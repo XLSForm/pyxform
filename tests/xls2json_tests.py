@@ -6,12 +6,12 @@ import sys, os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 from django.test import TestCase, Client
-from json2xform.xls2json import ExcelReader
+from pyxform.xls2json import ExcelReader
 
 class BasicXls2JsonApiTests(TestCase):
 
     def test_simple_yes_or_no_question(self):
-        x = ExcelReader("json2xform/tests/yes_or_no_question.xls")
+        x = ExcelReader("pyxform/tests/yes_or_no_question.xls")
         x_results = x.to_dict()
         
         expected_dict = [
@@ -35,7 +35,7 @@ class BasicXls2JsonApiTests(TestCase):
 
 
     def test_gps(self):
-        x = ExcelReader("json2xform/tests/gps.xls")
+        x = ExcelReader("pyxform/tests/gps.xls")
 
         expected_dict = [{u'type': u'gps', u'name': u'location'}]
 
@@ -43,14 +43,14 @@ class BasicXls2JsonApiTests(TestCase):
 
     
     def test_string_and_integer(self):
-        x = ExcelReader("json2xform/tests/string_and_integer.xls")
+        x = ExcelReader("pyxform/tests/string_and_integer.xls")
 
         expected_dict = [{u'text': {u'english': u'What is your name?'}, u'type': u'string', u'name': u'your_name'}, {u'text': {u'english': u'How many years old are you?'}, u'type': u'integer', u'name': u'your_age'}]
 
         self.assertEqual(x.to_dict()[u"children"], expected_dict)
 
     def test_table(self):
-        x = ExcelReader("json2xform/tests/table.xls")
+        x = ExcelReader("pyxform/tests/table.xls")
 
         [{u'children': [{u'type': u'integer', u'name': u'count', u'label': {u'English': u'How many are there in this group?'}}], u'type': u'table', u'name': u'my_table', u'label': {u'English': u'My Table'}}]
 

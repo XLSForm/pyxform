@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
-from json2xform.builder import create_survey_element_from_dict
-from json2xform.xls2json import ExcelReader
+from pyxform.builder import create_survey_element_from_dict
+from pyxform.xls2json import ExcelReader
 
 class BuilderTests(TestCase):
     
@@ -61,7 +61,7 @@ class BuilderTests(TestCase):
         self.assertEqual(g.to_dict(), expected_dict)
 
     def test_specify_other(self):
-        excel_reader = ExcelReader("json2xform/tests/specify_other.xls")
+        excel_reader = ExcelReader("pyxform/tests/specify_other.xls")
         d = excel_reader.to_dict()
         survey = create_survey_element_from_dict(d)
         expected_dict = {

@@ -112,5 +112,5 @@ class Survey(Section):
         fp.close()
         
     def instantiate(self):
-        from json2xform.instance import SurveyInstance
+        from instance import SurveyInstance
         return SurveyInstance(self)

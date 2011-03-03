@@ -6,13 +6,13 @@ import sys, os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 from django.test import TestCase, Client
-from json2xform.xls2json import ExcelReader
-from json2xform.builder import create_survey_element_from_dict
+from pyxform.xls2json import ExcelReader
+from pyxform.builder import create_survey_element_from_dict
 
 class GroupTests(TestCase):
 
     def test_json(self):
-        x = ExcelReader("json2xform/tests/group.xls")
+        x = ExcelReader("pyxform/tests/group.xls")
         x_results = x.to_dict()
         expected_dict = {
             u'name': 'group',
@@ -45,7 +45,7 @@ class GroupTests(TestCase):
         self.assertEqual(x_results, expected_dict)
 
     def test_equality_of_to_dict(self):
-        x = ExcelReader("json2xform/tests/group.xls")
+        x = ExcelReader("pyxform/tests/group.xls")
         x_results = x.to_dict()
 
         survey_object = create_survey_element_from_dict(x_results)
