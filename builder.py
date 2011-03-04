@@ -56,7 +56,7 @@ class SurveyElementBuilder(object):
             Question.TYPE : u"text",
             Question.NAME : u"%s_other" % d[Question.NAME],
             Question.LABEL : d[Question.LABEL],
-            Question.BIND : {u"relevant" : u"selected(${%s}, 'other')" % d[Question.NAME]}
+            Question.BIND : {u"relevant" : u"selected(../%s, 'other')" % d[Question.NAME]}
             }
         return InputQuestion(**kwargs)
 
