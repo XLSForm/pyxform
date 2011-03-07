@@ -16,16 +16,16 @@ class BasicXls2JsonApiTests(TestCase):
         
         expected_dict = [
             {
-                u'text': {u'english': u'have you had a good day today?'},
+                u'label': {u'english': u'have you had a good day today?'},
                 u'type': u'select one',
                 u'name': u'good_day',
                 u'choices': [
                     {
-                        u'text': {u'english': u'yes'},
+                        u'label': {u'english': u'yes'},
                         u'value': u'yes'
                         },
                     {
-                        u'text': {u'english': u'no'},
+                        u'label': {u'english': u'no'},
                         u'value': u'no'
                         }
                     ]

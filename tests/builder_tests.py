@@ -92,9 +92,46 @@ class BuilderTests(TestCase):
                     },
                 {
                     u'name': u'sex_other',
-                    u'bind': {u'relevant': u"selected(${sex}, 'other')"},
+                    u'bind': {u'relevant': u"selected(../sex, 'other')"},
                     u'label': {u'English': u'What sex are you?'},
                     u'type': u'text'}
                 ]
             }
+        self.assertEqual(survey.to_dict(), expected_dict)
+
+    def test_include(self):
+        excel_reader = ExcelReader("pyxform/tests/include.xls")
+        d = excel_reader.to_dict()
+        survey = create_survey_element_from_dict(d)
+        expected_dict = {
+            u'name': 'include',
+            u'type': u'survey',
+            u'children': [
+                {
+                    u'name': u'name',
+                    u'label': {u'English': u"What's your name?"},
+                    u'type': u'text'
+                    },
+                {
+                    u'name': u'yes_or_no_question',
+                    u'type': u'group',
+                    u'label': {u'English': u'Yes or no question section'},
+                    u'children': [
+                        {
+                            u'name': u'good_day',
+                            u'label': {u'english': u'have you had a good day today?'},
+                            u'type': u'select one',
+                            u'children': [
+                                {
+                                    u'name': u'yes',
+                                    u'value': u'yes',
+                                    u'label': {u'english': u'yes'}
+                                    },
+                                {
+                                    u'name': u'no',
+                                    u'value': u'no',
+                                    u'label': {u'english': u'no'}
+                                    }
+                                ]}]}]}
+
         self.assertEqual(survey.to_dict(), expected_dict)
