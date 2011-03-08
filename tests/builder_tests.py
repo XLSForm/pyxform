@@ -92,7 +92,7 @@ class BuilderTests(TestCase):
                     },
                 {
                     u'name': u'sex_other',
-                    u'bind': {u'relevant': u"selected(${sex}, 'other')"},
+                    u'bind': {u'relevant': u"selected(../sex, 'other')"},
                     u'label': {u'English': u'What sex are you?'},
                     u'type': u'text'}
                 ]
