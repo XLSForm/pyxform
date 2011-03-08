@@ -64,7 +64,7 @@ class Survey(Section):
 
     def id_string(self):
         return self.get_name() + "_" + \
-            self._created.strftime("%Y%m%d")
+            self._created.strftime("%Y_%m_%d")
 
     def xml_instance(self):
         result = Section.xml_instance(self)
@@ -93,7 +93,7 @@ class Survey(Section):
         """
         def repl(matchobj):
             if matchobj.group(1) not in self._xpath:
-                raise Exception("There is not survey element with this name.",
+                raise Exception("There is no survey element with this name.",
                                 matchobj.group(1))
             return self._xpath[matchobj.group(1)]
         return repl

@@ -42,6 +42,9 @@ class SurveyElement(object):
             element._set_parent(self)
             self._children.append(element)
 
+    def get_children(self):
+        return self._children
+
     def get(self, key):
         # name, type, control, bind, label, hint
         return self._dict[key]

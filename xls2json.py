@@ -25,6 +25,7 @@ class ExcelReader(object):
     def __init__(self, path):
         self._path = path
         name_match = re.search(r"(?P<name>[^/]+)\.xls$", path)
+        if not name_match: raise Exception("This is not a path to an excel file", path)
         self._name = name_match.groupdict()["name"]
         self._dict = None
         self._setup()
@@ -147,6 +148,8 @@ class ExcelReader(object):
             re.sub(r"\s+", " ", question_type)
             if question_type.startswith(u"select"):
                 self._prepare_multiple_choice_question(q, question_type)
+            if question_type.startswith(u"begin loop"):
+                self._prepare_begin_loop(q, question_type)
             if question_type.startswith(u"begin table"):
                 self._prepare_begin_table(q, question_type)
 
@@ -161,6 +164,14 @@ class ExcelReader(object):
         else:
             q[TYPE] = d["select_command"]
 
+    def _prepare_begin_loop(self, q, question_type):
+        m = re.search(r"^(?P<type>begin loop) over (?P<list_name>\S+)$", question_type)
+        assert m, "unsupported select syntax:" + question_type
+        assert COLUMNS not in q
+        d = m.groupdict()
+        q[COLUMNS] = d["list_name"]
+        q[TYPE] = d["type"]
+
     def _prepare_begin_table(self, q, question_type):
         m = re.search(r"^(?P<type>begin table) with columns from (?P<list_name>\S+)$", question_type)
         assert m, "unsupported select syntax:" + question_type
@@ -171,7 +182,7 @@ class ExcelReader(object):
 
     def _insert_lists(self):
         """
-        For each multiple choice question and table in the survey find
+        For each multiple choice question and loop in the survey find
         the corresponding list and add it to that question.
         """
         lists_by_name = self._dict[self._lists_sheet_name]
@@ -192,8 +203,8 @@ class ExcelReader(object):
         stack = [result]
         for cmd in self._dict:
             cmd_type = cmd[u"type"]
-            match_begin = re.match(r"begin (?P<type>group|repeat|table)", cmd_type)
-            match_end = re.match(r"end (?P<type>group|repeat|table)", cmd_type)
+            match_begin = re.match(r"begin (?P<type>group|repeat|table|loop)", cmd_type)
+            match_end = re.match(r"end (?P<type>group|repeat|table|loop)", cmd_type)
             if match_begin:
                 # start a new section
                 cmd[u"type"] = match_begin.group(1)

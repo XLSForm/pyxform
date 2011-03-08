@@ -3,7 +3,7 @@ from question import Question, InputQuestion, UploadQuestion, MultipleChoiceQues
 from section import Section, RepeatingSection, GroupedSection
 from survey import Survey
 import utils
-from pyxform.xls2json import ExcelReader
+from xls2json import ExcelReader
 
 class SurveyElementBuilder(object):
     # we use this CLASSES dict to create questions from dictionaries
@@ -71,12 +71,39 @@ class SurveyElementBuilder(object):
             if survey_element: result.add_child(survey_element)
         return result
 
-    def _create_table_from_dict(self, d):
-        kwargs = d.copy()
-        keys_to_delete = [u"type", u"children", u"columns"]
-        for key in keys_to_delete: del kwargs[key]
-        result = GroupedSection(**kwargs)
+    def _create_loop_from_dict(self, d):
+        result = []
 
+        # columns is a left over from when this was
+        # create_table_from_dict, I will need to clean this up
+        for column in d[u"columns"]:
+            for child in d[SurveyElement.CHILDREN]:
+                question_dict = self._create_question_dict_from_template_and_info(child, column)
+                question = self.create_survey_element_from_dict(question_dict)
+                result.append(question)
+        return result
+
+    def _create_question_dict_from_template_and_info(self, question_template, info):
+        info_by_lang = dict(
+            [(lang, {u"name" : info[u"name"], u"label" : info[u"label"][lang]}) for lang in info[u"label"].keys()]
+            )
+
+        template_copy = question_template.copy()
+        for key in template_copy.keys():
+            if type(template_copy[key])==unicode:
+                template_copy[key] = template_copy[key] % info
+            elif type(template_copy[key])==dict:
+                template_copy[key] = template_copy[key].copy()
+                for key2 in template_copy[key].keys():
+                    template_copy[key][key2] = template_copy[key][key2] % info_by_lang.get(key2, info)
+        return template_copy
+
+    def _create_table_from_dict(self, d):
+        try:
+            kwargs = dict([(k, d[k]) for k in [Section.NAME, Section.LABEL]])
+        except KeyError:
+            raise Exception("This table is missing either a name or a label.", d)
+        result = GroupedSection(**kwargs)
         for column in d[u"columns"]:
             # create a new group for each column
             try:
@@ -85,37 +112,22 @@ class SurveyElementBuilder(object):
                 raise Exception("Column is missing name or label", column)
             g = GroupedSection(**kwargs)
             for child in d[SurveyElement.CHILDREN]:
-                copy = child.copy()
-                try:
-                    self._add_column_label_to_question_label(column, copy)
-                except TypeError:
-                    # there's no '%s' substitution to fill
-                    pass
-                g.add_child(self.create_survey_element_from_dict(copy))
+                g.add_child(self.create_survey_element_from_dict(child))
             result.add_child(g)
         return result
-
-    def _add_column_label_to_question_label(self, column, question):
-        new_label = {}
-        for lang in column[Section.LABEL].keys():
-            new_label[lang] = question[Question.LABEL][lang] % column[Section.LABEL][lang]                
-        question[Question.LABEL] = new_label
 
     def create_survey_element_from_dict(self, d):
         if d[SurveyElement.TYPE] in self.SECTION_CLASSES:
             return self._create_section_from_dict(d)
-        elif d[SurveyElement.TYPE]==u"table":
-            return self._create_table_from_dict(d)
+        elif d[SurveyElement.TYPE]==u"loop":
+            return self._create_loop_from_dict(d)
         elif d[SurveyElement.TYPE]==u"include":
             excel_reader = ExcelReader(d[SurveyElement.NAME])
             include_dict = excel_reader.to_dict()
-            assert include_dict[SurveyElement.TYPE]==u"survey" # this would be better placed in a test of xls2json
-            include_dict[SurveyElement.TYPE] = u"group"
-            for key in d.keys():
-                if key not in [SurveyElement.TYPE, SurveyElement.NAME]:
-                    assert key not in include_dict
-                    include_dict[key] = d[key]
-            return create_survey_element_from_dict(include_dict)
+            full_survey = create_survey_element_from_dict(include_dict)
+            return full_survey.get_children()
+        elif d[SurveyElement.TYPE]==u"table":
+            return self._create_table_from_dict(d)
         else:
             return self._create_question_from_dict(d)
 
