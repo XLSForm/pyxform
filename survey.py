@@ -26,13 +26,22 @@ class Survey(Section):
         return E(ns("h", "html"),
                  E(ns("h", "head"),
                    E(ns("h", "title"), self.get_name()),
-                   E("model",
-                     E.itext(*self.xml_translations()),
-                     E.instance(self.xml_instance()),
-                     *self.xml_bindings()
-                     ),
+                   self.xml_model()
                    ),
                  E(ns("h", "body"), *self.xml_control())
+                 )
+
+    def xml_model(self):
+        self._setup_translations()
+        if self._translations:
+            return E("model",
+                     self.xml_translations(),
+                     E.instance(self.xml_instance()),
+                     *self.xml_bindings()
+                     )
+        return E("model",
+                 E.instance(self.xml_instance()),
+                 *self.xml_bindings()
                  )
 
     def _setup_translations(self):
@@ -50,7 +59,6 @@ class Survey(Section):
                             self._translations[lang][translation_key] = text[lang]
 
     def xml_translations(self):
-        self._setup_translations()
         result = []
         for lang in self._translations.keys():
             result.append( E.translation(lang=lang) )
@@ -61,7 +69,7 @@ class Survey(Section):
                         id=name
                         )
                     )
-        return result
+        return E.itext(*result)
 
     def id_string(self):
         return self.get_name() + "_" + \
