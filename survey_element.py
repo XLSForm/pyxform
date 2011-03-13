@@ -1,5 +1,6 @@
 from utils import is_valid_xml_tag, node, ns
 from collections import defaultdict
+from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
 
 class SurveyElement(object):
     # the following are important keys for the underlying dict that
@@ -32,6 +33,17 @@ class SurveyElement(object):
         self._children = []
         for element in kwargs.get(u"children", []):
             self.add_child(element)
+        self._question_type_dictionary = kwargs.get(
+            u"question_type_dictionary", None
+            )
+
+    def get_question_type_dictionary(self):
+        if self._question_type_dictionary:
+            return self._question_type_dictionary
+        elif self._parent:
+            return self._parent.get_question_type_dictionary()
+        else:
+            return DEFAULT_QUESTION_TYPE_DICTIONARY
 
     def add_child(self, element):
         # I should probably rename this function, because now it handles lists

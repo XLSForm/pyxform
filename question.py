@@ -1,8 +1,5 @@
-import os
 from utils import node, SEP, CHOICE_PREFIX
 from survey_element import SurveyElement
-from xls2json import ExcelReader
-
 
 def _overlay(over, under):
     if type(under)==dict:
@@ -11,24 +8,18 @@ def _overlay(over, under):
         return result
     return over if over else under
 
-
 class Question(SurveyElement):
-    # this is a dictionary of all the question types we will use in creating XForms.
-    _path_to_this_file = os.path.abspath(__file__)
-    _path_to_this_dir = os.path.dirname(_path_to_this_file)
-    _path_to_question_types = os.path.join(_path_to_this_dir, "question_types", "nigeria.xls")
-    _excel_reader = ExcelReader(_path_to_question_types)
-    TYPES = _excel_reader.to_dict()
+    def get_type_definition(self):
+        qtd = self.get_question_type_dictionary()
+        question_type_str = self._dict[self.TYPE]
+        return qtd.get_definition(question_type_str)
 
     def get(self, key):
         """
         Overlay this questions binding attributes on type of the
         attributes from this question type.
         """
-        question_type = SurveyElement.get(self, self.TYPE)
-        if question_type not in self.TYPES:
-            raise Exception("Unknown question type", question_type)
-        question_type_dict = self.TYPES[question_type]
+        question_type_dict = self.get_type_definition()
         under = question_type_dict.get(key, None)
         over = SurveyElement.get(self, key)
         if not under: return over

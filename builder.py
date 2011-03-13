@@ -4,6 +4,7 @@ from section import Section, RepeatingSection, GroupedSection
 from survey import Survey
 import utils
 from xls2json import ExcelReader
+from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
 
 try:
     # here's some spaghetti code to get location info into our XForms
@@ -27,10 +28,14 @@ class SurveyElementBuilder(object):
         u"survey" : Survey,
         }
 
+    def __init__(self, **kwargs):
+        self._question_type_dictionary = kwargs.get(
+            u"question_type_dictionary",
+            DEFAULT_QUESTION_TYPE_DICTIONARY
+            )
+
     def _get_question_class(self, question_type_str):
-        if question_type_str not in Question.TYPES:
-            raise Exception("Unknown question type", question_type_str)
-        question_type = Question.TYPES[question_type_str]
+        question_type = self._question_type_dictionary.get_definition(question_type_str)
         control_dict = question_type.get(Question.CONTROL, {})
         control_tag = control_dict.get(u"tag", u"")
         return self.QUESTION_CLASSES[control_tag]
