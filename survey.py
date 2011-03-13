@@ -38,15 +38,15 @@ class Survey(Section):
         self._translations = defaultdict(dict)
         for e in self.iter_children():
             translation_keys = e.get_translation_keys()
-            for translation_key, text in [
-                (translation_keys[u"label"], e.get_label()),
-                (translation_keys[u"hint"], e.get_hint())
-                ]:
-                for lang in text.keys():
-                    if translation_key in self._translations[lang]:
-                        assert self._translations[lang][translation_key] == text[lang], "The labels for this translation key are inconsistent %(key)s %(label)s" % {"key" : translation_key, "label" : text[lang]}
-                    else:
-                        self._translations[lang][translation_key] = text[lang]
+            for key in translation_keys.keys():
+                translation_key = translation_keys[key]
+                text = e.get(key)
+                if type(text)==dict:
+                    for lang in text.keys():
+                        if translation_key in self._translations[lang]:
+                            assert self._translations[lang][translation_key] == text[lang], "The labels for this translation key are inconsistent %(key)s %(label)s" % {"key" : translation_key, "label" : text[lang]}
+                        else:
+                            self._translations[lang][translation_key] = text[lang]
 
     def xml_translations(self):
         self._setup_translations()

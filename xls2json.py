@@ -29,15 +29,12 @@ class ExcelReader(object):
         self._name = name_match.groupdict()["name"]
         self._dict = None
         self._setup()
-        sheet_names = self._dict.keys()
+        self._sheet_names = self._dict.keys()
+        self._set_choices_and_columns_sheet_name()
+        self._strip_unicode_values()
+        self._fix_int_values()
 
-        self._lists_sheet_name = None
-        for sheet_name in sheet_names:
-            if sheet_name in CHOICES_SHEET_NAMES:
-                self._lists_sheet_name = sheet_name
-
-        if SURVEY_SHEET in sheet_names:
-            self._fix_int_values()
+        if SURVEY_SHEET in self._sheet_names:
             self._group_dictionaries()
             self._process_question_type()
             if self._lists_sheet_name:
@@ -45,10 +42,18 @@ class ExcelReader(object):
                 self._insert_lists()
             self._dict = self._dict[SURVEY_SHEET]
             self._organize_sections()
-        elif sheet_names==[TYPES_SHEET]:
+        elif self._sheet_names==[TYPES_SHEET]:
             self._group_dictionaries()
             self._dict = self._dict[TYPES_SHEET]
             self._organize_by_type_name()
+
+    def _set_choices_and_columns_sheet_name(self):
+        sheet_names = self._dict.keys()
+
+        self._lists_sheet_name = None
+        for sheet_name in sheet_names:
+            if sheet_name in CHOICES_SHEET_NAMES:
+                self._lists_sheet_name = sheet_name
 
     def to_dict(self):
         return self._dict
@@ -76,10 +81,15 @@ class ExcelReader(object):
                 for column in range(0,sheet.ncols):
                     key = sheet.cell(0,column).value
                     value = sheet.cell(row,column).value
-                    if value:
-                        # this strip here is a little hacky way to clean up the data from excel, often spaces at the end of question types are breaking things
-                        row_dict[key] = value.strip()
+                    if value: row_dict[key] = value
                 if row_dict: self._dict[sheet.name].append(row_dict)
+
+    def _strip_unicode_values(self):
+        for sheet_name, dicts in self._dict.items():
+            for d in dicts:
+                for k, v in d.items():
+                    if type(v)==unicode:
+                        d[k] = v.strip()
 
     def _fix_int_values(self):
         """

@@ -20,7 +20,7 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
         q.set_name("cow_color")
         q._dict[MultipleChoiceQuestion.TYPE] = u"select one"
         
-        q._add_option(label="Green", value="green")
+        q.add_choice(label="Green", value="green")
         s.add_child(q)
 
         expected_dict = {
@@ -70,8 +70,8 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
     
     def test_two_options_cannot_have_the_same_value(self):
         q = MultipleChoiceQuestion(name="Favorite Color")
-        q._add_option(value="grey", label="Gray")
-        q._add_option(value="grey", label="Grey")
+        q.add_choice(value="grey", label="Gray")
+        q.add_choice(value="grey", label="Grey")
         self.assertRaises(Exception, q, 'validate')
     
     def test_one_section_cannot_have_two_conflicting_slugs(self):

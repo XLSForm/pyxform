@@ -49,6 +49,9 @@ class SurveyElement(object):
         # name, type, control, bind, label, hint
         return self._dict[key]
 
+    def set(self, key, value):
+        self._dict[key] = value
+
     def set_name(self, name):
         self._dict[self.NAME] = name
 
@@ -95,15 +98,7 @@ class SurveyElement(object):
             if not v: del result[k]
         return result
 
-    def set_attributes(self, d):
-        """
-        This is a little hacky. I think it would be cleaner to use a
-        meta class to create a new class for each question type.
-        """
-        self._attributes.update(d)
-
     def get_translation_keys(self):
-        # we could base this off of the xpath instead of just the name
         return {
             u"label" : u"%s:label" % self.get_xpath(),
             u"hint" : u"%s:hint" % self.get_xpath(),
@@ -111,12 +106,18 @@ class SurveyElement(object):
 
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):
-        d = self.get_translation_keys()
-        return node(u"label", ref="jr:itext('%s')" % d[u"label"])
+        if type(self.get_label())==dict:
+            d = self.get_translation_keys()
+            return node(u"label", ref="jr:itext('%s')" % d[u"label"])
+        else:
+            return node(u"label", self.get_label())
 
     def xml_hint(self):
-        d = self.get_translation_keys()
-        return node(u"hint", ref="jr:itext('%s')" % d[u"hint"])
+        if type(self.get_hint())==dict:
+            d = self.get_translation_keys()
+            return node(u"hint", ref="jr:itext('%s')" % d[u"hint"])
+        else:
+            return node(u"hint", self.get_hint())
 
     def xml_label_and_hint(self):
         if self.get_hint():

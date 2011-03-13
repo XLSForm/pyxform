@@ -93,7 +93,7 @@ class BuilderTests(TestCase):
                 {
                     u'name': u'sex_other',
                     u'bind': {u'relevant': u"selected(../sex, 'other')"},
-                    u'label': {u'English': u'What sex are you?'},
+                    u'label': {u'English': u'Specify other.'},
                     u'type': u'text'}
                 ]
             }
@@ -154,7 +154,7 @@ class BuilderTests(TestCase):
                 {
                     u'name': u'available_toilet_types_other',
                     u'bind': {u'relevant': u"selected(../available_toilet_types, 'other')"},
-                    u'label': {u'english': u'What type of toilets are on the premises?'},
+                    u'label': {u'english': u'Specify other.'},
                     u'type': u'text'
                     },
                 {

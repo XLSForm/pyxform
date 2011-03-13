@@ -4,17 +4,19 @@ from survey_element import SurveyElement
 from xls2json import ExcelReader
 
 
-def _overlay_dicts(over, under):
-    result = under.copy()
-    result.update(over)
-    return result
+def _overlay(over, under):
+    if type(under)==dict:
+        result = under.copy()
+        result.update(over)
+        return result
+    return over if over else under
 
 
 class Question(SurveyElement):
     # this is a dictionary of all the question types we will use in creating XForms.
     _path_to_this_file = os.path.abspath(__file__)
     _path_to_this_dir = os.path.dirname(_path_to_this_file)
-    _path_to_question_types = os.path.join(_path_to_this_dir, "question_types.xls")
+    _path_to_question_types = os.path.join(_path_to_this_dir, "question_types", "nigeria.xls")
     _excel_reader = ExcelReader(_path_to_question_types)
     TYPES = _excel_reader.to_dict()
 
@@ -24,11 +26,13 @@ class Question(SurveyElement):
         attributes from this question type.
         """
         question_type = SurveyElement.get(self, self.TYPE)
+        if question_type not in self.TYPES:
+            raise Exception("Unknown question type", question_type)
         question_type_dict = self.TYPES[question_type]
         under = question_type_dict.get(key, None)
         over = SurveyElement.get(self, key)
         if not under: return over
-        return _overlay_dicts(over, under)
+        return _overlay(over, under)
 
     def xml_instance(self):
         return node(self.get_name())
@@ -65,7 +69,9 @@ class Option(SurveyElement):
     def __init__(self, *args, **kwargs):
         # if there's no value key then we'll use the name
         # the value and name will be used interchangeably
-        value = kwargs.get(self.VALUE, kwargs.get(self.NAME, None))
+        value = kwargs.get(self.VALUE,
+                           kwargs.get(self.NAME,
+                                      None))
         if value is None:
             raise Exception("Did not specify value for multiple choice option", kwargs)
         d = {
@@ -92,14 +98,14 @@ class MultipleChoiceQuestion(Question):
     def __init__(self, *args, **kwargs):
         Question.__init__(self, *args, **kwargs)
         for option in kwargs.get(u'choices', []):
-            self._add_option(**option)
+            self.add_choice(**option)
         
     def validate(self):
         Question.validate(self)
         for choice in self.iter_children():
             if choice!=self: choice.validate()
         
-    def _add_option(self, **kwargs):
+    def add_choice(self, **kwargs):
         option = Option(**kwargs)
         self.add_child(option)
 
@@ -114,3 +120,9 @@ class MultipleChoiceQuestion(Question):
         for n in [o.xml() for o in self._children]:
             result.append(n)                
         return result
+
+
+class SelectOneQuestion(MultipleChoiceQuestion):
+    def __init__(self, *args, **kwargs):
+        MultipleChoiceQuestion.__init__(self, *args, **kwargs)
+        self._dict[self.TYPE] = u"select one"
