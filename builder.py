@@ -52,7 +52,7 @@ class SurveyElementBuilder(object):
             d_copy[Question.TYPE] = question_type_str
             d_copy[u"choices"].append({
                     u"name" : u"other",
-                    u"label" : dict([(lang, u"Other") for lang in d[Question.LABEL].keys()]),
+                    u"label" : self._label_hack(u"Other", d[Question.LABEL]),
                     })
             return [self._create_question_from_dict(d_copy),
                     self._create_specify_other_question_from_dict(d_copy)]
@@ -60,11 +60,20 @@ class SurveyElementBuilder(object):
         if question_class: return question_class(**d)
         return []
 
+    def _label_hack(self, label_to_repeat, question_label):
+        if type(question_label)==unicode:
+            return label_to_repeat
+        if type(question_label)==dict:
+            return dict([(lang, label_to_repeat) for lang in question_label.keys()])
+        else:
+            raise Exception("Question label is expected to be unicode or dict",
+                            question_label)
+
     def _create_specify_other_question_from_dict(self, d):
         kwargs = {
             Question.TYPE : u"text",
             Question.NAME : u"%s_other" % d[Question.NAME],
-            Question.LABEL : dict([(lang, u"Specify other.") for lang in d[Question.LABEL].keys()]),
+            Question.LABEL : self._label_hack("Specify other.", d[Question.LABEL]),
             Question.BIND : {u"relevant" : u"selected(../%s, 'other')" % d[Question.NAME]},
             }
         return InputQuestion(**kwargs)

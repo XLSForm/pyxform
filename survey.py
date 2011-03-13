@@ -7,6 +7,7 @@ from collections import defaultdict
 import codecs
 import re
 import json
+from odk_validate import check_xform
 
 class Survey(Section):
     def __init__(self, *args, **kwargs):
@@ -105,11 +106,13 @@ class Survey(Section):
         bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
         return re.sub(bracketed_tag, self._var_repl_function(), text)
 
-    def print_xform_to_file(self, filename=""):
+    def print_xform_to_file(self, filename="", validate=True):
         if not filename: filename = self.id_string() + ".xml"
         fp = codecs.open(filename, mode="w", encoding="utf-8")
         fp.write(self.to_xml())
         fp.close()
+        if validate:
+            check_xform(filename)
         
     def instantiate(self):
         from instance import SurveyInstance
