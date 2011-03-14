@@ -7,6 +7,7 @@ from collections import defaultdict
 import codecs
 import re
 import json
+import os
 from odk_validate import check_xform
 
 class Survey(Section):
@@ -71,9 +72,11 @@ class Survey(Section):
                     )
         return E.itext(*result)
 
+    def date_stamp(self):
+        return self._created.strftime("%Y_%m_%d")
+
     def id_string(self):
-        return self.get_name() + "_" + \
-            self._created.strftime("%Y_%m_%d")
+        return self.get_name() + "_" + self.date_stamp()
 
     def xml_instance(self):
         result = Section.xml_instance(self)
@@ -114,13 +117,13 @@ class Survey(Section):
         bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
         return re.sub(bracketed_tag, self._var_repl_function(), text)
 
-    def print_xform_to_file(self, filename="", validate=True):
-        if not filename: filename = self.id_string() + ".xml"
-        fp = codecs.open(filename, mode="w", encoding="utf-8")
+    def print_xform_to_file(self, path="", validate=True):
+        if not path: path = self.id_string() + ".xml"
+        fp = codecs.open(path, mode="w", encoding="utf-8")
         fp.write(self.to_xml())
         fp.close()
         if validate:
-            check_xform(filename)
+            check_xform(path)
         
     def instantiate(self):
         from instance import SurveyInstance

@@ -8,7 +8,11 @@ def xls2json(name):
 
 def json2xform(name):
     s = create_survey_element_from_json("%s.json" % name)
-    s.print_xform_to_file()
+    path = "%(name)s_%(date)s.xml" % {
+        "name" : name,
+        "date" : s.date_stamp()
+        }
+    s.print_xform_to_file(path=path)
 
 def xls2xform(name):
     xls2json(name)
