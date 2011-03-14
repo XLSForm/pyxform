@@ -132,10 +132,15 @@ class SurveyElementBuilder(object):
         elif d[SurveyElement.TYPE]==u"loop":
             return self._create_loop_from_dict(d)
         elif d[SurveyElement.TYPE]==u"include":
-            excel_reader = ExcelReader(d[SurveyElement.NAME])
-            include_dict = excel_reader.to_dict()
-            full_survey = create_survey_element_from_dict(include_dict)
-            return full_survey.get_children()
+            path = d[SurveyElement.NAME]
+            if path.endswith(".xls"):
+                excel_reader = ExcelReader(path)
+                include_dict = excel_reader.to_dict()
+                full_survey = create_survey_element_from_dict(include_dict)
+                return full_survey.get_children()
+            elif path.endswith(".json"):
+                full_survey = create_survey_element_from_json(path)
+                return full_survey.get_children()
         elif d[SurveyElement.TYPE]==u"table":
             return self._create_table_from_dict(d)
         else:
