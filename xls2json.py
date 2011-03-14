@@ -8,6 +8,11 @@ import re
 import sys
 import codecs
 
+def print_pyobj_to_json(pyobj, path):
+    fp = codecs.open(path, mode="w", encoding="utf-8")
+    json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
+    fp.close()
+
 # the following are the three sheet names that this program expects
 SURVEY_SHEET = u"survey"
 CHOICES_SHEET_NAMES = [u"choices", u"choices and columns"]
@@ -60,9 +65,7 @@ class ExcelReader(object):
 
     def print_json_to_file(self, filename=""):
         if not filename: filename = self._path[:-4] + ".json"
-        fp = codecs.open(filename, mode="w", encoding="utf-8")
-        json.dump(self.to_dict(), fp=fp, ensure_ascii=False, indent=4)
-        fp.close()
+        print_pyobj_to_json(self.to_dict(), filename)
 
     def _setup(self):
         """
