@@ -87,9 +87,12 @@ class Option(SurveyElement):
 
 class MultipleChoiceQuestion(Question):
     def __init__(self, *args, **kwargs):
-        Question.__init__(self, *args, **kwargs)
-        for option in kwargs.get(u'choices', []):
-            self.add_choice(**option)
+        kwargs_copy = kwargs.copy()
+        choices = kwargs_copy.pop(u"choices", []) + \
+            kwargs_copy.pop(u"children", [])
+        Question.__init__(self, *args, **kwargs_copy)
+        for choice in choices:
+            self.add_choice(**choice)
         
     def validate(self):
         Question.validate(self)
