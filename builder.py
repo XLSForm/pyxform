@@ -73,10 +73,10 @@ class SurveyElementBuilder(object):
         return InputQuestion(**kwargs)
 
     def _create_section_from_dict(self, d):
-        kwargs = d.copy()
-        children = kwargs.pop(Section.CHILDREN)
-        section_class = self.SECTION_CLASSES[kwargs[Section.TYPE]]
-        result = section_class(**kwargs)
+        d_copy = d.copy()
+        children = d_copy.pop(Section.CHILDREN)
+        section_class = self.SECTION_CLASSES[d_copy[Section.TYPE]]
+        result = section_class(**d_copy)
         for child in children:
             survey_element = self.create_survey_element_from_dict(child)
             if survey_element: result.add_child(survey_element)
