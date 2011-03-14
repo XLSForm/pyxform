@@ -6,12 +6,6 @@ import utils
 from xls2json import ExcelReader
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
 
-try:
-    # here's some spaghetti code to get location info into our XForms
-    from lga_hack.location_questions import select_zone_state_lga
-except ImportError:
-    pass
-
 class SurveyElementBuilder(object):
     # we use this CLASSES dict to create questions from dictionaries
     QUESTION_CLASSES = {
@@ -144,8 +138,6 @@ class SurveyElementBuilder(object):
             return full_survey.get_children()
         elif d[SurveyElement.TYPE]==u"table":
             return self._create_table_from_dict(d)
-        elif d[SurveyElement.TYPE]==u"zone_state_lga":
-            return select_zone_state_lga()
         else:
             return self._create_question_from_dict(d)
 
