@@ -1,3 +1,4 @@
 *.pyc
 *~
 .DS_Store
+tests/how_old_are_you.json
