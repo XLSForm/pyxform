@@ -50,30 +50,33 @@ class BasicXls2JsonApiTests(TestCase):
         self.assertEqual(x.to_dict()[u"children"], expected_dict)
 
     def test_table(self):
-        x = ExcelReader("pyxform/tests/table.xls")
-
-        [{u'children': [{u'type': u'integer', u'name': u'count', u'label': {u'English': u'How many are there in this group?'}}], u'type': u'table', u'name': u'my_table', u'label': {u'English': u'My Table'}}]
+        x = ExcelReader("pyxform/tests/simple_loop.xls")
 
         expected_dict = {
-            u"type" : u"table",
-            u"name" : u"my_table",
-            u"label" : {u"English" : u"My Table"},
-            u"columns" : [
+            u'type': u'survey',
+            u'name': 'simple_loop',
+            u'children': [
                 {
-                    u"name" : u"col1",
-                    u"label" : {u"English" : u"Column 1"},
-                    },
-                {
-                    u"name" : u"col2",
-                    u"label" : {u"English" : u"Column 2"},
-                    },
-                ],
-            u"children" : [
-                {
-                    u"type": u"integer",
-                    u"name": u"count",
-                    u"label": {u"English": u"How many are there in this group?"}
-                    },
-                ]
-            }
-        self.assertEqual(x.to_dict()[u"children"][0], expected_dict)
+                    u'children': [
+                        {
+                            u'type': u'integer',
+                            u'name': u'count',
+                            u'label': {u'English': u'How many are there in this group?'}
+                            }
+                        ],
+                    u'type': u'loop',
+                    u'name': u'my_table',
+                    u'columns': [
+                        {
+                            u'name': u'col1',
+                            u'label': {u'English': u'Column 1'}
+                            },
+                        {
+                            u'name': u'col2',
+                            u'label': {u'English': u'Column 2'}
+                            }
+                        ],
+                    u'label': {u'English': u'My Table'}
+                    }]}
+
+        self.assertEqual(x.to_dict(), expected_dict)

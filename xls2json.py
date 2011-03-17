@@ -163,8 +163,6 @@ class ExcelReader(object):
                 self._prepare_multiple_choice_question(q, question_type)
             if question_type.startswith(u"begin loop"):
                 self._prepare_begin_loop(q, question_type)
-            if question_type.startswith(u"begin table"):
-                self._prepare_begin_table(q, question_type)
 
     def _prepare_multiple_choice_question(self, q, question_type):
         m = re.search(r"^(?P<select_command>select one|select all that apply) from (?P<list_name>\S+)( (?P<specify_other>or specify other))?$", question_type)
@@ -179,14 +177,6 @@ class ExcelReader(object):
 
     def _prepare_begin_loop(self, q, question_type):
         m = re.search(r"^(?P<type>begin loop) over (?P<list_name>\S+)$", question_type)
-        assert m, "unsupported select syntax:" + question_type
-        assert COLUMNS not in q
-        d = m.groupdict()
-        q[COLUMNS] = d["list_name"]
-        q[TYPE] = d["type"]
-
-    def _prepare_begin_table(self, q, question_type):
-        m = re.search(r"^(?P<type>begin table) with columns from (?P<list_name>\S+)$", question_type)
         assert m, "unsupported select syntax:" + question_type
         assert COLUMNS not in q
         d = m.groupdict()
@@ -216,8 +206,8 @@ class ExcelReader(object):
         stack = [result]
         for cmd in self._dict:
             cmd_type = cmd[u"type"]
-            match_begin = re.match(r"begin (?P<type>group|repeat|table|loop)", cmd_type)
-            match_end = re.match(r"end (?P<type>group|repeat|table|loop)", cmd_type)
+            match_begin = re.match(r"begin (?P<type>group|repeat|loop)", cmd_type)
+            match_end = re.match(r"end (?P<type>group|repeat|loop)", cmd_type)
             if match_begin:
                 # start a new section
                 cmd[u"type"] = match_begin.group(1)
