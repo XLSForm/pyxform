@@ -106,9 +106,12 @@ class SurveyElementBuilder(object):
         return result.get_children()
 
     def _create_question_dict_from_template_and_info(self, question_template, info):
-        info_by_lang = dict(
-            [(lang, {u"name" : info[u"name"], u"label" : info[u"label"][lang]}) for lang in info[u"label"].keys()]
-            )
+        # if the label in info has multiple languages setup a
+        # dictionary by language to do substitutions.
+        if type(info[u"label"])==dict:
+            info_by_lang = dict(
+                [(lang, {u"name" : info[u"name"], u"label" : info[u"label"][lang]}) for lang in info[u"label"].keys()]
+                )
 
         result = question_template.copy()
         for key in result.keys():
@@ -117,7 +120,10 @@ class SurveyElementBuilder(object):
             elif type(result[key])==dict:
                 result[key] = result[key].copy()
                 for key2 in result[key].keys():
-                    result[key][key2] = result[key][key2] % info_by_lang.get(key2, info)
+                    if type(info[u"label"])==dict:
+                        result[key][key2] = result[key][key2] % info_by_lang.get(key2, info)
+                    else:
+                        result[key][key2] = result[key][key2] % info
         return result
 
     def create_survey_element_from_dict(self, d):
