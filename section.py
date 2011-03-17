@@ -13,9 +13,11 @@ class Section(SurveyElement):
         element_slugs = []
         for element in self._children:
             if element.get_name() in element_slugs:
-                raise Exception("Element with name: '%s' already exists" % element.get_name())
-            else:
-                element_slugs.append(element.get_name())
+                raise Exception(
+                    "Element with this name already exists.",
+                    element_slugs, element.get_name()
+                    )
+            element_slugs.append(element.get_name())
 
     def xml_instance(self):
         result = node(self.get_name())
