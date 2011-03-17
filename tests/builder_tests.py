@@ -164,6 +164,7 @@ class BuilderTests(TestCase):
                     u'name': u'available_toilet_types',
                     u'label': {u'english': u'What type of toilets are on the premises?'},
                     u'type': u'select all that apply',
+                    u'bind': {u'constraint': u"(.='none' or not(selected(., 'none')))"},
                     u'children': [
                         {
                             u'name': u'pit_latrine_with_slab',
@@ -181,10 +182,18 @@ class BuilderTests(TestCase):
                             u'label': {u'english': u'Bucket system'}
                             },
                         {
+                            u'name': u'none',
+                            u'value': u'none',
+                            u'label': u'None',
+                            },
+                        {
                             u'name': u'other',
                             u'value': u'other',
-                            u'label': {u'english': u'Other'}}]
+                            u'label': {u'english': u'Other'}
+                            },
+                        ]
                     },
+
                 {
                     u'name': u'available_toilet_types_other',
                     u'bind': {u'relevant': u"selected(../available_toilet_types, 'other')"},
@@ -225,3 +234,5 @@ class BuilderTests(TestCase):
                 {u'name': u'other', u'label': {u'english': u'Other'}, u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}
 
         self.assertEqual(survey.to_dict(), expected_dict)
+
+{u'name': 'loop', u'type': u'survey', u'children': [{u'name': u'available_toilet_types', u'bind': {u'constraint': u"(.='none' or not(selected(., 'none')))"}, u'label': {u'english': u'What type of toilets are on the premises?'}, u'type': u'select all that apply', u'children': [{u'name': u'pit_latrine_with_slab', u'value': u'pit_latrine_with_slab', u'label': {u'english': u'Pit latrine with slab'}}, {u'name': u'open_pit_latrine', u'value': u'open_pit_latrine', u'label': {u'english': u'Pit latrine without slab/open pit'}}, {u'name': u'bucket_system', u'value': u'bucket_system', u'label': {u'english': u'Bucket system'}}, {u'name': u'none', u'value': u'none', u'label': u'None'}, {u'name': u'other', u'value': u'other', u'label': {u'english': u'Other'}}]}, {u'name': u'available_toilet_types_other', u'bind': {u'relevant': u"selected(../available_toilet_types, 'other')"}, u'label': {u'english': 'Specify other.'}, u'type': u'text'}, {u'name': u'pit_latrine_with_slab', u'label': {u'english': u'Pit latrine with slab'}, u'children': [{u'name': u'number', u'label': {u'english': u'How many Pit latrine with slab are on the premises?'}, u'type': u'integer'}]}, {u'name': u'open_pit_latrine', u'label': {u'english': u'Pit latrine without slab/open pit'}, u'children': [{u'name': u'number', u'label': {u'english': u'How many Pit latrine without slab/open pit are on the premises?'}, u'type': u'integer'}]}, {u'name': u'bucket_system', u'label': {u'english': u'Bucket system'}, u'children': [{u'name': u'number', u'label': {u'english': u'How many Bucket system are on the premises?'}, u'type': u'integer'}]}, {u'name': u'none', u'label': u'None'}, {u'name': u'other', u'label': {u'english': u'Other'}, u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}

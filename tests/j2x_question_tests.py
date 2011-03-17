@@ -167,10 +167,10 @@ class Json2XformQuestionValidationTests(TestCase):
                 ]
             }
 
-        expected_select_all_control_xml = """<select ref="/test/select_all_q"><label ref="jr:itext('/test/select_all_q:label')"/><hint>Select all that apply.</hint><item><label ref="jr:itext('/test/select_all_q/f:label')"/><value>f</value></item><item><label ref="jr:itext('/test/select_all_q/g:label')"/><value>g</value></item><item><label ref="jr:itext('/test/select_all_q/h:label')"/><value>h</value></item></select>"""
+        expected_select_all_control_xml = """<select ref="/test/select_all_q"><label ref="jr:itext('/test/select_all_q:label')"/><hint>Select all that apply.</hint><item><label ref="jr:itext('/test/select_all_q/f:label')"/><value>f</value></item><item><label ref="jr:itext('/test/select_all_q/g:label')"/><value>g</value></item><item><label ref="jr:itext('/test/select_all_q/h:label')"/><value>h</value></item><item><label>None</label><value>none</value></item></select>"""
         
         expected_select_all_binding_xml = """
-        <bind nodeset="/test/select_all_q" type="select" required="false()"/>
+<bind required="false()" nodeset="/test/select_all_q" type="select" constraint="(.='none' or not(selected(., 'none')))"/>
         """.strip()
         
         q = create_survey_element_from_dict(simple_select_all_question)
