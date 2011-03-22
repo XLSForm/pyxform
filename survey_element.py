@@ -101,6 +101,13 @@ class SurveyElement(object):
         """
         return u"/".join([u""] + [n.get_name() for n in self.get_lineage()])
 
+    def get_abbreviated_xpath(self):
+        lineage = self.get_lineage()
+        if len(lineage) >= 2:
+            return u"/".join([n.get_name() for n in lineage[1:]])
+        else:
+            return lineage[0].get_name()
+
     def to_dict(self):
         self.validate()
         result = dict([(k, v) for k, v in self._dict.items()])
