@@ -48,15 +48,23 @@ class SurveyElementBuilder(object):
         if question_type_str.endswith(u" or specify other"):
             question_type_str = question_type_str[:len(question_type_str)-len(u" or specify other")]
             d_copy[Question.TYPE] = question_type_str
-            d_copy[u"choices"].append({
-                    u"name" : u"other",
-                    u"label" : self._label_hack(u"Other", d[Question.LABEL]),
-                    })
+            self._add_other_option_to_multiple_choice_question(d_copy)
             return [self._create_question_from_dict(d_copy),
                     self._create_specify_other_question_from_dict(d_copy)]
         question_class = self._get_question_class(question_type_str)
         if question_class: return question_class(**d_copy)
         return []
+
+    def _add_other_option_to_multiple_choice_question(self, d):
+        # ideally, we'd just be pulling from children
+        choice_list = d.get(u"choices", d.get(u"children", []))
+        assert len(choice_list)>0, "There should be choices for this question."
+        other_choice = {
+            u"name" : u"other",
+            u"label" : u"Other",
+            }
+        if other_choice not in choice_list:
+            choice_list.append(other_choice)
 
     def _add_none_option_to_select_all_that_apply(self, d_copy):
         choice_list = d_copy.get(u"choices", d_copy.get(u"children", []))
@@ -157,9 +165,7 @@ class SurveyElementBuilder(object):
         elif d[SurveyElement.TYPE]==u"include":
             path = d[SurveyElement.NAME]
             if path.endswith(".xls"):
-                excel_reader = ExcelReader(path)
-                include_dict = excel_reader.to_dict()
-                full_survey = create_survey_element_from_dict(include_dict)
+                full_survey = create_survey_from_xls(path)
                 return full_survey.get_children()
             elif path.endswith(".json"):
                 full_survey = create_survey_element_from_json(path)
@@ -173,4 +179,14 @@ def create_survey_element_from_dict(d):
 
 def create_survey_element_from_json(str_or_path):
     d = utils.get_pyobj_from_json(str_or_path)
+    return create_survey_element_from_dict(d)
+
+def create_survey_from_xls(path):
+    # Interestingly enough this behaves differently than a json dump
+    # and create survey element from json. This is because to
+    # questions that share the same choice list cannot share the same
+    # choice list in json. This is definitely something to think
+    # about.
+    excel_reader = ExcelReader(path)
+    d = excel_reader.to_dict()
     return create_survey_element_from_dict(d)
