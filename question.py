@@ -62,7 +62,6 @@ class Option(SurveyElement):
             self.NAME : kwargs[self.NAME],
             }
         SurveyElement.__init__(self, **d)
-        self._dict[self.VALUE] = value
 
     def xml_value(self):
         return node(u"value", self.get_name())

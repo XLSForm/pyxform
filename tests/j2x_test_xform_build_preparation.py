@@ -14,8 +14,8 @@ class Json2XformExportingPrepTests(TestCase):
     
     def test_dictionary_consolidates_duplicate_entries(self):
         
-        yes_or_no_dict_array = [{ "text": {"French":"Oui", "English": "Yes"}, "value": "yes"}, \
-                {"text": {"French": "Non", "English": "No"}, "value": "no"}]
+        yes_or_no_dict_array = [{ "text": {"French":"Oui", "English": "Yes"}, "name": "yes"}, \
+                {"text": {"French": "Non", "English": "No"}, "name": "no"}]
         
         first_yesno_question = MultipleChoiceQuestion(name="yn_q1", options=yes_or_no_dict_array)
         second_yesno_question = MultipleChoiceQuestion(name="yn_q2", options=yes_or_no_dict_array)

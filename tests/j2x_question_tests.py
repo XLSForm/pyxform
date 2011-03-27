@@ -64,8 +64,8 @@ class Json2XformQuestionValidationTests(TestCase):
             "type" : "select one",
             "name" : "qname",
             "choices" : [
-                {"label": {"f": "fa","e": "ea"},"value": "a"},
-                {"label": {"f": "fb","e": "eb"},"value": "b"}
+                {"label": {"f": "fa","e": "ea"},"name": "a"},
+                {"label": {"f": "fb","e": "eb"},"name": "b"}
                 ]
             }
         
@@ -161,9 +161,9 @@ class Json2XformQuestionValidationTests(TestCase):
             "type": "select all that apply",
             "name": "select_all_q",
             "choices": [
-                {"label": {"f": "ff", "e": "ef"}, "value": "f"},
-                {"label": {"f": "fg", "e": "eg"}, "value": "g"},
-                {"label": {"f": "fh", "e": "eh"}, "value": "h"}
+                {"label": {"f": "ff", "e": "ef"}, "name": "f"},
+                {"label": {"f": "fg", "e": "eg"}, "name": "g"},
+                {"label": {"f": "fh", "e": "eh"}, "name": "h"}
                 ]
             }
 

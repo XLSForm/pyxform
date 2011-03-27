@@ -20,7 +20,7 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
         q.set_name("cow_color")
         q._dict[MultipleChoiceQuestion.TYPE] = u"select one"
         
-        q.add_choice(label="Green", value="green")
+        q.add_choice(label="Green", name="green")
         s.add_child(q)
 
         expected_dict = {
@@ -33,7 +33,6 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
                         {
                             u'label': 'Green',
                             u'name': 'green',
-                            u'value': 'green'
                             }
                         ],
                     }
@@ -44,8 +43,8 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
     
     def test_survey_can_be_created_in_a_slightly_less_verbose_manner(self):
         option_dict_array = [
-            {'value': 'red', 'label':'Red'},
-            {'value': 'blue', 'label': 'Blue'}
+            {'name': 'red', 'label':'Red'},
+            {'name': 'blue', 'label': 'Blue'}
             ]
         
         q = MultipleChoiceQuestion(name="Favorite_Color", choices=option_dict_array)
@@ -59,8 +58,8 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
                     u'name': 'Favorite_Color',
                     u'type' : u'select one',
                     u'children': [
-                        {u'label': 'Red', u'name': 'red', u'value': 'red'},
-                        {u'label': 'Blue', u'name': 'blue', u'value': 'blue'}
+                        {u'label': 'Red', u'name': 'red'},
+                        {u'label': 'Blue', u'name': 'blue'}
                         ],
                     }
                 ],
@@ -70,8 +69,8 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
     
     def test_two_options_cannot_have_the_same_value(self):
         q = MultipleChoiceQuestion(name="Favorite Color")
-        q.add_choice(value="grey", label="Gray")
-        q.add_choice(value="grey", label="Grey")
+        q.add_choice(name="grey", label="Gray")
+        q.add_choice(name="grey", label="Grey")
         self.assertRaises(Exception, q, 'validate')
     
     def test_one_section_cannot_have_two_conflicting_slugs(self):
