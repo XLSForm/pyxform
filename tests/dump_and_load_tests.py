@@ -3,6 +3,7 @@ from pyxform.builder import create_survey_element_from_dict, \
     create_survey_element_from_json
 from pyxform.xls2json import ExcelReader, print_pyobj_to_json
 from pyxform import Survey, InputQuestion
+import os
 
 class DumpAndLoadTests(TestCase):
 
@@ -31,3 +32,8 @@ class DumpAndLoadTests(TestCase):
             path = survey.get_name() + ".json"
             survey_from_dump = create_survey_element_from_json(path)
             self.assertEqual(survey.to_dict(), survey_from_dump.to_dict())
+
+    def tearDown(self):
+        for filename, survey in self.surveys.items():
+            path = survey.get_name() + ".json"
+            os.remove(path)
