@@ -87,14 +87,14 @@ class BuilderTests(TestCase):
                             },
                         {
                             u'name': u'other',
-                            u'label': {u'English': u'Other'}
+                            u'label': u'Other'
                             }
                         ]
                     },
                 {
                     u'name': u'sex_other',
                     u'bind': {u'relevant': u"selected(../sex, 'other')"},
-                    u'label': {u'English': u'Specify other.'},
+                    u'label': u'Specify other.',
                     u'type': u'text'}
                 ]
             }
@@ -181,7 +181,7 @@ class BuilderTests(TestCase):
                             },
                         {
                             u'name': u'other',
-                            u'label': {u'english': u'Other'}
+                            u'label': u'Other'
                             },
                         ]
                     },
@@ -189,7 +189,7 @@ class BuilderTests(TestCase):
                 {
                     u'name': u'available_toilet_types_other',
                     u'bind': {u'relevant': u"selected(../available_toilet_types, 'other')"},
-                    u'label': {u'english': 'Specify other.'},
+                    u'label': u'Specify other.',
                     u'type': u'text'
                     },
                 {
@@ -228,7 +228,7 @@ class BuilderTests(TestCase):
                     },
                 {
                     u'name': u'other',
-                    u'label': {u'english': u'Other'},
+                    u'label': u'Other',
                     u'type' : u'group',
                     u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}
 
