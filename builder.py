@@ -82,20 +82,11 @@ class SurveyElementBuilder(object):
             else:
                 d_copy[u"bind"][u"constraint"] = none_constraint
 
-    def _label_hack(self, label_to_repeat, question_label):
-        if type(question_label)==unicode:
-            return label_to_repeat
-        if type(question_label)==dict:
-            return dict([(lang, label_to_repeat) for lang in question_label.keys()])
-        else:
-            raise Exception("Question label is expected to be unicode or dict",
-                            question_label)
-
     def _create_specify_other_question_from_dict(self, d):
         kwargs = {
             Question.TYPE : u"text",
             Question.NAME : u"%s_other" % d[Question.NAME],
-            Question.LABEL : self._label_hack("Specify other.", d[Question.LABEL]),
+            Question.LABEL : u"Specify other.",
             Question.BIND : {u"relevant" : u"selected(../%s, 'other')" % d[Question.NAME]},
             }
         return InputQuestion(**kwargs)
