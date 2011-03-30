@@ -33,11 +33,12 @@ class BuilderTests(TestCase):
         expected_dict = {
             u'name': u'my_loop',
             u'label': {u'English': u'My Loop'},
-            u'type' : u'loop',
+            u'type' : u'group',
             u'children': [
                 {
                     u'name': u'col1',
                     u'label': {u'English': u'column 1'},
+                    u'type' : u'group',
                     u'children': [
                         {
                             u'name': u'count',
@@ -49,6 +50,7 @@ class BuilderTests(TestCase):
                 {
                     u'name': u'col2',
                     u'label': {u'English': u'column 2'},
+                    u'type' : u'group',
                     u'children': [
                         {
                             u'name': u'count',
@@ -77,25 +79,22 @@ class BuilderTests(TestCase):
                     u'children': [
                         {
                             u'name': u'male',
-                            u'value': u'male',
                             u'label': {u'English': u'Male'}
                             },
                         {
                             u'name': u'female',
-                            u'value': u'female',
                             u'label': {u'English': u'Female'}
                             },
                         {
                             u'name': u'other',
-                            u'value': u'other',
-                            u'label': {u'English': u'Other'}
+                            u'label': u'Other'
                             }
                         ]
                     },
                 {
                     u'name': u'sex_other',
                     u'bind': {u'relevant': u"selected(../sex, 'other')"},
-                    u'label': {u'English': u'Specify other.'},
+                    u'label': u'Specify other.',
                     u'type': u'text'}
                 ]
             }
@@ -121,12 +120,10 @@ class BuilderTests(TestCase):
                         u'children': [
                             {
                                 u'name': u'yes',
-                                u'value': u'yes',
                                 u'label': {u'english': u'yes'}
                                 },
                             {
                                 u'name': u'no',
-                                u'value': u'no',
                                 u'label': {u'english': u'no'}
                                 }
                             ]}]}
@@ -168,28 +165,23 @@ class BuilderTests(TestCase):
                     u'children': [
                         {
                             u'name': u'pit_latrine_with_slab',
-                            u'value': u'pit_latrine_with_slab',
                             u'label': {u'english': u'Pit latrine with slab'}
                             },
                         {
                             u'name': u'open_pit_latrine',
-                            u'value': u'open_pit_latrine',
                             u'label': {u'english': u'Pit latrine without slab/open pit'}
                             },
                         {
                             u'name': u'bucket_system',
-                            u'value': u'bucket_system',
                             u'label': {u'english': u'Bucket system'}
                             },
                         {
                             u'name': u'none',
-                            u'value': u'none',
                             u'label': u'None',
                             },
                         {
                             u'name': u'other',
-                            u'value': u'other',
-                            u'label': {u'english': u'Other'}
+                            u'label': u'Other'
                             },
                         ]
                     },
@@ -197,12 +189,13 @@ class BuilderTests(TestCase):
                 {
                     u'name': u'available_toilet_types_other',
                     u'bind': {u'relevant': u"selected(../available_toilet_types, 'other')"},
-                    u'label': {u'english': 'Specify other.'},
+                    u'label': u'Specify other.',
                     u'type': u'text'
                     },
                 {
                     u'name': u'pit_latrine_with_slab',
                     u'label': {u'english': u'Pit latrine with slab'},
+                    u'type' : u'group',
                     u'children': [
                         {
                             u'name': u'number',
@@ -212,6 +205,7 @@ class BuilderTests(TestCase):
                 {
                     u'name': u'open_pit_latrine',
                     u'label': {u'english': u'Pit latrine without slab/open pit'},
+                    u'type' : u'group',
                     u'children': [
                         {
                             u'name': u'number',
@@ -223,6 +217,7 @@ class BuilderTests(TestCase):
                 {
                     u'name': u'bucket_system',
                     u'label': {u'english': u'Bucket system'},
+                    u'type' : u'group',
                     u'children': [
                         {
                             u'name': u'number',
@@ -231,6 +226,10 @@ class BuilderTests(TestCase):
                             }
                         ]
                     },
-                {u'name': u'other', u'label': {u'english': u'Other'}, u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}
+                {
+                    u'name': u'other',
+                    u'label': u'Other',
+                    u'type' : u'group',
+                    u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}
 
         self.assertEqual(survey.to_dict(), expected_dict)

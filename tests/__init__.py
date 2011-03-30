@@ -7,3 +7,4 @@ from json2xform_test import *
 from group_test import *
 from builder_tests import *
 from xls2json_tests import *
+from dump_and_load_tests import *

@@ -1,6 +1,7 @@
 from utils import is_valid_xml_tag, node, ns
 from collections import defaultdict
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
+from xls2json import print_pyobj_to_json
 
 class SurveyElement(object):
     # the following are important keys for the underlying dict that
@@ -117,6 +118,15 @@ class SurveyElement(object):
         for k, v in result.items():
             if not v: del result[k]
         return result
+
+    def json_dump(self, path=""):
+        if not path:
+            path = self.get_name() + ".json"
+        print_pyobj_to_json(self.to_dict(), path)
+
+    def __eq__(self, y):
+        # I need to look up how exactly to override the == operator.
+        return self.to_dict() == y.to_dict()
 
     def get_translation_keys(self):
         return {

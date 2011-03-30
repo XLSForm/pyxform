@@ -56,8 +56,6 @@ class Json2XformExportingPrepTests(TestCase):
         <?xml version='1.0' ?><data id="build_WaterSimple_1295821382"><name>JK Resevoir</name><users_per_month>300</users_per_month><geopoint>40.783594633609184 -73.96436698913574 300.0 4.0</geopoint></data>
         """.strip())
         
-        print instance.__unicode__()
-        
     def test_simple_registration_xml(self):
         reg_xform = Survey(name="Registration")
         name_question = create_survey_element_from_dict({'type':'text','name':'name'})

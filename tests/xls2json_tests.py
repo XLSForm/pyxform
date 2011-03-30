@@ -22,11 +22,11 @@ class BasicXls2JsonApiTests(TestCase):
                 u'choices': [
                     {
                         u'label': {u'english': u'yes'},
-                        u'value': u'yes'
+                        u'name': u'yes'
                         },
                     {
                         u'label': {u'english': u'no'},
-                        u'value': u'no'
+                        u'name': u'no'
                         }
                     ]
                 }
@@ -42,10 +42,10 @@ class BasicXls2JsonApiTests(TestCase):
         self.assertEqual(x.to_dict()[u"children"], expected_dict)
 
     
-    def test_string_and_integer(self):
-        x = ExcelReader("pyxform/tests/string_and_integer.xls")
+    def test_text_and_integer(self):
+        x = ExcelReader("pyxform/tests/text_and_integer.xls")
 
-        expected_dict = [{u'text': {u'english': u'What is your name?'}, u'type': u'string', u'name': u'your_name'}, {u'text': {u'english': u'How many years old are you?'}, u'type': u'integer', u'name': u'your_age'}]
+        expected_dict = [{u'text': {u'english': u'What is your name?'}, u'type': u'text', u'name': u'your_name'}, {u'text': {u'english': u'How many years old are you?'}, u'type': u'integer', u'name': u'your_age'}]
 
         self.assertEqual(x.to_dict()[u"children"], expected_dict)
 

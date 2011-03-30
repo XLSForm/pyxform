@@ -63,3 +63,10 @@ class GroupedSection(Section):
         for n in Section.xml_control(self):
             group_node.append(n)
         return group_node
+
+    def to_dict(self):
+        # This is quite hacky, might want to think about a smart way
+        # to approach this problem.
+        result = super(GroupedSection, self).to_dict()
+        result[u"type"] = u"group"
+        return result
