@@ -1,5 +1,7 @@
-from xform_manager.utils import parse_xform_instance
-
+try:
+    from xform_manager.xform_instance_parser import parse_xform_instance
+except:
+    parse_xform_instance = None
 
 class SurveyInstance(object):
     def __init__(self, survey_object, **kwargs):
