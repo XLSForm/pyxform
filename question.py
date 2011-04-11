@@ -1,4 +1,4 @@
-from utils import node, SEP, CHOICE_PREFIX
+from utils import node, SEP
 from survey_element import SurveyElement
 
 def _overlay(over, under):

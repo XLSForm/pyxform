@@ -1,7 +1,7 @@
 from question import MultipleChoiceQuestion
 from section import Section
 from question import Question
-from utils import E, ns, SEP, QUESTION_PREFIX, CHOICE_PREFIX, etree, XFORM_TAG_REGEXP
+from utils import E, ns, SEP, etree, XFORM_TAG_REGEXP
 from datetime import datetime
 from collections import defaultdict
 import codecs
