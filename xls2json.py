@@ -7,6 +7,7 @@ import json
 import re
 import sys
 import codecs
+import os
 
 def print_pyobj_to_json(pyobj, path):
     fp = codecs.open(path, mode="w", encoding="utf-8")
@@ -28,23 +29,25 @@ COLUMNS = u"columns"
 
 class ExcelReader(object):
     def __init__(self, path):
+        assert isinstance(path, basestring), "path must be a string"
+        (filepath, filename) = os.path.split(path)
+        (shortname, extension) = os.path.splitext(filename)
+        assert extension==".xls", "path must end with .xls"
         self._path = path
-        name_match = re.search(r"(?P<name>[^/]+)\.xls$", path)
-        if not name_match: raise Exception("This is not a path to an excel file", path)
-        self._name = name_match.groupdict()["name"]
-        self._prepare_dict()
+        self._name = shortname
+        self._parse_xls()
 
-        if SURVEY_SHEET in self._sheet_names:
-            self._setup_survey()
-        elif self._sheet_names==[TYPES_SHEET]:
-            self._setup_question_types_dictionary()
-
-    def _prepare_dict(self):
+    def _parse_xls(self):
         self._create_dict_from_xls()
         self._sheet_names = self._dict.keys()
         self._set_choices_and_columns_sheet_name()
         self._strip_unicode_values()
         self._fix_int_values()
+
+        if SURVEY_SHEET in self._sheet_names:
+            self._setup_survey()
+        elif self._sheet_names==[TYPES_SHEET]:
+            self._setup_question_types_dictionary()
 
     def _setup_survey(self):
         self._group_dictionaries()
@@ -235,6 +238,20 @@ class ExcelReader(object):
         for question_type in self._dict:
             result[question_type.pop(u"name")] = question_type
         self._dict = result
+
+
+class VariableNameReader(ExcelReader):
+    def __init__(self, path):
+        ExcelReader.__init__(self, path)
+        self._organize_renames()
+
+    def _organize_renames(self):
+        new_dict = {}
+        for d in self._dict[u"Dictionary"]:
+            if u"Variable Name" in d:
+                new_dict[d[u"XPath"]] = d[u"Variable Name"]
+        self._dict = new_dict
+
 
 if __name__=="__main__":
     # Open the excel file that is the second argument to this python
