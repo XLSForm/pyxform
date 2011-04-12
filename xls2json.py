@@ -253,9 +253,16 @@ class VariableNameReader(ExcelReader):
 
     def _organize_renames(self):
         new_dict = {}
+        variable_names_so_far = []
+        assert u"Dictionary" in self._dict
         for d in self._dict[u"Dictionary"]:
             if u"Variable Name" in d:
+                assert d[u"Variable Name"] not in variable_names_so_far, \
+                    d[u"Variable Name"]                
+                variable_names_so_far.append(d[u"Variable Name"])
                 new_dict[d[u"XPath"]] = d[u"Variable Name"]
+            else:
+                variable_names_so_far.append(d[u"XPath"])
         self._dict = new_dict
 
 
@@ -264,6 +271,6 @@ if __name__=="__main__":
     # call, convert that file to json and save that json to a file
     path = sys.argv[1]
     assert path[-4:]==".xls"
-    converter = ExcelReader(path)
-    # converter.print_json_to_file()
-    print json.dumps(converter.to_dict(), ensure_ascii=False, indent=4)
+    converter = VariableNameReader(path)
+    converter.print_json_to_file()
+    # print json.dumps(converter.to_dict(), ensure_ascii=False, indent=4)
