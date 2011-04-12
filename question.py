@@ -102,9 +102,3 @@ class MultipleChoiceQuestion(Question):
         for n in [o.xml() for o in self._children]:
             result.append(n)                
         return result
-
-
-class SelectOneQuestion(MultipleChoiceQuestion):
-    def __init__(self, *args, **kwargs):
-        MultipleChoiceQuestion.__init__(self, *args, **kwargs)
-        self._dict[self.TYPE] = u"select one"

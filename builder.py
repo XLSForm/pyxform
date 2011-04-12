@@ -173,11 +173,12 @@ def create_survey_element_from_json(str_or_path):
     return create_survey_element_from_dict(d)
 
 def create_survey_from_xls(path):
-    # Interestingly enough this behaves differently than a json dump
-    # and create survey element from json. This is because to
-    # questions that share the same choice list cannot share the same
-    # choice list in json. This is definitely something to think
-    # about.
+    """
+    Interestingly enough this behaves differently than a json dump and
+    create survey element from json. This is because to questions that
+    share the same choice list cannot share the same choice list in
+    json. This is definitely something to think about.
+    """
     excel_reader = ExcelReader(path)
     d = excel_reader.to_dict()
     return create_survey_element_from_dict(d)
