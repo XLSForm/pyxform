@@ -32,25 +32,33 @@ class ExcelReader(object):
         name_match = re.search(r"(?P<name>[^/]+)\.xls$", path)
         if not name_match: raise Exception("This is not a path to an excel file", path)
         self._name = name_match.groupdict()["name"]
-        self._dict = None
-        self._setup()
+        self._prepare_dict()
+
+        if SURVEY_SHEET in self._sheet_names:
+            self._setup_survey()
+        elif self._sheet_names==[TYPES_SHEET]:
+            self._setup_question_types_dictionary()
+
+    def _prepare_dict(self):
+        self._create_dict_from_xls()
         self._sheet_names = self._dict.keys()
         self._set_choices_and_columns_sheet_name()
         self._strip_unicode_values()
         self._fix_int_values()
 
-        if SURVEY_SHEET in self._sheet_names:
-            self._group_dictionaries()
-            self._process_question_type()
-            if self._lists_sheet_name:
-                self._construct_choice_lists()
-                self._insert_lists()
-            self._dict = self._dict[SURVEY_SHEET]
-            self._organize_sections()
-        elif self._sheet_names==[TYPES_SHEET]:
-            self._group_dictionaries()
-            self._dict = self._dict[TYPES_SHEET]
-            self._organize_by_type_name()
+    def _setup_survey(self):
+        self._group_dictionaries()
+        self._process_question_type()
+        if self._lists_sheet_name:
+            self._construct_choice_lists()
+            self._insert_lists()
+        self._dict = self._dict[SURVEY_SHEET]
+        self._organize_sections()
+
+    def _setup_question_types_dictionary(self):
+        self._group_dictionaries()
+        self._dict = self._dict[TYPES_SHEET]
+        self._organize_by_type_name()
 
     def _set_choices_and_columns_sheet_name(self):
         sheet_names = self._dict.keys()
@@ -67,7 +75,7 @@ class ExcelReader(object):
         if not filename: filename = self._path[:-4] + ".json"
         print_pyobj_to_json(self.to_dict(), filename)
 
-    def _setup(self):
+    def _create_dict_from_xls(self):
         """
         Return a Python dictionary with a key for each worksheet
         name. For each sheet there is a list of dictionaries, each
