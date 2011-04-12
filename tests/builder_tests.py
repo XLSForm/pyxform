@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from pyxform.builder import create_survey_element_from_dict
-from pyxform.xls2json import ExcelReader, print_pyobj_to_json
+from pyxform.xls2json import SurveyReader, print_pyobj_to_json
 from pyxform import Survey, InputQuestion
 
 class BuilderTests(TestCase):
@@ -65,7 +65,7 @@ class BuilderTests(TestCase):
         self.assertEqual(g.to_dict(), expected_dict)
 
     def test_specify_other(self):
-        excel_reader = ExcelReader("pyxform/tests/specify_other.xls")
+        excel_reader = SurveyReader("pyxform/tests/specify_other.xls")
         d = excel_reader.to_dict()
         survey = create_survey_element_from_dict(d)
         expected_dict = {
@@ -101,7 +101,7 @@ class BuilderTests(TestCase):
         self.assertEqual(survey.to_dict(), expected_dict)
 
     def test_include(self):
-        excel_reader = ExcelReader("pyxform/tests/include.xls")
+        excel_reader = SurveyReader("pyxform/tests/include.xls")
         d = excel_reader.to_dict()
         survey = create_survey_element_from_dict(d)
         expected_dict = {
@@ -141,7 +141,7 @@ class BuilderTests(TestCase):
         survey_out_dict = survey_out.to_dict()
         print_pyobj_to_json(survey_out_dict, "pyxform/tests/how_old_are_you.json")
             
-        excel_reader = ExcelReader("pyxform/tests/include_json.xls")
+        excel_reader = SurveyReader("pyxform/tests/include_json.xls")
         d = excel_reader.to_dict()
         survey_in = create_survey_element_from_dict(d)
 
@@ -149,7 +149,7 @@ class BuilderTests(TestCase):
             if k!="name": self.assertEqual(v, survey_out_dict[k])
 
     def test_loop(self):
-        excel_reader = ExcelReader("pyxform/tests/loop.xls")
+        excel_reader = SurveyReader("pyxform/tests/loop.xls")
         d = excel_reader.to_dict()
         survey = create_survey_element_from_dict(d)
 

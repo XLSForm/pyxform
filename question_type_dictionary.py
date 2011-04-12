@@ -1,4 +1,4 @@
-from xls2json import ExcelReader
+from xls2json import QuestionTypesReader
 import os
 
 class QuestionTypeDictionary(object):
@@ -13,7 +13,7 @@ class QuestionTypeDictionary(object):
             "question_types",
             "%s.xls" % file_name
             )
-        excel_reader = ExcelReader(path_to_question_types)
+        excel_reader = QuestionTypesReader(path_to_question_types)
         self._dict = excel_reader.to_dict()
 
     def get_definition(self, question_type_str):

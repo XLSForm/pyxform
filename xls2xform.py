@@ -10,11 +10,11 @@ forward introduction to the xls2xform syntax.
 """
 
 import sys
-from xls2json import ExcelReader
+from xls2json import SurveyReader
 from builder import create_survey_element_from_json
 
 def xls2json(name):
-    converter = ExcelReader("%s.xls" % name)
+    converter = SurveyReader("%s.xls" % name)
     converter.print_json_to_file()
 
 def json2xform(name):

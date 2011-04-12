@@ -43,40 +43,7 @@ class ExcelReader(object):
         self._set_choices_and_columns_sheet_name()
         self._strip_unicode_values()
         self._fix_int_values()
-
-        if SURVEY_SHEET in self._sheet_names:
-            self._setup_survey()
-        elif self._sheet_names==[TYPES_SHEET]:
-            self._setup_question_types_dictionary()
-
-    def _setup_survey(self):
         self._group_dictionaries()
-        self._process_question_type()
-        if self._lists_sheet_name:
-            self._construct_choice_lists()
-            self._insert_lists()
-        self._dict = self._dict[SURVEY_SHEET]
-        self._organize_sections()
-
-    def _setup_question_types_dictionary(self):
-        self._group_dictionaries()
-        self._dict = self._dict[TYPES_SHEET]
-        self._organize_by_type_name()
-
-    def _set_choices_and_columns_sheet_name(self):
-        sheet_names = self._dict.keys()
-
-        self._lists_sheet_name = None
-        for sheet_name in sheet_names:
-            if sheet_name in CHOICES_SHEET_NAMES:
-                self._lists_sheet_name = sheet_name
-
-    def to_dict(self):
-        return self._dict
-
-    def print_json_to_file(self, filename=""):
-        if not filename: filename = self._path[:-4] + ".json"
-        print_pyobj_to_json(self.to_dict(), filename)
 
     def _create_dict_from_xls(self):
         """
@@ -97,6 +64,14 @@ class ExcelReader(object):
                     value = sheet.cell(row,column).value
                     if value: row_dict[key] = value
                 if row_dict: self._dict[sheet.name].append(row_dict)
+
+    def _set_choices_and_columns_sheet_name(self):
+        sheet_names = self._dict.keys()
+
+        self._lists_sheet_name = None
+        for sheet_name in sheet_names:
+            if sheet_name in CHOICES_SHEET_NAMES:
+                self._lists_sheet_name = sheet_name
 
     def _strip_unicode_values(self):
         for sheet_name, dicts in self._dict.items():
@@ -137,21 +112,26 @@ class ExcelReader(object):
                     assert k not in d
                     d[k] = v
 
-    def _construct_choice_lists(self):
-        """
-        Each choice has a list name associated with it. Go through the
-        list of choices, grouping all the choices by their list name.
-        """
-        choice_list = self._dict[self._lists_sheet_name]
-        choices = {}
-        for choice in choice_list:
-            try:
-                list_name = choice.pop(LIST_NAME)
-            except KeyError:
-                raise Exception("For some reason this choice isn't associated with a list.", choice)
-            if list_name in choices: choices[list_name].append(choice)
-            else: choices[list_name] = [choice]
-        self._dict[self._lists_sheet_name] = choices
+    def to_dict(self):
+        return self._dict
+
+    def print_json_to_file(self, filename=""):
+        if not filename: filename = self._path[:-4] + ".json"
+        print_pyobj_to_json(self.to_dict(), filename)
+
+
+class SurveyReader(ExcelReader):
+    def __init__(self, path):
+        ExcelReader.__init__(self, path)
+        self._setup_survey()
+
+    def _setup_survey(self):
+        self._process_question_type()
+        if self._lists_sheet_name:
+            self._construct_choice_lists()
+            self._insert_lists()
+        self._dict = self._dict[SURVEY_SHEET]
+        self._organize_sections()
 
     def _process_question_type(self):
         """
@@ -194,6 +174,22 @@ class ExcelReader(object):
         q[COLUMNS] = d["list_name"]
         q[TYPE] = d["type"]
 
+    def _construct_choice_lists(self):
+        """
+        Each choice has a list name associated with it. Go through the
+        list of choices, grouping all the choices by their list name.
+        """
+        choice_list = self._dict[self._lists_sheet_name]
+        choices = {}
+        for choice in choice_list:
+            try:
+                list_name = choice.pop(LIST_NAME)
+            except KeyError:
+                raise Exception("For some reason this choice isn't associated with a list.", choice)
+            if list_name in choices: choices[list_name].append(choice)
+            else: choices[list_name] = [choice]
+        self._dict[self._lists_sheet_name] = choices
+
     def _insert_lists(self):
         """
         For each multiple choice question and loop in the survey find
@@ -232,6 +228,16 @@ class ExcelReader(object):
             else:
                 stack[-1][u"children"].append(cmd)
         self._dict = result
+
+
+class QuestionTypesReader(ExcelReader):
+    def __init__(self, path):
+        ExcelReader.__init__(self, path)
+        self._setup_question_types_dictionary()
+
+    def _setup_question_types_dictionary(self):
+        self._dict = self._dict[TYPES_SHEET]
+        self._organize_by_type_name()
 
     def _organize_by_type_name(self):
         result = {}

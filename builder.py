@@ -3,7 +3,7 @@ from question import Question, InputQuestion, UploadQuestion, MultipleChoiceQues
 from section import Section, RepeatingSection, GroupedSection
 from survey import Survey
 import utils
-from xls2json import ExcelReader
+from xls2json import SurveyReader
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
 
 class SurveyElementBuilder(object):
@@ -179,6 +179,6 @@ def create_survey_from_xls(path):
     share the same choice list cannot share the same choice list in
     json. This is definitely something to think about.
     """
-    excel_reader = ExcelReader(path)
+    excel_reader = SurveyReader(path)
     d = excel_reader.to_dict()
     return create_survey_element_from_dict(d)
