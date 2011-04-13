@@ -164,6 +164,11 @@ class SurveyElementBuilder(object):
         else:
             return self._create_question_from_dict(d)
 
+    def create_survey_element_from_json(self, str_or_path):
+        d = utils.get_pyobj_from_json(str_or_path)
+        return self.create_survey_element_from_dict(d)
+
+
 def create_survey_element_from_dict(d):
     builder = SurveyElementBuilder()
     return builder.create_survey_element_from_dict(d)

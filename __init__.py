@@ -6,4 +6,5 @@ Collect easy.
 from survey import Survey
 from question import MultipleChoiceQuestion, InputQuestion
 from instance import SurveyInstance
-from builder import create_survey_from_xls
+from builder import SurveyElementBuilder, create_survey_from_xls
+from question_type_dictionary import QuestionTypeDictionary
