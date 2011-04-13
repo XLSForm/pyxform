@@ -52,6 +52,8 @@ class SurveyElementBuilder(object):
             return [self._create_question_from_dict(d_copy),
                     self._create_specify_other_question_from_dict(d_copy)]
         question_class = self._get_question_class(question_type_str)
+        # todo: clean up this spaghetti code
+        d_copy[u"question_type_dictionary"] = self._question_type_dictionary
         if question_class: return question_class(**d_copy)
         return []
 
