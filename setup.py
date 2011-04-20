@@ -1,3 +1,6 @@
+# This file is adapted from:
+# http://packages.python.org/an_example_pypi_project/setuptools.html
+
 import os
 from setuptools import setup
 
