@@ -167,6 +167,10 @@ class SurveyElement(object):
             return node(u"hint", self.get_hint())
 
     def xml_label_and_hint(self):
+        """
+        Return a list containing one node for the label and if there
+        is a hint one node for the hint.
+        """
         if self.get_hint():
             return [self.xml_label(), self.xml_hint()]
         return [self.xml_label()]
