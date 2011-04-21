@@ -7,3 +7,6 @@ tests/how_old_are_you.json
 build
 dist
 pyxform.egg-info
+
+# By having build ignored above, this ignores documents created by
+# sphinx. Overall, I think this is a good thing.
