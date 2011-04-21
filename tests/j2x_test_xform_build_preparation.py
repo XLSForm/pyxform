@@ -1,11 +1,7 @@
 """
 Testing preparation of values for XForm exporting
 """
-import sys, os
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-
-from django.test import TestCase, Client
+from unittest import TestCase
 from pyxform import *
 
 import json
