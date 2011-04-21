@@ -1,13 +1,9 @@
 """
 Testing simple cases for pyxform
 """
-import sys, os
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-
-from django.test import TestCase, Client
+from unittest import TestCase
 #from ..pyxform import survey_from_json
-from ..survey import Survey
+from pyxform.survey import Survey
 
 from pyxform.builder import create_survey_element_from_dict
 

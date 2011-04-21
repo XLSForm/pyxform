@@ -1,17 +1,18 @@
 """
 Testing simple cases for Xls2Json
 """
-import sys, os
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-
-from django.test import TestCase, Client
+from unittest import TestCase
 from pyxform.xls2json import SurveyReader
+
+import os
+def absolute_path(f, file_name):
+    directory = os.path.dirname(f)
+    return os.path.join(directory, file_name)
 
 class BasicXls2JsonApiTests(TestCase):
 
     def test_simple_yes_or_no_question(self):
-        x = SurveyReader("pyxform/tests/yes_or_no_question.xls")
+        x = SurveyReader(absolute_path(__file__, "yes_or_no_question.xls"))
         x_results = x.to_dict()
         
         expected_dict = [
@@ -35,7 +36,7 @@ class BasicXls2JsonApiTests(TestCase):
 
 
     def test_gps(self):
-        x = SurveyReader("pyxform/tests/gps.xls")
+        x = SurveyReader(absolute_path(__file__, "gps.xls"))
 
         expected_dict = [{u'type': u'gps', u'name': u'location'}]
 
@@ -43,14 +44,14 @@ class BasicXls2JsonApiTests(TestCase):
 
     
     def test_text_and_integer(self):
-        x = SurveyReader("pyxform/tests/text_and_integer.xls")
+        x = SurveyReader(absolute_path(__file__, "text_and_integer.xls"))
 
         expected_dict = [{u'text': {u'english': u'What is your name?'}, u'type': u'text', u'name': u'your_name'}, {u'text': {u'english': u'How many years old are you?'}, u'type': u'integer', u'name': u'your_age'}]
 
         self.assertEqual(x.to_dict()[u"children"], expected_dict)
 
     def test_table(self):
-        x = SurveyReader("pyxform/tests/simple_loop.xls")
+        x = SurveyReader(absolute_path(__file__, "simple_loop.xls"))
 
         expected_dict = {
             u'type': u'survey',

@@ -1,18 +1,14 @@
 """
 Testing creation of Surveys using verbose methods
 """
-import sys, os
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-
-from django.test import TestCase, Client
+from unittest import TestCase
 from pyxform import *
 from pyxform.question import Question
 from pyxform.builder import create_survey_element_from_dict
 
 import json
 
-from ..utils import E, ns, etree
+from pyxform.utils import E, ns, etree
 
 TESTING_BINDINGS = True
 
