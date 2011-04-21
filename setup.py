@@ -20,8 +20,11 @@ setup(
     license = "BSD",
     keywords = "XForm ODK Collect",
     url = "http://github.com/mvpdev/pyxform",
-    packages=['pyxform', 'tests'],
+    packages=['pyxform'],
     long_description=read('README'),
+    install_requires=[
+        'nose==1.0.0',
+        ],
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: BSD License",
