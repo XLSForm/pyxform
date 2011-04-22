@@ -7,6 +7,7 @@ import json
 import re
 import sys
 import codecs
+import os
 
 def print_pyobj_to_json(pyobj, path):
     fp = codecs.open(path, mode="w", encoding="utf-8")
@@ -28,46 +29,23 @@ COLUMNS = u"columns"
 
 class ExcelReader(object):
     def __init__(self, path):
+        assert isinstance(path, basestring), "path must be a string"
+        (filepath, filename) = os.path.split(path)
+        (shortname, extension) = os.path.splitext(filename)
+        assert extension==".xls", "path must end with .xls"
         self._path = path
-        name_match = re.search(r"(?P<name>[^/]+)\.xls$", path)
-        if not name_match: raise Exception("This is not a path to an excel file", path)
-        self._name = name_match.groupdict()["name"]
-        self._dict = None
-        self._setup()
+        self._name = unicode(shortname)
+        self._parse_xls()
+
+    def _parse_xls(self):
+        self._create_dict_from_xls()
         self._sheet_names = self._dict.keys()
         self._set_choices_and_columns_sheet_name()
         self._strip_unicode_values()
         self._fix_int_values()
+        self._group_dictionaries()
 
-        if SURVEY_SHEET in self._sheet_names:
-            self._group_dictionaries()
-            self._process_question_type()
-            if self._lists_sheet_name:
-                self._construct_choice_lists()
-                self._insert_lists()
-            self._dict = self._dict[SURVEY_SHEET]
-            self._organize_sections()
-        elif self._sheet_names==[TYPES_SHEET]:
-            self._group_dictionaries()
-            self._dict = self._dict[TYPES_SHEET]
-            self._organize_by_type_name()
-
-    def _set_choices_and_columns_sheet_name(self):
-        sheet_names = self._dict.keys()
-
-        self._lists_sheet_name = None
-        for sheet_name in sheet_names:
-            if sheet_name in CHOICES_SHEET_NAMES:
-                self._lists_sheet_name = sheet_name
-
-    def to_dict(self):
-        return self._dict
-
-    def print_json_to_file(self, filename=""):
-        if not filename: filename = self._path[:-4] + ".json"
-        print_pyobj_to_json(self.to_dict(), filename)
-
-    def _setup(self):
+    def _create_dict_from_xls(self):
         """
         Return a Python dictionary with a key for each worksheet
         name. For each sheet there is a list of dictionaries, each
@@ -86,6 +64,14 @@ class ExcelReader(object):
                     value = sheet.cell(row,column).value
                     if value: row_dict[key] = value
                 if row_dict: self._dict[sheet.name].append(row_dict)
+
+    def _set_choices_and_columns_sheet_name(self):
+        sheet_names = self._dict.keys()
+
+        self._lists_sheet_name = None
+        for sheet_name in sheet_names:
+            if sheet_name in CHOICES_SHEET_NAMES:
+                self._lists_sheet_name = sheet_name
 
     def _strip_unicode_values(self):
         for sheet_name, dicts in self._dict.items():
@@ -126,25 +112,30 @@ class ExcelReader(object):
                     assert k not in d
                     d[k] = v
 
-    def _construct_choice_lists(self):
-        """
-        Each choice has a list name associated with it. Go through the
-        list of choices, grouping all the choices by their list name.
-        """
-        choice_list = self._dict[self._lists_sheet_name]
-        choices = {}
-        for choice in choice_list:
-            try:
-                list_name = choice.pop(LIST_NAME)
-            except KeyError:
-                raise Exception("For some reason this choice isn't associated with a list.", choice)
-            if list_name in choices: choices[list_name].append(choice)
-            else: choices[list_name] = [choice]
-        self._dict[self._lists_sheet_name] = choices
+    def to_dict(self):
+        return self._dict
+
+    def print_json_to_file(self, filename=""):
+        if not filename: filename = self._path[:-4] + ".json"
+        print_pyobj_to_json(self.to_dict(), filename)
+
+
+class SurveyReader(ExcelReader):
+    def __init__(self, path):
+        ExcelReader.__init__(self, path)
+        self._setup_survey()
+
+    def _setup_survey(self):
+        self._process_question_type()
+        if self._lists_sheet_name:
+            self._construct_choice_lists()
+            self._insert_lists()
+        self._dict = self._dict[SURVEY_SHEET]
+        self._organize_sections()
 
     def _process_question_type(self):
         """
-        We need to handle question types that look like "select one
+        We need to handle question types that look like select one
         from list-name or specify other.
 
         select one from list-name
@@ -182,6 +173,22 @@ class ExcelReader(object):
         d = m.groupdict()
         q[COLUMNS] = d["list_name"]
         q[TYPE] = d["type"]
+
+    def _construct_choice_lists(self):
+        """
+        Each choice has a list name associated with it. Go through the
+        list of choices, grouping all the choices by their list name.
+        """
+        choice_list = self._dict[self._lists_sheet_name]
+        choices = {}
+        for choice in choice_list:
+            try:
+                list_name = choice.pop(LIST_NAME)
+            except KeyError:
+                raise Exception("For some reason this choice isn't associated with a list.", choice)
+            if list_name in choices: choices[list_name].append(choice)
+            else: choices[list_name] = [choice]
+        self._dict[self._lists_sheet_name] = choices
 
     def _insert_lists(self):
         """
@@ -222,17 +229,48 @@ class ExcelReader(object):
                 stack[-1][u"children"].append(cmd)
         self._dict = result
 
+
+class QuestionTypesReader(ExcelReader):
+    def __init__(self, path):
+        ExcelReader.__init__(self, path)
+        self._setup_question_types_dictionary()
+
+    def _setup_question_types_dictionary(self):
+        self._dict = self._dict[TYPES_SHEET]
+        self._organize_by_type_name()
+
     def _organize_by_type_name(self):
         result = {}
         for question_type in self._dict:
             result[question_type.pop(u"name")] = question_type
         self._dict = result
 
+
+class VariableNameReader(ExcelReader):
+    def __init__(self, path):
+        ExcelReader.__init__(self, path)
+        self._organize_renames()
+
+    def _organize_renames(self):
+        new_dict = {}
+        variable_names_so_far = []
+        assert u"Dictionary" in self._dict
+        for d in self._dict[u"Dictionary"]:
+            if u"Variable Name" in d:
+                assert d[u"Variable Name"] not in variable_names_so_far, \
+                    d[u"Variable Name"]                
+                variable_names_so_far.append(d[u"Variable Name"])
+                new_dict[d[u"XPath"]] = d[u"Variable Name"]
+            else:
+                variable_names_so_far.append(d[u"XPath"])
+        self._dict = new_dict
+
+
 if __name__=="__main__":
     # Open the excel file that is the second argument to this python
     # call, convert that file to json and save that json to a file
     path = sys.argv[1]
     assert path[-4:]==".xls"
-    converter = ExcelReader(path)
-    # converter.print_json_to_file()
-    print json.dumps(converter.to_dict(), ensure_ascii=False, indent=4)
+    converter = VariableNameReader(path)
+    converter.print_json_to_file()
+    # print json.dumps(converter.to_dict(), ensure_ascii=False, indent=4)

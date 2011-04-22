@@ -1,7 +1,7 @@
 from question import MultipleChoiceQuestion
 from section import Section
 from question import Question
-from utils import E, ns, SEP, QUESTION_PREFIX, CHOICE_PREFIX, etree, XFORM_TAG_REGEXP
+from utils import node, SEP, XFORM_TAG_REGEXP
 from datetime import datetime
 from collections import defaultdict
 import codecs
@@ -9,6 +9,14 @@ import re
 import json
 import os
 from odk_validate import check_xform
+
+nsmap = {
+    u"xmlns" : u"http://www.w3.org/2002/xforms",
+    u"xmlns:h" : u"http://www.w3.org/1999/xhtml",
+    u"xmlns:ev" : u"http://www.w3.org/2001/xml-events",
+    u"xmlns:xsd" : u"http://www.w3.org/2001/XMLSchema",
+    u"xmlns:jr" : u"http://openrosa.org/javarosa",
+    }
 
 class Survey(Section):
     def __init__(self, *args, **kwargs):
@@ -23,27 +31,35 @@ class Survey(Section):
         """
         self.validate()
         self._setup_xpath_dictionary()
+        return node(u"h:html",
+                    node(u"h:head",
+                         node(u"h:title", self.get_name()),
+                         self.xml_model()
+                        ),
+                    node(u"h:body", *self.xml_control()),
+                    **nsmap
+                    )
         
-        return E(ns("h", "html"),
-                 E(ns("h", "head"),
-                   E(ns("h", "title"), self.get_name()),
-                   self.xml_model()
-                   ),
-                 E(ns("h", "body"), *self.xml_control())
-                 )
+        # return E(ns("h", "html"),
+        #          E(ns("h", "head"),
+        #            E(ns("h", "title"), self.get_name()),
+        #            self.xml_model()
+        #            ),
+        #          E(ns("h", "body"), *self.xml_control())
+        #          )
 
     def xml_model(self):
         self._setup_translations()
         if self._translations:
-            return E("model",
-                     self.xml_translations(),
-                     E.instance(self.xml_instance()),
-                     *self.xml_bindings()
-                     )
-        return E("model",
-                 E.instance(self.xml_instance()),
-                 *self.xml_bindings()
-                 )
+            return node("model",
+                        self.xml_translations(),
+                        node("instance", self.xml_instance()),
+                        *self.xml_bindings()
+                        )
+        return node("model",
+                    node("instance", self.xml_instance()),
+                    *self.xml_bindings()
+                    )
 
     def _setup_translations(self):
         self._translations = defaultdict(dict)
@@ -62,15 +78,15 @@ class Survey(Section):
     def xml_translations(self):
         result = []
         for lang in self._translations.keys():
-            result.append( E.translation(lang=lang) )
+            result.append( node("translation", lang=lang) )
             for name in self._translations[lang].keys():
-                result[-1].append(
-                    E.text(
-                        E.value(self._translations[lang][name]),
+                result[-1].appendChild(
+                    node("text",
+                        node("value", self._translations[lang][name]),
                         id=name
                         )
                     )
-        return E.itext(*result)
+        return node("itext", *result)
 
     def date_stamp(self):
         return self._created.strftime("%Y_%m_%d")
@@ -80,11 +96,11 @@ class Survey(Section):
 
     def xml_instance(self):
         result = Section.xml_instance(self)
-        result.attrib[u"id"] = self.id_string()
+        result.setAttribute(u"id", self.id_string())
         return result
 
     def to_xml(self):
-        return etree.tostring(self.xml(), pretty_print=True)
+        return self.xml().toxml()
     
     def __unicode__(self):
         return "<survey name='%s' element_count='%s'>" % (self.get_name(), len(self._children))

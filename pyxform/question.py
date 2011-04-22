@@ -1,4 +1,4 @@
-from utils import node, SEP, CHOICE_PREFIX
+from utils import node, SEP
 from survey_element import SurveyElement
 
 def _overlay(over, under):
@@ -68,8 +68,8 @@ class Option(SurveyElement):
 
     def xml(self):
         item = node(u"item")
-        item.append(self.xml_label())
-        item.append(self.xml_value())
+        item.appendChild(self.xml_label())
+        item.appendChild(self.xml_value())
         return item
 
 
@@ -95,16 +95,10 @@ class MultipleChoiceQuestion(Question):
         assert self.get_bind()[u"type"] in [u"select", u"select1"]
         result = node(
             self.get_bind()[u"type"],
-            {u"ref" : self.get_xpath()}
+            ref=self.get_xpath()
             )
         for n in self.xml_label_and_hint():
-            result.append(n)
+            result.appendChild(n)
         for n in [o.xml() for o in self._children]:
-            result.append(n)                
+            result.appendChild(n)                
         return result
-
-
-class SelectOneQuestion(MultipleChoiceQuestion):
-    def __init__(self, *args, **kwargs):
-        MultipleChoiceQuestion.__init__(self, *args, **kwargs)
-        self._dict[self.TYPE] = u"select one"

@@ -3,7 +3,7 @@ from question import Question, InputQuestion, UploadQuestion, MultipleChoiceQues
 from section import Section, RepeatingSection, GroupedSection
 from survey import Survey
 import utils
-from xls2json import ExcelReader
+from xls2json import SurveyReader
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
 
 class SurveyElementBuilder(object):
@@ -52,6 +52,8 @@ class SurveyElementBuilder(object):
             return [self._create_question_from_dict(d_copy),
                     self._create_specify_other_question_from_dict(d_copy)]
         question_class = self._get_question_class(question_type_str)
+        # todo: clean up this spaghetti code
+        d_copy[u"question_type_dictionary"] = self._question_type_dictionary
         if question_class: return question_class(**d_copy)
         return []
 
@@ -164,6 +166,11 @@ class SurveyElementBuilder(object):
         else:
             return self._create_question_from_dict(d)
 
+    def create_survey_element_from_json(self, str_or_path):
+        d = utils.get_pyobj_from_json(str_or_path)
+        return self.create_survey_element_from_dict(d)
+
+
 def create_survey_element_from_dict(d):
     builder = SurveyElementBuilder()
     return builder.create_survey_element_from_dict(d)
@@ -173,11 +180,12 @@ def create_survey_element_from_json(str_or_path):
     return create_survey_element_from_dict(d)
 
 def create_survey_from_xls(path):
-    # Interestingly enough this behaves differently than a json dump
-    # and create survey element from json. This is because to
-    # questions that share the same choice list cannot share the same
-    # choice list in json. This is definitely something to think
-    # about.
-    excel_reader = ExcelReader(path)
+    """
+    Interestingly enough this behaves differently than a json dump and
+    create survey element from json. This is because to questions that
+    share the same choice list cannot share the same choice list in
+    json. This is definitely something to think about.
+    """
+    excel_reader = SurveyReader(path)
     d = excel_reader.to_dict()
     return create_survey_element_from_dict(d)

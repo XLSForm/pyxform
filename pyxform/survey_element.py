@@ -1,9 +1,15 @@
-from utils import is_valid_xml_tag, node, ns
+from utils import is_valid_xml_tag, node
 from collections import defaultdict
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
 from xls2json import print_pyobj_to_json
 
 class SurveyElement(object):
+    """
+    SurveyElement is the base class we'll looks for the following keys in kwargs: name,
+    label, hint, type, bind, control, parent, children, and
+    question_type_dictionary.
+    """
+
     # the following are important keys for the underlying dict that
     # describes this survey element
     NAME = u"name"
@@ -39,6 +45,10 @@ class SurveyElement(object):
             )
 
     def get_question_type_dictionary(self):
+        """
+        Return the dictionary of question types this SurveyElement is
+        associated with.
+        """
         if self._question_type_dictionary:
             return self._question_type_dictionary
         elif self._parent:
@@ -47,6 +57,10 @@ class SurveyElement(object):
             return DEFAULT_QUESTION_TYPE_DICTIONARY
 
     def add_child(self, element):
+        """
+        Add a SurveyElement to this SurveyElement's children. As a
+        slight hack, this method also accepts a list of elements.
+        """
         # I should probably rename this function, because now it handles lists
         if type(element)==list:
             for list_element in element:
@@ -56,6 +70,9 @@ class SurveyElement(object):
             self._children.append(element)
 
     def get_children(self):
+        """
+        Return this SurveyElement's children.
+        """
         return self._children
 
     def get(self, key):
@@ -150,6 +167,10 @@ class SurveyElement(object):
             return node(u"hint", self.get_hint())
 
     def xml_label_and_hint(self):
+        """
+        Return a list containing one node for the label and if there
+        is a hint one node for the hint.
+        """
         if self.get_hint():
             return [self.xml_label(), self.xml_hint()]
         return [self.xml_label()]
@@ -163,11 +184,6 @@ class SurveyElement(object):
         if d:
             for k, v in d.items():
                 d[k] = survey.insert_xpaths(v)
-                if u":" in k:
-                    l = k.split(u":")
-                    assert len(l)==2
-                    d[ns(l[0], l[1])] = survey.insert_xpaths(v)
-                    del d[k]
             return node(u"bind", nodeset=self.get_xpath(), **d)
         return None
 

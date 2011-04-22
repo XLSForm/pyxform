@@ -1,78 +1,74 @@
 """
 Testing the instance object for pyxform.
 """
-import sys, os
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-
-from django.test import TestCase, Client
+from unittest import TestCase
 from pyxform import *
 from pyxform.builder import create_survey_element_from_dict
 
 class Json2XformExportingPrepTests(TestCase):
     
     def test_simple_survey_instantiation(self):
-        surv = Survey(name="Simple")
-        q = create_survey_element_from_dict({"type":"text", "name":"survey_question"})
+        surv = Survey(name=u"Simple")
+        q = create_survey_element_from_dict({u"type":u"text", u"name":u"survey_question"})
         surv.add_child(q)
         
         i = surv.instantiate()
         
-        self.assertEquals(i.keys(), ["survey_question"])
+        self.assertEquals(i.keys(), [u"survey_question"])
         self.assertEquals(set(i.xpaths()), set([\
             u"/Simple", \
             u"/Simple/survey_question", \
         ]))
     
     def test_simple_survey_answering(self):
-        surv = Survey(name="Water")
-        q = create_survey_element_from_dict({"type":"text", "name":"color"})
-        q2 = create_survey_element_from_dict({"type":"text", "name":"feeling"})
+        surv = Survey(name=u"Water")
+        q = create_survey_element_from_dict({u"type":u"text", u"name":u"color"})
+        q2 = create_survey_element_from_dict({u"type":u"text", u"name":u"feeling"})
         
         surv.add_child(q)
         surv.add_child(q2)
         i = SurveyInstance(surv)
         
-        i.answer(name="color", value="blue")
-        self.assertEquals(i.answers()[u'color'], "blue")
+        i.answer(name=u"color", value=u"blue")
+        self.assertEquals(i.answers()[u'color'], u"blue")
         
-        i.answer(name="feeling", value="liquidy")
-        self.assertEquals(i.answers()[u'feeling'], "liquidy")
+        i.answer(name=u"feeling", value=u"liquidy")
+        self.assertEquals(i.answers()[u'feeling'], u"liquidy")
         
     def test_answers_can_be_imported_from_xml(self):
-        surv = Survey(name="data")
+        surv = Survey(name=u"data")
         
         surv.add_child(create_survey_element_from_dict({ \
-                                'type':'text', 'name':'name'}))
+                                u'type':u'text', u'name':u'name'}))
         surv.add_child(create_survey_element_from_dict({ \
-                                'type':'integer', 'name':'users_per_month'}))
+                                u'type':u'integer', u'name':u'users_per_month'}))
         surv.add_child(create_survey_element_from_dict({ \
-                                'type':'gps', 'name':'geopoint'}))
+                                u'type':u'gps', u'name':u'geopoint'}))
         surv.add_child(create_survey_element_from_dict({ \
-                                'type':'imei', 'name':'device_id'}))
+                                u'type':u'imei', u'name':u'device_id'}))
         
         instance = surv.instantiate()
-        instance.import_from_xml("""
+        instance.import_from_xml(u"""
         <?xml version='1.0' ?><data id="build_WaterSimple_1295821382"><name>JK Resevoir</name><users_per_month>300</users_per_month><geopoint>40.783594633609184 -73.96436698913574 300.0 4.0</geopoint></data>
         """.strip())
         
     def test_simple_registration_xml(self):
-        reg_xform = Survey(name="Registration")
-        name_question = create_survey_element_from_dict({'type':'text','name':'name'})
+        reg_xform = Survey(name=u"Registration")
+        name_question = create_survey_element_from_dict({u'type':u'text',u'name':u'name'})
         reg_xform.add_child(name_question)
         
         reg_instance = reg_xform.instantiate()
         
-        reg_instance.answer(name="name", value="bob")
+        reg_instance.answer(name=u"name", value=u"bob")
         
 #        rdict = reg_instance.to_dict()
-        expected_dict = {"node_name" : "Registration", \
-                "id": reg_xform.id_string(), \
-                "children": [{'node_name':'name', 'value':'bob'}]}
+        expected_dict = {u"node_name" : u"Registration", \
+                u"id": reg_xform.id_string(), \
+                u"children": [{u'node_name':u'name', u'value':u'bob'}]}
         
 #        self.assertEqual(rdict, expected_dict)
 
         rx = reg_instance.to_xml()
-        expected_xml = """<?xml version='1.0' ?><Registration id="%s"><name>bob</name></Registration>""" % \
+        expected_xml = u"""<?xml version='1.0' ?><Registration id="%s"><name>bob</name></Registration>""" % \
                     (reg_xform.id_string())
         self.assertEqual(rx, expected_xml)
