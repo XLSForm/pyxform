@@ -71,7 +71,7 @@ class Survey(Section):
         for lang in self._translations.keys():
             result.append( node("translation", lang=lang) )
             for name in self._translations[lang].keys():
-                result[-1].append(
+                result[-1].appendChild(
                     node("text",
                         node("value", self._translations[lang][name]),
                         id=name

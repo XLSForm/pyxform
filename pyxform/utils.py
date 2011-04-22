@@ -39,7 +39,7 @@ def node(tag, *args, **kwargs):
             try:
                 result.appendChild(n)
             except:
-                raise Exception(n)
+                raise Exception(type(n), n)
     return result
 
 def get_pyobj_from_json(str_or_path):
