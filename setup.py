@@ -21,7 +21,7 @@ setup(
     keywords = "XForm ODK Collect",
     url = "http://github.com/mvpdev/pyxform",
     packages=['pyxform'],
-    long_description=read('README'),
+    long_description=read('README.rst'),
     install_requires=[
         'nose==1.0.0',
         'Sphinx==1.0.7',
