@@ -22,7 +22,7 @@ class Section(SurveyElement):
     def xml_instance(self):
         result = node(self.get_name())
         for child in self._children:
-            result.append(child.xml_instance())
+            result.appendChild(child.xml_instance())
         return result
 
     def xml_control(self):
@@ -50,7 +50,7 @@ class RepeatingSection(Section):
         """
         repeat_node = node(u"repeat", nodeset=self.get_xpath())
         for n in Section.xml_control(self):
-            repeat_node.append(n)
+            repeat_node.appendChild(n)
         return node(
             u"group",
             self.xml_label(),
@@ -61,7 +61,7 @@ class GroupedSection(Section):
     def xml_control(self):
         group_node = node(u"group", self.xml_label(), nodeset=self.get_xpath())
         for n in Section.xml_control(self):
-            group_node.append(n)
+            group_node.appendChild(n)
         return group_node
 
     def to_dict(self):

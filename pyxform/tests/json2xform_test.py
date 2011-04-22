@@ -24,8 +24,8 @@ class BasicJson2XFormTests(TestCase):
         can be exported to_xml twice, and the same thing will be returned
         both times.
         """
-        survey = Survey(name="SampleSurvey")
-        q = create_survey_element_from_dict({'type':'text', 'name':'name'})
+        survey = Survey(name=u"SampleSurvey")
+        q = create_survey_element_from_dict({u'type':u'text', u'name':u'name'})
         survey.add_child(q)
         
         str1 = survey.to_xml()

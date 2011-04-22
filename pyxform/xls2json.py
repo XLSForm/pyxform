@@ -34,7 +34,7 @@ class ExcelReader(object):
         (shortname, extension) = os.path.splitext(filename)
         assert extension==".xls", "path must end with .xls"
         self._path = path
-        self._name = shortname
+        self._name = unicode(shortname)
         self._parse_xls()
 
     def _parse_xls(self):
@@ -135,7 +135,7 @@ class SurveyReader(ExcelReader):
 
     def _process_question_type(self):
         """
-        We need to handle question types that look like "select one
+        We need to handle question types that look like select one
         from list-name or specify other.
 
         select one from list-name

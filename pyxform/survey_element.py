@@ -1,4 +1,4 @@
-from utils import is_valid_xml_tag, node, ns
+from utils import is_valid_xml_tag, node
 from collections import defaultdict
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
 from xls2json import print_pyobj_to_json
@@ -167,6 +167,10 @@ class SurveyElement(object):
             return node(u"hint", self.get_hint())
 
     def xml_label_and_hint(self):
+        """
+        Return a list containing one node for the label and if there
+        is a hint one node for the hint.
+        """
         if self.get_hint():
             return [self.xml_label(), self.xml_hint()]
         return [self.xml_label()]
@@ -180,11 +184,6 @@ class SurveyElement(object):
         if d:
             for k, v in d.items():
                 d[k] = survey.insert_xpaths(v)
-                if u":" in k:
-                    l = k.split(u":")
-                    assert len(l)==2
-                    d[ns(l[0], l[1])] = survey.insert_xpaths(v)
-                    del d[k]
             return node(u"bind", nodeset=self.get_xpath(), **d)
         return None
 

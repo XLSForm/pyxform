@@ -25,6 +25,7 @@ setup(
     install_requires=[
         'nose==1.0.0',
         'Sphinx==1.0.7',
+        'xlrd==0.7.1',
         ],
     classifiers=[
         "Development Status :: 4 - Beta",
