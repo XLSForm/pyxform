@@ -1,7 +1,7 @@
 from question import MultipleChoiceQuestion
 from section import Section
 from question import Question
-from utils import node, ns, SEP, XFORM_TAG_REGEXP
+from utils import node, SEP, XFORM_TAG_REGEXP
 from datetime import datetime
 from collections import defaultdict
 import codecs
@@ -9,6 +9,14 @@ import re
 import json
 import os
 from odk_validate import check_xform
+
+nsmap = {
+    u"xmlns" : u"http://www.w3.org/2002/xforms",
+    u"xmlns:h" : u"http://www.w3.org/1999/xhtml",
+    u"xmlns:ev" : u"http://www.w3.org/2001/xml-events",
+    u"xmlns:xsd" : u"http://www.w3.org/2001/XMLSchema",
+    u"xmlns:jr" : u"http://openrosa.org/javarosa",
+    }
 
 class Survey(Section):
     def __init__(self, *args, **kwargs):
@@ -23,12 +31,13 @@ class Survey(Section):
         """
         self.validate()
         self._setup_xpath_dictionary()
-        return node(u"html",
-                    node(u"head",
-                         node(u"title", self.get_name()),
+        return node(u"h:html",
+                    node(u"h:head",
+                         node(u"h:title", self.get_name()),
                          self.xml_model()
                         ),
-                    node(u"body", *self.xml_control())
+                    node(u"h:body", *self.xml_control()),
+                    **nsmap
                     )
         
         # return E(ns("h", "html"),

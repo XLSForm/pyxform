@@ -3,23 +3,12 @@ import re
 import codecs
 import json
 
-nsmap = {
-    None : "http://www.w3.org/2002/xforms",
-    "h" : "http://www.w3.org/1999/xhtml",
-    "ev" : "http://www.w3.org/2001/xml-events",
-    "xsd" : "http://www.w3.org/2001/XMLSchema",
-    "jr" : "http://openrosa.org/javarosa",
-    }
-
 SEP = "_"
 
 # http://www.w3.org/TR/REC-xml/
 TAG_START_CHAR = r"[a-zA-Z:_]"
 TAG_CHAR = r"[a-zA-Z:_0-9\-.]"
 XFORM_TAG_REGEXP = "%(start)s%(char)s*" % {"start" : TAG_START_CHAR, "char" : TAG_CHAR}
-
-def ns(abbrev, text):
-    return "{" + nsmap[abbrev] + "}" + text
 
 def is_valid_xml_tag(tag):
     return re.search(r"^" + XFORM_TAG_REGEXP + r"$", tag)

@@ -8,7 +8,7 @@ from pyxform.builder import create_survey_element_from_dict
 
 import json
 
-from pyxform.utils import ns, node
+from pyxform.utils import node
 
 TESTING_BINDINGS = True
 
