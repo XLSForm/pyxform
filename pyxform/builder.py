@@ -28,6 +28,14 @@ class SurveyElementBuilder(object):
             DEFAULT_QUESTION_TYPE_DICTIONARY
             )
 
+    def set_paths(self, paths):
+        """
+        paths is a dict that maps file names to absolute paths. This
+        method is often used when working with includes.
+        """
+        assert type(paths)==dict
+        self._paths = paths
+
     def _get_question_class(self, question_type_str):
         question_type = self._question_type_dictionary.get_definition(question_type_str)
         control_dict = question_type.get(Question.CONTROL, {})
@@ -156,7 +164,8 @@ class SurveyElementBuilder(object):
         elif d[SurveyElement.TYPE]==u"loop":
             return self._create_loop_from_dict(d)
         elif d[SurveyElement.TYPE]==u"include":
-            path = d[SurveyElement.NAME]
+            file_name = d[SurveyElement.NAME]
+            path = self._paths.get(file_name, file_name)
             if path.endswith(".xls"):
                 full_survey = create_survey_from_xls(path)
                 return full_survey.get_children()
@@ -171,8 +180,9 @@ class SurveyElementBuilder(object):
         return self.create_survey_element_from_dict(d)
 
 
-def create_survey_element_from_dict(d):
+def create_survey_element_from_dict(d, paths={}):
     builder = SurveyElementBuilder()
+    builder.set_paths(paths)
     return builder.create_survey_element_from_dict(d)
 
 def create_survey_element_from_json(str_or_path):
@@ -180,12 +190,6 @@ def create_survey_element_from_json(str_or_path):
     return create_survey_element_from_dict(d)
 
 def create_survey_from_xls(path):
-    """
-    Interestingly enough this behaves differently than a json dump and
-    create survey element from json. This is because to questions that
-    share the same choice list cannot share the same choice list in
-    json. This is definitely something to think about.
-    """
     excel_reader = SurveyReader(path)
     d = excel_reader.to_dict()
     return create_survey_element_from_dict(d)
@@ -201,3 +205,8 @@ def render_survey_package(survey_package):
     for child in children:
         survey.add_child(builder.create_survey_element_from_dict(child))
     return survey
+
+def create_survey_from_xls_or_json(file_name, paths):
+    excel_reader = SurveyReader(paths[file_name])
+    d = excel_reader.to_dict()
+    return create_survey_element_from_dict(d, paths)

@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name = "pyxform",
-    version = "0.5",
+    version = "0.6",
     author = "Columbia University, Modi Research Group",
     author_email = "andrew.ei.marder@gmail.com",
     description = ("A library for authoring XForms for ODK Collect."),
@@ -21,7 +21,7 @@ setup(
     keywords = "XForm ODK Collect",
     url = "http://github.com/mvpdev/pyxform",
     packages=['pyxform'],
-    long_description=read('README'),
+    long_description=read('README.rst'),
     install_requires=[
         'nose==1.0.0',
         'Sphinx==1.0.7',
