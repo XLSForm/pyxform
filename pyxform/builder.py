@@ -203,7 +203,7 @@ def render_survey_package(survey_package):
     survey = Survey(id_string=id_string, name=name)
     builder = SurveyElementBuilder()
     for child in children:
-        survey.add_child(builder.create_survey_element_from_dict(child))
+        survey.add_child(create_survey_element_from_dict(child))
     return survey
 
 def create_survey_from_xls_or_json(file_name, paths):
