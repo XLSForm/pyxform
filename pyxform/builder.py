@@ -189,3 +189,15 @@ def create_survey_from_xls(path):
     excel_reader = SurveyReader(path)
     d = excel_reader.to_dict()
     return create_survey_element_from_dict(d)
+
+def render_survey_package(survey_package):
+    children = survey_package.get(u'survey', [])
+    name = unicode(survey_package.get(u'name'))
+    id_string = survey_package.get(u'id_string')
+    #question_types don't work yet
+    question_types = survey_package.get(u'question_types')
+    survey = Survey(id_string=id_string, name=name)
+    builder = SurveyElementBuilder()
+    for child in children:
+        survey.add_child(builder.create_survey_element_from_dict(child))
+    return survey
