@@ -24,6 +24,7 @@ class Survey(Section):
         self._xpath = {}
         self._parent = None
         self._created = datetime.now()
+        self._id_string = kwargs.get(u'id_string')
 
     def xml(self):
         """
@@ -92,7 +93,9 @@ class Survey(Section):
         return self._created.strftime("%Y_%m_%d")
 
     def id_string(self):
-        return self.get_name() + "_" + self.date_stamp()
+        if self._id_string is None:
+            self._id_string = self.get_name() + "_" + self.date_stamp()
+        return self._id_string
 
     def xml_instance(self):
         result = Section.xml_instance(self)
