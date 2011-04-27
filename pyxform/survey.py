@@ -92,6 +92,9 @@ class Survey(Section):
     def date_stamp(self):
         return self._created.strftime("%Y_%m_%d")
 
+    def set_id_string(self, id_string):
+        self._id_string = id_string
+
     def id_string(self):
         if self._id_string is None:
             self._id_string = self.get_name() + "_" + self.date_stamp()
