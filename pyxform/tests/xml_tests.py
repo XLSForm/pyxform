@@ -48,4 +48,5 @@ class XMLTests(TestCase):
   </h:body>
 </h:html>'''
         xml_str = re.sub(u">\s+<", u"><", xml_str)
+        xml_str = re.sub(r"yes_or_no_question_2011_04_22", self.survey.id_string(), xml_str)
         self.assertEquals(xml_str, self.survey.to_xml())
