@@ -218,15 +218,17 @@ def render_survey_package(survey_package):
 
 def create_survey(
     name_of_main_section, sections,
-    question_type_dictionary=None
+    id_string=None, question_type_dictionary=None
     ):
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
     builder.set_question_type_dictionary(question_type_dictionary)
     assert name_of_main_section in sections
-    return builder.create_survey_element_from_dict(
+    survey = builder.create_survey_element_from_dict(
         sections[name_of_main_section]
         )
+    survey.set_id_string(id_string)
+    return survey
 
 def section_name(path_or_file_name):
     directory, filename = os.path.split(path_or_file_name)
