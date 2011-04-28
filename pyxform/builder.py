@@ -223,7 +223,7 @@ def create_survey(
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
     builder.set_question_type_dictionary(question_type_dictionary)
-    assert name_of_main_section in sections
+    assert name_of_main_section in sections, name_of_main_section
     survey = builder.create_survey_element_from_dict(
         sections[name_of_main_section]
         )
