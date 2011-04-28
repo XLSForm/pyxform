@@ -80,7 +80,10 @@ class MultipleChoiceQuestion(Question):
             kwargs_copy.pop(u"children", [])
         Question.__init__(self, *args, **kwargs_copy)
         for choice in choices:
-            self.add_choice(**choice)
+            try:
+                self.add_choice(**choice)
+            except KeyError:
+                raise KeyError("An option for this question is missing a name or a label.", kwargs)
         
     def validate(self):
         Question.validate(self)
