@@ -1,5 +1,5 @@
 from subprocess import Popen, PIPE
-import os, re
+import os, re, sys
 from collections import defaultdict
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -37,8 +37,11 @@ class XFormValidator(object):
         self._run_odk_validate(path_to_xform)
         self._parse_odk_validate_output()
         if not self.is_valid():
-            raise Exception(self.get_odk_validate_output())
+            raise Exception(self._odk_validate_output)
 
 def check_xform(path):
     validator = XFormValidator()
     validator.validate(path)
+
+if __name__ == '__main__':
+    check_xform(sys.argv[1])
