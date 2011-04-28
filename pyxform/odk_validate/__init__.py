@@ -37,7 +37,7 @@ class XFormValidator(object):
         self._run_odk_validate(path_to_xform)
         self._parse_odk_validate_output()
         if not self.is_valid():
-            raise Exception(self._odk_validate_output)
+            raise Exception(self.get_odk_validate_output())
 
 def check_xform(path):
     validator = XFormValidator()
