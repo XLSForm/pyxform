@@ -59,7 +59,7 @@ class Option(SurveyElement):
     def __init__(self, *args, **kwargs):
         d = {
             self.LABEL : kwargs[self.LABEL],
-            self.NAME : kwargs[self.NAME],
+            self.NAME : unicode(kwargs[self.NAME]),
             }
         SurveyElement.__init__(self, **d)
 
@@ -71,6 +71,9 @@ class Option(SurveyElement):
         item.appendChild(self.xml_label())
         item.appendChild(self.xml_value())
         return item
+
+    def validate(self):
+        pass
 
 
 class MultipleChoiceQuestion(Question):
