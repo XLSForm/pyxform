@@ -105,7 +105,11 @@ class Survey(Section):
         result.setAttribute(u"id", self.id_string())
         return result
 
-    def to_xml(self):
+    def _to_xml(self):
+        """
+        I want the to_xml method to by default validate the xml we are
+        producing.
+        """
         return self.xml().toxml()
     
     def __unicode__(self):
@@ -142,10 +146,18 @@ class Survey(Section):
     def print_xform_to_file(self, path="", validate=True):
         if not path: path = self.id_string() + ".xml"
         fp = codecs.open(path, mode="w", encoding="utf-8")
-        fp.write(self.to_xml())
+        fp.write(self._to_xml())
         fp.close()
         if validate:
             check_xform(path)
+
+    def to_xml(self):
+        temporary_file_name = "_temporary_file_used_to_validate_xform.xml"
+        temporary_file_path = os.path.abspath(temporary_file_name)
+        # this will throw an exception if the xml is not valid
+        self.print_xform_to_file(temporary_file_path)
+        os.remove(temporary_file_name)
+        return self._to_xml()
         
     def instantiate(self):
         from instance import SurveyInstance
