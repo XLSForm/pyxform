@@ -62,7 +62,7 @@ class ExcelReader(object):
                 for column in range(0,sheet.ncols):
                     key = sheet.cell(0,column).value
                     value = sheet.cell(row,column).value
-                    if value: row_dict[key] = value
+                    if value is not None and value!="": row_dict[key] = value
                 if row_dict: self._dict[sheet.name].append(row_dict)
 
     def _set_choices_and_columns_sheet_name(self):
@@ -270,7 +270,6 @@ if __name__=="__main__":
     # Open the excel file that is the second argument to this python
     # call, convert that file to json and save that json to a file
     path = sys.argv[1]
-    assert path[-4:]==".xls"
-    converter = VariableNameReader(path)
-    converter.print_json_to_file()
-    # print json.dumps(converter.to_dict(), ensure_ascii=False, indent=4)
+    converter = SurveyReader(path)
+    # converter.print_json_to_file()
+    print json.dumps(converter.to_dict(), ensure_ascii=False, indent=4)
