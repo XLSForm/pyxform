@@ -3,6 +3,7 @@ from utils import node
 
 class Section(SurveyElement):
     def validate(self):
+        super(Section, self).validate()
         for element in self._children:
             element.validate()
         self._validate_uniqueness_of_element_names()
