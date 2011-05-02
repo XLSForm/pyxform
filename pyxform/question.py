@@ -112,4 +112,4 @@ class MultipleChoiceQuestion(Question):
 class SelectOneQuestion(MultipleChoiceQuestion):
     def __init__(self, *args, **kwargs):
         super(SelectOneQuestion, self).__init__(*args, **kwargs)
-        self.get_bind()[u"type"] = u"select1"
+        self._dict[u"bind"][u"type"] = u"select1"
