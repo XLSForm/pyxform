@@ -9,6 +9,7 @@ class BuilderTests(TestCase):
     def setUp(self):
         self.this_directory = os.path.dirname(__file__)
         survey_out = Survey(
+            name=u"age",
             type=u"survey"
             )
         question = InputQuestion(name=u"age")

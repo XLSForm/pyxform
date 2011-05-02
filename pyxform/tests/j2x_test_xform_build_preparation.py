@@ -20,7 +20,7 @@ class Json2XformExportingPrepTests(TestCase):
         second_yesno_question = MultipleChoiceQuestion(
             name="yn_q2", options=yes_or_no_dict_array, type="select one")
         
-        s = Survey(name="Yes Or No Tests")
+        s = Survey(name="yes_or_no_tests")
         s.add_child(first_yesno_question)
         s.add_child(second_yesno_question)
         
