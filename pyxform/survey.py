@@ -53,16 +53,9 @@ class Survey(Section):
     def xml_model(self):
         self._setup_translations()
         self._setup_media()
-        
         if self._translations:
             return node("model",
                         self.xml_translations_and_media(),
-                        node("instance", self.xml_instance()),
-                        *self.xml_bindings()
-                        )
-        if self._media:
-            return node("model",
-                        self.xml_media(),
                         node("instance", self.xml_instance()),
                         *self.xml_bindings()
                         )
@@ -86,7 +79,19 @@ class Survey(Section):
                             self._translations[lang][translation_key] = text[lang]
                             
     def _setup_media(self):
-        self._media = defaultdict(dict)
+        """
+        Merges any media files in with the translations so that they all end up in the itext node. This method is handles the following cases:
+            -Media files exist and no label translations exist
+            -Media files exist and label translations exist
+            -Media translations exist and label translations exist
+            
+        The following cases are not yet covered:
+            -Media files exist and no label is provided at all
+            -Media translations exist and no label translations exist (is this valid? Do we need to support it?)
+        """
+        translationsExist = self._translations
+        if not translationsExist:
+            self._translations = defaultdict(dict)
         for e in self.iter_children():
             media_keys = e.get_media_keys()
             for key in media_keys:
@@ -94,50 +99,58 @@ class Survey(Section):
                 text = e.get(key)
                 if type(text) == dict:
                     for media_type in text.keys():
-                        if media_type in SurveyElement.SUPPORTED_MEDIA:
-                            if not self._translations:
-                                self._media[media_key]["long"] = e.to_dict()[u"label"]
-                            self._media[media_key][media_type] = text[media_type]
-                        else:
-                            raise Exception("Media type: " + media_type + " not supported")        
-
-    def xml_translations(self):
-        result = []
-        for lang in self._translations.keys():
-            result.append( node("translation", lang=lang) )
-            for name in self._translations[lang].keys():
-                result[-1].appendChild(node("text", node("value", self._translations[lang][name]),id=name))
-        return node("itext", *result)
+                        #Check if this media file's language is specified
+                        langs = [media_type.partition(":")[-1]]
+                        media_type_to_store = media_type.partition(":")[0]
+                        
+                        langsExist = langs != [u'']
+                        if not langsExist and not translationsExist:
+                            #If no language is specified, just default to English
+                            langs = ["English"]
+                            media_type_to_store = media_type
+                        elif not langsExist and translationsExist:
+                            #If no language is specified, but there are label translations, add the media file to 
+                            #all languages
+                            langs = self._translations.keys()
+                            media_type_to_store = media_type
+                        
+                        for lang in langs:
+                            if media_type_to_store in SurveyElement.SUPPORTED_MEDIA:
+                                #Find the translation node we will be adding to
+                                translation_key = media_key.partition(":")[0] + ":label"
+                                
+                                if not translationsExist:
+                                    #If there are no translations specified, pull the generic label
+                                    translation_label = e.to_dict()[u"label"]
+                                else:
+                                    translation_label = self._translations[lang][translation_key]
+                                
+                                #Initialize the entry to a dictionary
+                                if not (translation_key in self._translations[lang] and type(self._translations[lang][translation_key]) == dict):
+                                    self._translations[lang][translation_key] = {"long": translation_label}
+                                
+                                self._translations[lang][translation_key][media_type_to_store]= text[media_type]
+                            
+                            else:
+                                raise Exception("Media type: " + media_type_to_store + " not supported")        
     
     def xml_translations_and_media(self):
         result = []
         for lang in self._translations.keys():
             result.append(node("translation", lang=lang))
-            for name in self._translations[lang].keys():
-                media_name = name.partition(":")[0] + ":media"
-                media_nodes = []
-                media_nodes.append(node("value", self._translations[lang][name], form="long"))
-                if self._media and self._media[media_name]:
-                    for media_type in self._media[media_name]:
-                        media_nodes.append(node("value", "jr://" + media_type + "/" + self._media[media_name][media_type], form=media_type))
-                result[-1].appendChild(node("text", *media_nodes, id=name))
-        return node("itext", *result)
-        
-    
-    def xml_media(self):
-        #If we get here, we know that there were no transaltions and the itext node
-        #has not been set up. We need to initiazlize an itext node with a default language
-        result = []
-        result.append( node ("translation",  lang="English"))
-        for name in self._media.keys():
-            media_nodes = []
-            for media_type in self._media[name]:
-                if media_type == "long":
-                    media_nodes.append(node("value", self._media[name][media_type], form=media_type))
+            for label_name in self._translations[lang].keys():
+                itext_nodes = []
+                
+                if type(self._translations[lang][label_name]) == dict:
+                    for media_type in self._translations[lang][label_name]:
+                        if media_type == "long":
+                            itext_nodes.append(node("value", self._translations[lang][label_name][media_type], form=media_type))
+                        else:
+                            itext_nodes.append(node("value", "jr://" + media_type + "/" + self._translations[lang][label_name][media_type], form=media_type))
                 else:
-                    media_nodes.append(node("value", "jr://" + media_type + "/" + self._media[name][media_type], form=media_type))
-            result[-1].appendChild(node("text", *media_nodes, id=name))
-        
+                    itext_nodes.append(node("value", self._translations[lang][label_name], form="long"))
+
+                result[-1].appendChild(node("text", *itext_nodes, id=label_name))
         return node("itext", *result)
         
 
@@ -162,7 +175,7 @@ class Survey(Section):
         I want the to_xml method to by default validate the xml we are
         producing.
         """
-        return self.xml().toprettyxml()
+        return self.xml().toxml()
     
     def __unicode__(self):
         return "<survey name='%s' element_count='%s'>" % (self.get_name(), len(self._children))
