@@ -9,6 +9,7 @@ import re
 import json
 import os
 from odk_validate import check_xform
+from survey_element import SurveyElement
 
 nsmap = {
     u"xmlns" : u"http://www.w3.org/2002/xforms",
@@ -51,9 +52,16 @@ class Survey(Section):
 
     def xml_model(self):
         self._setup_translations()
+        self._setup_media()
         if self._translations:
             return node("model",
                         self.xml_translations(),
+                        node("instance", self.xml_instance()),
+                        *self.xml_bindings()
+                        )
+        if self._media:
+            return node("model",
+                        self.xml_media(),
                         node("instance", self.xml_instance()),
                         *self.xml_bindings()
                         )
@@ -75,19 +83,48 @@ class Survey(Section):
                             assert self._translations[lang][translation_key] == text[lang], "The labels for this translation key are inconsistent %(key)s %(label)s" % {"key" : translation_key, "label" : text[lang]}
                         else:
                             self._translations[lang][translation_key] = text[lang]
+                            
+    def _setup_media(self):
+        self._media = defaultdict(dict)
+        for e in self.iter_children():
+            media_keys = e.get_media_keys()
+            for key in media_keys:
+                media_key = media_keys[key]
+                text = e.get(key)
+                if type(text) == dict:
+                    for media_type in text.keys():
+                        if media_type in SurveyElement.SUPPORTED_MEDIA:
+                            self._media[media_key]["long"] = e.to_dict()[u"label"]
+                            self._media[media_key][media_type] = text[media_type]
+                        else:
+                            raise Exception("Media type: " + media_type + " not supported")        
 
     def xml_translations(self):
         result = []
         for lang in self._translations.keys():
             result.append( node("translation", lang=lang) )
             for name in self._translations[lang].keys():
-                result[-1].appendChild(
-                    node("text",
-                        node("value", self._translations[lang][name]),
-                        id=name
-                        )
-                    )
+                result[-1].appendChild(node("text", node("value", self._translations[lang][name]),id=name))
         return node("itext", *result)
+    
+    def xml_media(self):
+        #If we get here, we know that there were no transaltions and the itext node
+        #has not been set up. We need to initiazlize an itext node with a default language
+        result = []
+        result.append( node ("translation",  lang="English"))
+        for name in self._media.keys():
+            media_nodes = []
+            for media_type in self._media[name]:
+                if media_type == "long":
+                    media_nodes.append(node("value", self._media[name][media_type], form=media_type))
+                elif media_type == "image" or media_type == "video":
+                    media_nodes.append(node("value", "jr://" + media_type + "s/" + self._media[name][media_type], form=media_type))
+                elif media_type == "audio":
+                    media_nodes.append(node("value", "jr://" + media_type + "/" + self._media[name][media_type], form=media_type))
+            result[-1].appendChild(node("text", *media_nodes, id=name))
+        
+        return node("itext", *result)
+        
 
     def date_stamp(self):
         return self._created.strftime("%Y_%m_%d")
@@ -110,7 +147,7 @@ class Survey(Section):
         I want the to_xml method to by default validate the xml we are
         producing.
         """
-        return self.xml().toxml()
+        return self.xml().toprettyxml()
     
     def __unicode__(self):
         return "<survey name='%s' element_count='%s'>" % (self.get_name(), len(self._children))
