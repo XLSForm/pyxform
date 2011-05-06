@@ -53,9 +53,10 @@ class Survey(Section):
     def xml_model(self):
         self._setup_translations()
         self._setup_media()
+        
         if self._translations:
             return node("model",
-                        self.xml_translations(),
+                        self.xml_translations_and_media(),
                         node("instance", self.xml_instance()),
                         *self.xml_bindings()
                         )
@@ -94,7 +95,8 @@ class Survey(Section):
                 if type(text) == dict:
                     for media_type in text.keys():
                         if media_type in SurveyElement.SUPPORTED_MEDIA:
-                            self._media[media_key]["long"] = e.to_dict()[u"label"]
+                            if not self._translations:
+                                self._media[media_key]["long"] = e.to_dict()[u"label"]
                             self._media[media_key][media_type] = text[media_type]
                         else:
                             raise Exception("Media type: " + media_type + " not supported")        
@@ -107,6 +109,21 @@ class Survey(Section):
                 result[-1].appendChild(node("text", node("value", self._translations[lang][name]),id=name))
         return node("itext", *result)
     
+    def xml_translations_and_media(self):
+        result = []
+        for lang in self._translations.keys():
+            result.append(node("translation", lang=lang))
+            for name in self._translations[lang].keys():
+                media_name = name.partition(":")[0] + ":media"
+                media_nodes = []
+                media_nodes.append(node("value", self._translations[lang][name], form="long"))
+                if self._media and self._media[media_name]:
+                    for media_type in self._media[media_name]:
+                        media_nodes.append(node("value", "jr://" + media_type + "/" + self._media[media_name][media_type], form=media_type))
+                result[-1].appendChild(node("text", *media_nodes, id=name))
+        return node("itext", *result)
+        
+    
     def xml_media(self):
         #If we get here, we know that there were no transaltions and the itext node
         #has not been set up. We need to initiazlize an itext node with a default language
@@ -117,9 +134,7 @@ class Survey(Section):
             for media_type in self._media[name]:
                 if media_type == "long":
                     media_nodes.append(node("value", self._media[name][media_type], form=media_type))
-                elif media_type == "image" or media_type == "video":
-                    media_nodes.append(node("value", "jr://" + media_type + "s/" + self._media[name][media_type], form=media_type))
-                elif media_type == "audio":
+                else:
                     media_nodes.append(node("value", "jr://" + media_type + "/" + self._media[name][media_type], form=media_type))
             result[-1].appendChild(node("text", *media_nodes, id=name))
         
