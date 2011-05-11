@@ -10,7 +10,7 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
     
     def test_survey_can_be_created_in_a_verbose_manner(self):
         s = Survey()
-        s.set_name("Simple Survey")
+        s.set_name("simple_survey")
         
         q = MultipleChoiceQuestion()
         q.set_name("cow_color")
@@ -20,7 +20,7 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
         s.add_child(q)
 
         expected_dict = {
-            u'name': 'Simple Survey',
+            u'name': 'simple_survey',
             u'children': [
                 {
                     u'name': 'cow_color',
@@ -45,10 +45,10 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
         
         q = MultipleChoiceQuestion(name="Favorite_Color", choices=option_dict_array)
         q._dict[MultipleChoiceQuestion.TYPE] = u"select one"
-        s = Survey(name="Roses are Red", children=[q])
+        s = Survey(name="Roses_are_Red", children=[q])
 
         expected_dict = {
-            u'name': 'Roses are Red',
+            u'name': 'Roses_are_Red',
             u'children': [
                 {
                     u'name': 'Favorite_Color',

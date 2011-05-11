@@ -1,12 +1,15 @@
 from unittest import TestCase
-from pyxform.builder import create_survey_element_from_dict
-from pyxform.xls2json import SurveyReader, print_pyobj_to_json
+from pyxform.builder import create_survey_from_path, SurveyElementBuilder
+from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
+import os
 
 class BuilderTests(TestCase):
 
     def setUp(self):
+        self.this_directory = os.path.dirname(__file__)
         survey_out = Survey(
+            name=u"age",
             type=u"survey"
             )
         question = InputQuestion(name=u"age")
@@ -43,7 +46,8 @@ class BuilderTests(TestCase):
                     },
                 ]
             }
-        g = create_survey_element_from_dict(d)
+        builder = SurveyElementBuilder()
+        g = builder.create_survey_element_from_dict(d)
 
         expected_dict = {
             u'name': u'my_loop',
@@ -80,9 +84,8 @@ class BuilderTests(TestCase):
         self.assertEqual(g.to_dict(), expected_dict)
 
     def test_specify_other(self):
-        excel_reader = SurveyReader("pyxform/tests/specify_other.xls")
-        d = excel_reader.to_dict()
-        survey = create_survey_element_from_dict(d)
+        path = os.path.join(self.this_directory, "specify_other.xls")
+        survey = create_survey_from_path(path)
         expected_dict = {
             u'name': 'specify_other',
             u'type': u'survey',
@@ -116,9 +119,8 @@ class BuilderTests(TestCase):
         self.assertEqual(survey.to_dict(), expected_dict)
 
     def test_include(self):
-        excel_reader = SurveyReader("pyxform/tests/include.xls")
-        d = excel_reader.to_dict()
-        survey = create_survey_element_from_dict(d)
+        path = os.path.join(self.this_directory, "include.xls")
+        survey = create_survey_from_path(path)
         expected_dict = {
             u'name': 'include',
             u'type': u'survey',
@@ -145,18 +147,16 @@ class BuilderTests(TestCase):
 
         self.assertEqual(survey.to_dict(), expected_dict)
 
-    def test_include_json(self):            
-        excel_reader = SurveyReader("pyxform/tests/include_json.xls")
-        d = excel_reader.to_dict()
-        survey_in = create_survey_element_from_dict(d)
+    def test_include_json(self):
+        path = os.path.join(self.this_directory, "include_json.xls")
+        survey_in = create_survey_from_path(path)
 
         for k, v in survey_in.to_dict().items():
             if k!="name": self.assertEqual(v, self.survey_out_dict[k])
 
     def test_loop(self):
-        excel_reader = SurveyReader("pyxform/tests/loop.xls")
-        d = excel_reader.to_dict()
-        survey = create_survey_element_from_dict(d)
+        path = os.path.join(self.this_directory, "loop.xls")
+        survey = create_survey_from_path(path)
 
         expected_dict = {
             u'name': 'loop',

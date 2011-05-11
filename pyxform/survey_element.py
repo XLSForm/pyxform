@@ -87,7 +87,8 @@ class SurveyElement(object):
 
     def validate(self):
         if not is_valid_xml_tag(self.get_name()):
-            raise Exception("Invalid xml tag.", self._dict)
+            msg = "The name of this survey element is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods."
+            raise Exception(self.get_name(), msg)                
     
     def _set_parent(self, parent):
         self._parent = parent

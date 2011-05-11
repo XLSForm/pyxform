@@ -4,7 +4,9 @@ from section import Section, RepeatingSection, GroupedSection
 from survey import Survey
 import utils
 from xls2json import SurveyReader
-from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
+from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY, \
+     QuestionTypeDictionary
+import os, glob
 
 class SurveyElementBuilder(object):
     # we use this CLASSES dict to create questions from dictionaries
@@ -23,10 +25,27 @@ class SurveyElementBuilder(object):
         }
 
     def __init__(self, **kwargs):
-        self._question_type_dictionary = kwargs.get(
-            u"question_type_dictionary",
-            DEFAULT_QUESTION_TYPE_DICTIONARY
+        self.set_sections(
+            kwargs.get(u"sections", {})
             )
+        self.set_question_type_dictionary(
+            kwargs.get(u"question_type_dictionary")
+            )
+
+    def set_sections(self, sections):
+        """
+        sections is a dict of python objects, a key in this dict is
+        the name of the section and the value is a dict that can be
+        used to create a whole survey.
+        """
+        assert type(sections)==dict
+        self._sections = sections
+
+    def set_question_type_dictionary(self, question_type_dictionary):
+        if type(question_type_dictionary)==QuestionTypeDictionary:
+            self._question_type_dictionary = question_type_dictionary
+        else:
+            self._question_type_dictionary = DEFAULT_QUESTION_TYPE_DICTIONARY
 
     def _get_question_class(self, question_type_str):
         question_type = self._question_type_dictionary.get_definition(question_type_str)
@@ -156,13 +175,13 @@ class SurveyElementBuilder(object):
         elif d[SurveyElement.TYPE]==u"loop":
             return self._create_loop_from_dict(d)
         elif d[SurveyElement.TYPE]==u"include":
-            path = d[SurveyElement.NAME]
-            if path.endswith(".xls"):
-                full_survey = create_survey_from_xls(path)
-                return full_survey.get_children()
-            elif path.endswith(".json"):
-                full_survey = create_survey_element_from_json(path)
-                return full_survey.get_children()
+            section_name = d[SurveyElement.NAME]
+            if section_name not in self._sections:
+                raise Exception("This section has not been included.",
+                                section_name, self._sections.keys())
+            d = self._sections[section_name]
+            full_survey = self.create_survey_element_from_dict(d)
+            return full_survey.get_children()
         else:
             return self._create_question_from_dict(d)
 
@@ -171,8 +190,9 @@ class SurveyElementBuilder(object):
         return self.create_survey_element_from_dict(d)
 
 
-def create_survey_element_from_dict(d):
+def create_survey_element_from_dict(d, sections={}):
     builder = SurveyElementBuilder()
+    builder.set_sections(sections)
     return builder.create_survey_element_from_dict(d)
 
 def create_survey_element_from_json(str_or_path):
@@ -180,12 +200,55 @@ def create_survey_element_from_json(str_or_path):
     return create_survey_element_from_dict(d)
 
 def create_survey_from_xls(path):
-    """
-    Interestingly enough this behaves differently than a json dump and
-    create survey element from json. This is because to questions that
-    share the same choice list cannot share the same choice list in
-    json. This is definitely something to think about.
-    """
     excel_reader = SurveyReader(path)
     d = excel_reader.to_dict()
     return create_survey_element_from_dict(d)
+
+def render_survey_package(survey_package):
+    children = survey_package.get(u'survey', [])
+    name = unicode(survey_package.get(u'name'))
+    id_string = survey_package.get(u'id_string')
+    #question_types don't work yet
+    question_types = survey_package.get(u'question_types')
+    survey = Survey(id_string=id_string, name=name)
+    builder = SurveyElementBuilder()
+    for child in children:
+        survey.add_child(create_survey_element_from_dict(child))
+    return survey
+
+def create_survey(
+    name_of_main_section, sections,
+    id_string=None, question_type_dictionary=None
+    ):
+    builder = SurveyElementBuilder()
+    builder.set_sections(sections)
+    builder.set_question_type_dictionary(question_type_dictionary)
+    assert name_of_main_section in sections, name_of_main_section
+    survey = builder.create_survey_element_from_dict(
+        sections[name_of_main_section]
+        )
+    survey.set_id_string(id_string)
+    return survey
+
+def section_name(path_or_file_name):
+    directory, filename = os.path.split(path_or_file_name)
+    section_name, extension = os.path.splitext(filename)
+    return section_name
+
+def create_survey_from_path(path):
+    directory, file_name = os.path.split(path)
+    sections = {}
+    xls_files = glob.glob(os.path.join(directory, "*.xls"))
+    for xls_file_path in xls_files:
+        name = section_name(xls_file_path)
+        excel_reader = SurveyReader(xls_file_path)
+        sections[name] = excel_reader.to_dict()
+    json_files = glob.glob(os.path.join(directory, "*.json"))
+    for json_file_path in json_files:
+        name = section_name(json_file_path)
+        sections[name] = utils.get_pyobj_from_json(json_file_path)
+    kwargs = {
+        "name_of_main_section" : section_name(file_name),
+        "sections" : sections,
+        }
+    return create_survey(**kwargs)

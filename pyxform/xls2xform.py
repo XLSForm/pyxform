@@ -4,33 +4,15 @@ use with ODK Collect. xl2xform is called at the command line using::
 
     python xls2xform.py path-to-excel-file
 
-To learn what sort of features are supported by xls2xform please refer
-to xls/tutorial-v0.1.xls. This example survey is the most straight
-forward introduction to the xls2xform syntax.
+This will create a new XForm in the directory containing the excel
+file.
 """
+import os, sys
+from builder import create_survey_from_path
 
-import sys
-from xls2json import SurveyReader
-from builder import create_survey_element_from_json
-
-def xls2json(name):
-    converter = SurveyReader("%s.xls" % name)
-    converter.print_json_to_file()
-
-def json2xform(name):
-    s = create_survey_element_from_json("%s.json" % name)
-    path = "%(name)s_%(date)s.xml" % {
-        "name" : name,
-        "date" : s.date_stamp()
-        }
-    s.print_xform_to_file(path=path)
-
-def xls2xform(path):
-    assert path.endswith(".xls")
-    name = path[:-4]
-    xls2json(name)
-    json2xform(name)
-
-if __name__=="__main__":
-    name = sys.argv[1]
-    xls2xform(name)
+if __name__ == '__main__':
+    path_to_excel_file = sys.argv[1]
+    survey = create_survey_from_path(path_to_excel_file)
+    directory, filename = os.path.split(path_to_excel_file)
+    path_to_xform = os.path.join(directory, survey.id_string() + ".xml")
+    survey.print_xform_to_file(path_to_xform)

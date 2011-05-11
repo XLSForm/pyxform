@@ -25,7 +25,7 @@ class BasicJson2XFormTests(TestCase):
         both times.
         """
         survey = Survey(name=u"SampleSurvey")
-        q = create_survey_element_from_dict({u'type':u'text', u'name':u'name'})
+        q = create_survey_element_from_dict({u'type':u'text', u'name':u'name', u'label':u'label'})
         survey.add_child(q)
         
         str1 = survey.to_xml()

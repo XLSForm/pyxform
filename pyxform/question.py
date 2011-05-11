@@ -59,7 +59,7 @@ class Option(SurveyElement):
     def __init__(self, *args, **kwargs):
         d = {
             self.LABEL : kwargs[self.LABEL],
-            self.NAME : kwargs[self.NAME],
+            self.NAME : unicode(kwargs[self.NAME]),
             }
         SurveyElement.__init__(self, **d)
 
@@ -72,6 +72,9 @@ class Option(SurveyElement):
         item.appendChild(self.xml_value())
         return item
 
+    def validate(self):
+        pass
+
 
 class MultipleChoiceQuestion(Question):
     def __init__(self, *args, **kwargs):
@@ -80,7 +83,10 @@ class MultipleChoiceQuestion(Question):
             kwargs_copy.pop(u"children", [])
         Question.__init__(self, *args, **kwargs_copy)
         for choice in choices:
-            self.add_choice(**choice)
+            try:
+                self.add_choice(**choice)
+            except KeyError:
+                raise KeyError("An option for this question is missing a name or a label.", kwargs)
         
     def validate(self):
         Question.validate(self)
@@ -102,3 +108,8 @@ class MultipleChoiceQuestion(Question):
         for n in [o.xml() for o in self._children]:
             result.appendChild(n)                
         return result
+
+class SelectOneQuestion(MultipleChoiceQuestion):
+    def __init__(self, *args, **kwargs):
+        super(SelectOneQuestion, self).__init__(*args, **kwargs)
+        self._dict[self.TYPE] = u"select one"

@@ -1,76 +1,47 @@
 from subprocess import Popen, PIPE
-import os, re
+import os, re, sys
+from collections import defaultdict
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "java_lib", "ODK Validate.jar")
 
-class ValidateException(Exception):
-    def __init__(self, flag, message):
-        self.flag = flag
-        self.message = message
-    
-	def __str__(self):
-	    return repr(self.message)
-
-class ValidateError(ValidateException):
-    pass
-
-class ValidateWarning(ValidateException):
-    pass
-
 # Only the modded headless version of ODK Validate returns these codes.
-#  see: lonely_java_src/FormValidator.java
+# see: lonely_java_src/FormValidator.java
 HEADLESS_ODK_VALIDATE_REGEXS = {
-    'result': r"\nResult: (.*)$",
-    'error': r"\nError: (.*)$"
-}
+    'result': r"^Result: (.*)$",
+    'error': r"^Error: (.*)$",
+    }
 
-class XFormValidationStatus:
-    def __init__(self):
-        self.valid = False
-    def set_flag(self, exc, e):
-        self.exc = exc
-        self.flag = e.flag
-        self.message = e.message
-    def __str__(self):
-        return "%s: %s" % (self.flag, self.message)
+class XFormValidator(object):
 
-def check_xform(filename):
-    status = XFormValidationStatus()
-    try:
-        validate_xform(filename)
-    except ValidateWarning, e:
-        if re.match("valid", e.flag, re.I): status.valid = True
-        status.set_flag("Warning", e)
-    except ValidateError, e:
-        status.set_flag("Error", e)
-    return status
+    def _run_odk_validate(self, path_to_xform):
+        self._path_to_xform = path_to_xform
+        stdout, stderr = Popen(["java", "-jar", ODK_VALIDATE_JAR, self._path_to_xform], stdout=PIPE, stderr=PIPE).communicate()
+        self._odk_validate_output = (stdout + stderr).split('\n')
 
-def validate_xform(p2x):
-    jar_output = Popen(["java", "-jar", ODK_VALIDATE_JAR, p2x], stdout=PIPE, stderr=PIPE).communicate()
-    
-    # since i'm not sure whether errors get pumped to stderr/stdout, so I'll just
-    # mush all the output together...
-    result_str = "\n".join(jar_output)
+    def get_odk_validate_output(self):
+        return "\n".join(self._odk_validate_output)
 
-    # Andrew added this print statement because check_xform wasn't
-    # throwing the following error:
-    # Parsing form...
-    # Title: "Practice"
-    # no <translation>s defined
-    #     Problem found at nodeset: /html/head/model/itext
-    #     With element <itext/>
-    # Result: Invalid
-    print result_str
-    
-    error_match = re.search(HEADLESS_ODK_VALIDATE_REGEXS['error'], result_str, flags=re.IGNORECASE)
-    result_match = re.search(HEADLESS_ODK_VALIDATE_REGEXS['result'], result_str, flags=re.IGNORECASE)
-    
-    if error_match:
-        error_flag = error_match.group(1)
-        error_msg = re.sub(HEADLESS_ODK_VALIDATE_REGEXS['error'], "", result_str).strip()
-        raise ValidateError(error_flag, error_msg)
-    elif result_match:
-        result_flag = result_match.group(1)
-        warning = re.sub(HEADLESS_ODK_VALIDATE_REGEXS['result'], "", result_str).strip()
-        raise ValidateWarning(result_flag, warning)
+    def _parse_odk_validate_output(self):
+        self._errors_and_result = defaultdict(list)
+        for line in self._odk_validate_output:
+            for key, regexp in HEADLESS_ODK_VALIDATE_REGEXS.items():
+                m = re.search(regexp, line)
+                if m:
+                    self._errors_and_result[key].append(m.group(1))
+
+    def is_valid(self):
+        return self._errors_and_result['result']==['Valid']
+
+    def validate(self, path_to_xform):
+        self._run_odk_validate(path_to_xform)
+        self._parse_odk_validate_output()
+        if not self.is_valid():
+            raise Exception(self.get_odk_validate_output())
+
+def check_xform(path):
+    validator = XFormValidator()
+    validator.validate(path)
+
+if __name__ == '__main__':
+    check_xform(sys.argv[1])
