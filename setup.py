@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name = "pyxform",
-    version = "0.6",
+    version = "0.7",
     author = "Columbia University, Modi Research Group",
     author_email = "andrew.ei.marder@gmail.com",
     description = ("A library for authoring XForms for ODK Collect."),
