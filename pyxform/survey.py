@@ -51,7 +51,7 @@ class Survey(Section):
 
     def xml_model(self):
         self._setup_translations()
-        if self._translations:
+        if self._languages != []:
             return node("model",
                         self.xml_translations(),
                         node("instance", self.xml_instance()),
@@ -63,30 +63,35 @@ class Survey(Section):
                     )
 
     def _setup_translations(self):
-        self._translations = defaultdict(dict)
-        for e in self.iter_children():
-            translation_keys = e.get_translation_keys()
-            for key in translation_keys.keys():
-                translation_key = translation_keys[key]
-                text = e.get(key)
-                if type(text)==dict:
-                    for lang in text.keys():
-                        if translation_key in self._translations[lang]:
-                            assert self._translations[lang][translation_key] == text[lang], "The labels for this translation key are inconsistent %(key)s %(label)s" % {"key" : translation_key, "label" : text[lang]}
-                        else:
-                            self._translations[lang][translation_key] = text[lang]
+        languages = set()
+        for survey_element in self.iter_children():
+            for display_element in ["label", "hint"]:
+                d = survey_element.get(display_element)
+                if type(d) == dict:
+                    for language in d.keys():
+                        languages.add(language)
+        self._languages = list(languages)
 
     def xml_translations(self):
         result = []
-        for lang in self._translations.keys():
-            result.append( node("translation", lang=lang) )
-            for name in self._translations[lang].keys():
-                result[-1].appendChild(
-                    node("text",
-                        node("value", self._translations[lang][name]),
-                        id=name
-                        )
-                    )
+        for language in self._languages:
+            translation_node = node("translation", lang=language)
+            result.append(translation_node)
+            for survey_element in self.iter_children():
+                for display_element in ["label", "hint"]:
+                    d = survey_element.get(display_element)
+                    if type(d) == dict and d != {}:
+                        text = d.get(language, u"-")
+                        translation_path = u":".join([
+                                survey_element.get_xpath(),
+                                display_element
+                                ])
+                        result[-1].appendChild(
+                            node("text",
+                                node("value", text),
+                                id=translation_path
+                                )
+                            )
         return node("itext", *result)
 
     def date_stamp(self):
