@@ -98,8 +98,14 @@ class Survey(Section):
             result = defaultdict(dict)
             for display_element in [u"label", u"hint"]:
                 d = survey_element.get(display_element)
-                if type(d) == dict:
-                    for language, text in d.items():
+                if type(d) == dict and d != {}:
+                    for language in self._languages:
+                        try:
+                            text = d[language]
+                        except KeyError:
+                            text = u"MISSING TRANSLATION"
+                            print "Missing %s translation %s" % \
+                                (language, str(d))
                         path = survey_element.get_xpath() + u":" + \
                             display_element
                         result[display_element][language] = \
