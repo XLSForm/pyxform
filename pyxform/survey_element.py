@@ -11,11 +11,11 @@ class SurveyElement(object):
     """
 
     #Supported media types for attaching to questions
-    SUPPORTED_MEDIA = {
+    SUPPORTED_MEDIA = [
         "image",
         "audio",
-        "video"
-        }
+        "video",
+        ]
     
 
     # the following are important keys for the underlying dict that
