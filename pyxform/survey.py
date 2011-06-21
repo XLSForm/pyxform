@@ -263,12 +263,13 @@ class Survey(Section):
         if validate:
             check_xform(path)
 
-    def to_xml(self):
-        temporary_file_name = "_temporary_file_used_to_validate_xform.xml"
-        temporary_file_path = os.path.abspath(temporary_file_name)
-        # this will throw an exception if the xml is not valid
-        self.print_xform_to_file(temporary_file_path)
-        os.remove(temporary_file_name)
+    def to_xml(self, validate=True):
+        if validate:
+            temporary_file_name = "_temporary_file_used_to_validate_xform.xml"
+            temporary_file_path = os.path.abspath(temporary_file_name)
+            # this will throw an exception if the xml is not valid
+            self.print_xform_to_file(temporary_file_path)
+            os.remove(temporary_file_name)
         return self._to_xml()
 
     def instantiate(self):
