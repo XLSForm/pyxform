@@ -216,17 +216,17 @@ def render_survey_package(survey_package):
         survey.add_child(create_survey_element_from_dict(child))
     return survey
 
-def create_survey(
-    name_of_main_section, sections,
+def create_survey(name, main_section, sections={},
     id_string=None, question_type_dictionary=None
     ):
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
     builder.set_question_type_dictionary(question_type_dictionary)
-    assert name_of_main_section in sections, name_of_main_section
-    survey = builder.create_survey_element_from_dict(
-        sections[name_of_main_section]
-        )
+    survey = builder.create_survey_element_from_dict({
+        'type': 'survey',
+        'children': main_section,
+        'name': unicode(name)
+    })
     survey.set_id_string(id_string)
     return survey
 

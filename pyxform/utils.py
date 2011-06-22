@@ -13,6 +13,9 @@ XFORM_TAG_REGEXP = "%(start)s%(char)s*" % {"start" : TAG_START_CHAR, "char" : TA
 def is_valid_xml_tag(tag):
     return re.search(r"^" + XFORM_TAG_REGEXP + r"$", tag)
 
+def is_string(x):
+    return isinstance(x, basestring)
+
 def node(tag, *args, **kwargs):
     result = Element(tag)
     for k, v in kwargs.iteritems():
@@ -24,11 +27,11 @@ def node(tag, *args, **kwargs):
         text_node.data = unicode_args[0]
         result.appendChild(text_node)
     for n in args:
-        if type(n)!=unicode:
+        if not is_string(n):
             try:
                 result.appendChild(n)
             except:
-                raise Exception(type(n), n)
+                raise Exception("Could not appendChild: %s" % n)
     return result
 
 def get_pyobj_from_json(str_or_path):
