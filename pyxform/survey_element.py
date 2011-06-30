@@ -10,6 +10,14 @@ class SurveyElement(object):
     question_type_dictionary.
     """
 
+    #Supported media types for attaching to questions
+    SUPPORTED_MEDIA = [
+        "image",
+        "audio",
+        "video",
+        ]
+    
+
     # the following are important keys for the underlying dict that
     # describes this survey element
     NAME = u"name"
@@ -18,6 +26,7 @@ class SurveyElement(object):
     TYPE = u"type"
     BIND = u"bind"
     CONTROL = u"control"
+    MEDIA = u"media"
     # this node will also have a parent and children, like a tree!
     # these will not be stored in the dict.
     PARENT = u"parent"
@@ -30,6 +39,7 @@ class SurveyElement(object):
         TYPE : u"",
         BIND : {},
         CONTROL : {},
+        MEDIA : u""
         }
 
     def __init__(self, *args, **kwargs):
@@ -89,7 +99,7 @@ class SurveyElement(object):
         if not is_valid_xml_tag(self.get_name()):
             msg = "The name of this survey element is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods."
             raise Exception(self.get_name(), msg)                
-    
+
     def _set_parent(self, parent):
         self._parent = parent
 
@@ -149,14 +159,23 @@ class SurveyElement(object):
     def get_translation_keys(self):
         return {
             u"label" : u"%s:label" % self.get_xpath(),
-            u"hint" : u"%s:hint" % self.get_xpath(),
+            u"hint" : u"%s:hint" % self.get_xpath()
             }
-
+      
+    def get_media_keys(self):
+        return {
+            u"media" : u"%s:media" % self.get_xpath()
+            }
+    
+    
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):
         if type(self.get_label())==dict:
             d = self.get_translation_keys()
             return node(u"label", ref="jr:itext('%s')" % d[u"label"])
+        elif type(self.get_media())==dict:
+            d = self.get_media_keys()
+            return node(u"label", ref="jr:itext('%s')" %  d[u"media"])
         else:
             return node(u"label", self.get_label())
 
