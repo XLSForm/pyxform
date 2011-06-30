@@ -1,4 +1,4 @@
-pyxform v0.85
+pyxform v0.86
 =============
 
 pyxform is a Python library that makes writing XForms for ODK Collect
