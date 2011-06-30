@@ -24,7 +24,11 @@ class Survey(Section):
         self._xpath = {}
         self._parent = None
         self._created = datetime.now()
-        self._id_string = kwargs.get(u'id_string')
+        if u"id_string" not in kwargs:
+            kwargs[u"id_string"] = kwargs.get(u"name", u"")
+        self._id_string = unicode(kwargs[u'id_string'])
+        self._title = unicode(kwargs.get(u'title', self._id_string))
+        self._file_name = unicode(kwargs.get(u'file_name', self._id_string))
 
     def xml(self):
         """
@@ -34,20 +38,12 @@ class Survey(Section):
         self._setup_xpath_dictionary()
         return node(u"h:html",
                     node(u"h:head",
-                         node(u"h:title", self.get_name()),
+                         node(u"h:title", self._title),
                          self.xml_model()
                         ),
                     node(u"h:body", *self.xml_control()),
                     **nsmap
                     )
-
-        # return E(ns("h", "html"),
-        #          E(ns("h", "head"),
-        #            E(ns("h", "title"), self.get_name()),
-        #            self.xml_model()
-        #            ),
-        #          E(ns("h", "body"), *self.xml_control())
-        #          )
 
     def xml_model(self):
         self._setup_media()
