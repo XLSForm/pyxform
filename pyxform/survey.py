@@ -100,8 +100,8 @@ class Survey(Section):
                             text = d[language]
                         except KeyError:
                             text = u"MISSING TRANSLATION"
-                            print "Missing %s translation %s" % \
-                                (language, str(d))
+#                            print "Missing %s translation %s" % \
+#                                (language, str(d))
                         path = survey_element.get_xpath() + u":" + \
                             display_element
                         result[display_element][language] = \
