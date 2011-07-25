@@ -146,7 +146,11 @@ class SurveyReader(ExcelReader):
         let's make it a requirement that list-names have no spaces
         """
         for q in self._dict[SURVEY_SHEET]:
-            if TYPE not in q: raise Exception("Did not specify question type", q)
+            if TYPE not in q:
+                raise Exception(
+                    "The following question did not specify a question type:\n" + \
+                    json.dumps(q, indent=4)
+                    )
             question_type = q[TYPE]
             question_type.strip()
             re.sub(r"\s+", " ", question_type)
