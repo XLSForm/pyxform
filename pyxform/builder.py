@@ -286,6 +286,4 @@ def create_survey_from_path(path):
         "main_section": sections.get(section_name(file_name)),
         "sections": sections,
         }
-    import json
-    print json.dumps(kwargs, indent=4)
     return create_survey(**kwargs)
