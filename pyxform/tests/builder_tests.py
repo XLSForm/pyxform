@@ -2,7 +2,9 @@ from unittest import TestCase
 from pyxform.builder import create_survey_from_path, SurveyElementBuilder
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
+import utils
 import os
+
 
 class BuilderTests(TestCase):
 
@@ -17,11 +19,11 @@ class BuilderTests(TestCase):
         question.set(InputQuestion.LABEL, u"How old are you?")
         survey_out.add_child(question)
         self.survey_out_dict = survey_out.to_dict()
-        print_pyobj_to_json(self.survey_out_dict, "pyxform/tests/how_old_are_you.json")
+        print_pyobj_to_json(self.survey_out_dict, utils.path_to_text_fixture("how_old_are_you.json"))
 
     def tearDown(self):
         import os
-        os.remove("pyxform/tests/how_old_are_you.json")
+        os.remove(utils.path_to_text_fixture("how_old_are_you.json"))
 
     def test_create_table_from_dict(self):
         d = {
@@ -84,7 +86,7 @@ class BuilderTests(TestCase):
         self.assertEqual(g.to_dict(), expected_dict)
 
     def test_specify_other(self):
-        path = os.path.join(self.this_directory, "specify_other.xls")
+        path = utils.path_to_text_fixture("specify_other.xls")
         survey = create_survey_from_path(path)
         expected_dict = {
             u'name': 'specify_other',
@@ -119,7 +121,7 @@ class BuilderTests(TestCase):
         self.assertEqual(survey.to_dict(), expected_dict)
 
     def test_include(self):
-        path = os.path.join(self.this_directory, "include.xls")
+        path = utils.path_to_text_fixture("include.xls")
         survey = create_survey_from_path(path)
         expected_dict = {
             u'name': 'include',
@@ -148,14 +150,14 @@ class BuilderTests(TestCase):
         self.assertEqual(survey.to_dict(), expected_dict)
 
     def test_include_json(self):
-        path = os.path.join(self.this_directory, "include_json.xls")
+        path = utils.path_to_text_fixture("include_json.xls")
         survey_in = create_survey_from_path(path)
 
         for k, v in survey_in.to_dict().items():
             if k!="name": self.assertEqual(v, self.survey_out_dict[k])
 
     def test_loop(self):
-        path = os.path.join(self.this_directory, "loop.xls")
+        path = utils.path_to_text_fixture("loop.xls")
         survey = create_survey_from_path(path)
 
         expected_dict = {

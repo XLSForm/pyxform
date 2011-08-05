@@ -3,6 +3,8 @@ from pyxform.builder import create_survey_from_path
 from pyxform.xls2json import SurveyReader, print_pyobj_to_json
 from pyxform import Survey, InputQuestion
 import os
+import utils
+
 
 class DumpAndLoadTests(TestCase):
 
@@ -24,14 +26,13 @@ class DumpAndLoadTests(TestCase):
         self.surveys = {}
         self.this_directory = os.path.dirname(__file__)
         for filename in self.excel_files:
-            path = os.path.join(self.this_directory, filename)
+            path = utils.path_to_text_fixture(filename)
             self.surveys[filename] = create_survey_from_path(path)
-    
+
     def test_load_from_dump(self):
         for filename, survey in self.surveys.items():
             survey.json_dump()
-            path = os.path.join(self.this_directory,
-                                survey.get_name() + ".json")
+            path = survey.get_name() + ".json"
             survey_from_dump = create_survey_from_path(path)
             self.assertEqual(survey.to_dict(), survey_from_dump.to_dict())
 

@@ -4,11 +4,13 @@ Testing simple cases for Xls2Json
 from unittest import TestCase
 from pyxform.xls2json import SurveyReader
 from pyxform.builder import create_survey_element_from_dict
+import utils
+
 
 class GroupTests(TestCase):
 
     def test_json(self):
-        x = SurveyReader("pyxform/tests/group.xls")
+        x = SurveyReader(utils.path_to_text_fixture("group.xls"))
         x_results = x.to_dict()
         expected_dict = {
             u'name': 'group',
@@ -41,7 +43,7 @@ class GroupTests(TestCase):
         self.assertEqual(x_results, expected_dict)
 
     def test_equality_of_to_dict(self):
-        x = SurveyReader("pyxform/tests/group.xls")
+        x = SurveyReader(utils.path_to_text_fixture("group.xls"))
         x_results = x.to_dict()
 
         survey_object = create_survey_element_from_dict(x_results)
