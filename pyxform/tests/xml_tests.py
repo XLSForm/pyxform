@@ -32,7 +32,7 @@ class XMLTests(TestCase):
           <good_day/>
         </yes_or_no_question>
       </instance>
-      <bind nodeset="/yes_or_no_question/good_day" required="true()" type="select1"/>
+      <bind nodeset="/yes_or_no_question/good_day" type="select1"/>
     </model>
   </h:head>
   <h:body>

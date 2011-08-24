@@ -4,8 +4,9 @@ Testing simple cases for Xls2Json
 from unittest import TestCase
 from pyxform.xls2json import SurveyReader
 import utils
-
 import os
+
+
 def absolute_path(f, file_name):
     directory = os.path.dirname(f)
     return os.path.join(directory, file_name)
@@ -36,7 +37,6 @@ class BasicXls2JsonApiTests(TestCase):
             ]
         self.assertEqual(x_results[u"children"], expected_dict)
 
-
     def test_gps(self):
         x = SurveyReader(utils.path_to_text_fixture("gps.xls"))
 
@@ -44,7 +44,6 @@ class BasicXls2JsonApiTests(TestCase):
 
         self.assertEqual(x.to_dict()[u"children"], expected_dict)
 
-    
     def test_text_and_integer(self):
         x = SurveyReader(utils.path_to_text_fixture("text_and_integer.xls"))
 

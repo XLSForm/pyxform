@@ -39,7 +39,7 @@ class Json2XformQuestionValidationTests(TestCase):
         expected_string_control_xml = u"""<input ref="/test/enumerator_name"><label ref="jr:itext('/test/enumerator_name:label')"/></input>"""
         
         expected_string_binding_xml = u"""
-        <bind nodeset="/test/enumerator_name" required="true()" type="string"/>
+        <bind nodeset="/test/enumerator_name" type="string"/>
         """.strip()
         
         self.s.add_child(q)
@@ -67,7 +67,7 @@ class Json2XformQuestionValidationTests(TestCase):
         expected_select_one_control_xml = u"""<select1 ref="/test/qname"><label ref="jr:itext('/test/qname:label')"/><item><label ref="jr:itext('/test/qname/a:label')"/><value>a</value></item><item><label ref="jr:itext('/test/qname/b:label')"/><value>b</value></item></select1>"""
         
         expected_select_one_binding_xml = u"""
-        <bind nodeset="/test/qname" required="true()" type="select1"/>
+        <bind nodeset="/test/qname" type="select1"/>
         """.strip()
         
         q = create_survey_element_from_dict(simple_select_one_json)
@@ -81,14 +81,19 @@ class Json2XformQuestionValidationTests(TestCase):
         """
         not sure how integer questions should show up.
         """
-        simple_integer_question = {u"text": {u"f": u"fc", u"e": u"ec"}, u"type": u"integer", u"name": u"integer_q", u"attributes": {}}
+        simple_integer_question = {
+            u"label": {u"f": u"fc", u"e": u"ec"},
+            u"type": u"integer",
+            u"name": u"integer_q",
+            u"attributes": {}
+            }
 
         expected_integer_control_xml = u"""
         <input ref="/test/integer_q"><label ref="jr:itext('/test/integer_q:label')"/></input>
         """.strip()
         
         expected_integer_binding_xml = u"""
-        <bind nodeset="/test/integer_q" required="true()" type="int"/>
+        <bind nodeset="/test/integer_q" type="int"/>
         """.strip()
         
         q = create_survey_element_from_dict(simple_integer_question)
@@ -105,14 +110,14 @@ class Json2XformQuestionValidationTests(TestCase):
         """
         not sure how date questions should show up.
         """
-        simple_date_question = {u"text": {u"f": u"fd", u"e": u"ed"}, u"type": u"date", u"name": u"date_q", u"attributes": {}}
+        simple_date_question = {u"label": {u"f": u"fd", u"e": u"ed"}, u"type": u"date", u"name": u"date_q", u"attributes": {}}
         
         expected_date_control_xml = u"""
         <input ref="/test/date_q"><label ref="jr:itext('/test/date_q:label')"/></input>
         """.strip()
         
         expected_date_binding_xml = u"""
-        <bind nodeset="/test/date_q" required="true()" type="date"/>
+        <bind nodeset="/test/date_q" type="date"/>
         """.strip()
         
         q = create_survey_element_from_dict(simple_date_question)
@@ -135,7 +140,7 @@ class Json2XformQuestionValidationTests(TestCase):
         expected_phone_number_control_xml = u"""<input ref="/test/phone_number_q"><label ref="jr:itext('/test/phone_number_q:label')"/><hint>Enter numbers only.</hint></input>"""
 
         expected_phone_number_binding_xml = u"""
-        <bind constraint="regex(., '^\d*$')" nodeset="/test/phone_number_q" required="true()" type="string"/>
+        <bind constraint="regex(., '^\d*$')" nodeset="/test/phone_number_q" type="string"/>
         """.strip()
         
         q = create_survey_element_from_dict(simple_phone_number_question)
@@ -163,7 +168,7 @@ class Json2XformQuestionValidationTests(TestCase):
         expected_select_all_control_xml = u"""<select ref="/test/select_all_q"><label ref="jr:itext('/test/select_all_q:label')"/><hint>Select all that apply.</hint><item><label ref="jr:itext('/test/select_all_q/f:label')"/><value>f</value></item><item><label ref="jr:itext('/test/select_all_q/g:label')"/><value>g</value></item><item><label ref="jr:itext('/test/select_all_q/h:label')"/><value>h</value></item><item><label>None</label><value>none</value></item></select>"""
         
         expected_select_all_binding_xml = u"""
-<bind constraint="(.='none' or not(selected(., 'none')))" nodeset="/test/select_all_q" required="true()" type="select"/>
+<bind constraint="(.='none' or not(selected(., 'none')))" nodeset="/test/select_all_q" type="select"/>
         """.strip()
         
         q = create_survey_element_from_dict(simple_select_all_question)
@@ -177,14 +182,14 @@ class Json2XformQuestionValidationTests(TestCase):
         """
         not sure how decimal should show up.
         """
-        simple_decimal_question = {u"text": {u"f": u"f text", u"e": u"e text"}, u"type": u"decimal", u"name": u"decimal_q", u"attributes": {}}
+        simple_decimal_question = {u"label": {u"f": u"f text", u"e": u"e text"}, u"type": u"decimal", u"name": u"decimal_q", u"attributes": {}}
 
         expected_decimal_control_xml = u"""
         <input ref="/test/decimal_q"><label ref="jr:itext('/test/decimal_q:label')"/></input>
         """.strip()
         
         expected_decimal_binding_xml = u"""
-        <bind nodeset="/test/decimal_q" required="true()" type="decimal"/>
+        <bind nodeset="/test/decimal_q" type="decimal"/>
         """.strip()
         
         q = create_survey_element_from_dict(simple_decimal_question)
