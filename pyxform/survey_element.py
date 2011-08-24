@@ -3,27 +3,44 @@ from collections import defaultdict
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
 from xls2json import print_pyobj_to_json
 
+
 class SurveyElement(object):
     """
-    SurveyElement is the base class we'll looks for the following keys in kwargs: name,
-    label, hint, type, bind, control, parent, children, and
-    question_type_dictionary.
+    SurveyElement is the base class we'll looks for the following keys
+    in kwargs: name, label, hint, type, bind, control, parent,
+    children, and question_type_dictionary.
     """
+
+    binding_conversions = {
+        "yes": "true()",
+        "Yes": "true()",
+        "YES": "true()",
+        "true": "true()",
+        "True": "true()",
+        "TRUE": "true()",
+        "no": "false()",
+        "No": "false()",
+        "NO": "false()",
+        "false": "false()",
+        "False": "false()",
+        "FALSE": "false()"
+    }
 
     #Supported media types for attaching to questions
     SUPPORTED_MEDIA = [
         "image",
         "audio",
-        "video",
-        ]
-    
+        "video"
+    ]
 
     # the following are important keys for the underlying dict that
     # describes this survey element
     NAME = u"name"
     LABEL = u"label"
     HINT = u"hint"
+    DEFAULT = u"default"
     TYPE = u"type"
+    APPEARANCE = u"appearance"
     BIND = u"bind"
     CONTROL = u"control"
     MEDIA = u"media"
@@ -33,13 +50,14 @@ class SurveyElement(object):
     CHILDREN = u"children"
 
     _DEFAULT_VALUES = {
-        NAME : u"",
-        LABEL : {},
-        HINT : {},
-        TYPE : u"",
-        BIND : {},
-        CONTROL : {},
-        MEDIA : u""
+        NAME: u"",
+        LABEL: {},
+        HINT: {},
+        DEFAULT: {},
+        TYPE: u"",
+        BIND: {},
+        CONTROL: {},
+        MEDIA: {}
         }
 
     def __init__(self, *args, **kwargs):
@@ -72,7 +90,7 @@ class SurveyElement(object):
         slight hack, this method also accepts a list of elements.
         """
         # I should probably rename this function, because now it handles lists
-        if type(element)==list:
+        if type(element) == list:
             for list_element in element:
                 self.add_child(list_element)
         else:
@@ -86,7 +104,7 @@ class SurveyElement(object):
         return self._children
 
     def get(self, key):
-        # name, type, control, bind, label, hint
+        # name, type, control, bind, label, hint, default
         return self._dict[key]
 
     def set(self, key, value):
@@ -144,7 +162,8 @@ class SurveyElement(object):
         result[u"children"] = [e.to_dict() for e in self._children]
         # remove any keys with empty values
         for k, v in result.items():
-            if not v: del result[k]
+            if not v:
+                del result[k]
         return result
 
     def json_dump(self, path=""):
@@ -158,42 +177,50 @@ class SurveyElement(object):
 
     def get_translation_keys(self):
         return {
-            u"label" : u"%s:label" % self.get_xpath(),
-            u"hint" : u"%s:hint" % self.get_xpath()
+            u"label": u"%s:label" % self.get_xpath(),
+            u"hint": u"%s:hint" % self.get_xpath()
             }
-      
+
     def get_media_keys(self):
         return {
-            u"media" : u"%s:media" % self.get_xpath()
+            u"media": u"%s:media" % self.get_xpath()
             }
-    
-    
+
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):
-        if type(self.get_label())==dict:
+        if not self.get_label() and not self.get(self.TYPE) == "group"and len(self.get('media')) == 0:
+            return None
+
+        if type(self.get_label()) == dict or not len(self.get('media')) == 0:
+            if len(self.get_label()) == 0 and self.get(self.TYPE) == "group":
+                return None
             d = self.get_translation_keys()
             return node(u"label", ref="jr:itext('%s')" % d[u"label"])
-        elif type(self.get_media())==dict:
-            d = self.get_media_keys()
-            return node(u"label", ref="jr:itext('%s')" %  d[u"media"])
         else:
-            return node(u"label", self.get_label())
+            label, outputInserted = self.get_root().insert_output_values(self.get_label())
+            return node(u"label", label, toParseString=outputInserted)
 
     def xml_hint(self):
-        if type(self.get_hint())==dict:
+        if type(self.get_hint()) == dict:
             d = self.get_translation_keys()
             return node(u"hint", ref="jr:itext('%s')" % d[u"hint"])
         else:
-            return node(u"hint", self.get_hint())
+            hint, outputInserted = self.get_root().insert_output_values(self.get_hint())
+            return node(u"hint", hint, toParseString=outputInserted)
 
     def xml_label_and_hint(self):
         """
         Return a list containing one node for the label and if there
         is a hint one node for the hint.
         """
-        if self.get_hint():
+        if self.get_label() and self.get_hint():
             return [self.xml_label(), self.xml_hint()]
-        return [self.xml_label()]
+        elif self.get_label():
+            return [self.xml_label()]
+        elif self.get_hint():
+            return [self.xml_hint()]
+        else:
+            return None
 
     def xml_binding(self):
         """
@@ -203,6 +230,8 @@ class SurveyElement(object):
         d = self.get_bind().copy()
         if d:
             for k, v in d.items():
+                if v in self.binding_conversions:
+                    v = self.binding_conversions[v]
                 d[k] = survey.insert_xpaths(v)
             return node(u"bind", nodeset=self.get_xpath(), **d)
         return None
@@ -214,7 +243,8 @@ class SurveyElement(object):
         result = []
         for e in self.iter_children():
             xml_binding = e.xml_binding()
-            if xml_binding!=None: result.append(xml_binding)
+            if xml_binding != None:
+                result.append(xml_binding)
         return result
 
     def xml_control(self):
