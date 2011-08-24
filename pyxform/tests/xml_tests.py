@@ -19,11 +19,11 @@ class XMLTests(TestCase):
           <text id="/yes_or_no_question/good_day:label">
             <value>have you had a good day today?</value>
           </text>
-          <text id="/yes_or_no_question/good_day/yes:label">
-            <value>yes</value>
-          </text>
           <text id="/yes_or_no_question/good_day/no:label">
             <value>no</value>
+          </text>
+          <text id="/yes_or_no_question/good_day/yes:label">
+            <value>yes</value>
           </text>
         </translation>
       </itext>
@@ -48,7 +48,8 @@ class XMLTests(TestCase):
       </item>
     </select1>
   </h:body>
-</h:html>'''
-        xml_str = re.sub(u">\s+<", u"><", xml_str)
+</h:html>
+'''
         xml_str = re.sub(r"yes_or_no_question_2011_04_22", self.survey.id_string(), xml_str)
+        self.maxDiff = None
         self.assertEquals(xml_str, self.survey.to_xml())
