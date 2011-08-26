@@ -1,7 +1,8 @@
 from unittest import TestCase
-from pyxform.builder import create_survey_from_path, SurveyElementBuilder
+from pyxform.builder import create_survey_from_path, SurveyElementBuilder, create_survey
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
+from pyxform import file_utils
 import utils
 import os
 
@@ -87,7 +88,8 @@ class BuilderTests(TestCase):
 
     def test_specify_other(self):
         path = utils.path_to_text_fixture("specify_other.xls")
-        survey = create_survey_from_path(path)
+        survey = create_survey(**file_utils. \
+                                    load_xls_to_dict(path))
         expected_dict = {
             u'name': 'specify_other',
             u'type': u'survey',
@@ -122,7 +124,9 @@ class BuilderTests(TestCase):
 
     def test_include(self):
         path = utils.path_to_text_fixture("include.xls")
-        survey = create_survey_from_path(path)
+        survey = create_survey(**file_utils. \
+                                    load_xls_to_dict(path))
+#        survey = create_survey_from_path(path)
         expected_dict = {
             u'name': 'include',
             u'type': u'survey',
@@ -151,15 +155,17 @@ class BuilderTests(TestCase):
 
     def test_include_json(self):
         path = utils.path_to_text_fixture("include_json.xls")
-        survey_in = create_survey_from_path(path)
-
+        survey_in = create_survey(**file_utils. \
+                                    load_xls_to_dict(path))
+#        survey_in = create_survey_from_path(path)
         for k, v in survey_in.to_dict().items():
             if k!="name": self.assertEqual(v, self.survey_out_dict[k])
 
     def test_loop(self):
         path = utils.path_to_text_fixture("loop.xls")
-        survey = create_survey_from_path(path)
-
+        survey = create_survey(**file_utils. \
+                                    load_xls_to_dict(path))
+#        survey = create_survey_from_path(path)
         expected_dict = {
             u'name': 'loop',
             u'type': u'survey',
