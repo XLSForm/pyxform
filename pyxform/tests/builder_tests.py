@@ -87,9 +87,7 @@ class BuilderTests(TestCase):
         self.assertEqual(g.to_dict(), expected_dict)
 
     def test_specify_other(self):
-        path = utils.path_to_text_fixture("specify_other.xls")
-        survey = create_survey(**file_utils. \
-                                    load_xls_to_dict(path))
+        survey = utils.create_survey_from_fixture("specify_other", filetype="xls")
         expected_dict = {
             u'name': 'specify_other',
             u'type': u'survey',
@@ -123,10 +121,7 @@ class BuilderTests(TestCase):
         self.assertEqual(survey.to_dict(), expected_dict)
 
     def test_include(self):
-        path = utils.path_to_text_fixture("include.xls")
-        survey = create_survey(**file_utils. \
-                                    load_xls_to_dict(path))
-#        survey = create_survey_from_path(path)
+        survey = utils.create_survey_from_fixture("include", filetype="xls")
         expected_dict = {
             u'name': 'include',
             u'type': u'survey',
@@ -154,18 +149,12 @@ class BuilderTests(TestCase):
         self.assertEqual(survey.to_dict(), expected_dict)
 
     def test_include_json(self):
-        path = utils.path_to_text_fixture("include_json.xls")
-        survey_in = create_survey(**file_utils. \
-                                    load_xls_to_dict(path))
-#        survey_in = create_survey_from_path(path)
+        survey_in = utils.create_survey_from_fixture("include_json", filetype="xls")
         for k, v in survey_in.to_dict().items():
             if k!="name": self.assertEqual(v, self.survey_out_dict[k])
 
     def test_loop(self):
-        path = utils.path_to_text_fixture("loop.xls")
-        survey = create_survey(**file_utils. \
-                                    load_xls_to_dict(path))
-#        survey = create_survey_from_path(path)
+        survey = utils.create_survey_from_fixture("loop", filetype="xls")
         expected_dict = {
             u'name': 'loop',
             u'type': u'survey',
