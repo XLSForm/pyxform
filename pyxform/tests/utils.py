@@ -6,7 +6,6 @@ def path_to_text_fixture(filename):
 
 
 from pyxform.builder import create_survey_from_path
-from pyxform import file_utils
 from pyxform.xls2json import SurveyReader
 
 def create_survey_from_fixture(fixture_name, filetype="xls"):
