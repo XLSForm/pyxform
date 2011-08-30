@@ -111,8 +111,35 @@ def xls_to_dict(path):
     return _dict
 
 def csv_to_dict(path):
-    _dict = {}
-    raise NotImplementedError("CSV not supported yet")
+    import csv
+    _dict = { u'survey': [],
+              u'choices': [] }
+    def first_column_as_sheet_name(row):
+        s_or_c = row[0]
+        content = row[1:]
+        if s_or_c == '':
+            s_or_c = None
+        if reduce(lambda x, y: x+y, content) == '':
+            # content is a list of empty strings
+            content = None
+        return (s_or_c, content)
+    with open(path, 'rU') as f:
+        reader = csv.reader(f)
+        push_mode = None
+        current_headers = None
+        for row in reader:
+            survey_or_choices, content = first_column_as_sheet_name(row)
+            if survey_or_choices != None:
+                push_mode = survey_or_choices
+                current_headers = None
+            if content != None:
+                if current_headers == None:
+                    current_headers = content
+                else:
+                    _d = {}
+                    for key, val in zip(current_headers, content):
+                        _d[key] = val
+                    _dict[push_mode].append(_d)
     return _dict
 
 class SpreadsheetReader(object):
