@@ -110,10 +110,10 @@ def xls_to_dict(path):
                 _dict[sheet.name].append(row_dict)
     return _dict
 
+import csv
+from collections import defaultdict
 def csv_to_dict(path):
-    import csv
-    _dict = { u'survey': [],
-              u'choices': [] }
+    _dict = defaultdict(list)
     def first_column_as_sheet_name(row):
         s_or_c = row[0]
         content = row[1:]
@@ -138,9 +138,10 @@ def csv_to_dict(path):
                 else:
                     _d = {}
                     for key, val in zip(current_headers, content):
-                        _d[key] = val
+                        if val != "":
+                            _d[key] = val
                     _dict[push_mode].append(_d)
-    return _dict
+    return dict(_dict)
 
 class SpreadsheetReader(object):
 
