@@ -40,7 +40,7 @@ class BasicXls2JsonApiTests(TestCase):
     def test_gps(self):
         x = SurveyReader(utils.path_to_text_fixture("gps.xls"))
 
-        expected_dict = [{u'type': u'gps', u'name': u'location'}]
+        expected_dict = [{u'type': u'gps', u'name': u'location', u'label': u'GPS'}]
 
         self.assertEqual(x.to_dict()[u"children"], expected_dict)
 
