@@ -2,7 +2,6 @@
 A Python script to convert excel files into JSON.
 """
 
-from xlrd import open_workbook
 import json
 import re
 import sys
@@ -37,27 +36,6 @@ SET_TITLE = u"set form title"
 SET_ID = u"set form id"
 SET_DEFAULT_LANG = u"set default language"
 
-#Conversion dictionary from user friendly column names to meaningful values
-col_name_conversions = {
-    "caption": u"label",
-    "appearance": u"control:appearance",
-    "relevance": u"bind:relevant",
-    "required": u"bind:required",
-    "read only": u"bind:readonly",
-    "constraint": u"bind:constraint",
-    "constraing message": u"bind:jr:constraintMsg",
-    "calculation": u"bind:calculate",
-    "command": u"type",
-    "tag": u"name",
-    "label": u"caption",
-    "relevant": u"bind:relevant",
-    "skippable": u"required",
-    "value": u"name",
-    "image": u"media:image",
-    "audio": u"media:audio",
-    "video": u"media:video",
-    "count": u"bind:jr:count"
-}
 
 group_name_conversions = {
     "looped group": u"repeat"
@@ -78,70 +56,7 @@ yes_no_conversions = {
         "FALSE": "false()"
     }
 
-def xls_to_dict(path):
-    """
-    Return a Python dictionary with a key for each worksheet
-    name. For each sheet there is a list of dictionaries, each
-    dictionary corresponds to a single row in the worksheet. A
-    dictionary has keys taken from the column headers and values
-    equal to the cell value for that row and column.
-    """
-    workbook = open_workbook(path)
-    _dict = {}
-    for sheet in workbook.sheets():
-        _dict[sheet.name] = []
-        for row in range(1, sheet.nrows):
-            row_dict = {}
-            for column in range(0, sheet.ncols):
-                key = sheet.cell(0, column).value
-
-                # Convert key from ui friendly to meaningful
-                if key in col_name_conversions:
-                    key = col_name_conversions[key]
-                # Special case for converting captions because
-                # they have languages
-                key = key.replace("caption", "label")
-
-                value = sheet.cell(row, column).value
-                if value is not None and value != "":
-                    row_dict[key] = value
-
-            if row_dict:
-                _dict[sheet.name].append(row_dict)
-    return _dict
-
-import csv
-from collections import defaultdict
-def csv_to_dict(path):
-    _dict = defaultdict(list)
-    def first_column_as_sheet_name(row):
-        s_or_c = row[0]
-        content = row[1:]
-        if s_or_c == '':
-            s_or_c = None
-        if reduce(lambda x, y: x+y, content) == '':
-            # content is a list of empty strings
-            content = None
-        return (s_or_c, content)
-    with open(path, 'rU') as f:
-        reader = csv.reader(f)
-        push_mode = None
-        current_headers = None
-        for row in reader:
-            survey_or_choices, content = first_column_as_sheet_name(row)
-            if survey_or_choices != None:
-                push_mode = survey_or_choices
-                current_headers = None
-            if content != None:
-                if current_headers == None:
-                    current_headers = content
-                else:
-                    _d = {}
-                    for key, val in zip(current_headers, content):
-                        if val != "":
-                            _d[key] = val
-                    _dict[push_mode].append(_d)
-    return dict(_dict)
+from pyxform import file_utils
 
 class SpreadsheetReader(object):
 
@@ -165,9 +80,9 @@ class SpreadsheetReader(object):
 
     def _parse_input(self):
         if self.filetype == "xls":
-            self._dict = xls_to_dict(self._path)
+            self._dict = file_utils.xls_to_dict(self._path)
         elif self.filetype == "csv":
-            self._dict = csv_to_dict(self._path)
+            self._dict = file_utils.csv_to_dict(self._path)
         self._sheet_names = self._dict.keys()
         self._set_choices_and_columns_sheet_name()
         self._strip_unicode_values()

@@ -1,30 +1,96 @@
 import os
 import glob
-from xls2json import SurveyReader
 import utils
+from xlrd import open_workbook
 
-def _section_name(path_or_file_name):
-    directory, filename = os.path.split(path_or_file_name)
-    _section_name, extension = os.path.splitext(filename)
-    return _section_name
+#Conversion dictionary from user friendly column names to meaningful values
+col_name_conversions = {
+    "caption": u"label",
+    "appearance": u"control:appearance",
+    "relevance": u"bind:relevant",
+    "required": u"bind:required",
+    "read only": u"bind:readonly",
+    "constraint": u"bind:constraint",
+    "constraing message": u"bind:jr:constraintMsg",
+    "calculation": u"bind:calculate",
+    "command": u"type",
+    "tag": u"name",
+    "label": u"caption",
+    "relevant": u"bind:relevant",
+    "skippable": u"required",
+    "value": u"name",
+    "image": u"media:image",
+    "audio": u"media:audio",
+    "video": u"media:video",
+    "count": u"bind:jr:count"
+}
 
-def load_xls_to_dict(path):
-    directory, file_name = os.path.split(path)
-    sections = {}
-    xls_files = glob.glob(os.path.join(directory, "*.xls"))
-    for xls_file_path in xls_files:
-        name = _section_name(xls_file_path)
-        excel_reader = SurveyReader(xls_file_path)
-        sections[name] = excel_reader.to_dict()
-    json_files = glob.glob(os.path.join(directory, "*.json"))
-    for json_file_path in json_files:
-        name = _section_name(json_file_path)
-        sections[name] = utils.get_pyobj_from_json(json_file_path)
-    return {
-        "title": _section_name(file_name),
-        "name_of_main_section": _section_name(file_name),
-        "sections": sections,
-        }
+def xls_to_dict(path):
+    """
+    Return a Python dictionary with a key for each worksheet
+    name. For each sheet there is a list of dictionaries, each
+    dictionary corresponds to a single row in the worksheet. A
+    dictionary has keys taken from the column headers and values
+    equal to the cell value for that row and column.
+    """
+    workbook = open_workbook(path)
+    _dict = {}
+    for sheet in workbook.sheets():
+        _dict[sheet.name] = []
+        for row in range(1, sheet.nrows):
+            row_dict = {}
+            for column in range(0, sheet.ncols):
+                key = sheet.cell(0, column).value
+
+                # Convert key from ui friendly to meaningful
+                if key in col_name_conversions:
+                    key = col_name_conversions[key]
+                # Special case for converting captions because
+                # they have languages
+                key = key.replace("caption", "label")
+
+                value = sheet.cell(row, column).value
+                if value is not None and value != "":
+                    row_dict[key] = value
+
+            if row_dict:
+                _dict[sheet.name].append(row_dict)
+    return _dict
+
+
+import csv
+from collections import defaultdict
+def csv_to_dict(path):
+    _dict = defaultdict(list)
+    def first_column_as_sheet_name(row):
+        s_or_c = row[0]
+        content = row[1:]
+        if s_or_c == '':
+            s_or_c = None
+        if reduce(lambda x, y: x+y, content) == '':
+            # content is a list of empty strings
+            content = None
+        return (s_or_c, content)
+    with open(path, 'rU') as f:
+        reader = csv.reader(f)
+        push_mode = None
+        current_headers = None
+        for row in reader:
+            survey_or_choices, content = first_column_as_sheet_name(row)
+            if survey_or_choices != None:
+                push_mode = survey_or_choices
+                current_headers = None
+            if content != None:
+                if current_headers == None:
+                    current_headers = content
+                else:
+                    _d = {}
+                    for key, val in zip(current_headers, content):
+                        if val != "":
+                            _d[key] = val
+                    _dict[push_mode].append(_d)
+    return dict(_dict)
+
 
 def load_csv_to_dict(path):
     # Note, this does not include sections
