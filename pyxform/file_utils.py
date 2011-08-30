@@ -59,9 +59,8 @@ def xls_to_dict(path):
 
 
 import csv
-from collections import defaultdict
 def csv_to_dict(path):
-    _dict = defaultdict(list)
+    _dict = {}
     def first_column_as_sheet_name(row):
         s_or_c = row[0]
         content = row[1:]
@@ -79,6 +78,8 @@ def csv_to_dict(path):
             survey_or_choices, content = first_column_as_sheet_name(row)
             if survey_or_choices != None:
                 push_mode = survey_or_choices
+                if push_mode not in _dict:
+                    _dict[push_mode] = []
                 current_headers = None
             if content != None:
                 if current_headers == None:
@@ -89,7 +90,7 @@ def csv_to_dict(path):
                         if val != "":
                             _d[key] = val
                     _dict[push_mode].append(_d)
-    return dict(_dict)
+    return _dict
 
 
 def load_csv_to_dict(path):
