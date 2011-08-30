@@ -91,16 +91,3 @@ def csv_to_dict(path):
                             _d[key] = val
                     _dict[push_mode].append(_d)
     return _dict
-
-
-def load_csv_to_dict(path):
-    # Note, this does not include sections
-    section_path = _section_name(path)
-    # sections = {
-    #     section_path: SurveyReader(path, filetype="csv").to_dict()
-    # }
-    # return {
-    #     "title": section_path,
-    #     "name_of_main_section": section_path,
-    #     "sections": sections,
-    #     }
