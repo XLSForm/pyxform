@@ -8,8 +8,17 @@ def _section_name(path_or_file_name):
     _section_name, extension = os.path.splitext(filename)
     return _section_name
 
-def load_xls_to_dict(path):
+def load_xls_to_dict(path, include_directory=True):
     directory, file_name = os.path.split(path)
+    main_section_name = _section_name(file_name)
+    sections = collect_compatible_files_in_directory(directory)
+    return {
+        "title": main_section_name,
+        "name_of_main_section": main_section_name,
+        "sections": sections,
+        }
+
+def collect_compatible_files_in_directory(directory):
     sections = {}
     xls_files = glob.glob(os.path.join(directory, "*.xls"))
     for xls_file_path in xls_files:
@@ -20,11 +29,7 @@ def load_xls_to_dict(path):
     for json_file_path in json_files:
         name = _section_name(json_file_path)
         sections[name] = utils.get_pyobj_from_json(json_file_path)
-    return {
-        "title": _section_name(file_name),
-        "name_of_main_section": _section_name(file_name),
-        "sections": sections,
-        }
+    return sections
 
 def load_csv_to_dict(path):
     # Note, this does not include sections

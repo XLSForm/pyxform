@@ -263,4 +263,4 @@ def create_survey_from_path(path):
     I think this should be phased out. [AD]
     """
     return create_survey(**file_utils. \
-                            load_xls_to_dict(path))
+                            load_xls_to_dict(path, include_directory=True))
