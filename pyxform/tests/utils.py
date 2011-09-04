@@ -11,7 +11,7 @@ from pyxform import file_utils
 def create_survey_from_fixture(fixture_name, filetype="xls"):
     if filetype == "xls":
         fixture_path = path_to_text_fixture("%s.xls" % fixture_name)
-        survey_dict = file_utils.load_xls_to_dict(fixture_path)
+        survey_dict = file_utils.load_xls_to_pkg_dict(fixture_path)
         return create_survey(**survey_dict)
     elif filetype == "csv":
         # fixture_path does not include the full file name
