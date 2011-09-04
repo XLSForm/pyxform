@@ -6,6 +6,7 @@ from pyxform import file_utils
 import utils
 import os
 
+FIXTURE_FILETYPE = "xls"
 
 class BuilderTests(TestCase):
 
@@ -87,7 +88,7 @@ class BuilderTests(TestCase):
         self.assertEqual(g.to_dict(), expected_dict)
 
     def test_specify_other(self):
-        survey = utils.create_survey_from_fixture("specify_other", filetype="xls")
+        survey = utils.create_survey_from_fixture("specify_other", filetype=FIXTURE_FILETYPE)
         expected_dict = {
             u'name': 'specify_other',
             u'type': u'survey',
@@ -121,7 +122,7 @@ class BuilderTests(TestCase):
         self.assertEqual(survey.to_dict(), expected_dict)
 
     def test_include(self):
-        survey = utils.create_survey_from_fixture("include", filetype="xls",
+        survey = utils.create_survey_from_fixture("include", filetype=FIXTURE_FILETYPE,
                                                   include_directory=True)
         expected_dict = {
             u'name': 'include',
@@ -150,13 +151,13 @@ class BuilderTests(TestCase):
         self.assertEqual(survey.to_dict(), expected_dict)
 
     def test_include_json(self):
-        survey_in = utils.create_survey_from_fixture("include_json", filetype="xls",
+        survey_in = utils.create_survey_from_fixture("include_json", filetype=FIXTURE_FILETYPE,
                                                      include_directory=True)
         for k, v in survey_in.to_dict().items():
             if k!="name": self.assertEqual(v, self.survey_out_dict[k])
 
     def test_loop(self):
-        survey = utils.create_survey_from_fixture("loop", filetype="xls")
+        survey = utils.create_survey_from_fixture("loop", filetype=FIXTURE_FILETYPE)
         expected_dict = {
             u'name': 'loop',
             u'type': u'survey',

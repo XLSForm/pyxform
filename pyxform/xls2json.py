@@ -153,7 +153,6 @@ class SpreadsheetReader(object):
             self.filetype = "xls"
         elif extension == ".csv":
             self.filetype = "csv"
-            raise NotImplementedError("CSVs not supported")
         self._path = path
         self._name = unicode(shortname)
         self._print_name = unicode(shortname)
