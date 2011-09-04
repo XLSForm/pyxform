@@ -1,6 +1,7 @@
 import os
 import glob
 import utils
+from xlrd import open_workbook
 
 from xls2json import SurveyReader
 
