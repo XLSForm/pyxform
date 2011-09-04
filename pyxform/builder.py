@@ -250,17 +250,18 @@ def create_survey(
     survey.set_def_lang(default_language)
     return survey
 
-
-def section_name(path_or_file_name):
-    directory, filename = os.path.split(path_or_file_name)
-    section_name, extension = os.path.splitext(filename)
-    return section_name
-
 from pyxform import file_utils
 
 def create_survey_from_path(path):
     """
     I think this should be phased out. [AD]
     """
-    return create_survey(**file_utils. \
-                            load_xls_to_pkg_dict(path, include_directory=True))
+    directory, file_name = os.path.split(path)
+    main_section_name = file_utils._section_name(file_name)
+    sections = file_utils.collect_compatible_files_in_directory(directory)
+    pkg = {
+        u'title': main_section_name,
+        u'name_of_main_section': main_section_name,
+        u'sections': sections
+    }
+    return create_survey(**pkg)

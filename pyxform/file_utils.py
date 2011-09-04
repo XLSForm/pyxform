@@ -17,20 +17,6 @@ def load_file_to_dict(path):
         name = _section_name(path)
         return (name, utils.get_pyobj_from_json(path))
 
-def load_xls_to_pkg_dict(path, include_directory=True):
-    if not include_directory:
-        main_section_name, section = load_file_to_dict(path)
-        sections = {main_section_name: section}
-    else:
-        directory, file_name = os.path.split(path)
-        main_section_name = _section_name(file_name)
-        sections = collect_compatible_files_in_directory(directory)
-    return {
-        "title": main_section_name,
-        "name_of_main_section": main_section_name,
-        "sections": sections,
-        }
-
 def collect_compatible_files_in_directory(directory):
     sections = {}
     available_files = glob.glob(os.path.join(directory, "*.xls")) + \
