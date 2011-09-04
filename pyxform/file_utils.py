@@ -1,12 +1,13 @@
 import os
 import glob
-from xls2json import SurveyReader
 import utils
+
+from xls2json import SurveyReader
 
 def _section_name(path_or_file_name):
     directory, filename = os.path.split(path_or_file_name)
-    _section_name, extension = os.path.splitext(filename)
-    return _section_name
+    section_name, extension = os.path.splitext(filename)
+    return section_name
 
 def load_file_to_dict(path):
     if path.endswith(".xls") or path.endswith(".csv"):

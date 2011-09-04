@@ -5,8 +5,10 @@ def path_to_text_fixture(filename):
     return os.path.join(directory, "example_xls", filename)
 
 
-from pyxform.builder import create_survey
+from pyxform.builder import create_survey_from_path
+from pyxform.xls2json import SurveyReader
 from pyxform import file_utils
+from pyxform.builder import create_survey
 
 def create_survey_from_fixture(fixture_name, filetype="xls", include_directory=False):
     fixture_path = path_to_text_fixture("%s.%s" % (fixture_name, filetype))
@@ -17,7 +19,3 @@ def create_survey_from_fixture(fixture_name, filetype="xls", include_directory=F
         directory, noop = os.path.split(fixture_path)
         pkg[u'sections'] = file_utils.collect_compatible_files_in_directory(directory)
     return create_survey(**pkg)
-
-# def absolute_path(f, file_name):
-#     directory = os.path.dirname(f)
-#     return os.path.join(directory, file_name)

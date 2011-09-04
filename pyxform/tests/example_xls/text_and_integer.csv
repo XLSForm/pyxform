@@ -2,3 +2,4 @@
 ,"type","name","text:english"
 ,"text","your_name","What is your name?"
 ,"integer","your_age","How many years old are you?"
+"choices",,,

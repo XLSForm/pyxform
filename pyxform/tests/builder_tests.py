@@ -2,7 +2,6 @@ from unittest import TestCase
 from pyxform.builder import create_survey_from_path, SurveyElementBuilder, create_survey
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
-from pyxform import file_utils
 import utils
 import os
 
