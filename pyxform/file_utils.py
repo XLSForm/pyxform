@@ -9,7 +9,7 @@ def _section_name(path_or_file_name):
     return _section_name
 
 def load_file_to_dict(path):
-    if path.endswith(".xls"):
+    if path.endswith(".xls") or path.endswith(".csv"):
         name = _section_name(path)
         excel_reader = SurveyReader(path)
         return (name, excel_reader.to_dict())
@@ -36,15 +36,3 @@ def collect_compatible_files_in_directory(directory):
     available_files = glob.glob(os.path.join(directory, "*.xls")) + \
                         glob.glob(os.path.join(directory, "*.json"))
     return dict([load_file_to_dict(f) for f in available_files])
-
-def load_csv_to_dict(path):
-    # Note, this does not include sections
-    section_path = _section_name(path)
-    # sections = {
-    #     section_path: SurveyReader(path, filetype="csv").to_dict()
-    # }
-    # return {
-    #     "title": section_path,
-    #     "name_of_main_section": section_path,
-    #     "sections": sections,
-    #     }
