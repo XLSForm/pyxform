@@ -1,6 +1,6 @@
 "survey",,,
 ,"type","name","label:english"
-,"select all that apply from toilet_type or specify other","available_toilet_types","What type of toilets are on the premises? "
+,"select all that apply from toilet_type or specify other","available_toilet_types","What type of toilets are on the premises?"
 ,"begin loop over toilet_type",,
 ,"integer","number","How many %(label)s are on the premises?"
 ,"end loop",,
