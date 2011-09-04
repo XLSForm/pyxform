@@ -230,20 +230,21 @@ def render_survey_package(survey_package):
 
 
 def create_survey(
-    name_of_main_section, sections,
+    name_of_main_section=None, sections={},
+    main_section=None,
     id_string=None,
     title=None,
     print_name=None,
     default_language=None,
     question_type_dictionary=None
     ):
+    if main_section == None:
+        main_section = sections[name_of_main_section]
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
     builder.set_question_type_dictionary(question_type_dictionary)
     #assert name_of_main_section in sections, name_of_main_section
-    survey = builder.create_survey_element_from_dict(
-        sections[name_of_main_section]
-        )
+    survey = builder.create_survey_element_from_dict(main_section)
     survey.set_id_string(id_string)
     survey.set_title(title)
     survey.set_print_name(print_name)
