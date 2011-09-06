@@ -195,12 +195,18 @@ class SurveyReader(ExcelReader):
         self._setup_survey()
 
     def _setup_survey(self):
+        self._remove_questions_without_types()
         self._process_question_type()
         if self._lists_sheet_name:
             self._construct_choice_lists()
             self._insert_lists()
         self._dict = self._dict[SURVEY_SHEET]
         self._organize_sections()
+
+    def _remove_questions_without_types(self):
+        self._dict[SURVEY_SHEET] = [
+            q for q in self._dict[SURVEY_SHEET] if u"type" in q
+            ]
 
     def _process_question_type(self):
         """
@@ -216,11 +222,6 @@ class SurveyReader(ExcelReader):
         """
         to_remove = []
         for q in self._dict[SURVEY_SHEET]:
-            if TYPE not in q:
-                #Did not specify question type: Ignore the question
-                to_remove.append(q)
-                continue
-
             if q[TYPE] == SET_TITLE:
                 if not q[NAME].strip().find(" ") == -1:
                     raise Exception("Form title must not include any spaces", q[NAME])
