@@ -82,3 +82,17 @@ class BasicXls2JsonApiTests(TestCase):
                     }]}
 
         self.assertEqual(x.to_dict(), expected_dict)
+
+from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
+
+class CsvReaderEquivalencyTest(TestCase):
+    def test_equivalency(self):
+        equivalent_fixtures = ['group', 'loop',  #'gps',
+                'specify_other', 'include', 'text_and_integer', \
+                'include_json', 'yes_or_no_question']
+        for fixture in equivalent_fixtures:
+            xls_path = utils.path_to_text_fixture("%s.xls" % fixture)
+            csv_path = utils.path_to_text_fixture("%s.csv" % fixture)
+            xls_inp = xls_to_dict(xls_path)
+            csv_inp = csv_to_dict(csv_path)
+            self.assertEqual(csv_inp, xls_inp)

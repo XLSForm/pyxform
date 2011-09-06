@@ -2,7 +2,6 @@
 A Python script to convert excel files into JSON.
 """
 
-from xlrd import open_workbook
 import json
 import re
 import sys
@@ -37,27 +36,6 @@ SET_TITLE = u"set form title"
 SET_ID = u"set form id"
 SET_DEFAULT_LANG = u"set default language"
 
-#Conversion dictionary from user friendly column names to meaningful values
-col_name_conversions = {
-    "caption": u"label",
-    "appearance": u"control:appearance",
-    "relevance": u"bind:relevant",
-    "required": u"bind:required",
-    "read only": u"bind:readonly",
-    "constraint": u"bind:constraint",
-    "constraing message": u"bind:jr:constraintMsg",
-    "calculation": u"bind:calculate",
-    "command": u"type",
-    "tag": u"name",
-    "label": u"caption",
-    "relevant": u"bind:relevant",
-    "skippable": u"required",
-    "value": u"name",
-    "image": u"media:image",
-    "audio": u"media:audio",
-    "video": u"media:video",
-    "count": u"bind:jr:count"
-}
 
 group_name_conversions = {
     "looped group": u"repeat"
@@ -78,60 +56,37 @@ yes_no_conversions = {
         "FALSE": "false()"
     }
 
+from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 
-class ExcelReader(object):
+class SpreadsheetReader(object):
 
     def __init__(self, path):
         assert isinstance(path, basestring), "path must be a string"
         (filepath, filename) = os.path.split(path)
         (shortname, extension) = os.path.splitext(filename)
-        assert extension == ".xls", "path must end with .xls"
+#        assert extension == ".xls", "path must end with .xls"
+        if extension == ".xls":
+            self.filetype = "xls"
+        elif extension == ".csv":
+            self.filetype = "csv"
         self._path = path
         self._name = unicode(shortname)
         self._print_name = unicode(shortname)
         self._title = unicode(shortname)
         self._id = unicode(shortname)
         self._def_lang = unicode("English")
-        self._parse_xls()
+        self._parse_input()
 
-    def _parse_xls(self):
-        self._create_dict_from_xls()
+    def _parse_input(self):
+        if self.filetype == "xls":
+            self._dict = xls_to_dict(self._path)
+        elif self.filetype == "csv":
+            self._dict = csv_to_dict(self._path)
         self._sheet_names = self._dict.keys()
         self._set_choices_and_columns_sheet_name()
         self._strip_unicode_values()
         self._fix_int_values()
         self._group_dictionaries()
-
-    def _create_dict_from_xls(self):
-        """
-        Return a Python dictionary with a key for each worksheet
-        name. For each sheet there is a list of dictionaries, each
-        dictionary corresponds to a single row in the worksheet. A
-        dictionary has keys taken from the column headers and values
-        equal to the cell value for that row and column.
-        """
-        workbook = open_workbook(self._path)
-        self._dict = {}
-        for sheet in workbook.sheets():
-            self._dict[sheet.name] = []
-            for row in range(1, sheet.nrows):
-                row_dict = {}
-                for column in range(0, sheet.ncols):
-                    key = sheet.cell(0, column).value
-
-                    # Convert key from ui friendly to meaningful
-                    if key in col_name_conversions:
-                        key = col_name_conversions[key]
-                    # Special case for converting captions because
-                    # they have languages
-                    key = key.replace("caption", "label")
-
-                    value = sheet.cell(row, column).value
-                    if value is not None and value != "":
-                        row_dict[key] = value
-
-                if row_dict:
-                    self._dict[sheet.name].append(row_dict)
 
     def _set_choices_and_columns_sheet_name(self):
         sheet_names = self._dict.keys()
@@ -189,9 +144,9 @@ class ExcelReader(object):
         print_pyobj_to_json(self.to_dict(), filename)
 
 
-class SurveyReader(ExcelReader):
+class SurveyReader(SpreadsheetReader):
     def __init__(self, path):
-        ExcelReader.__init__(self, path)
+        SpreadsheetReader.__init__(self, path)
         self._setup_survey()
 
     def _setup_survey(self):
@@ -356,9 +311,9 @@ class SurveyReader(ExcelReader):
         self._dict = result
 
 
-class QuestionTypesReader(ExcelReader):
+class QuestionTypesReader(SpreadsheetReader):
     def __init__(self, path):
-        ExcelReader.__init__(self, path)
+        SpreadsheetReader.__init__(self, path)
         self._setup_question_types_dictionary()
 
     def _setup_question_types_dictionary(self):
@@ -372,9 +327,9 @@ class QuestionTypesReader(ExcelReader):
         self._dict = result
 
 
-class VariableNameReader(ExcelReader):
+class VariableNameReader(SpreadsheetReader):
     def __init__(self, path):
-        ExcelReader.__init__(self, path)
+        SpreadsheetReader.__init__(self, path)
         self._organize_renames()
 
     def _organize_renames(self):

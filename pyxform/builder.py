@@ -215,63 +215,40 @@ def create_survey_from_xls(path):
     d = excel_reader.to_dict()
     return create_survey_element_from_dict(d)
 
-def render_survey_package(survey_package):
-    children = survey_package.get(u'survey', [])
-    name = unicode(survey_package.get(u'name'))
-    id_string = survey_package.get(u'id_string')
-    print_name = survey_package.get(u'print_name')
-    #question_types don't work yet
-    question_types = survey_package.get(u'question_types')
-    survey = Survey(id_string=id_string,print_name=print_name, name=name)
-    builder = SurveyElementBuilder()
-    for child in children:
-        survey.add_child(create_survey_element_from_dict(child))
-    return survey
-
-
 def create_survey(
-    name_of_main_section, sections,
+    name_of_main_section=None, sections={},
+    main_section=None,
     id_string=None,
     title=None,
     print_name=None,
     default_language=None,
     question_type_dictionary=None
     ):
+    if main_section == None:
+        main_section = sections[name_of_main_section]
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
     builder.set_question_type_dictionary(question_type_dictionary)
     #assert name_of_main_section in sections, name_of_main_section
-    survey = builder.create_survey_element_from_dict(
-        sections[name_of_main_section]
-        )
+    survey = builder.create_survey_element_from_dict(main_section)
     survey.set_id_string(id_string)
     survey.set_title(title)
     survey.set_print_name(print_name)
     survey.set_def_lang(default_language)
     return survey
 
-
-def section_name(path_or_file_name):
-    directory, filename = os.path.split(path_or_file_name)
-    section_name, extension = os.path.splitext(filename)
-    return section_name
-
+from pyxform import file_utils
 
 def create_survey_from_path(path):
+    """
+    I think this should be phased out. [AD]
+    """
     directory, file_name = os.path.split(path)
-    sections = {}
-    xls_files = glob.glob(os.path.join(directory, "*.xls"))
-    for xls_file_path in xls_files:
-        name = section_name(xls_file_path)
-        excel_reader = SurveyReader(xls_file_path)
-        sections[name] = excel_reader.to_dict()
-    json_files = glob.glob(os.path.join(directory, "*.json"))
-    for json_file_path in json_files:
-        name = section_name(json_file_path)
-        sections[name] = utils.get_pyobj_from_json(json_file_path)
-    kwargs = {
-        "title": section_name(file_name),
-        "name_of_main_section": section_name(file_name),
-        "sections": sections,
-        }
-    return create_survey(**kwargs)
+    main_section_name = file_utils._section_name(file_name)
+    sections = file_utils.collect_compatible_files_in_directory(directory)
+    pkg = {
+        u'title': main_section_name,
+        u'name_of_main_section': main_section_name,
+        u'sections': sections
+    }
+    return create_survey(**pkg)
