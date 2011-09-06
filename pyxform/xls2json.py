@@ -126,12 +126,18 @@ class SurveyReader(ExcelReader):
         self._setup_survey()
 
     def _setup_survey(self):
+        self._remove_questions_without_types()
         self._process_question_type()
         if self._lists_sheet_name:
             self._construct_choice_lists()
             self._insert_lists()
         self._dict = self._dict[SURVEY_SHEET]
         self._organize_sections()
+
+    def _remove_questions_without_types(self):
+        self._dict[SURVEY_SHEET] = [
+            q for q in self._dict[SURVEY_SHEET] if u"type" in q
+            ]
 
     def _process_question_type(self):
         """
@@ -146,8 +152,7 @@ class SurveyReader(ExcelReader):
         let's make it a requirement that list-names have no spaces
         """
         for q in self._dict[SURVEY_SHEET]:
-            if TYPE not in q: raise Exception("Did not specify question type", q)
-            question_type = q[TYPE]
+            question_type = q.get(TYPE, u"")
             question_type.strip()
             re.sub(r"\s+", " ", question_type)
             if question_type.startswith(u"select"):
