@@ -58,13 +58,19 @@ yes_no_conversions = {
 
 from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 
+
 class SpreadsheetReader(object):
 
-    def __init__(self, path):
-        assert isinstance(path, basestring), "path must be a string"
+    def __init__(self, path_or_file):
+        if isinstance(path_or_file, basestring):
+            self._file_object = None
+            path = path_or_file
+        else:
+            self._file_object = path_or_file
+            path = self._file_object.name
+
         (filepath, filename) = os.path.split(path)
         (shortname, extension) = os.path.splitext(filename)
-#        assert extension == ".xls", "path must end with .xls"
         if extension == ".xls":
             self.filetype = "xls"
         elif extension == ".csv":
@@ -79,7 +85,7 @@ class SpreadsheetReader(object):
 
     def _parse_input(self):
         if self.filetype == "xls":
-            self._dict = xls_to_dict(self._path)
+            self._dict = xls_to_dict(self._file_object if self._file_object is not None else self._path)
         elif self.filetype == "csv":
             self._dict = csv_to_dict(self._path)
         self._sheet_names = self._dict.keys()

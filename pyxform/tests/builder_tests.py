@@ -1,11 +1,12 @@
 from unittest import TestCase
-from pyxform.builder import create_survey_from_path, SurveyElementBuilder, create_survey
+from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
 import utils
 import os
 
 FIXTURE_FILETYPE = "xls"
+
 
 class BuilderTests(TestCase):
 
@@ -21,6 +22,11 @@ class BuilderTests(TestCase):
         survey_out.add_child(question)
         self.survey_out_dict = survey_out.to_dict()
         print_pyobj_to_json(self.survey_out_dict, utils.path_to_text_fixture("how_old_are_you.json"))
+
+    def test_create_from_file_object(self):
+        path = utils.path_to_text_fixture('yes_or_no_question.xls')
+        with open(path) as f:
+            s = create_survey_from_xls(f)
 
     def tearDown(self):
         import os

@@ -8,7 +8,7 @@ from xls2json import SurveyReader
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY, \
      QuestionTypeDictionary
 import os
-import glob
+from pyxform import file_utils
 
 
 class SurveyElementBuilder(object):
@@ -206,14 +206,17 @@ def create_survey_element_from_dict(d, sections={}):
     builder.set_sections(sections)
     return builder.create_survey_element_from_dict(d)
 
+
 def create_survey_element_from_json(str_or_path):
     d = utils.get_pyobj_from_json(str_or_path)
     return create_survey_element_from_dict(d)
 
-def create_survey_from_xls(path):
-    excel_reader = SurveyReader(path)
+
+def create_survey_from_xls(path_or_file):
+    excel_reader = SurveyReader(path_or_file)
     d = excel_reader.to_dict()
     return create_survey_element_from_dict(d)
+
 
 def create_survey(
     name_of_main_section=None, sections={},
@@ -237,7 +240,6 @@ def create_survey(
     survey.set_def_lang(default_language)
     return survey
 
-from pyxform import file_utils
 
 def create_survey_from_path(path):
     """

@@ -26,7 +26,8 @@ col_name_conversions = {
     "count": u"bind:jr:count"
 }
 
-def xls_to_dict(path):
+
+def xls_to_dict(path_or_file):
     """
     Return a Python dictionary with a key for each worksheet
     name. For each sheet there is a list of dictionaries, each
@@ -34,7 +35,11 @@ def xls_to_dict(path):
     dictionary has keys taken from the column headers and values
     equal to the cell value for that row and column.
     """
-    workbook = open_workbook(path)
+    if isinstance(path_or_file, basestring):
+        workbook = open_workbook(filename=path_or_file)
+    else:
+        workbook = open_workbook(file_contents=path_or_file.read())
+
     _dict = {}
     for sheet in workbook.sheets():
         _dict[sheet.name] = []
