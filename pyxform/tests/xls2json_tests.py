@@ -95,4 +95,5 @@ class CsvReaderEquivalencyTest(TestCase):
             csv_path = utils.path_to_text_fixture("%s.csv" % fixture)
             xls_inp = xls_to_dict(xls_path)
             csv_inp = csv_to_dict(csv_path)
+            self.maxDiff = None
             self.assertEqual(csv_inp, xls_inp)

@@ -1,4 +1,5 @@
 from xlrd import open_workbook
+from collections import defaultdict
 
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
@@ -40,28 +41,19 @@ def xls_to_dict(path_or_file):
     else:
         workbook = open_workbook(file_contents=path_or_file.read())
 
-    _dict = {}
+    result = {}
     for sheet in workbook.sheets():
-        _dict[sheet.name] = []
+        result[sheet.name] = []
         for row in range(1, sheet.nrows):
             row_dict = {}
             for column in range(0, sheet.ncols):
                 key = sheet.cell(0, column).value
-
-                # Convert key from ui friendly to meaningful
-                if key in col_name_conversions:
-                    key = col_name_conversions[key]
-                # Special case for converting captions because
-                # they have languages
-                key = key.replace("caption", "label")
-
                 value = sheet.cell(row, column).value
                 if value is not None and value != "":
                     row_dict[key] = value
-
-            if row_dict:
-                _dict[sheet.name].append(row_dict)
-    return _dict
+            if row_dict != {}:
+                result[sheet.name].append(row_dict)
+    return result
 
 
 import csv
@@ -78,14 +70,14 @@ def csv_to_dict(path):
         return (s_or_c, content)
     with open(path, 'rU') as f:
         reader = csv.reader(f)
-        push_mode = None
+        sheet_name = None
         current_headers = None
         for row in reader:
             survey_or_choices, content = first_column_as_sheet_name(row)
             if survey_or_choices != None:
-                push_mode = survey_or_choices
-                if push_mode not in _dict:
-                    _dict[push_mode] = []
+                sheet_name = survey_or_choices
+                if sheet_name not in _dict:
+                    _dict[unicode(sheet_name)] = []
                 current_headers = None
             if content != None:
                 if current_headers == None:
@@ -94,6 +86,6 @@ def csv_to_dict(path):
                     _d = {}
                     for key, val in zip(current_headers, content):
                         if val != "":
-                            _d[key] = val
-                    _dict[push_mode].append(_d)
+                            _d[unicode(key)] = unicode(val)
+                    _dict[sheet_name].append(_d)
     return _dict
