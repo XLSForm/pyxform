@@ -1,6 +1,6 @@
 from survey_element import SurveyElement
-from question import Question, InputQuestion, UploadQuestion, \
-    MultipleChoiceQuestion
+from question import Question, InputQuestion, TriggerQuestion, \
+    UploadQuestion, MultipleChoiceQuestion
 from section import Section, RepeatingSection, GroupedSection
 from survey import Survey
 import utils
@@ -16,6 +16,7 @@ class SurveyElementBuilder(object):
     QUESTION_CLASSES = {
         u"": Question,
         u"input": InputQuestion,
+        u"trigger": TriggerQuestion,
         u"select": MultipleChoiceQuestion,
         u"select1": MultipleChoiceQuestion,
         u"upload": UploadQuestion,
@@ -41,11 +42,11 @@ class SurveyElementBuilder(object):
         the name of the section and the value is a dict that can be
         used to create a whole survey.
         """
-        assert type(sections)==dict
+        assert type(sections) == dict
         self._sections = sections
 
     def set_question_type_dictionary(self, question_type_dictionary):
-        if type(question_type_dictionary)==QuestionTypeDictionary:
+        if type(question_type_dictionary) == QuestionTypeDictionary:
             self._question_type_dictionary = question_type_dictionary
         else:
             self._question_type_dictionary = DEFAULT_QUESTION_TYPE_DICTIONARY
@@ -63,6 +64,8 @@ class SurveyElementBuilder(object):
         question_type_str = d[Question.TYPE]
         d_copy = d.copy()
 
+        # Todo: figure out a global setting for whether select all
+        # that apply questions have an automatic none option.
         if question_type_str.startswith(u"select all that apply"):
             self._add_none_option_to_select_all_that_apply(d_copy)
 
@@ -76,13 +79,15 @@ class SurveyElementBuilder(object):
         question_class = self._get_question_class(question_type_str)
         # todo: clean up this spaghetti code
         d_copy[u"question_type_dictionary"] = self._question_type_dictionary
-        if question_class: return question_class(**d_copy)
+        if question_class:
+            return question_class(**d_copy)
         return []
 
     def _add_other_option_to_multiple_choice_question(self, d):
         # ideally, we'd just be pulling from children
         choice_list = d.get(u"choices", d.get(u"children", []))
-        assert len(choice_list)>0, "There should be choices for this question."
+        if len(choice_list) <= 0:
+            raise Exception("There should be choices for this question.")
         other_choice = {
             u"name": u"other",
             u"label": u"Other",
@@ -92,7 +97,8 @@ class SurveyElementBuilder(object):
 
     def _add_none_option_to_select_all_that_apply(self, d_copy):
         choice_list = d_copy.get(u"choices", d_copy.get(u"children", []))
-        assert len(choice_list)>0, "There should be choices for this question."
+        if len(choice_list) <= 0:
+            raise Exception("There should be choices for this question.")
         none_choice = {
             u"name": u"none",
             u"label": u"None",
@@ -100,7 +106,8 @@ class SurveyElementBuilder(object):
         if none_choice not in choice_list:
             choice_list.append(none_choice)
             none_constraint = u"(.='none' or not(selected(., 'none')))"
-            if u"bind" not in d_copy: d_copy[u"bind"] = {}
+            if u"bind" not in d_copy:
+                d_copy[u"bind"] = {}
             if u"constraint" in d_copy[u"bind"]:
                 d_copy[u"bind"][u"constraint"] += " and " + none_constraint
             else:
@@ -115,20 +122,6 @@ class SurveyElementBuilder(object):
             }
         return InputQuestion(**kwargs)
 
-    def _create_survey_from_dict(self, d):
-        """
-        To get things working quickly, we'll use d['name'] if
-        id_string is not around.
-        """
-        d_copy = d.copy()
-        children = d_copy.pop(Section.CHILDREN)
-        result = Survey(**d_copy)
-        for child in children:
-            survey_element = self.create_survey_element_from_dict(child)
-            if survey_element:
-                result.add_child(survey_element)
-        return result
-
     def _create_section_from_dict(self, d):
         d_copy = d.copy()
         children = d_copy.pop(Section.CHILDREN)
@@ -136,7 +129,8 @@ class SurveyElementBuilder(object):
         result = section_class(**d_copy)
         for child in children:
             survey_element = self.create_survey_element_from_dict(child)
-            if survey_element: result.add_child(survey_element)
+            if survey_element:
+                result.add_child(survey_element)
         return result
 
     def _create_loop_from_dict(self, d):
@@ -186,29 +180,21 @@ class SurveyElementBuilder(object):
                         result[key][key2] = result[key][key2] % info
         return result
 
-    def _handle_include(self, d):
-        section_name = d[SurveyElement.NAME]
-        if section_name not in self._sections:
-            raise Exception("This section has not been included.",
-                            section_name, self._sections.keys())
-        d = self._sections[section_name]
-        full_survey = self.create_survey_element_from_dict(d)
-        return full_survey.get_children()
-
-    DISPATCHER = {
-        u'survey': _create_survey_from_dict,
-        u"group": _create_section_from_dict,
-        u"repeat": _create_section_from_dict,
-        u"loop": _create_loop_from_dict,
-        u"include": _handle_include,
-        u"default": _create_question_from_dict,
-        }
-
     def create_survey_element_from_dict(self, d):
-        default_method = self.DISPATCHER[u"default"]
-        survey_element_type = d[SurveyElement.TYPE]
-        method = self.DISPATCHER.get(survey_element_type, default_method)
-        return method(self, d)
+        if d[SurveyElement.TYPE] in self.SECTION_CLASSES:
+            return self._create_section_from_dict(d)
+        elif d[SurveyElement.TYPE]==u"loop":
+            return self._create_loop_from_dict(d)
+        elif d[SurveyElement.TYPE]==u"include":
+            section_name = d[SurveyElement.NAME]
+            if section_name not in self._sections:
+                raise Exception("This section has not been included.",
+                                section_name, self._sections.keys())
+            d = self._sections[section_name]
+            full_survey = self.create_survey_element_from_dict(d)
+            return full_survey.get_children()
+        else:
+            return self._create_question_from_dict(d)
 
     def create_survey_element_from_json(self, str_or_path):
         d = utils.get_pyobj_from_json(str_or_path)
@@ -229,61 +215,40 @@ def create_survey_from_xls(path):
     d = excel_reader.to_dict()
     return create_survey_element_from_dict(d)
 
-def render_survey_package(survey_package):
-    children = survey_package.get(u'survey', [])
-    name = unicode(survey_package.get(u'name'))
-    id_string = survey_package.get(u'id_string')
-    #question_types don't work yet
-    question_types = survey_package.get(u'question_types')
-    survey = Survey(id_string=id_string, name=name)
-    builder = SurveyElementBuilder()
-    for child in children:
-        survey.add_child(create_survey_element_from_dict(child))
-    return survey
-
-
-def create_survey(title, main_section, sections={},
-    id_string=None, question_type_dictionary=None, name=None
+def create_survey(
+    name_of_main_section=None, sections={},
+    main_section=None,
+    id_string=None,
+    title=None,
+    print_name=None,
+    default_language=None,
+    question_type_dictionary=None
     ):
+    if main_section == None:
+        main_section = sections[name_of_main_section]
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
     builder.set_question_type_dictionary(question_type_dictionary)
-    if type(main_section) == list:
-        # todo: we had been using the field name for the id string,
-        # title, and file name of a survey. We need to break these
-        # three things into separate fields. Right now I'm trying a
-        # hack to get titles working correctly.
-        main_section = {
-            'name': title,
-            'type': 'survey',
-            'children': main_section,
-            }
+    #assert name_of_main_section in sections, name_of_main_section
     survey = builder.create_survey_element_from_dict(main_section)
     survey.set_id_string(id_string)
+    survey.set_title(title)
+    survey.set_print_name(print_name)
+    survey.set_def_lang(default_language)
     return survey
 
-
-def section_name(path_or_file_name):
-    directory, filename = os.path.split(path_or_file_name)
-    name, extension = os.path.splitext(filename)
-    return name
-
+from pyxform import file_utils
 
 def create_survey_from_path(path):
+    """
+    I think this should be phased out. [AD]
+    """
     directory, file_name = os.path.split(path)
-    sections = {}
-    xls_files = glob.glob(os.path.join(directory, "*.xls"))
-    for xls_file_path in xls_files:
-        name = section_name(xls_file_path)
-        excel_reader = SurveyReader(xls_file_path)
-        sections[name] = excel_reader.to_dict()
-    json_files = glob.glob(os.path.join(directory, "*.json"))
-    for json_file_path in json_files:
-        name = section_name(json_file_path)
-        sections[name] = utils.get_pyobj_from_json(json_file_path)
-    kwargs = {
-        "title": section_name(file_name),
-        "main_section": sections.get(section_name(file_name)),
-        "sections": sections,
-        }
-    return create_survey(**kwargs)
+    main_section_name = file_utils._section_name(file_name)
+    sections = file_utils.collect_compatible_files_in_directory(directory)
+    pkg = {
+        u'title': main_section_name,
+        u'name_of_main_section': main_section_name,
+        u'sections': sections
+    }
+    return create_survey(**pkg)

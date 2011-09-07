@@ -1,6 +1,7 @@
 from question import SurveyElement
 from utils import node
 
+
 class Section(SurveyElement):
     def validate(self):
         super(Section, self).validate()
@@ -21,7 +22,11 @@ class Section(SurveyElement):
             element_slugs.append(element.get_name())
 
     def xml_instance(self):
-        result = node(self.get_name())
+        if type(self) == RepeatingSection:
+            kwargs = {"jr:template": ""}
+        else:
+            kwargs = {}
+        result = node(self.get_name(), **kwargs)
         for child in self._children:
             result.appendChild(child.xml_instance())
         return result
@@ -33,6 +38,7 @@ class Section(SurveyElement):
         this section.
         """
         return [e.xml_control() for e in self._children if e.xml_control() is not None]
+
 
 class RepeatingSection(Section):
     def xml_control(self):
@@ -49,18 +55,45 @@ class RepeatingSection(Section):
         </repeat>
         </group>
         """
-        repeat_node = node(u"repeat", nodeset=self.get_xpath())
+        control_dict = self.get_control()
+        if u"appearance" in control_dict:
+            repeat_node = node(
+                u"repeat", nodeset=self.get_xpath(),
+                appearance=control_dict[u"appearance"]
+                )
+        else:
+            repeat_node = node(u"repeat", nodeset=self.get_xpath())
         for n in Section.xml_control(self):
             repeat_node.appendChild(n)
-        return node(
-            u"group",
-            self.xml_label(),
-            repeat_node
-            )
+
+        label = self.xml_label()
+        if label:
+            return node(
+                u"group", self.xml_label(), repeat_node,
+                ref=self.get_xpath()
+                )
+        return node(u"group", repeat_node, ref=self.get_xpath())
+
 
 class GroupedSection(Section):
     def xml_control(self):
-        group_node = node(u"group", self.xml_label(), nodeset=self.get_xpath())
+        control_dict = self.get_control()
+        xml_label = self.xml_label()
+
+        if u"appearance" in control_dict and xml_label:
+            group_node = node(
+                u"group", xml_label, ref=self.get_xpath(),
+                appearance=control_dict[u"appearance"]
+                )
+        elif u"appearance" in control_dict and not xml_label:
+            group_node = node(
+                u"group", ref=self.get_xpath(),
+                appearance=control_dict[u"appearance"]
+                )
+        elif not u"appearance" in control_dict and xml_label:
+            group_node = node(u"group", self.xml_label(), ref=self.get_xpath())
+        else:
+            group_node = node(u"group", ref=self.get_xpath())
         for n in Section.xml_control(self):
             group_node.appendChild(n)
         return group_node

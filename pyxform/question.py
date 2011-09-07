@@ -1,12 +1,14 @@
-from utils import node, SEP
+from utils import node
 from survey_element import SurveyElement
 
+
 def _overlay(over, under):
-    if type(under)==dict:
+    if type(under) == dict:
         result = under.copy()
         result.update(over)
         return result
     return over if over else under
+
 
 class Question(SurveyElement):
     def get_type_definition(self):
@@ -22,12 +24,15 @@ class Question(SurveyElement):
         question_type_dict = self.get_type_definition()
         under = question_type_dict.get(key, None)
         over = SurveyElement.get(self, key)
-        if not under: return over
+        if not under:
+            return over
         return _overlay(over, under)
 
     def xml_instance(self):
+        if self.get(u"default"):
+            return node(self.get_name(), unicode(self.get(u"default")))
         return node(self.get_name())
-        
+
     def xml_control(self):
         return None
 
@@ -38,29 +43,82 @@ class InputQuestion(Question):
     dates, geopoints, barcodes ...
     """
     def xml_control(self):
-        return node(u"input", ref=self.get_xpath(), *self.xml_label_and_hint())
+        control_dict = self.get_control()
+        label_and_hint = self.xml_label_and_hint()
+        if self.APPEARANCE in control_dict and label_and_hint:
+            return node(
+                u"input", ref=self.get_xpath(),
+                appearance=control_dict[self.APPEARANCE],
+                *self.xml_label_and_hint()
+                )
+        elif not self.APPEARANCE in control_dict and label_and_hint:
+            return node(u"input",
+                ref=self.get_xpath(),
+                *self.xml_label_and_hint()
+                )
+        elif self.APPEARANCE in control_dict and not label_and_hint:
+            return node(
+                u"input", ref=self.get_xpath(),
+                appearance=control_dict[self.APPEARANCE]
+                )
+        else:
+            return node(u"input", ref=self.get_xpath())
+
+
+class TriggerQuestion(Question):
+
+    def xml_control(self):
+        control_dict = self.get_control()
+        if self.APPEARANCE in control_dict:
+            return node(
+                u"trigger", ref=self.get_xpath(),
+                appearance=control_dict[self.APPEARANCE],
+                *self.xml_label_and_hint()
+                )
+        else:
+            return node(u"trigger",
+                ref=self.get_xpath(),
+                *self.xml_label_and_hint()
+                )
 
 
 class UploadQuestion(Question):
     def _get_media_type(self):
         return self.get_control()[u"mediatype"]
-        
+
     def xml_control(self):
-        return node(
-            u"upload",
-            ref=self.get_xpath(),
-            mediatype=self._get_media_type(),
-            *self.xml_label_and_hint()
-            )
+        control_dict = self.get_control()
+        if self.APPEARANCE in control_dict:
+            return node(
+                u"upload",
+                ref=self.get_xpath(),
+                mediatype=self._get_media_type(),
+                appearance=control_dict[self.APPEARANCE],
+                *self.xml_label_and_hint()
+                )
+        else:
+            return node(
+                u"upload",
+                ref=self.get_xpath(),
+                mediatype=self._get_media_type(),
+                *self.xml_label_and_hint()
+                )
 
 
 class Option(SurveyElement):
 
     def __init__(self, *args, **kwargs):
-        d = {
-            self.LABEL : kwargs[self.LABEL],
-            self.NAME : unicode(kwargs[self.NAME]),
-            }
+        if self.MEDIA in kwargs:
+            d = {
+                self.LABEL: kwargs[self.LABEL],
+                self.MEDIA: kwargs[self.MEDIA],
+                self.NAME: unicode(kwargs[self.NAME]),
+                }
+        else:
+            d = {
+                self.LABEL: kwargs[self.LABEL],
+                self.NAME: unicode(kwargs[self.NAME]),
+                }
         SurveyElement.__init__(self, **d)
 
     def xml_value(self):
@@ -88,23 +146,34 @@ class MultipleChoiceQuestion(Question):
     def validate(self):
         Question.validate(self)
         for choice in self.iter_children():
-            if choice!=self: choice.validate()
-        
+            if choice != self:
+                choice.validate()
+
     def add_choice(self, **kwargs):
         option = Option(**kwargs)
         self.add_child(option)
 
     def xml_control(self):
-        assert self.get_bind()[u"type"] in [u"select", u"select1"]
-        result = node(
-            self.get_bind()[u"type"],
-            ref=self.get_xpath()
-            )
+        assert self.get_bind()[self.TYPE] in [u"select", u"select1"]
+
+        control_dict = self.get_control()
+        if self.APPEARANCE in control_dict:
+            result = node(
+                self.get_bind()[self.TYPE],
+                ref=self.get_xpath(),
+                appearance=control_dict[self.APPEARANCE]
+                )
+        else:
+            result = node(
+                self.get_bind()[self.TYPE],
+                ref=self.get_xpath()
+                )
         for n in self.xml_label_and_hint():
             result.appendChild(n)
         for n in [o.xml() for o in self._children]:
-            result.appendChild(n)                
+            result.appendChild(n)
         return result
+
 
 class SelectOneQuestion(MultipleChoiceQuestion):
     def __init__(self, *args, **kwargs):
