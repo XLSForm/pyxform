@@ -1,0 +1,3 @@
+
+class PyxformError(Exception):
+    pass
