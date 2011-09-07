@@ -175,11 +175,21 @@ class SurveyElement(object):
         # I need to look up how exactly to override the == operator.
         return self.to_dict() == y.to_dict()
 
-    def get_translation_keys(self):
-        return {
-            u"label": u"%s:label" % self.get_xpath(),
-            u"hint": u"%s:hint" % self.get_xpath()
-            }
+    def _translation_path(self, display_element):
+        return self.get_xpath() + ":" + display_element
+
+    def get_translations(self):
+        for display_element in ['label', 'hint']:
+            label_or_hint = self.get(display_element)
+            if type(label_or_hint) == dict:
+                for lang, text in label_or_hint.items():
+                    yield {
+                        'display_element': display_element,
+                        'path': self._translation_path(display_element),
+                        'element': self,
+                        'lang': lang,
+                        'text': text,
+                        }
 
     def get_media_keys(self):
         return {
@@ -194,8 +204,7 @@ class SurveyElement(object):
         if type(self.get_label()) == dict or not len(self.get('media')) == 0:
             if len(self.get_label()) == 0 and self.get(self.TYPE) == "group":
                 return None
-            d = self.get_translation_keys()
-            return node(u"label", ref="jr:itext('%s')" % d[u"label"])
+            return node(u"label", ref="jr:itext('%s')" % self._translation_path(u"label"))
         else:
             label, outputInserted = self.get_root().insert_output_values(self.get_label())
             return node(u"label", label, toParseString=outputInserted)

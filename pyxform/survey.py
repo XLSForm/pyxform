@@ -49,7 +49,7 @@ class Survey(Section):
         self._setup_media()
         if self._translations:
             return node("model",
-                        self.xml_translations_and_media(),
+                        self.itext(),
                         node("instance", self.xml_instance()),
                         *self.xml_bindings()
                         )
@@ -61,16 +61,8 @@ class Survey(Section):
     def _setup_translations(self):
         self._translations = defaultdict(dict)
         for e in self.iter_children():
-            translation_keys = e.get_translation_keys()
-            for key in translation_keys.keys():
-                translation_key = translation_keys[key]
-                text = e.get(key)
-                if type(text) == dict:
-                    for lang in text.keys():
-                        if translation_key in self._translations[lang]:
-                            assert self._translations[lang][translation_key] == text[lang], "The labels for this translation key are inconsistent %(key)s %(label)s" % {"key": translation_key, "label": text[lang]}
-                        else:
-                            self._translations[lang][translation_key] = text[lang]
+            for d in e.get_translations():
+                self._translations[d['lang']][d['path']] = d['text']
 
     def _setup_media(self):
         """
@@ -165,34 +157,23 @@ class Survey(Section):
                             else:
                                 raise Exception("Media type: " + media_type_to_store + " not supported")
 
-    def xml_translations_and_media(self):
-        result = []
+    def itext(self):
+        children = []
         for lang in self._translations.keys():
+            kwargs = {'lang': lang}
             if lang == self._def_lang:
-                result.append(node("translation", lang=lang, default=""))
-            else:
-                result.append(node("translation", lang=lang))
-            for label_name in self._translations[lang].keys():
-                itext_nodes = []
-                label_type = label_name.partition(":")[-1]
+                kwargs['default'] = ''
+            children.append(node("translation", **kwargs))
 
-                if type(self._translations[lang][label_name]) == dict and label_type == "label":
-                    for media_type in self._translations[lang][label_name]:
-                        value = self._translations[lang][label_name][media_type]
-                        if media_type == "long":
-                            itext_nodes.append(node("value", value, form=media_type))
-                        elif media_type == "image":
-                            itext_nodes.append(node("value", "jr://images/" + value, form=media_type))
-                        else:
-                            itext_nodes.append(node("value", "jr://" + media_type + "/" + value, form=media_type))
-                else:
-                    # I don't know what form="long" does exactly. I'm
-                    # sticking with the old approach. -Andrew
-                    itext_nodes.append(node("value", self._translations[lang][label_name]))
-                    # itext_nodes.append(node("value", self._translations[lang][label_name], form="long"))
+            for e in self.iter_children():
+                for d in e.get_translations():
+                    if d['lang'] == lang:
+                        t = node("text", node("value", d['text']), id=d['path'])
+                        children[-1].appendChild(t)
 
-                result[-1].appendChild(node("text", *itext_nodes, id=label_name))
-        return node("itext", *result)
+            # todo: figure out how to get media in here smoothly
+
+        return node("itext", *children)
 
     def date_stamp(self):
         return self._created.strftime("%Y_%m_%d")
