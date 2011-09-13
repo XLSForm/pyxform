@@ -6,16 +6,17 @@ from pyxform import *
 
 import json
 
+
 class Json2XformVerboseSurveyCreationTests(TestCase):
-    
+
     def test_survey_can_be_created_in_a_verbose_manner(self):
         s = Survey()
-        s.set_name("simple_survey")
-        
+        s.name = "simple_survey"
+
         q = MultipleChoiceQuestion()
-        q.set_name("cow_color")
-        q._dict[MultipleChoiceQuestion.TYPE] = u"select one"
-        
+        q.name = "cow_color"
+        q.type = "select one"
+
         q.add_choice(label="Green", name="green")
         s.add_child(q)
 
@@ -34,7 +35,7 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
                     }
                 ],
             }
-        
+        self.maxDiff = None
         self.assertEqual(s.to_dict(), expected_dict)
     
     def test_survey_can_be_created_in_a_slightly_less_verbose_manner(self):
@@ -44,7 +45,7 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
             ]
         
         q = MultipleChoiceQuestion(name="Favorite_Color", choices=option_dict_array)
-        q._dict[MultipleChoiceQuestion.TYPE] = u"select one"
+        q.type = u"select one"
         s = Survey(name="Roses_are_Red", children=[q])
 
         expected_dict = {

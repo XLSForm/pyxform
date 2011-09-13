@@ -63,12 +63,12 @@ class Json2XformExportingPrepTests(TestCase):
         
 #        rdict = reg_instance.to_dict()
         expected_dict = {u"node_name" : u"Registration", \
-                u"id": reg_xform.id_string(), \
+                u"id": reg_xform.id_string, \
                 u"children": [{u'node_name':u'name', u'value':u'bob'}]}
         
 #        self.assertEqual(rdict, expected_dict)
 
         rx = reg_instance.to_xml()
         expected_xml = u"""<?xml version='1.0' ?><Registration id="%s"><name>bob</name></Registration>""" % \
-                    (reg_xform.id_string())
+                    (reg_xform.id_string)
         self.assertEqual(rx, expected_xml)

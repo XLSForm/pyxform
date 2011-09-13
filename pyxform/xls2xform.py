@@ -14,7 +14,7 @@ if __name__ == '__main__':
     path_to_excel_file = sys.argv[1]
     survey = create_survey_from_path(path_to_excel_file)
     directory, filename = os.path.split(path_to_excel_file)
-    path_to_xform = os.path.join(directory, survey.id_string() + ".xml")
+    path_to_xform = os.path.join(directory, survey.id_string + ".xml")
     survey.print_xform_to_file(path_to_xform)
-    path_to_json = os.path.join(directory, survey.id_string() + ".json")
+    path_to_json = os.path.join(directory, survey.id_string + ".json")
     survey.json_dump(path_to_json)

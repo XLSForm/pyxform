@@ -32,11 +32,11 @@ class DumpAndLoadTests(TestCase):
     def test_load_from_dump(self):
         for filename, survey in self.surveys.items():
             survey.json_dump()
-            path = survey.get_name() + ".json"
+            path = survey.name + ".json"
             survey_from_dump = create_survey_from_path(path, include_directory=True)
             self.assertEqual(survey.to_dict(), survey_from_dump.to_dict())
 
     def tearDown(self):
         for filename, survey in self.surveys.items():
-            path = survey.get_name() + ".json"
+            path = survey.name + ".json"
             os.remove(path)

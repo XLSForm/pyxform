@@ -5,7 +5,7 @@ from utils import node
 class Section(SurveyElement):
     def validate(self):
         super(Section, self).validate()
-        for element in self._children:
+        for element in self.children:
             element.validate()
         self._validate_uniqueness_of_element_names()
 
@@ -13,21 +13,21 @@ class Section(SurveyElement):
     # dictionary for a survey.
     def _validate_uniqueness_of_element_names(self):
         element_slugs = []
-        for element in self._children:
-            if element.get_name() in element_slugs:
+        for element in self.children:
+            if element.name in element_slugs:
                 raise Exception(
                     "Element with this name already exists.",
-                    element_slugs, element.get_name()
+                    element_slugs, element.name
                     )
-            element_slugs.append(element.get_name())
+            element_slugs.append(element.name)
 
     def xml_instance(self):
         if type(self) == RepeatingSection:
             kwargs = {"jr:template": ""}
         else:
             kwargs = {}
-        result = node(self.get_name(), **kwargs)
-        for child in self._children:
+        result = node(self.name, **kwargs)
+        for child in self.children:
             result.appendChild(child.xml_instance())
         return result
 
@@ -37,7 +37,7 @@ class Section(SurveyElement):
         let's just return a list of controls from all the children of
         this section.
         """
-        return [e.xml_control() for e in self._children if e.xml_control() is not None]
+        return [e.xml_control() for e in self.children if e.xml_control() is not None]
 
 
 class RepeatingSection(Section):
@@ -55,7 +55,7 @@ class RepeatingSection(Section):
         </repeat>
         </group>
         """
-        control_dict = self.get_control()
+        control_dict = self.control
         if u"appearance" in control_dict:
             repeat_node = node(
                 u"repeat", nodeset=self.get_xpath(),
@@ -77,7 +77,7 @@ class RepeatingSection(Section):
 
 class GroupedSection(Section):
     def xml_control(self):
-        control_dict = self.get_control()
+        control_dict = self.control
         xml_label = self.xml_label()
 
         if u"appearance" in control_dict and xml_label:

@@ -1,13 +1,14 @@
 from section import Section
 from question import Question
 from utils import node, XFORM_TAG_REGEXP
-from datetime import datetime
 from collections import defaultdict
 import codecs
+from datetime import datetime
 import re
 import os
 from odk_validate import check_xform
 from survey_element import SurveyElement
+
 
 nsmap = {
     u"xmlns": u"http://www.w3.org/2002/xforms",
@@ -19,15 +20,19 @@ nsmap = {
 
 
 class Survey(Section):
-    def __init__(self, *args, **kwargs):
-        Section.__init__(self, *args, **kwargs)
-        self._xpath = {}
-        self._parent = None
-        self._created = datetime.now()
-        self._id_string = kwargs.get(u'id_string')
-        self._title = kwargs.get(u'title')
-        self._print_name = kwargs.get(u'print_name')
-        self._def_lang = kwargs.get(u'def_lang')
+
+    FIELDS = Section.FIELDS.copy()
+    FIELDS.update(
+        {
+            u"_xpath": dict,
+            u"_created": datetime.now,
+            u"title": unicode,
+            u"id_string": unicode,
+            u"file_name": unicode,
+            u"default_language": unicode,
+            u"_translations": dict,
+            }
+        )
 
     def xml(self):
         """
@@ -37,7 +42,7 @@ class Survey(Section):
         self._setup_xpath_dictionary()
         return node(u"h:html",
                     node(u"h:head",
-                         node(u"h:title", self.title()),
+                         node(u"h:title", self.title),
                          self.xml_model()
                         ),
                     node(u"h:body", *self.xml_control()),
@@ -93,7 +98,7 @@ class Survey(Section):
 
                         langsExist = langs != [u'']
                         if not langsExist and not translationsExist:
-                            langs = self._def_lang
+                            langs = self.default_language
                             print langs
                             media_type_to_store = media_type
                         elif not langsExist and translationsExist:
@@ -117,7 +122,7 @@ class Survey(Section):
                                         translation_label = e.to_dict()[u"label"]
                                         e.set(u"label", {lang: translation_label})
                                     else:
-                                        raise Exception(e.get_name(), "Must include a label")
+                                        raise Exception(e.name, "Must include a label")
                                 elif not langsExist:
                                     if u"label" in e.to_dict():
                                         translation_label = e.to_dict()[u"label"]
@@ -142,7 +147,7 @@ class Survey(Section):
                                             translation_label = e.to_dict()[u"label"]
                                             e.set(u"label", {lang: translation_label})
                                     else:
-                                        raise Exception(e.get_name(), "Must include a label")
+                                        raise Exception(e.name, "Must include a label")
                                 else:
                                     translation_label = self._translations[lang][translation_key]
 
@@ -161,7 +166,7 @@ class Survey(Section):
         children = []
         for lang in self._translations.keys():
             kwargs = {'lang': lang}
-            if lang == self._def_lang:
+            if lang == self.default_language:
                 kwargs['default'] = ''
             children.append(node("translation", **kwargs))
 
@@ -178,37 +183,9 @@ class Survey(Section):
     def date_stamp(self):
         return self._created.strftime("%Y_%m_%d")
 
-    def set_id_string(self, id_string):
-        self._id_string = id_string
-
-    def set_title(self, title):
-        self._title = title
-
-    def set_print_name(self, print_name):
-        self._print_name = print_name
-
-    def set_def_lang(self, def_lang):
-        self._def_lang = def_lang
-
-    def id_string(self):
-        if self._id_string is None:
-            self._id_string = self.get_name()
-        return self._id_string
-
-    def title(self):
-        if self._title is None:
-            self._title = self.get_name()
-        return self._title
-
-    def print_name(self):
-        return self._print_name
-
-    def def_lang(self):
-        return self._def_lang
-
     def xml_instance(self):
         result = Section.xml_instance(self)
-        result.setAttribute(u"id", self.id_string())
+        result.setAttribute(u"id", self.id_string)
         return result
 
     def _to_pretty_xml(self):
@@ -228,16 +205,16 @@ class Survey(Section):
         return inlineOutput
 
     def __unicode__(self):
-        return "<survey name='%s' element_count='%s'>" % (self.get_name(), len(self._children))
+        return "<survey name='%s' element_count='%s'>" % (self.name, len(self.children))
 
     def _setup_xpath_dictionary(self):
         self._xpath = {}
         for element in self.iter_children():
             if isinstance(element, Question) or isinstance(element, Section):
-                if element.get_name() in self._xpath:
-                    self._xpath[element.get_name()] = None
+                if element.name in self._xpath:
+                    self._xpath[element.name] = None
                 else:
-                    self._xpath[element.get_name()] = element.get_xpath()
+                    self._xpath[element.name] = element.get_xpath()
 
     def _var_repl_function(self):
         """

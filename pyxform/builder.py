@@ -53,7 +53,7 @@ class SurveyElementBuilder(object):
 
     def _get_question_class(self, question_type_str):
         question_type = self._question_type_dictionary.get_definition(question_type_str)
-        control_dict = question_type.get(Question.CONTROL, {})
+        control_dict = question_type.get(u"control", {})
         control_tag = control_dict.get(u"tag", u"")
         return self.QUESTION_CLASSES[control_tag]
 
@@ -61,7 +61,7 @@ class SurveyElementBuilder(object):
         """
         This function returns None for unrecognized types.
         """
-        question_type_str = d[Question.TYPE]
+        question_type_str = d[u"type"]
         d_copy = d.copy()
 
         # Todo: figure out a global setting for whether select all
@@ -72,7 +72,7 @@ class SurveyElementBuilder(object):
         # hack job right here to get this to work
         if question_type_str.endswith(u" or specify other"):
             question_type_str = question_type_str[:len(question_type_str)-len(u" or specify other")]
-            d_copy[Question.TYPE] = question_type_str
+            d_copy["type"] = question_type_str
             self._add_other_option_to_multiple_choice_question(d_copy)
             return [self._create_question_from_dict(d_copy),
                     self._create_specify_other_question_from_dict(d_copy)]
@@ -115,22 +115,24 @@ class SurveyElementBuilder(object):
 
     def _create_specify_other_question_from_dict(self, d):
         kwargs = {
-            Question.TYPE: u"text",
-            Question.NAME: u"%s_other" % d[Question.NAME],
-            Question.LABEL: u"Specify other.",
-            Question.BIND: {u"relevant": u"selected(../%s, 'other')" % d[Question.NAME]},
+            u"type": u"text",
+            u"name": u"%s_other" % d[u"name"],
+            u"label": u"Specify other.",
+            u"bind": {u"relevant": u"selected(../%s, 'other')" % d[u"name"]},
             }
         return InputQuestion(**kwargs)
 
     def _create_section_from_dict(self, d):
         d_copy = d.copy()
-        children = d_copy.pop(Section.CHILDREN)
-        section_class = self.SECTION_CLASSES[d_copy[Section.TYPE]]
+        children = d_copy.pop(u"children")
+        section_class = self.SECTION_CLASSES[d_copy[u"type"]]
+        if d[u'type'] == u'survey' and u'title' not in d:
+            d_copy[u'title'] = d[u'name']
         result = section_class(**d_copy)
         for child in children:
             survey_element = self.create_survey_element_from_dict(child)
             if survey_element:
-                result.add_child(survey_element)
+                result.add_children(survey_element)
         return result
 
     def _create_loop_from_dict(self, d):
@@ -143,21 +145,22 @@ class SurveyElementBuilder(object):
         # create_table_from_dict, I will need to clean this up
         for loop_item in d[u"columns"]:
             kwargs = {
-                Section.NAME: loop_item.get(Section.NAME, u""),
-                Section.LABEL: loop_item.get(Section.LABEL, u""),
+                u"name": loop_item.get(u"name", u""),
+                u"label": loop_item.get(u"label", u""),
                 }
             # if this is a none option for a select all that apply
             # question then we should skip adding it to the result
-            if kwargs[Section.NAME]=="none": continue
+            if kwargs[u"name"]=="none": continue
 
             column = GroupedSection(**kwargs)
-            for child in d[SurveyElement.CHILDREN]:
+            for child in d[u"children"]:
                 question_dict = self._create_question_dict_from_template_and_info(child, loop_item)
                 question = self.create_survey_element_from_dict(question_dict)
                 column.add_child(question)
             result.add_child(column)
-        if result.get_name()!=u"": return result
-        return result.get_children()
+        if result.name != u"":
+            return result
+        return result.children
 
     def _create_question_dict_from_template_and_info(self, question_template, info):
         # if the label in info has multiple languages setup a
@@ -181,18 +184,18 @@ class SurveyElementBuilder(object):
         return result
 
     def create_survey_element_from_dict(self, d):
-        if d[SurveyElement.TYPE] in self.SECTION_CLASSES:
+        if d[u"type"] in self.SECTION_CLASSES:
             return self._create_section_from_dict(d)
-        elif d[SurveyElement.TYPE]==u"loop":
+        elif d[u"type"] == u"loop":
             return self._create_loop_from_dict(d)
-        elif d[SurveyElement.TYPE]==u"include":
-            section_name = d[SurveyElement.NAME]
+        elif d[u"type"] == u"include":
+            section_name = d[u"name"]
             if section_name not in self._sections:
                 raise Exception("This section has not been included.",
                                 section_name, self._sections.keys())
             d = self._sections[section_name]
             full_survey = self.create_survey_element_from_dict(d)
-            return full_survey.get_children()
+            return full_survey.children
         else:
             return self._create_question_from_dict(d)
 
@@ -223,7 +226,6 @@ def create_survey(
     main_section=None,
     id_string=None,
     title=None,
-    print_name=None,
     default_language=None,
     question_type_dictionary=None
     ):
@@ -234,10 +236,9 @@ def create_survey(
     builder.set_question_type_dictionary(question_type_dictionary)
     #assert name_of_main_section in sections, name_of_main_section
     survey = builder.create_survey_element_from_dict(main_section)
-    survey.set_id_string(id_string)
-    survey.set_title(title)
-    survey.set_print_name(print_name)
-    survey.set_def_lang(default_language)
+    survey.id_string = id_string
+    survey.title = title
+    survey.def_lang = default_language
     return survey
 
 def create_survey_from_path(path, include_directory=False):

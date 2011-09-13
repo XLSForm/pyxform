@@ -118,7 +118,7 @@ class XFormInstanceParser(object):
 
     def get_flat_dict_with_attributes(self):
         result = self.to_flat_dict().copy()
-        result[XFORM_ID_STRING] = self.get_xform_id_string()
+        result[XFORM_ID_STRING] = self.get_xform_id_string
         return result
 
 

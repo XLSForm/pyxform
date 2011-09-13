@@ -17,8 +17,8 @@ class BuilderTests(TestCase):
             type=u"survey"
             )
         question = InputQuestion(name=u"age")
-        question.set(InputQuestion.TYPE, u"integer")
-        question.set(InputQuestion.LABEL, u"How old are you?")
+        question.type = u"integer"
+        question.label = u"How old are you?"
         survey_out.add_child(question)
         self.survey_out_dict = survey_out.to_dict()
         print_pyobj_to_json(self.survey_out_dict, utils.path_to_text_fixture("how_old_are_you.json"))
@@ -95,8 +95,9 @@ class BuilderTests(TestCase):
     def test_specify_other(self):
         survey = utils.create_survey_from_fixture("specify_other", filetype=FIXTURE_FILETYPE)
         expected_dict = {
-            u'name': 'specify_other',
+            u'name': u'specify_other',
             u'type': u'survey',
+            u'title': u'specify_other',
             u'children': [
                 {
                     u'name': u'sex',
@@ -124,6 +125,7 @@ class BuilderTests(TestCase):
                     u'type': u'text'}
                 ]
             }
+        self.maxDiff = None
         self.assertEqual(survey.to_dict(), expected_dict)
 
     def test_include(self):
@@ -131,6 +133,7 @@ class BuilderTests(TestCase):
                                                   include_directory=True)
         expected_dict = {
             u'name': 'include',
+            u'title': 'include',
             u'type': u'survey',
             u'children': [
                 {
@@ -156,15 +159,30 @@ class BuilderTests(TestCase):
         self.assertEqual(survey.to_dict(), expected_dict)
 
     def test_include_json(self):
-        survey_in = utils.create_survey_from_fixture("include_json", filetype=FIXTURE_FILETYPE,
-                                                     include_directory=True)
-        for k, v in survey_in.to_dict().items():
-            if k!="name": self.assertEqual(v, self.survey_out_dict[k])
+        survey_in = utils.create_survey_from_fixture(
+            "include_json",
+            filetype=FIXTURE_FILETYPE,
+            include_directory=True
+            )
+        expected_dict = {
+            u'name': u'include_json',
+            u'title': u'include_json',
+            u'type': u'survey',
+            u'children': [
+                {
+                    u'label': u'How old are you?',
+                    u'name': u'age',
+                    u'type': u'integer'
+                    }
+                ],
+            }
+        self.assertEquals(survey_in.to_dict(), expected_dict)
 
     def test_loop(self):
         survey = utils.create_survey_from_fixture("loop", filetype=FIXTURE_FILETYPE)
         expected_dict = {
             u'name': 'loop',
+            u'title': u'loop',
             u'type': u'survey',
             u'children': [
                 {
@@ -241,5 +259,5 @@ class BuilderTests(TestCase):
                     u'label': u'Other',
                     u'type' : u'group',
                     u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}
-
+        self.maxDiff = None
         self.assertEqual(survey.to_dict(), expected_dict)
