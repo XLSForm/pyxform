@@ -56,7 +56,7 @@ yes_no_conversions = {
         "FALSE": "false()"
     }
 
-from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
+from xls2json_backends import xls_to_dict, csv_to_dict
 
 
 class SpreadsheetReader(object):

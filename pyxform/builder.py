@@ -8,7 +8,7 @@ from xls2json import SurveyReader
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY, \
      QuestionTypeDictionary
 import os
-from pyxform import file_utils
+import file_utils
 
 
 class SurveyElementBuilder(object):
@@ -236,8 +236,7 @@ def create_survey(
     builder.set_question_type_dictionary(question_type_dictionary)
     #assert name_of_main_section in sections, name_of_main_section
     survey = builder.create_survey_element_from_dict(main_section)
-    if id_string is not None:
-        survey.id_string = id_string
+    survey.id_string = name_of_main_section if id_string is None else name_of_main_section
     if title is not None:
         survey.title = title
     survey.def_lang = default_language
