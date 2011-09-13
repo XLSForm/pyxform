@@ -236,8 +236,10 @@ def create_survey(
     builder.set_question_type_dictionary(question_type_dictionary)
     #assert name_of_main_section in sections, name_of_main_section
     survey = builder.create_survey_element_from_dict(main_section)
-    survey.id_string = id_string
-    survey.title = title
+    if id_string is not None:
+        survey.id_string = id_string
+    if title is not None:
+        survey.title = title
     survey.def_lang = default_language
     return survey
 
@@ -251,7 +253,6 @@ def create_survey_from_path(path, include_directory=False):
         main_section_name, section = file_utils.load_file_to_dict(path)
         sections = {main_section_name: section}
     pkg = {
-        u'title': main_section_name,
         u'name_of_main_section': main_section_name,
         u'sections': sections
         }

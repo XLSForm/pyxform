@@ -161,8 +161,14 @@ class SurveyReader(SpreadsheetReader):
         if self._lists_sheet_name:
             self._construct_choice_lists()
             self._insert_lists()
-        self._dict = self._dict[SURVEY_SHEET]
+        self._save_settings()
         self._organize_sections()
+
+    def _save_settings(self):
+        # the excel reader gives a list of dicts, one dict for each
+        # row after the headers, we're only going to use the first
+        # row.
+        self._settings = self._dict.get(u"settings", [{}])[0]
 
     def _remove_questions_without_types(self):
         self._dict[SURVEY_SHEET] = [
@@ -285,7 +291,9 @@ class SurveyReader(SpreadsheetReader):
 
     def _organize_sections(self):
         # this needs to happen after columns have been inserted
+        self._dict = self._dict[SURVEY_SHEET]
         result = {u"type": u"survey", u"name": self._name, u"children": []}
+        result.update(self._settings)
         stack = [result]
         for cmd in self._dict:
             cmd_type = cmd[u"type"]
