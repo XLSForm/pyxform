@@ -235,8 +235,9 @@ def create_survey(
     builder.set_sections(sections)
     builder.set_question_type_dictionary(question_type_dictionary)
     #assert name_of_main_section in sections, name_of_main_section
+    if u"id_string" not in main_section:
+        main_section[u"id_string"] = name_of_main_section if id_string is None else name_of_main_section
     survey = builder.create_survey_element_from_dict(main_section)
-    survey.id_string = name_of_main_section if id_string is None else name_of_main_section
     if title is not None:
         survey.title = title
     survey.def_lang = default_language
