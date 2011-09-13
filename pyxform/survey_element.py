@@ -215,8 +215,8 @@ class SurveyElement(object):
 
     def xml_hint(self):
         if type(self.get_hint()) == dict:
-            d = self.get_translation_keys()
-            return node(u"hint", ref="jr:itext('%s')" % d[u"hint"])
+            path = self._translation_path("hint")
+            return node(u"hint", ref="jr:itext('%s')" % path)
         else:
             hint, outputInserted = self.get_root().insert_output_values(self.get_hint())
             return node(u"hint", hint, toParseString=outputInserted)
