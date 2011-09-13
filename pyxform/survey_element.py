@@ -1,3 +1,4 @@
+import json
 from utils import is_valid_xml_tag, node
 from collections import defaultdict
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
@@ -165,6 +166,9 @@ class SurveyElement(object):
             if not v:
                 del result[k]
         return result
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
 
     def json_dump(self, path=""):
         if not path:
