@@ -240,17 +240,18 @@ def create_survey(
     survey.set_def_lang(default_language)
     return survey
 
-
-def create_survey_from_path(path):
-    """
-    I think this should be phased out. [AD]
-    """
+def create_survey_from_path(path, include_directory=False):
     directory, file_name = os.path.split(path)
     main_section_name = file_utils._section_name(file_name)
-    sections = file_utils.collect_compatible_files_in_directory(directory)
+    if include_directory:
+        main_section_name = file_utils._section_name(file_name)
+        sections = file_utils.collect_compatible_files_in_directory(directory)
+    else:
+        main_section_name, section = file_utils.load_file_to_dict(path)
+        sections = {main_section_name: section}
     pkg = {
         u'title': main_section_name,
         u'name_of_main_section': main_section_name,
         u'sections': sections
-    }
+        }
     return create_survey(**pkg)
