@@ -238,6 +238,12 @@ def create_survey(
     if u"id_string" not in main_section:
         main_section[u"id_string"] = name_of_main_section if id_string is None else name_of_main_section
     survey = builder.create_survey_element_from_dict(main_section)
+
+    # not sure where to do this without repeating ourselves, but it's needed to pass
+    # xls2xform tests
+    if id_string is not None:
+        survey.id_string = id_string
+
     if title is not None:
         survey.title = title
     survey.def_lang = default_language
