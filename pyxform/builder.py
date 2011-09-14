@@ -135,26 +135,23 @@ class SurveyElementBuilder(object):
                 result.add_children(survey_element)
         return result
 
-    def _create_loop_from_dict(self, d):
+    def _create_loop_from_dict(self, d, group_each_iteration=True):
         d_copy = d.copy()
-        d_copy.pop(u"children", "")
-        d_copy.pop(u"columns", "")
+        children = d_copy.pop(u"children", [])
+        columns = d_copy.pop(u"columns", [])
         result = GroupedSection(**d_copy)
 
         # columns is a left over from when this was
         # create_table_from_dict, I will need to clean this up
-        for loop_item in d[u"columns"]:
-            kwargs = {
-                u"name": loop_item.get(u"name", u""),
-                u"label": loop_item.get(u"label", u""),
-                }
+        for column_dict in columns:
+
             # if this is a none option for a select all that apply
             # question then we should skip adding it to the result
-            if kwargs[u"name"]=="none": continue
+            if column_dict[u"name"]=="none": continue
 
-            column = GroupedSection(**kwargs)
-            for child in d[u"children"]:
-                question_dict = self._create_question_dict_from_template_and_info(child, loop_item)
+            column = GroupedSection(**column_dict)
+            for child in children:
+                question_dict = self._name_and_label_substitutions(child, column_dict)
                 question = self.create_survey_element_from_dict(question_dict)
                 column.add_child(question)
             result.add_child(column)
@@ -162,7 +159,7 @@ class SurveyElementBuilder(object):
             return result
         return result.children
 
-    def _create_question_dict_from_template_and_info(self, question_template, info):
+    def _name_and_label_substitutions(self, question_template, info):
         # if the label in info has multiple languages setup a
         # dictionary by language to do substitutions.
         if type(info[u"label"])==dict:
