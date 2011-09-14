@@ -51,7 +51,7 @@ class Survey(Section):
 
     def xml_model(self):
         self._setup_translations()
-        self._setup_media()
+        # self._setup_media()
         if self._translations:
             return node("model",
                         self.itext(),
@@ -68,6 +68,18 @@ class Survey(Section):
         for e in self.iter_children():
             for d in e.get_translations():
                 self._translations[d['lang']][d['path']] = d['text']
+        self._add_empty_translations()
+
+    def _add_empty_translations(self):
+        paths = []
+        for lang, d in self._translations.items():
+            for path, text in d.items():
+                if path not in paths:
+                    paths.append(path)
+        for lang, d in self._translations.items():
+            for path in paths:
+                if path not in d:
+                    self._translations[lang][path] = u"-"
 
     def _setup_media(self):
         """
@@ -164,17 +176,15 @@ class Survey(Section):
 
     def itext(self):
         children = []
-        for lang in self._translations.keys():
+        for lang, d in self._translations.items():
             kwargs = {'lang': lang}
             if lang == self.default_language:
                 kwargs['default'] = ''
             children.append(node("translation", **kwargs))
 
-            for e in self.iter_children():
-                for d in e.get_translations():
-                    if d['lang'] == lang:
-                        t = node("text", node("value", d['text']), id=d['path'])
-                        children[-1].appendChild(t)
+            for path, text in d.items():
+                t = node("text", node("value", text), id=path)
+                children[-1].appendChild(t)
 
             # todo: figure out how to get media in here smoothly
 
