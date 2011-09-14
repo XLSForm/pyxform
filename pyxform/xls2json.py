@@ -156,11 +156,11 @@ class SurveyReader(SpreadsheetReader):
         self._setup_survey()
 
     def _setup_survey(self):
+        assert SURVEY_SHEET in self._dict, "You must have a sheet named: " + SURVEY_SHEET
         self._remove_questions_without_types()
         self._process_question_type()
-        if self._lists_sheet_name:
-            self._construct_choice_lists()
-            self._insert_lists()
+        self._construct_choice_lists()
+        self._insert_lists()
         self._save_settings()
         self._organize_sections()
 
@@ -259,6 +259,8 @@ class SurveyReader(SpreadsheetReader):
         Each choice has a list name associated with it. Go through the
         list of choices, grouping all the choices by their list name.
         """
+        if self._lists_sheet_name is None:
+            return
         choice_list = self._dict[self._lists_sheet_name]
         choices = {}
         for choice in choice_list:
@@ -277,7 +279,7 @@ class SurveyReader(SpreadsheetReader):
         For each multiple choice question and loop in the survey find
         the corresponding list and add it to that question.
         """
-        lists_by_name = self._dict[self._lists_sheet_name]
+        lists_by_name = self._dict.get(self._lists_sheet_name, {})
         for q in self._dict[SURVEY_SHEET]:
             self._insert_list(q, CHOICES, lists_by_name)
             self._insert_list(q, COLUMNS, lists_by_name)
