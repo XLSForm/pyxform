@@ -11,6 +11,7 @@ class LoopTests(TestCase):
         self.maxDiff = None
         expected_dict = {
             u'name': u'another_loop',
+            u'id_string': u'another_loop',
             u'title': u'another_loop',
             u'type': u'survey',
             u'children': [

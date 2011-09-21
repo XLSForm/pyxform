@@ -215,8 +215,9 @@ def create_survey_element_from_json(str_or_path):
 def create_survey_from_xls(path_or_file):
     excel_reader = SurveyReader(path_or_file)
     d = excel_reader.to_dict()
-    return create_survey_element_from_dict(d)
-
+    survey = create_survey_element_from_dict(d)
+    survey.id_string = excel_reader._name
+    return survey
 
 def create_survey(
     name_of_main_section=None, sections={},
