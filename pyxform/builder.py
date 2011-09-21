@@ -216,7 +216,8 @@ def create_survey_from_xls(path_or_file):
     excel_reader = SurveyReader(path_or_file)
     d = excel_reader.to_dict()
     survey = create_survey_element_from_dict(d)
-    survey.id_string = excel_reader._name
+    if not survey.id_string:
+        survey.id_string = excel_reader._name
     return survey
 
 def create_survey(
