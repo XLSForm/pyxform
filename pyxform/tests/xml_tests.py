@@ -19,11 +19,11 @@ class XMLTests(TestCase):
           <text id="/yes_or_no_question/good_day:label">
             <value>have you had a good day today?</value>
           </text>
-          <text id="/yes_or_no_question/good_day/yes:label">
-            <value>yes</value>
-          </text>
           <text id="/yes_or_no_question/good_day/no:label">
             <value>no</value>
+          </text>
+          <text id="/yes_or_no_question/good_day/yes:label">
+            <value>yes</value>
           </text>
         </translation>
       </itext>

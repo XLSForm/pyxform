@@ -12,7 +12,7 @@ HEADLESS_ODK_VALIDATE_REGEXS = {
     'error': r"^Error: (.*)$",
     }
 
-from pyxform.odk_validate.errors import ODKValidateError
+from errors import ODKValidateError
 
 class XFormValidator(object):
 

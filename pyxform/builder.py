@@ -8,7 +8,7 @@ from xls2json import SurveyReader
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY, \
      QuestionTypeDictionary
 import os
-from pyxform import file_utils
+import file_utils
 
 
 class SurveyElementBuilder(object):
@@ -135,26 +135,23 @@ class SurveyElementBuilder(object):
                 result.add_children(survey_element)
         return result
 
-    def _create_loop_from_dict(self, d):
+    def _create_loop_from_dict(self, d, group_each_iteration=True):
         d_copy = d.copy()
-        d_copy.pop(u"children", "")
-        d_copy.pop(u"columns", "")
+        children = d_copy.pop(u"children", [])
+        columns = d_copy.pop(u"columns", [])
         result = GroupedSection(**d_copy)
 
         # columns is a left over from when this was
         # create_table_from_dict, I will need to clean this up
-        for loop_item in d[u"columns"]:
-            kwargs = {
-                u"name": loop_item.get(u"name", u""),
-                u"label": loop_item.get(u"label", u""),
-                }
+        for column_dict in columns:
+
             # if this is a none option for a select all that apply
             # question then we should skip adding it to the result
-            if kwargs[u"name"]=="none": continue
+            if column_dict[u"name"]=="none": continue
 
-            column = GroupedSection(**kwargs)
-            for child in d[u"children"]:
-                question_dict = self._create_question_dict_from_template_and_info(child, loop_item)
+            column = GroupedSection(**column_dict)
+            for child in children:
+                question_dict = self._name_and_label_substitutions(child, column_dict)
                 question = self.create_survey_element_from_dict(question_dict)
                 column.add_child(question)
             result.add_child(column)
@@ -162,7 +159,7 @@ class SurveyElementBuilder(object):
             return result
         return result.children
 
-    def _create_question_dict_from_template_and_info(self, question_template, info):
+    def _name_and_label_substitutions(self, question_template, info):
         # if the label in info has multiple languages setup a
         # dictionary by language to do substitutions.
         if type(info[u"label"])==dict:
@@ -218,8 +215,10 @@ def create_survey_element_from_json(str_or_path):
 def create_survey_from_xls(path_or_file):
     excel_reader = SurveyReader(path_or_file)
     d = excel_reader.to_dict()
-    return create_survey_element_from_dict(d)
-
+    survey = create_survey_element_from_dict(d)
+    if not survey.id_string:
+        survey.id_string = excel_reader._name
+    return survey
 
 def create_survey(
     name_of_main_section=None, sections={},
@@ -235,9 +234,15 @@ def create_survey(
     builder.set_sections(sections)
     builder.set_question_type_dictionary(question_type_dictionary)
     #assert name_of_main_section in sections, name_of_main_section
+    if u"id_string" not in main_section:
+        main_section[u"id_string"] = name_of_main_section if id_string is None else name_of_main_section
     survey = builder.create_survey_element_from_dict(main_section)
+
+    # not sure where to do this without repeating ourselves, but it's needed to pass
+    # xls2xform tests
     if id_string is not None:
         survey.id_string = id_string
+
     if title is not None:
         survey.title = title
     survey.def_lang = default_language
