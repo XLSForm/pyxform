@@ -1,5 +1,7 @@
 from xlrd import open_workbook
 from collections import defaultdict
+import csv
+import cStringIO
 
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
@@ -56,7 +58,6 @@ def xls_to_dict(path_or_file):
     return result
 
 
-import csv
 def csv_to_dict(path):
     _dict = {}
     def first_column_as_sheet_name(row):
@@ -89,3 +90,54 @@ def csv_to_dict(path):
                             _d[unicode(key)] = unicode(val)
                     _dict[sheet_name].append(_d)
     return _dict
+
+
+"""
+I want the ability to go:
+
+    xls => csv
+so that we can go:
+    xls => csv => survey
+
+and some day:
+    csv => xls
+
+"""
+
+def convert_file_to_csv_string(path):
+    """
+    This will open a csv or xls file and return a CSV in the format:
+        sheet_name1
+        ,col1,col2
+        ,r1c1,r1c2
+        ,r2c1,r2c2
+        sheet_name2
+        ,col1,col2
+        ,r1c1,r1c2
+        ,r2c1,r2c2
+
+    Currently, it processes csv files and xls files to ensure consistent
+    csv delimiters, etc. for tests.
+    """
+    if path.endswith(".csv"):
+        imported_sheets = csv_to_dict(path)
+    else:
+        imported_sheets = xls_to_dict(path)
+    foo = cStringIO.StringIO()
+    writer = csv.writer(foo, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    for sheet_name, rows in imported_sheets.items():
+        writer.writerow([sheet_name])
+        out_keys = []
+        out_rows = []
+        for row in rows:
+            out_row = []
+            for key in row.keys():
+                if key not in out_keys:
+                    out_keys.append(key)
+            for out_key in out_keys:
+                out_row.append(row.get(out_key, None))
+            out_rows.append(out_row)
+        writer.writerow([None] + out_keys)
+        for out_row in out_rows:
+            writer.writerow([None] + out_row)
+    return foo.getvalue()
