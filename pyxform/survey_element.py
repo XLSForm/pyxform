@@ -132,7 +132,7 @@ class SurveyElement(dict):
     def get_abbreviated_xpath(self):
         lineage = self.get_lineage()
         if len(lineage) >= 2:
-            return u"/".join([n.name for n in lineage[1:]])
+            return u"/".join([unicode(n.name) for n in lineage[1:]])
         else:
             return lineage[0].name
 
