@@ -233,10 +233,11 @@ class Survey(Section):
         """
         def repl(matchobj):
             name = matchobj.group(1)
+            intro = "There has been a problem trying to replace ${%s} with the XPath to the survey element named '%s'." % (name, name)
             if name not in self._xpath:
-                raise Exception("There is no survey element with this name.", name)
+                raise Exception(intro + " There is no survey element with this name.")
             if self._xpath[name] is None:
-                raise Exception("There are multiple survey elements with this name.", name)
+                raise Exception(intro + " There are multiple survey elements with this name.")
             return self._xpath[name]
         return repl
 
