@@ -232,10 +232,12 @@ class Survey(Section):
         replace ${varname} with the xpath to varname.
         """
         def repl(matchobj):
-            if matchobj.group(1) not in self._xpath:
-                raise Exception("There is no survey element with this name.",
-                                matchobj.group(1))
-            return self._xpath[matchobj.group(1)]
+            name = matchobj.group(1)
+            if name not in self._xpath:
+                raise Exception("There is no survey element with this name.", name)
+            if self._xpath[name] is None:
+                raise Exception("There are multiple survey elements with this name.", name)
+            return self._xpath[name]
         return repl
 
     def insert_xpaths(self, text):
