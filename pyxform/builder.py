@@ -220,6 +220,7 @@ def create_survey_from_xls(path_or_file):
         survey.id_string = excel_reader._name
     return survey
 
+
 def create_survey(
     name_of_main_section=None, sections={},
     main_section=None,
@@ -247,6 +248,7 @@ def create_survey(
         survey.title = title
     survey.def_lang = default_language
     return survey
+
 
 def create_survey_from_path(path, include_directory=False):
     directory, file_name = os.path.split(path)

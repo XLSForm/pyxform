@@ -10,6 +10,14 @@ FIXTURE_FILETYPE = "xls"
 
 class BuilderTests(TestCase):
 
+    def test_uniqueness_of_section_names(self):
+        path = utils.path_to_text_fixture('group_names_must_be_unique.xls')
+        survey = create_survey_from_xls(path)
+        self.assertRaises(
+            Exception,
+            survey.to_xml
+            )
+
     def setUp(self):
         self.this_directory = os.path.dirname(__file__)
         survey_out = Survey(

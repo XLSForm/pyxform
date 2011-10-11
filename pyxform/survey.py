@@ -34,6 +34,18 @@ class Survey(Section):
             }
         )
 
+    def validate(self):
+        super(Survey, self).validate()
+        self._validate_uniqueness_of_section_names()
+
+    def _validate_uniqueness_of_section_names(self):
+        section_names = []
+        for e in self.iter_children():
+            if isinstance(e, Section):
+                if e.name in section_names:
+                    raise Exception("There are two sections with the name %s." % e.name)
+                section_names.append(e.name)
+
     def xml(self):
         """
         calls necessary preparation methods, then returns the xml.
