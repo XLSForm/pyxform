@@ -16,7 +16,7 @@ class Section(SurveyElement):
         for element in self.children:
             if element.name in element_slugs:
                 raise Exception(
-                    "There are two survey elements named %s in the section named %s." % (element.name, self.name)
+                    "There are two survey elements named '%s' in the section named '%s'." % (element.name, self.name)
                     )
             element_slugs.append(element.name)
 
