@@ -258,7 +258,7 @@ class Survey(Section):
         Replace all instances of ${var} with the xpath to var.
         """
         bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
-        return re.sub(bracketed_tag, self._var_repl_function(), text)
+        return re.sub(bracketed_tag, self._var_repl_function(), unicode(text))
 
     def _var_repl_output_function(self):
         """
@@ -274,7 +274,7 @@ class Survey(Section):
 
     def insert_output_values(self, text):
         bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
-        result = re.sub(bracketed_tag, self._var_repl_output_function(), text)
+        result = re.sub(bracketed_tag, self._var_repl_output_function(), unicode(text))
         return result, not result == text
 
     def print_xform_to_file(self, path="", validate=True):
