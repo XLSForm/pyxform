@@ -1,3 +1,6 @@
+class PyXFormError(Exception):
+    pass
 
-class PyxformError(Exception):
+
+class ValidationError(PyXFormError):
     pass

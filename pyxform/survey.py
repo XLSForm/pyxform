@@ -8,6 +8,7 @@ import re
 import os
 from odk_validate import check_xform
 from survey_element import SurveyElement
+from errors import PyXFormError
 
 
 nsmap = {
@@ -43,7 +44,7 @@ class Survey(Section):
         for e in self.iter_children():
             if isinstance(e, Section):
                 if e.name in section_names:
-                    raise Exception("There are two sections with the name %s." % e.name)
+                    raise PyXFormError("There are two sections with the name %s." % e.name)
                 section_names.append(e.name)
 
     def xml(self):
@@ -146,7 +147,7 @@ class Survey(Section):
                                         translation_label = e.to_dict()[u"label"]
                                         e.set(u"label", {lang: translation_label})
                                     else:
-                                        raise Exception(e.name, "Must include a label")
+                                        raise PyXFormError(e.name, "Must include a label")
                                 elif not langsExist:
                                     if u"label" in e.to_dict():
                                         translation_label = e.to_dict()[u"label"]
@@ -171,7 +172,7 @@ class Survey(Section):
                                             translation_label = e.to_dict()[u"label"]
                                             e.set(u"label", {lang: translation_label})
                                     else:
-                                        raise Exception(e.name, "Must include a label")
+                                        raise PyXFormError(e.name, "Must include a label")
                                 else:
                                     translation_label = self._translations[lang][translation_key]
 
@@ -184,7 +185,7 @@ class Survey(Section):
                                 self._translations[lang][translation_key][media_type_to_store]= text[media_type]
 
                             else:
-                                raise Exception("Media type: " + media_type_to_store + " not supported")
+                                raise PyXFormError("Media type: " + media_type_to_store + " not supported")
 
     def itext(self):
         children = []
@@ -247,9 +248,9 @@ class Survey(Section):
             name = matchobj.group(1)
             intro = "There has been a problem trying to replace ${%s} with the XPath to the survey element named '%s'." % (name, name)
             if name not in self._xpath:
-                raise Exception(intro + " There is no survey element with this name.")
+                raise PyXFormError(intro + " There is no survey element with this name.")
             if self._xpath[name] is None:
-                raise Exception(intro + " There are multiple survey elements with this name.")
+                raise PyXFormError(intro + " There are multiple survey elements with this name.")
             return self._xpath[name]
         return repl
 
@@ -267,7 +268,7 @@ class Survey(Section):
         """
         def repl(matchobj):
             if matchobj.group(1) not in self._xpath:
-                raise Exception("There is no survey element with this name.",
+                raise PyXFormError("There is no survey element with this name.",
                                 matchobj.group(1))
             return '<output value="' + self._xpath[matchobj.group(1)] + '" />'
         return repl

@@ -1,3 +1,0 @@
-
-class ODKValidateError(Exception):
-    pass

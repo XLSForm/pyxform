@@ -1,5 +1,6 @@
 from question import SurveyElement
 from utils import node
+from errors import PyXFormError
 
 
 class Section(SurveyElement):
@@ -15,7 +16,7 @@ class Section(SurveyElement):
         element_slugs = []
         for element in self.children:
             if element.name in element_slugs:
-                raise Exception(
+                raise PyXFormError(
                     "There are two survey elements named '%s' in the section named '%s'." % (element.name, self.name)
                     )
             element_slugs.append(element.name)

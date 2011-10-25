@@ -7,6 +7,7 @@ import re
 import sys
 import codecs
 import os
+from errors import PyXFormError
 
 
 def print_pyobj_to_json(pyobj, path):
@@ -191,14 +192,14 @@ class SurveyReader(SpreadsheetReader):
         for q in self._dict[SURVEY_SHEET]:
             if q[TYPE] == SET_TITLE:
                 if not q[NAME].strip().find(" ") == -1:
-                    raise Exception("Form title must not include any spaces", q[NAME])
+                    raise PyXFormError("Form title must not include any spaces", q[NAME])
                 self._title = q[NAME]
                 to_remove.append(q)
                 continue
 
             if q[TYPE] == SET_ID:
                 if not q[NAME].strip().find(" ") == -1:
-                    raise Exception("Form id must not include any spaces", q[NAME])
+                    raise PyXFormError("Form id must not include any spaces", q[NAME])
                 self._id = q[NAME]
                 to_remove.append(q)
                 continue
@@ -226,7 +227,7 @@ class SurveyReader(SpreadsheetReader):
                 self._prepare_begin_loop(q, question_type)
 
         if not self._id.find(" ") == -1:
-            raise Exception("Form id must not include any spaces", self._id)
+            raise PyXFormError("Form id must not include any spaces", self._id)
 
         if not self._name.find(" ") == -1:
             self._name = self._id
@@ -267,7 +268,7 @@ class SurveyReader(SpreadsheetReader):
             try:
                 list_name = choice.pop(LIST_NAME)
             except KeyError:
-                raise Exception("For some reason this choice isn't associated with a list.", choice)
+                raise PyXFormError("For some reason this choice isn't associated with a list.", choice)
             if list_name in choices:
                 choices[list_name].append(choice)
             else:
@@ -288,7 +289,7 @@ class SurveyReader(SpreadsheetReader):
         if key in q:
             list_name = q[key]
             if list_name not in lists_by_name:
-                raise Exception("There is no list of %s by this name" % key, list_name)
+                raise PyXFormError("There is no list of %s by this name" % key, list_name)
             q[key] = lists_by_name[list_name]
 
     def _organize_sections(self):
@@ -321,7 +322,7 @@ class SurveyReader(SpreadsheetReader):
 
                 begin_cmd = stack.pop()
                 if begin_cmd[u"type"] != match_end:
-                    raise Exception("This end group does not match the previous begin", cmd)
+                    raise PyXFormError("This end group does not match the previous begin", cmd)
             else:
                 stack[-1][u"children"].append(cmd)
         self._dict = result

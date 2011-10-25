@@ -1,6 +1,7 @@
 from subprocess import Popen, PIPE
 import os, re, sys
 from collections import defaultdict
+from pyxform.errors import ValidationError
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "java_lib", "ODK Validate.jar")
@@ -12,7 +13,6 @@ HEADLESS_ODK_VALIDATE_REGEXS = {
     'error': r"^Error: (.*)$",
     }
 
-from errors import ODKValidateError
 
 class XFormValidator(object):
 
@@ -44,7 +44,8 @@ class XFormValidator(object):
         self._run_odk_validate(path_to_xform)
         self._parse_odk_validate_output()
         if not self.is_valid():
-            raise ODKValidateError(self.get_odk_validate_output())
+            raise ValidationError(self.get_odk_validate_output())
+
 
 def check_xform(path):
     validator = XFormValidator()

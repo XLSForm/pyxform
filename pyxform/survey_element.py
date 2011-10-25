@@ -2,6 +2,7 @@ import json
 from utils import is_valid_xml_tag, node
 from xls2json import print_pyobj_to_json
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
+from errors import PyXFormError
 
 
 def _overlay(over, under):
@@ -100,7 +101,7 @@ class SurveyElement(dict):
     def validate(self):
         if not is_valid_xml_tag(self.name):
             msg = "The name of this survey element is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods."
-            raise Exception(self.name, msg)                
+            raise PyXFormError(self.name, msg)                
 
     def iter_children(self):
         # it really seems like this method should not yield self

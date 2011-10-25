@@ -1,7 +1,6 @@
-from survey_element import SurveyElement
 from question import Question, InputQuestion, TriggerQuestion, \
     UploadQuestion, MultipleChoiceQuestion
-from section import Section, RepeatingSection, GroupedSection
+from section import RepeatingSection, GroupedSection
 from survey import Survey
 import utils
 from xls2json import SurveyReader
@@ -9,6 +8,7 @@ from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY, \
      QuestionTypeDictionary
 import os
 import file_utils
+from errors import PyXFormError
 
 
 class SurveyElementBuilder(object):
@@ -87,7 +87,7 @@ class SurveyElementBuilder(object):
         # ideally, we'd just be pulling from children
         choice_list = d.get(u"choices", d.get(u"children", []))
         if len(choice_list) <= 0:
-            raise Exception("There should be choices for this question.")
+            raise PyXFormError("There should be choices for this question.")
         other_choice = {
             u"name": u"other",
             u"label": u"Other",
@@ -98,7 +98,7 @@ class SurveyElementBuilder(object):
     def _add_none_option_to_select_all_that_apply(self, d_copy):
         choice_list = d_copy.get(u"choices", d_copy.get(u"children", []))
         if len(choice_list) <= 0:
-            raise Exception("There should be choices for this question.")
+            raise PyXFormError("There should be choices for this question.")
         none_choice = {
             u"name": u"none",
             u"label": u"None",
@@ -188,7 +188,7 @@ class SurveyElementBuilder(object):
         elif d[u"type"] == u"include":
             section_name = d[u"name"]
             if section_name not in self._sections:
-                raise Exception("This section has not been included.",
+                raise PyXFormError("This section has not been included.",
                                 section_name, self._sections.keys())
             d = self._sections[section_name]
             full_survey = self.create_survey_element_from_dict(d)
