@@ -188,15 +188,12 @@ class SurveyElement(dict):
 
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):
-        if not self.label and not self.type == "group" and len(self.media) == 0:
-            return None
-
-        if type(self.label) == dict or not len(self.media) == 0:
-            if len(self.label) == 0 and self.type == "group":
-                return None
-            return node(u"label", ref="jr:itext('%s')" % self._translation_path(u"label"))
+        if type(self.label) == dict:
+            ref = "jr:itext('%s')" % self._translation_path(u"label")
+            return node(u"label", ref=ref)
         else:
-            label, outputInserted = self.get_root().insert_output_values(self.label)
+            survey = self.get_root()
+            label, outputInserted = survey.insert_output_values(self.label)
             return node(u"label", label, toParseString=outputInserted)
 
     def xml_hint(self):
