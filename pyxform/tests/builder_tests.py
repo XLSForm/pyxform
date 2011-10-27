@@ -2,6 +2,7 @@ from unittest import TestCase
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
+from pyxform.errors import PyXFormError
 import utils
 import os
 
@@ -9,6 +10,14 @@ FIXTURE_FILETYPE = "xls"
 
 
 class BuilderTests(TestCase):
+
+    def test_unknown_question_type(self):
+        path = utils.path_to_text_fixture('unknown_question_type.xls')
+        survey = create_survey_from_xls(path)
+        self.assertRaises(
+            PyXFormError,
+            survey.to_xml
+            )
 
     def test_uniqueness_of_section_names(self):
         path = utils.path_to_text_fixture('group_names_must_be_unique.xls')

@@ -1,8 +1,20 @@
 from utils import node
 from survey_element import SurveyElement
+from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
+from errors import PyXFormError
 
 
 class Question(SurveyElement):
+
+    def validate(self):
+        SurveyElement.validate(self)
+
+        # make sure that the type of this question exists in the
+        # question type dictionary.
+        if self.type not in DEFAULT_QUESTION_TYPE_DICTIONARY:
+            raise PyXFormError(
+                "Unknown question type '%s'." % self.type
+                )
 
     def xml_instance(self):
         if self.get(u"default"):
