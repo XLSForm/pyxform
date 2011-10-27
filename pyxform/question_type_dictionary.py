@@ -2,7 +2,7 @@ from xls2json import QuestionTypesReader
 import os
 
 
-class QuestionTypeDictionary(object):
+class QuestionTypeDictionary(dict):
 
     def __init__(self, file_name="base"):
         # Right now we're using an excel file to describe question
@@ -17,9 +17,10 @@ class QuestionTypeDictionary(object):
             "%s.xls" % file_name
             )
         excel_reader = QuestionTypesReader(path_to_question_types)
-        self._dict = excel_reader.to_dict()
+        for k, v in excel_reader.to_dict().iteritems():
+            self[k] = v
 
     def get_definition(self, question_type_str):
-        return self._dict.get(question_type_str, {})
+        return self.get(question_type_str, {})
 
 DEFAULT_QUESTION_TYPE_DICTIONARY = QuestionTypeDictionary()
