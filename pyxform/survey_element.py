@@ -100,8 +100,8 @@ class SurveyElement(dict):
 
     def validate(self):
         if not is_valid_xml_tag(self.name):
-            msg = "The name of this survey element is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods."
-            raise PyXFormError(self.name, msg)
+            msg = "The name '%s' is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods." % self.name
+            raise PyXFormError(msg)
 
     def iter_children(self):
         # it really seems like this method should not yield self
