@@ -157,7 +157,8 @@ class SurveyReader(SpreadsheetReader):
         self._setup_survey()
 
     def _setup_survey(self):
-        assert SURVEY_SHEET in self._dict, "You must have a sheet named: " + SURVEY_SHEET
+        if SURVEY_SHEET not in self._dict:
+            raise PyXFormError("You must have a sheet named: " + SURVEY_SHEET)
         self._remove_questions_without_types()
         self._process_question_type()
         self._construct_choice_lists()
@@ -219,7 +220,7 @@ class SurveyReader(SpreadsheetReader):
 
             question_type = q[TYPE]
             question_type.strip()
-            re.sub(r"\s+", " ", question_type)
+            question_type = re.sub(r"\s+", " ", question_type)
 
             if u"select" in question_type:
                 self._prepare_multiple_choice_question(q, question_type)
@@ -238,7 +239,8 @@ class SurveyReader(SpreadsheetReader):
     def _prepare_multiple_choice_question(self, q, question_type):
         regexp = r"^(?P<select_command>select one|select all that apply) from (?P<list_name>\S+)( (?P<specify_other>or specify other))?$"
         m = re.search(regexp, question_type)
-        assert m, "unsupported select syntax:" + question_type
+        if not m:
+            raise PyXFormError("Unsupported select syntax '%s'." % question_type)
         assert CHOICES not in q
         d = m.groupdict()
         q[CHOICES] = d["list_name"]
@@ -249,7 +251,8 @@ class SurveyReader(SpreadsheetReader):
 
     def _prepare_begin_loop(self, q, question_type):
         m = re.search(r"^(?P<type>begin loop) over (?P<list_name>\S+)$", question_type)
-        assert m, "unsupported select syntax:" + question_type
+        if not m:
+            raise PyXFormError("unsupported loop syntax:" + question_type)
         assert COLUMNS not in q
         d = m.groupdict()
         q[COLUMNS] = d["list_name"]

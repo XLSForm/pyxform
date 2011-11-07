@@ -101,7 +101,7 @@ class SurveyElement(dict):
     def validate(self):
         if not is_valid_xml_tag(self.name):
             msg = "The name of this survey element is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods."
-            raise PyXFormError(self.name, msg)                
+            raise PyXFormError(self.name, msg)
 
     def iter_children(self):
         # it really seems like this method should not yield self
@@ -217,7 +217,8 @@ class SurveyElement(dict):
         elif self.hint:
             return [self.xml_hint()]
         else:
-            return None
+            msg = "The survey element named '%s' has no label or hint." % self.name
+            raise PyXFormError(msg)
 
     def xml_binding(self):
         """
