@@ -72,7 +72,10 @@ class SpreadsheetReader(object):
 
         (filepath, filename) = os.path.split(path)
         (shortname, extension) = os.path.splitext(filename)
-        if extension == ".xls":
+        self.filetype = None
+        if extension == ".xlsx":
+            raise PyXFormError("XLSX files are not supported at this time. Please save the spreadsheet as an XLS file (97).")
+        elif extension == ".xls":
             self.filetype = "xls"
         elif extension == ".csv":
             self.filetype = "csv"
@@ -85,7 +88,9 @@ class SpreadsheetReader(object):
         self._parse_input()
 
     def _parse_input(self):
-        if self.filetype == "xls":
+        if self.filetype == None:
+            raise PyXFormError("File was not recognized")
+        elif self.filetype == "xls":
             self._dict = xls_to_dict(self._file_object if self._file_object is not None else self._path)
         elif self.filetype == "csv":
             self._dict = csv_to_dict(self._path)

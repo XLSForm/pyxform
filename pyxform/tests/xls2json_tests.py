@@ -83,6 +83,11 @@ class BasicXls2JsonApiTests(TestCase):
 
         self.assertEqual(x.to_dict(), expected_dict)
 
+    def test_xlsx_fails(self):
+        def load_xlsx_file():
+            x = SurveyReader(utils.path_to_text_fixture("text_and_integer_xlsx.xlsx"))
+        self.assertRaises(Exception, load_xlsx_file)
+
 from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 
 class CsvReaderEquivalencyTest(TestCase):
