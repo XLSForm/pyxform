@@ -11,17 +11,21 @@ FIXTURE_FILETYPE = "xls"
 
 class BuilderTests(TestCase):
 
+    def test_new_widgets(self):
+        survey = utils.build_survey('widgets.xls')
+        path = utils.path_to_text_fixture('widgets.xml')
+        with open(path) as f:
+            self.assertEqual(survey.to_xml(), f.read())
+
     def test_unknown_question_type(self):
-        path = utils.path_to_text_fixture('unknown_question_type.xls')
-        survey = create_survey_from_xls(path)
+        survey = utils.build_survey('unknown_question_type.xls')
         self.assertRaises(
             PyXFormError,
             survey.to_xml
             )
 
     def test_uniqueness_of_section_names(self):
-        path = utils.path_to_text_fixture('group_names_must_be_unique.xls')
-        survey = create_survey_from_xls(path)
+        survey = utils.build_survey('group_names_must_be_unique.xls')
         self.assertRaises(
             Exception,
             survey.to_xml

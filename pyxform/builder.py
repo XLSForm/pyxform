@@ -29,6 +29,7 @@ class SurveyElementBuilder(object):
         }
 
     def __init__(self, **kwargs):
+        self._add_none_option = True
         self.set_sections(
             kwargs.get(u"sections", {})
             )
@@ -66,7 +67,8 @@ class SurveyElementBuilder(object):
 
         # Todo: figure out a global setting for whether select all
         # that apply questions have an automatic none option.
-        if question_type_str.startswith(u"select all that apply"):
+        if self._add_none_option and \
+                question_type_str.startswith(u"select all that apply"):
             self._add_none_option_to_select_all_that_apply(d_copy)
 
         # hack job right here to get this to work
@@ -181,6 +183,8 @@ class SurveyElementBuilder(object):
         return result
 
     def create_survey_element_from_dict(self, d):
+        if u"add_none_option" in d:
+            self._add_none_option = d[u"add_none_option"]
         if d[u"type"] in self.SECTION_CLASSES:
             return self._create_section_from_dict(d)
         elif d[u"type"] == u"loop":
