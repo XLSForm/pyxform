@@ -126,7 +126,7 @@ class SurveyElementBuilder(object):
 
     def _create_section_from_dict(self, d):
         d_copy = d.copy()
-        children = d_copy.pop(u"children")
+        children = d_copy.pop(u"children", [])
         section_class = self.SECTION_CLASSES[d_copy[u"type"]]
         if d[u'type'] == u'survey' and u'title' not in d:
             d_copy[u'title'] = d[u'name']
