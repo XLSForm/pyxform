@@ -93,7 +93,7 @@ class SpreadsheetReader(object):
         elif self.filetype == "xls":
             self._dict = xls_to_dict(self._file_object if self._file_object is not None else self._path)
         elif self.filetype == "csv":
-            self._dict = csv_to_dict(self._path)
+            self._dict = csv_to_dict(self._file_object if self._file_object is not None else self._path)
         self._sheet_names = self._dict.keys()
         self._set_choices_and_columns_sheet_name()
         self._strip_unicode_values()

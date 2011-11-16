@@ -57,38 +57,48 @@ def xls_to_dict(path_or_file):
                 result[sheet.name].append(row_dict)
     return result
 
+def csv_to_dict(path_or_file):
+    if isinstance(path_or_file, basestring):
+        with open(path_or_file) as f:
+            csv_data = f.read()
+    else:
+        csv_data = path_or_file.read()
 
-def csv_to_dict(path):
     _dict = {}
     def first_column_as_sheet_name(row):
-        s_or_c = row[0]
-        content = row[1:]
-        if s_or_c == '':
-            s_or_c = None
-        if reduce(lambda x, y: x+y, content) == '':
-            # content is a list of empty strings
-            content = None
-        return (s_or_c, content)
-    with open(path, 'rU') as f:
-        reader = csv.reader(f)
-        sheet_name = None
-        current_headers = None
-        for row in reader:
-            survey_or_choices, content = first_column_as_sheet_name(row)
-            if survey_or_choices != None:
-                sheet_name = survey_or_choices
-                if sheet_name not in _dict:
-                    _dict[unicode(sheet_name)] = []
-                current_headers = None
-            if content != None:
-                if current_headers == None:
-                    current_headers = content
-                else:
-                    _d = {}
-                    for key, val in zip(current_headers, content):
-                        if val != "":
-                            _d[unicode(key)] = unicode(val)
-                    _dict[sheet_name].append(_d)
+        if len(row) == 0:
+            return (None, None)
+        elif len(row) == 1:
+            return (row[0], None)
+        else:
+            s_or_c = row[0]
+            content = row[1:]
+            if s_or_c == '':
+                s_or_c = None
+            if reduce(lambda x, y: x+y, content) == '':
+                # content is a list of empty strings
+                content = None
+            return (s_or_c, content)
+
+    reader = csv.reader(csv_data.split("\n"))
+    sheet_name = None
+    current_headers = None
+    for row in reader:
+        survey_or_choices, content = first_column_as_sheet_name(row)
+        if survey_or_choices != None:
+            sheet_name = survey_or_choices
+            if sheet_name not in _dict:
+                _dict[unicode(sheet_name)] = []
+            current_headers = None
+        if content != None:
+            if current_headers == None:
+                current_headers = content
+            else:
+                _d = {}
+                for key, val in zip(current_headers, content):
+                    if val != "":
+                        _d[unicode(key)] = unicode(val)
+                _dict[sheet_name].append(_d)
     return _dict
 
 
