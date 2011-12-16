@@ -56,7 +56,7 @@
     </input>
     <input ref="/widgets/my_int">
       <label>integer widget</label>
-      <hint>try entering a number &gt; 10</hint>
+      <hint>try entering a number &lt; 10</hint>
     </input>
     <input ref="/widgets/my_decimal">
       <label>decimal widget</label>
