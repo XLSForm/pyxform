@@ -34,7 +34,7 @@
       <bind nodeset="/widgets/my_time" type="time"/>
       <bind constraint="not(selected(., 'c') and selected(., 'd'))" jr:constraintMsg="option c and d cannot be selected together" nodeset="/widgets/my_select" type="select"/>
       <bind nodeset="/widgets/my_select1" type="select1"/>
-      <bind nodeset="/widgets/my_output" readonly="true()" relevant="selected(/widgets/branch, 'n')" type="string"/>
+      <bind nodeset="/widgets/my_output" readonly="true()" type="string"/>
       <bind nodeset="/widgets/my_geopoint" type="geopoint"/>
       <bind nodeset="/widgets/my_barcode" type="barcode"/>
       <bind nodeset="/widgets/my_image" type="binary"/>
