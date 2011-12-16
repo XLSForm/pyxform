@@ -1,7 +1,7 @@
 "survey",,,,,,,,,,
 ,"type","name","label","hint","bind:constraint","bind:jr:constraintMsg","default","bind:readonly","bind:relevant","control:appearance"
 ,"string","my_string","string widget","can be short or very long",,,,,,
-,"int","my_int","integer widget","try entering a number > 10",". < 10","number must be less than 10",,,,
+,"int","my_int","integer widget","try entering a number < 10",". < 10","number must be less than 10",,,,
 ,"decimal","my_decimal","decimal widget","only numbers > 10.51 and < 18.39",". > 10.51 and . < 18.39","number must be between 10.51 and 18.39",18.31,,,
 ,"date","my_date","date widget","only future dates allowed",". >= today()","only future dates allowed","2010-06-15",,,
 ,"time","my_time","time widget","testing time",,,,,,
