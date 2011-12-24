@@ -19,9 +19,8 @@ nsmap = {
     u"xmlns:jr": u"http://openrosa.org/javarosa",
     }
 
-
 class Survey(Section):
-
+    
     FIELDS = Section.FIELDS.copy()
     FIELDS.update(
         {
@@ -41,12 +40,13 @@ class Survey(Section):
 
     def _validate_uniqueness_of_section_names(self):
         section_names = []
-        for e in self.iter_children():
+        for e in self.iter_descendants():
             if isinstance(e, Section):
                 if e.name in section_names:
                     raise PyXFormError("There are two sections with the name %s." % e.name)
                 section_names.append(e.name)
 
+    #TODO: Maybe rename XML functions to generate_[x], so it's clear they are not just getters.
     def xml(self):
         """
         calls necessary preparation methods, then returns the xml.
@@ -76,9 +76,14 @@ class Survey(Section):
                     *self.xml_bindings()
                     )
 
+    def xml_instance(self):
+        result = Section.xml_instance(self)
+        result.setAttribute(u"id", self.id_string)
+        return result
+
     def _setup_translations(self):
         self._translations = defaultdict(dict)
-        for e in self.iter_children():
+        for e in self.iter_descendants():
             for d in e.get_translations():
                 self._translations[d['lang']][d['path']] = d['text']
         self._add_empty_translations()
@@ -107,10 +112,11 @@ class Survey(Section):
         The following cases are not yet covered:
             -Media files exist and no label is provided at all
         """
+        #TODO: Cover the uncovered case.
         translationsExist = self._translations
         if not translationsExist:
             self._translations = defaultdict(dict)
-        for e in self.iter_children():
+        for e in self.iter_descendants():
             media_keys = e.get_media_keys()
             for key in media_keys:
                 media_key = media_keys[key]
@@ -182,12 +188,17 @@ class Survey(Section):
                                 if not (translation_key in self._translations[lang] and type(self._translations[lang][translation_key]) == dict):
                                     self._translations[lang][translation_key] = {"long": translation_label}
 
-                                self._translations[lang][translation_key][media_type_to_store]= text[media_type]
+                                self._translations[lang][translation_key][media_type_to_store] = text[media_type]
 
                             else:
                                 raise PyXFormError("Media type: " + media_type_to_store + " not supported")
 
     def itext(self):
+        """
+        itext can be images/audio/video/text
+        It can be localized for different languages which is what most of these attributes are for.
+        @see http://code.google.com/p/opendatakit/wiki/XFormDesignGuidelines
+        """
         children = []
         for lang, d in self._translations.items():
             kwargs = {'lang': lang}
@@ -199,17 +210,12 @@ class Survey(Section):
                 t = node("text", node("value", text), id=path)
                 children[-1].appendChild(t)
 
-            # todo: figure out how to get media in here smoothly
+            # TODO: figure out how to get media in here smoothly
 
         return node("itext", *children)
 
     def date_stamp(self):
         return self._created.strftime("%Y_%m_%d")
-
-    def xml_instance(self):
-        result = Section.xml_instance(self)
-        result.setAttribute(u"id", self.id_string)
-        return result
 
     def _to_pretty_xml(self):
         """
@@ -218,7 +224,7 @@ class Survey(Section):
         """
         # Hacky way of pretty printing xml without adding extra white
         # space to text
-        # Todo: check out pyxml
+        # TODO: check out pyxml
         # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
         xml_with_linebreaks = self.xml().toprettyxml(indent='  ')
         text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
@@ -232,7 +238,7 @@ class Survey(Section):
 
     def _setup_xpath_dictionary(self):
         self._xpath = {}
-        for element in self.iter_children():
+        for element in self.iter_descendants():
             if isinstance(element, Question) or isinstance(element, Section):
                 if element.name in self._xpath:
                     self._xpath[element.name] = None
@@ -261,21 +267,20 @@ class Survey(Section):
         bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
         return re.sub(bracketed_tag, self._var_repl_function(), unicode(text))
 
-    def _var_repl_output_function(self):
+    def _var_repl_output_function(self,matchobj):
         """
         Given a dictionary of xpaths, return a function we can use to
         replace ${varname} with the xpath to varname.
         """
-        def repl(matchobj):
-            if matchobj.group(1) not in self._xpath:
-                raise PyXFormError("There is no survey element with this name.",
-                                matchobj.group(1))
-            return '<output value="' + self._xpath[matchobj.group(1)] + '" />'
-        return repl
+        if matchobj.group(1) not in self._xpath:
+            raise PyXFormError("There is no survey element with this name.",
+                            matchobj.group(1))
+        return '<output value="' + self._xpath[matchobj.group(1)] + '" />'
+
 
     def insert_output_values(self, text):
         bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
-        result = re.sub(bracketed_tag, self._var_repl_output_function(), unicode(text))
+        result = re.sub(bracketed_tag, self._var_repl_output_function, unicode(text))
         return result, not result == text
 
     def print_xform_to_file(self, path="", validate=True):
@@ -294,7 +299,9 @@ class Survey(Section):
         self.print_xform_to_file(temporary_file_path)
         os.remove(temporary_file_name)
         return self._to_pretty_xml()
-
+    
+    #TODO: Figure out why we need a survey class and a survey instance class.
+    #    This get's called by a test specifically made for it and nothing else.
     def instantiate(self):
         from instance import SurveyInstance
         return SurveyInstance(self)

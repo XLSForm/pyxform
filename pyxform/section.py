@@ -21,11 +21,10 @@ class Section(SurveyElement):
                     )
             element_slugs.append(element.name)
 
-    def xml_instance(self):
-        if type(self) == RepeatingSection:
-            kwargs = {"jr:template": ""}
-        else:
-            kwargs = {}
+    def xml_instance(self, **kwargs):
+        """
+        Creates an xml representation of the section
+        """
         result = node(self.name, **kwargs)
         for child in self.children:
             result.appendChild(child.xml_instance())
@@ -73,7 +72,10 @@ class RepeatingSection(Section):
                 ref=self.get_xpath()
                 )
         return node(u"group", repeat_node, ref=self.get_xpath())
-
+    #I'm anal about matching function signatures when overriding a function, but there's no reason for kwargs to be an argument
+    def xml_instance(self, **kwargs):
+        kwargs = {"jr:template": ""} #It might make more sense to add this as a child on initialization
+        return super(RepeatingSection, self).xml_instance(**kwargs)
 
 class GroupedSection(Section):
     def xml_control(self):

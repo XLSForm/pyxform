@@ -32,7 +32,6 @@ class SurveyElement(dict):
         u"bind": dict,
         u"control": dict,
         u"media": dict,
-
         # this node will also have a parent and children, like a tree!
         u"parent": lambda: None,
         u"children": list,
@@ -44,6 +43,9 @@ class SurveyElement(dict):
         return defaults.get_definition(self.get(u"type"))
 
     def __getattr__(self, key):
+        """
+        Get attributes from FIELDS rather than the class.
+        """
         if key in self.FIELDS:
             question_type_dict = self._default()
             under = question_type_dict.get(key, None)
@@ -103,11 +105,16 @@ class SurveyElement(dict):
             msg = "The name '%s' is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods." % self.name
             raise PyXFormError(msg)
 
-    def iter_children(self):
+    def iter_descendants(self):
+        """
+        A survey_element is a dictionary of survey_elements
+        This method does a preorder traversal over them.
+        For the time being this survery_element is included among its descendants
+        """
         # it really seems like this method should not yield self
         yield self
         for e in self.children:
-            for f in e.iter_children():
+            for f in e.iter_descendants():
                 yield f
 
     def get_lineage(self):
@@ -138,6 +145,10 @@ class SurveyElement(dict):
             return lineage[0].name
 
     def to_dict(self):
+        """
+        Create a dict copy of this survey element by removing inappropriate attributes
+        and converting its children to dicts
+        """
         self.validate()
         result = self.copy()
         to_delete = [u"parent", u"question_type_dictionary", u"_created"]
@@ -152,6 +163,7 @@ class SurveyElement(dict):
         for k, v in result.items():
             if not v:
                 del result[k]
+                
         return result
 
     def to_json(self):
@@ -236,10 +248,10 @@ class SurveyElement(dict):
 
     def xml_bindings(self):
         """
-        Return a list of bindings for this node and all its descendents.
+        Return a list of bindings for this node and all its descendants.
         """
         result = []
-        for e in self.iter_children():
+        for e in self.iter_descendants():
             xml_binding = e.xml_binding()
             if xml_binding != None:
                 result.append(xml_binding)

@@ -65,7 +65,7 @@ class SurveyElementBuilder(object):
         question_type_str = d[u"type"]
         d_copy = d.copy()
 
-        # Todo: figure out a global setting for whether select all
+        # TODO: figure out a global setting for whether select all
         # that apply questions have an automatic none option.
         if self._add_none_option and \
                 question_type_str.startswith(u"select all that apply"):
@@ -73,7 +73,7 @@ class SurveyElementBuilder(object):
 
         # hack job right here to get this to work
         if question_type_str.endswith(u" or specify other"):
-            question_type_str = question_type_str[:len(question_type_str)-len(u" or specify other")]
+            question_type_str = question_type_str[:len(question_type_str) - len(u" or specify other")]
             d_copy["type"] = question_type_str
             self._add_other_option_to_multiple_choice_question(d_copy)
             return [self._create_question_from_dict(d_copy),
@@ -138,6 +138,10 @@ class SurveyElementBuilder(object):
         return result
 
     def _create_loop_from_dict(self, d, group_each_iteration=True):
+        """
+        Takes a json_dict in the proper format
+        Returns a GroupedSection
+        """
         d_copy = d.copy()
         children = d_copy.pop(u"children", [])
         columns = d_copy.pop(u"columns", [])
@@ -149,7 +153,7 @@ class SurveyElementBuilder(object):
 
             # if this is a none option for a select all that apply
             # question then we should skip adding it to the result
-            if column_dict[u"name"]=="none": continue
+            if column_dict[u"name"] == "none": continue
 
             column = GroupedSection(**column_dict)
             for child in children:
@@ -159,29 +163,28 @@ class SurveyElementBuilder(object):
             result.add_child(column)
         if result.name != u"":
             return result
-        return result.children
+        return result.children #TODO: Verify that nothing breaks if this returns a list
 
-    def _name_and_label_substitutions(self, question_template, info):
-        # if the label in info has multiple languages setup a
+    def _name_and_label_substitutions(self, question_template, column_headers):
+        # if the label in column_headers has multiple languages setup a
         # dictionary by language to do substitutions.
-        if type(info[u"label"])==dict:
+        if type(column_headers[u"label"]) == dict:
             info_by_lang = dict(
-                [(lang, {u"name": info[u"name"], u"label": info[u"label"][lang]}) for lang in info[u"label"].keys()]
+                [(lang, {u"name": column_headers[u"name"], u"label": column_headers[u"label"][lang]}) for lang in column_headers[u"label"].keys()]
                 )
 
         result = question_template.copy()
         for key in result.keys():
-            if type(result[key])==unicode:
-                result[key] = result[key] % info
-            elif type(result[key])==dict:
+            if type(result[key]) == unicode:
+                result[key] = result[key] % column_headers
+            elif type(result[key]) == dict:
                 result[key] = result[key].copy()
                 for key2 in result[key].keys():
-                    if type(info[u"label"])==dict:
-                        result[key][key2] = result[key][key2] % info_by_lang.get(key2, info)
+                    if type(column_headers[u"label"]) == dict:
+                        result[key][key2] = result[key][key2] % info_by_lang.get(key2, column_headers)
                     else:
-                        result[key][key2] = result[key][key2] % info
+                        result[key][key2] = result[key][key2] % column_headers
         return result
-
     def create_survey_element_from_dict(self, d):
         if u"add_none_option" in d:
             self._add_none_option = d[u"add_none_option"]
@@ -206,6 +209,9 @@ class SurveyElementBuilder(object):
 
 
 def create_survey_element_from_dict(d, sections={}):
+    """
+    Creates a Survey from a dictionary in the format provided by SurveyReader
+    """
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
     return builder.create_survey_element_from_dict(d)
@@ -233,6 +239,9 @@ def create_survey(
     default_language=None,
     question_type_dictionary=None
     ):
+    """
+    
+    """
     if main_section == None:
         main_section = sections[name_of_main_section]
     builder = SurveyElementBuilder()
@@ -255,8 +264,12 @@ def create_survey(
 
 
 def create_survey_from_path(path, include_directory=False):
+    """
+    @see: create_survey
+    """
     directory, file_name = os.path.split(path)
     main_section_name = file_utils._section_name(file_name)
+    #TODO: Where is include_directory parameter used? What is it for?
     if include_directory:
         main_section_name = file_utils._section_name(file_name)
         sections = file_utils.collect_compatible_files_in_directory(directory)

@@ -3,7 +3,9 @@ import os
 
 
 class QuestionTypeDictionary(dict):
-
+    """
+    A dictionary parsed from an xls file that defines question types.
+    """
     def __init__(self, file_name="base"):
         # Right now we're using an excel file to describe question
         # types we will use in creating XForms, we'll switch over to

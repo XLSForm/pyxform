@@ -18,7 +18,7 @@ def print_pyobj_to_json(pyobj, path):
 # the following are the three sheet names that this program expects
 SURVEY_SHEET = u"survey"
 CHOICES_SHEET_NAMES = [u"choices", u"choices and columns"]
-COLUMNS_SHEET = u"columns"
+COLUMNS_SHEET = u"columns" #Not used
 TYPES_SHEET = u"question types"
 
 LIST_NAME = u"list name"
@@ -61,7 +61,7 @@ from xls2json_backends import xls_to_dict, csv_to_dict
 
 
 class SpreadsheetReader(object):
-
+    
     def __init__(self, path_or_file):
         if isinstance(path_or_file, basestring):
             self._file_object = None
@@ -101,6 +101,10 @@ class SpreadsheetReader(object):
         self._group_dictionaries()
 
     def _set_choices_and_columns_sheet_name(self):
+        """
+        If the xls file has a sheet with a name in CHOICES_SHEET_NAMES
+        _lists_sheet_name is set to it.
+        """
         sheet_names = self._dict.keys()
 
         self._lists_sheet_name = None
@@ -155,113 +159,143 @@ class SpreadsheetReader(object):
             filename = self._path[:-4] + ".json"
         print_pyobj_to_json(self.to_dict(), filename)
 
+class ParseQuestionException(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
 
 class SurveyReader(SpreadsheetReader):
+
     def __init__(self, path):
-        SpreadsheetReader.__init__(self, path)
+        super(SurveyReader, self).__init__(path)
         self._setup_survey()
 
     def _setup_survey(self):
+        """
+        Does some parsing on the survey sheet.
+        I think this should probably go somewhere else so all the parsing happens in the same place.
+        """
         if SURVEY_SHEET not in self._dict:
             raise PyXFormError("You must have a sheet named: " + SURVEY_SHEET)
-        self._remove_questions_without_types()
-        self._process_question_type()
+        
+        self._process_questions()
         self._construct_choice_lists()
         self._insert_lists()
         self._save_settings()
         self._organize_sections()
 
     def _save_settings(self):
+        """
+        sets _settings to the settings worksheet.
+        """
         # the excel reader gives a list of dicts, one dict for each
         # row after the headers, we're only going to use the first
         # row.
         self._settings = self._dict.get(u"settings", [{}])[0]
 
-    def _remove_questions_without_types(self):
-        self._dict[SURVEY_SHEET] = [
-            q for q in self._dict[SURVEY_SHEET] if u"type" in q
-            ]
-
-    def _process_question_type(self):
+    def _process_questions(self):
         """
-        We need to handle question types that look like select one
-        from list-name or specify other.
-
-        select one from list-name
-        select all that apply from list-name
-        select one from list-name or specify other
-        select all that apply from list-name or specify other
-
-        let's make it a requirement that list-names have no spaces
+        A question is dictionary representing a row in the survey worksheet where the keys are the column headers.
+        This function does some light parsing on them, for example it will:
+        remove disabled questions, set the survey title and id, break apart select and group statements.
         """
-        to_remove = []
-        for q in self._dict[SURVEY_SHEET]:
-            if q[TYPE] == SET_TITLE:
-                if not q[NAME].strip().find(" ") == -1:
-                    raise PyXFormError("Form title must not include any spaces", q[NAME])
-                self._title = q[NAME]
-                to_remove.append(q)
+        new_question_list = list()
+        for question in self._dict[SURVEY_SHEET]:
+            if u"type" not in question:
                 continue
-
-            if q[TYPE] == SET_ID:
-                if not q[NAME].strip().find(" ") == -1:
-                    raise PyXFormError("Form id must not include any spaces", q[NAME])
-                self._id = q[NAME]
-                to_remove.append(q)
-                continue
-
-            if q[TYPE] == SET_DEFAULT_LANG:
-                self._def_lang = q[NAME]
-                to_remove.append(q)
-                continue
-
-            if DISABLED in q:
-                disabled = q["disabled"]
+            #Disabled should probably be first so the attributes below can be disabled.
+            if DISABLED in question:
+                disabled = question["disabled"]
                 if disabled in yes_no_conversions:
                     disabled = yes_no_conversions[disabled]
                 if disabled == 'true()':
-                    to_remove.append(q)
+                    continue
+                
+            #TODO: These should be on the settings sheet... I'm not sure if we need to support them being on the survey sheet as well
+            #    Except default lang, I don't know what to do with that.
+            if question[TYPE] == SET_TITLE:
+                if not question[NAME].strip().find(" ") == -1:
+                    raise PyXFormError("Form title must not include any spaces", question[NAME])
+                self._title = question[NAME]
                 continue
-
-            question_type = q[TYPE]
-            question_type.strip()
-            question_type = re.sub(r"\s+", " ", question_type)
-
-            if u"select" in question_type:
-                self._prepare_multiple_choice_question(q, question_type)
-            if question_type.startswith(u"begin loop"):
-                self._prepare_begin_loop(q, question_type)
-
-        if not self._id.find(" ") == -1:
+    
+            if question[TYPE] == SET_ID:
+                #TODO: Can any name cell ever contain spaces? Move this up if not
+                if not question[NAME].strip().find(" ") == -1:
+                    raise PyXFormError("Form id must not include any spaces", question[NAME])
+                self._id = question[NAME]
+                continue
+            
+            if question[TYPE] == SET_DEFAULT_LANG:
+                self._def_lang = question[NAME]#We need to hold onto this because it is used when generating itext elements
+                continue
+            
+            new_question_list.append(self._process_question_type(question))
+            
+        self._dict[SURVEY_SHEET] = new_question_list
+        
+        #Make sure form name and ID are properly set:
+        if self._id.find(" ") != -1:
             raise PyXFormError("Form id must not include any spaces", self._id)
 
-        if not self._name.find(" ") == -1:
+        if self._name.find(" ") != -1:
             self._name = self._id
 
-        for q in to_remove:
-            self._dict[SURVEY_SHEET].remove(q)
+    def _process_question_type(self, question):
+        question_type = question[TYPE]
+        question_type.strip()
+        question_type = re.sub(r"\s+", " ", question_type) #Remove double spaces?
 
-    def _prepare_multiple_choice_question(self, q, question_type):
-        regexp = r"^(?P<select_command>select one|select all that apply) from (?P<list_name>\S+)( (?P<specify_other>or specify other))?$"
-        m = re.search(regexp, question_type)
-        if not m:
-            raise PyXFormError("Unsupported select syntax '%s'." % question_type)
-        assert CHOICES not in q
-        d = m.groupdict()
-        q[CHOICES] = d["list_name"]
-        if d["specify_other"]:
-            q[TYPE] = " ".join([d["select_command"], d["specify_other"]])
-        else:
-            q[TYPE] = d["select_command"]
+        try:
+            return self._prepare_multiple_choice_question(question, question_type)
+        except ParseQuestionException:
+            try:
+                return self._prepare_begin_loop(question, question_type)
+            except ParseQuestionException as e:
+                #print e.value #just for debug, maybe this should print to a logfile
+                #raise PyXFormError("Unsupported syntax: '%s'" % question_type)
+                return question
+
+    def _prepare_multiple_choice_question(self, question, question_type):
+        """
+        Parse a multple choice question
+        Throws ParseQuestionException
+        Returns the passed in reference to the question object
+        """
+        selectCommands = ["select all that apply from", "select one from", #Old commands
+                          "select_one", "select_multiple"] #New commands
+        
+        regexp = r"^(?P<select_command>(" + '|'.join(selectCommands) + r")) (?P<list_name>\S+)( (?P<specify_other>or specify other))?$"
+        
+        parse = re.search(regexp, question_type)
+        if not parse:
+            raise ParseQuestionException("Regex search returned None")
+        
+        parse_dict = parse.groupdict()
+        if not parse_dict["select_command"]:
+            raise ParseQuestionException("select_command not specified")
+        
+        question[TYPE] = parse_dict["select_command"]
+        
+        #TODO: specify_other is not in the new spec
+        if parse_dict["specify_other"]:
+            question[TYPE] += " " + parse_dict["specify_other"]
+            
+        assert CHOICES not in question #Not sure why this would happen
+        question[CHOICES] = parse_dict["list_name"]
+        return question
 
     def _prepare_begin_loop(self, q, question_type):
         m = re.search(r"^(?P<type>begin loop) over (?P<list_name>\S+)$", question_type)
         if not m:
-            raise PyXFormError("unsupported loop syntax:" + question_type)
+            raise ParseQuestionException("Regex search returned None")
+            #raise PyXFormError("unsupported loop syntax:" + question_type)
         assert COLUMNS not in q
         d = m.groupdict()
         q[COLUMNS] = d["list_name"]
         q[TYPE] = d["type"]
+        return q
 
     def _construct_choice_lists(self):
         """
@@ -275,12 +309,12 @@ class SurveyReader(SpreadsheetReader):
         for choice in choice_list:
             try:
                 list_name = choice.pop(LIST_NAME)
+                if list_name in choices:
+                    choices[list_name].append(choice)
+                else:
+                    choices[list_name] = [choice]
             except KeyError:
                 raise PyXFormError("For some reason this choice isn't associated with a list.", choice)
-            if list_name in choices:
-                choices[list_name].append(choice)
-            else:
-                choices[list_name] = [choice]
         self._dict[self._lists_sheet_name] = choices
 
     def _insert_lists(self):
@@ -301,6 +335,9 @@ class SurveyReader(SpreadsheetReader):
             q[key] = lists_by_name[list_name]
 
     def _organize_sections(self):
+        """
+        This function arranges all the sections into a tree structure
+        """
         # this needs to happen after columns have been inserted
         self._dict = self._dict[SURVEY_SHEET]
         result = {u"type": u"survey", u"name": self._name, u"children": []}
@@ -310,7 +347,7 @@ class SurveyReader(SpreadsheetReader):
             cmd_type = cmd[u"type"]
             match_begin = re.match(r"begin (?P<type>group|repeat|loop)", cmd_type)
             match_end = re.match(r"end (?P<type>group|repeat|loop)", cmd_type)
-            # Todo: combine the begin and end patterns below with those above.
+            # TODO: combine the begin and end patterns below with those above.
             # match_begin = re.match(r"begin (?P<type>lgroup|group|looped group|repeat)", cmd_type)
             # match_end = re.match(r"end (?P<type>lgroup|group|looped group|repeat)", cmd_type)
             if match_begin:
@@ -337,8 +374,12 @@ class SurveyReader(SpreadsheetReader):
 
 
 class QuestionTypesReader(SpreadsheetReader):
+    """
+    Class for reading spreadsheet file that specifies the available question types.
+    @see question_type_dictionary
+    """
     def __init__(self, path):
-        SpreadsheetReader.__init__(self, path)
+        super(QuestionTypesReader, self).__init__(path)
         self._setup_question_types_dictionary()
 
     def _setup_question_types_dictionary(self):
@@ -352,6 +393,7 @@ class QuestionTypesReader(SpreadsheetReader):
         self._dict = result
 
 
+#Not used
 class VariableNameReader(SpreadsheetReader):
     def __init__(self, path):
         SpreadsheetReader.__init__(self, path)

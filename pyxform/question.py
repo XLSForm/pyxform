@@ -124,7 +124,7 @@ class MultipleChoiceQuestion(Question):
 
     def validate(self):
         Question.validate(self)
-        for choice in self.iter_children():
+        for choice in self.iter_descendants():
             if choice != self:
                 choice.validate()
 
