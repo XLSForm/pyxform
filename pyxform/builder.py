@@ -186,6 +186,10 @@ class SurveyElementBuilder(object):
                         result[key][key2] = result[key][key2] % column_headers
         return result
     def create_survey_element_from_dict(self, d):
+        """
+        Convert from a nested python dictionary (a json dict I call it because they correspond directly to our json objects)
+        to a survey object
+        """
         if u"add_none_option" in d:
             self._add_none_option = d[u"add_none_option"]
         if d[u"type"] in self.SECTION_CLASSES:
@@ -224,7 +228,7 @@ def create_survey_element_from_json(str_or_path):
 
 def create_survey_from_xls(path_or_file):
     excel_reader = SurveyReader(path_or_file)
-    d = excel_reader.to_dict()
+    d = excel_reader.to_json_dict()
     survey = create_survey_element_from_dict(d)
     if not survey.id_string:
         survey.id_string = excel_reader._name

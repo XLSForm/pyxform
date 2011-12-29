@@ -36,7 +36,7 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
                 ],
             }
         self.maxDiff = None
-        self.assertEqual(s.to_dict(), expected_dict)
+        self.assertEqual(s.to_json_dict(), expected_dict)
     
     def test_survey_can_be_created_in_a_slightly_less_verbose_manner(self):
         option_dict_array = [
@@ -62,7 +62,7 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
                 ],
             }
 
-        self.assertEqual(s.to_dict(), expected_dict)
+        self.assertEqual(s.to_json_dict(), expected_dict)
     
     def test_two_options_cannot_have_the_same_value(self):
         q = MultipleChoiceQuestion(name="Favorite Color")

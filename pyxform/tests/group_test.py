@@ -11,7 +11,7 @@ class GroupTests(TestCase):
 
     def test_json(self):
         x = SurveyReader(utils.path_to_text_fixture("group.xls"))
-        x_results = x.to_dict()
+        x_results = x.to_json_dict()
         expected_dict = {
             u'name': 'group',
             u'type': u'survey',
@@ -44,10 +44,10 @@ class GroupTests(TestCase):
 
     def test_equality_of_to_dict(self):
         x = SurveyReader(utils.path_to_text_fixture("group.xls"))
-        x_results = x.to_dict()
+        x_results = x.to_json_dict()
 
         survey = create_survey_element_from_dict(x_results)
-        survey_dict = survey.to_dict()
+        survey_dict = survey.to_json_dict()
         # using the builder sets the title attribute to equal name
         # this won't happen through reading the excel file as done by
         # SurveyReader.

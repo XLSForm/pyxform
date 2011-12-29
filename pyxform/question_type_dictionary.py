@@ -19,7 +19,7 @@ class QuestionTypeDictionary(dict):
             "%s.xls" % file_name
             )
         excel_reader = QuestionTypesReader(path_to_question_types)
-        for k, v in excel_reader.to_dict().iteritems():
+        for k, v in excel_reader.to_json_dict().iteritems():
             self[k] = v
 
     def get_definition(self, question_type_str):

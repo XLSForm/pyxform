@@ -151,13 +151,13 @@ class SpreadsheetReader(object):
                     assert k not in d
                     d[k] = v
 
-    def to_dict(self):
+    def to_json_dict(self):
         return self._dict
 
     def print_json_to_file(self, filename=""):
         if not filename:
             filename = self._path[:-4] + ".json"
-        print_pyobj_to_json(self.to_dict(), filename)
+        print_pyobj_to_json(self.to_json_dict(), filename)
 
 class ParseQuestionException(Exception):
     def __init__(self, value):
@@ -263,28 +263,32 @@ class SurveyReader(SpreadsheetReader):
         Throws ParseQuestionException
         Returns the passed in reference to the question object
         """
-        selectCommands = ["select all that apply from", "select one from", #Old commands
-                          "select_one", "select_multiple"] #New commands
+        selectCommands = {#Old commands
+                          "select all that apply from" : u"select all that apply",
+                          "select one from" : u"select one", 
+                          #New commands
+                          "select_one" : u"select one",
+                          "select_multiple" : u"select all that apply" }
         
-        regexp = r"^(?P<select_command>(" + '|'.join(selectCommands) + r")) (?P<list_name>\S+)( (?P<specify_other>or specify other))?$"
-        
-        parse = re.search(regexp, question_type)
-        if not parse:
-            raise ParseQuestionException("Regex search returned None")
-        
-        parse_dict = parse.groupdict()
-        if not parse_dict["select_command"]:
-            raise ParseQuestionException("select_command not specified")
-        
-        question[TYPE] = parse_dict["select_command"]
-        
-        #TODO: specify_other is not in the new spec
-        if parse_dict["specify_other"]:
-            question[TYPE] += " " + parse_dict["specify_other"]
-            
-        assert CHOICES not in question #Not sure why this would happen
-        question[CHOICES] = parse_dict["list_name"]
-        return question
+        select_regexp = r"^(?P<select_command>(" + '|'.join(selectCommands.keys()) + r")) (?P<list_name>\S+)( (?P<specify_other>or specify other))?$"
+        select_parse = re.search(select_regexp, question_type)
+        if select_parse:
+            parse_dict = select_parse.groupdict()
+            if parse_dict["select_command"]:
+                select_type = selectCommands[parse_dict["select_command"]]
+                list_name = parse_dict["list_name"] #TODO: should check that this is valid at some point
+                
+                #TODO: specify_other is not in the new spec
+                specify_other = ("specify_other" in parse_dict and parse_dict["specify_other"]) or (" or specify other" in parse_dict and parse_dict[" or specify other"]) #old version
+
+                question[TYPE] = select_type
+                if specify_other:
+                    question[TYPE] += " or specify other"
+                question[CHOICES] = list_name
+                
+                return question
+                
+        raise ParseQuestionException("")
 
     def _prepare_begin_loop(self, q, question_type):
         m = re.search(r"^(?P<type>begin loop) over (?P<list_name>\S+)$", question_type)
@@ -308,7 +312,9 @@ class SurveyReader(SpreadsheetReader):
         choices = {}
         for choice in choice_list:
             try:
-                list_name = choice.pop(LIST_NAME)
+                #TODO: decide whether there should be an underscore in list_name so we can get rid of this.
+                list_name_string_wo_underscore = re.sub(" ", "_", LIST_NAME) if LIST_NAME not in choice else LIST_NAME
+                list_name = choice.pop(list_name_string_wo_underscore)
                 if list_name in choices:
                     choices[list_name].append(choice)
                 else:
@@ -420,4 +426,4 @@ if __name__ == "__main__":
     path = sys.argv[1]
     converter = SurveyReader(path)
     # converter.print_json_to_file()
-    print json.dumps(converter.to_dict(), ensure_ascii=False, indent=4)
+    print json.dumps(converter.to_json_dict(), ensure_ascii=False, indent=4)

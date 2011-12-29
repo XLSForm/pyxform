@@ -100,9 +100,9 @@ class GroupedSection(Section):
             group_node.appendChild(n)
         return group_node
 
-    def to_dict(self):
+    def to_json_dict(self):
         # This is quite hacky, might want to think about a smart way
         # to approach this problem.
-        result = super(GroupedSection, self).to_dict()
+        result = super(GroupedSection, self).to_json_dict()
         result[u"type"] = u"group"
         return result

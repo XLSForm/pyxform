@@ -144,7 +144,7 @@ class SurveyElement(dict):
         else:
             return lineage[0].name
 
-    def to_dict(self):
+    def to_json_dict(self):
         """
         Create a dict copy of this survey element by removing inappropriate attributes
         and converting its children to dicts
@@ -158,7 +158,7 @@ class SurveyElement(dict):
         children = result.pop(u"children")
         result[u"children"] = []
         for child in children:
-            result[u"children"].append(child.to_dict())
+            result[u"children"].append(child.to_json_dict())
         # remove any keys with empty values
         for k, v in result.items():
             if not v:
@@ -167,16 +167,16 @@ class SurveyElement(dict):
         return result
 
     def to_json(self):
-        return json.dumps(self.to_dict())
+        return json.dumps(self.to_json_dict())
 
     def json_dump(self, path=""):
         if not path:
             path = self.name + ".json"
-        print_pyobj_to_json(self.to_dict(), path)
+        print_pyobj_to_json(self.to_json_dict(), path)
 
     def __eq__(self, y):
         # I need to look up how exactly to override the == operator.
-        return self.to_dict() == y.to_dict()
+        return self.to_json_dict() == y.to_json_dict()
 
     def _translation_path(self, display_element):
         return self.get_xpath() + ":" + display_element

@@ -149,14 +149,14 @@ class Survey(Section):
                                     # If there are no translations
                                     # specified, pull the generic
                                     # label.
-                                    if u"label" in e.to_dict():
-                                        translation_label = e.to_dict()[u"label"]
+                                    if u"label" in e.to_json_dict():
+                                        translation_label = e.to_json_dict()[u"label"]
                                         e.set(u"label", {lang: translation_label})
                                     else:
                                         raise PyXFormError(e.name, "Must include a label")
                                 elif not langsExist:
-                                    if u"label" in e.to_dict():
-                                        translation_label = e.to_dict()[u"label"]
+                                    if u"label" in e.to_json_dict():
+                                        translation_label = e.to_json_dict()[u"label"]
 
                                         if type(translation_label) == dict:
                                             for key in translation_label:
@@ -166,8 +166,8 @@ class Survey(Section):
                                     else:
                                         translation_label = None
                                 elif translation_key not in self._translations[lang]:
-                                    if u"label" in e.to_dict():
-                                        labels = e.to_dict()[u"label"]
+                                    if u"label" in e.to_json_dict():
+                                        labels = e.to_json_dict()[u"label"]
                                         if type(labels) == dict and lang in labels:
                                             translation_label = labels[u"lang"]
                                             e.set(u"label", {lang: translation_label})
@@ -175,7 +175,7 @@ class Survey(Section):
                                             translation_label = None
                                             e.set(u"label", {lang: None})
                                         else:
-                                            translation_label = e.to_dict()[u"label"]
+                                            translation_label = e.to_json_dict()[u"label"]
                                             e.set(u"label", {lang: translation_label})
                                     else:
                                         raise PyXFormError(e.name, "Must include a label")
@@ -300,8 +300,9 @@ class Survey(Section):
         os.remove(temporary_file_name)
         return self._to_pretty_xml()
     
-    #TODO: Figure out why we need a survey class and a survey instance class.
-    #    This get's called by a test specifically made for it and nothing else.
     def instantiate(self):
+        """
+        Instantiate as in return a instance of the survey can contain collected data.
+        """
         from instance import SurveyInstance
         return SurveyInstance(self)

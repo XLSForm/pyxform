@@ -41,7 +41,7 @@ class BuilderTests(TestCase):
         question.type = u"integer"
         question.label = u"How old are you?"
         survey_out.add_child(question)
-        self.survey_out_dict = survey_out.to_dict()
+        self.survey_out_dict = survey_out.to_json_dict()
         print_pyobj_to_json(self.survey_out_dict, utils.path_to_text_fixture("how_old_are_you.json"))
 
     def test_create_from_file_object(self):
@@ -111,7 +111,7 @@ class BuilderTests(TestCase):
                 ]
             }
 
-        self.assertEqual(g.to_dict(), expected_dict)
+        self.assertEqual(g.to_json_dict(), expected_dict)
 
     def test_specify_other(self):
         survey = utils.create_survey_from_fixture("specify_other", filetype=FIXTURE_FILETYPE)
@@ -147,7 +147,7 @@ class BuilderTests(TestCase):
                 ]
             }
         self.maxDiff = None
-        self.assertEqual(survey.to_dict(), expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_include(self):
         survey = utils.create_survey_from_fixture("include", filetype=FIXTURE_FILETYPE,
@@ -177,7 +177,7 @@ class BuilderTests(TestCase):
                                 }
                             ]}]}
 
-        self.assertEqual(survey.to_dict(), expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_include_json(self):
         survey_in = utils.create_survey_from_fixture(
@@ -197,7 +197,7 @@ class BuilderTests(TestCase):
                     }
                 ],
             }
-        self.assertEquals(survey_in.to_dict(), expected_dict)
+        self.assertEquals(survey_in.to_json_dict(), expected_dict)
 
     def test_loop(self):
         survey = utils.create_survey_from_fixture("loop", filetype=FIXTURE_FILETYPE)
@@ -281,4 +281,4 @@ class BuilderTests(TestCase):
                     u'type' : u'group',
                     u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}
         self.maxDiff = None
-        self.assertEqual(survey.to_dict(), expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)

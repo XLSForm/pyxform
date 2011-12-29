@@ -29,7 +29,7 @@ class SettingsTests(TestCase):
                     }
                 ],
             }
-        self.assertEqual(survey_reader.to_dict(), expected_dict)
+        self.assertEqual(survey_reader.to_json_dict(), expected_dict)
 
     def test_settings(self):
         survey = create_survey_from_path(self.path)

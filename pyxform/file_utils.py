@@ -14,7 +14,7 @@ def load_file_to_dict(path):
     if path.endswith(".xls") or path.endswith(".csv"):
         name = _section_name(path)
         excel_reader = SurveyReader(path)
-        return (name, excel_reader.to_dict())
+        return (name, excel_reader.to_json_dict())
     elif path.endswith(".json"):
         name = _section_name(path)
         return (name, utils.get_pyobj_from_json(path))
