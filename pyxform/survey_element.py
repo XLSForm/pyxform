@@ -105,6 +105,7 @@ class SurveyElement(dict):
             msg = "The name '%s' is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods." % self.name
             raise PyXFormError(msg)
 
+    #TODO: Make sure renaming this doesn't cause any problems
     def iter_descendants(self):
         """
         A survey_element is a dictionary of survey_elements
