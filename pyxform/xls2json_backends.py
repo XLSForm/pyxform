@@ -7,29 +7,6 @@ import cStringIO
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
 
-#Conversion dictionary from user friendly column names to meaningful values
-col_name_conversions = {
-    "caption": u"label",
-    "appearance": u"control:appearance",
-    "relevance": u"bind:relevant",
-    "required": u"bind:required",
-    "read only": u"bind:readonly",
-    "constraint": u"bind:constraint",
-    "constraing message": u"bind:jr:constraintMsg",
-    "calculation": u"bind:calculate",
-    "command": u"type",
-    "tag": u"name",
-    "label": u"caption",
-    "relevant": u"bind:relevant",
-    "skippable": u"required",
-    "value": u"name",
-    "image": u"media:image",
-    "audio": u"media:audio",
-    "video": u"media:video",
-    "count": u"bind:jr:count"
-}
-
-
 def xls_to_dict(path_or_file):
     """
     Return a Python dictionary with a key for each worksheet
