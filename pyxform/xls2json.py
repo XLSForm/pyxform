@@ -24,11 +24,7 @@ COLUMNS = u"columns" #this is for loop statements
 CHOICES_AND_COLUMNS = u"choices and columns"
 
 
-# Special reserved values for type column that allow the user to set
-# the form's title or id.
-SET_TITLE = u"set form title"
-SET_ID = u"set form id"
-SET_DEFAULT_LANG = u"set default language"
+LIST_NAME = u"list name"
 
 yes_no_aliases = {
     "yes": "true()",
@@ -54,7 +50,7 @@ control_aliases = {
 select_aliases = {
       u"select all that apply from" : u"select all that apply",
       u"select one from" : u"select one", 
-      #New commands
+      u"selec1" : u"select one", 
       u"select_one" : u"select one",
       u"select_multiple" : u"select all that apply",
       u"or specify other" : u"or specify other",
@@ -62,34 +58,44 @@ select_aliases = {
 }
 #TODO: Check on bind prefix approach in json.
 #Conversion dictionary from user friendly column names to meaningful values
-column_header_aliases = {
-    u"constraint_message" : u"constraint message",
-    u"read_only" : u"read only", 
-    u"list_name" : u"list name",
+survey_header_aliases = {
+    u"constraint_message" : u"constraint message",#TODO: This is an issue
+    u"read_only" : constants.READONLY,
     u"relevant":u"bind:relevant",
-    u"caption": u"label",
-    u"appearance": u"control:appearance",
+    u"caption": constants.LABEL,
+    u"appearance": u"control:appearance",#TODO: this is also an issue
     u"relevance": u"bind:relevant",
     u"required": u"bind:required",
     u"constraint": u"bind:constraint",
     u"constraining message": u"bind:jr:constraintMsg",
     u"calculation": u"bind:calculate",
-    u"command": u"type",
-    u"tag": u"name",
-    u"label": u"caption",
+    u"command": constants.TYPE,
+    u"tag": constants.NAME,
+    u"label": u"caption",#TODO: this is also an issue
     u"skippable": u"required",
-    u"value": u"name",
+    u"value": constants.NAME,
     u"image": u"media:image",
     u"audio": u"media:audio",
     u"video": u"media:video",
     u"count": u"bind:jr:count"
 }
+
+# This line makes a list out of all the unicode values in constants.
+# survey_header_names = [x for x in constants.__dict__.values() if type(x) is type(unicode())]
+# This is used column header validation, if we see a name that isn't in this list we will throw a warning.
+# TODO: I'm thinking about not validating the column headers. If there is an unknown header, it will show up in the json,
+# and we can validate the json instead and return the invalid name (which is the only really important info for this type of problem).
+survey_header_names = [ constants.TYPE, constants.NAME, constants.LABEL, constants.READONLY ]
+
+
+settings_header_aliases = {
+    u"list_name" : LIST_NAME
+}
+settings_header_names = [ LIST_NAME, u"name", u"label" ]
+
 type_aliases = {
     u"image": u"photo"
 }
-
-# Makes a list out of all the unicode values in constants.
-column_header_names = [x for x in constants.__dict__.values() if type(x) is type(unicode())]
 
 def print_pyobj_to_json(pyobj, path):
     fp = codecs.open(path, mode="w", encoding="utf-8")
@@ -207,24 +213,31 @@ def group_headers(dict_array):
         out_dict_array.append(out_row)
     return out_dict_array
     
-def process_headers(dict_array, throw_warnings=True):
+def dealias_headers(dict_array, header_aliases):
     """
-    Dealias the headers and optionally throw warnings for unknown headers.
+    Dealias the headers according to the given alias map
     Copies dict_array so this isn't super efficient.
     """
     out_dict_array = list()
     for row in dict_array:
         out_row = dict()
         for key in row.keys():
-            if key in column_header_aliases.keys():
-                out_row[column_header_aliases[key]] = row[key]
+            if key in header_aliases.keys():
+                out_row[header_aliases[key]] = row[key]
             else:
-                if key not in column_header_names and throw_warnings:
-                    #TODO warning
-                    print "unknown column header:" + key
                 out_row[key] = row[key]
         out_dict_array.append(out_row)
     return out_dict_array
+
+def validate_headers(dict_array, header_names):
+    """
+    throw warnings for unknown headers.
+    """
+    for row in dict_array:
+        for key in row.keys():
+                if key not in header_names:
+                    #TODO warning
+                    print "Unknown column header: " + key 
 
 def dealias_types(dict_array):
     """
@@ -312,12 +325,11 @@ def spreadsheet_to_json(spreadsheet_dict, default_name, default_language="englis
     if SURVEY not in spreadsheet_dict:
         raise PyXFormError("You must have a sheet named: " + SURVEY)
     survey_sheet = spreadsheet_dict[SURVEY]
-    survey_sheet = process_headers(survey_sheet, throw_warnings=False)
+    #Process the headers
+    survey_sheet = dealias_headers(survey_sheet, survey_header_aliases)
     survey_sheet = group_headers(survey_sheet)
     print survey_sheet
-    #I call process_headers twice because it is badly entangled with group_headers.
-    #There are some ways around this but I think this way is easier to understand/implement.
-    survey_sheet = process_headers(survey_sheet, throw_warnings=True)
+    validate_headers(survey_sheet, survey_header_names)
      
     #survey_sheet = clean_unicode_values(survey_sheet)
     survey_sheet = dealias_types(survey_sheet)
@@ -326,17 +338,18 @@ def spreadsheet_to_json(spreadsheet_dict, default_name, default_language="englis
     #Basically, if there is a "choices and columns" sheet, its lists override the lists in the other sheets.
     #TODO: the overriding should be the other way around.
     choices_and_columns_sheet = spreadsheet_dict.get(CHOICES_AND_COLUMNS, {})
-    choices_and_columns = group_dictionaries_by_key(choices_and_columns_sheet, constants.LIST_NAME)
+    choices_and_columns = group_dictionaries_by_key(choices_and_columns_sheet, LIST_NAME)
     
     choices_sheet = spreadsheet_dict.get(CHOICES, {})
-    choices = group_dictionaries_by_key(choices_sheet, constants.LIST_NAME)
+    choices = group_dictionaries_by_key(choices_sheet, LIST_NAME)
     choices.update(choices_and_columns)
     
     columns_sheet = spreadsheet_dict.get(COLUMNS, {})
-    columns = group_dictionaries_by_key(columns_sheet, constants.LIST_NAME)
+    columns = group_dictionaries_by_key(columns_sheet, LIST_NAME)
     columns.update(choices_and_columns)
     
-    settings_sheet = process_headers(spreadsheet_dict.get(SETTINGS, {}))
+    settings_sheet = dealias_headers(spreadsheet_dict.get(SETTINGS, {}), settings_header_aliases)
+    validate_headers(settings_sheet, settings_header_names)
     print "settings sheet: "
     print settings_sheet
     
