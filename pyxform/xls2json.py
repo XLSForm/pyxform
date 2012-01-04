@@ -23,9 +23,9 @@ CHOICES = u"choices"
 COLUMNS = u"columns" #this is for loop statements
 CHOICES_AND_COLUMNS = u"choices and columns"
 
+LIST_NAME = u"list name" #TODO: come up with a way to organize the names used for different sheets.
 
-LIST_NAME = u"list name"
-
+#Ideally aliases should resolve to elements in the json form schema
 yes_no_aliases = {
     "yes": "true()",
     "Yes": "true()",
@@ -63,7 +63,7 @@ survey_header_aliases = {
     u"read_only" : constants.READONLY,
     u"relevant":u"bind:relevant",
     u"caption": constants.LABEL,
-    u"appearance": u"control:appearance",#TODO: this is also an issue
+    u"appearance": u"control:appearance", #TODO: this is also an issue
     u"relevance": u"bind:relevant",
     u"required": u"bind:required",
     u"constraint": u"bind:constraint",
@@ -71,13 +71,23 @@ survey_header_aliases = {
     u"calculation": u"bind:calculate",
     u"command": constants.TYPE,
     u"tag": constants.NAME,
-    u"label": u"caption",#TODO: this is also an issue
+    #u"label": u"caption",#TODO: this is also an issue
     u"skippable": u"required",
     u"value": constants.NAME,
     u"image": u"media:image",
     u"audio": u"media:audio",
     u"video": u"media:video",
     u"count": u"bind:jr:count"
+}
+settings_header_aliases = {
+    u"form_title" : constants.TITLE,
+    u"form_id" : constants.ID_STRING
+}
+choices_header_aliases = {
+    u"list_name" : LIST_NAME
+}
+type_aliases = {
+    u"image": u"photo"
 }
 
 # This line makes a list out of all the unicode values in constants.
@@ -88,14 +98,9 @@ survey_header_aliases = {
 survey_header_names = [ constants.TYPE, constants.NAME, constants.LABEL, constants.READONLY ]
 
 
-settings_header_aliases = {
-    u"list_name" : LIST_NAME
-}
 settings_header_names = [ LIST_NAME, u"name", u"label" ]
 
-type_aliases = {
-    u"image": u"photo"
-}
+
 
 def print_pyobj_to_json(pyobj, path):
     fp = codecs.open(path, mode="w", encoding="utf-8")
@@ -162,6 +167,9 @@ class SpreadsheetReader(object):
         print_pyobj_to_json(self.to_json_dict(), filename)
 
 def list_to_nested_dict(lst):
+    """
+    [1,2,3,4] -> {1:{2:{3:4}}}
+    """
     if len(lst) > 1:
         return {lst[0] : list_to_nested_dict(lst[1:])}
     else:
@@ -169,14 +177,15 @@ def list_to_nested_dict(lst):
 def merge_dicts(dict_a, dict_b, default_key = "default", default_key_2 = "default_2"):
     """
     Recursively merge two nested dicts into a single dict.
-    If leaf elements have a key they matches something else
-    they will be put into a new dict under the default_key and combined as such.
+    If a non-dict value has a key that matches something else
+    it will be put into a new dict under default_key
+    or default_key_2 (if the default_key has already been used) and combined as such.
     """
     #print dict_a
     #print dict_b
-    if dict_a is None or len(dict_a) == 0:
+    if dict_a is None:
         return dict_b
-    if dict_b is None or len(dict_b) == 0:
+    if dict_b is None:
         return dict_a
     
     if type(dict_a) is not dict:
@@ -184,6 +193,11 @@ def merge_dicts(dict_a, dict_b, default_key = "default", default_key_2 = "defaul
         default_key = default_key_2 #This is how name collisions are avoided when merging two leaf elements
     if type(dict_b) is not dict:
         dict_b = {default_key : dict_b}
+    
+#    if len(dict_a) == 0:
+#        return dict_b
+#    if len(dict_b) == 0:
+#        return dict_a
     
     all_keys = set(dict_a.keys()).union(set(dict_b.keys()))
     
@@ -264,6 +278,7 @@ def clean_unicode_values(dict_array):
                 row[key] = re.sub(r"\s+", " ", value.strip())
     return dict_array
 
+#TODO: TRUE/FALSE show up as 1/0, which causes a problem here among other places because true and 1 should be unique
 def check_name_uniqueness(dict_array):
     """
     Make sure all names are unique
@@ -271,11 +286,15 @@ def check_name_uniqueness(dict_array):
     """
     #This set is used to validate the uniqueness of names.
     name_set = set()
+    #TODO: There is an issue with row numbers being off when there are blank rows.
+    #      Ideally the spreadsheet reader should return empty dicts for blank rows, rather than nothing as it does now.
+    row_number = 0
     for row in dict_array:
+        row_number += 1
         name = row.get(constants.NAME)
         if name:
             if name in name_set:
-                raise PyXFormError("Question name is not unique: " + name)
+                raise PyXFormError("Question name is not unique: " + str(name) +" Row: " + str(row_number))
             else:
                 name_set.add(name)
     return dict_array
@@ -285,6 +304,7 @@ def group_dictionaries_by_key(list_of_dicts, key, remove_key = True):
     """
     Takes a list of dictionaries and returns a dictionary of lists of dictionaries with the same value for the given key.
     The grouping key is removed by default.
+    If the key is not in any dictionary an empty dict is returned.
     """
     dict_of_lists = dict()
     for dicty in list_of_dicts:
@@ -297,7 +317,8 @@ def group_dictionaries_by_key(list_of_dicts, key, remove_key = True):
             dict_of_lists[dicty_key] = [dicty]
     return dict_of_lists
 
-
+#TODO: This function might not be necessary... It is used to look up question type templates, but this function is only needed
+# if they are stored in the same format as the survey sheets.
 def find_dictionary_with_key_value_pair(dict_of_dicts, key, value):
     """
     Look through a dictionary of dictionaries for the specified key value pair and return the first dictionary that contains it
@@ -309,16 +330,23 @@ def find_dictionary_with_key_value_pair(dict_of_dicts, key, value):
     return None
 
 
-def spreadsheet_to_json(spreadsheet_dict, default_name, default_language="english"):
+def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"english"):
     """
     spreadsheet_dict -- nested dictionaries representing a spreadsheet. should be similar to those returned by xls_to_dict
-    default_name -- I recommend setting this to the spreadsheets filename
+    form_name -- The spreadsheet's filename
     default_language -- if there are multilingual elements this will be the default language they are put in.
     returns a nested dictionary equivalent to the format specified in the json form spec.
     """
+    #Make sure the passed in vars are unicode
+    form_name = unicode(form_name)
+    default_language = unicode(default_language)
+    
+    #Open file to print warning log to.
+    warn_out = open('warnings.txt', 'w')
+    
     #Load primative question types
-    import question_type_dictionary
-    question_types = question_type_dictionary.DEFAULT_QUESTION_TYPE_DICTIONARY
+    #import question_type_dictionary
+    #question_types = question_type_dictionary.DEFAULT_QUESTION_TYPE_DICTIONARY
     #question_types = xls_to_dict("question_types/base.xls").popitem()[1]
 
     #Break apart the spreadsheet dict down into easier to access objects
@@ -327,38 +355,50 @@ def spreadsheet_to_json(spreadsheet_dict, default_name, default_language="englis
     survey_sheet = spreadsheet_dict[SURVEY]
     #Process the headers
     survey_sheet = dealias_headers(survey_sheet, survey_header_aliases)
+    #Dealiasing first since aliases might resolve to expressions with unparsed colons
     survey_sheet = group_headers(survey_sheet)
-    print survey_sheet
+    #print survey_sheet
     validate_headers(survey_sheet, survey_header_names)
-     
     #survey_sheet = clean_unicode_values(survey_sheet)
     survey_sheet = dealias_types(survey_sheet)
     
     #The logic for the choices and columns sheets is sort of complicated because of the different naming conventions.
     #Basically, if there is a "choices and columns" sheet, its lists override the lists in the other sheets.
     #TODO: the overriding should be the other way around.
-    choices_and_columns_sheet = spreadsheet_dict.get(CHOICES_AND_COLUMNS, {})
+    choices_and_columns_sheet = group_headers(spreadsheet_dict.get(CHOICES_AND_COLUMNS, {}))
     choices_and_columns = group_dictionaries_by_key(choices_and_columns_sheet, LIST_NAME)
     
-    choices_sheet = spreadsheet_dict.get(CHOICES, {})
+    choices_sheet = spreadsheet_dict.get(CHOICES, [])
+    choices_sheet = dealias_headers(choices_sheet, choices_header_aliases)
+    choices_sheet = group_headers(choices_sheet)
+    #print "choices_sheet"
+    #print choices_sheet
     choices = group_dictionaries_by_key(choices_sheet, LIST_NAME)
+    #print "choices"
+    #print choices
     choices.update(choices_and_columns)
-    
-    columns_sheet = spreadsheet_dict.get(COLUMNS, {})
+
+    columns_sheet = group_headers(spreadsheet_dict.get(COLUMNS, []))
     columns = group_dictionaries_by_key(columns_sheet, LIST_NAME)
     columns.update(choices_and_columns)
     
-    settings_sheet = dealias_headers(spreadsheet_dict.get(SETTINGS, {}), settings_header_aliases)
-    validate_headers(settings_sheet, settings_header_names)
-    print "settings sheet: "
-    print settings_sheet
-    
+    settings_sheet = group_headers(dealias_headers(spreadsheet_dict.get(SETTINGS, []), settings_header_aliases))
+    settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
+    #validate_headers(settings_sheet, settings_header_names)
+#    print "settings sheet: "
+#    print settings_sheet
+
+    #Here we create our json dict root with default settings:
+    id_string = settings.get(constants.ID_STRING, form_name)
     json_dict = {
        constants.TYPE : SURVEY,
-       constants.NAME : default_name,
+       constants.NAME : form_name,
+       constants.TITLE : id_string,
+       constants.ID_STRING : id_string,
        constants.CHILDREN : []
     }
-    json_dict.update(settings_sheet)
+    #Here the default settings are overridden by those in the settings sheet
+    json_dict.update(settings)
     
     check_name_uniqueness(survey_sheet)#TODO: Maybe do this after instead?
     check_name_uniqueness(choices_sheet)
@@ -391,7 +431,7 @@ def spreadsheet_to_json(spreadsheet_dict, default_name, default_language="englis
         control_parse = re.search(r"((?P<begin>begin)|(?P<end>end))(\s|_)(?P<type>(" + '|'.join(control_aliases.keys()) + r"))( over (?P<list_name>\S+))?$", question_type)
         if control_parse:
             parse_dict = control_parse.groupdict()
-            if "begin" in parse_dict:
+            if parse_dict.get("begin"):
                 if "type" in parse_dict:
                     #Create a new json dict with children, and the proper type, and add it to  parent_children_array in place of a question.
                     #Its children will become the parent_children_array (so following questions are nested under it) until an end command is encountered.
@@ -405,12 +445,12 @@ def spreadsheet_to_json(spreadsheet_dict, default_name, default_language="englis
                             raise PyXFormError("repeat without list name", "Error on row: " + str(row_number))
                         list_name = parse_dict["list_name"]
                         if list_name not in columns:
-                            raise PyXFormError("List name not in columns sheet: " + list_name, "Error on row: " + str(row_number))
+                            raise PyXFormError("List name not in columns sheet: " + list_name + " Error on row: " + str(row_number))
                         new_json_dict[constants.COLUMNS] = columns[list_name]
                     parent_children_array.append(new_json_dict)
                     stack.append(child_list)
                     continue
-            elif "end" in parse_dict:
+            elif parse_dict.get("end"):
                 #We don't need conventions for ends because they can be inferred by syntax.
                 #We could use them to provide better error checking though.
                 #TODO: suggest making the spec just have end statements
@@ -420,10 +460,10 @@ def spreadsheet_to_json(spreadsheet_dict, default_name, default_language="englis
                 continue
         
         #Make sure the question has a valid name
-        question_name = row.get(constants.NAME)
+        question_name = unicode(row.get(constants.NAME))
         if not question_name:
             raise PyXFormError("Question with no name on row " + str(row_number))
-        if " " in question_name:
+        if u" " in question_name:
             print question_name
             #I don't think it's ever ok for there to be spaces in this attribute but I could be wrong... TODO:Check for other bad chars
             raise PyXFormError("Spaces in question name on row " + str(row_number))
@@ -431,16 +471,7 @@ def spreadsheet_to_json(spreadsheet_dict, default_name, default_language="englis
         if constants.LABEL not in row:
             #TODO: Should there be a default label?
             print "Warning unlabeled question in row" + str(row_number)
-           
-
-        #Try to parse question using the primative types
-        question_type_template = find_dictionary_with_key_value_pair(question_types, constants.TYPE, question_type)
-        if question_type_template:
-            new_json_dict = question_type_template.copy()
-            new_json_dict.update(row)
-            parent_children_array.append(new_json_dict)
-            print "in theory something was appended"
-            continue
+            #warn_out.write()
         
         #Try to parse question as a select:
         select_regexp = r"^(?P<select_command>(" + '|'.join(select_aliases.keys()) + r")) (?P<list_name>\S+)( (?P<specify_other>(or specify other|or_other)))?$"
@@ -454,10 +485,10 @@ def spreadsheet_to_json(spreadsheet_dict, default_name, default_language="englis
                 if list_name not in choices:
                     raise PyXFormError("List name not in choices sheet: " + list_name, "Error on row: " + str(row_number))
                 
-                print choices[list_name]
+                #print "choices[list_name]choices[list_name]choices[list_name]" + str(choices[list_name])
                 
-                if "specify_other" in parse_dict:
-                    select_type += " " + str(parse_dict["specify_other"])
+                if parse_dict.get("specify_other") is not None:
+                    select_type += u" " + unicode(parse_dict["specify_other"])
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
@@ -465,14 +496,40 @@ def spreadsheet_to_json(spreadsheet_dict, default_name, default_language="englis
                 parent_children_array.append(new_json_dict)
                 continue
         
-        print "count not parse type: " + question_type + " on row " + str(row_number)#TODO Warn
+        #Try to parse question using the primative types
+        #TODO: Fix and add back in the stuff for processing primative question types.
+        #question_type_template = find_dictionary_with_key_value_pair(question_types, constants.TYPE, question_type)
+        if True:#question_type_template:
+            #new_json_dict = question_type_template.copy()
+            #new_json_dict.update(row)
+            #parent_children_array.append(new_json_dict)
+            parent_children_array.append(row)
+            continue
+        
         #Give up on this row.
+        warn_out.write("count not parse type: " + question_type + " on row " + str(row_number))
+    print json.dumps(json_dict, indent=4, ensure_ascii=False)
     return json_dict
 
 class SurveyReader(SpreadsheetReader):
     def __init__(self, path):
         super(SurveyReader, self).__init__(path)
-        self._dict = spreadsheet_to_json(self._dict, "default_name")
+        #I would rather find these by calling specific functions i.e.
+        #workbook_dict = get_dict_from_workbook(path)
+        default_name = self._name
+        default_language = self._def_lang
+        self._dict = spreadsheet_to_json(self._dict, default_name, default_language)
+
+def organize_by_type_name(dict_list):
+    """
+    Transform a list of dicts, into a dict or dicts keyed by the value of the specified key in each dictionary.
+    If two dictionaries fall under the same key, or one doesn't have the key, an error is thrown.
+    """
+    result = {}
+    for dicty in dict_list:
+        if u"name" in dicty:
+            result[dicty.pop(u"name")] = dicty
+    return result
 
 class QuestionTypesReader(SpreadsheetReader):
     """
@@ -482,18 +539,12 @@ class QuestionTypesReader(SpreadsheetReader):
     def __init__(self, path):
         super(QuestionTypesReader, self).__init__(path)
         self._setup_question_types_dictionary()
-
+        
     def _setup_question_types_dictionary(self):
         TYPES_SHEET = u"question types"
         self._dict = self._dict[TYPES_SHEET]
-        self._organize_by_type_name()
-
-    def _organize_by_type_name(self):
-        result = {}
-        for question_type in self._dict:
-            result[question_type.pop(u"name")] = question_type
-        self._dict = result
-
+        print self._dict
+        self._dict = organize_by_type_name(self._dict)
 
 #Not used internally
 class VariableNameReader(SpreadsheetReader):

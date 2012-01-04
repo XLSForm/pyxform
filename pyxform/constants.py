@@ -4,8 +4,9 @@ These names need to be shared between X2json and json2Y programs.
 """
 
 TYPE = u"type"
+TITLE = u"title"
 NAME = u"name"
-ID = u"id"
+ID_STRING = u"id_string"
 LABEL = u"label"
 HINT = u"hint"
 READONLY = u"readonly"

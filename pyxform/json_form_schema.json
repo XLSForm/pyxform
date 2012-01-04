@@ -11,7 +11,12 @@
 		"name" :
 		{
 			"type" : "string",
-			"description" : "The name of the form.",
+			"description" : "The filename the form was read from. (keep?)"
+		},
+		"title" :
+		{
+			"type" : "string",
+			"description" : "The form title.",
 			"default" : {"$ref" : "#/properties/form_id"}
 		},
 		"type" :
