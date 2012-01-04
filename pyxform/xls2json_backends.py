@@ -26,12 +26,20 @@ def xls_to_dict(path_or_file):
         for row in range(1, sheet.nrows):
             row_dict = {}
             for column in range(0, sheet.ncols):
-                key = sheet.cell(0, column).value
-                value = sheet.cell(row, column).value
+                #Changing to cell_value function
+                key = sheet.cell_value(0, column)#.value
+                value = sheet.cell_value(row, column)#.value
                 if value is not None and value != "":
+                    #Ideally, I think we want everything to be unicode except maybe numbers?
+#                    value_type = sheet.cell_type(row, column)
+#                    if value_type == xlrd.XL_CELL_BOOLEAN:
+#                        value = u"True" if value else u"False"
+                    value = unicode(value)
                     row_dict[key] = value
-            if row_dict != {}:
-                result[sheet.name].append(row_dict)
+#            Taking this condition out so I can get accurate row numbers.
+#            TODO: Do the same for csvs
+#            if row_dict != {}:
+            result[sheet.name].append(row_dict)
     return result
 
 def csv_to_dict(path_or_file):
