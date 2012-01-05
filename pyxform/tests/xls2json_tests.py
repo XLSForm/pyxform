@@ -56,7 +56,9 @@ class BasicXls2JsonApiTests(TestCase):
 
         expected_dict = {
             u'type': u'survey',
-            u'name': 'simple_loop',
+            u'name': u'simple_loop',
+            u'id_string': u'simple_loop',
+            u'title': u'simple_loop',
             u'children': [
                 {
                     u'children': [
@@ -80,7 +82,7 @@ class BasicXls2JsonApiTests(TestCase):
                         ],
                     u'label': {u'English': u'My Table'}
                     }]}
-
+        self.maxDiff = None
         self.assertEqual(x.to_json_dict(), expected_dict)
 
     def test_xlsx_fails(self):

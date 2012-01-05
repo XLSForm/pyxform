@@ -32,7 +32,7 @@ class Json2XformQuestionValidationTests(TestCase):
                 },
             u"type": u"text",
             u"name": u"enumerator_name"
-            }
+        }
 
         q = create_survey_element_from_dict(simple_string_json)
         

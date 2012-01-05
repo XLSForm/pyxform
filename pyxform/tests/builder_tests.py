@@ -10,10 +10,11 @@ FIXTURE_FILETYPE = "xls"
 
 
 class BuilderTests(TestCase):
-
+    maxDiff = None
     def test_new_widgets(self):
         survey = utils.build_survey('widgets.xls')
         path = utils.path_to_text_fixture('widgets.xml')
+        print survey.to_xml()
         with open(path) as f:
             self.assertEqual(survey.to_xml(), f.read())
 
@@ -25,6 +26,7 @@ class BuilderTests(TestCase):
             )
 
     def test_uniqueness_of_section_names(self):
+        #Looking at the xls file, I think this test might be broken.
         survey = utils.build_survey('group_names_must_be_unique.xls')
         self.assertRaises(
             Exception,
@@ -119,12 +121,13 @@ class BuilderTests(TestCase):
             u'name': u'specify_other',
             u'type': u'survey',
             u'title': u'specify_other',
+            u'id_string': u'specify_other',
             u'children': [
                 {
                     u'name': u'sex',
                     u'label': {u'English': u'What sex are you?'},
                     u'type': u'select one',
-                    u'children': [
+                    u'children': [ #TODO Change to choices (there is stuff in the json2xform half that will need to change)
                         {
                             u'name': u'male',
                             u'label': {u'English': u'Male'}
@@ -147,14 +150,17 @@ class BuilderTests(TestCase):
                 ]
             }
         self.maxDiff = None
+        #import json
+        #print json.dumps(survey, indent=4, ensure_ascii=False)
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_include(self):
-        survey = utils.create_survey_from_fixture("include", filetype=FIXTURE_FILETYPE,
+        survey = utils.create_survey_from_fixture(u"include", filetype=FIXTURE_FILETYPE,
                                                   include_directory=True)
         expected_dict = {
-            u'name': 'include',
-            u'title': 'include',
+            u'name': u'include',
+            u'title': u'include',
+            u'id_string': u'include',
             u'type': u'survey',
             u'children': [
                 {
@@ -176,18 +182,19 @@ class BuilderTests(TestCase):
                                 u'label': {u'english': u'no'}
                                 }
                             ]}]}
-
+        
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_include_json(self):
         survey_in = utils.create_survey_from_fixture(
-            "include_json",
+            u"include_json",
             filetype=FIXTURE_FILETYPE,
             include_directory=True
             )
         expected_dict = {
             u'name': u'include_json',
             u'title': u'include_json',
+            u'id_string': u'include_json',
             u'type': u'survey',
             u'children': [
                 {
@@ -202,7 +209,8 @@ class BuilderTests(TestCase):
     def test_loop(self):
         survey = utils.create_survey_from_fixture("loop", filetype=FIXTURE_FILETYPE)
         expected_dict = {
-            u'name': 'loop',
+            u'name': u'loop',
+            u'id_string': u'loop',
             u'title': u'loop',
             u'type': u'survey',
             u'children': [
