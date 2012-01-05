@@ -1,4 +1,4 @@
-from xlrd import open_workbook
+import xlrd
 from collections import defaultdict
 import csv
 import cStringIO
@@ -7,6 +7,24 @@ import cStringIO
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
 
+
+def xls_value_to_unicode(value, value_type):
+    """
+    Take a xls formatted value and try to make a unicode string representation.
+    """
+    if value_type == xlrd.XL_CELL_BOOLEAN:
+        return u"TRUE" if value else u"FALSE"
+    if value_type == xlrd.XL_CELL_NUMBER:
+        #Try to display as an int if possible.
+        int_value = int(value)
+        if int_value == value:
+            return unicode(int_value)
+        else:
+            return unicode(value)
+    else:
+        return unicode(value)
+        
+
 def xls_to_dict(path_or_file):
     """
     Return a Python dictionary with a key for each worksheet
@@ -14,11 +32,12 @@ def xls_to_dict(path_or_file):
     dictionary corresponds to a single row in the worksheet. A
     dictionary has keys taken from the column headers and values
     equal to the cell value for that row and column.
+    All the keys and leaf elements are unicode text.
     """
     if isinstance(path_or_file, basestring):
-        workbook = open_workbook(filename=path_or_file)
+        workbook = xlrd.open_workbook(filename=path_or_file)
     else:
-        workbook = open_workbook(file_contents=path_or_file.read())
+        workbook = xlrd.open_workbook(file_contents=path_or_file.read())
 
     result = {}
     for sheet in workbook.sheets():
@@ -29,13 +48,9 @@ def xls_to_dict(path_or_file):
                 #Changing to cell_value function
                 key = sheet.cell_value(0, column)#.value
                 value = sheet.cell_value(row, column)#.value
+                value_type = sheet.cell_type(row, column)
                 if value is not None and value != "":
-                    #Ideally, I think we want everything to be unicode except maybe numbers?
-#                    value_type = sheet.cell_type(row, column)
-#                    if value_type == xlrd.XL_CELL_BOOLEAN:
-#                        value = u"True" if value else u"False"
-                    value = unicode(value)
-                    row_dict[key] = value
+                    row_dict[key] = xls_value_to_unicode(value, value_type)
 #            Taking this condition out so I can get accurate row numbers.
 #            TODO: Do the same for csvs
 #            if row_dict != {}:

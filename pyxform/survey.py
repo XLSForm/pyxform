@@ -25,7 +25,7 @@ class Survey(Section):
     FIELDS.update(
         {
             u"_xpath": dict,
-            u"_created": datetime.now,
+            u"_created": datetime.now, #This can't be dumped to json
             u"title": unicode,
             u"id_string": unicode,
             u"file_name": unicode,

@@ -47,13 +47,23 @@ class SurveyElementBuilder(object):
         self._sections = sections
 
     def set_question_type_dictionary(self, question_type_dictionary):
+        """
+        Set the question type dictionary that the builder uses to convert from the types
+        specified in the json form to xform elements.
+        """
         if type(question_type_dictionary) == QuestionTypeDictionary:
             self._question_type_dictionary = question_type_dictionary
         else:
             self._question_type_dictionary = DEFAULT_QUESTION_TYPE_DICTIONARY
 
     def _get_question_class(self, question_type_str):
+        """
+        Read the type string from the json format,
+        and find what class it maps to going through type_dictionary -> QUESTION_CLASSES 
+        """
         question_type = self._question_type_dictionary.get_definition(question_type_str)
+        print question_type_str + ":"
+        print question_type
         control_dict = question_type.get(u"control", {})
         control_tag = control_dict.get(u"tag", u"")
         return self.QUESTION_CLASSES[control_tag]
@@ -67,6 +77,7 @@ class SurveyElementBuilder(object):
 
         # TODO: figure out a global setting for whether select all
         # that apply questions have an automatic none option.
+        # Why isn't the none choice implicit?
         if self._add_none_option and \
                 question_type_str.startswith(u"select all that apply"):
             self._add_none_option_to_select_all_that_apply(d_copy)
@@ -79,6 +90,7 @@ class SurveyElementBuilder(object):
             return [self._create_question_from_dict(d_copy),
                     self._create_specify_other_question_from_dict(d_copy)]
         question_class = self._get_question_class(question_type_str)
+        
         # todo: clean up this spaghetti code
         d_copy[u"question_type_dictionary"] = self._question_type_dictionary
         if question_class:
@@ -187,7 +199,8 @@ class SurveyElementBuilder(object):
         return result
     def create_survey_element_from_dict(self, d):
         """
-        Convert from a nested python dictionary (a json dict I call it because they correspond directly to our json objects)
+        Convert from a nested python dictionary/array structure
+        (a json dict I call it because it corresponds directly with a json object)
         to a survey object
         """
         if u"add_none_option" in d:
@@ -271,11 +284,13 @@ def create_survey(
 
 def create_survey_from_path(path, include_directory=False):
     """
+    include_directory -- Switch to indicate that all the survey forms in
+                         the same directory as the specified file should be read
+                         so they can be included through include types.
     @see: create_survey
     """
     directory, file_name = os.path.split(path)
     main_section_name = file_utils._section_name(file_name)
-    #TODO: Where is include_directory parameter used? What is it for?
     if include_directory:
         main_section_name = file_utils._section_name(file_name)
         sections = file_utils.collect_compatible_files_in_directory(directory)

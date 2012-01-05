@@ -232,7 +232,7 @@ class SurveyElement(dict):
         else:
             msg = "The survey element named '%s' has no label or hint." % self.name
             raise PyXFormError(msg)
-
+    
     def xml_binding(self):
         """
         Return the binding for this survey element.
@@ -241,7 +241,8 @@ class SurveyElement(dict):
         d = self.bind.copy()
         if d:
             for k, v in d.items():
-                if v in self.binding_conversions:
+                #I think all the binding conversions should be happening on the xls2json side.
+                if hashable(v) and v in self.binding_conversions:
                     v = self.binding_conversions[v]
                 d[k] = survey.insert_xpaths(v)
             return node(u"bind", nodeset=self.get_xpath(), **d)
@@ -264,3 +265,11 @@ class SurveyElement(dict):
         doesn't make sense to implement here in the base class.
         """
         raise Exception("Control not implemented")
+    
+def hashable(v):
+    """Determine whether `v` can be hashed."""
+    try:
+        hash(v)
+    except TypeError:
+        return False
+    return True

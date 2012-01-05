@@ -112,6 +112,8 @@ class MultipleChoiceQuestion(Question):
 
     def __init__(self, *args, **kwargs):
         kwargs_copy = kwargs.copy()
+        #Notice that choices can be specified under choices or children. I'm going to try to stick to just choices.
+        #Aliases in the json format will make it more difficult to use going forward.
         choices = kwargs_copy.pop(u"choices", []) + \
             kwargs_copy.pop(u"children", [])
         Question.__init__(self, *args, **kwargs_copy)
@@ -129,7 +131,7 @@ class MultipleChoiceQuestion(Question):
                 choice.validate()
 
     def xml_control(self):
-        assert self.bind[u"type"] in [u"select", u"select1"]
+        assert self.bind[u"type"] in [u"select", u"select1"]#Why select1?
 
         control_dict = self.control
         if u"appearance" in control_dict:

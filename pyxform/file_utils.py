@@ -24,6 +24,9 @@ def load_file_to_dict(path):
         return (name, utils.get_pyobj_from_json(path))
 
 def collect_compatible_files_in_directory(directory):
+    """
+    create a giant dict out of all the spreadsheets and json forms in the given directory
+    """
     #sections = {}
     available_files = glob.glob(os.path.join(directory, "*.xls")) + \
                         glob.glob(os.path.join(directory, "*.json"))
