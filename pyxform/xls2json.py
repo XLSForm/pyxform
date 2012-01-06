@@ -166,7 +166,7 @@ class SpreadsheetReader(object):
             filename = self._path[:-4] + ".json"
         print_pyobj_to_json(self.to_json_dict(), filename)
 
-def list_to_nested_dict(lst, depth=0):
+def list_to_nested_dict(lst):
     """
     [1,2,3,4] -> {1:{2:{3:4}}}
     """
@@ -234,7 +234,8 @@ def group_headers(dict_array):
                                                     {
                                                         DICT_CHAR.join(tokens[1:]) : v
                                                     }
-                                                })
+                                                }
+                                      )
             
         out_dict_array.append(out_row)
     return out_dict_array
@@ -342,7 +343,7 @@ def find_dictionary_with_key_value_pair(dict_of_dicts, key, value):
     return None
 
 
-def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"english"):
+def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"english", warn_out_file='warnings.txt'):
     """
     spreadsheet_dict -- nested dictionaries representing a spreadsheet. should be similar to those returned by xls_to_dict
     form_name -- The spreadsheet's filename
@@ -354,9 +355,11 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
     default_language = unicode(default_language)
     
     #Open file to print warning log to.
-    warn_out = open('warnings.txt', 'w')
+    warn_out = open(warn_out_file, 'w')
     
     #Load primative question types
+    #Took the question types out because there is already code that validates and
+    #adds attributes to questions with it the the json2xform half.
     #import question_type_dictionary
     #question_types = question_type_dictionary.DEFAULT_QUESTION_TYPE_DICTIONARY
     #question_types = xls_to_dict("question_types/base.xls").popitem()[1]
@@ -370,7 +373,8 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
     #Dealiasing first since aliases might resolve to expressions with unparsed colons
     survey_sheet = group_headers(survey_sheet)
     #print survey_sheet
-    validate_headers(survey_sheet, survey_header_names)
+    #validate_headers(survey_sheet, survey_header_names)
+    
     #survey_sheet = clean_unicode_values(survey_sheet)
     survey_sheet = dealias_types(survey_sheet)
     
@@ -393,7 +397,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
     
     settings_sheet = group_headers(dealias_headers(spreadsheet_dict.get(SETTINGS, []), settings_header_aliases))
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
-    #validate_headers(settings_sheet, settings_header_names)
+#    validate_headers(settings_sheet, settings_header_names)
 #    print "settings sheet: "
 #    print settings_sheet
 
@@ -415,14 +419,15 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
     
     #Parse the survey sheet while generating a survey in our json format:
     row_number = 0
-    stack = [json_dict.get(constants.CHILDREN)]
+    #A stack is used to keep track of begin/end expressions
+    stack = [(None, json_dict.get(constants.CHILDREN))]
     for row in survey_sheet:
         row_number += 1
-        parent_children_array = stack[-1]
+        prev_control_type, parent_children_array = stack[-1]
         
         #Disabled should probably be first so the attributes below can be disabled.
         if u"disabled" in row:
-            print "The 'disabled' column header is not part of the current spec. We recommend using relevant instead."#TODO Warn
+            warn_out.write("The 'disabled' column header is not part of the current spec. We recommend using relevant instead.")#TODO Warn
             disabled = row.pop(u"disabled")
             if disabled in yes_no_aliases:
                 disabled = yes_no_aliases[disabled]
@@ -435,21 +440,19 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
         #Get question type
         question_type = row.get(u"type")
         if not question_type:
-            #TODO: Throw a warning here
+            raise PyXFormError("Question with no type on row " + str(row_number))
             continue
         
-        #Try to parse question as a ending control statement (i.e. end loop/repeat/group):
+        #Try to parse question as a end control statement (i.e. end loop/repeat/group):
         end_control_parse = re.search(r"(?P<end>end)(\s|_)(?P<type>("
                                   + '|'.join(control_aliases.keys()) + r"))$", question_type)
         if end_control_parse:
             parse_dict = end_control_parse.groupdict()
-            if parse_dict.get("end"):
-                #We don't need conventions for ends because they can be inferred by syntax.
-                #We could use them to provide better error checking though.
-                #TODO: suggest making the spec just have end statements
-                if len(stack) == 1:
-                    raise PyXFormError("unmatched end statement")
-                stack.pop(0)
+            if parse_dict.get("end") and "type" in parse_dict:
+                control_type = control_aliases[parse_dict["type"]]
+                if prev_control_type != control_type or len(stack) == 1:
+                    raise PyXFormError("Unmatched end statement. Previous control type: " + prev_control_type + ", Control type: " + control_type)   
+                stack.pop()
                 continue
         
         #Make sure the question has a valid name
@@ -457,16 +460,14 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
         if not question_name:
             raise PyXFormError("Question with no name on row " + str(row_number))
         if u" " in question_name:
-            print question_name
             #I don't think it's ever ok for there to be spaces in this attribute but I could be wrong... TODO:Check for other bad chars
             raise PyXFormError("Spaces in question name on row " + str(row_number))
         
         if constants.LABEL not in row:
             #TODO: Should there be a default label?
-            print "Warning unlabeled question in row" + str(row_number)
-            #warn_out.write()
+            warn_out.write("Warning unlabeled question in row" + str(row_number))
         
-        #Try to parse question as a control statement (i.e. begin or end a loop/repeat/group:
+        #Try to parse question as begin control statement (i.e. begin loop/repeat/group:
         begin_control_parse = re.search(r"(?P<begin>begin)(\s|_)(?P<type>("
                                   + '|'.join(control_aliases.keys())
                                   + r"))( (over )?(?P<list_name>\S+))?$", question_type)
@@ -489,7 +490,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
                         raise PyXFormError("List name not in columns sheet: " + list_name + " Error on row: " + str(row_number))
                     new_json_dict[constants.COLUMNS] = columns[list_name]
                 parent_children_array.append(new_json_dict)
-                stack.append(child_list)
+                stack.append((control_type, child_list))
                 continue
 
         #Try to parse question as a select:
@@ -529,7 +530,9 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
         
         #Give up on this row.
         warn_out.write("count not parse type: " + question_type + " on row " + str(row_number))
-    print json.dumps(json_dict, indent=4, ensure_ascii=False)
+    #print json.dumps(json_dict, indent=4, ensure_ascii=False)
+    if len(stack) != 1:
+        raise PyXFormError("unmatched begin statement: " + str(stack[-1][0]))
     return json_dict
 
 class SurveyReader(SpreadsheetReader):
@@ -566,7 +569,7 @@ class QuestionTypesReader(SpreadsheetReader):
         self._dict = self._dict[TYPES_SHEET]
         #print self._dict
         self._dict = group_headers(self._dict)
-        print json.dumps(self._dict, indent=4, ensure_ascii=False)
+        #print json.dumps(self._dict, indent=4, ensure_ascii=False)
         self._dict = organize_by_type_name(self._dict, u"name")
         
 
