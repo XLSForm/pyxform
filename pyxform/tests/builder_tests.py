@@ -217,7 +217,7 @@ class BuilderTests(TestCase):
                     u'name': u'available_toilet_types',
                     u'label': {u'english': u'What type of toilets are on the premises?'},
                     u'type': u'select all that apply',
-                    u'bind': {u'constraint': u"(.='none' or not(selected(., 'none')))"},
+                    #u'bind': {u'constraint': u"(.='none' or not(selected(., 'none')))"},
                     u'children': [
                         {
                             u'name': u'pit_latrine_with_slab',
@@ -231,10 +231,11 @@ class BuilderTests(TestCase):
                             u'name': u'bucket_system',
                             u'label': {u'english': u'Bucket system'}
                             },
-                        {
-                            u'name': u'none',
-                            u'label': u'None',
-                            },
+                        #Removing this because select alls shouldn't need an explicit none option
+                        #{
+                        #    u'name': u'none',
+                        #    u'label': u'None',
+                        #    },
                         {
                             u'name': u'other',
                             u'label': u'Other'
