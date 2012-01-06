@@ -23,8 +23,10 @@ CHOICES = u"choices"
 COLUMNS = u"columns" #this is for loop statements
 CHOICES_AND_COLUMNS = u"choices and columns"
 
-LIST_NAME = u"list name" #TODO: come up with a way to organize the names used for different sheets.
+#xls specific constants:
+LIST_NAME = u"list name"
 
+#Aliases:
 #Ideally aliases should resolve to elements in the json form schema
 yes_no_aliases = {
     "yes": "true()",
@@ -50,6 +52,8 @@ control_aliases = {
     u"looped group": constants.REPEAT
 }
 select_aliases = {
+      u"add select one prompt using" : u"select one",
+      u"add select multiple prompt using" : u"select one",
       u"select all that apply from" : u"select all that apply",
       u"select one from" : u"select one",
       u"selec1" : u"select one", 
@@ -59,7 +63,7 @@ select_aliases = {
 #TODO: Check on bind prefix approach in json.
 #Conversion dictionary from user friendly column names to meaningful values
 survey_header_aliases = {
-    u"constraint_message" : u"constraint message",#TODO: This is an issue
+    u"constraint_message" : u"constraint message",#TODO: This is an issue (should it be under bind?)
     u"read_only" : constants.READONLY,
     u"relevant":u"bind:relevant",
     u"caption": constants.LABEL,
@@ -84,7 +88,8 @@ settings_header_aliases = {
     u"form_id" : constants.ID_STRING
 }
 list_header_aliases = {
-    u"list_name" : LIST_NAME
+    u"list_name" : LIST_NAME,
+    u"value" : constants.NAME #Perhaps there should a different name constant for list item names?
 }
 type_aliases = {
     u"image": u"photo"
@@ -95,14 +100,15 @@ type_aliases = {
 # This is used column header validation, if we see a name that isn't in this list we will throw a warning.
 # TODO: I'm thinking about not validating the column headers. If there is an unknown header, it will show up in the json,
 # and we can validate the json instead and return the invalid name (which is the only really important info for this type of problem).
-survey_header_names = [ constants.TYPE, constants.NAME, constants.LABEL, constants.READONLY ]
-
-
-settings_header_names = [ LIST_NAME, u"name", u"label" ]
-
+# survey_header_names = [ constants.TYPE, constants.NAME, constants.LABEL, constants.READONLY ]
+#
+# settings_header_names = [ LIST_NAME, u"name", u"label" ]
 
 
 def print_pyobj_to_json(pyobj, path):
+    """
+    dump a python nested array/dict structure to the specified file
+    """
     fp = codecs.open(path, mode="w", encoding="utf-8")
     json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
     fp.close()
@@ -278,7 +284,6 @@ def dealias_types(dict_array):
                 row[constants.TYPE] = type_aliases[constants.TYPE]
     return dict_array
 
-#TODO: Check to make sure if this should be kept
 def clean_unicode_values(dict_array):
     """
     Go though the dict array and removing double spaces and trailing and leading spaces from all unicode values
@@ -291,7 +296,6 @@ def clean_unicode_values(dict_array):
                 row[key] = re.sub(r"\s+", " ", value.strip())
     return dict_array
 
-#TODO: TRUE/FALSE show up as 1/0, which causes a problem here among other places because true and 1 should be unique
 def check_name_uniqueness(dict_array):
     """
     Make sure all names are unique
@@ -299,8 +303,6 @@ def check_name_uniqueness(dict_array):
     """
     #This set is used to validate the uniqueness of names.
     name_set = set()
-    #TODO: There is an issue with row numbers being off when there are blank rows.
-    #      Ideally the spreadsheet reader should return empty dicts for blank rows, rather than nothing as it does now.
     row_number = 0
     for row in dict_array:
         row_number += 1
@@ -331,7 +333,7 @@ def group_dictionaries_by_key(list_of_dicts, key, remove_key = True):
     return dict_of_lists
 
 #TODO: This function might not be necessary... It is used to look up question type templates, but this function is only needed
-# if they are stored in the same format as the survey sheets.
+# if they are stored in the same format as the survey sheets. Plus I'm not processing question types here anymore.
 def find_dictionary_with_key_value_pair(dict_of_dicts, key, value):
     """
     Look through a dictionary of dictionaries for the specified key value pair and return the first dictionary that contains it
@@ -397,9 +399,6 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
     
     settings_sheet = group_headers(dealias_headers(spreadsheet_dict.get(SETTINGS, []), settings_header_aliases))
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
-#    validate_headers(settings_sheet, settings_header_names)
-#    print "settings sheet: "
-#    print settings_sheet
 
     #Here we create our json dict root with default settings:
     id_string = settings.get(constants.ID_STRING, form_name)
@@ -413,9 +412,8 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
     #Here the default settings are overridden by those in the settings sheet
     json_dict.update(settings)
     
-    check_name_uniqueness(survey_sheet)#TODO: Maybe do this after instead?
-    check_name_uniqueness(choices_sheet)
-    check_name_uniqueness(columns_sheet)
+    check_name_uniqueness(survey_sheet)
+    #TODO: We could also check the choices/columns lists for unique names (within the list).
     
     #Parse the survey sheet while generating a survey in our json format:
     row_number = 0
@@ -441,6 +439,17 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
         question_type = row.get(u"type")
         if not question_type:
             raise PyXFormError("Question with no type on row " + str(row_number))
+            continue
+        
+        #Try to read form title and id from the survey sheet if they happen to be specified there
+        #(done only for backwards compatibility, settings should be in the settings sheet)
+        if u"set form title" == question_type:
+            warn_out.write("Please put the form title on a separate settings sheet.")
+            json_dict[constants.TITLE] = unicode(row.get(constants.NAME))
+            continue
+        if u"set form id" == question_type:
+            warn_out.write("Please put the form id on a separate settings sheet.")
+            json_dict[constants.ID_STRING] = unicode(row.get(constants.NAME))
             continue
         
         #Try to parse question as a end control statement (i.e. end loop/repeat/group):
