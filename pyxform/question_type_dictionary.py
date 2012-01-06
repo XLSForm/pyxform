@@ -25,4 +25,4 @@ class QuestionTypeDictionary(dict):
     def get_definition(self, question_type_str):
         return self.get(question_type_str, {})
 
-DEFAULT_QUESTION_TYPE_DICTIONARY = QuestionTypeDictionary()
+DEFAULT_QUESTION_TYPE_DICTIONARY = QuestionTypeDictionary("all")
