@@ -29,13 +29,15 @@ class SurveyElementBuilder(object):
         }
 
     def __init__(self, **kwargs):
-        self._add_none_option = True
+        self._add_none_option = False #I don't know why we would need an explicit none option for select alls
         self.set_sections(
             kwargs.get(u"sections", {})
             )
         self.set_question_type_dictionary(
             kwargs.get(u"question_type_dictionary")
             )
+#        if self._add_none_option:
+#            raise Exception()
 
     def set_sections(self, sections):
         """
@@ -77,7 +79,6 @@ class SurveyElementBuilder(object):
 
         # TODO: figure out a global setting for whether select all
         # that apply questions have an automatic none option.
-        # Why isn't the none choice implicit?
         if self._add_none_option and \
                 question_type_str.startswith(u"select all that apply"):
             self._add_none_option_to_select_all_that_apply(d_copy)
@@ -257,7 +258,10 @@ def create_survey(
     question_type_dictionary=None
     ):
     """
-    
+    name_of_main_section -- a string key used to find the main section in the sections dict if it is not supplied in the main_section arg
+    main_section -- a json dict that represents a survey
+    sections -- a dictionary of sections that can be drawn from to build the survey
+    This function uses the builder class to create and return a survey.
     """
     if main_section == None:
         main_section = sections[name_of_main_section]
@@ -273,6 +277,7 @@ def create_survey(
     # xls2xform tests
     # TODO: I would assume that the json-dict is valid (i.e. that it has a id string), then throw an error here.
     #        We can set the id to whatever we want in xls2json.
+    #        Although to be totally modular, maybe we do need to repeat a lot of the validation and setting default value stuff from xls2json
     if id_string is not None:
         survey.id_string = id_string
 
