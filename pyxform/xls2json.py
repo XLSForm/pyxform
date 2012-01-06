@@ -95,16 +95,6 @@ type_aliases = {
     u"image": u"photo"
 }
 
-# This line makes a list out of all the unicode values in constants.
-# survey_header_names = [x for x in constants.__dict__.values() if type(x) is type(unicode())]
-# This is used column header validation, if we see a name that isn't in this list we will throw a warning.
-# TODO: I'm thinking about not validating the column headers. If there is an unknown header, it will show up in the json,
-# and we can validate the json instead and return the invalid name (which is the only really important info for this type of problem).
-# survey_header_names = [ constants.TYPE, constants.NAME, constants.LABEL, constants.READONLY ]
-#
-# settings_header_names = [ LIST_NAME, u"name", u"label" ]
-
-
 def print_pyobj_to_json(pyobj, path):
     """
     dump a python nested array/dict structure to the specified file
@@ -180,6 +170,7 @@ def list_to_nested_dict(lst):
         return {lst[0] : list_to_nested_dict(lst[1:])}
     else:
         return lst[0]
+    
 def merge_dicts(dict_a, dict_b, default_key = "default", default_key_2 = "default_2"):
     """
     Recursively merge two nested dicts into a single dict.
@@ -187,8 +178,6 @@ def merge_dicts(dict_a, dict_b, default_key = "default", default_key_2 = "defaul
     it will be put into a new dict under default_key
     or default_key_2 (if the default_key has already been used) and combined as such.
     """
-    #print dict_a
-    #print dict_b
     if dict_a is None:
         return dict_b
     if dict_b is None:
@@ -219,7 +208,7 @@ def group_headers(dict_array):
     "bonjour"} becomes {"text": {"english": "hello", "french" :
     "bonjour"}.
     """
-    #TODO
+    #TODO:
     #Colons aren't the best syntax for this because they are also used in namespaces (i.e. jr:something)
     #For now I'm only parsing the first colon and hoping nobody ever tries a multi-level group.
     DICT_CHAR = u":"
@@ -228,8 +217,6 @@ def group_headers(dict_array):
         out_row = dict()
         for k, v in row.items():
             tokens = k.split(DICT_CHAR)
-            #print "begin"
-            #print list_to_nested_dict(tokens)
             #tokens.append(v)
             #out_row = merge_dicts(out_row, list_to_nested_dict(tokens))
             if len(tokens) == 1:
@@ -261,16 +248,6 @@ def dealias_headers(dict_array, header_aliases):
                 out_row[key] = row[key]
         out_dict_array.append(out_row)
     return out_dict_array
-
-def validate_headers(dict_array, header_names):
-    """
-    throw warnings for unknown headers.
-    """
-    for row in dict_array:
-        for key in row.keys():
-                if key not in header_names:
-                    #TODO warning
-                    print "Unknown column header: " + key 
 
 def dealias_types(dict_array):
     """
@@ -331,18 +308,6 @@ def group_dictionaries_by_key(list_of_dicts, key, remove_key = True):
         else:
             dict_of_lists[dicty_key] = [dicty]
     return dict_of_lists
-
-#TODO: This function might not be necessary... It is used to look up question type templates, but this function is only needed
-# if they are stored in the same format as the survey sheets. Plus I'm not processing question types here anymore.
-def find_dictionary_with_key_value_pair(dict_of_dicts, key, value):
-    """
-    Look through a dictionary of dictionaries for the specified key value pair and return the first dictionary that contains it
-    If the pair is not found return none.
-    """
-    for dicty in dict_of_dicts:
-        if key in dicty and dicty[key] == value:
-            return dicty
-    return None
 
 
 def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"english", warn_out_file='warnings.txt'):
@@ -425,7 +390,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
         
         #Disabled should probably be first so the attributes below can be disabled.
         if u"disabled" in row:
-            warn_out.write("The 'disabled' column header is not part of the current spec. We recommend using relevant instead.")#TODO Warn
+            warn_out.write("The 'disabled' column header is not part of the current spec. We recommend using relevant instead." + '\n')
             disabled = row.pop(u"disabled")
             if disabled in yes_no_aliases:
                 disabled = yes_no_aliases[disabled]
@@ -444,11 +409,11 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
         #Try to read form title and id from the survey sheet if they happen to be specified there
         #(done only for backwards compatibility, settings should be in the settings sheet)
         if u"set form title" == question_type:
-            warn_out.write("Please put the form title on a separate settings sheet.")
+            warn_out.write("Please put the form title on a separate settings sheet." + '\n')
             json_dict[constants.TITLE] = unicode(row.get(constants.NAME))
             continue
         if u"set form id" == question_type:
-            warn_out.write("Please put the form id on a separate settings sheet.")
+            warn_out.write("Please put the form id on a separate settings sheet." + '\n')
             json_dict[constants.ID_STRING] = unicode(row.get(constants.NAME))
             continue
         
@@ -474,7 +439,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
         
         if constants.LABEL not in row:
             #TODO: Should there be a default label?
-            warn_out.write("Warning unlabeled question in row" + str(row_number))
+            warn_out.write("Warning unlabeled question in row" + str(row_number) + '\n')
         
         #Try to parse question as begin control statement (i.e. begin loop/repeat/group:
         begin_control_parse = re.search(r"(?P<begin>begin)(\s|_)(?P<type>("
@@ -527,21 +492,13 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
                 parent_children_array.append(new_json_dict)
                 continue
         
-        #Try to parse question using the primative types
-        #TODO: Fix and add back in the stuff for processing primative question types.
-        #question_type_template = find_dictionary_with_key_value_pair(question_types, constants.TYPE, question_type)
-        if True:#question_type_template:
-            #new_json_dict = question_type_template.copy()
-            #new_json_dict.update(row)
-            #parent_children_array.append(new_json_dict)
+            #TODO: Consider doing some type validation here.
             parent_children_array.append(row)
-            continue
-        
-        #Give up on this row.
-        warn_out.write("count not parse type: " + question_type + " on row " + str(row_number))
-    #print json.dumps(json_dict, indent=4, ensure_ascii=False)
+
+    
     if len(stack) != 1:
         raise PyXFormError("unmatched begin statement: " + str(stack[-1][0]))
+    #print json.dumps(json_dict, indent=4, ensure_ascii=False)
     return json_dict
 
 class SurveyReader(SpreadsheetReader):
