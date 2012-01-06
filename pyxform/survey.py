@@ -129,8 +129,10 @@ class Survey(Section):
 
                         langsExist = langs != [u'']
                         if not langsExist and not translationsExist:
-                            langs = self.default_language
-                            print langs
+                            #Copying Beorse's "no translation type bug" fix:
+                            #langs = self.default_language
+                            #print langs
+                            langs = [self.default_language]
                             media_type_to_store = media_type
                         elif not langsExist and translationsExist:
                             # If no language is specified, but there

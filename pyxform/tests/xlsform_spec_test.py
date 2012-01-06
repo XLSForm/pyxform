@@ -8,7 +8,7 @@ import utils
 import os, sys
 from pyxform.xls2json import SurveyReader
 
-path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
+path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/" + "simple_loop.xls" #"xlsform_spec_test.xls"
 
 class basic_test(TestCase):
     def runTest(self):
@@ -16,7 +16,8 @@ class basic_test(TestCase):
 #        print x.to_json_dict()
         survey = pyxform.create_survey_from_path(path_to_excel_file)
         directory, filename = os.path.split(path_to_excel_file)
-        path_to_xform = os.path.join(directory, survey.id_string + ".xml")
+        root_filename, ext = os.path.splitext(filename)
+        path_to_xform = os.path.join(directory, root_filename + ".xml")
         survey.print_xform_to_file(path_to_xform)
         pass
     

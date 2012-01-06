@@ -62,8 +62,8 @@ class SurveyElementBuilder(object):
         and find what class it maps to going through type_dictionary -> QUESTION_CLASSES 
         """
         question_type = self._question_type_dictionary.get_definition(question_type_str)
-        print question_type_str + ":"
-        print question_type
+        #print question_type_str + ":"
+        #print question_type
         control_dict = question_type.get(u"control", {})
         control_tag = control_dict.get(u"tag", u"")
         return self.QUESTION_CLASSES[control_tag]
