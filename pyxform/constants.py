@@ -20,3 +20,6 @@ COLUMNS = u"columns"
 GROUP = u"group"
 CHILDREN = u"children"
 CHOICES = u"choices"
+
+PUBLIC_KEY = u"public_key"
+SUBMISSION_URL = u"submission_url"
