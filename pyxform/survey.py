@@ -147,14 +147,13 @@ class Survey(Section):
 
                                 if not translationsExist:
                                     # If there are no translations
-                                    # specified, pull the generic
-                                    # label.
-                                    if u"label" in survey_element.to_json_dict():
-                                        translation_label = survey_element.to_json_dict()[u"label"]
+                                    # specified, pull the generic label
+                                    survey_element_dict = survey_element.to_json_dict()
+                                    if u"label" in survey_element_dict:
+                                        translation_label = survey_element_dict[u"label"]
                                         survey_element.__setattr__(u"label", {lang: translation_label})
                                     else:
-                                        #TODO: incorporate Beorse's unlabeled media fix
-                                        #translation_label = None
+                                        #TODO:
                                         raise PyXFormError(survey_element.name, "Must include a label")
                                         
                                 elif not langsExist:
@@ -220,6 +219,7 @@ class Survey(Section):
     #From Beorse's xml_translations_and_media
     def itext(self):
         """
+        This function creates the survey's itext nodes.
         itext can be images/audio/video/text
         It can be localized for different languages which is what most of these attributes are for.
         @see http://code.google.com/p/opendatakit/wiki/XFormDesignGuidelines

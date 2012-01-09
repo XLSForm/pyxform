@@ -202,7 +202,8 @@ class SurveyElement(dict):
 
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):
-        if type(self.label) == dict:
+        if type(self.label) is dict or len(self.media) > 0:
+            #If there is a dictionary label, or non-empty media dict, then we need to make a label with an itext ref
             ref = "jr:itext('%s')" % self._translation_path(u"label")
             return node(u"label", ref=ref)
         else:
@@ -223,15 +224,17 @@ class SurveyElement(dict):
         Return a list containing one node for the label and if there
         is a hint one node for the hint.
         """
-        if self.label and self.hint:
-            return [self.xml_label(), self.xml_hint()]
-        elif self.label:
-            return [self.xml_label()]
-        elif self.hint:
-            return [self.xml_hint()]
-        else:
+        result = []
+        if self.label or self.media:
+            result.append(self.xml_label())
+        if self.hint:
+            result.append(self.xml_hint())
+
+        if len(result) == 0:
             msg = "The survey element named '%s' has no label or hint." % self.name
             raise PyXFormError(msg)
+        
+        return result
     
     def xml_binding(self):
         """

@@ -28,20 +28,7 @@ LIST_NAME = u"list name"
 
 #Aliases:
 #Ideally aliases should resolve to elements in the json form schema
-yes_no_aliases = {
-    "yes": "true()",
-    "Yes": "true()",
-    "YES": "true()",
-    "true": "true()",
-    "True": "true()",
-    "TRUE": "true()",
-    "no": "false()",
-    "No": "false()",
-    "NO": "false()",
-    "false": "false()",
-    "False": "false()",
-    "FALSE": "false()"
-}
+
 #select, control and settings alias keys used for parsing,
 #which is why self mapped keys are necessary.
 control_aliases = {
@@ -93,10 +80,27 @@ survey_header_aliases = {
 }
 list_header_aliases = {
     u"list_name" : LIST_NAME,
-    u"value" : constants.NAME #Perhaps there should a different name constant for list item names?
+    u"value" : constants.NAME,
+    u"image": u"media:image",
+    u"audio": u"media:audio",
+    u"video": u"media:video"
 }
 type_aliases = {
     u"image": u"photo"
+}
+yes_no_aliases = {
+    "yes": "true()",
+    "Yes": "true()",
+    "YES": "true()",
+    "true": "true()",
+    "True": "true()",
+    "TRUE": "true()",
+    "no": "false()",
+    "No": "false()",
+    "NO": "false()",
+    "false": "false()",
+    "False": "false()",
+    "FALSE": "false()"
 }
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -108,7 +112,7 @@ def print_pyobj_to_json(pyobj, path=None):
         json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
         fp.close()
     else:
-        print json.dump(pyobj, ensure_ascii=False, indent=4)
+        print json.dumps(pyobj, ensure_ascii=False, indent=4)
 
 class SpreadsheetReader(object):
     
@@ -485,7 +489,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"def
     
     if len(stack) != 1:
         raise PyXFormError("unmatched begin statement: " + str(stack[-1][0]))
-    #print json.dumps(json_dict, indent=4, ensure_ascii=False)
+    print_pyobj_to_json(json_dict)
     return json_dict
 
 class SurveyReader(SpreadsheetReader):
