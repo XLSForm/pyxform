@@ -55,7 +55,7 @@ def node(tag, *args, **kwargs):
             text_node = Text()
             text_node.data = unicode(n)
             result.appendChild(text_node)
-        elif type(n) != unicode:
+        elif type(n) is not unicode:
             try:
                 result.appendChild(n)
             except:

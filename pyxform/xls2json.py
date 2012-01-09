@@ -99,13 +99,16 @@ type_aliases = {
     u"image": u"photo"
 }
 
-def print_pyobj_to_json(pyobj, path):
+def print_pyobj_to_json(pyobj, path=None):
     """
-    dump a python nested array/dict structure to the specified file
+    dump a python nested array/dict structure to the specified file or stdout if no file is specified
     """
-    fp = codecs.open(path, mode="w", encoding="utf-8")
-    json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
-    fp.close()
+    if path:
+        fp = codecs.open(path, mode="w", encoding="utf-8")
+        json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
+        fp.close()
+    else:
+        print json.dump(pyobj, ensure_ascii=False, indent=4)
 
 class SpreadsheetReader(object):
     
@@ -299,16 +302,15 @@ def group_dictionaries_by_key(list_of_dicts, key, remove_key = True):
     dict_of_lists = dict()
     for dicty in list_of_dicts:
         if key not in dicty: continue
-        dicty_key = dicty[key]
+        dicty_value = dicty[key]
         if remove_key: dicty.pop(key)
-        if dicty_key in dict_of_lists:
-            dict_of_lists[dicty_key].append(dicty)
+        if dicty_value in dict_of_lists:
+            dict_of_lists[dicty_value].append(dicty)
         else:
-            dict_of_lists[dicty_key] = [dicty]
+            dict_of_lists[dicty_value] = [dicty]
     return dict_of_lists
 
-
-def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"english", warn_out_file='warnings.txt'):
+def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"default", warn_out_file='warnings.txt'):
     """
     spreadsheet_dict -- nested dictionaries representing a spreadsheet. should be similar to those returned by xls_to_dict
     form_name -- The spreadsheet's filename
@@ -329,9 +331,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
     #Process the headers:
     #Dealiasing must happen before grouping
     survey_sheet = dealias_headers(survey_sheet, survey_header_aliases)
-    print "BEGIN"
     survey_sheet = group_headers(survey_sheet)
-    print survey_sheet
     survey_sheet = clean_unicode_values(survey_sheet)
     survey_sheet = dealias_types(survey_sheet)
     
@@ -362,6 +362,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
        constants.NAME : form_name,
        constants.TITLE : id_string,
        constants.ID_STRING : id_string,
+       constants.DEFAULT_LANGUAGE : default_language,
        constants.CHILDREN : []
     }
     #Here the default settings are overridden by those in the settings sheet
@@ -484,7 +485,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"eng
     
     if len(stack) != 1:
         raise PyXFormError("unmatched begin statement: " + str(stack[-1][0]))
-    print json.dumps(json_dict, indent=4, ensure_ascii=False)
+    #print json.dumps(json_dict, indent=4, ensure_ascii=False)
     return json_dict
 
 class SurveyReader(SpreadsheetReader):
@@ -501,13 +502,17 @@ def organize_by_values(dict_list, key):
     dict_list -- a list of dicts
     key -- a key shared by all the dicts in dict_list
     Returns a dict of dicts keyed by the value of the specified key in each dictionary.
-    If two dictionaries fall under the same key, or one doesn't have the key, an error is thrown.
+    If two dictionaries fall under the same key an error is thrown.
+    If a dictionary is doesn't have the specified key it is omitted
     """
     result = {}
     for dicty in dict_list:
         if key in dicty:
             dicty_copy = dicty.copy()
-            result[dicty_copy.pop(key)] = dicty_copy
+            val = dicty_copy.pop(key)
+            if val in result:
+                raise Exception("Duplicate key: " + val)
+            result[val] = dicty_copy
     return result
 
 class QuestionTypesReader(SpreadsheetReader):
@@ -528,8 +533,8 @@ class QuestionTypesReader(SpreadsheetReader):
         self._dict = organize_by_values(self._dict, u"name")
         
 
-#Not used internally
-#TODO: If this is used anywhere else it is probably broken from the changes I made to SpreadsheetReader
+#Not used internally (or on formhub)
+#TODO: If this is used anywhere else it is probably broken from the changes I made to SpreadsheetReader.
 class VariableNameReader(SpreadsheetReader):
     def __init__(self, path):
         SpreadsheetReader.__init__(self, path)

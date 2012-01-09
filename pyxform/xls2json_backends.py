@@ -75,6 +75,7 @@ def csv_to_dict(path_or_file):
             content = row[1:]
             if s_or_c == '':
                 s_or_c = None
+            #concatenate all the strings in content
             if reduce(lambda x, y: x+y, content) == '':
                 # content is a list of empty strings
                 content = None
@@ -97,7 +98,9 @@ def csv_to_dict(path_or_file):
                 _d = {}
                 for key, val in zip(current_headers, content):
                     if val != "":
-                        _d[unicode(key)] = unicode(val)
+                        #Slight modification so values are striped
+                        #this is because csvs often spaces following commas (but the csv reader might already handle that.)
+                        _d[unicode(key)] = unicode(val.strip())
                 _dict[sheet_name].append(_d)
     return _dict
 

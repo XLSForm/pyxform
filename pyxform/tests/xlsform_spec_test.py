@@ -6,9 +6,11 @@ from unittest import TestCase
 import pyxform
 import utils
 import os, sys
-from pyxform.xls2json import SurveyReader
+import pyxform.xls2json as x2j
 
-path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/" + "simple_loop.xls" #"xlsform_spec_test.xls"
+#path_to_excel_file = "/home/user/Desktop/full_instrument_117_english_only.xls"
+path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
+#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/simple_loop.xls"
 
 class basic_test(TestCase):
     def runTest(self):
@@ -21,3 +23,10 @@ class basic_test(TestCase):
         survey.print_xform_to_file(path_to_xform)
         pass
     
+    
+#class test_variable_name_reader(TestCase):
+#    def runTest(self):
+#        vnr = x2j.VariableNameReader(path_to_excel_file)
+#        x2j.print_pyobj_to_json(vnr.to_json_dict())
+#        pass
+

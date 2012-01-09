@@ -36,8 +36,6 @@ class SurveyElementBuilder(object):
         self.set_question_type_dictionary(
             kwargs.get(u"question_type_dictionary")
             )
-#        if self._add_none_option:
-#            raise Exception()
 
     def set_sections(self, sections):
         """
