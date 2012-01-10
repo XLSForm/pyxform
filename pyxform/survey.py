@@ -101,15 +101,7 @@ class Survey(Section):
     def _setup_media(self):
         """
         Merges any media files in with the translations so that they
-        all end up in the itext node. This method is handles the
-        following cases:
-
-            -Media files exist and no label translations exist
-            -Media files exist and label translations exist
-            -Media translations exist and label translations exist
-
-        The following cases are not yet covered:
-            -Media files exist and no label is provided at all
+        all end up in the itext node.
         """
         translationsExist = self._translations
         if not translationsExist:
@@ -227,9 +219,10 @@ class Survey(Section):
         result = []
         for lang in self._translations.keys():
             if lang == self.default_language:
-                result.append(node("translation", lang=lang,default=""))
+                result.append(node("translation", lang=lang,default=self.default_language))
             else:
                 result.append(node("translation", lang=lang))
+
             for label_name in self._translations[lang].keys():
                 itext_nodes = []
                 label_type = label_name.partition(":")[-1]

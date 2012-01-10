@@ -25,6 +25,7 @@ CHOICES_AND_COLUMNS = u"choices and columns"
 
 #xls specific constants:
 LIST_NAME = u"list name"
+TABLE_LIST = u"table-list"
 
 #Aliases:
 #Ideally aliases should resolve to elements in the json form schema
@@ -41,11 +42,13 @@ control_aliases = {
 select_aliases = {
       u"add select one prompt using" : u"select one",
       u"add select multiple prompt using" : u"select one",
-      u"select all that apply from" : u"select all that apply",
+      u"select all that apply from" : u"select all that apply", #This could pose a problem since the shorter alias might match...
       u"select one from" : u"select one",
       u"selec1" : u"select one", 
       u"select_one" : u"select one",
-      u"select_multiple" : u"select all that apply"
+      u"select one" : u"select one",
+      u"select_multiple" : u"select all that apply",
+      u"select all that apply" : u"select all that apply"
 }
 settings_header_aliases = {
     u"form_title" : constants.TITLE,
@@ -85,8 +88,11 @@ list_header_aliases = {
     u"audio": u"media:audio",
     u"video": u"media:video"
 }
+#Note that most of the type aliasing happens in all.xls
 type_aliases = {
-    u"image": u"photo"
+    u"image": u"photo",
+    u"add audio prompt" : u"audio",
+    u"add video prompt" : u"video"
 }
 yes_no_aliases = {
     "yes": "true()",
@@ -151,7 +157,7 @@ class SpreadsheetReader(object):
         self._sheet_names = self._dict.keys()
         for sheet_name, sheet in self._dict.items():
             clean_unicode_values(sheet)
-        self._fix_int_values()
+        #self._fix_int_values()    No longer needed because I changed the backend to use unicode for everything
 
     def _fix_int_values(self):
         """
@@ -189,9 +195,9 @@ def merge_dicts(dict_a, dict_b, default_key = "default", default_key_2 = "defaul
     it will be put into a new dict under default_key
     or default_key_2 (if the default_key has already been used) and combined as such.
     """
-    if dict_a is None:
+    if dict_a is None or dict_a == {}:
         return dict_b
-    if dict_b is None:
+    if dict_b is None or dict_b == {}:
         return dict_a
     
     if type(dict_a) is not dict:
@@ -199,11 +205,6 @@ def merge_dicts(dict_a, dict_b, default_key = "default", default_key_2 = "defaul
         default_key = default_key_2 #This is how name collisions are avoided when merging two leaf elements
     if type(dict_b) is not dict:
         dict_b = {default_key : dict_b}
-    
-#    if len(dict_a) == 0:
-#        return dict_b
-#    if len(dict_b) == 0:
-#        return dict_a
     
     all_keys = set(dict_a.keys()).union(set(dict_b.keys()))
     
@@ -314,24 +315,26 @@ def group_dictionaries_by_key(list_of_dicts, key, remove_key = True):
             dict_of_lists[dicty_value] = [dicty]
     return dict_of_lists
 
-def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"default", warn_out_file='warnings.txt'):
+def workbook_to_json(workbook_dict, form_name=None, default_language=u"default", warnings=None):
     """
-    spreadsheet_dict -- nested dictionaries representing a spreadsheet. should be similar to those returned by xls_to_dict
+    workbook_dict -- nested dictionaries representing a spreadsheet. should be similar to those returned by xls_to_dict
     form_name -- The spreadsheet's filename
     default_language -- if there are multilingual elements this will be the default language they are put in.
+    warnings -- an optional list which warnings will be appended to
     returns a nested dictionary equivalent to the format specified in the json form spec.
     """
+    if warnings is None:
+        #Set warnings to a list that will be discarded.
+        warnings = []
+    
     #Make sure the passed in vars are unicode
     form_name = unicode(form_name)
     default_language = unicode(default_language)
-    
-    #Open file to print warning log to.
-    warn_out = open(warn_out_file, 'w')
 
     #Break apart the spreadsheet dict down into easier to access objects
-    if SURVEY not in spreadsheet_dict:
+    if SURVEY not in workbook_dict:
         raise PyXFormError("You must have a sheet named: " + SURVEY)
-    survey_sheet = spreadsheet_dict[SURVEY]
+    survey_sheet = workbook_dict[SURVEY]
     #Process the headers:
     #Dealiasing must happen before grouping
     survey_sheet = dealias_headers(survey_sheet, survey_header_aliases)
@@ -341,22 +344,22 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"def
     
     #The logic for the choices and columns sheets is sort of complicated because of the different naming conventions.
     #Basically, I combine everything into one list. If this breaks something we can come up with a complicated scheme later on.
-    choices_and_columns_sheet = spreadsheet_dict.get(CHOICES_AND_COLUMNS, {})
+    choices_and_columns_sheet = workbook_dict.get(CHOICES_AND_COLUMNS, {})
     choices_and_columns_sheet = dealias_headers(choices_and_columns_sheet, list_header_aliases)
     choices_and_columns_sheet = group_headers(choices_and_columns_sheet)
     
-    choices_sheet = spreadsheet_dict.get(CHOICES, [])
+    choices_sheet = workbook_dict.get(CHOICES, [])
     choices_sheet = dealias_headers(choices_sheet, list_header_aliases)
     choices_sheet = group_headers(choices_sheet)
     
-    columns_sheet = spreadsheet_dict.get(COLUMNS, [])
+    columns_sheet = workbook_dict.get(COLUMNS, [])
     columns_sheet = dealias_headers(columns_sheet, list_header_aliases)
     columns_sheet = group_headers(columns_sheet)
     
     combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
     choices = columns = combined_lists
     
-    settings_sheet = group_headers(dealias_headers(spreadsheet_dict.get(SETTINGS, []), settings_header_aliases))
+    settings_sheet = group_headers(dealias_headers(workbook_dict.get(SETTINGS, []), settings_header_aliases))
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
     
     #Here we create our json dict root with default settings:
@@ -372,6 +375,9 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"def
     #Here the default settings are overridden by those in the settings sheet
     json_dict.update(settings)
     
+    #TODO: The advantage to doing this later is we don't have to worry about disabled questions or end attributes
+    #    Also we can enforce it up to the names being unique within a group
+    #    This might already happen in the json2xform code...
     check_name_uniqueness(survey_sheet)
     #TODO: We could also check the choices/columns lists for unique names (within the each list).
     
@@ -379,13 +385,16 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"def
     row_number = 0
     #A stack is used to keep track of begin/end expressions
     stack = [(None, json_dict.get(constants.CHILDREN))]
+    #If a group has a table-list appearance flag this will be set to the name of the list
+    table_list = None
+    begin_table_list = False
     for row in survey_sheet:
         row_number += 1
         prev_control_type, parent_children_array = stack[-1]
         
         #Disabled should probably be first so the attributes below can be disabled.
         if u"disabled" in row:
-            warn_out.write("The 'disabled' column header is not part of the current spec. We recommend using relevant instead." + '\n')
+            warnings.append("The 'disabled' column header is not part of the current spec. We recommend using relevant instead.")
             disabled = row.pop(u"disabled")
             if disabled in yes_no_aliases:
                 disabled = yes_no_aliases[disabled]
@@ -396,7 +405,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"def
         if len(row) == 0: continue
         
         #Get question type
-        question_type = row.get(u"type")
+        question_type = row.get(constants.TYPE)
         if not question_type:
             raise PyXFormError("Question with no type on row " + str(row_number))
             continue
@@ -417,6 +426,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"def
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError("Unmatched end statement. Previous control type: " + prev_control_type + ", Control type: " + control_type)   
                 stack.pop()
+                table_list = None
                 continue
         
         #Make sure the question has a valid name
@@ -429,7 +439,7 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"def
         
         if constants.LABEL not in row:
             #TODO: Should there be a default label?
-            warn_out.write("Warning unlabeled question in row" + str(row_number) + '\n')
+            warnings.append("Warning unlabeled question in row " + str(row_number))
         
         #Try to parse question as begin control statement (i.e. begin loop/repeat/group:
         begin_control_parse = re.search(r"(?P<begin>begin)(\s|_)(?P<type>("
@@ -448,11 +458,17 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"def
                 if control_type is constants.LOOP:
                     if not parse_dict.get("list_name"):
                         #TODO: Perhaps warn and make repeat into a group?
-                        raise PyXFormError("repeat without list name", "Error on row: " + str(row_number))
+                        raise PyXFormError("Repeat without list name " + " Error on row: " + str(row_number))
                     list_name = parse_dict["list_name"]
                     if list_name not in columns:
                         raise PyXFormError("List name not in columns sheet: " + list_name + " Error on row: " + str(row_number))
                     new_json_dict[constants.COLUMNS] = columns[list_name]
+                
+                #Code to deal with table_list appearance flags (for groups of selects)
+                if new_json_dict.get(u"control",{}).get(u"appearance") == TABLE_LIST:
+                    begin_table_list = True
+                    new_json_dict[u"control"][u"appearance"] = u"field-list"
+                    
                 parent_children_array.append(new_json_dict)
                 stack.append((control_type, child_list))
                 continue
@@ -469,16 +485,32 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"def
                 list_name = parse_dict["list_name"]
 
                 if list_name not in choices:
-                    raise PyXFormError("List name not in choices sheet: " + list_name, "Error on row: " + str(row_number))
+                    raise PyXFormError("List name not in choices sheet: " + list_name + " Error on row: " + str(row_number))
                 
-                #print "choices[list_name]choices[list_name]choices[list_name]" + str(choices[list_name])
                 if parse_dict.get("specify_other") is not None:
                     select_type += u" or specify other"
                     
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
                 new_json_dict[constants.CHOICES] = choices[list_name]
+                
+                #Code to deal with table_list appearance flags (for groups of selects)
+                if table_list or begin_table_list:
+                    if begin_table_list: #If this row is the first select in a a table list
+                        table_list = list_name
+                        new_new_json_dict = new_json_dict.copy()
+                        new_new_json_dict[constants.NAME] = "field_list_labels" #TODO: need to make unique
+                        control = new_new_json_dict[u"control"] = new_new_json_dict.get(u"control", {})
+                        control[u"appearance"] = "label"
+                        parent_children_array.append(new_new_json_dict)
+                        begin_table_list = False
+
+                    if table_list is not list_name:
+                        raise PyXFormError("Badly formatted table list, list names don't match: " + table_list + ", " + list_name + " Error on row: " + str(row_number))
                     
+                    control = new_json_dict[u"control"] = new_json_dict.get(u"control", {})
+                    control[u"appearance"] = "list-nolabel"
+                        
                 parent_children_array.append(new_json_dict)
                 continue
             
@@ -492,15 +524,43 @@ def spreadsheet_to_json(spreadsheet_dict, form_name=None, default_language=u"def
     print_pyobj_to_json(json_dict)
     return json_dict
 
+def parse_file_to_workbook_dict(path):
+    (filepath, filename) = os.path.split(path)
+    if not filename: raise PyXFormError("No filename.")
+    (shortname, extension) = os.path.splitext(filename)
+    if not extension: raise PyXFormError("No extension.")
+    
+    if extension == ".xls":
+        return xls_to_dict(path)
+    elif extension == ".csv":
+        return csv_to_dict(path)
+    elif extension == ".xlsx":
+        raise PyXFormError("XLSX files are not supported at this time. Please save the spreadsheet as an XLS file (97).")
+    else:
+        raise PyXFormError("File was not recognized")
+
+def get_filename(path):
+    return os.path.splitext((os.path.basename(path)))[0]
+
+def parse_file_to_json(path, default_name = None, default_language = u"English", warnings=None):
+    """
+    A wrapper for workbook_to_json
+    """
+    workbook_dict = parse_file_to_workbook_dict(path)
+    if default_name is None:
+        default_name = unicode(get_filename(path))
+    return workbook_to_json(workbook_dict, default_name, default_language, warnings)
+
 class SurveyReader(SpreadsheetReader):
     def __init__(self, path):
-        super(SurveyReader, self).__init__(path)
-        #I would rather find these by calling specific functions i.e.
-        #workbook_dict = get_dict_from_workbook(path)
-        default_name = self._name
-        default_language = self._def_lang
-        self._dict = spreadsheet_to_json(self._dict, default_name, default_language)
-
+        self._warnings = []
+        self._dict =  parse_file_to_json(path, warnings=self._warnings)
+        self._path = path
+    def print_warning_log(self, warn_out_file):
+        #Open file to print warning log to.
+        warn_out = open(warn_out_file, 'w')
+        warn_out.write('\n'.join(self._warnings))
+        
 def organize_by_values(dict_list, key):
     """
     dict_list -- a list of dicts

@@ -78,6 +78,17 @@ class RepeatingSection(Section):
         return super(RepeatingSection, self).xml_instance(**kwargs)
 
 class GroupedSection(Section):
+#    I think this might be a better place for the table-list stuff, however it doesn't allow for as good of validation as putting it in xls2json
+#    def __init__(self, **kwargs):
+#        control = kwargs.get(u"control")
+#        if control:
+#            appearance = control.get(u"appearance")
+#            if appearance is u"table-list":
+#                print "HI"
+#                control[u"appearance"] = "field-list"
+#                kwargs["children"].insert(0, kwargs["children"][0])
+#        super(GroupedSection, self).__init__(kwargs)
+        
     def xml_control(self):
         control_dict = self.control
         xml_label = self.xml_label()
