@@ -75,8 +75,7 @@ class SurveyElementBuilder(object):
         question_type_str = d[u"type"]
         d_copy = d.copy()
 
-        # TODO: figure out a global setting for whether select all
-        # that apply questions have an automatic none option.
+        # TODO: Keep add none option?
         if self._add_none_option and \
                 question_type_str.startswith(u"select all that apply"):
             self._add_none_option_to_select_all_that_apply(d_copy)

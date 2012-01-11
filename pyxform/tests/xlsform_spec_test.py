@@ -9,8 +9,8 @@ import os, sys
 import pyxform.xls2json as x2j
 
 #path_to_excel_file = "/home/user/Desktop/full_instrument_117_english_only.xls"
-#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
-path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/MgSO4.xls"
+path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
+#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/MgSO4.xls"
 #path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/simple_loop.xls"
 
 class basic_test(TestCase):

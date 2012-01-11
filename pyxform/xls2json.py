@@ -388,6 +388,10 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     settings_sheet = dealias_and_group_headers(workbook_dict.get(SETTINGS, []), settings_header_aliases, default_language)
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
     
+    #Fix to allow specifying the add none option setting in the survey:
+    if u"add_none_option" in settings:
+        settings[u"add_none_option"] = yes_no_aliases.get(settings[u"add_none_option"], u"false()") == u"true"
+    
     #Here we create our json dict root with default settings:
     id_string = settings.get(constants.ID_STRING, form_name)
     json_dict = {
