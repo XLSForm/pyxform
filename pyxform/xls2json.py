@@ -547,7 +547,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     if len(stack) != 1:
         raise PyXFormError("unmatched begin statement: " + str(stack[-1][0]))
-    print_pyobj_to_json(json_dict)
+    #print_pyobj_to_json(json_dict)
     return json_dict
 
 def parse_file_to_workbook_dict(path):
@@ -579,6 +579,8 @@ def parse_file_to_json(path, default_name = None, default_language = u"default",
 
 class SurveyReader(SpreadsheetReader):
     def __init__(self, path):
+        if type(path) is file:
+            path = path.name
         self._warnings = []
         self._dict =  parse_file_to_json(path, warnings=self._warnings)
         self._path = path
