@@ -61,7 +61,6 @@ settings_header_aliases = {
 #TODO: Check on bind prefix approach in json.
 #Conversion dictionary from user friendly column names to meaningful values
 survey_header_aliases = {
-    u"constraint_message" : u"constraint message",#TODO: This is an issue (should it be under bind?)
     u"read_only" : constants.READONLY,
     u"relevant":u"bind:relevant",
     u"caption": constants.LABEL,
@@ -70,11 +69,11 @@ survey_header_aliases = {
     u"required": u"bind:required",
     u"constraint": u"bind:constraint",
     u"constraining message": u"bind:jr:constraintMsg",
+    u"constraint message": u"bind:jr:constraintMsg",
+    u"constraint_message": u"bind:jr:constraintMsg",
     u"calculation": u"bind:calculate",
     u"command": constants.TYPE,
     u"tag": constants.NAME,
-    #u"label": u"caption",#TODO: this is also an issue
-    u"skippable": u"required",
     u"value": constants.NAME,
     u"image": u"media:image",
     u"audio": u"media:audio",
@@ -91,6 +90,8 @@ list_header_aliases = {
 #Note that most of the type aliasing happens in all.xls
 type_aliases = {
     u"image": u"photo",
+    u"add image prompt" : u"photo",
+    u"add photo prompt" : u"photo",
     u"add audio prompt" : u"audio",
     u"add video prompt" : u"video"
 }
@@ -213,12 +214,53 @@ def merge_dicts(dict_a, dict_b, default_key = "default", default_key_2 = "defaul
         out_dict[key] = merge_dicts(dict_a.get(key), dict_b.get(key), default_key, default_key_2)
     return out_dict
     
-def group_headers(dict_array):
+#def group_headers(dict_array, default_language):
+#    """
+#    For each row in the worksheet, group all keys that contain a colon. So
+#    {"text:english": "hello", "text:french" : "bonjour"}
+#    becomes
+#    {"text": {"english": "hello", "french" : "bonjour"}.
+#    """
+#    #TODO:
+#    #Colons aren't the best syntax for this because they are also used in namespaces (i.e. jr:something)
+#    #For now I'm only parsing the first colon and hoping nobody ever tries a multi-level group.
+#    DICT_CHAR = u":"
+#    out_dict_array = list()
+#    for row in dict_array:
+#        #print row
+#        out_row = dict()
+#        for k, v in row.items():
+#            tokens = k.split(DICT_CHAR)
+#            #tokens.append(v)
+#            #out_row = merge_dicts(out_row, list_to_nested_dict(tokens))
+#            new_key = tokens[0]
+#            new_value = { DICT_CHAR.join(tokens[1:]) : v } if len(tokens) > 1 else v
+#            out_row = merge_dicts(out_row, { new_key : new_value }, default_language)
+#        #print out_row
+#        out_dict_array.append(out_row)
+#    return out_dict_array
+#    
+#def dealias_headers(dict_array, header_aliases):
+#    """
+#    Dealias the headers according to the given alias map
+#    Copies dict_array so this isn't super efficient.
+#    """
+#    out_dict_array = list()
+#    for row in dict_array:
+#        out_row = dict()
+#        for key in row.keys():
+#            out_row[header_aliases.get(key,key)] = row[key]
+#        out_dict_array.append(out_row)
+#    return out_dict_array
+
+def dealias_and_group_headers(dict_array, header_aliases, default_language):
     """
     For each row in the worksheet, group all keys that contain a colon. So
     {"text:english": "hello", "text:french" : "bonjour"}
     becomes
     {"text": {"english": "hello", "french" : "bonjour"}.
+    In addition dealiasing is done on the original key, and the grouped key.
+    default_language -- used to group labels/hints/etc without a language specified, with localized versions
     """
     #TODO:
     #Colons aren't the best syntax for this because they are also used in namespaces (i.e. jr:something)
@@ -228,30 +270,12 @@ def group_headers(dict_array):
     for row in dict_array:
         #print row
         out_row = dict()
-        for k, v in row.items():
-            tokens = k.split(DICT_CHAR)
-            #tokens.append(v)
-            #out_row = merge_dicts(out_row, list_to_nested_dict(tokens))
-            new_key = tokens[0]
-            new_value = { DICT_CHAR.join(tokens[1:]) : v } if len(tokens) > 1 else v
-            out_row = merge_dicts(out_row, { new_key : new_value })
-        #print out_row
-        out_dict_array.append(out_row)
-    return out_dict_array
-    
-def dealias_headers(dict_array, header_aliases):
-    """
-    Dealias the headers according to the given alias map
-    Copies dict_array so this isn't super efficient.
-    """
-    out_dict_array = list()
-    for row in dict_array:
-        out_row = dict()
-        for key in row.keys():
-            if key in header_aliases.keys():
-                out_row[header_aliases[key]] = row[key]
-            else:
-                out_row[key] = row[key]
+        for key, val in row.items():
+            dealiased_key = header_aliases.get(key, key)
+            tokens = dealiased_key.split(DICT_CHAR)
+            new_key = header_aliases.get(tokens[0],tokens[0])
+            new_value = { DICT_CHAR.join(tokens[1:]) : val } if len(tokens) > 1 else val
+            out_row = merge_dicts(out_row, { new_key : new_value }, default_language)
         out_dict_array.append(out_row)
     return out_dict_array
 
@@ -336,30 +360,32 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         raise PyXFormError("You must have a sheet named: " + SURVEY)
     survey_sheet = workbook_dict[SURVEY]
     #Process the headers:
-    #Dealiasing must happen before grouping
-    survey_sheet = dealias_headers(survey_sheet, survey_header_aliases)
-    survey_sheet = group_headers(survey_sheet)
+    #Initial group is to group the language tags, then we dealias the headers
+    #survey_sheet = group_headers(survey_sheet)
+    survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, default_language)
+    #survey_sheet = group_headers(survey_sheet)
+    
     survey_sheet = clean_unicode_values(survey_sheet)
     survey_sheet = dealias_types(survey_sheet)
     
     #The logic for the choices and columns sheets is sort of complicated because of the different naming conventions.
     #Basically, I combine everything into one list. If this breaks something we can come up with a complicated scheme later on.
     choices_and_columns_sheet = workbook_dict.get(CHOICES_AND_COLUMNS, {})
-    choices_and_columns_sheet = dealias_headers(choices_and_columns_sheet, list_header_aliases)
-    choices_and_columns_sheet = group_headers(choices_and_columns_sheet)
+    choices_and_columns_sheet = dealias_and_group_headers(choices_and_columns_sheet, list_header_aliases, default_language)
+    #choices_and_columns_sheet = group_headers(choices_and_columns_sheet)
     
     choices_sheet = workbook_dict.get(CHOICES, [])
-    choices_sheet = dealias_headers(choices_sheet, list_header_aliases)
-    choices_sheet = group_headers(choices_sheet)
+    choices_sheet = dealias_and_group_headers(choices_sheet, list_header_aliases, default_language)
+    #choices_sheet = group_headers(choices_sheet)
     
     columns_sheet = workbook_dict.get(COLUMNS, [])
-    columns_sheet = dealias_headers(columns_sheet, list_header_aliases)
-    columns_sheet = group_headers(columns_sheet)
+    columns_sheet = dealias_and_group_headers(columns_sheet, list_header_aliases, default_language)
+    #columns_sheet = group_headers(columns_sheet)
     
     combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
     choices = columns = combined_lists
     
-    settings_sheet = group_headers(dealias_headers(workbook_dict.get(SETTINGS, []), settings_header_aliases))
+    settings_sheet = dealias_and_group_headers(workbook_dict.get(SETTINGS, []), settings_header_aliases, default_language)
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
     
     #Here we create our json dict root with default settings:
@@ -378,7 +404,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     #TODO: The advantage to doing this later is we don't have to worry about disabled questions or end attributes
     #    Also we can enforce it up to the names being unique within a group
     #    This might already happen in the json2xform code...
-    check_name_uniqueness(survey_sheet)
+    #check_name_uniqueness(survey_sheet)
     #TODO: We could also check the choices/columns lists for unique names (within the each list).
     
     #Parse the survey sheet while generating a survey in our json format:
@@ -476,7 +502,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         #Try to parse question as a select:
         select_regexp = (r"^(?P<select_command>("
                          + '|'.join(select_aliases.keys())
-                         + r")) (?P<list_name>\S+)( (?P<specify_other>(or specify other|or_other)))?$")
+                         + r")) (?P<list_name>\S+)( (?P<specify_other>(or specify other|or_other|or other)))?$")
         select_parse = re.search(select_regexp, question_type)
         if select_parse:
             parse_dict = select_parse.groupdict()
@@ -542,7 +568,7 @@ def parse_file_to_workbook_dict(path):
 def get_filename(path):
     return os.path.splitext((os.path.basename(path)))[0]
 
-def parse_file_to_json(path, default_name = None, default_language = u"English", warnings=None):
+def parse_file_to_json(path, default_name = None, default_language = u"default", warnings=None):
     """
     A wrapper for workbook_to_json
     """
@@ -592,10 +618,9 @@ class QuestionTypesReader(SpreadsheetReader):
         TYPES_SHEET = u"question types"
         self._dict = self._dict[TYPES_SHEET]
         #print self._dict
-        self._dict = group_headers(self._dict)
+        self._dict = dealias_and_group_headers(self._dict, {}, u"default")
         #print json.dumps(self._dict, indent=4, ensure_ascii=False)
         self._dict = organize_by_values(self._dict, u"name")
-        
 
 #Not used internally (or on formhub)
 #TODO: If this is used anywhere else it is probably broken from the changes I made to SpreadsheetReader.
