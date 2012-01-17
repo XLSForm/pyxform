@@ -61,8 +61,9 @@ settings_header_aliases = {
 #TODO: Check on bind prefix approach in json.
 #Conversion dictionary from user friendly column names to meaningful values
 survey_header_aliases = {
-    u"read_only" : constants.READONLY,
-    u"relevant":u"bind:relevant",
+    u"read_only" : u"bind:readonly",
+    u"readonly" : u"bind:readonly",
+    u"relevant": u"bind:relevant",
     u"caption": constants.LABEL,
     u"appearance": u"control:appearance", #TODO: this is also an issue
     u"relevance": u"bind:relevant",
