@@ -19,9 +19,11 @@ BIND = u"bind"#TODO: What should I do with the nested types? (readonly and relev
 MEDIA = u"media"
 CONTROL = u"control"
 APPEARANCE = u"appearance"
-LOOP = u"loop"
-REPEAT = u"repeat"
 
+LOOP = u"loop"
+COLUMNS = u"columns"
+
+REPEAT = u"repeat"
 GROUP = u"group"
 CHILDREN = u"children"
 
