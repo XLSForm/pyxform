@@ -132,12 +132,11 @@ def list_to_nested_dict(lst):
     else:
         return lst[0]
     
-def merge_dicts(dict_a, dict_b, default_key = "default", default_key_2 = "default_2"):
+def merge_dicts(dict_a, dict_b, default_key = "default"):
     """
     Recursively merge two nested dicts into a single dict.
-    If a non-dict value has a key that matches something else
-    it will be put into a new dict under default_key
-    or default_key_2 (if the default_key has already been used) and combined as such.
+    When keys match their values are merged using a recursive call to this function,
+    otherwise they are just added to the output dict.
     """
     if dict_a is None or dict_a == {}:
         return dict_b
@@ -145,16 +144,19 @@ def merge_dicts(dict_a, dict_b, default_key = "default", default_key_2 = "defaul
         return dict_a
     
     if type(dict_a) is not dict:
+        if default_key in dict_b:
+            return dict_b
         dict_a = {default_key : dict_a}
-        default_key = default_key_2 #This is how name collisions are avoided when merging two leaf elements
     if type(dict_b) is not dict:
+        if default_key in dict_a:
+            return dict_a
         dict_b = {default_key : dict_b}
     
     all_keys = set(dict_a.keys()).union(set(dict_b.keys()))
     
     out_dict = dict()
     for key in all_keys:
-        out_dict[key] = merge_dicts(dict_a.get(key), dict_b.get(key), default_key, default_key_2)
+        out_dict[key] = merge_dicts(dict_a.get(key), dict_b.get(key), default_key)
     return out_dict
     
 #def group_headers(dict_array, default_language):
@@ -196,7 +198,7 @@ def merge_dicts(dict_a, dict_b, default_key = "default", default_key_2 = "defaul
 #        out_dict_array.append(out_row)
 #    return out_dict_array
 
-def dealias_and_group_headers(dict_array, header_aliases, default_language):
+def dealias_and_group_headers(dict_array, header_aliases, default_language=u"default"):
     """
     For each row in the worksheet, group all keys that contain a colon. So
     {"text:english": "hello", "text:french" : "bonjour"}
@@ -211,7 +213,6 @@ def dealias_and_group_headers(dict_array, header_aliases, default_language):
     DICT_CHAR = u":"
     out_dict_array = list()
     for row in dict_array:
-        #print row
         out_row = dict()
         for key, val in row.items():
             dealiased_key = header_aliases.get(key, key)
@@ -287,8 +288,13 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     """
     workbook_dict -- nested dictionaries representing a spreadsheet. should be similar to those returned by xls_to_dict
     form_name -- The spreadsheet's filename
-    default_language -- if there are multilingual elements this will be the default language they are put in.
+    default_language -- default_language does two things:
+    1. In the xform the default language is the language reverted to when there is no translation available for some itext element.
+       Because of this every itext element must have a default language translation.
+    2. In the workbook if media/labels/hints that do not have a language suffix will be treated as though their suffix is the default language.
+       If the default language is used as a suffix for media/labels/hints, then the suffixless version will be overwritten.
     warnings -- an optional list which warnings will be appended to
+    
     returns a nested dictionary equivalent to the format specified in the json form spec.
     """
     if warnings is None:
@@ -299,34 +305,14 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     form_name = unicode(form_name)
     default_language = unicode(default_language)
 
-    #Break apart the spreadsheet dict down into easier to access objects
-    if SURVEY not in workbook_dict:
-        raise PyXFormError("You must have a sheet named: " + SURVEY)
-    survey_sheet = workbook_dict[SURVEY]
-    #Process the headers:
-    #Initial group is to group the language tags, then we dealias the headers
-    survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, default_language)
-    survey_sheet = clean_unicode_values(survey_sheet)
-    survey_sheet = dealias_types(survey_sheet)
-    
-    #Columns and "choices and columns" sheets are deprecated, but we combine them with the choices sheet for backwards-compatibility.
-    choices_and_columns_sheet = workbook_dict.get(CHOICES_AND_COLUMNS, {})
-    choices_and_columns_sheet = dealias_and_group_headers(choices_and_columns_sheet, list_header_aliases, default_language)
-    
-    columns_sheet = workbook_dict.get(COLUMNS, [])
-    columns_sheet = dealias_and_group_headers(columns_sheet, list_header_aliases, default_language)
-    
-    choices_sheet = workbook_dict.get(CHOICES, [])
-    choices_sheet = dealias_and_group_headers(choices_sheet, list_header_aliases, default_language)
-    
-    combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
-    choices = columns = combined_lists
-    
-    settings_sheet = dealias_and_group_headers(workbook_dict.get(SETTINGS, []), settings_header_aliases, default_language)
+    #Break the spreadsheet dict into easier to access objects (settings, choices, survey_sheet):
+    ########### Settings sheet ##########
+    settings_sheet = dealias_and_group_headers(workbook_dict.get(SETTINGS, []), settings_header_aliases)
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
+    default_language = settings.get(constants.DEFAULT_LANGUAGE, default_language)
     
     #add_none_option is a boolean that when true, indicates a none option should automatically be added to selects.
-    #It should probably be deprecated by I haven't checked yet.
+    #It should probably be deprecated but I haven't checked yet.
     if u"add_none_option" in settings:
         settings[u"add_none_option"] = yes_no_aliases.get(settings[u"add_none_option"], u"false()") == u"true"
     
@@ -342,6 +328,30 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     }
     #Here the default settings are overridden by those in the settings sheet
     json_dict.update(settings)
+    
+    ########### Choices sheet ##########
+    #Columns and "choices and columns" sheets are deprecated, but we combine them with the choices sheet for backwards-compatibility.
+    choices_and_columns_sheet = workbook_dict.get(CHOICES_AND_COLUMNS, {})
+    choices_and_columns_sheet = dealias_and_group_headers(choices_and_columns_sheet, list_header_aliases, default_language)
+    
+    columns_sheet = workbook_dict.get(COLUMNS, [])
+    columns_sheet = dealias_and_group_headers(columns_sheet, list_header_aliases, default_language)
+    
+    choices_sheet = workbook_dict.get(CHOICES, [])
+    choices_sheet = dealias_and_group_headers(choices_sheet, list_header_aliases, default_language)
+    
+    combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
+    choices = columns = combined_lists
+    
+    ########### Survey sheet ###########
+    if SURVEY not in workbook_dict:
+        raise PyXFormError("You must have a sheet named: " + SURVEY)
+    survey_sheet = workbook_dict[SURVEY]
+    #Process the headers:
+    #Initial group is to group the language tags, then we dealias the headers
+    survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, default_language)
+    survey_sheet = clean_unicode_values(survey_sheet)
+    survey_sheet = dealias_types(survey_sheet)
     
     #Parse the survey sheet while generating a survey in our json format:
     row_number = 0
