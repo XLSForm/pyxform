@@ -62,6 +62,12 @@ class SurveyElement(dict):
         for key, default in self.FIELDS.items():
             self[key] = kwargs.get(key, default())
         self._link_children()
+        
+        #Create a space label for unlabeled elements with the label appearance tag.
+        #This is because such elements are used to label the options for selects in a field-list
+        #and might want blank labels for themselves.
+        if self.control.get(u"appearance") == u"label" and not self.label:
+            self[u"label"] = u" "
 
     def _link_children(self):
         for child in self.children:
@@ -229,7 +235,7 @@ class SurveyElement(dict):
             result.append(self.xml_label())
         if self.hint:
             result.append(self.xml_hint())
-
+        
         if len(result) == 0:
             msg = "The survey element named '%s' has no label or hint." % self.name
             raise PyXFormError(msg)

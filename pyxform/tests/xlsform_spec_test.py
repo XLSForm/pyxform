@@ -8,10 +8,12 @@ import utils
 import os, sys
 import pyxform.xls2json as x2j
 
-#path_to_excel_file = "/home/user/Desktop/full_instrument_117_english_only.xls"
+#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/specify_other.csv"
+#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/full_instrument_117_english_only.xls"
 path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
 #path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/MgSO4.xls"
 #path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/simple_loop.xls"
+#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/nutrition_screening6.xls"
 
 class basic_test(TestCase):
     def runTest(self):
@@ -21,9 +23,11 @@ class basic_test(TestCase):
         directory, filename = os.path.split(path_to_excel_file)
         root_filename, ext = os.path.splitext(filename)
         path_to_xform = os.path.join(directory, root_filename + ".xml")
+        print "Printing to " + path_to_xform
         survey.print_xform_to_file(path_to_xform)
         pass
-    
+
+#TODO: test warnings
     
 #class test_variable_name_reader(TestCase):
 #    def runTest(self):

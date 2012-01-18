@@ -4,7 +4,7 @@ A Python script to convert excel files into JSON.
 import json
 import re
 import sys
-#import codecs
+import codecs
 import os
 import constants
 from errors import PyXFormError
@@ -462,13 +462,15 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 
                 #Code to deal with table_list appearance flags (for groups of selects)
                 if table_list or begin_table_list:
-                    if begin_table_list: #If this row is the first select in a a table list
+                    if begin_table_list: #If this row is the first select in a table list
                         table_list = list_name
-                        new_new_json_dict = new_json_dict.copy()
-                        new_new_json_dict[constants.NAME] = "field_list_labels" #TODO: need to make unique
-                        control = new_new_json_dict[u"control"] = new_new_json_dict.get(u"control", {})
-                        control[u"appearance"] = "label"
-                        parent_children_array.append(new_new_json_dict)
+                        table_list_header = {
+                            constants.TYPE : select_type,
+                            constants.NAME : "reserved_name_for_field_list_labels_" + str(row_number), #Adding row number for uniqueness
+                            constants.CONTROL : { u"appearance" : u"label" },
+                            constants.CHOICES : choices[list_name]
+                        }
+                        parent_children_array.append(table_list_header)
                         begin_table_list = False
 
                     if table_list is not list_name:
@@ -484,7 +486,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         
         #Put the row in the json dict as is:
         parent_children_array.append(row)
-
     
     if len(stack) != 1:
         raise PyXFormError("unmatched begin statement: " + str(stack[-1][0]))
@@ -547,7 +548,8 @@ def organize_by_values(dict_list, key):
 class SpreadsheetReader(object):
     
     def __init__(self, path_or_file):
-        if type(path) is file:
+        path = path_or_file
+        if type(path_or_file) is file:
             path = path.name
         
         self._dict = workbook_dict = parse_file_to_workbook_dict(path)
