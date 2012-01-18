@@ -1,9 +1,10 @@
 """
-This file constains constants that correspond to the json survey format property names. (@see json_form_schema.json)
-These names need to be shared between X2json and json2Y programs.
-By putting them in a shared file, the literal names can be easily changed, typos can be avoided, and dev tools can be used to find all references to the names.
+This file contains constants that correspond with the property names in the json survey format. (@see json_form_schema.json)
+These names are to be shared between X2json and json2Y programs.
+By putting them in a shared file, the literal names can be easily changed, typos can be avoided, and references are easier to find.
 """
-#TODO: Replace strings in the json2xforms code with these constants
+#TODO: Replace matching strings in the json2xforms code (builder.py, survey.py, survey_element.py, question.py) with these constants
+
 TYPE = u"type"
 TITLE = u"title"
 NAME = u"name"
@@ -13,14 +14,18 @@ SUBMISSION_URL = u"submission_url"
 DEFAULT_LANGUAGE = u"default_language"
 LABEL = u"label"
 HINT = u"hint"
-#READONLY = u"readonly"
+
 BIND = u"bind"#TODO: What should I do with the nested types? (readonly and relevant)
 MEDIA = u"media"
+CONTROL = u"control"
 APPEARANCE = u"appearance"
 LOOP = u"loop"
 REPEAT = u"repeat"
-#COLUMNS = u"columns" #This shouldn't be necessary.
+
 GROUP = u"group"
 CHILDREN = u"children"
+
+SELECT_ONE = u"select one"
+SELECT_ALL_THAT_APPLY = u"select all that apply"
 CHOICES = u"choices"
 

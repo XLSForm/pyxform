@@ -1,17 +1,15 @@
 """
 A Python script to convert excel files into JSON.
-I'm currently trying to shift this to a more functional style.
-It might seem a bit strange right now because it's half way in-between being oo and functional.
 """
-
 import json
 import re
 import sys
-import codecs
+#import codecs
 import os
 import constants
 from errors import PyXFormError
 from xls2json_backends import xls_to_dict, csv_to_dict
+from utils import is_valid_xml_tag
 
 # STATIC DATA:
 
@@ -33,22 +31,22 @@ TABLE_LIST = u"table-list"
 #select, control and settings alias keys used for parsing,
 #which is why self mapped keys are necessary.
 control_aliases = {
-    constants.GROUP : constants.GROUP,
+    u"group" : constants.GROUP,
     u"lgroup" : constants.REPEAT,
-    constants.REPEAT : constants.REPEAT,
-    constants.LOOP : constants.LOOP,
+    u"repeat" : constants.REPEAT,
+    u"loop" : constants.LOOP,
     u"looped group": constants.REPEAT
 }
 select_aliases = {
-      u"add select one prompt using" : u"select one",
-      u"add select multiple prompt using" : u"select one",
-      u"select all that apply from" : u"select all that apply", #This could pose a problem since the shorter alias might match...
-      u"select one from" : u"select one",
-      u"selec1" : u"select one", 
-      u"select_one" : u"select one",
-      u"select one" : u"select one",
-      u"select_multiple" : u"select all that apply",
-      u"select all that apply" : u"select all that apply"
+      u"add select one prompt using" : constants.SELECT_ONE,
+      u"add select multiple prompt using" : constants.SELECT_ONE,
+      u"select all that apply from" : constants.SELECT_ALL_THAT_APPLY,
+      u"select one from" : constants.SELECT_ONE,
+      u"selec1" : constants.SELECT_ONE, 
+      u"select_one" : constants.SELECT_ONE,
+      u"select one" : constants.SELECT_ONE,
+      u"select_multiple" : constants.SELECT_ALL_THAT_APPLY,
+      u"select all that apply" : constants.SELECT_ALL_THAT_APPLY
 }
 settings_header_aliases = {
     u"form_title" : constants.TITLE,
@@ -90,11 +88,14 @@ list_header_aliases = {
 }
 #Note that most of the type aliasing happens in all.xls
 type_aliases = {
+    u"imei" : u"deviceid",
     u"image": u"photo",
     u"add image prompt" : u"photo",
     u"add photo prompt" : u"photo",
     u"add audio prompt" : u"audio",
-    u"add video prompt" : u"video"
+    u"add video prompt" : u"video",
+    u"simserial" : u"get sim id",
+    u"phonenumber" : u"get phonenumber"
 }
 yes_no_aliases = {
     "yes": "true()",
@@ -121,65 +122,6 @@ def print_pyobj_to_json(pyobj, path=None):
         fp.close()
     else:
         print json.dumps(pyobj, ensure_ascii=False, indent=4)
-
-class SpreadsheetReader(object):
-    
-    def __init__(self, path_or_file):
-        if isinstance(path_or_file, basestring):
-            self._file_object = None
-            path = path_or_file
-        else:
-            self._file_object = path_or_file
-            path = self._file_object.name
-
-        (filepath, filename) = os.path.split(path)
-        (shortname, extension) = os.path.splitext(filename)
-        self.filetype = None
-        if extension == ".xlsx":
-            raise PyXFormError("XLSX files are not supported at this time. Please save the spreadsheet as an XLS file (97).")
-        elif extension == ".xls":
-            self.filetype = "xls"
-        elif extension == ".csv":
-            self.filetype = "csv"
-        self._path = path
-        self._name = unicode(shortname)
-        self._print_name = unicode(shortname)
-        self._title = unicode(shortname)
-        self._id = unicode(shortname)
-        self._def_lang = unicode("English")
-        self._parse_input()
-
-    def _parse_input(self):
-        if self.filetype == None:
-            raise PyXFormError("File was not recognized")
-        elif self.filetype == "xls":
-            self._dict = xls_to_dict(self._file_object if self._file_object is not None else self._path)
-        elif self.filetype == "csv":
-            self._dict = csv_to_dict(self._file_object if self._file_object is not None else self._path)
-        self._sheet_names = self._dict.keys()
-        for sheet_name, sheet in self._dict.items():
-            clean_unicode_values(sheet)
-        #self._fix_int_values()    No longer needed because I changed the backend to use unicode for everything
-
-    def _fix_int_values(self):
-        """
-        Excel only has floats, but we really want integer values to be
-        ints.
-        """
-        for sheet_name, dicts in self._dict.items():
-            for d in dicts:
-                for k, v in d.items():
-                    if type(v) == float and v == int(v):
-                        d[k] = int(v)
-
-    def to_json_dict(self):
-        return self._dict
-
-    #TODO: Make sure the unicode chars don't show up
-    def print_json_to_file(self, filename=""):
-        if not filename:
-            filename = self._path[:-4] + ".json"
-        print_pyobj_to_json(self.to_json_dict(), filename)
 
 def list_to_nested_dict(lst):
     """
@@ -304,6 +246,7 @@ def clean_unicode_values(dict_array):
                 row[key] = re.sub(r"\s+", " ", value.strip())
     return dict_array
 
+#This is currently unused because name uniqueness is checked in the json2xform code.
 def check_name_uniqueness(dict_array):
     """
     Make sure all names are unique
@@ -362,26 +305,19 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     survey_sheet = workbook_dict[SURVEY]
     #Process the headers:
     #Initial group is to group the language tags, then we dealias the headers
-    #survey_sheet = group_headers(survey_sheet)
     survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, default_language)
-    #survey_sheet = group_headers(survey_sheet)
-    
     survey_sheet = clean_unicode_values(survey_sheet)
     survey_sheet = dealias_types(survey_sheet)
     
-    #The logic for the choices and columns sheets is sort of complicated because of the different naming conventions.
-    #Basically, I combine everything into one list. If this breaks something we can come up with a complicated scheme later on.
+    #Columns and "choices and columns" sheets are deprecated, but we combine them with the choices sheet for backwards-compatibility.
     choices_and_columns_sheet = workbook_dict.get(CHOICES_AND_COLUMNS, {})
     choices_and_columns_sheet = dealias_and_group_headers(choices_and_columns_sheet, list_header_aliases, default_language)
-    #choices_and_columns_sheet = group_headers(choices_and_columns_sheet)
-    
-    choices_sheet = workbook_dict.get(CHOICES, [])
-    choices_sheet = dealias_and_group_headers(choices_sheet, list_header_aliases, default_language)
-    #choices_sheet = group_headers(choices_sheet)
     
     columns_sheet = workbook_dict.get(COLUMNS, [])
     columns_sheet = dealias_and_group_headers(columns_sheet, list_header_aliases, default_language)
-    #columns_sheet = group_headers(columns_sheet)
+    
+    choices_sheet = workbook_dict.get(CHOICES, [])
+    choices_sheet = dealias_and_group_headers(choices_sheet, list_header_aliases, default_language)
     
     combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
     choices = columns = combined_lists
@@ -389,7 +325,8 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     settings_sheet = dealias_and_group_headers(workbook_dict.get(SETTINGS, []), settings_header_aliases, default_language)
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
     
-    #Fix to allow specifying the add none option setting in the survey:
+    #add_none_option is a boolean that when true, indicates a none option should automatically be added to selects.
+    #It should probably be deprecated by I haven't checked yet.
     if u"add_none_option" in settings:
         settings[u"add_none_option"] = yes_no_aliases.get(settings[u"add_none_option"], u"false()") == u"true"
     
@@ -405,12 +342,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     }
     #Here the default settings are overridden by those in the settings sheet
     json_dict.update(settings)
-    
-    #TODO: The advantage to doing this later is we don't have to worry about disabled questions or end attributes
-    #    Also we can enforce it up to the names being unique within a group
-    #    This might already happen in the json2xform code...
-    #check_name_uniqueness(survey_sheet)
-    #TODO: We could also check the choices/columns lists for unique names (within the each list).
     
     #Parse the survey sheet while generating a survey in our json format:
     row_number = 0
@@ -464,12 +395,16 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         question_name = unicode(row.get(constants.NAME))
         if not question_name:
             raise PyXFormError("Question with no name on row " + str(row_number))
-        if u" " in question_name:
-            #I don't think it's ever ok for there to be spaces in this attribute but I could be wrong... TODO:Check for other bad chars
-            raise PyXFormError("Spaces in question name on row " + str(row_number))
+        if is_valid_xml_tag(question_name):
+            error_message = "Invalid question name [" + question_name + "] on row " + str(row_number) + "\n"
+            error_message += "Names must begin with a letter, colon, or underscore. Subsequent characters can include numbers, dashes, and periods."
+            raise PyXFormError(error_message)
         
         if constants.LABEL not in row:
             #TODO: Should there be a default label?
+            #TODO: Make exception for question types with no body element.
+            #      Not sure if we should throw warnings for questions with media and groups.
+            #      Warnings can be ignored so I'm not too concerned about false positives.
             warnings.append("Warning unlabeled question in row " + str(row_number))
         
         #Try to parse question as begin control statement (i.e. begin loop/repeat/group:
@@ -546,7 +481,8 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 continue
             
         #TODO: Consider adding some question_type validation here.
-        #Put the question in the json dict as is:
+        
+        #Put the row in the json dict as is:
         parent_children_array.append(row)
 
     
@@ -556,6 +492,11 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     return json_dict
 
 def parse_file_to_workbook_dict(path):
+    """
+    Given a xls or csv workbook file use xls2json_backends to create a python workbook_dict.
+    workbook_dicts are organized as follows:
+    {sheetname : [{column_header : column_value_in_array_indexed_row}]}
+    """
     (filepath, filename) = os.path.split(path)
     if not filename: raise PyXFormError("No filename.")
     (shortname, extension) = os.path.splitext(filename)
@@ -571,6 +512,9 @@ def parse_file_to_workbook_dict(path):
         raise PyXFormError("File was not recognized")
 
 def get_filename(path):
+    """
+    Get the extensionless filename from a path
+    """
     return os.path.splitext((os.path.basename(path)))[0]
 
 def parse_file_to_json(path, default_name = None, default_language = u"default", warnings=None):
@@ -582,18 +526,6 @@ def parse_file_to_json(path, default_name = None, default_language = u"default",
         default_name = unicode(get_filename(path))
     return workbook_to_json(workbook_dict, default_name, default_language, warnings)
 
-class SurveyReader(SpreadsheetReader):
-    def __init__(self, path):
-        if type(path) is file:
-            path = path.name
-        self._warnings = []
-        self._dict =  parse_file_to_json(path, warnings=self._warnings)
-        self._path = path
-    def print_warning_log(self, warn_out_file):
-        #Open file to print warning log to.
-        warn_out = open(warn_out_file, 'w')
-        warn_out.write('\n'.join(self._warnings))
-        
 def organize_by_values(dict_list, key):
     """
     dict_list -- a list of dicts
@@ -611,6 +543,78 @@ def organize_by_values(dict_list, key):
                 raise Exception("Duplicate key: " + val)
             result[val] = dicty_copy
     return result
+
+class SpreadsheetReader(object):
+    
+    def __init__(self, path_or_file):
+        if type(path) is file:
+            path = path.name
+        
+        self._dict = workbook_dict = parse_file_to_workbook_dict(path)
+        self._path = path
+        self._name = self._print_name = self._title = self._id = unicode(get_filename(path))
+            
+#        if isinstance(path_or_file, basestring):
+#            self._file_object = None
+#            path = path_or_file
+#        else:
+#            self._file_object = path_or_file
+#            path = self._file_object.name
+#
+#        (filepath, filename) = os.path.split(path)
+#        (shortname, extension) = os.path.splitext(filename)
+#        self.filetype = None
+#        if extension == ".xlsx":
+#            raise PyXFormError("XLSX files are not supported at this time. Please save the spreadsheet as an XLS file (97).")
+#        elif extension == ".xls":
+#            self.filetype = "xls"
+#        elif extension == ".csv":
+#            self.filetype = "csv"
+#        self._path = path
+#        self._name = unicode(shortname)
+#        self._print_name = unicode(shortname)
+#        self._title = unicode(shortname)
+#        self._id = unicode(shortname)
+#        self._def_lang = unicode("English")
+#        self._parse_input()
+
+#    def _parse_input(self):
+#        if self.filetype == None:
+#            raise PyXFormError("File was not recognized")
+#        elif self.filetype == "xls":
+#            self._dict = xls_to_dict(self._file_object if self._file_object is not None else self._path)
+#        elif self.filetype == "csv":
+#            self._dict = csv_to_dict(self._file_object if self._file_object is not None else self._path)
+#        self._sheet_names = self._dict.keys()
+#        for sheet_name, sheet in self._dict.items():
+#            clean_unicode_values(sheet)
+#        #self._fix_int_values()    No longer needed because I changed the backend to use unicode for everything
+
+    def to_json_dict(self):
+        return self._dict
+
+    #TODO: Make sure the unicode chars don't show up
+    def print_json_to_file(self, filename=""):
+        if not filename:
+            filename = self._path[:-4] + ".json"
+        print_pyobj_to_json(self.to_json_dict(), filename)
+
+class SurveyReader(SpreadsheetReader):
+    """
+    SurveyReader is a wrapper for the parse_file_to_json function.
+    It allows us to use the old interface where a SpreadsheetReader based object is created
+    then a to_json_dict function is called on it.
+    """
+    def __init__(self, path):
+        if type(path) is file:
+            path = path.name
+        self._warnings = []
+        self._dict =  parse_file_to_json(path, warnings=self._warnings)
+        self._path = path
+    def print_warning_log(self, warn_out_file):
+        #Open file to print warning log to.
+        warn_out = open(warn_out_file, 'w')
+        warn_out.write('\n'.join(self._warnings))
 
 class QuestionTypesReader(SpreadsheetReader):
     """
@@ -653,8 +657,13 @@ class VariableNameReader(SpreadsheetReader):
 
 if __name__ == "__main__":
     # Open the excel file that is the second argument to this python
-    # call, convert that file to json and save that json to a file
-    path = sys.argv[1]
-    converter = SurveyReader(path)
-    # converter.print_json_to_file()
-    print json.dumps(converter.to_json_dict(), ensure_ascii=False, indent=4)
+    # call, convert that file to json and print it
+    #path = sys.argv[1]
+    path = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
+    warnings = []
+    json_dict = parse_file_to_json(path, warnings=warnings)
+    print_pyobj_to_json(json_dict)
+    
+    if len(warnings) > 0:
+        sys.stderr.write("Warnings:" + '\n')
+        sys.stderr.write('\n'.join(warnings) + '\n')
