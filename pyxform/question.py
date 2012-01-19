@@ -18,6 +18,8 @@ class Question(SurveyElement):
 
     def xml_instance(self):
         if self.get(u"default"):
+            #survey = self.get_root()
+            #return node(self.name, survey.insert_xpaths(unicode(self.get(u"default"))))
             return node(self.name, unicode(self.get(u"default")))
         return node(self.name)
 
