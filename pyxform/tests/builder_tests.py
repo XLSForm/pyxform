@@ -120,6 +120,7 @@ class BuilderTests(TestCase):
             u'name': u'specify_other',
             u'type': u'survey',
             u'title': u'specify_other',
+            u'default_language': u'default',
             u'id_string': u'specify_other',
             u'children': [
                 {
@@ -160,6 +161,7 @@ class BuilderTests(TestCase):
             u'name': u'include',
             u'title': u'include',
             u'id_string': u'include',
+            u'default_language': u'default',
             u'type': u'survey',
             u'children': [
                 {
@@ -193,6 +195,7 @@ class BuilderTests(TestCase):
         expected_dict = {
             u'name': u'include_json',
             u'title': u'include_json',
+            u'default_language': u'default',
             u'id_string': u'include_json',
             u'type': u'survey',
             u'children': [
@@ -212,6 +215,7 @@ class BuilderTests(TestCase):
             u'id_string': u'loop',
             u'title': u'loop',
             u'type': u'survey',
+            u'default_language': u'default',
             u'children': [
                 {
                     u'name': u'available_toilet_types',

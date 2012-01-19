@@ -12,6 +12,7 @@ class LoopTests(TestCase):
         expected_dict = {
             u'name': u'another_loop',
             u'id_string': u'another_loop',
+            u'default_language': u'default',
             u'title': u'another_loop',
             u'type': u'survey',
             u'children': [

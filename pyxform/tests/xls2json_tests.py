@@ -58,6 +58,7 @@ class BasicXls2JsonApiTests(TestCase):
             u'type': u'survey',
             u'name': u'simple_loop',
             u'id_string': u'simple_loop',
+            u'default_language': u'default',
             u'title': u'simple_loop',
             u'children': [
                 {

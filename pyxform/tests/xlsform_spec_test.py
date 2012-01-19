@@ -23,7 +23,7 @@ class basic_test(TestCase):
         directory, filename = os.path.split(path_to_excel_file)
         root_filename, ext = os.path.splitext(filename)
         path_to_xform = os.path.join(directory, root_filename + ".xml")
-        print "Printing to " + path_to_xform
+        #print "Printing to " + path_to_xform
         survey.print_xform_to_file(path_to_xform)
         pass
 
