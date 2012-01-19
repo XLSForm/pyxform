@@ -439,8 +439,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         if begin_control_parse:
             parse_dict = begin_control_parse.groupdict()
             if parse_dict.get("begin") and "type" in parse_dict:
-                #Create a new json dict with children, and the proper type, and add it to  parent_children_array in place of a question.
-                #Its children will become the parent_children_array (so following questions are nested under it) until an end command is encountered.
+                #Create a new json dict with children, and the proper type, and add it to parent_children_array in place of a question.
+                #parent_children_array will then be set to its children array (so following questions are nested under it)
+                #until an end command is encountered.
                 control_type = control_aliases[parse_dict["type"]]
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type
@@ -499,7 +500,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                         begin_table_list = False
 
                     if table_list is not list_name:
-                        raise PyXFormError("Badly formatted table list, list names don't match: " + table_list + ", " + list_name + " Error on row: " + str(row_number))
+                        error_message = "Error on row: " + str(row_number) + "\n"
+                        error_message += "Badly formatted table list, list names don't match: " + table_list + " vs. " + list_name
+                        raise PyXFormError(error_message)
                     
                     control = new_json_dict[u"control"] = new_json_dict.get(u"control", {})
                     control[u"appearance"] = "list-nolabel"
@@ -580,42 +583,6 @@ class SpreadsheetReader(object):
         self._dict = workbook_dict = parse_file_to_workbook_dict(path)
         self._path = path
         self._name = self._print_name = self._title = self._id = unicode(get_filename(path))
-            
-#        if isinstance(path_or_file, basestring):
-#            self._file_object = None
-#            path = path_or_file
-#        else:
-#            self._file_object = path_or_file
-#            path = self._file_object.name
-#
-#        (filepath, filename) = os.path.split(path)
-#        (shortname, extension) = os.path.splitext(filename)
-#        self.filetype = None
-#        if extension == ".xlsx":
-#            raise PyXFormError("XLSX files are not supported at this time. Please save the spreadsheet as an XLS file (97).")
-#        elif extension == ".xls":
-#            self.filetype = "xls"
-#        elif extension == ".csv":
-#            self.filetype = "csv"
-#        self._path = path
-#        self._name = unicode(shortname)
-#        self._print_name = unicode(shortname)
-#        self._title = unicode(shortname)
-#        self._id = unicode(shortname)
-#        self._def_lang = unicode("English")
-#        self._parse_input()
-
-#    def _parse_input(self):
-#        if self.filetype == None:
-#            raise PyXFormError("File was not recognized")
-#        elif self.filetype == "xls":
-#            self._dict = xls_to_dict(self._file_object if self._file_object is not None else self._path)
-#        elif self.filetype == "csv":
-#            self._dict = csv_to_dict(self._file_object if self._file_object is not None else self._path)
-#        self._sheet_names = self._dict.keys()
-#        for sheet_name, sheet in self._dict.items():
-#            clean_unicode_values(sheet)
-#        #self._fix_int_values()    No longer needed because I changed the backend to use unicode for everything
 
     def to_json_dict(self):
         return self._dict
@@ -653,9 +620,10 @@ class QuestionTypesReader(SpreadsheetReader):
         self._setup_question_types_dictionary()
         
     def _setup_question_types_dictionary(self):
+        use_double_colons = has_double_colon(self._dict)
         TYPES_SHEET = u"question types"
         self._dict = self._dict[TYPES_SHEET]
-        self._dict = dealias_and_group_headers(self._dict, {}, False, u"default")
+        self._dict = dealias_and_group_headers(self._dict, {}, use_double_colons, u"default")
         self._dict = organize_by_values(self._dict, u"name")
 
 #Not used internally (or on formhub)
@@ -680,10 +648,11 @@ class VariableNameReader(SpreadsheetReader):
         self._dict = new_dict
 
 if __name__ == "__main__":
-    # Open the excel file that is the second argument to this python
-    # call, convert that file to json and print it
-    #path = sys.argv[1]
-    path = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
+    # Open the excel file specified by the arguement of this python call,
+    # convert that file to json, then print it
+    path = sys.argv[1]
+    #path = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
+    
     warnings = []
     json_dict = parse_file_to_json(path, warnings=warnings)
     print_pyobj_to_json(json_dict)
