@@ -1,9 +1,9 @@
 {
 	"type" : "object",
-	"description" : "This is the schema for a survey form. It is designed to map nicely to a xform for use with ODK while being easier to create. It is the central format for formhub and xls2xform",
+	"description" : "This is the schema for json survey forms, the intermediate format in xls2xform.",
 	"properties" :
 	{
-		"id" :
+		"id_string" :
 		{
 			"type" : "string",
 			"description" : "The form id. If missing this should default to filename. TODO: Make sure I have the right property name here."
@@ -22,7 +22,7 @@
 		"type" :
 		{
 			"type" : "string",
-			"description" : "The type of the form. (This might be implicit, and thus something we can remove)",
+			"description" : "The type of the form.",
 			"default" : "survey"
 		},
 		"public_key" :
@@ -77,7 +77,7 @@
 							{
 								"type" : "string"
 							},
-							"constraint_message" :
+							"jr:constraintMsg" :
 							{
 								"type" : "string"
 							},
@@ -88,18 +88,24 @@
 							"relevant" :
 							{
 								"type" : "string"
+							},
+							"read_only" :
+							{
+								"type" : "string"
+							},
+							"jr:count" :
+							{
+								"description" : "The number of times to repeat a repeat.",
+								"type" : "string"
+							},
+							"calculate" :
+							{
+								"description" : "A formula to be used to compute the value of a calculate type question.",
+								"type" : "string"
 							}
 						}
 					},
 					"default" :
-					{
-						"type" : "string"
-					},
-					"read_only" :
-					{
-						"type" : "string"
-					},
-					"calculation" :
 					{
 						"type" : "string"
 					},
@@ -148,21 +154,24 @@
 							}
 						}
 					},
-					"appearance" :
-					{
-						"type" : "string",
-						"description" : "The appearance of the element in ODK. Values are specific to certain types.",
-						"enum" : 
-						[
-							"field_list",
-							"minimal",
-							"label",
-							"list-nolabel",
-							"autocomplete",
-							"autocomplete_chars",
-							"compact",
-							"compact-2"
-						]
+					"control" :
+						{
+							"appearance" :
+							{
+								"type" : "string",
+								"description" : "The appearance of the element in ODK. Values are specific to certain types.",
+								"enum" : 
+								[
+									"field-list",
+									"minimal",
+									"label",
+									"list-nolabel",
+									"autocomplete",
+									"autocomplete_chars",
+									"compact",
+									"compact-2"
+								]
+							}
 					},
 					"children" :
 					{
@@ -198,7 +207,7 @@
 					"columns" :
 					{
 						"type" : "array",
-						"description" : "Applicable only to repeat/loop type questions. I would like to rename this to items if possible.",
+						"description" : "Applicable only to loop type questions.",
 						"items" : 
 						{
 							"type" : "object",
