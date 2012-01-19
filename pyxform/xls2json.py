@@ -88,13 +88,11 @@ list_header_aliases = {
 #Note that most of the type aliasing happens in all.xls
 type_aliases = {
     u"imei" : u"deviceid",
-    u"image": u"photo",
+    u"image" : u"photo",
     u"add image prompt" : u"photo",
     u"add photo prompt" : u"photo",
     u"add audio prompt" : u"audio",
-    u"add video prompt" : u"video",
-    u"simserial" : u"get sim id",
-    u"phonenumber" : u"get phonenumber"
+    u"add video prompt" : u"video"
 }
 yes_no_aliases = {
     "yes": "true()",
@@ -110,6 +108,15 @@ yes_no_aliases = {
     "False": "false()",
     "FALSE": "false()"
 }
+label_optional_types = [
+    u"deviceid",
+    u"phonenumber",
+    u"simserial",
+    u"calculate",
+    u"start",
+    u"end",
+    u"today"
+]
 ####### END OF STATIC DATA #######
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -161,22 +168,22 @@ def dealias_and_group_headers_single_colon(dict_array, header_aliases, default_l
     default_language -- used to group labels/hints/etc without a language specified, with localized versions
     """
     
-    DICT_CHAR = u":"
+    GROUP_DELIMITER = u":"
     def replace_double_colons(dealiased_key):
         """"Replace any double colons the dealiased key might have with single colons."""
         tokens = dealiased_key.split(u"::")
         if len(tokens) > 2:
             raise PyXFormError("Dealiased key cannot be parsed using single colon conventions.")
-        return DICT_CHAR.join(tokens)
+        return GROUP_DELIMITER.join(tokens)
         
     out_dict_array = list()
     for row in dict_array:
         out_row = dict()
         for key, val in row.items():
             dealiased_key = replace_double_colons(header_aliases.get(key, key))
-            tokens = dealiased_key.split(DICT_CHAR)
+            tokens = dealiased_key.split(GROUP_DELIMITER)
             new_key = header_aliases.get(tokens[0],tokens[0])
-            new_value = { DICT_CHAR.join(tokens[1:]) : val } if len(tokens) > 1 else val
+            new_value = { GROUP_DELIMITER.join(tokens[1:]) : val } if len(tokens) > 1 else val
             out_row = merge_dicts(out_row, { new_key : new_value }, default_language)
         out_dict_array.append(out_row)
     return out_dict_array
@@ -199,13 +206,13 @@ def dealias_and_group_headers_double_colon(dict_array, header_aliases, default_l
     In addition dealiasing is done on the original key, and the grouped key.
     default_language -- used to group labels/hints/etc without a language specified with localized versions.
     """
-    DICT_CHAR = u"::"
+    GROUP_DELIMITER = u"::"
     out_dict_array = list()
     for row in dict_array:
         out_row = dict()
         for key, val in row.items():
             dealiased_key = header_aliases.get(key, key)
-            tokens = dealiased_key.split(DICT_CHAR)
+            tokens = dealiased_key.split(GROUP_DELIMITER)
             new_key = header_aliases.get(tokens[0],tokens[0])
             new_value = list_to_nested_dict(tokens[1:] + [val])
             out_row = merge_dicts(out_row, { new_key : new_value }, default_language)
@@ -225,10 +232,9 @@ def dealias_types(dict_array):
     replace them with the name they map to.
     """
     for row in dict_array:
-        if constants.TYPE in dict_array:
-            found_type = row[constants.TYPE]
-            if found_type in type_aliases:
-                row[constants.TYPE] = type_aliases[constants.TYPE]
+        found_type = row.get(constants.TYPE)
+        if found_type in type_aliases.keys():
+            row[constants.TYPE] = type_aliases[found_type]
     return dict_array
 
 def clean_unicode_values(dict_array):
@@ -367,14 +373,23 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, use_double_colons, default_language)
     survey_sheet = clean_unicode_values(survey_sheet)
     survey_sheet = dealias_types(survey_sheet)
-    
+    ##################################
     #Parse the survey sheet while generating a survey in our json format:
-    row_number = 0
+    row_number = 1 #We start at 1 because the column header row is not included in the survey sheet (presumably).
     #A stack is used to keep track of begin/end expressions
     stack = [(None, json_dict.get(constants.CHILDREN))]
     #If a group has a table-list appearance flag this will be set to the name of the list
     table_list = None
     begin_table_list = False
+    #For efficiency we compile all the regular expressions that will be used to parse types:
+    end_control_regex = re.compile(r"(?P<end>end)(\s|_)(?P<type>("
+                                   + '|'.join(control_aliases.keys()) + r"))$")
+    begin_control_regex = re.compile(r"(?P<begin>begin)(\s|_)(?P<type>("
+                                     + '|'.join(control_aliases.keys())
+                                     + r"))( (over )?(?P<list_name>\S+))?$")
+    select_regexp = re.compile(r"^(?P<select_command>("
+                               + '|'.join(select_aliases.keys())
+                               + r")) (?P<list_name>\S+)( (?P<specify_other>(or specify other|or_other|or other)))?$")
     for row in survey_sheet:
         row_number += 1
         prev_control_type, parent_children_array = stack[-1]
@@ -404,8 +419,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
             continue
         
         #Try to parse question as a end control statement (i.e. end loop/repeat/group):
-        end_control_parse = re.search(r"(?P<end>end)(\s|_)(?P<type>("
-                                  + '|'.join(control_aliases.keys()) + r"))$", question_type)
+        end_control_parse = end_control_regex.search(question_type)
         if end_control_parse:
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
@@ -425,17 +439,16 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
             error_message += "Names must begin with a letter, colon, or underscore. Subsequent characters can include numbers, dashes, and periods."
             raise PyXFormError(error_message)
         
-        if constants.LABEL not in row:
+        if constants.LABEL not in row and \
+           row.get(constants.MEDIA) is None and \
+           question_type not in label_optional_types:
             #TODO: Should there be a default label?
-            #TODO: Make exception for question types with no body element.
-            #      Not sure if we should throw warnings for questions with media and groups.
+            #      Not sure if we should throw warnings for groups...
             #      Warnings can be ignored so I'm not too concerned about false positives.
-            warnings.append("Warning unlabeled question in row " + str(row_number))
+            warnings.append("Warning unlabeled question in row " + str(row_number) + ": " + str(row))
         
         #Try to parse question as begin control statement (i.e. begin loop/repeat/group:
-        begin_control_parse = re.search(r"(?P<begin>begin)(\s|_)(?P<type>("
-                                  + '|'.join(control_aliases.keys())
-                                  + r"))( (over )?(?P<list_name>\S+))?$", question_type)
+        begin_control_parse = begin_control_regex.search(question_type)
         if begin_control_parse:
             parse_dict = begin_control_parse.groupdict()
             if parse_dict.get("begin") and "type" in parse_dict:
@@ -466,10 +479,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 continue
 
         #Try to parse question as a select:
-        select_regexp = (r"^(?P<select_command>("
-                         + '|'.join(select_aliases.keys())
-                         + r")) (?P<list_name>\S+)( (?P<specify_other>(or specify other|or_other|or other)))?$")
-        select_parse = re.search(select_regexp, question_type)
+        select_parse = select_regexp.search(question_type)
         if select_parse:
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
@@ -648,10 +658,13 @@ class VariableNameReader(SpreadsheetReader):
         self._dict = new_dict
 
 if __name__ == "__main__":
-    # Open the excel file specified by the arguement of this python call,
+    # Open the excel file specified by the argument of this python call,
     # convert that file to json, then print it
-    path = sys.argv[1]
-    #path = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
+    if len(sys.argv) < 2:
+        #print "You must supply a file argument."
+        path = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
+    else:
+        path = sys.argv[1]
     
     warnings = []
     json_dict = parse_file_to_json(path, warnings=warnings)
