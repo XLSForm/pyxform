@@ -14,6 +14,7 @@ class BuilderTests(TestCase):
     def test_new_widgets(self):
         survey = utils.build_survey('widgets.xls')
         path = utils.path_to_text_fixture('widgets.xml')
+        survey.to_xml
         with open(path) as f:
             self.assertEqual(survey.to_xml(), f.read())
 

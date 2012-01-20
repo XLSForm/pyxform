@@ -124,6 +124,7 @@ class Survey(Section):
                         print text
                         survey_element.__setattr__(u"label", text)
                         for media_type, media in text.items():
+
                             for language, media_uri in media.items():
                                 if language not in self._translations:
                                     self._translations[language] = {}

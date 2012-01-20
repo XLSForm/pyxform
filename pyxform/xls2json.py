@@ -157,37 +157,6 @@ def merge_dicts(dict_a, dict_b, default_key = "default"):
         out_dict[key] = merge_dicts(dict_a.get(key), dict_b.get(key), default_key)
     return out_dict
 
-def dealias_and_group_headers_single_colon(dict_array, header_aliases, default_language=u"default"):
-    """
-    For each row in the worksheet, group all keys that contain a colon. So
-    {"text:english": "hello", "text:french" : "bonjour"}
-    becomes
-    {"text": {"english": "hello", "french" : "bonjour"}.
-    #Only the first colon is parsed in order to avoid nesting jr:something tokens.
-    In addition dealiasing is done on the original key, and the grouped key.
-    default_language -- used to group labels/hints/etc without a language specified, with localized versions
-    """
-    
-    GROUP_DELIMITER = u":"
-    def replace_double_colons(dealiased_key):
-        """"Replace any double colons the dealiased key might have with single colons."""
-        tokens = dealiased_key.split(u"::")
-        if len(tokens) > 2:
-            raise PyXFormError("Dealiased key cannot be parsed using single colon conventions.")
-        return GROUP_DELIMITER.join(tokens)
-        
-    out_dict_array = list()
-    for row in dict_array:
-        out_row = dict()
-        for key, val in row.items():
-            dealiased_key = replace_double_colons(header_aliases.get(key, key))
-            tokens = dealiased_key.split(GROUP_DELIMITER)
-            new_key = header_aliases.get(tokens[0],tokens[0])
-            new_value = { GROUP_DELIMITER.join(tokens[1:]) : val } if len(tokens) > 1 else val
-            out_row = merge_dicts(out_row, { new_key : new_value }, default_language)
-        out_dict_array.append(out_row)
-    return out_dict_array
-
 def list_to_nested_dict(lst):
     """
     [1,2,3,4] -> {1:{2:{3:4}}}
@@ -196,14 +165,14 @@ def list_to_nested_dict(lst):
         return {lst[0] : list_to_nested_dict(lst[1:])}
     else:
         return lst[0]
-    
-def dealias_and_group_headers_double_colon(dict_array, header_aliases, default_language=u"default"):
+
+def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, default_language=u"default"):
     """
     For each row in the worksheet, group all keys that contain a double colon. So
     {"text::english": "hello", "text::french" : "bonjour"}
     becomes
     {"text": {"english": "hello", "french" : "bonjour"}.
-    In addition dealiasing is done on the original key, and the grouped key.
+    Dealiasing is done to the first token (the first term separated by the delimiter).
     default_language -- used to group labels/hints/etc without a language specified with localized versions.
     """
     GROUP_DELIMITER = u"::"
@@ -211,19 +180,26 @@ def dealias_and_group_headers_double_colon(dict_array, header_aliases, default_l
     for row in dict_array:
         out_row = dict()
         for key, val in row.items():
-            dealiased_key = header_aliases.get(key, key)
-            tokens = dealiased_key.split(GROUP_DELIMITER)
-            new_key = header_aliases.get(tokens[0],tokens[0])
+            
+            tokens = list()
+            
+            if use_double_colons:
+                tokens = key.split(GROUP_DELIMITER)
+            else:
+                #We do the initial parse using single colons for backwards compatibility and
+                #only the first single is used in order to avoid nesting jr:something tokens.
+                tokens = key.split(u":")
+                if len(tokens) > 1:
+                    tokens[1:] = [u":".join(tokens[1:])]
+            
+            dealiased_first_token = header_aliases.get(tokens[0],tokens[0])
+            tokens = dealiased_first_token.split(GROUP_DELIMITER) + tokens[1:]
+            new_key = tokens[0]
             new_value = list_to_nested_dict(tokens[1:] + [val])
             out_row = merge_dicts(out_row, { new_key : new_value }, default_language)
+            
         out_dict_array.append(out_row)
     return out_dict_array
-
-def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, default_language=u"default"):
-    if use_double_colons:
-        return dealias_and_group_headers_double_colon(dict_array, header_aliases, default_language)
-    else:
-        return dealias_and_group_headers_single_colon(dict_array, header_aliases, default_language)
 
 
 def dealias_types(dict_array):
