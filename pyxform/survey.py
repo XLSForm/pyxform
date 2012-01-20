@@ -307,6 +307,10 @@ class Survey(Section):
 
 
     def insert_output_values(self, text):
+        """
+        Replace all the ${variables} in text with xpaths.
+        Returns that and a boolean indicating if there were any ${variables} present.
+        """
         bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
         result = re.sub(bracketed_tag, self._var_repl_output_function, unicode(text))
         return result, not result == text
