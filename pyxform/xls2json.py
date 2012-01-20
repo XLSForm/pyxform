@@ -188,6 +188,8 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, def
             else:
                 #We do the initial parse using single colons for backwards compatibility and
                 #only the first single is used in order to avoid nesting jr:something tokens.
+                #TODO: I think this will still break if there is media with translations,
+                #so maybe a better backwards compatibility hack would be to joint jr with the next token
                 tokens = key.split(u":")
                 if len(tokens) > 1:
                     tokens[1:] = [u":".join(tokens[1:])]

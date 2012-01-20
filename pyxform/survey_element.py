@@ -194,14 +194,18 @@ class SurveyElement(dict):
             if type(label_or_hint) == dict:
                 for lang, text in label_or_hint.items():
                     yield {
-                        'display_element': display_element,
+                        'display_element': display_element, #Not used
                         'path': self._translation_path(display_element),
-                        'element': self,
+                        'element': self, #Not used
                         'lang': lang,
                         'text': text,
                         }
 
     def get_media_keys(self):
+        """
+        @deprected
+        I'm leaving this in just in case it has outside references.
+        """
         return {
             u"media": u"%s:media" % self.get_xpath()
             }

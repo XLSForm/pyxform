@@ -85,12 +85,20 @@ class Survey(Section):
         set up the self._translations dict which will be referenced in the setup media and itext functions
         """
         self._translations = defaultdict(dict)
-        for e in self.iter_descendants():
-            for d in e.get_translations():
-                self._translations[d['lang']][d['path']] = d['text']
-        self._add_empty_translations()
+        for element in self.iter_descendants():
+            for d in element.get_translations():
+                self._translations[d['lang']][d['path']] = {"long" : d['text']}
+        #self._add_empty_translations()
 
+    #I don't think this is needed.
+    #However, we may want to be able to create empty elements so that
+    #for example there can be a hint that only appears if someone is looking at
+    #the German translation.
     def _add_empty_translations(self):
+        """
+        For every path used, if a language does not include that path, add it,
+        and give it a "-" value.
+        """
         paths = []
         for lang, d in self._translations.items():
             for path, text in d.items():
@@ -103,144 +111,96 @@ class Survey(Section):
 
     def _setup_media(self):
         """
-        Merges any media files in with the translations so that they
-        all end up in the itext node.
+        Traverse the survey, find all the media, and put in into the _translations data structure which looks like this:
+        {language : {element_xpath : {media_type : media}}}
+        It matches the xform nesting order.
         """
-        translationsExist = self._translations
-        if not translationsExist:
-            self._translations = defaultdict(dict)    
+        if not self._translations:
+            self._translations = defaultdict(dict)
+        
         for survey_element in self.iter_descendants():
-            media_keys = survey_element.get_media_keys()
-            for key in media_keys:
-                media_key = media_keys[key]
-                #Find the translation node we will be adding to
-                translation_key = media_key.partition(":")[0] + ":label"
+            
+            translation_key = survey_element.get_xpath() + ":label"
+            media_dict = survey_element.get(u"media")
+            
+            for media_type, possibly_localized_media in media_dict.items():
                 
-                text = survey_element.get(key)
-                if type(text) is dict and text != {}:
+                if media_type not in SurveyElement.SUPPORTED_MEDIA:
+                    raise PyXFormError("Media type: " + media_type + " not supported")
+                
+                localized_media = dict()
+                
+                if type(possibly_localized_media) is dict:
+                    #media is localized
+                    localized_media = possibly_localized_media
+                else:    
+                    #media is not localized so create a localized version using the default language
+                    localized_media = { self.default_language : possibly_localized_media }
                     
-                    #If this media is localized in the same fashion as a label (i.e. it is a dict of languages)
-                    if type(text.values()[0]) is dict:
-                        print text
-                        survey_element.__setattr__(u"label", text)
-                        for media_type, media in text.items():
-
-                            for language, media_uri in media.items():
-                                if language not in self._translations:
-                                    self._translations[language] = {}
-                                if translation_key not in self._translations[language]:
-                                    self._translations[language][translation_key] = {}
-                                self._translations[language][translation_key][media_type] = media_uri
-                        continue
+                for language, media in localized_media.items():
                     
-                    for media_type in text.keys():
-                        #Check if this media file's language is specified
-                        langs = [media_type.partition(":")[-1]]
-                        media_type_to_store = media_type.partition(":")[0]
+                    #Create the required dictionaries in _translations, then add media as a leaf value:
+                    
+                    if language not in self._translations:
+                        self._translations[language] = {}
+                    
+                    translations_language = self._translations[language]
+                    
+                    if translation_key not in translations_language:
+                        translations_language[translation_key] = {}
+                    
+                    #if type(translations_language[translation_key]) is not dict:
+                    #    translations_language[translation_key] = {"long" : translations_language[translation_key]}
+                    
+                    translations_trans_key = translations_language[translation_key]
+                    
+                    if media_type not in translations_trans_key:
+                            translations_trans_key[media_type] = {}
+                        
+                    translations_trans_key[media_type] = media
 
-                        langsExist = (langs != [u''])
-                        if not langsExist and not translationsExist:
-                            #Copying Beorse's "no translation type bug" fix:
-                            #langs = self.default_language
-                            #print langs
-                            langs = [self.default_language]
-                            media_type_to_store = media_type
-                        elif not langsExist and translationsExist:
-                            # If no language is specified, but there
-                            # are label translations, add the media
-                            # file to all languages.
-                            langs = self._translations.keys()
-                            media_type_to_store = media_type
-
-                        for lang in langs:
-                            if media_type_to_store in SurveyElement.SUPPORTED_MEDIA:
-
-                                if not translationsExist:
-                                    # If there are no translations
-                                    # specified, pull the generic label
-                                    survey_element_dict = survey_element.to_json_dict()
-                                    if u"label" in survey_element_dict:
-                                        translation_label = survey_element_dict[u"label"]
-                                        survey_element.__setattr__(u"label", {lang: translation_label})
-                                    else:
-                                        #TODO:
-                                        raise PyXFormError(survey_element.name, "Must include a label")
-                                        
-                                elif not langsExist:
-                                    if u"label" in survey_element.to_json_dict():
-                                        translation_label = survey_element.to_json_dict()[u"label"]
-
-                                        if type(translation_label) == dict:
-                                            for key in translation_label:
-                                                translation_label = translation_label[key]
-                                                break
-                                        survey_element.__setattr__(u"label", {lang: translation_label})
-                                    else:
-                                        translation_label = None
-                                elif translation_key not in self._translations[lang]:
-                                    if u"label" in survey_element.to_json_dict():
-                                        labels = survey_element.to_json_dict()[u"label"]
-                                        if type(labels) == dict and lang in labels:
-                                            translation_label = labels[u"lang"]
-                                            survey_element.__setattr__(u"label", {lang: translation_label})
-                                        elif type(labels) == dict and not lang in labels:
-                                            translation_label = None
-                                            survey_element.__setattr__(u"label", {lang: None})
-                                        else:
-                                            translation_label = survey_element.to_json_dict()[u"label"]
-                                            survey_element.__setattr__(u"label", {lang: translation_label})
-                                    else:
-                                        raise PyXFormError(survey_element.name, "Must include a label")
-                                else:
-                                    translation_label = self._translations[lang][translation_key]
-
-                                #Initialize the entry to a dictionary
-                                if not translation_label:
-                                    self._translations[lang][translation_key] = {}
-                                if not (translation_key in self._translations[lang] and type(self._translations[lang][translation_key]) == dict):
-                                    self._translations[lang][translation_key] = {"long": translation_label}
-
-                                self._translations[lang][translation_key][media_type_to_store] = text[media_type]
-
-                            else:
-                                raise PyXFormError("Media type: " + media_type_to_store + " not supported")
-
-
-
-    #From Beorse's xml_translations_and_media
     def itext(self):
         """
-        This function creates the survey's itext nodes.
+        This function creates the survey's itext nodes from _translations (@see _setup_media and _setup_translations).
         itext can be images/audio/video/text
         It can be localized for different languages which is what most of these attributes are for.
         @see http://code.google.com/p/opendatakit/wiki/XFormDesignGuidelines
         """
         result = []
-        for lang in self._translations.keys():
+        for lang, translation in self._translations.items():
             if lang == self.default_language:
-                result.append(node("translation", lang=lang,default=self.default_language))
+                result.append(node("translation", lang=lang,default=u"true()"))
             else:
                 result.append(node("translation", lang=lang))
 
-            for label_name in self._translations[lang].keys():
+            for label_name, content in translation.items():
                 itext_nodes = []
                 label_type = label_name.partition(":")[-1]
 
-                if type(self._translations[lang][label_name]) == dict and label_type == "label":
-                    for media_type in self._translations[lang][label_name]:
-                        value = self._translations[lang][label_name][media_type]
-                        if media_type == "long":
-                            value, outputInserted = self.insert_output_values(value)
-                            itext_nodes.append(node("value", value, form=media_type, toParseString=outputInserted))
-                        elif media_type == "image":
-                            itext_nodes.append(node("value", "jr://images/" + value, form=media_type))
-                        else:
-                            itext_nodes.append(node("value", "jr://" + media_type + "/" + value, form=media_type))
-                else:
-                    value, outputInserted = self.insert_output_values(self._translations[lang][label_name])
-                    itext_nodes.append(node("value", value))
+                if type(content) is not dict: raise Exception()
+                
+                for media_type, media_value in content.items():
+                    
+                    #There is a odk/jr bug where hints can't have a value for the form attribute.
+                    #This is my workaround.
+                    if label_type == u"hint":
+                        value, outputInserted = self.insert_output_values(media_value)
+                        itext_nodes.append(node("value", value, toParseString=outputInserted))
+                        continue
+                    
+                    if media_type == "long":
+                        value, outputInserted = self.insert_output_values(media_value)
+                        #I'm ignoring long types for now because I don't know how they are supposed to work.
+                        #itext_nodes.append(node("value", value, form=media_type, toParseString=outputInserted))
+                        itext_nodes.append(node("value", value, toParseString=outputInserted))
+                    elif media_type == "image":
+                        itext_nodes.append(node("value", "jr://images/" + media_value, form=media_type))
+                    else:
+                        itext_nodes.append(node("value", "jr://" + media_type + "/" + media_value, form=media_type))
+
 
                 result[-1].appendChild(node("text", *itext_nodes, id=label_name))
+                
         return node("itext", *result)
 
     def date_stamp(self):
