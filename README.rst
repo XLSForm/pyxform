@@ -36,6 +36,7 @@ Chage Log
 (since `v0.89
 <https://github.com/modilabs/pyxform/tree/39097db3da789fef9e33a6680df1e912dd29c5db>`_)
 
+- Added new example/test spreadsheets: (xlsform_spec_test.xls, calculate.xls, warnings.xls)
 - xls_to_dict in xls2json_backends.py now converts everything (including numbers and booleans) to trimmed unicode values.
   (This solves the issue with labels not being able to be numbers).
 - Aliases added (see *_alias dictionaries in xls2json.py)
@@ -46,3 +47,5 @@ Chage Log
 - Added media back in
 - Added table-lists
 - Automatic none option for select all that apply is off by default.
+- Adding json_form_schema.json to document the json format.
+  (Perhaps it could be used for validate or form generation at some point).
