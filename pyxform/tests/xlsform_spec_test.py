@@ -1,37 +1,45 @@
-# The Django application xls2xform uses the function
-# pyxform.create_survey. We have a test here to make sure no one
-# breaks that function.
+"""
+Some tests for the new (v0.9) spec is properly implemented.  
+"""
 
 from unittest import TestCase
 import pyxform
-import utils
+from pyxform import xls2json
 import os, sys
-import pyxform.xls2json as x2j
+import utils
 
-#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/specify_other.csv"
-#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/full_instrument_117_english_only.xls"
-path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/xlsform_spec_test.xls"
-#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/MgSO4.xls"
-#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/simple_loop.xls"
-#path_to_excel_file = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/nutrition_screening6.xls"
-
-class basic_test(TestCase):
+class main_test(TestCase):
+    
+    maxDiff = None
+    
     def runTest(self):
-#        x = SurveyReader(utils.path_to_text_fixture("unknown_question_type.xls"))
-#        print x.to_json_dict()
-        survey = pyxform.create_survey_from_path(path_to_excel_file)
+       
+        path_to_excel_file = utils.path_to_text_fixture("xlsform_spec_test.xls")
+        
+        #Get the xform output path:
         directory, filename = os.path.split(path_to_excel_file)
         root_filename, ext = os.path.splitext(filename)
         path_to_xform = os.path.join(directory, root_filename + ".xml")
-        #print "Printing to " + path_to_xform
+
+        #Do the conversion:
+        json_survey = xls2json.parse_file_to_json(path_to_excel_file)
+        survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(path_to_xform)
-        pass
+        
+        #Compare with the expected output:
+        expected_path = utils.path_to_text_fixture("spec_test_expected_output.xml")
+        with open(expected_path) as expected_file:
+            self.assertMultiLineEqual(survey.to_xml(), expected_file.read())
 
-#TODO: test warnings
-    
-#class test_variable_name_reader(TestCase):
-#    def runTest(self):
-#        vnr = x2j.VariableNameReader(path_to_excel_file)
-#        x2j.print_pyobj_to_json(vnr.to_json_dict())
-#        pass
-
+class warnings_test(TestCase):
+    """
+    Just checks that the number of warnings thrown when reading warnings.xls doesn't change.
+    """
+    def runTest(self):
+        
+        path_to_excel_file = utils.path_to_text_fixture("warnings.xls")
+        
+        warnings = []
+        xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
+        #print '\n'.join(warnings)
+        self.assertEquals(len(warnings), 17, "Found " + str(len(warnings)) + " warnings")

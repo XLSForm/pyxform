@@ -161,9 +161,9 @@ class Survey(Section):
 
     def itext(self):
         """
-        This function creates the survey's itext nodes from _translations (@see _setup_media and _setup_translations).
-        itext can be images/audio/video/text
-        It can be localized for different languages which is what most of these attributes are for.
+        This function creates the survey's itext nodes from _translations
+        @see _setup_media _setup_translations
+        itext nodes are localized images/audio/video/text
         @see http://code.google.com/p/opendatakit/wiki/XFormDesignGuidelines
         """
         result = []
