@@ -38,7 +38,7 @@ control_aliases = {
 }
 select_aliases = {
       u"add select one prompt using" : constants.SELECT_ONE,
-      u"add select multiple prompt using" : constants.SELECT_ONE,
+      u"add select multiple prompt using" : constants.SELECT_ALL_THAT_APPLY,
       u"select all that apply from" : constants.SELECT_ALL_THAT_APPLY,
       u"select one from" : constants.SELECT_ONE,
       u"selec1" : constants.SELECT_ONE, 
@@ -185,14 +185,19 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, def
             
             if use_double_colons:
                 tokens = key.split(GROUP_DELIMITER)
+#            else:
+#                #We do the initial parse using single colons for backwards compatibility and
+#                #only the first single is used in order to avoid nesting jr:something tokens.
+#                if len(tokens) > 1:
+#                    tokens[1:] = [u":".join(tokens[1:])]
             else:
-                #We do the initial parse using single colons for backwards compatibility and
-                #only the first single is used in order to avoid nesting jr:something tokens.
-                #TODO: I think this will still break if there is media with translations,
-                #so maybe a better backwards compatibility hack would be to joint jr with the next token
+                #I think the commented out section above break if there is something like media:image:english
+                #so maybe a better backwards compatibility hack is to join any jr token with the next token
                 tokens = key.split(u":")
-                if len(tokens) > 1:
-                    tokens[1:] = [u":".join(tokens[1:])]
+                if "jr" in tokens:
+                    jr_idx = tokens.index("jr")
+                    tokens[jr_idx] = u":".join(tokens[jr_idx:jr_idx+2])
+                    tokens.pop(jr_idx+1)
             
             dealiased_first_token = header_aliases.get(tokens[0],tokens[0])
             tokens = dealiased_first_token.split(GROUP_DELIMITER) + tokens[1:]
@@ -352,7 +357,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     survey_sheet = clean_unicode_values(survey_sheet)
     survey_sheet = dealias_types(survey_sheet)
     ##################################
+    
     #Parse the survey sheet while generating a survey in our json format:
+    
     row_number = 1 #We start at 1 because the column header row is not included in the survey sheet (presumably).
     #A stack is used to keep track of begin/end expressions
     stack = [(None, json_dict.get(constants.CHILDREN))]
@@ -360,9 +367,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     table_list = None
     begin_table_list = False
     #For efficiency we compile all the regular expressions that will be used to parse types:
-    end_control_regex = re.compile(r"(?P<end>end)(\s|_)(?P<type>("
+    end_control_regex = re.compile(r"^(?P<end>end)(\s|_)(?P<type>("
                                    + '|'.join(control_aliases.keys()) + r"))$")
-    begin_control_regex = re.compile(r"(?P<begin>begin)(\s|_)(?P<type>("
+    begin_control_regex = re.compile(r"^(?P<begin>begin)(\s|_)(?P<type>("
                                      + '|'.join(control_aliases.keys())
                                      + r"))( (over )?(?P<list_name>\S+))?$")
     select_regexp = re.compile(r"^(?P<select_command>("
