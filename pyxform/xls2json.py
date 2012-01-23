@@ -226,8 +226,7 @@ def clean_unicode_values(dict_array):
     Note that the keys don't get cleaned, which could be an issue.
     """
     for row in dict_array:
-        for key in row.keys():
-            value = row[key]
+        for key, value in row.items():
             if type(value) is unicode:
                 row[key] = re.sub(r"\s+", " ", value.strip())
     return dict_array
@@ -352,9 +351,8 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         raise PyXFormError("You must have a sheet named: " + SURVEY)
     survey_sheet = workbook_dict[SURVEY]
     #Process the headers:
-    #Initial group is to group the language tags, then we dealias the headers
-    survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, use_double_colons, default_language)
     survey_sheet = clean_unicode_values(survey_sheet)
+    survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, use_double_colons, default_language)
     survey_sheet = dealias_types(survey_sheet)
     ##################################
     
