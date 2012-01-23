@@ -86,7 +86,7 @@ class Survey(Section):
         """
         self._translations = defaultdict(dict)
         for element in self.iter_descendants():
-            for d in element.get_translations():
+            for d in element.get_translations(self.default_language):
                 self._translations[d['lang']][d['path']] = {"long" : d['text']}
         #self._add_empty_translations()
 

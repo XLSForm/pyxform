@@ -188,10 +188,17 @@ class SurveyElement(dict):
     def _translation_path(self, display_element):
         return self.get_xpath() + ":" + display_element
 
-    def get_translations(self):
+    def get_translations(self, default_language):
         for display_element in [u'label', u'hint']:
             label_or_hint = self[display_element]
-            if type(label_or_hint) == dict:
+            
+            if display_element is u'label' \
+               and self.needs_itext_ref() \
+               and type(label_or_hint) is not dict \
+               and label_or_hint:
+                label_or_hint = {default_language : label_or_hint}
+                
+            if type(label_or_hint) is dict:
                 for lang, text in label_or_hint.items():
                     yield {
                         'display_element': display_element, #Not used
@@ -210,9 +217,12 @@ class SurveyElement(dict):
             u"media": u"%s:media" % self.get_xpath()
             }
 
+    def needs_itext_ref(self):
+        return type(self.label) is dict or (type(self.media) is dict and len(self.media) > 0)
+
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):
-        if type(self.label) is dict or len(self.media) > 0:
+        if self.needs_itext_ref():
             #If there is a dictionary label, or non-empty media dict, then we need to make a label with an itext ref
             ref = "jr:itext('%s')" % self._translation_path(u"label")
             return node(u"label", ref=ref)
