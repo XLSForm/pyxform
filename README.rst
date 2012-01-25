@@ -17,7 +17,9 @@ Testing
 To make sure the install worked out, you can do the following:
 
 	pip install nose==1.0.0
+
 	cd your-virtual-env-dir/src/pyxform
+
 	nosetests
 
 Documentation
