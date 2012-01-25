@@ -27,5 +27,7 @@ Documentation
 To check out the documentation for pyxform do the following:
 
 	pip install Sphinx==1.0.7
+
 	cd your-virtual-env-dir/src/pyxform/docs
+
 	make html
