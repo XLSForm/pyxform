@@ -1,7 +1,8 @@
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
     <h:title>Spec test</h:title>
     <model>
+      <submission action="https://example-odk-aggregate.appspot.com/submission" base64RsaPublicKey="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo93+Dgn3iDleC9XMTDH7ez1MOm/BOt287DgkldNkdvrtdC4oUegx3N8Say9tq47k2EOzeLYkezVnKdtserx+g/+R6pDIOS66bwbH+HoslDEUaZRZ47EipSGC1JhtOp/nQGQCsdVc5q/fPvw8d2rLLi+PQUZPBOiBxUo9h/CFc41hl/quUELmylSdL4O06OAP8OCEDA+tl0C2Ik+uCYMDJLD4m7YVbkV7jJXjtILj+GW+noLriFMRsgg7WKQe2j9fw5+v46nzhokOnDnHh+yGwQMfs/B0jfFAgXllLNjIPlXQf2UVzuxEax6wLCyqUXMIjCPSNfnzDRgFB4Qw3QbJCwIDAQAB" method="form-data-post"/>
       <itext>
         <translation default="true()" lang="default">
           <text id="/xlsform_spec_test/repeat_test/group_test/select_multiple_test/yes:label">
@@ -204,6 +205,9 @@
           <phonenumber_test_output/>
           <_1/>
           <FALSE/>
+          <orx:meta>
+            <orx:instanceID/>
+          </orx:meta>
         </xlsform_spec_test>
       </instance>
       <bind nodeset="/xlsform_spec_test/some_text" type="string"/>
@@ -248,6 +252,7 @@
       <bind nodeset="/xlsform_spec_test/phonenumber_test_output" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/_1" type="string"/>
       <bind nodeset="/xlsform_spec_test/FALSE" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/xlsform_spec_test/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

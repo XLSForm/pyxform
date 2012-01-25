@@ -17,6 +17,7 @@ nsmap = {
     u"xmlns:ev": u"http://www.w3.org/2001/xml-events",
     u"xmlns:xsd": u"http://www.w3.org/2001/XMLSchema",
     u"xmlns:jr": u"http://openrosa.org/javarosa",
+    u"xmlns:orx": u"http://openrosa.org/xforms/"
     }
 
 class Survey(Section):
@@ -31,9 +32,11 @@ class Survey(Section):
             u"file_name": unicode,
             u"default_language": unicode,
             u"_translations": dict,
+            u"submission_url": unicode,
+            u"public_key": unicode
             }
         )
-
+        
     def validate(self):
         super(Survey, self).validate()
         self._validate_uniqueness_of_section_names()
@@ -62,22 +65,33 @@ class Survey(Section):
                     )
 
     def xml_model(self):
+        """
+        Generate the xform <model> element
+        """
         self._setup_translations()
         self._setup_media()
+        model_children = [node("instance", self.xml_instance())] + self.xml_bindings()
         if self._translations:
-            return node("model",
-                        self.itext(),
-                        node("instance", self.xml_instance()),
-                        *self.xml_bindings()
-                        )
-        return node("model",
-                    node("instance", self.xml_instance()),
-                    *self.xml_bindings()
-                    )
+            model_children.insert(0, self.itext())
+        if self.submission_url:
+            #We need to add a unique form instance id if the form is to be submitted. 
+            model_children.append(node("bind", nodeset="/"+self.name+"/meta/instanceID", type="string", readonly="true()", calculate="concat('uuid:', uuid())"))
+            
+            if self.public_key:
+                submission_node = node("submission", method="form-data-post", action=self.submission_url, base64RsaPublicKey=self.public_key)
+            else:
+                submission_node = node("submission", method="form-data-post", action=self.submission_url)
+            model_children.insert(0, submission_node)
+        return node("model",  *model_children)
 
     def xml_instance(self):
         result = Section.xml_instance(self)
         result.setAttribute(u"id", self.id_string)
+        
+        #We need to add a unique form instance id if the form is to be submitted.
+        if self.submission_url:
+            result.appendChild(node("orx:meta", node("orx:instanceID")))
+            
         return result
 
     def _setup_translations(self):
@@ -295,7 +309,7 @@ class Survey(Section):
     
     def instantiate(self):
         """
-        Instantiate as in return a instance of the survey can contain collected data.
+        Instantiate as in return a instance of SurveyInstance for collected data.
         """
         from instance import SurveyInstance
         return SurveyInstance(self)
