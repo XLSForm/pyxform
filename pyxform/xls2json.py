@@ -41,7 +41,7 @@ select_aliases = {
       u"add select multiple prompt using" : constants.SELECT_ALL_THAT_APPLY,
       u"select all that apply from" : constants.SELECT_ALL_THAT_APPLY,
       u"select one from" : constants.SELECT_ONE,
-      u"selec1" : constants.SELECT_ONE, 
+      u"select1" : constants.SELECT_ONE, 
       u"select_one" : constants.SELECT_ONE,
       u"select one" : constants.SELECT_ONE,
       u"select_multiple" : constants.SELECT_ALL_THAT_APPLY,
