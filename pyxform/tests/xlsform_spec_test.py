@@ -7,6 +7,7 @@ import pyxform
 from pyxform import xls2json
 import os, sys
 import utils
+import codecs
 
 class main_test(TestCase):
     
@@ -28,8 +29,8 @@ class main_test(TestCase):
         
         #Compare with the expected output:
         expected_path = utils.path_to_text_fixture("spec_test_expected_output.xml")
-        with open(expected_path) as expected_file:
-            self.assertMultiLineEqual(survey.to_xml(), expected_file.read())
+        with codecs.open(expected_path, 'rb', encoding="utf-8") as expected_file:
+            self.assertMultiLineEqual(expected_file.read(), survey.to_xml())
 
 class warnings_test(TestCase):
     """
