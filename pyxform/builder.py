@@ -29,7 +29,7 @@ class SurveyElementBuilder(object):
         }
 
     def __init__(self, **kwargs):
-        self._add_none_option = True
+        self._add_none_option = False #I don't know why we would need an explicit none option for select alls
         self.set_sections(
             kwargs.get(u"sections", {})
             )
@@ -47,13 +47,23 @@ class SurveyElementBuilder(object):
         self._sections = sections
 
     def set_question_type_dictionary(self, question_type_dictionary):
+        """
+        Set the question type dictionary that the builder uses to convert from the types
+        specified in the json form to xform elements.
+        """
         if type(question_type_dictionary) == QuestionTypeDictionary:
             self._question_type_dictionary = question_type_dictionary
         else:
             self._question_type_dictionary = DEFAULT_QUESTION_TYPE_DICTIONARY
 
     def _get_question_class(self, question_type_str):
+        """
+        Read the type string from the json format,
+        and find what class it maps to going through type_dictionary -> QUESTION_CLASSES 
+        """
         question_type = self._question_type_dictionary.get_definition(question_type_str)
+        #print question_type_str + ":"
+        #print question_type
         control_dict = question_type.get(u"control", {})
         control_tag = control_dict.get(u"tag", u"")
         return self.QUESTION_CLASSES[control_tag]
@@ -65,20 +75,20 @@ class SurveyElementBuilder(object):
         question_type_str = d[u"type"]
         d_copy = d.copy()
 
-        # Todo: figure out a global setting for whether select all
-        # that apply questions have an automatic none option.
+        # TODO: Keep add none option?
         if self._add_none_option and \
                 question_type_str.startswith(u"select all that apply"):
             self._add_none_option_to_select_all_that_apply(d_copy)
 
         # hack job right here to get this to work
         if question_type_str.endswith(u" or specify other"):
-            question_type_str = question_type_str[:len(question_type_str)-len(u" or specify other")]
+            question_type_str = question_type_str[:len(question_type_str) - len(u" or specify other")]
             d_copy["type"] = question_type_str
             self._add_other_option_to_multiple_choice_question(d_copy)
             return [self._create_question_from_dict(d_copy),
                     self._create_specify_other_question_from_dict(d_copy)]
         question_class = self._get_question_class(question_type_str)
+        
         # todo: clean up this spaghetti code
         d_copy[u"question_type_dictionary"] = self._question_type_dictionary
         if question_class:
@@ -138,6 +148,10 @@ class SurveyElementBuilder(object):
         return result
 
     def _create_loop_from_dict(self, d, group_each_iteration=True):
+        """
+        Takes a json_dict in the proper format
+        Returns a GroupedSection
+        """
         d_copy = d.copy()
         children = d_copy.pop(u"children", [])
         columns = d_copy.pop(u"columns", [])
@@ -149,7 +163,7 @@ class SurveyElementBuilder(object):
 
             # if this is a none option for a select all that apply
             # question then we should skip adding it to the result
-            if column_dict[u"name"]=="none": continue
+            if column_dict[u"name"] == "none": continue
 
             column = GroupedSection(**column_dict)
             for child in children:
@@ -159,30 +173,34 @@ class SurveyElementBuilder(object):
             result.add_child(column)
         if result.name != u"":
             return result
-        return result.children
+        return result.children #TODO: Verify that nothing breaks if this returns a list
 
-    def _name_and_label_substitutions(self, question_template, info):
-        # if the label in info has multiple languages setup a
+    def _name_and_label_substitutions(self, question_template, column_headers):
+        # if the label in column_headers has multiple languages setup a
         # dictionary by language to do substitutions.
-        if type(info[u"label"])==dict:
+        if type(column_headers[u"label"]) == dict:
             info_by_lang = dict(
-                [(lang, {u"name": info[u"name"], u"label": info[u"label"][lang]}) for lang in info[u"label"].keys()]
+                [(lang, {u"name": column_headers[u"name"], u"label": column_headers[u"label"][lang]}) for lang in column_headers[u"label"].keys()]
                 )
 
         result = question_template.copy()
         for key in result.keys():
-            if type(result[key])==unicode:
-                result[key] = result[key] % info
-            elif type(result[key])==dict:
+            if type(result[key]) == unicode:
+                result[key] = result[key] % column_headers
+            elif type(result[key]) == dict:
                 result[key] = result[key].copy()
                 for key2 in result[key].keys():
-                    if type(info[u"label"])==dict:
-                        result[key][key2] = result[key][key2] % info_by_lang.get(key2, info)
+                    if type(column_headers[u"label"]) == dict:
+                        result[key][key2] = result[key][key2] % info_by_lang.get(key2, column_headers)
                     else:
-                        result[key][key2] = result[key][key2] % info
+                        result[key][key2] = result[key][key2] % column_headers
         return result
-
     def create_survey_element_from_dict(self, d):
+        """
+        Convert from a nested python dictionary/array structure
+        (a json dict I call it because it corresponds directly with a json object)
+        to a survey object
+        """
         if u"add_none_option" in d:
             self._add_none_option = d[u"add_none_option"]
         if d[u"type"] in self.SECTION_CLASSES:
@@ -206,6 +224,9 @@ class SurveyElementBuilder(object):
 
 
 def create_survey_element_from_dict(d, sections={}):
+    """
+    Creates a Survey from a dictionary in the format provided by SurveyReader
+    """
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
     return builder.create_survey_element_from_dict(d)
@@ -218,7 +239,7 @@ def create_survey_element_from_json(str_or_path):
 
 def create_survey_from_xls(path_or_file):
     excel_reader = SurveyReader(path_or_file)
-    d = excel_reader.to_dict()
+    d = excel_reader.to_json_dict()
     survey = create_survey_element_from_dict(d)
     if not survey.id_string:
         survey.id_string = excel_reader._name
@@ -233,6 +254,12 @@ def create_survey(
     default_language=None,
     question_type_dictionary=None
     ):
+    """
+    name_of_main_section -- a string key used to find the main section in the sections dict if it is not supplied in the main_section arg
+    main_section -- a json dict that represents a survey
+    sections -- a dictionary of sections that can be drawn from to build the survey
+    This function uses the builder class to create and return a survey.
+    """
     if main_section == None:
         main_section = sections[name_of_main_section]
     builder = SurveyElementBuilder()
@@ -242,9 +269,12 @@ def create_survey(
     if u"id_string" not in main_section:
         main_section[u"id_string"] = name_of_main_section if id_string is None else name_of_main_section
     survey = builder.create_survey_element_from_dict(main_section)
-
+    
     # not sure where to do this without repeating ourselves, but it's needed to pass
     # xls2xform tests
+    # TODO: I would assume that the json-dict is valid (i.e. that it has a id string), then throw an error here.
+    #        We can set the id to whatever we want in xls2json.
+    #        Although to be totally modular, maybe we do need to repeat a lot of the validation and setting default value stuff from xls2json
     if id_string is not None:
         survey.id_string = id_string
 
@@ -255,6 +285,12 @@ def create_survey(
 
 
 def create_survey_from_path(path, include_directory=False):
+    """
+    include_directory -- Switch to indicate that all the survey forms in
+                         the same directory as the specified file should be read
+                         so they can be included through include types.
+    @see: create_survey
+    """
     directory, file_name = os.path.split(path)
     main_section_name = file_utils._section_name(file_name)
     if include_directory:

@@ -10,10 +10,11 @@ FIXTURE_FILETYPE = "xls"
 
 
 class BuilderTests(TestCase):
-
+    maxDiff = None
     def test_new_widgets(self):
         survey = utils.build_survey('widgets.xls')
         path = utils.path_to_text_fixture('widgets.xml')
+        survey.to_xml
         with open(path) as f:
             self.assertEqual(survey.to_xml(), f.read())
 
@@ -25,6 +26,7 @@ class BuilderTests(TestCase):
             )
 
     def test_uniqueness_of_section_names(self):
+        #Looking at the xls file, I think this test might be broken.
         survey = utils.build_survey('group_names_must_be_unique.xls')
         self.assertRaises(
             Exception,
@@ -41,7 +43,7 @@ class BuilderTests(TestCase):
         question.type = u"integer"
         question.label = u"How old are you?"
         survey_out.add_child(question)
-        self.survey_out_dict = survey_out.to_dict()
+        self.survey_out_dict = survey_out.to_json_dict()
         print_pyobj_to_json(self.survey_out_dict, utils.path_to_text_fixture("how_old_are_you.json"))
 
     def test_create_from_file_object(self):
@@ -111,7 +113,7 @@ class BuilderTests(TestCase):
                 ]
             }
 
-        self.assertEqual(g.to_dict(), expected_dict)
+        self.assertEqual(g.to_json_dict(), expected_dict)
 
     def test_specify_other(self):
         survey = utils.create_survey_from_fixture("specify_other", filetype=FIXTURE_FILETYPE)
@@ -119,12 +121,14 @@ class BuilderTests(TestCase):
             u'name': u'specify_other',
             u'type': u'survey',
             u'title': u'specify_other',
+            u'default_language': u'default',
+            u'id_string': u'specify_other',
             u'children': [
                 {
                     u'name': u'sex',
                     u'label': {u'English': u'What sex are you?'},
                     u'type': u'select one',
-                    u'children': [
+                    u'children': [ #TODO Change to choices (there is stuff in the json2xform half that will need to change)
                         {
                             u'name': u'male',
                             u'label': {u'English': u'Male'}
@@ -147,14 +151,18 @@ class BuilderTests(TestCase):
                 ]
             }
         self.maxDiff = None
-        self.assertEqual(survey.to_dict(), expected_dict)
+        #import json
+        #print json.dumps(survey, indent=4, ensure_ascii=False)
+        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_include(self):
-        survey = utils.create_survey_from_fixture("include", filetype=FIXTURE_FILETYPE,
+        survey = utils.create_survey_from_fixture(u"include", filetype=FIXTURE_FILETYPE,
                                                   include_directory=True)
         expected_dict = {
-            u'name': 'include',
-            u'title': 'include',
+            u'name': u'include',
+            u'title': u'include',
+            u'id_string': u'include',
+            u'default_language': u'default',
             u'type': u'survey',
             u'children': [
                 {
@@ -176,18 +184,20 @@ class BuilderTests(TestCase):
                                 u'label': {u'english': u'no'}
                                 }
                             ]}]}
-
-        self.assertEqual(survey.to_dict(), expected_dict)
+        
+        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_include_json(self):
         survey_in = utils.create_survey_from_fixture(
-            "include_json",
+            u"include_json",
             filetype=FIXTURE_FILETYPE,
             include_directory=True
             )
         expected_dict = {
             u'name': u'include_json',
             u'title': u'include_json',
+            u'default_language': u'default',
+            u'id_string': u'include_json',
             u'type': u'survey',
             u'children': [
                 {
@@ -197,20 +207,22 @@ class BuilderTests(TestCase):
                     }
                 ],
             }
-        self.assertEquals(survey_in.to_dict(), expected_dict)
+        self.assertEquals(survey_in.to_json_dict(), expected_dict)
 
     def test_loop(self):
         survey = utils.create_survey_from_fixture("loop", filetype=FIXTURE_FILETYPE)
         expected_dict = {
-            u'name': 'loop',
+            u'name': u'loop',
+            u'id_string': u'loop',
             u'title': u'loop',
             u'type': u'survey',
+            u'default_language': u'default',
             u'children': [
                 {
                     u'name': u'available_toilet_types',
                     u'label': {u'english': u'What type of toilets are on the premises?'},
                     u'type': u'select all that apply',
-                    u'bind': {u'constraint': u"(.='none' or not(selected(., 'none')))"},
+                    #u'bind': {u'constraint': u"(.='none' or not(selected(., 'none')))"},
                     u'children': [
                         {
                             u'name': u'pit_latrine_with_slab',
@@ -224,10 +236,11 @@ class BuilderTests(TestCase):
                             u'name': u'bucket_system',
                             u'label': {u'english': u'Bucket system'}
                             },
-                        {
-                            u'name': u'none',
-                            u'label': u'None',
-                            },
+                        #Removing this because select alls shouldn't need an explicit none option
+                        #{
+                        #    u'name': u'none',
+                        #    u'label': u'None',
+                        #    },
                         {
                             u'name': u'other',
                             u'label': u'Other'
@@ -281,4 +294,4 @@ class BuilderTests(TestCase):
                     u'type' : u'group',
                     u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}
         self.maxDiff = None
-        self.assertEqual(survey.to_dict(), expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)

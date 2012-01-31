@@ -16,7 +16,7 @@ def build_survey(filename):
 def create_survey_from_fixture(fixture_name, filetype="xls", include_directory=False):
     fixture_path = path_to_text_fixture("%s.%s" % (fixture_name, filetype))
     noop, section_dict = file_utils.load_file_to_dict(fixture_path)
-    pkg = {u'title': fixture_name,
+    pkg = {u'title': unicode(fixture_name),
            u'main_section': section_dict}
     if include_directory:
         directory, noop = os.path.split(fixture_path)

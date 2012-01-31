@@ -10,7 +10,7 @@ class XMLTests(TestCase):
         self.survey = create_survey_from_xls(utils.path_to_text_fixture("yes_or_no_question.xls"))
 
     def test_to_xml(self):
-        xml_str = u'''<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        xml_str = u'''<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
     <h:title>yes_or_no_question</h:title>
     <model>
