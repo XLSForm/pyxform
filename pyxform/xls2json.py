@@ -513,7 +513,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     #print_pyobj_to_json(json_dict)
     return json_dict
 
-def parse_file_to_workbook_dict(path):
+def parse_file_to_workbook_dict(path, file_object=None):
     """
     Given a xls or csv workbook file use xls2json_backends to create a python workbook_dict.
     workbook_dicts are organized as follows:
@@ -525,9 +525,9 @@ def parse_file_to_workbook_dict(path):
     if not extension: raise PyXFormError("No extension.")
     
     if extension == ".xls":
-        return xls_to_dict(path)
+        return xls_to_dict(file_object if file_object is not None else path)
     elif extension == ".csv":
-        return csv_to_dict(path)
+        return csv_to_dict(file_object if file_object is not None else path)
     elif extension == ".xlsx":
         raise PyXFormError("XLSX files are not supported at this time. Please save the spreadsheet as an XLS file (97).")
     else:
@@ -539,11 +539,11 @@ def get_filename(path):
     """
     return os.path.splitext((os.path.basename(path)))[0]
 
-def parse_file_to_json(path, default_name = None, default_language = u"default", warnings=None):
+def parse_file_to_json(path, default_name = None, default_language = u"default", warnings=None, file_object=None):
     """
     A wrapper for workbook_to_json
     """
-    workbook_dict = parse_file_to_workbook_dict(path)
+    workbook_dict = parse_file_to_workbook_dict(path, file_object)
     if default_name is None:
         default_name = unicode(get_filename(path))
     return workbook_to_json(workbook_dict, default_name, default_language, warnings)
@@ -567,12 +567,10 @@ def organize_by_values(dict_list, key):
     return result
 
 class SpreadsheetReader(object):
-    
     def __init__(self, path_or_file):
         path = path_or_file
         if type(path_or_file) is file:
             path = path.name
-        
         self._dict = workbook_dict = parse_file_to_workbook_dict(path)
         self._path = path
         self._name = self._print_name = self._title = self._id = unicode(get_filename(path))
@@ -592,11 +590,16 @@ class SurveyReader(SpreadsheetReader):
     It allows us to use the old interface where a SpreadsheetReader based object is created
     then a to_json_dict function is called on it.
     """
-    def __init__(self, path):
-        if type(path) is file:
-            path = path.name
+    def __init__(self, path_or_file):
+        if isinstance(path_or_file, basestring):
+            self._file_object = None
+            path = path_or_file
+        else:
+            self._file_object = path_or_file
+            path = path_or_file.name
+
         self._warnings = []
-        self._dict =  parse_file_to_json(path, warnings=self._warnings)
+        self._dict =  parse_file_to_json(path, warnings=self._warnings, file_object=self._file_object)
         self._path = path
     def print_warning_log(self, warn_out_file):
         #Open file to print warning log to.
