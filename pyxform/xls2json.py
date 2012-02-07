@@ -492,7 +492,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                         parent_children_array.append(table_list_header)
                         begin_table_list = False
 
-                    if table_list is not list_name:
+                    if table_list <> list_name:
                         error_message = "Error on row: " + str(row_number) + "\n"
                         error_message += "Badly formatted table list, list names don't match: " + table_list + " vs. " + list_name
                         raise PyXFormError(error_message)
