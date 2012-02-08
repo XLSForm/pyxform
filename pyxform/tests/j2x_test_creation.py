@@ -75,3 +75,37 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
         q2 = InputQuestion(name="YourName")
         s = Survey(name="Roses are Red", children=[q1, q2])
         self.assertRaises(Exception, s, 'validate')
+
+    def allow_surveys_with_comment_rows(self):
+        "assume that a survey with rows that don't have name, type, or label headings raise warning only"
+        path = utils.path_to_text_fixture('allow_comment_rows_test.xls')
+        survey = create_survey_from_xls(path)
+        expected_dict = {
+                "default_language": "default", 
+                "id_string": "allow_comment_rows_test", 
+                "children": [
+                {
+                        "name": "farmer_name", 
+                        "label": {
+                                "English": "First and last name of farmer"
+                        }, 
+                        "type": "text"
+                }
+                ], 
+                        "name": "allow_comment_rows_test", 
+                        "_translations": {
+                                "English": {
+                                        "/allow_comment_rows_test/farmer_name:label": {
+                                                "long": "First and last name of farmer"
+                                        }
+                                }
+                        }, 
+                        "title": "allow_comment_rows_test", 
+                        "_xpath": {
+                                "allow_comment_rows_test": "/allow_comment_rows_test", 
+                                "farmer_name": "/allow_comment_rows_test/farmer_name"
+                        }, 
+                        "type": "survey"
+                }
+        self.assertEquals(survey.to_json_dict(), expected_dict)
+
