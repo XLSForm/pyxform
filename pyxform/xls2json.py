@@ -392,6 +392,10 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         #Get question type
         question_type = row.get(constants.TYPE)
         if not question_type:
+            # if name and label are also missing, then its a comment row, and we skip it with warning
+            if not ((constants.NAME in row) and (constants.LABEL in row)):
+                    warnings.append("Row wihtout name, text, or label is being skipped " + str(row_number) + ": " + str(row))
+                    continue
             raise PyXFormError("Question with no type on row " + str(row_number))
             continue
         
