@@ -79,6 +79,7 @@ survey_header_aliases = {
     u"count": u"bind::jr:count"
 }
 list_header_aliases = {
+    u"caption": constants.LABEL, 
     u"list_name" : LIST_NAME,
     u"value" : constants.NAME,
     u"image": u"media::image",
@@ -185,6 +186,7 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, def
             
             if use_double_colons:
                 tokens = key.split(GROUP_DELIMITER)
+
 #            else:
 #                #We do the initial parse using single colons for backwards compatibility and
 #                #only the first single is used in order to avoid nesting jr:something tokens.

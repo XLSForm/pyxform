@@ -184,6 +184,7 @@ class Survey(Section):
         for lang, translation in self._translations.items():
             if lang == self.default_language:
                 result.append(node("translation", lang=lang,default=u"true()"))
+                #result.append(node("translation", lang=lang))
             else:
                 result.append(node("translation", lang=lang))
 
@@ -195,7 +196,7 @@ class Survey(Section):
                 
                 for media_type, media_value in content.items():
                     
-                    #There is a odk/jr bug where hints can't have a value for the form attribute.
+                    #There is a odk/jr bug where hints can't have a value for the "form" attribute.
                     #This is my workaround.
                     if label_type == u"hint":
                         value, outputInserted = self.insert_output_values(media_value)
