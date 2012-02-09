@@ -133,7 +133,7 @@ class MultipleChoiceQuestion(Question):
                 choice.validate()
 
     def xml_control(self):
-        assert self.bind[u"type"] in [u"select", u"select1"]#Why select1?
+        assert self.bind[u"type"] in [u"select", u"select1"] #Why select1? -- odk/jr use select1 for single-option-select
 
         control_dict = self.control
         if u"appearance" in control_dict:

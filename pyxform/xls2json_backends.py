@@ -22,7 +22,7 @@ def xls_value_to_unicode(value, value_type):
         else:
             return unicode(value)
     else:
-        return unicode(value)
+        return unicode(value.strip())
         
 
 def xls_to_dict(path_or_file):
