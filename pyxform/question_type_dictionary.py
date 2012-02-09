@@ -3,7 +3,9 @@ import os
 
 
 class QuestionTypeDictionary(dict):
-
+    """
+    A dictionary parsed from an xls file that defines question types.
+    """
     def __init__(self, file_name="base"):
         # Right now we're using an excel file to describe question
         # types we will use in creating XForms, we'll switch over to
@@ -17,10 +19,10 @@ class QuestionTypeDictionary(dict):
             "%s.xls" % file_name
             )
         excel_reader = QuestionTypesReader(path_to_question_types)
-        for k, v in excel_reader.to_dict().iteritems():
+        for k, v in excel_reader.to_json_dict().iteritems():
             self[k] = v
 
     def get_definition(self, question_type_str):
         return self.get(question_type_str, {})
 
-DEFAULT_QUESTION_TYPE_DICTIONARY = QuestionTypeDictionary()
+DEFAULT_QUESTION_TYPE_DICTIONARY = QuestionTypeDictionary("all")

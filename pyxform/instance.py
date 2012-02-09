@@ -44,7 +44,7 @@ class SurveyInstance(object):
         else:
             self._orphan_answers[name] = value
 
-    def to_dict(self):
+    def to_json_dict(self):
         children = []
         for k, v in self._answers.items():
             children.append({'node_name':k, 'value':v})

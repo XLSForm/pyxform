@@ -1,7 +1,13 @@
 from subprocess import Popen, PIPE
 import os, re, sys
 from collections import defaultdict
-from pyxform.errors import ValidationError
+# this is ugly, but allows running pyxform
+# as a standalone xls validator from the cl
+try:
+    from pyxform.errors import ValidationError
+except ImportError:
+    from errors import ValidationError
+
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "java_lib", "ODK Validate.jar")

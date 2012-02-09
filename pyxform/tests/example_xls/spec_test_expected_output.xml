@@ -1,0 +1,457 @@
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Spec test</h:title>
+    <model>
+      <submission action="https://example-odk-aggregate.appspot.com/submission" base64RsaPublicKey="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo93+Dgn3iDleC9XMTDH7ez1MOm/BOt287DgkldNkdvrtdC4oUegx3N8Say9tq47k2EOzeLYkezVnKdtserx+g/+R6pDIOS66bwbH+HoslDEUaZRZ47EipSGC1JhtOp/nQGQCsdVc5q/fPvw8d2rLLi+PQUZPBOiBxUo9h/CFc41hl/quUELmylSdL4O06OAP8OCEDA+tl0C2Ik+uCYMDJLD4m7YVbkV7jJXjtILj+GW+noLriFMRsgg7WKQe2j9fw5+v46nzhokOnDnHh+yGwQMfs/B0jfFAgXllLNjIPlXQf2UVzuxEax6wLCyqUXMIjCPSNfnzDRgFB4Qw3QbJCwIDAQAB" method="form-data-post"/>
+      <itext>
+        <translation default="true()" lang="default">
+          <text id="/xlsform_spec_test/repeat_test/group_test/select_multiple_test/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/compact-2-test/a:label">
+            <value form="image">jr://images/a.jpg</value>
+          </text>
+          <text id="/xlsform_spec_test/some_text:hint">
+            <value>a hint</value>
+          </text>
+          <text id="/xlsform_spec_test/text_image_audio_video_test:label">
+            <value form="image">jr://images/img_test.jpg</value>
+            <value form="audio">jr://audio/audio_test.wav</value>
+            <value form="video">jr://video/test.mov</value>
+            <value>text_image_audio_video_test</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/group_test/select_multiple_test/no:label">
+            <value>No</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/name/reserved_name_for_field_list_labels_20/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/compact-test/b:label">
+            <value form="image">jr://images/b.jpg</value>
+          </text>
+          <text id="/xlsform_spec_test/number_label:hint">
+            <value>a note</value>
+          </text>
+          <text id="/xlsform_spec_test/autocomplete_test/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/compact-test/a:label">
+            <value form="image">jr://images/a.jpg</value>
+          </text>
+          <text id="/xlsform_spec_test/autocomplete_chars_test/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/xlsform_spec_test/autocomplete_chars_test/no:label">
+            <value>No</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/labeled_select_group/list-nolabel-test/no:label">
+            <value>No</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/labeled_select_group/list-nolabel-test/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/xlsform_spec_test/display_image_test:label">
+            <value form="image">jr://images/img_test.jpg</value>
+          </text>
+          <text id="/xlsform_spec_test/autocomplete_test/no:label">
+            <value>No</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/labeled_select_group/label-test/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/labeled_select_group/label-test/no:label">
+            <value>No</value>
+          </text>
+          <text id="/xlsform_spec_test/number_label:label">
+            <value>1</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/compact-2-test/b:label">
+            <value form="image">jr://images/b.jpg</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/name/reserved_name_for_field_list_labels_20/no:label">
+            <value>No</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/name/table_list_question/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/xlsform_spec_test/some_text:label">
+            <value>some text</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/name/table_list_question/no:label">
+            <value>No</value>
+          </text>
+          <text id="/xlsform_spec_test/text_image_audio_video_test:hint">
+            <value>The goal of this test is to try out all the different media types in many languages to see if there are any bugs inserting media.</value>
+          </text>
+        </translation>
+        <translation lang="chinese">
+          <text id="/xlsform_spec_test/repeat_test/group_test/select_multiple_test/yes:label">
+            <value>是</value>
+          </text>
+          <text id="/xlsform_spec_test/number_label:label">
+            <value>-</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/labeled_select_group/label-test/yes:label">
+            <value>是</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/name/table_list_question/yes:label">
+            <value>是</value>
+          </text>
+          <text id="/xlsform_spec_test/number_label:hint">
+            <value>-</value>
+          </text>
+          <text id="/xlsform_spec_test/autocomplete_test/yes:label">
+            <value>是</value>
+          </text>
+          <text id="/xlsform_spec_test/autocomplete_chars_test/yes:label">
+            <value>是</value>
+          </text>
+          <text id="/xlsform_spec_test/some_text:hint">
+            <value>ni hao</value>
+          </text>
+          <text id="/xlsform_spec_test/text_image_audio_video_test:label">
+            <value form="audio">jr://audio/chinese_audio.wav</value>
+            <value>您好</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/labeled_select_group/list-nolabel-test/no:label">
+            <value>没有</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/group_test/select_multiple_test/no:label">
+            <value>没有</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/labeled_select_group/list-nolabel-test/yes:label">
+            <value>是</value>
+          </text>
+          <text id="/xlsform_spec_test/some_text:label">
+            <value>您好</value>
+          </text>
+          <text id="/xlsform_spec_test/autocomplete_chars_test/no:label">
+            <value>没有</value>
+          </text>
+          <text id="/xlsform_spec_test/autocomplete_test/no:label">
+            <value>没有</value>
+          </text>
+          <text id="/xlsform_spec_test/text_image_audio_video_test:hint">
+            <value>ni hao</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/name/reserved_name_for_field_list_labels_20/yes:label">
+            <value>是</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/name/reserved_name_for_field_list_labels_20/no:label">
+            <value>没有</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/labeled_select_group/label-test/no:label">
+            <value>没有</value>
+          </text>
+          <text id="/xlsform_spec_test/repeat_test/name/table_list_question/no:label">
+            <value>没有</value>
+          </text>
+        </translation>
+        <translation lang="english">
+          <text id="/xlsform_spec_test/text_image_audio_video_test:label">
+            <value form="image">jr://images/img_test_2.jpg</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <xlsform_spec_test id="Spec test">
+          <some_text/>
+          <number_label/>
+          <text_image_audio_video_test/>
+          <display_image_test/>
+          <autocomplete_test/>
+          <autocomplete_chars_test/>
+          <a_integer/>
+          <a_decimal/>
+          <repeat_test jr:template="">
+            <group_test>
+              <required_text/>
+              <select_multiple_test/>
+            </group_test>
+            <labeled_select_group>
+              <label-test/>
+              <list-nolabel-test/>
+            </labeled_select_group>
+            <name>
+              <reserved_name_for_field_list_labels_20/>
+              <table_list_question/>
+            </name>
+            <compact-test/>
+            <compact-2-test/>
+          </repeat_test>
+          <acknowledge_test/>
+          <date_test/>
+          <time_test/>
+          <datetime_test/>
+          <geopoint_test/>
+          <barcode_test/>
+          <image_test/>
+          <audio_test/>
+          <video_test/>
+          <note_test/>
+          <calculate_test/>
+          <calculate_test_output/>
+          <start/>
+          <start_test_output/>
+          <end/>
+          <end_test_output/>
+          <today/>
+          <today_test_output/>
+          <deviceid/>
+          <deviceid_test_output/>
+          <simserial/>
+          <simserial_test_output/>
+          <phonenumber/>
+          <phonenumber_test_output/>
+          <_1/>
+          <FALSE/>
+          <orx:meta>
+            <orx:instanceID/>
+          </orx:meta>
+        </xlsform_spec_test>
+      </instance>
+      <bind nodeset="/xlsform_spec_test/some_text" type="string"/>
+      <bind nodeset="/xlsform_spec_test/number_label" readonly="true()" type="string"/>
+      <bind nodeset="/xlsform_spec_test/text_image_audio_video_test" type="string"/>
+      <bind nodeset="/xlsform_spec_test/display_image_test" readonly="true()" type="string"/>
+      <bind nodeset="/xlsform_spec_test/autocomplete_test" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/autocomplete_chars_test" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/a_integer" type="int"/>
+      <bind constraint=". &lt;= /xlsform_spec_test/a_integer" nodeset="/xlsform_spec_test/a_decimal" type="decimal"/>
+      <bind nodeset="/xlsform_spec_test/repeat_test/group_test/required_text" required="true()" type="string"/>
+      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="you can't select yes and no" nodeset="/xlsform_spec_test/repeat_test/group_test/select_multiple_test" required="false()" type="select"/>
+      <bind nodeset="/xlsform_spec_test/repeat_test/labeled_select_group/label-test" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/repeat_test/labeled_select_group/list-nolabel-test" required="true()" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/repeat_test/name/reserved_name_for_field_list_labels_20" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/repeat_test/name/table_list_question" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/repeat_test/compact-test" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/repeat_test/compact-2-test" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/acknowledge_test" type="string"/>
+      <bind nodeset="/xlsform_spec_test/date_test" type="date"/>
+      <bind nodeset="/xlsform_spec_test/time_test" type="time"/>
+      <bind nodeset="/xlsform_spec_test/datetime_test" type="dateTime"/>
+      <bind nodeset="/xlsform_spec_test/geopoint_test" type="geopoint"/>
+      <bind nodeset="/xlsform_spec_test/barcode_test" type="barcode"/>
+      <bind nodeset="/xlsform_spec_test/image_test" type="binary"/>
+      <bind nodeset="/xlsform_spec_test/audio_test" type="binary"/>
+      <bind nodeset="/xlsform_spec_test/video_test" type="binary"/>
+      <bind nodeset="/xlsform_spec_test/note_test" readonly="true()" type="string"/>
+      <bind calculate="2+2" nodeset="/xlsform_spec_test/calculate_test" type="string"/>
+      <bind nodeset="/xlsform_spec_test/calculate_test_output" readonly="true()" type="string"/>
+      <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/xlsform_spec_test/start" type="dateTime"/>
+      <bind nodeset="/xlsform_spec_test/start_test_output" readonly="true()" type="string"/>
+      <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/xlsform_spec_test/end" type="dateTime"/>
+      <bind nodeset="/xlsform_spec_test/end_test_output" readonly="true()" type="string"/>
+      <bind jr:preload="date" jr:preloadParams="today" nodeset="/xlsform_spec_test/today" type="date"/>
+      <bind nodeset="/xlsform_spec_test/today_test_output" readonly="true()" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/xlsform_spec_test/deviceid" type="string"/>
+      <bind nodeset="/xlsform_spec_test/deviceid_test_output" readonly="true()" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="simserial" nodeset="/xlsform_spec_test/simserial" type="string"/>
+      <bind nodeset="/xlsform_spec_test/simserial_test_output" readonly="true()" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/xlsform_spec_test/phonenumber" type="string"/>
+      <bind nodeset="/xlsform_spec_test/phonenumber_test_output" readonly="true()" type="string"/>
+      <bind nodeset="/xlsform_spec_test/_1" type="string"/>
+      <bind nodeset="/xlsform_spec_test/FALSE" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/xlsform_spec_test/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/xlsform_spec_test/some_text">
+      <label ref="jr:itext('/xlsform_spec_test/some_text:label')"/>
+      <hint ref="jr:itext('/xlsform_spec_test/some_text:hint')"/>
+    </input>
+    <input ref="/xlsform_spec_test/number_label">
+      <label ref="jr:itext('/xlsform_spec_test/number_label:label')"/>
+      <hint ref="jr:itext('/xlsform_spec_test/number_label:hint')"/>
+    </input>
+    <input ref="/xlsform_spec_test/text_image_audio_video_test">
+      <label ref="jr:itext('/xlsform_spec_test/text_image_audio_video_test:label')"/>
+      <hint ref="jr:itext('/xlsform_spec_test/text_image_audio_video_test:hint')"/>
+    </input>
+    <input ref="/xlsform_spec_test/display_image_test">
+      <label ref="jr:itext('/xlsform_spec_test/display_image_test:label')"/>
+    </input>
+    <select1 appearance="autocomplete" ref="/xlsform_spec_test/autocomplete_test">
+      <label>autocomplete_test</label>
+      <item>
+        <label ref="jr:itext('/xlsform_spec_test/autocomplete_test/yes:label')"/>
+        <value>yes</value>
+      </item>
+      <item>
+        <label ref="jr:itext('/xlsform_spec_test/autocomplete_test/no:label')"/>
+        <value>no</value>
+      </item>
+    </select1>
+    <select1 appearance="autocomplete_chars" ref="/xlsform_spec_test/autocomplete_chars_test">
+      <label>autocomplete_chars_test</label>
+      <item>
+        <label ref="jr:itext('/xlsform_spec_test/autocomplete_chars_test/yes:label')"/>
+        <value>yes</value>
+      </item>
+      <item>
+        <label ref="jr:itext('/xlsform_spec_test/autocomplete_chars_test/no:label')"/>
+        <value>no</value>
+      </item>
+    </select1>
+    <input ref="/xlsform_spec_test/a_integer">
+      <label>a integer</label>
+    </input>
+    <input ref="/xlsform_spec_test/a_decimal">
+      <label>constrained decimal</label>
+    </input>
+    <group ref="/xlsform_spec_test/repeat_test">
+      <label>repeat_test</label>
+      <repeat nodeset="/xlsform_spec_test/repeat_test">
+        <group appearance="field-list" ref="/xlsform_spec_test/repeat_test/group_test">
+          <label>
+            
+          </label>
+          <input ref="/xlsform_spec_test/repeat_test/group_test/required_text">
+            <label>required_text</label>
+          </input>
+          <select appearance="minimal" ref="/xlsform_spec_test/repeat_test/group_test/select_multiple_test">
+            <label>select multiple test</label>
+            <hint>Select all that apply.</hint>
+            <item>
+              <label ref="jr:itext('/xlsform_spec_test/repeat_test/group_test/select_multiple_test/yes:label')"/>
+              <value>yes</value>
+            </item>
+            <item>
+              <label ref="jr:itext('/xlsform_spec_test/repeat_test/group_test/select_multiple_test/no:label')"/>
+              <value>no</value>
+            </item>
+          </select>
+        </group>
+        <group appearance="field-list" ref="/xlsform_spec_test/repeat_test/labeled_select_group">
+          <label>labeled select group test</label>
+          <select1 appearance="label" ref="/xlsform_spec_test/repeat_test/labeled_select_group/label-test">
+            <label>label-test</label>
+            <item>
+              <label ref="jr:itext('/xlsform_spec_test/repeat_test/labeled_select_group/label-test/yes:label')"/>
+              <value>yes</value>
+            </item>
+            <item>
+              <label ref="jr:itext('/xlsform_spec_test/repeat_test/labeled_select_group/label-test/no:label')"/>
+              <value>no</value>
+            </item>
+          </select1>
+          <select1 appearance="list-nolabel" ref="/xlsform_spec_test/repeat_test/labeled_select_group/list-nolabel-test">
+            <label>list-nolabel-test</label>
+            <item>
+              <label ref="jr:itext('/xlsform_spec_test/repeat_test/labeled_select_group/list-nolabel-test/yes:label')"/>
+              <value>yes</value>
+            </item>
+            <item>
+              <label ref="jr:itext('/xlsform_spec_test/repeat_test/labeled_select_group/list-nolabel-test/no:label')"/>
+              <value>no</value>
+            </item>
+          </select1>
+        </group>
+        <group appearance="field-list" ref="/xlsform_spec_test/repeat_test/name">
+          <label>
+            
+          </label>
+          <select1 appearance="label" ref="/xlsform_spec_test/repeat_test/name/reserved_name_for_field_list_labels_20">
+            <label>
+               
+            </label>
+            <item>
+              <label ref="jr:itext('/xlsform_spec_test/repeat_test/name/reserved_name_for_field_list_labels_20/yes:label')"/>
+              <value>yes</value>
+            </item>
+            <item>
+              <label ref="jr:itext('/xlsform_spec_test/repeat_test/name/reserved_name_for_field_list_labels_20/no:label')"/>
+              <value>no</value>
+            </item>
+          </select1>
+          <select1 appearance="list-nolabel" ref="/xlsform_spec_test/repeat_test/name/table_list_question">
+            <label>table list question</label>
+            <hint>hint</hint>
+            <item>
+              <label ref="jr:itext('/xlsform_spec_test/repeat_test/name/table_list_question/yes:label')"/>
+              <value>yes</value>
+            </item>
+            <item>
+              <label ref="jr:itext('/xlsform_spec_test/repeat_test/name/table_list_question/no:label')"/>
+              <value>no</value>
+            </item>
+          </select1>
+        </group>
+        <select1 appearance="compact" ref="/xlsform_spec_test/repeat_test/compact-test">
+          <label>compact-test</label>
+          <item>
+            <label ref="jr:itext('/xlsform_spec_test/repeat_test/compact-test/a:label')"/>
+            <value>a</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/xlsform_spec_test/repeat_test/compact-test/b:label')"/>
+            <value>b</value>
+          </item>
+        </select1>
+        <select1 appearance="compact-2" ref="/xlsform_spec_test/repeat_test/compact-2-test">
+          <label>compact-2-test</label>
+          <item>
+            <label ref="jr:itext('/xlsform_spec_test/repeat_test/compact-2-test/a:label')"/>
+            <value>a</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/xlsform_spec_test/repeat_test/compact-2-test/b:label')"/>
+            <value>b</value>
+          </item>
+        </select1>
+      </repeat>
+    </group>
+    <trigger ref="/xlsform_spec_test/acknowledge_test">
+      <label>acknowledge_test</label>
+    </trigger>
+    <input ref="/xlsform_spec_test/date_test">
+      <label>date_test</label>
+    </input>
+    <input ref="/xlsform_spec_test/time_test">
+      <label>time_test</label>
+    </input>
+    <input ref="/xlsform_spec_test/datetime_test">
+      <label>datetime_test</label>
+    </input>
+    <input ref="/xlsform_spec_test/geopoint_test">
+      <label>geopoint_test</label>
+      <hint>GPS coordinates can only be collected when outside.</hint>
+    </input>
+    <input ref="/xlsform_spec_test/barcode_test">
+      <label>barcode_test</label>
+    </input>
+    <upload mediatype="image/*" ref="/xlsform_spec_test/image_test">
+      <label>image_test</label>
+    </upload>
+    <upload mediatype="audio/*" ref="/xlsform_spec_test/audio_test">
+      <label>audio_test</label>
+    </upload>
+    <upload mediatype="video/*" ref="/xlsform_spec_test/video_test">
+      <label>video_test</label>
+    </upload>
+    <input ref="/xlsform_spec_test/note_test">
+      <label>note_test</label>
+    </input>
+    <input ref="/xlsform_spec_test/calculate_test_output">
+      <label><output value="/xlsform_spec_test/calculate_test"/>  </label>
+    </input>
+    <input ref="/xlsform_spec_test/start_test_output">
+      <label>start test output: <output value="/xlsform_spec_test/start"/></label></input>
+    <input ref="/xlsform_spec_test/end_test_output">
+      <label>end test output: <output value="/xlsform_spec_test/end"/></label></input>
+    <input ref="/xlsform_spec_test/today_test_output">
+      <label>today_test_output: <output value="/xlsform_spec_test/today"/></label></input>
+    <input ref="/xlsform_spec_test/deviceid_test_output">
+      <label>deviceid_test_output: <output value="/xlsform_spec_test/deviceid"/></label></input>
+    <input ref="/xlsform_spec_test/simserial_test_output">
+      <label>simserial_test_output: <output value="/xlsform_spec_test/simserial"/></label></input>
+    <input ref="/xlsform_spec_test/phonenumber_test_output">
+      <label>phonenumber_test_output: <output value="/xlsform_spec_test/phonenumber"/></label></input>
+    <input ref="/xlsform_spec_test/_1">
+      <label>numerical name test</label>
+    </input>
+    <input ref="/xlsform_spec_test/FALSE">
+      <label>boolean name test</label>
+    </input>
+  </h:body>
+</h:html>

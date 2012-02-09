@@ -13,6 +13,7 @@ class SettingsTests(TestCase):
         survey_reader = SurveyReader(self.path)
         expected_dict = {
             u'id_string': u'new_id',
+            u'default_language': u'default',
             u'name': u'settings',
             u'title': u'My Survey',
             u'type': u'survey',
@@ -29,7 +30,7 @@ class SettingsTests(TestCase):
                     }
                 ],
             }
-        self.assertEqual(survey_reader.to_dict(), expected_dict)
+        self.assertEqual(survey_reader.to_json_dict(), expected_dict)
 
     def test_settings(self):
         survey = create_survey_from_path(self.path)
