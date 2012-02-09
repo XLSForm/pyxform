@@ -16,13 +16,13 @@ class XMLTests(TestCase):
     <model>
       <itext>
         <translation lang="english">
-          <text id="/yes_or_no_question/good_day:label">
+          <text id="/yes_or_no_question/good_day-label">
             <value>have you had a good day today?</value>
           </text>
-          <text id="/yes_or_no_question/good_day/no:label">
+          <text id="/yes_or_no_question/good_day/no-label">
             <value>no</value>
           </text>
-          <text id="/yes_or_no_question/good_day/yes:label">
+          <text id="/yes_or_no_question/good_day/yes-label">
             <value>yes</value>
           </text>
         </translation>
@@ -37,13 +37,13 @@ class XMLTests(TestCase):
   </h:head>
   <h:body>
     <select1 ref="/yes_or_no_question/good_day">
-      <label ref="jr:itext('/yes_or_no_question/good_day:label')"/>
+      <label ref="jr:itext('/yes_or_no_question/good_day-label')"/>
       <item>
-        <label ref="jr:itext('/yes_or_no_question/good_day/yes:label')"/>
+        <label ref="jr:itext('/yes_or_no_question/good_day/yes-label')"/>
         <value>yes</value>
       </item>
       <item>
-        <label ref="jr:itext('/yes_or_no_question/good_day/no:label')"/>
+        <label ref="jr:itext('/yes_or_no_question/good_day/no-label')"/>
         <value>no</value>
       </item>
     </select1>

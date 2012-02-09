@@ -36,7 +36,7 @@ class Json2XformQuestionValidationTests(TestCase):
 
         q = create_survey_element_from_dict(simple_string_json)
         
-        expected_string_control_xml = u"""<input ref="/test/enumerator_name"><label ref="jr:itext('/test/enumerator_name:label')"/></input>"""
+        expected_string_control_xml = u"""<input ref="/test/enumerator_name"><label ref="jr:itext('/test/enumerator_name-label')"/></input>"""
         
         expected_string_binding_xml = u"""
         <bind nodeset="/test/enumerator_name" type="string"/>
@@ -64,7 +64,7 @@ class Json2XformQuestionValidationTests(TestCase):
         
         # I copied the response in, since this is not our method of testing
         # valid return values.
-        expected_select_one_control_xml = u"""<select1 ref="/test/qname"><label ref="jr:itext('/test/qname:label')"/><item><label ref="jr:itext('/test/qname/a:label')"/><value>a</value></item><item><label ref="jr:itext('/test/qname/b:label')"/><value>b</value></item></select1>"""
+        expected_select_one_control_xml = u"""<select1 ref="/test/qname"><label ref="jr:itext('/test/qname-label')"/><item><label ref="jr:itext('/test/qname/a-label')"/><value>a</value></item><item><label ref="jr:itext('/test/qname/b-label')"/><value>b</value></item></select1>"""
         
         expected_select_one_binding_xml = u"""
         <bind nodeset="/test/qname" type="select1"/>
@@ -89,7 +89,7 @@ class Json2XformQuestionValidationTests(TestCase):
             }
 
         expected_integer_control_xml = u"""
-        <input ref="/test/integer_q"><label ref="jr:itext('/test/integer_q:label')"/></input>
+        <input ref="/test/integer_q"><label ref="jr:itext('/test/integer_q-label')"/></input>
         """.strip()
         
         expected_integer_binding_xml = u"""
@@ -113,7 +113,7 @@ class Json2XformQuestionValidationTests(TestCase):
         simple_date_question = {u"label": {u"f": u"fd", u"e": u"ed"}, u"type": u"date", u"name": u"date_q", u"attributes": {}}
         
         expected_date_control_xml = u"""
-        <input ref="/test/date_q"><label ref="jr:itext('/test/date_q:label')"/></input>
+        <input ref="/test/date_q"><label ref="jr:itext('/test/date_q-label')"/></input>
         """.strip()
         
         expected_date_binding_xml = u"""
@@ -137,7 +137,7 @@ class Json2XformQuestionValidationTests(TestCase):
             u"name": u"phone_number_q",
             }
 
-        expected_phone_number_control_xml = u"""<input ref="/test/phone_number_q"><label ref="jr:itext('/test/phone_number_q:label')"/><hint>Enter numbers only.</hint></input>"""
+        expected_phone_number_control_xml = u"""<input ref="/test/phone_number_q"><label ref="jr:itext('/test/phone_number_q-label')"/><hint>Enter numbers only.</hint></input>"""
 
         expected_phone_number_binding_xml = u"""
         <bind constraint="regex(., '^\d*$')" nodeset="/test/phone_number_q" type="string"/>
@@ -165,7 +165,7 @@ class Json2XformQuestionValidationTests(TestCase):
                 ]
             }
 
-        expected_select_all_control_xml = u"""<select ref="/test/select_all_q"><label ref="jr:itext('/test/select_all_q:label')"/><hint>Select all that apply.</hint><item><label ref="jr:itext('/test/select_all_q/f:label')"/><value>f</value></item><item><label ref="jr:itext('/test/select_all_q/g:label')"/><value>g</value></item><item><label ref="jr:itext('/test/select_all_q/h:label')"/><value>h</value></item></select>"""
+        expected_select_all_control_xml = u"""<select ref="/test/select_all_q"><label ref="jr:itext('/test/select_all_q-label')"/><hint>Select all that apply.</hint><item><label ref="jr:itext('/test/select_all_q/f-label')"/><value>f</value></item><item><label ref="jr:itext('/test/select_all_q/g-label')"/><value>g</value></item><item><label ref="jr:itext('/test/select_all_q/h-label')"/><value>h</value></item></select>"""
         
         expected_select_all_binding_xml = u"""
 <bind nodeset="/test/select_all_q" type="select"/>
@@ -185,7 +185,7 @@ class Json2XformQuestionValidationTests(TestCase):
         simple_decimal_question = {u"label": {u"f": u"f text", u"e": u"e text"}, u"type": u"decimal", u"name": u"decimal_q", u"attributes": {}}
 
         expected_decimal_control_xml = u"""
-        <input ref="/test/decimal_q"><label ref="jr:itext('/test/decimal_q:label')"/></input>
+        <input ref="/test/decimal_q"><label ref="jr:itext('/test/decimal_q-label')"/></input>
         """.strip()
         
         expected_decimal_binding_xml = u"""
