@@ -115,7 +115,8 @@ label_optional_types = [
     u"calculate",
     u"start",
     u"end",
-    u"today"
+    u"today",
+    u"commcare_hidden_case_load"
 ]
 ####### END OF STATIC DATA #######
 
