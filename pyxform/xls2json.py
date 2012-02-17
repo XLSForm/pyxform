@@ -79,6 +79,7 @@ survey_header_aliases = {
     u"count": u"bind::jr:count"
 }
 list_header_aliases = {
+    u"caption": constants.LABEL,
     u"list_name" : LIST_NAME,
     u"value" : constants.NAME,
     u"image": u"media::image",
