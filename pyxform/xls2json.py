@@ -278,6 +278,8 @@ def has_double_colon(workbook_dict):
     for sheet in workbook_dict.values():
         for row in sheet:
             for column_header in row.keys():
+                if type(column_header) is not unicode:
+                    continue
                 if u"::" in column_header:
                     return True
     return False
@@ -304,7 +306,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     form_name = unicode(form_name)
     default_language = unicode(default_language)
 
-    #We check for double columns to determine whether to use them, or single colons to delimit grouped headers.
+    #We check for double columns to determine whether to use them or single colons to delimit grouped headers.
     #Single colons are bad because they conflict with with the xform namespace syntax (i.e. jr:constraintMsg),
     #so we only use them if we have to for backwards compatibility.
     use_double_colons = has_double_colon(workbook_dict)
@@ -346,6 +348,13 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     choices_sheet = dealias_and_group_headers(choices_sheet, list_header_aliases, use_double_colons, default_language)
     
     combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
+    
+    #Validate the choice names by making sure they have no spaces.
+    for list_name, dict_list in combined_lists.iteritems():
+        for list_item in dict_list:
+            if u' ' in list_item[constants.NAME]:
+                raise PyXFormError("Choice names/values cannot have spaces. See [" + list_item[constants.NAME] + "] in [" + list_name + "]")
+                
     choices = columns = combined_lists
     
     ########### Survey sheet ###########
