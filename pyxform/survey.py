@@ -115,6 +115,11 @@ class Survey(Section):
             for path, text in d.items():
                 if path not in paths:
                     paths.append(path)
+        
+        #We lose the ability to have the default language be the fallback by adding empty translations for everything.
+        #we could just add them for the default language by using the following two lines of code instead of the for loop          
+        #lang = self.default_language
+        #d = self._translations[self.default_language]
         for lang, d in self._translations.items():
             for path in paths:
                 if path not in d:
