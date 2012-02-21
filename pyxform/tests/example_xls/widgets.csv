@@ -8,7 +8,7 @@
 ,"select all that apply from list","my_select","select multiple widget","don't pick c and d together","not(selected(., 'c') and selected(., 'd'))","option c and d cannot be selected together","a c",,,
 ,"select one from list2","my_select1","select one widget","scroll down to see default selection",,,8,,,
 ,"trigger","my_trigger","acknowledge widget","need to push button",,,,,,
-,"string","my_output","review widget. is your email still ${my_trigger}?","long hint: there is an upcoming section.",,,,"true()","selected(/widgets/branch, 'n')",
+,"string","my_output","review widget. is your email still ${my_trigger}?","long hint: there is an upcoming section.",,,,"true()",,
 ,"geopoint","my_geopoint","geopoint widget","this will get gps location",,,,,,
 ,"barcode","my_barcode","barcode widget","scans multi-format 1d/2d barcodes",,,,,,
 ,"image","my_image","image widget","this will launch the camera",,,,,,

@@ -102,16 +102,13 @@ class Survey(Section):
         for element in self.iter_descendants():
             for d in element.get_translations(self.default_language):
                 self._translations[d['lang']][d['path']] = {"long" : d['text']}
-        #self._add_empty_translations()
+        self._add_empty_translations()
 
-    #I don't think this is needed.
-    #However, we may want to be able to create empty elements so that
-    #for example there can be a hint that only appears if someone is looking at
-    #the German translation.
     def _add_empty_translations(self):
         """
         For every path used, if a language does not include that path, add it,
-        and give it a "-" value.
+        and give it a "-" value. Added because for hints, you want to allow empty
+        translations for the default language (otherwise the validator complains).
         """
         paths = []
         for lang, d in self._translations.items():
@@ -121,7 +118,7 @@ class Survey(Section):
         for lang, d in self._translations.items():
             for path in paths:
                 if path not in d:
-                    self._translations[lang][path] = u"-"
+                    self._translations[lang][path] = {"long":u"-"}
 
     def _setup_media(self):
         """

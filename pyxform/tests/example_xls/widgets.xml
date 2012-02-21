@@ -2,6 +2,62 @@
   <h:head>
     <h:title>widgets</h:title>
     <model>
+      <itext>
+        <translation default="true()" lang="default">
+          <text id="/widgets/happy_sad_table_2/happy_sad_second_method/happy:label">
+            <value form="image">jr://images/happy.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table/happy_sad_michael/sad:label">
+            <value form="image">jr://images/sad.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/happy:label">
+            <value form="image">jr://images/happy.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table_2/happy_sad_second_method/sad:label">
+            <value form="image">jr://images/sad.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table_2/happy_sad_brian2/sad:label">
+            <value form="image">jr://images/sad.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table/happy_sad_brian/happy:label">
+            <value form="image">jr://images/happy.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/sad:label">
+            <value form="image">jr://images/sad.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table_2/happy_sad_brian2/happy:label">
+            <value form="image">jr://images/happy.jpg</value>
+          </text>
+          <text id="/widgets/grid_test_audio/a:label">
+            <value form="image">jr://images/a.jpg</value>
+            <value>a</value>
+          </text>
+          <text id="/widgets/grid_test_audio/b:label">
+            <value form="image">jr://images/b.jpg</value>
+            <value>b</value>
+          </text>
+          <text id="/widgets/grid_test/b:label">
+            <value form="image">jr://images/b.jpg</value>
+            <value>b</value>
+          </text>
+          <text id="/widgets/happy_sad_table_2/happy_sad_michael2/sad:label">
+            <value form="image">jr://images/sad.jpg</value>
+          </text>
+          <text id="/widgets/grid_test/a:label">
+            <value form="image">jr://images/a.jpg</value>
+            <value>a</value>
+          </text>
+          <text id="/widgets/happy_sad_table/happy_sad_michael/happy:label">
+            <value form="image">jr://images/happy.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table_2/happy_sad_michael2/happy:label">
+            <value form="image">jr://images/happy.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table/happy_sad_brian/sad:label">
+            <value form="image">jr://images/sad.jpg</value>
+          </text>
+        </translation>
+      </itext>
       <instance>
         <widgets id="widgets">
           <my_string/>
@@ -24,7 +80,28 @@
           <spinner/>
           <spinner_all/>
           <selectadvance/>
-          <autocomplete/>
+          <grid_test/>
+          <grid_test_audio/>
+          <table_list_test>
+            <table_list_test_label/>
+            <table_list_1/>
+            <table_list_2/>
+          </table_list_test>
+          <table_list_test2>
+            <reserved_name_for_field_list_labels_30/>
+            <table_list_3/>
+            <table_list_4/>
+          </table_list_test2>
+          <happy_sad_table_2>
+            <happy_sad_second_method/>
+            <happy_sad_brian2/>
+            <happy_sad_michael2/>
+          </happy_sad_table_2>
+          <happy_sad_table>
+            <reserved_name_for_field_list_labels_39/>
+            <happy_sad_brian/>
+            <happy_sad_michael/>
+          </happy_sad_table>
         </widgets>
       </instance>
       <bind nodeset="/widgets/my_string" type="string"/>
@@ -34,7 +111,7 @@
       <bind nodeset="/widgets/my_time" type="time"/>
       <bind constraint="not(selected(., 'c') and selected(., 'd'))" jr:constraintMsg="option c and d cannot be selected together" nodeset="/widgets/my_select" type="select"/>
       <bind nodeset="/widgets/my_select1" type="select1"/>
-      <bind nodeset="/widgets/my_output" readonly="true()" relevant="selected(/widgets/branch, 'n')" type="string"/>
+      <bind nodeset="/widgets/my_output" readonly="true()" type="string"/>
       <bind nodeset="/widgets/my_geopoint" type="geopoint"/>
       <bind nodeset="/widgets/my_barcode" type="barcode"/>
       <bind nodeset="/widgets/my_image" type="binary"/>
@@ -46,7 +123,20 @@
       <bind nodeset="/widgets/spinner" type="select1"/>
       <bind nodeset="/widgets/spinner_all" type="select"/>
       <bind nodeset="/widgets/selectadvance" type="select1"/>
-      <bind nodeset="/widgets/autocomplete" type="select1"/>
+      <bind nodeset="/widgets/grid_test" type="select1"/>
+      <bind nodeset="/widgets/grid_test_audio" type="select1"/>
+      <bind nodeset="/widgets/table_list_test/table_list_test_label" type="select1"/>
+      <bind nodeset="/widgets/table_list_test/table_list_1" type="select1"/>
+      <bind nodeset="/widgets/table_list_test/table_list_2" type="select1"/>
+      <bind nodeset="/widgets/table_list_test2/reserved_name_for_field_list_labels_30" type="select1"/>
+      <bind nodeset="/widgets/table_list_test2/table_list_3" type="select1"/>
+      <bind nodeset="/widgets/table_list_test2/table_list_4" type="select1"/>
+      <bind nodeset="/widgets/happy_sad_table_2/happy_sad_second_method" type="select"/>
+      <bind nodeset="/widgets/happy_sad_table_2/happy_sad_brian2" type="select"/>
+      <bind nodeset="/widgets/happy_sad_table_2/happy_sad_michael2" type="select"/>
+      <bind nodeset="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39" type="select"/>
+      <bind nodeset="/widgets/happy_sad_table/happy_sad_brian" type="select"/>
+      <bind nodeset="/widgets/happy_sad_table/happy_sad_michael" type="select"/>
     </model>
   </h:head>
   <h:body>
@@ -223,24 +313,183 @@
         <value>d</value>
       </item>
     </select1>
-    <select1 appearance="autocomplete" ref="/widgets/autocomplete">
-      <label>Select Widget - Auto Complete</label>
+    <select1 appearance="compact" ref="/widgets/grid_test">
+      <label>Grid test</label>
+      <hint>make sure to put a.jpg and b.jpg in the form-media folder</hint>
       <item>
-        <label>option a</label>
+        <label ref="jr:itext('/widgets/grid_test/a:label')"/>
         <value>a</value>
       </item>
       <item>
-        <label>option b</label>
+        <label ref="jr:itext('/widgets/grid_test/b:label')"/>
         <value>b</value>
       </item>
+    </select1>
+    <select1 appearance="quickcompact" ref="/widgets/grid_test_audio">
+      <label>Grid auto-advance test</label>
+      <hint>make sure to put a.jpg and b.jpg in the form-media folder</hint>
       <item>
-        <label>option c</label>
-        <value>c</value>
+        <label ref="jr:itext('/widgets/grid_test_audio/a:label')"/>
+        <value>a</value>
       </item>
       <item>
-        <label>option d</label>
-        <value>d</value>
+        <label ref="jr:itext('/widgets/grid_test_audio/b:label')"/>
+        <value>b</value>
       </item>
     </select1>
+    <group appearance="field-list" ref="/widgets/table_list_test">
+      <label>List Group</label>
+      <select1 appearance="label" ref="/widgets/table_list_test/table_list_test_label">
+        <label>Labeled Choices</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 appearance="list-nolabel" ref="/widgets/table_list_test/table_list_1">
+        <label>Q1</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 appearance="list-nolabel" ref="/widgets/table_list_test/table_list_2">
+        <label>Question 2</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list" ref="/widgets/table_list_test2">
+      <label>(An easier to specify list group)</label>
+      <select1 appearance="label" ref="/widgets/table_list_test2/reserved_name_for_field_list_labels_30">
+        <label>
+           
+        </label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 appearance="list-nolabel" ref="/widgets/table_list_test2/table_list_3">
+        <label>Q1</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <select1 appearance="list-nolabel" ref="/widgets/table_list_test2/table_list_4">
+        <label>Question 2</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list" ref="/widgets/happy_sad_table_2">
+      <label>Multi List Group</label>
+      <select appearance="label" ref="/widgets/happy_sad_table_2/happy_sad_second_method">
+        <label>Multi Choice List</label>
+        <hint>Select all that apply.</hint>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_second_method/happy:label')"/>
+          <value>happy</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_second_method/sad:label')"/>
+          <value>sad</value>
+        </item>
+      </select>
+      <select appearance="list-nolabel" ref="/widgets/happy_sad_table_2/happy_sad_brian2">
+        <label>Brian</label>
+        <hint>Select all that apply.</hint>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_brian2/happy:label')"/>
+          <value>happy</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_brian2/sad:label')"/>
+          <value>sad</value>
+        </item>
+      </select>
+      <select appearance="list-nolabel" ref="/widgets/happy_sad_table_2/happy_sad_michael2">
+        <label>Michael</label>
+        <hint>Select all that apply.</hint>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_michael2/happy:label')"/>
+          <value>happy</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_michael2/sad:label')"/>
+          <value>sad</value>
+        </item>
+      </select>
+    </group>
+    <group appearance="field-list" ref="/widgets/happy_sad_table">
+      <label>(An easier to specify multi list group)</label>
+      <select appearance="label" ref="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39">
+        <label>
+           
+        </label>
+        <hint>Select all that apply.</hint>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/happy:label')"/>
+          <value>happy</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/sad:label')"/>
+          <value>sad</value>
+        </item>
+      </select>
+      <select appearance="list-nolabel" ref="/widgets/happy_sad_table/happy_sad_brian">
+        <label>Brian</label>
+        <hint>Select all that apply.</hint>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_brian/happy:label')"/>
+          <value>happy</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_brian/sad:label')"/>
+          <value>sad</value>
+        </item>
+      </select>
+      <select appearance="list-nolabel" ref="/widgets/happy_sad_table/happy_sad_michael">
+        <label>Michael</label>
+        <hint>Select all that apply.</hint>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_michael/happy:label')"/>
+          <value>happy</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_michael/sad:label')"/>
+          <value>sad</value>
+        </item>
+      </select>
+    </group>
   </h:body>
 </h:html>
