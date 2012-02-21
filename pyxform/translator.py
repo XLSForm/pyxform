@@ -49,7 +49,7 @@ class Translator(object):
         dictionary = self._dict[string]
         return _StringTranslator(dictionary)
 
-    def to_dict(self):
+    def to_json_dict(self):
         return self._dict
 
 
@@ -81,8 +81,8 @@ class Translator(object):
 # all_translations = []
 # for xls_file in xls_files:
 #     excel_reader = ExcelReader(xls_file)
-#     for sheet_name, list_of_dicts in excel_reader.to_dict().items():
+#     for sheet_name, list_of_dicts in excel_reader.to_json_dict().items():
 #         for d in list_of_dicts:
 #             for result in add_row(d):
 #                 translator.add_translation(**result)
-# print_pyobj_to_json(translator.to_dict(), "nigeria.json")
+# print_pyobj_to_json(translator.to_json_dict(), "nigeria.json")

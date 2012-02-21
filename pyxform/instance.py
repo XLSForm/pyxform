@@ -1,16 +1,18 @@
 from xform_instance_parser import parse_xform_instance
 
+
 class SurveyInstance(object):
+
     def __init__(self, survey_object, **kwargs):
         self._survey = survey_object
         self.kwargs = kwargs #not sure what might be passed to this
 
         #does the survey object provide a way to get the key dicts?
-        self._keys = [c.get_name() for c in self._survey._children]
-        
-        self._name = self._survey.get_name()
-        self._id = self._survey.id_string()
-        
+        self._keys = [c.name for c in self._survey.children]
+
+        self._name = self._survey.name
+        self._id = self._survey.id_string
+
         # get xpaths
         #  - prep for xpaths.
         self._survey.xml()
@@ -42,7 +44,7 @@ class SurveyInstance(object):
         else:
             self._orphan_answers[name] = value
 
-    def to_dict(self):
+    def to_json_dict(self):
         children = []
         for k, v in self._answers.items():
             children.append({'node_name':k, 'value':v})

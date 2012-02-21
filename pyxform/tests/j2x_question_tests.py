@@ -20,7 +20,7 @@ def ctw(control):
     return control.toxml()
 
 class Json2XformQuestionValidationTests(TestCase):
-    
+    maxDiff = None
     def setUp(self):
         self.s = Survey(name=u"test")
     
@@ -32,7 +32,7 @@ class Json2XformQuestionValidationTests(TestCase):
                 },
             u"type": u"text",
             u"name": u"enumerator_name"
-            }
+        }
 
         q = create_survey_element_from_dict(simple_string_json)
         
@@ -165,10 +165,10 @@ class Json2XformQuestionValidationTests(TestCase):
                 ]
             }
 
-        expected_select_all_control_xml = u"""<select ref="/test/select_all_q"><label ref="jr:itext('/test/select_all_q:label')"/><hint>Select all that apply.</hint><item><label ref="jr:itext('/test/select_all_q/f:label')"/><value>f</value></item><item><label ref="jr:itext('/test/select_all_q/g:label')"/><value>g</value></item><item><label ref="jr:itext('/test/select_all_q/h:label')"/><value>h</value></item><item><label>None</label><value>none</value></item></select>"""
+        expected_select_all_control_xml = u"""<select ref="/test/select_all_q"><label ref="jr:itext('/test/select_all_q:label')"/><hint>Select all that apply.</hint><item><label ref="jr:itext('/test/select_all_q/f:label')"/><value>f</value></item><item><label ref="jr:itext('/test/select_all_q/g:label')"/><value>g</value></item><item><label ref="jr:itext('/test/select_all_q/h:label')"/><value>h</value></item></select>"""
         
         expected_select_all_binding_xml = u"""
-<bind constraint="(.='none' or not(selected(., 'none')))" nodeset="/test/select_all_q" type="select"/>
+<bind nodeset="/test/select_all_q" type="select"/>
         """.strip()
         
         q = create_survey_element_from_dict(simple_select_all_question)

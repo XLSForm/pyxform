@@ -1,15 +1,88 @@
+import json
 from utils import is_valid_xml_tag, node
-from collections import defaultdict
-from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
 from xls2json import print_pyobj_to_json
+from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
+from errors import PyXFormError
 
 
-class SurveyElement(object):
+def _overlay(over, under):
+    if type(under) == dict:
+        result = under.copy()
+        result.update(over)
+        return result
+    return over if over else under
+
+
+class SurveyElement(dict):
     """
     SurveyElement is the base class we'll looks for the following keys
     in kwargs: name, label, hint, type, bind, control, parent,
     children, and question_type_dictionary.
     """
+
+    # the following are important keys for the underlying dict that
+    # describes this survey element
+    FIELDS = {
+        u"name": unicode,
+        u"label": unicode,
+        u"hint": unicode,
+        u"default": unicode,
+        u"type": unicode,
+        u"appearance": unicode,
+        u"bind": dict,
+        u"control": dict,
+        u"media": dict,
+        # this node will also have a parent and children, like a tree!
+        u"parent": lambda: None,
+        u"children": list,
+        }
+
+    def _default(self):
+        # TODO: need way to override question type dictionary
+        defaults = DEFAULT_QUESTION_TYPE_DICTIONARY
+        return defaults.get_definition(self.get(u"type"))
+
+    def __getattr__(self, key):
+        """
+        Get attributes from FIELDS rather than the class.
+        """
+        if key in self.FIELDS:
+            question_type_dict = self._default()
+            under = question_type_dict.get(key, None)
+            over = self.get(key)
+            if not under:
+                return over
+            return _overlay(over, under)
+        raise AttributeError(key)
+
+    def __setattr__(self, key, value):
+        self[key] = value
+
+    def __init__(self, **kwargs):
+        for key, default in self.FIELDS.items():
+            self[key] = kwargs.get(key, default())
+        self._link_children()
+        
+        #Create a space label for unlabeled elements with the label appearance tag.
+        #This is because such elements are used to label the options for selects in a field-list
+        #and might want blank labels for themselves.
+        if self.control.get(u"appearance") == u"label" and not self.label:
+            self[u"label"] = u" "
+
+    def _link_children(self):
+        for child in self.children:
+            child.parent = self
+
+    def add_child(self, child):
+        self.children.append(child)
+        child.parent = self
+
+    def add_children(self, children):
+        if type(children) == list:
+            for child in children:
+                self.add_child(child)
+        else:
+            self.add_child(children)
 
     binding_conversions = {
         "yes": "true()",
@@ -33,99 +106,22 @@ class SurveyElement(object):
         "video"
     ]
 
-    # the following are important keys for the underlying dict that
-    # describes this survey element
-    NAME = u"name"
-    LABEL = u"label"
-    HINT = u"hint"
-    DEFAULT = u"default"
-    TYPE = u"type"
-    APPEARANCE = u"appearance"
-    BIND = u"bind"
-    CONTROL = u"control"
-    MEDIA = u"media"
-    # this node will also have a parent and children, like a tree!
-    # these will not be stored in the dict.
-    PARENT = u"parent"
-    CHILDREN = u"children"
-
-    _DEFAULT_VALUES = {
-        NAME: u"",
-        LABEL: {},
-        HINT: {},
-        DEFAULT: {},
-        TYPE: u"",
-        BIND: {},
-        CONTROL: {},
-        MEDIA: {}
-        }
-
-    def __init__(self, *args, **kwargs):
-        self._dict = defaultdict(dict)
-        for k, default_value in self._DEFAULT_VALUES.items():
-            self._dict[k] = kwargs.get(k, default_value)
-        self._parent = kwargs.get(u"parent", None)
-        self._children = []
-        for element in kwargs.get(u"children", []):
-            self.add_child(element)
-        self._question_type_dictionary = kwargs.get(
-            u"question_type_dictionary", None
-            )
-
-    def get_question_type_dictionary(self):
-        """
-        Return the dictionary of question types this SurveyElement is
-        associated with.
-        """
-        if self._question_type_dictionary:
-            return self._question_type_dictionary
-        elif self._parent:
-            return self._parent.get_question_type_dictionary()
-        else:
-            return DEFAULT_QUESTION_TYPE_DICTIONARY
-
-    def add_child(self, element):
-        """
-        Add a SurveyElement to this SurveyElement's children. As a
-        slight hack, this method also accepts a list of elements.
-        """
-        # I should probably rename this function, because now it handles lists
-        if type(element) == list:
-            for list_element in element:
-                self.add_child(list_element)
-        else:
-            element._set_parent(self)
-            self._children.append(element)
-
-    def get_children(self):
-        """
-        Return this SurveyElement's children.
-        """
-        return self._children
-
-    def get(self, key):
-        # name, type, control, bind, label, hint, default
-        return self._dict[key]
-
-    def set(self, key, value):
-        self._dict[key] = value
-
-    def set_name(self, name):
-        self._dict[self.NAME] = name
-
     def validate(self):
-        if not is_valid_xml_tag(self.get_name()):
-            msg = "The name of this survey element is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods."
-            raise Exception(self.get_name(), msg)                
+        if not is_valid_xml_tag(self.name):
+            msg = "The name '%s' is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods." % self.name
+            raise PyXFormError(msg)
 
-    def _set_parent(self, parent):
-        self._parent = parent
-
-    def iter_children(self):
+    #TODO: Make sure renaming this doesn't cause any problems
+    def iter_descendants(self):
+        """
+        A survey_element is a dictionary of survey_elements
+        This method does a preorder traversal over them.
+        For the time being this survery_element is included among its descendants
+        """
         # it really seems like this method should not yield self
         yield self
-        for e in self._children:
-            for f in e.iter_children():
+        for e in self.children:
+            for f in e.iter_descendants():
                 yield f
 
     def get_lineage(self):
@@ -134,8 +130,8 @@ class SurveyElement(object):
         """
         result = [self]
         current_element = self
-        while current_element._parent:
-            current_element = current_element._parent
+        while current_element.parent:
+            current_element = current_element.parent
             result = [current_element] + result
         return result
 
@@ -146,75 +142,101 @@ class SurveyElement(object):
         """
         Return the xpath of this survey element.
         """
-        return u"/".join([u""] + [n.get_name() for n in self.get_lineage()])
+        return u"/".join([u""] + [n.name for n in self.get_lineage()])
 
     def get_abbreviated_xpath(self):
         lineage = self.get_lineage()
         if len(lineage) >= 2:
-            return u"/".join([n.get_name() for n in lineage[1:]])
+            return u"/".join([unicode(n.name) for n in lineage[1:]])
         else:
-            return lineage[0].get_name()
+            return lineage[0].name
 
-    def to_dict(self):
+    def to_json_dict(self):
+        """
+        Create a dict copy of this survey element by removing inappropriate attributes
+        and converting its children to dicts
+        """
         self.validate()
-        result = dict([(k, v) for k, v in self._dict.items()])
-        assert u"children" not in result
-        result[u"children"] = [e.to_dict() for e in self._children]
+        result = self.copy()
+        to_delete = [u"parent", u"question_type_dictionary", u"_created"]
+        for key in to_delete:
+            if key in result:
+                del result[key]
+        children = result.pop(u"children")
+        result[u"children"] = []
+        for child in children:
+            result[u"children"].append(child.to_json_dict())
         # remove any keys with empty values
         for k, v in result.items():
             if not v:
                 del result[k]
+                
         return result
+
+    def to_json(self):
+        return json.dumps(self.to_json_dict())
 
     def json_dump(self, path=""):
         if not path:
-            path = self.get_name() + ".json"
-        print_pyobj_to_json(self.to_dict(), path)
+            path = self.name + ".json"
+        print_pyobj_to_json(self.to_json_dict(), path)
 
     def __eq__(self, y):
         # I need to look up how exactly to override the == operator.
-        return self.to_dict() == y.to_dict()
+        return self.to_json_dict() == y.to_json_dict()
 
     def _translation_path(self, display_element):
         return self.get_xpath() + ":" + display_element
 
-    def get_translations(self):
-        for display_element in ['label', 'hint']:
-            label_or_hint = self.get(display_element)
-            if type(label_or_hint) == dict:
+    def get_translations(self, default_language):
+        for display_element in [u'label', u'hint']:
+            label_or_hint = self[display_element]
+            
+            if display_element is u'label' \
+               and self.needs_itext_ref() \
+               and type(label_or_hint) is not dict \
+               and label_or_hint:
+                label_or_hint = {default_language : label_or_hint}
+                
+            if type(label_or_hint) is dict:
                 for lang, text in label_or_hint.items():
                     yield {
-                        'display_element': display_element,
+                        'display_element': display_element, #Not used
                         'path': self._translation_path(display_element),
-                        'element': self,
+                        'element': self, #Not used
                         'lang': lang,
                         'text': text,
                         }
 
     def get_media_keys(self):
+        """
+        @deprected
+        I'm leaving this in just in case it has outside references.
+        """
         return {
             u"media": u"%s:media" % self.get_xpath()
             }
 
+    def needs_itext_ref(self):
+        return type(self.label) is dict or (type(self.media) is dict and len(self.media) > 0)
+
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):
-        if not self.get_label() and not self.get(self.TYPE) == "group"and len(self.get('media')) == 0:
-            return None
-
-        if type(self.get_label()) == dict or not len(self.get('media')) == 0:
-            if len(self.get_label()) == 0 and self.get(self.TYPE) == "group":
-                return None
-            return node(u"label", ref="jr:itext('%s')" % self._translation_path(u"label"))
+        if self.needs_itext_ref():
+            #If there is a dictionary label, or non-empty media dict, then we need to make a label with an itext ref
+            ref = "jr:itext('%s')" % self._translation_path(u"label")
+            return node(u"label", ref=ref)
         else:
-            label, outputInserted = self.get_root().insert_output_values(self.get_label())
+            survey = self.get_root()
+            label, outputInserted = survey.insert_output_values(self.label)
             return node(u"label", label, toParseString=outputInserted)
 
     def xml_hint(self):
-        if type(self.get_hint()) == dict:
-            d = self.get_translation_keys()
-            return node(u"hint", ref="jr:itext('%s')" % d[u"hint"])
+        if type(self.hint) == dict:
+            path = self._translation_path("hint")
+            return node(u"hint", ref="jr:itext('%s')" % path)
         else:
-            hint, outputInserted = self.get_root().insert_output_values(self.get_hint())
+            hint, outputInserted = self.get_root().insert_output_values(self.hint)
             return node(u"hint", hint, toParseString=outputInserted)
 
     def xml_label_and_hint(self):
@@ -222,24 +244,28 @@ class SurveyElement(object):
         Return a list containing one node for the label and if there
         is a hint one node for the hint.
         """
-        if self.get_label() and self.get_hint():
-            return [self.xml_label(), self.xml_hint()]
-        elif self.get_label():
-            return [self.xml_label()]
-        elif self.get_hint():
-            return [self.xml_hint()]
-        else:
-            return None
-
+        result = []
+        if self.label or self.media:
+            result.append(self.xml_label())
+        if self.hint:
+            result.append(self.xml_hint())
+        
+        if len(result) == 0:
+            msg = "The survey element named '%s' has no label or hint." % self.name
+            raise PyXFormError(msg)
+        
+        return result
+    
     def xml_binding(self):
         """
         Return the binding for this survey element.
         """
         survey = self.get_root()
-        d = self.get_bind().copy()
+        d = self.bind.copy()
         if d:
             for k, v in d.items():
-                if v in self.binding_conversions:
+                #I think all the binding conversions should be happening on the xls2json side.
+                if hashable(v) and v in self.binding_conversions:
                     v = self.binding_conversions[v]
                 d[k] = survey.insert_xpaths(v)
             return node(u"bind", nodeset=self.get_xpath(), **d)
@@ -247,10 +273,10 @@ class SurveyElement(object):
 
     def xml_bindings(self):
         """
-        Return a list of bindings for this node and all its descendents.
+        Return a list of bindings for this node and all its descendants.
         """
         result = []
-        for e in self.iter_children():
+        for e in self.iter_descendants():
             xml_binding = e.xml_binding()
             if xml_binding != None:
                 result.append(xml_binding)
@@ -262,14 +288,11 @@ class SurveyElement(object):
         doesn't make sense to implement here in the base class.
         """
         raise Exception("Control not implemented")
-
-
-# add a bunch of get methods to the SurveyElement class
-def add_get_method(cls, key):
-    def get_method(self):
-        return self.get(key)
-    get_method.__name__ = str("get_%s" % key)
-    setattr(cls, get_method.__name__, get_method)
-
-for key in SurveyElement._DEFAULT_VALUES.keys():
-    add_get_method(SurveyElement, key)
+    
+def hashable(v):
+    """Determine whether `v` can be hashed."""
+    try:
+        hash(v)
+    except TypeError:
+        return False
+    return True

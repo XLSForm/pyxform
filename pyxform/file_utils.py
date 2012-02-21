@@ -1,7 +1,7 @@
 import os
 import glob
 import utils
-from xlrd import open_workbook
+#from xlrd import open_workbook
 
 from xls2json import SurveyReader
 
@@ -11,16 +11,23 @@ def _section_name(path_or_file_name):
     return section_name
 
 def load_file_to_dict(path):
+    """
+    Takes a file path and loads it into a nested json dict following the format in json_form_schema.json
+    The file may be a xls file or json file. If it is xls it is converted using xls2json.
+    """
     if path.endswith(".xls") or path.endswith(".csv"):
         name = _section_name(path)
         excel_reader = SurveyReader(path)
-        return (name, excel_reader.to_dict())
+        return (name, excel_reader.to_json_dict())
     elif path.endswith(".json"):
         name = _section_name(path)
         return (name, utils.get_pyobj_from_json(path))
 
 def collect_compatible_files_in_directory(directory):
-    sections = {}
+    """
+    create a giant dict out of all the spreadsheets and json forms in the given directory
+    """
+    #sections = {}
     available_files = glob.glob(os.path.join(directory, "*.xls")) + \
                         glob.glob(os.path.join(directory, "*.json"))
     return dict([load_file_to_dict(f) for f in available_files])

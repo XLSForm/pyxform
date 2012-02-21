@@ -1,7 +1,11 @@
 from xls2json import QuestionTypesReader
 import os
 
-class QuestionTypeDictionary(object):
+
+class QuestionTypeDictionary(dict):
+    """
+    A dictionary parsed from an xls file that defines question types.
+    """
     def __init__(self, file_name="base"):
         # Right now we're using an excel file to describe question
         # types we will use in creating XForms, we'll switch over to
@@ -15,11 +19,10 @@ class QuestionTypeDictionary(object):
             "%s.xls" % file_name
             )
         excel_reader = QuestionTypesReader(path_to_question_types)
-        self._dict = excel_reader.to_dict()
+        for k, v in excel_reader.to_json_dict().iteritems():
+            self[k] = v
 
     def get_definition(self, question_type_str):
-        if question_type_str not in self._dict:
-            raise Exception("Unknown question type", question_type_str, self._name)
-        return self._dict[question_type_str]
+        return self.get(question_type_str, {})
 
-DEFAULT_QUESTION_TYPE_DICTIONARY = QuestionTypeDictionary()
+DEFAULT_QUESTION_TYPE_DICTIONARY = QuestionTypeDictionary("all")
