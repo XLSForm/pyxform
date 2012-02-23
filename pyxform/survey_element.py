@@ -186,7 +186,7 @@ class SurveyElement(dict):
         return self.to_json_dict() == y.to_json_dict()
 
     def _translation_path(self, display_element):
-        return self.get_xpath() + ":" + display_element
+        return self.get_xpath() + "-" + display_element
 
     def get_translations(self, default_language):
         for display_element in [u'label', u'hint']:
