@@ -349,11 +349,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
     
-    #Validate the choice names by making sure they have no spaces.
-    for list_name, dict_list in combined_lists.iteritems():
-        for list_item in dict_list:
-            if u' ' in list_item[constants.NAME]:
-                raise PyXFormError("Choice names/values cannot have spaces. See [" + list_item[constants.NAME] + "] in [" + list_name + "]")
                 
     choices = columns = combined_lists
     
@@ -486,7 +481,13 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
 
                 if list_name not in choices:
                     raise PyXFormError("List name not in choices sheet: " + list_name + " Error on row: " + str(row_number))
-                
+
+                #Validate select_multiple choice names by making sure they have no spaces (will cause errors in exports).
+                if select_type == constants.SELECT_ALL_THAT_APPLY:
+                    for choice in choices[list_name]:
+                        if ' ' in choice[constants.NAME]:
+                                raise PyXFormError("Choice names with spaces cannot be added to multiple choice selects. See [" + choice[constants.NAME] + "] in [" + list_name + "]")
+
                 if parse_dict.get("specify_other") is not None:
                     select_type += u" or specify other"
                     
