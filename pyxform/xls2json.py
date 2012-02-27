@@ -41,7 +41,7 @@ select_aliases = {
       u"add select multiple prompt using" : constants.SELECT_ALL_THAT_APPLY,
       u"select all that apply from" : constants.SELECT_ALL_THAT_APPLY,
       u"select one from" : constants.SELECT_ONE,
-      u"selec1" : constants.SELECT_ONE, 
+      u"select1" : constants.SELECT_ONE, 
       u"select_one" : constants.SELECT_ONE,
       u"select one" : constants.SELECT_ONE,
       u"select_multiple" : constants.SELECT_ALL_THAT_APPLY,
@@ -79,7 +79,7 @@ survey_header_aliases = {
     u"count": u"bind::jr:count"
 }
 list_header_aliases = {
-    u"caption": constants.LABEL,
+    u"caption" : constants.LABEL,
     u"list_name" : LIST_NAME,
     u"value" : constants.NAME,
     u"image": u"media::image",
@@ -186,6 +186,7 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, def
             
             if use_double_colons:
                 tokens = key.split(GROUP_DELIMITER)
+
 #            else:
 #                #We do the initial parse using single colons for backwards compatibility and
 #                #only the first single is used in order to avoid nesting jr:something tokens.
@@ -277,6 +278,8 @@ def has_double_colon(workbook_dict):
     for sheet in workbook_dict.values():
         for row in sheet:
             for column_header in row.keys():
+                if type(column_header) is not unicode:
+                    continue
                 if u"::" in column_header:
                     return True
     return False
@@ -303,7 +306,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     form_name = unicode(form_name)
     default_language = unicode(default_language)
 
-    #We check for double columns to determine whether to use them, or single colons to delimit grouped headers.
+    #We check for double columns to determine whether to use them or single colons to delimit grouped headers.
     #Single colons are bad because they conflict with with the xform namespace syntax (i.e. jr:constraintMsg),
     #so we only use them if we have to for backwards compatibility.
     use_double_colons = has_double_colon(workbook_dict)
@@ -345,6 +348,8 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     choices_sheet = dealias_and_group_headers(choices_sheet, list_header_aliases, use_double_colons, default_language)
     
     combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
+    
+                
     choices = columns = combined_lists
     
     ########### Survey sheet ###########
@@ -476,7 +481,13 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
 
                 if list_name not in choices:
                     raise PyXFormError("List name not in choices sheet: " + list_name + " Error on row: " + str(row_number))
-                
+
+                #Validate select_multiple choice names by making sure they have no spaces (will cause errors in exports).
+                if select_type == constants.SELECT_ALL_THAT_APPLY:
+                    for choice in choices[list_name]:
+                        if ' ' in choice[constants.NAME]:
+                                raise PyXFormError("Choice names with spaces cannot be added to multiple choice selects. See [" + choice[constants.NAME] + "] in [" + list_name + "]")
+
                 if parse_dict.get("specify_other") is not None:
                     select_type += u" or specify other"
                     

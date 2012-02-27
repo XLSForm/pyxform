@@ -115,6 +115,11 @@ class Survey(Section):
             for path, text in d.items():
                 if path not in paths:
                     paths.append(path)
+        
+        #We lose the ability to have the default language be the fallback by adding empty translations for everything.
+        #we could just add them for the default language by using the following two lines of code instead of the for loop          
+        #lang = self.default_language
+        #d = self._translations[self.default_language]
         for lang, d in self._translations.items():
             for path in paths:
                 if path not in d:
@@ -181,6 +186,7 @@ class Survey(Section):
         for lang, translation in self._translations.items():
             if lang == self.default_language:
                 result.append(node("translation", lang=lang,default=u"true()"))
+                #result.append(node("translation", lang=lang))
             else:
                 result.append(node("translation", lang=lang))
 
@@ -192,7 +198,7 @@ class Survey(Section):
                 
                 for media_type, media_value in content.items():
                     
-                    #There is a odk/jr bug where hints can't have a value for the form attribute.
+                    #There is a odk/jr bug where hints can't have a value for the "form" attribute.
                     #This is my workaround.
                     if label_type == u"hint":
                         value, outputInserted = self.insert_output_values(media_value)
