@@ -97,7 +97,7 @@ class XFormInstanceParser(object):
     def get(self, abbreviated_xpath):
         return self.to_flat_dict()[abbreviated_xpath]
 
-    def to_dict(self):
+    def to_json_dict(self):
         return self._dict
 
     def to_flat_dict(self):
@@ -118,13 +118,13 @@ class XFormInstanceParser(object):
 
     def get_flat_dict_with_attributes(self):
         result = self.to_flat_dict().copy()
-        result[XFORM_ID_STRING] = self.get_xform_id_string()
+        result[XFORM_ID_STRING] = self.get_xform_id_string
         return result
 
 
 def xform_instance_to_dict(xml_str):
     parser = XFormInstanceParser(xml_str)
-    return parser.to_dict()
+    return parser.to_json_dict()
 
 def xform_instance_to_flat_dict(xml_str):
     parser = XFormInstanceParser(xml_str)

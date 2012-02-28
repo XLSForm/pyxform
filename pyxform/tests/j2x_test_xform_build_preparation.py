@@ -32,7 +32,7 @@ class Json2XformExportingPrepTests(TestCase):
         # options_list = s._build_options_list_from_descendants()
         # Is this method called somewhere else now?
         
-        desired_options_list = [first_yesno_question._children]
+        desired_options_list = [first_yesno_question.children]
 
         # todo: we need to think about whether we care about
         # consolidating these options lists.

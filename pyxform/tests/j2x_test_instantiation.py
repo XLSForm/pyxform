@@ -9,7 +9,7 @@ class Json2XformExportingPrepTests(TestCase):
     
     def test_simple_survey_instantiation(self):
         surv = Survey(name=u"Simple")
-        q = create_survey_element_from_dict({u"type":u"text", u"name":u"survey_question"})
+        q = create_survey_element_from_dict({u"type":u"text", u"name":u"survey_question", u"label": u"Question"})
         surv.add_child(q)
         
         i = surv.instantiate()
@@ -22,8 +22,8 @@ class Json2XformExportingPrepTests(TestCase):
     
     def test_simple_survey_answering(self):
         surv = Survey(name=u"Water")
-        q = create_survey_element_from_dict({u"type":u"text", u"name":u"color"})
-        q2 = create_survey_element_from_dict({u"type":u"text", u"name":u"feeling"})
+        q = create_survey_element_from_dict({u"type":u"text", u"name":u"color", u"label": u"Color"})
+        q2 = create_survey_element_from_dict({u"type":u"text", u"name":u"feeling", u"label": u"Feeling"})
         
         surv.add_child(q)
         surv.add_child(q2)
@@ -39,11 +39,11 @@ class Json2XformExportingPrepTests(TestCase):
         surv = Survey(name=u"data")
         
         surv.add_child(create_survey_element_from_dict({ \
-                                u'type':u'text', u'name':u'name'}))
+                                u'type':u'text', u'name':u'name', u"label": u"Name"}))
         surv.add_child(create_survey_element_from_dict({ \
-                                u'type':u'integer', u'name':u'users_per_month'}))
+                                u'type':u'integer', u'name':u'users_per_month', u"label": u"Users per month"}))
         surv.add_child(create_survey_element_from_dict({ \
-                                u'type':u'gps', u'name':u'geopoint'}))
+                                u'type':u'gps', u'name':u'geopoint', u'label': u'gps'}))
         surv.add_child(create_survey_element_from_dict({ \
                                 u'type':u'imei', u'name':u'device_id'}))
         
@@ -54,7 +54,7 @@ class Json2XformExportingPrepTests(TestCase):
         
     def test_simple_registration_xml(self):
         reg_xform = Survey(name=u"Registration")
-        name_question = create_survey_element_from_dict({u'type':u'text',u'name':u'name'})
+        name_question = create_survey_element_from_dict({u'type':u'text',u'name':u'name', u"label": u"Name"})
         reg_xform.add_child(name_question)
         
         reg_instance = reg_xform.instantiate()
@@ -63,12 +63,12 @@ class Json2XformExportingPrepTests(TestCase):
         
 #        rdict = reg_instance.to_dict()
         expected_dict = {u"node_name" : u"Registration", \
-                u"id": reg_xform.id_string(), \
+                u"id": reg_xform.id_string, \
                 u"children": [{u'node_name':u'name', u'value':u'bob'}]}
         
 #        self.assertEqual(rdict, expected_dict)
 
         rx = reg_instance.to_xml()
         expected_xml = u"""<?xml version='1.0' ?><Registration id="%s"><name>bob</name></Registration>""" % \
-                    (reg_xform.id_string())
+                    (reg_xform.id_string)
         self.assertEqual(rx, expected_xml)

@@ -1,11 +1,12 @@
 from question import SurveyElement
 from utils import node
+from errors import PyXFormError
 
 
 class Section(SurveyElement):
     def validate(self):
         super(Section, self).validate()
-        for element in self._children:
+        for element in self.children:
             element.validate()
         self._validate_uniqueness_of_element_names()
 
@@ -13,21 +14,19 @@ class Section(SurveyElement):
     # dictionary for a survey.
     def _validate_uniqueness_of_element_names(self):
         element_slugs = []
-        for element in self._children:
-            if element.get_name() in element_slugs:
-                raise Exception(
-                    "Element with this name already exists.",
-                    element_slugs, element.get_name()
+        for element in self.children:
+            if element.name in element_slugs:
+                raise PyXFormError(
+                    "There are two survey elements named '%s' in the section named '%s'." % (element.name, self.name)
                     )
-            element_slugs.append(element.get_name())
+            element_slugs.append(element.name)
 
-    def xml_instance(self):
-        if type(self) == RepeatingSection:
-            kwargs = {"jr:template": ""}
-        else:
-            kwargs = {}
-        result = node(self.get_name(), **kwargs)
-        for child in self._children:
+    def xml_instance(self, **kwargs):
+        """
+        Creates an xml representation of the section
+        """
+        result = node(self.name, **kwargs)
+        for child in self.children:
             result.appendChild(child.xml_instance())
         return result
 
@@ -37,7 +36,7 @@ class Section(SurveyElement):
         let's just return a list of controls from all the children of
         this section.
         """
-        return [e.xml_control() for e in self._children if e.xml_control() is not None]
+        return [e.xml_control() for e in self.children if e.xml_control() is not None]
 
 
 class RepeatingSection(Section):
@@ -55,7 +54,7 @@ class RepeatingSection(Section):
         </repeat>
         </group>
         """
-        control_dict = self.get_control()
+        control_dict = self.control
         if u"appearance" in control_dict:
             repeat_node = node(
                 u"repeat", nodeset=self.get_xpath(),
@@ -73,11 +72,25 @@ class RepeatingSection(Section):
                 ref=self.get_xpath()
                 )
         return node(u"group", repeat_node, ref=self.get_xpath())
-
+    #I'm anal about matching function signatures when overriding a function, but there's no reason for kwargs to be an argument
+    def xml_instance(self, **kwargs):
+        kwargs = {"jr:template": ""} #It might make more sense to add this as a child on initialization
+        return super(RepeatingSection, self).xml_instance(**kwargs)
 
 class GroupedSection(Section):
+#    I think this might be a better place for the table-list stuff, however it doesn't allow for as good of validation as putting it in xls2json
+#    def __init__(self, **kwargs):
+#        control = kwargs.get(u"control")
+#        if control:
+#            appearance = control.get(u"appearance")
+#            if appearance is u"table-list":
+#                print "HI"
+#                control[u"appearance"] = "field-list"
+#                kwargs["children"].insert(0, kwargs["children"][0])
+#        super(GroupedSection, self).__init__(kwargs)
+        
     def xml_control(self):
-        control_dict = self.get_control()
+        control_dict = self.control
         xml_label = self.xml_label()
 
         if u"appearance" in control_dict and xml_label:
@@ -98,9 +111,9 @@ class GroupedSection(Section):
             group_node.appendChild(n)
         return group_node
 
-    def to_dict(self):
+    def to_json_dict(self):
         # This is quite hacky, might want to think about a smart way
         # to approach this problem.
-        result = super(GroupedSection, self).to_dict()
+        result = super(GroupedSection, self).to_json_dict()
         result[u"type"] = u"group"
         return result

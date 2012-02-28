@@ -21,5 +21,5 @@ class Json2XformTestJsonImport(TestCase):
             }
         s = create_survey_element_from_dict(json_text)
         
-        self.assertEqual(s._children[0].get_type(), "decimal")
+        self.assertEqual(s.children[0].type, "decimal")
 		

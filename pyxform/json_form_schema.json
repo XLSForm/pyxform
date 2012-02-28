@@ -1,0 +1,240 @@
+{
+	"type" : "object",
+	"description" : "This is the schema for json survey forms, the intermediate format in xls2xform.",
+	"properties" :
+	{
+		"id_string" :
+		{
+			"type" : "string",
+			"description" : "The form id. If missing this should default to filename. TODO: Make sure I have the right property name here."
+		},
+		"name" :
+		{
+			"type" : "string",
+			"description" : "The filename the form was read from. (keep?)"
+		},
+		"title" :
+		{
+			"type" : "string",
+			"description" : "The form title.",
+			"default" : {"$ref" : "#/properties/form_id"}
+		},
+		"type" :
+		{
+			"type" : "string",
+			"description" : "The type of the form.",
+			"default" : "survey"
+		},
+		"public_key" :
+		{
+			"type" : "string",
+			"description" : "Public key for encryption."
+		},
+		"submission_url" :
+		{
+			"type" : "string",
+			"description" : "url form should be submitted to."
+		},
+		"children" :
+		{
+			"type" : "array",
+			"description" : "The children. The array order should be perserved. Note that the unique items contraint might not be as strong as we want, items can have the same name if other properties differ.",
+			"uniqueItems" : true,
+			"items" :  
+			{
+				"type" : "object",
+				"description" : "A child element. May correspond to a question or a group. This spec is self-refrencing so we can handle nested groups.",
+				"properties" :
+				{
+					"type" :
+					{
+						"type" : "string",
+						"description" : "The type of the element. (We could be more specific here about allowable values by using an enum.)",
+						"required" : true
+					},
+					"name" :
+					{
+						"type" : "string",
+						"description" : "The name of the element."
+					},
+					"label" :
+					{
+						"type" : ["string", "object"],
+						"description" : "Either a string label or a mapping of languages to localized version of the label",
+						"additionalProperties":
+						{
+							"type" : "string",
+							"description" : "A key value pair where the key is a language, and the value is the label in that language."
+						}
+					},
+					"bind" :
+					{
+						"type" : "object",
+						"description" : "The bind object is an xform artifact. Hopefully we can get rid of it and move it's properties to the top-level, but it might be necessairy for compatibility with formhub.",
+						"properties" :
+						{
+							"constraint" :
+							{
+								"type" : "string"
+							},
+							"jr:constraintMsg" :
+							{
+								"type" : "string"
+							},
+							"required" :
+							{
+								"type" : "string"
+							},
+							"relevant" :
+							{
+								"type" : "string"
+							},
+							"read_only" :
+							{
+								"type" : "string"
+							},
+							"jr:count" :
+							{
+								"description" : "The number of times to repeat a repeat.",
+								"type" : "string"
+							},
+							"calculate" :
+							{
+								"description" : "A formula to be used to compute the value of a calculate type question.",
+								"type" : "string"
+							}
+						}
+					},
+					"default" :
+					{
+						"type" : "string"
+					},
+					"hint" :
+					{
+						"type" : ["string", "object"],
+						"description" : "Either a hint string or a mapping of languages to localized versions of the hint",
+						"additionalProperties":
+						{
+							"type" : "string",
+							"description" : "A key value pair where the key is a language, and the value is the content in that language."
+						}
+					},
+					"media" :
+					{
+						"type" : "object",
+						"description" : "multimedia content",
+						"properties":
+						{
+							"image" :
+							{
+								"type" : ["object", "string"],
+								"additionalProperties":
+								{
+									"type" : "string",
+									"description" : "A key value pair where the key is a language, and the value is the content uri in that language."
+								}
+							},
+							"audio" :
+							{
+								"type" : ["object", "string"],
+								"additionalProperties":
+								{
+									"type" : "string",
+									"description" : "A key value pair where the key is a language, and the value is the content uri in that language."
+								}
+							},
+							"video" :
+							{
+								"type" : ["object", "string"],
+								"additionalProperties":
+								{
+									"type" : "string",
+									"description" : "A key value pair where the key is a language, and the value is the content uri in that language."
+								}
+							}
+						}
+					},
+					"control" :
+						{
+							"appearance" :
+							{
+								"type" : "string",
+								"description" : "The appearance of the element in ODK. Values are specific to certain types.",
+								"enum" : 
+								[
+									"field-list",
+									"minimal",
+									"label",
+									"list-nolabel",
+									"autocomplete",
+									"autocomplete_chars",
+									"compact",
+									"compact-2"
+								]
+							}
+					},
+					"children" :
+					{
+						"type" : "array",
+						"description" : "Applicable only to groups. Note the self-refrence here. Unfortunately refrences are not supported by all json validators and generators.",
+						"items" :  {"$ref" : "#/properties/children"}
+					},
+					"choices" :
+					{
+						"type" : "array",
+						"description" : "Applicable only to select type questions.",
+						"items" : 
+						{
+							"type" : "object",
+							"description" : "A choice.",
+							"properties" :
+							{
+								"name" :
+								{
+									"type" : "string",
+									"description" : "The name of the choice for xpath refrences.",
+									"required" : true
+								},
+								"label" :
+								{
+									"type" : "string",
+									"description" : "The label of the choice that the surveyor will see.",
+									"required" : true
+								}
+							}
+						}
+					},
+					"columns" :
+					{
+						"type" : "array",
+						"description" : "Applicable only to loop type questions.",
+						"items" : 
+						{
+							"type" : "object",
+							"description" : "A item.",
+							"properties" :
+							{
+								"name" :
+								{
+									"type" : "string",
+									"description" : "The name of the item (for xpath refrence).",
+									"required" : true
+								},
+								"label" :
+								{
+									"type" : "string",
+									"description" : "The item label which the surveyor will see."
+								}
+							}
+						}
+					}
+				},
+				"additionalProperties" :
+				{
+					"type" : "string",
+					"description" : "Additional properties can impose contraints on all properties not included above. Presently they all must be strings."
+				}
+			}
+		}
+	}
+}
