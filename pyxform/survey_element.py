@@ -29,6 +29,7 @@ class SurveyElement(dict):
         u"default": unicode,
         u"type": unicode,
         u"appearance": unicode,
+        u"jr:count" : unicode,
         u"bind": dict,
         u"control": dict,
         u"media": dict,
