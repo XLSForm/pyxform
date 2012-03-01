@@ -58,6 +58,7 @@ settings_header_aliases = {
 #TODO: Check on bind prefix approach in json.
 #Conversion dictionary from user friendly column names to meaningful values
 survey_header_aliases = {
+    u"repeat_count" : u"jr:count",
     u"read_only" : u"bind::readonly",
     u"readonly" : u"bind::readonly",
     u"relevant": u"bind::relevant",
