@@ -6,7 +6,7 @@ import utils
 from xls2json import SurveyReader
 from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY, \
      QuestionTypeDictionary
-import os
+import os, copy
 import file_utils
 from errors import PyXFormError
 
@@ -56,46 +56,57 @@ class SurveyElementBuilder(object):
         else:
             self._question_type_dictionary = DEFAULT_QUESTION_TYPE_DICTIONARY
 
-    def _get_question_class(self, question_type_str):
+    def create_survey_element_from_dict(self, d):
         """
-        Read the type string from the json format,
-        and find what class it maps to going through type_dictionary -> QUESTION_CLASSES 
+        Convert from a nested python dictionary/array structure
+        (a json dict I call it because it corresponds directly with a json object)
+        to a survey object
         """
-        question_type = self._question_type_dictionary.get_definition(question_type_str)
-        #print question_type_str + ":"
-        #print question_type
-        control_dict = question_type.get(u"control", {})
-        control_tag = control_dict.get(u"tag", u"")
-        return self.QUESTION_CLASSES[control_tag]
+        if u"add_none_option" in d:
+            self._add_none_option = d[u"add_none_option"]
+        if d[u"type"] in self.SECTION_CLASSES:
+            return self._create_section_from_dict(d)
+        elif d[u"type"] == u"loop":
+            return self._create_loop_from_dict(d)
+        elif d[u"type"] == u"include":
+            section_name = d[u"name"]
+            if section_name not in self._sections:
+                raise PyXFormError("This section has not been included.",
+                                section_name, self._sections.keys())
+            d = self._sections[section_name]
+            full_survey = self.create_survey_element_from_dict(d)
+            return full_survey.children
+        else:
+            return self._create_question_from_dict(d, self._question_type_dictionary, self._add_none_option)
 
-    def _create_question_from_dict(self, d):
-        """
-        This function returns None for unrecognized types.
-        """
+    @staticmethod
+    def _create_question_from_dict(d, question_type_dictionary, add_none_option=False):
         question_type_str = d[u"type"]
         d_copy = d.copy()
 
         # TODO: Keep add none option?
-        if self._add_none_option and \
-                question_type_str.startswith(u"select all that apply"):
-            self._add_none_option_to_select_all_that_apply(d_copy)
+        if add_none_option and question_type_str.startswith(u"select all that apply"):
+            SurveyElementBuilder._add_none_option_to_select_all_that_apply(d_copy)
 
-        # hack job right here to get this to work
-        if question_type_str.endswith(u" or specify other"):
-            question_type_str = question_type_str[:len(question_type_str) - len(u" or specify other")]
+        # Handle or_other on select type questions
+        or_other_str = u" or specify other"
+        if question_type_str.endswith(or_other_str):
+            question_type_str = question_type_str[:len(question_type_str) - len(or_other_str)]
             d_copy["type"] = question_type_str
-            self._add_other_option_to_multiple_choice_question(d_copy)
-            return [self._create_question_from_dict(d_copy),
-                    self._create_specify_other_question_from_dict(d_copy)]
-        question_class = self._get_question_class(question_type_str)
+            SurveyElementBuilder._add_other_option_to_multiple_choice_question(d_copy)
+            return [SurveyElementBuilder._create_question_from_dict(d_copy, question_type_dictionary, add_none_option),
+                    SurveyElementBuilder._create_specify_other_question_from_dict(d_copy)]
+        
+        question_class = SurveyElementBuilder._get_question_class(question_type_str, question_type_dictionary)
         
         # todo: clean up this spaghetti code
-        d_copy[u"question_type_dictionary"] = self._question_type_dictionary
+        d_copy[u"question_type_dictionary"] = question_type_dictionary
         if question_class:
             return question_class(**d_copy)
         return []
-
-    def _add_other_option_to_multiple_choice_question(self, d):
+    
+    @staticmethod
+    def _add_other_option_to_multiple_choice_question(d):
         # ideally, we'd just be pulling from children
         choice_list = d.get(u"choices", d.get(u"children", []))
         if len(choice_list) <= 0:
@@ -107,7 +118,8 @@ class SurveyElementBuilder(object):
         if other_choice not in choice_list:
             choice_list.append(other_choice)
 
-    def _add_none_option_to_select_all_that_apply(self, d_copy):
+    @staticmethod
+    def _add_none_option_to_select_all_that_apply(d_copy):
         choice_list = d_copy.get(u"choices", d_copy.get(u"children", []))
         if len(choice_list) <= 0:
             raise PyXFormError("There should be choices for this question.")
@@ -125,7 +137,19 @@ class SurveyElementBuilder(object):
             else:
                 d_copy[u"bind"][u"constraint"] = none_constraint
 
-    def _create_specify_other_question_from_dict(self, d):
+    @staticmethod
+    def _get_question_class(question_type_str, question_type_dictionary):
+        """
+        Read the type string from the json format,
+        and find what class it maps to going through type_dictionary -> QUESTION_CLASSES 
+        """
+        question_type = question_type_dictionary.get_definition(question_type_str)
+        control_dict = question_type.get(u"control", {})
+        control_tag = control_dict.get(u"tag", u"")
+        return SurveyElementBuilder.QUESTION_CLASSES[control_tag]
+
+    @staticmethod
+    def _create_specify_other_question_from_dict(d):
         kwargs = {
             u"type": u"text",
             u"name": u"%s_other" % d[u"name"],
@@ -142,7 +166,11 @@ class SurveyElementBuilder(object):
             d_copy[u'title'] = d[u'name']
         result = section_class(**d_copy)
         for child in children:
-            survey_element = self.create_survey_element_from_dict(child)
+            #Deep copying the child is a hacky solution to the or_other bug.
+            #I don't know why it works.
+            #And I hope it doesn't break something else.
+            #I think the good solution would be to rewrite this class.
+            survey_element = self.create_survey_element_from_dict(copy.deepcopy(child))
             if survey_element:
                 result.add_children(survey_element)
         return result
@@ -195,28 +223,6 @@ class SurveyElementBuilder(object):
                     else:
                         result[key][key2] = result[key][key2] % column_headers
         return result
-    def create_survey_element_from_dict(self, d):
-        """
-        Convert from a nested python dictionary/array structure
-        (a json dict I call it because it corresponds directly with a json object)
-        to a survey object
-        """
-        if u"add_none_option" in d:
-            self._add_none_option = d[u"add_none_option"]
-        if d[u"type"] in self.SECTION_CLASSES:
-            return self._create_section_from_dict(d)
-        elif d[u"type"] == u"loop":
-            return self._create_loop_from_dict(d)
-        elif d[u"type"] == u"include":
-            section_name = d[u"name"]
-            if section_name not in self._sections:
-                raise PyXFormError("This section has not been included.",
-                                section_name, self._sections.keys())
-            d = self._sections[section_name]
-            full_survey = self.create_survey_element_from_dict(d)
-            return full_survey.children
-        else:
-            return self._create_question_from_dict(d)
 
     def create_survey_element_from_json(self, str_or_path):
         d = utils.get_pyobj_from_json(str_or_path)
