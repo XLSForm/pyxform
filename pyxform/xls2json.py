@@ -418,7 +418,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
             if parse_dict.get("end") and "type" in parse_dict:
                 control_type = control_aliases[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
-                    raise PyXFormError("Unmatched end statement. Previous control type: " + prev_control_type + ", Control type: " + control_type)   
+                    raise PyXFormError("Unmatched end statement. Previous control type: " + str(prev_control_type) + ", Control type: " + str(control_type))
                 stack.pop()
                 table_list = None
                 continue
