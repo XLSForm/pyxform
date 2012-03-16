@@ -12,8 +12,13 @@ Installation
 ============
 Installing pyxform from github is easy with pip::
 
-	#If you fork this make sure the link to the repo is correct
+	# If you fork this make sure the link to the repo is correct
+
+    # If pulling from Modi Research Group version:
 	pip install -e git+https://github.com/modilabs/pyxform.git@master#egg=pyxform
+
+    # If pulling from the University of Washington version:
+	pip install -e git+https://github.com/UW-ICTD/pyxform.git@master#egg=pyxform
 
 Testing
 =======
