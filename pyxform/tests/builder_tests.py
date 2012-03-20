@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest2 import TestCase
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion

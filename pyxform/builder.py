@@ -276,7 +276,7 @@ def create_survey(
         main_section = sections[name_of_main_section]
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
-    #builder.set_question_type_dictionary(question_type_dictionary)
+
     #assert name_of_main_section in sections, name_of_main_section
     if u"id_string" not in main_section:
         main_section[u"id_string"] = name_of_main_section if id_string is None else name_of_main_section
