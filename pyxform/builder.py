@@ -4,12 +4,32 @@ from section import RepeatingSection, GroupedSection
 from survey import Survey
 import utils
 from xls2json import SurveyReader
-from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY, \
-     QuestionTypeDictionary
+from question_type_dictionary import QUESTION_TYPE_DICT
 import os, copy
 import file_utils
 from errors import PyXFormError
 
+def copy_json_dict(json_dict):
+    """
+    Returns a deep copy of the input json_dict
+    """
+    json_dict_copy = None
+    items = None
+    
+    if type(json_dict) is list:
+        json_dict_copy = [None]*len(json_dict)
+        items = enumerate(json_dict)
+    elif type(json_dict) is dict:
+        json_dict_copy = {}
+        items = json_dict.items()
+    
+    for key, value in items:
+        if type(value) is dict or type(value) is list:
+            json_dict_copy[key] = copy_json_dict(value)
+        else:
+            json_dict_copy[key] = value
+            
+    return json_dict_copy
 
 class SurveyElementBuilder(object):
     # we use this CLASSES dict to create questions from dictionaries
@@ -33,9 +53,6 @@ class SurveyElementBuilder(object):
         self.set_sections(
             kwargs.get(u"sections", {})
             )
-        self.set_question_type_dictionary(
-            kwargs.get(u"question_type_dictionary")
-            )
 
     def set_sections(self, sections):
         """
@@ -45,16 +62,6 @@ class SurveyElementBuilder(object):
         """
         assert type(sections) == dict
         self._sections = sections
-
-    def set_question_type_dictionary(self, question_type_dictionary):
-        """
-        Set the question type dictionary that the builder uses to convert from the types
-        specified in the json form to xform elements.
-        """
-        if type(question_type_dictionary) == QuestionTypeDictionary:
-            self._question_type_dictionary = question_type_dictionary
-        else:
-            self._question_type_dictionary = DEFAULT_QUESTION_TYPE_DICTIONARY
 
     def create_survey_element_from_dict(self, d):
         """
@@ -77,13 +84,13 @@ class SurveyElementBuilder(object):
             full_survey = self.create_survey_element_from_dict(d)
             return full_survey.children
         else:
-            return self._create_question_from_dict(d, self._question_type_dictionary, self._add_none_option)
+            return self._create_question_from_dict(d, copy_json_dict(QUESTION_TYPE_DICT), self._add_none_option)
 
     @staticmethod
     def _create_question_from_dict(d, question_type_dictionary, add_none_option=False):
         question_type_str = d[u"type"]
         d_copy = d.copy()
-
+        
         # TODO: Keep add none option?
         if add_none_option and question_type_str.startswith(u"select all that apply"):
             SurveyElementBuilder._add_none_option_to_select_all_that_apply(d_copy)
@@ -143,7 +150,7 @@ class SurveyElementBuilder(object):
         Read the type string from the json format,
         and find what class it maps to going through type_dictionary -> QUESTION_CLASSES 
         """
-        question_type = question_type_dictionary.get_definition(question_type_str)
+        question_type = question_type_dictionary.get(question_type_str, {})
         control_dict = question_type.get(u"control", {})
         control_tag = control_dict.get(u"tag", u"")
         return SurveyElementBuilder.QUESTION_CLASSES[control_tag]
@@ -188,8 +195,7 @@ class SurveyElementBuilder(object):
         # columns is a left over from when this was
         # create_table_from_dict, I will need to clean this up
         for column_dict in columns:
-
-            # if this is a none option for a select all that apply
+            # If this is a none option for a select all that apply
             # question then we should skip adding it to the result
             if column_dict[u"name"] == "none": continue
 
@@ -270,7 +276,7 @@ def create_survey(
         main_section = sections[name_of_main_section]
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
-    builder.set_question_type_dictionary(question_type_dictionary)
+    #builder.set_question_type_dictionary(question_type_dictionary)
     #assert name_of_main_section in sections, name_of_main_section
     if u"id_string" not in main_section:
         main_section[u"id_string"] = name_of_main_section if id_string is None else name_of_main_section
