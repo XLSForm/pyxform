@@ -285,7 +285,6 @@ def has_double_colon(workbook_dict):
                     return True
     return False
 
-
 def workbook_to_json(workbook_dict, form_name=None, default_language=u"default", warnings=None):
     """
     workbook_dict -- nested dictionaries representing a spreadsheet. should be similar to those returned by xls_to_dict
@@ -351,7 +350,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
     
                 
-    choices = columns = combined_lists
+    choices = combined_lists
     
     ########### Survey sheet ###########
     if SURVEY not in workbook_dict:
@@ -459,9 +458,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                         #TODO: Perhaps warn and make repeat into a group?
                         raise PyXFormError("Repeat without list name " + " Error on row: " + str(row_number))
                     list_name = parse_dict["list_name"]
-                    if list_name not in columns:
+                    if list_name not in choices:
                         raise PyXFormError("List name not in columns sheet: " + list_name + " Error on row: " + str(row_number))
-                    new_json_dict[constants.COLUMNS] = columns[list_name]
+                    new_json_dict[constants.COLUMNS] = choices[list_name]
                 
                 #Code to deal with table_list appearance flags (for groups of selects)
                 if new_json_dict.get(u"control",{}).get(u"appearance") == TABLE_LIST:

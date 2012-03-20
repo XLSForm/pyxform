@@ -1,4 +1,4 @@
-from unittest2 import TestCase
+from unittest import TestCase
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
@@ -7,7 +7,6 @@ import utils
 import os
 
 FIXTURE_FILETYPE = "xls"
-
 
 class BuilderTests(TestCase):
     maxDiff = None
@@ -287,11 +286,6 @@ class BuilderTests(TestCase):
                             u'type': u'integer'
                             }
                         ]
-                    },
-                {
-                    u'name': u'other',
-                    u'label': u'Other',
-                    u'type' : u'group',
-                    u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}
+                    }]}
         self.maxDiff = None
         self.assertEqual(survey.to_json_dict(), expected_dict)
