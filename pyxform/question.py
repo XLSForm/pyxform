@@ -1,6 +1,6 @@
 from utils import node
 from survey_element import SurveyElement
-from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
+from question_type_dictionary import QUESTION_TYPE_DICT
 from errors import PyXFormError
 
 
@@ -11,7 +11,7 @@ class Question(SurveyElement):
 
         # make sure that the type of this question exists in the
         # question type dictionary.
-        if self.type not in DEFAULT_QUESTION_TYPE_DICTIONARY:
+        if self.type not in QUESTION_TYPE_DICT:
             raise PyXFormError(
                 "Unknown question type '%s'." % self.type
                 )
@@ -128,9 +128,10 @@ class MultipleChoiceQuestion(Question):
 
     def validate(self):
         Question.validate(self)
-        for choice in self.iter_descendants():
-            if choice != self:
-                choice.validate()
+        descendants = self.iter_descendants()
+        descendants.next() # iter_descendants includes self; we need to pop it 
+        for choice in descendants: 
+            choice.validate()
 
     def xml_control(self):
         assert self.bind[u"type"] in [u"select", u"select1"] #Why select1? -- odk/jr use select1 for single-option-select
