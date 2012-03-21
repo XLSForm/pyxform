@@ -2,6 +2,7 @@ import xlrd
 from collections import defaultdict
 import csv
 import cStringIO
+import constants
 
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
@@ -34,14 +35,8 @@ def xls_to_dict(path_or_file):
     equal to the cell value for that row and column.
     All the keys and leaf elements are unicode text.
     """
-    if isinstance(path_or_file, basestring):
-        workbook = xlrd.open_workbook(filename=path_or_file)
-    else:
-        workbook = xlrd.open_workbook(file_contents=path_or_file.read())
-
-    result = {}
-    for sheet in workbook.sheets():
-        result[sheet.name] = []
+    def xls_to_dict_normal_sheet(sheet):
+        result = []
         for row in range(1, sheet.nrows):
             row_dict = {}
             for column in range(0, sheet.ncols):
@@ -54,7 +49,16 @@ def xls_to_dict(path_or_file):
 #            Taking this condition out so I can get accurate row numbers.
 #            TODO: Do the same for csvs
 #            if row_dict != {}:
-            result[sheet.name].append(row_dict)
+            result.append(row_dict)
+        return result
+    if isinstance(path_or_file, basestring):
+        workbook = xlrd.open_workbook(filename=path_or_file)
+    else:
+        workbook = xlrd.open_workbook(file_contents=path_or_file.read())
+
+    result = {}
+    for sheet in workbook.sheets():
+        result[sheet.name] = xls_to_dict_normal_sheet(sheet)
     return result
 
 def csv_to_dict(path_or_file):
