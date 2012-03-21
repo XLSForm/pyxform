@@ -1,6 +1,6 @@
 from utils import node
 from survey_element import SurveyElement
-from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
+from question_type_dictionary import QUESTION_TYPE_DICT
 from errors import PyXFormError
 
 
@@ -11,7 +11,7 @@ class Question(SurveyElement):
 
         # make sure that the type of this question exists in the
         # question type dictionary.
-        if self.type not in DEFAULT_QUESTION_TYPE_DICTIONARY:
+        if self.type not in QUESTION_TYPE_DICT:
             raise PyXFormError(
                 "Unknown question type '%s'." % self.type
                 )
