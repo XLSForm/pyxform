@@ -12,17 +12,6 @@ from xls2json_backends import xls_to_dict, csv_to_dict
 from utils import is_valid_xml_tag
 
 ####### STATIC DATA #######
-# The following are the possible sheet names:
-SURVEY = u"survey"
-SETTINGS = u"settings"
-# These sheet names are for list sheets
-CHOICES = u"choices"
-COLUMNS = u"columns" #this is for loop statements
-CHOICES_AND_COLUMNS = u"choices and columns"
-
-#xls specific constants:
-LIST_NAME = u"list name"
-TABLE_LIST = u"table-list"
 
 #Aliases:
 #Ideally aliases should resolve to elements in the json form schema
@@ -81,7 +70,7 @@ survey_header_aliases = {
 }
 list_header_aliases = {
     u"caption" : constants.LABEL,
-    u"list_name" : LIST_NAME,
+    u"list_name" : constants.LIST_NAME,
     u"value" : constants.NAME,
     u"image": u"media::image",
     u"audio": u"media::audio",
@@ -313,7 +302,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     #Break the spreadsheet dict into easier to access objects (settings, choices, survey_sheet):
     ########### Settings sheet ##########
-    settings_sheet = dealias_and_group_headers(workbook_dict.get(SETTINGS, []), settings_header_aliases, use_double_colons)
+    settings_sheet = dealias_and_group_headers(workbook_dict.get(constants.SETTINGS, []), settings_header_aliases, use_double_colons)
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
     
     default_language = settings.get(constants.DEFAULT_LANGUAGE, default_language)
@@ -326,7 +315,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     #Here we create our json dict root with default settings:
     id_string = settings.get(constants.ID_STRING, form_name)
     json_dict = {
-       constants.TYPE : SURVEY,
+       constants.TYPE : constants.SURVEY,
        constants.NAME : form_name,
        constants.TITLE : id_string,
        constants.ID_STRING : id_string,
@@ -338,24 +327,25 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     ########### Choices sheet ##########
     #Columns and "choices and columns" sheets are deprecated, but we combine them with the choices sheet for backwards-compatibility.
-    choices_and_columns_sheet = workbook_dict.get(CHOICES_AND_COLUMNS, {})
+    choices_and_columns_sheet = workbook_dict.get(constants.CHOICES_AND_COLUMNS, {})
     choices_and_columns_sheet = dealias_and_group_headers(choices_and_columns_sheet, list_header_aliases, use_double_colons, default_language)
     
-    columns_sheet = workbook_dict.get(COLUMNS, [])
+    columns_sheet = workbook_dict.get(constants.COLUMNS, [])
     columns_sheet = dealias_and_group_headers(columns_sheet, list_header_aliases, use_double_colons, default_language)
     
-    choices_sheet = workbook_dict.get(CHOICES, [])
+    choices_sheet = workbook_dict.get(constants.CHOICES, [])
     choices_sheet = dealias_and_group_headers(choices_sheet, list_header_aliases, use_double_colons, default_language)
     
-    combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
+    combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, constants.LIST_NAME)
     
                 
     choices = combined_lists
+
     
     ########### Survey sheet ###########
-    if SURVEY not in workbook_dict:
-        raise PyXFormError("You must have a sheet named: " + SURVEY)
-    survey_sheet = workbook_dict[SURVEY]
+    if constants.SURVEY not in workbook_dict:
+        raise PyXFormError("You must have a sheet named (case-sensitive): " + constants.SURVEY)
+    survey_sheet = workbook_dict[constants.SURVEY]
     #Process the headers:
     survey_sheet = clean_unicode_values(survey_sheet)
     survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, use_double_colons, default_language)
@@ -463,7 +453,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                     new_json_dict[constants.COLUMNS] = choices[list_name]
                 
                 #Code to deal with table_list appearance flags (for groups of selects)
-                if new_json_dict.get(u"control",{}).get(u"appearance") == TABLE_LIST:
+                if new_json_dict.get(u"control",{}).get(u"appearance") == constants.TABLE_LIST:
                     begin_table_list = True
                     new_json_dict[u"control"][u"appearance"] = u"field-list"
                     
