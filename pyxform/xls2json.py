@@ -8,7 +8,7 @@ import codecs
 import os
 import constants
 from errors import PyXFormError
-from xls2json_backends import xls_to_dict, csv_to_dict
+from xls2json_backends import xls_to_dict, csv_to_dict, get_cascading_json
 from utils import is_valid_xml_tag
 
 ####### STATIC DATA #######
@@ -35,6 +35,10 @@ select_aliases = {
       u"select one" : constants.SELECT_ONE,
       u"select_multiple" : constants.SELECT_ALL_THAT_APPLY,
       u"select all that apply" : constants.SELECT_ALL_THAT_APPLY
+}
+cascading_aliases = {
+    u'cascading select' : constants.CASCADING_SELECT,
+    u'cascading_select' : constants.CASCADING_SELECT,
 }
 settings_header_aliases = {
     u"form_title" : constants.TITLE,
@@ -347,8 +351,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, {})
     #print json.dumps(cascading_choices, sort_keys=True, indent=4)
     
-
-    
     ########### Survey sheet ###########
     if constants.SURVEY not in workbook_dict:
         raise PyXFormError("You must have a sheet named (case-sensitive): " + constants.SURVEY)
@@ -376,6 +378,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     select_regexp = re.compile(r"^(?P<select_command>("
                                + '|'.join(select_aliases.keys())
                                + r")) (?P<list_name>\S+)( (?P<specify_other>(or specify other|or_other|or other)))?$")
+    cascading_regexp = re.compile(r"^(?P<cascading_command>("
+                               + '|'.join(cascading_aliases.keys())
+                               + r")) (?P<cascading_level>\S+)?$")
     for row in survey_sheet:
         row_number += 1
         prev_control_type, parent_children_array = stack[-1]
@@ -467,6 +472,19 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 parent_children_array.append(new_json_dict)
                 stack.append((control_type, child_list))
                 continue
+
+        # try to parse as a cascading select
+        cascading_parse = cascading_regexp.search(question_type)
+        if cascading_parse:
+            parse_dict = cascading_parse.groupdict()
+            if parse_dict.get("cascading_command"):
+                #cascading_type = constants.CASCADING_SELECT
+                cascading_level = parse_dict["cascading_level"]
+                cascading_prefix = row.get(constants.NAME)
+                if not cascading_prefix:
+                    raise PyXFormError("Cascading select needs a name. Error on row: %s" % row_number)
+                cascading_json = get_cascading_json(cascading_choices, cascading_prefix, cascading_level)
+                print json.dumps(cascading_json, indent=4, sort_keys=True)
 
         #Try to parse question as a select:
         select_parse = select_regexp.search(question_type)

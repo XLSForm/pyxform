@@ -3,6 +3,8 @@ from collections import defaultdict
 import csv
 import cStringIO
 import constants
+import re
+from errors import PyXFormError
 
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
@@ -88,28 +90,34 @@ def xls_to_dict(path_or_file):
 
         # pass 2: explode things according to prev_choices 
         result2 = []
+        def slugify(s, prefix=''):
+            return prefix + '_' + re.sub(r'\W+', '_', s.lower()) if prefix else re.sub(r'\W+', '_', s.lower())
+        prefix = "$PREFIX$"
         for index,level in enumerate(result):
             if index==0: 
-                level["type"] = "select one"
-                result2.append(level) 
+                result2.append({'lambda': {
+                    "name": prefix + '_' + level['name'],
+                    "label": level['label'],
+                    "children": [{'name': slugify(x, prefix), 'label': x} for x in level['choice_labels']],
+                    "type": "select one",
+                }})
+                result2.append({"stopper" : level['name']})
                 continue
-            level_dict = {}
             calc_formula_string = 'ERROR'
-            for prev_choice in set(level["prev_choice_labels"]):
-                result2.append({
-                    "name" :  level["name"] + "_in_" + prev_choice, # needs a prefix
+            for prev_choice_label in set(level["prev_choice_labels"]):
+                prev_choice_name = slugify(prev_choice_label)
+                result2.append({'lambda': {
+                    "name" :  prefix + '_' + level["name"] + "_in_" + prev_choice_name,
                     "label" : level["label"],
-                    "choice_labels" : [x for (x,y) in zip(level["choice_labels"], level["prev_choice_labels"]) if y==prev_choice],
-                    "relevant" : "${" + "prefix" + "_" + result[index-1]["name"]  + "} ='" + prev_choice + "'",
-                                      #lambda prefix: "${" + prefix + "_" + result[index-1]["name"]  + "} ='" + prev_choice + "',"
+                    "children" : [{'name': slugify(x, prefix), 'label': x} for (x,y) in zip(level["choice_labels"], level["prev_choice_labels"]) if y==prev_choice_label],
+                    "relevant" : "${" + prefix + "_" + result[index-1]["name"]  + "} ='" + prev_choice_name + "'",
                     "type" : "select one"
-                })
-                # TODO: build the calculation formula
-            #pass 3 -- calculate
-            result2.append({
-                    "name" : level["name"],
+                }})
+            result2.append({'lambda': {
+                    "name" : prefix + '_' + level["name"],
                     "type" : "calculate",
-                    "calculation" : calc_formula_string })
+                    "calculation" : "calc_formula_string(prefix)" }})
+            result2.append({"stopper" : level['name']})
         return result2
     if isinstance(path_or_file, basestring):
         workbook = xlrd.open_workbook(filename=path_or_file)
@@ -121,6 +129,27 @@ def xls_to_dict(path_or_file):
         if sheet.name==constants.CASCADING_CHOICES: result[sheet.name] = xls_to_dict_cascade_sheet(sheet)
         else: result[sheet.name] = xls_to_dict_normal_sheet(sheet)
     return result
+
+def get_cascading_json(sheet_list, prefix, level):
+    return_list = []
+    for row in sheet_list:
+        if row.has_key('stopper'):
+            if row['stopper'] == level:
+                return return_list
+            else:
+                continue
+        elif row.has_key('lambda'):
+            def replace_prefix(d, prefix):
+                for k, v in d.items():
+                    if isinstance(v, basestring):
+                        d[k] = v.replace('$PREFIX$', prefix)
+                    elif isinstance(v, dict):
+                        d[k] = replace_prefix(v, prefix)
+                    elif isinstance(v, list):
+                        d[k] = map(lambda x:replace_prefix(x, prefix), v)
+                return d
+            return_list.append(replace_prefix(row['lambda'], prefix))
+    raise PyXFormError("Found a cascading_select " + level + ", but could not find " + level + "in cascades sheet.")
 
 def csv_to_dict(path_or_file):
     if isinstance(path_or_file, basestring):
