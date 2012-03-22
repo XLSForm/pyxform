@@ -51,6 +51,66 @@ def xls_to_dict(path_or_file):
 #            if row_dict != {}:
             result.append(row_dict)
         return result
+    def xls_value_from_sheet(sheet, row, column):
+        value = sheet.cell_value(row, column)
+        value_type = sheet.cell_type(row, column)
+        if value is not None and value != "":
+            return xls_value_to_unicode(value, value_type)
+        else: raise Exception("whaaaa")
+    def xls_to_dict_cascade_sheet(sheet):
+        result = []
+        for column in range(1, sheet.ncols): # col 1 = headers; don't process
+            # first row value for this column is the key
+            col_dict = {}
+            col_name = sheet.cell_value(0, column)
+            col_dict["name"] = col_name 
+            col_dict["choice_labels"] = []
+            col_dict["prev_choice_labels"] = [] 
+            for row in range(1, sheet.nrows):
+                
+                # pass 0: build col_dict for first time
+                key = sheet.cell_value(row , 0)
+                if key=="choice_label":
+                    col_dict["choice_labels"].append(xls_value_from_sheet(sheet, row, column))
+                    if column > 1: col_dict["prev_choice_labels"].append(xls_value_from_sheet(sheet, row, column - 1))
+                else:
+                    col_dict[key] = xls_value_from_sheet(sheet, row, column)
+
+                # pass 1: make sure choice_labels are unique, while keeping the paired prev_choice_label consistent 
+                def f((l1,l2), (x1,x2)):
+                    if x1 in l1: return (l1,l2)
+                    else: return (l1 + [x1], l2 + [x2]) 
+                zipped = reduce(f, zip(col_dict["choice_labels"], col_dict["prev_choice_labels"] or col_dict["choice_labels"]), ([], []))
+                col_dict["choice_labels"] = zipped[0]
+                if column > 1: col_dict["prev_choice_labels"] = zipped[1]
+                # end make things unique
+            result.append(col_dict)
+
+        # pass 2: explode things according to prev_choices 
+        result2 = []
+        for index,level in enumerate(result):
+            if index==0: 
+                level["type"] = "select one"
+                result2.append(level) 
+                continue
+            level_dict = {}
+            calc_formula_string = 'ERROR'
+            for prev_choice in set(level["prev_choice_labels"]):
+                result2.append({
+                    "name" :  level["name"] + "_in_" + prev_choice, # needs a prefix
+                    "label" : level["label"],
+                    "choice_labels" : [x for (x,y) in zip(level["choice_labels"], level["prev_choice_labels"]) if y==prev_choice],
+                    "relevant" : "${" + "prefix" + "_" + result[index-1]["name"]  + "} ='" + prev_choice + "'",
+                                      #lambda prefix: "${" + prefix + "_" + result[index-1]["name"]  + "} ='" + prev_choice + "',"
+                    "type" : "select one"
+                })
+                # TODO: build the calculation formula
+            #pass 3 -- calculate
+            result2.append({
+                    "name" : level["name"],
+                    "type" : "calculate",
+                    "calculation" : calc_formula_string })
+        return result2
     if isinstance(path_or_file, basestring):
         workbook = xlrd.open_workbook(filename=path_or_file)
     else:
@@ -58,7 +118,8 @@ def xls_to_dict(path_or_file):
 
     result = {}
     for sheet in workbook.sheets():
-        result[sheet.name] = xls_to_dict_normal_sheet(sheet)
+        if sheet.name==constants.CASCADING_CHOICES: result[sheet.name] = xls_to_dict_cascade_sheet(sheet)
+        else: result[sheet.name] = xls_to_dict_normal_sheet(sheet)
     return result
 
 def csv_to_dict(path_or_file):
