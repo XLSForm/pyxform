@@ -484,7 +484,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 if not cascading_prefix:
                     raise PyXFormError("Cascading select needs a name. Error on row: %s" % row_number)
                 cascading_json = get_cascading_json(cascading_choices, cascading_prefix, cascading_level)
-                print json.dumps(cascading_json, indent=4, sort_keys=True)
+                parent_children_array = parent_children_array + cascading_json
 
         #Try to parse question as a select:
         select_parse = select_regexp.search(question_type)
