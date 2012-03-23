@@ -103,20 +103,25 @@ def xls_to_dict(path_or_file):
                 }})
                 result2.append({"stopper" : level['name']})
                 continue
-            calc_formula_string = 'ERROR'
+            calc_formula_string = "'ERROR'"
             for prev_choice_label in set(level["prev_choice_labels"]):
                 prev_choice_name = slugify(prev_choice_label)
+                my_name = prefix + '_' + level["name"] + "_in_" + prev_choice_name
+                prev_choice_val = "${" + prefix + "_" + result[index-1]["name"] + "}"
                 result2.append({'lambda': {
-                    "name" :  prefix + '_' + level["name"] + "_in_" + prev_choice_name,
+                    "name" : my_name, 
                     "label" : level["label"],
-                    "children" : [{'name': slugify(x), 'label': x} for (x,y) in zip(level["choice_labels"], level["prev_choice_labels"]) if y==prev_choice_label],
-                    "bind": {u'relevant' : "${" + prefix + "_" + result[index-1]["name"]  + "}='" + prev_choice_name + "'"},
+                    "children" : [{'name': slugify(x), 'label': x} 
+                                  for (x,y) in zip(level["choice_labels"], level["prev_choice_labels"]) if y==prev_choice_label],
+                    "bind": {u'relevant' : prev_choice_val + "='" + prev_choice_name + "'"},
                     "type" : "select one"
                 }})
+                #import pdb; pdb.set_trace()
+                calc_formula_string = calc_formula_string.replace("'ERROR'", "if(" + prev_choice_val + "='" + prev_choice_name + "', ${" + my_name + "}, 'ERROR')")
             result2.append({'lambda': {
                     "name" : prefix + '_' + level["name"],
                     "type" : "calculate",
-                    "bind": {"calculate" : "calc_formula_string(prefix)"}}} )
+                    "bind": {u'calculate' : calc_formula_string}}} )
             result2.append({"stopper" : level['name']})
         return result2
     if isinstance(path_or_file, basestring):
@@ -135,6 +140,7 @@ def get_cascading_json(sheet_list, prefix, level):
     for row in sheet_list:
         if row.has_key('stopper'):
             if row['stopper'] == level:
+                return_list[-1]["name"] = prefix # last element's name IS the prefix; doesn't need level
                 return return_list
             else:
                 continue
