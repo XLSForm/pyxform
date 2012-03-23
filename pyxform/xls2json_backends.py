@@ -98,7 +98,7 @@ def xls_to_dict(path_or_file):
                 result2.append({'lambda': {
                     "name": prefix + '_' + level['name'],
                     "label": level['label'],
-                    "children": [{'name': slugify(x, prefix), 'label': x} for x in level['choice_labels']],
+                    "children": [{'name': slugify(x), 'label': x} for x in level['choice_labels']],
                     "type": "select one",
                 }})
                 result2.append({"stopper" : level['name']})
@@ -109,14 +109,14 @@ def xls_to_dict(path_or_file):
                 result2.append({'lambda': {
                     "name" :  prefix + '_' + level["name"] + "_in_" + prev_choice_name,
                     "label" : level["label"],
-                    "children" : [{'name': slugify(x, prefix), 'label': x} for (x,y) in zip(level["choice_labels"], level["prev_choice_labels"]) if y==prev_choice_label],
-                    "relevant" : "${" + prefix + "_" + result[index-1]["name"]  + "} ='" + prev_choice_name + "'",
+                    "children" : [{'name': slugify(x), 'label': x} for (x,y) in zip(level["choice_labels"], level["prev_choice_labels"]) if y==prev_choice_label],
+                    "bind": {u'relevant' : "${" + prefix + "_" + result[index-1]["name"]  + "}='" + prev_choice_name + "'"},
                     "type" : "select one"
                 }})
             result2.append({'lambda': {
                     "name" : prefix + '_' + level["name"],
                     "type" : "calculate",
-                    "calculation" : "calc_formula_string(prefix)" }})
+                    "bind": {"calculate" : "calc_formula_string(prefix)"}}} )
             result2.append({"stopper" : level['name']})
         return result2
     if isinstance(path_or_file, basestring):
