@@ -33,7 +33,8 @@ class Survey(Section):
             u"default_language": unicode,
             u"_translations": dict,
             u"submission_url": unicode,
-            u"public_key": unicode
+            u"public_key": unicode,
+            u"omit_instanceID": bool
             }
         )
         
@@ -73,25 +74,26 @@ class Survey(Section):
         model_children = [node("instance", self.xml_instance())] + self.xml_bindings()
         if self._translations:
             model_children.insert(0, self.itext())
-        if self.submission_url:
-            #We need to add a unique form instance id if the form is to be submitted. 
-            model_children.append(node("bind", nodeset="/"+self.name+"/meta/instanceID", type="string", readonly="true()", calculate="concat('uuid:', uuid())"))
-            
+        if self.submission_url or self.public_key:
+            submission_attrs = dict()
+            if self.submission_url:
+                submission_attrs["action"] = self.submission_url
             if self.public_key:
-                submission_node = node("submission", method="form-data-post", action=self.submission_url, base64RsaPublicKey=self.public_key)
-            else:
-                submission_node = node("submission", method="form-data-post", action=self.submission_url)
+                if self.omit_instanceID:
+                    raise PyXFormError("Cannot omit instanceID, it is required for encryption.")
+                submission_attrs["base64RsaPublicKey"] = self.public_key
+            submission_node = node("submission", method="form-data-post", **submission_attrs)
             model_children.insert(0, submission_node)
+        if not self.omit_instanceID:
+            #Warning, this will cause errors on old versions of collect because uuid is not a function.
+            model_children.append(node("bind", nodeset="/"+self.name+"/meta/instanceID", type="string", readonly="true()", calculate="concat('uuid:', uuid())"))
         return node("model",  *model_children)
 
     def xml_instance(self):
         result = Section.xml_instance(self)
         result.setAttribute(u"id", self.id_string)
-        
-        #We need to add a unique form instance id if the form is to be submitted.
-        if self.submission_url:
+        if not self.omit_instanceID:
             result.appendChild(node("orx:meta", node("orx:instanceID")))
-            
         return result
 
     def _setup_translations(self):
