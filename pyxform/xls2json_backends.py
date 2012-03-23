@@ -90,8 +90,7 @@ def xls_to_dict(path_or_file):
 
         # pass 2: explode things according to prev_choices 
         result2 = []
-        def slugify(s, prefix=''):
-            return prefix + '_' + re.sub(r'\W+', '_', s.lower()) if prefix else re.sub(r'\W+', '_', s.lower())
+        def slugify(s): return re.sub(r'\W+', '_', s.lower())
         prefix = "$PREFIX$"
         for index,level in enumerate(result):
             if index==0: 
