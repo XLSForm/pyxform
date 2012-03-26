@@ -1,5 +1,6 @@
 from unittest import TestCase
 from pyxform.builder import create_survey_from_xls
+from pyxform.errors import ValidationError
 import utils
 
 
@@ -67,3 +68,14 @@ class LoopTests(TestCase):
                 ],
             }
         self.assertEquals(survey.to_json_dict(), expected_dict)
+
+    def test_for_loop(self):
+        path = utils.path_to_text_fixture('for_loop.xls')
+        survey = create_survey_from_xls(path)
+        self.maxDiff = None
+        try:
+            actual_xml = survey.to_xml()
+        except ValidationError:
+            self.fail("survey.to_xml() raised ValidationError.")
+        # not sure what expected_xml should be in this case
+        #self.assertEquals(actual_xml, expected_xml)
