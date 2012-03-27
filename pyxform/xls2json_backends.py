@@ -58,7 +58,7 @@ def xls_to_dict(path_or_file):
         value_type = sheet.cell_type(row, column)
         if value is not None and value != "":
             return xls_value_to_unicode(value, value_type)
-        else: raise Exception("whaaaa")
+        else: raise PyXFormError("Empty Value")
     def xls_to_dict_cascade_sheet(sheet):
         result = []
         for column in range(1, sheet.ncols): # col 1 = headers; don't process
@@ -115,7 +115,6 @@ def xls_to_dict(path_or_file):
                     "bind": {u'relevant' : prev_choice_val + "='" + prev_choice_name + "'"},
                     "type" : "select one"
                 }})
-                #import pdb; pdb.set_trace()
                 calc_formula_string = calc_formula_string.replace("'ERROR'", "if(" + prev_choice_val + "='" + prev_choice_name + "', ${" + my_name + "}, 'ERROR')")
             result2.append({'lambda': {
                     "name" : prefix + '_' + level["name"],

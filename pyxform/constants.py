@@ -32,7 +32,6 @@ SELECT_ALL_THAT_APPLY = u"select all that apply"
 CHOICES = u"choices"
 
 # XLS Specific constants
-#xls specific constants:
 LIST_NAME = u"list name"
 CASCADING_SELECT = u"cascading_select"
 TABLE_LIST = u"table-list" # hyphenated because it goes in appearance, and convention for appearance column is dashes
@@ -45,9 +44,3 @@ CHOICES = u"choices"
 COLUMNS = u"columns" #this is for loop statements
 CHOICES_AND_COLUMNS = u"choices and columns"
 CASCADING_CHOICES = u"cascades"
-#xls specific constants:
-LIST_NAME = u"list name"
-CASCADING_SELECT = u"cascading_select"
-TABLE_LIST = u"table-list" # hyphenated because it goes in appearance, and convention for appearance column is dashes
-
-

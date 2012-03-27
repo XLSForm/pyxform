@@ -345,9 +345,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 
     choices = combined_lists
 
-    ########### Cascading Select sheet ##
-    #from IPython.Debugger import Tracer; debug_here = Tracer()
-    #import json
+    ########### Cascading Select sheet ###########
     cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, {})
     
     ########### Survey sheet ###########
@@ -477,7 +475,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         if cascading_parse:
             parse_dict = cascading_parse.groupdict()
             if parse_dict.get("cascading_command"):
-                #cascading_type = constants.CASCADING_SELECT
                 cascading_level = parse_dict["cascading_level"]
                 cascading_prefix = row.get(constants.NAME)
                 if not cascading_prefix:
