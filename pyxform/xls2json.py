@@ -349,7 +349,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     #from IPython.Debugger import Tracer; debug_here = Tracer()
     #import json
     cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, {})
-    #print json.dumps(cascading_choices, sort_keys=True, indent=4)
     
     ########### Survey sheet ###########
     if constants.SURVEY not in workbook_dict:
