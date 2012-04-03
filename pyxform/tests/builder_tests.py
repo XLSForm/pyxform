@@ -8,7 +8,6 @@ import os
 
 FIXTURE_FILETYPE = "xls"
 
-
 class BuilderTests(TestCase):
     maxDiff = None
     def test_new_widgets(self):
@@ -287,11 +286,6 @@ class BuilderTests(TestCase):
                             u'type': u'integer'
                             }
                         ]
-                    },
-                {
-                    u'name': u'other',
-                    u'label': u'Other',
-                    u'type' : u'group',
-                    u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}
+                    }]}
         self.maxDiff = None
         self.assertEqual(survey.to_json_dict(), expected_dict)

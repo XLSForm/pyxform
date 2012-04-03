@@ -58,6 +58,7 @@ settings_header_aliases = {
 #TODO: Check on bind prefix approach in json.
 #Conversion dictionary from user friendly column names to meaningful values
 survey_header_aliases = {
+    u"repeat_count" : u"jr:count",
     u"read_only" : u"bind::readonly",
     u"readonly" : u"bind::readonly",
     u"relevant": u"bind::relevant",
@@ -284,7 +285,6 @@ def has_double_colon(workbook_dict):
                     return True
     return False
 
-
 def workbook_to_json(workbook_dict, form_name=None, default_language=u"default", warnings=None):
     """
     workbook_dict -- nested dictionaries representing a spreadsheet. should be similar to those returned by xls_to_dict
@@ -349,13 +349,8 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
     
-    #Validate the choice names by making sure they have no spaces.
-    for list_name, dict_list in combined_lists.iteritems():
-        for list_item in dict_list:
-            if u' ' in list_item[constants.NAME]:
-                raise PyXFormError("Choice names/values cannot have spaces. See [" + list_item[constants.NAME] + "] in [" + list_name + "]")
                 
-    choices = columns = combined_lists
+    choices = combined_lists
     
     ########### Survey sheet ###########
     if SURVEY not in workbook_dict:
@@ -463,9 +458,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                         #TODO: Perhaps warn and make repeat into a group?
                         raise PyXFormError("Repeat without list name " + " Error on row: " + str(row_number))
                     list_name = parse_dict["list_name"]
-                    if list_name not in columns:
+                    if list_name not in choices:
                         raise PyXFormError("List name not in columns sheet: " + list_name + " Error on row: " + str(row_number))
-                    new_json_dict[constants.COLUMNS] = columns[list_name]
+                    new_json_dict[constants.COLUMNS] = choices[list_name]
                 
                 #Code to deal with table_list appearance flags (for groups of selects)
                 if new_json_dict.get(u"control",{}).get(u"appearance") == TABLE_LIST:
@@ -486,7 +481,13 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
 
                 if list_name not in choices:
                     raise PyXFormError("List name not in choices sheet: " + list_name + " Error on row: " + str(row_number))
-                
+
+                #Validate select_multiple choice names by making sure they have no spaces (will cause errors in exports).
+                if select_type == constants.SELECT_ALL_THAT_APPLY:
+                    for choice in choices[list_name]:
+                        if ' ' in choice[constants.NAME]:
+                                raise PyXFormError("Choice names with spaces cannot be added to multiple choice selects. See [" + choice[constants.NAME] + "] in [" + list_name + "]")
+
                 if parse_dict.get("specify_other") is not None:
                     select_type += u" or specify other"
                     

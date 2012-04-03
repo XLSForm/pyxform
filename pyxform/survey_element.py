@@ -1,7 +1,7 @@
 import json
 from utils import is_valid_xml_tag, node
 from xls2json import print_pyobj_to_json
-from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
+from question_type_dictionary import QUESTION_TYPE_DICT
 from errors import PyXFormError
 
 
@@ -29,6 +29,7 @@ class SurveyElement(dict):
         u"default": unicode,
         u"type": unicode,
         u"appearance": unicode,
+        u"jr:count" : unicode,
         u"bind": dict,
         u"control": dict,
         u"media": dict,
@@ -39,8 +40,8 @@ class SurveyElement(dict):
 
     def _default(self):
         # TODO: need way to override question type dictionary
-        defaults = DEFAULT_QUESTION_TYPE_DICTIONARY
-        return defaults.get_definition(self.get(u"type"))
+        defaults = QUESTION_TYPE_DICT
+        return defaults.get(self.get(u"type"), {})
 
     def __getattr__(self, key):
         """
