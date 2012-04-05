@@ -314,7 +314,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     #add_none_option is a boolean that when true, indicates a none option should automatically be added to selects.
     #It should probably be deprecated but I haven't checked yet.
     if u"add_none_option" in settings:
-        settings[u"add_none_option"] = yes_no_aliases.get(settings[u"add_none_option"], u"false()") == u"true"
+        settings[u"add_none_option"] = yes_no_aliases.get(settings[u"add_none_option"], u"false()") == u"true()"
     
     #Here we create our json dict root with default settings:
     id_string = settings.get(constants.ID_STRING, form_name)
