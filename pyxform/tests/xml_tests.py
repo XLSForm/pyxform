@@ -30,9 +30,13 @@ class XMLTests(TestCase):
       <instance>
         <yes_or_no_question id="yes_or_no_question_2011_04_22">
           <good_day/>
+          <orx:meta>
+            <orx:instanceID/>
+          </orx:meta>
         </yes_or_no_question>
       </instance>
       <bind nodeset="/yes_or_no_question/good_day" type="select1"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/yes_or_no_question/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
