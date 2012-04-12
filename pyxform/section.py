@@ -56,7 +56,7 @@ class RepeatingSection(Section):
         """
         control_dict = self.control
         kwargs = {}
-        if u"jr:count" in self:
+        if u"jr:count" in self and self[u"jr:count"] != "":
             kwargs = {u"jr:count" : self[u"jr:count"]}
         if u"appearance" in control_dict:
             repeat_node = node(

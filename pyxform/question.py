@@ -128,9 +128,10 @@ class MultipleChoiceQuestion(Question):
 
     def validate(self):
         Question.validate(self)
-        for choice in self.iter_descendants():
-            if choice != self:
-                choice.validate()
+        descendants = self.iter_descendants()
+        descendants.next() # iter_descendants includes self; we need to pop it 
+        for choice in descendants: 
+            choice.validate()
 
     def xml_control(self):
         assert self.bind[u"type"] in [u"select", u"select1"] #Why select1? -- odk/jr use select1 for single-option-select

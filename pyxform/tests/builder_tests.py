@@ -154,6 +154,35 @@ class BuilderTests(TestCase):
         #print json.dumps(survey, indent=4, ensure_ascii=False)
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
+    def test_select_one_question_with_identical_choice_name(self):
+        """
+        testing to make sure that select ones whose choice names are the same as
+        the name of the select one get compiled.
+        """
+        survey = utils.create_survey_from_fixture("choice_name_same_as_select_name", filetype=FIXTURE_FILETYPE)
+        expected_dict = {
+                u'name': u'choice_name_same_as_select_name', 
+                u'title': u'choice_name_same_as_select_name', 
+                u'default_language': u'default', 
+                u'id_string': u'choice_name_same_as_select_name', 
+                u'type': u'survey', 
+                u'children':  [
+                {
+                       u'children':  [
+                        {
+                               u'name': u'zone', 
+                               u'label': u'Zone'
+                        }
+                        ], 
+                               u'type': u'select one', 
+                               u'name': u'zone', 
+                               u'label': u'Zone'
+                }
+                ]
+        }
+        self.maxDiff = None
+        self.assertEqual(survey.to_json_dict(), expected_dict)
+
     def test_include(self):
         survey = utils.create_survey_from_fixture(u"include", filetype=FIXTURE_FILETYPE,
                                                   include_directory=True)
@@ -289,3 +318,8 @@ class BuilderTests(TestCase):
                     }]}
         self.maxDiff = None
         self.assertEqual(survey.to_json_dict(), expected_dict)
+
+    def test_cascading_selects(self):
+        survey_cs = utils.create_survey_from_fixture("cascading_select_test", filetype=FIXTURE_FILETYPE)
+        survey_eq = utils.create_survey_from_fixture("cascading_select_test_equivalent", filetype=FIXTURE_FILETYPE)
+        self.assertEqual(survey_cs.to_json_dict(), survey_eq.to_json_dict())

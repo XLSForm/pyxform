@@ -8,21 +8,10 @@ import codecs
 import os
 import constants
 from errors import PyXFormError
-from xls2json_backends import xls_to_dict, csv_to_dict
+from xls2json_backends import xls_to_dict, csv_to_dict, get_cascading_json
 from utils import is_valid_xml_tag
 
 ####### STATIC DATA #######
-# The following are the possible sheet names:
-SURVEY = u"survey"
-SETTINGS = u"settings"
-# These sheet names are for list sheets
-CHOICES = u"choices"
-COLUMNS = u"columns" #this is for loop statements
-CHOICES_AND_COLUMNS = u"choices and columns"
-
-#xls specific constants:
-LIST_NAME = u"list name"
-TABLE_LIST = u"table-list"
 
 #Aliases:
 #Ideally aliases should resolve to elements in the json form schema
@@ -46,6 +35,10 @@ select_aliases = {
       u"select one" : constants.SELECT_ONE,
       u"select_multiple" : constants.SELECT_ALL_THAT_APPLY,
       u"select all that apply" : constants.SELECT_ALL_THAT_APPLY
+}
+cascading_aliases = {
+    u'cascading select' : constants.CASCADING_SELECT,
+    u'cascading_select' : constants.CASCADING_SELECT,
 }
 settings_header_aliases = {
     u"form_title" : constants.TITLE,
@@ -81,7 +74,7 @@ survey_header_aliases = {
 }
 list_header_aliases = {
     u"caption" : constants.LABEL,
-    u"list_name" : LIST_NAME,
+    u"list_name" : constants.LIST_NAME,
     u"value" : constants.NAME,
     u"image": u"media::image",
     u"audio": u"media::audio",
@@ -313,7 +306,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     #Break the spreadsheet dict into easier to access objects (settings, choices, survey_sheet):
     ########### Settings sheet ##########
-    settings_sheet = dealias_and_group_headers(workbook_dict.get(SETTINGS, []), settings_header_aliases, use_double_colons)
+    settings_sheet = dealias_and_group_headers(workbook_dict.get(constants.SETTINGS, []), settings_header_aliases, use_double_colons)
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
     
     default_language = settings.get(constants.DEFAULT_LANGUAGE, default_language)
@@ -321,12 +314,12 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     #add_none_option is a boolean that when true, indicates a none option should automatically be added to selects.
     #It should probably be deprecated but I haven't checked yet.
     if u"add_none_option" in settings:
-        settings[u"add_none_option"] = yes_no_aliases.get(settings[u"add_none_option"], u"false()") == u"true"
+        settings[u"add_none_option"] = yes_no_aliases.get(settings[u"add_none_option"], u"false()") == u"true()"
     
     #Here we create our json dict root with default settings:
     id_string = settings.get(constants.ID_STRING, form_name)
     json_dict = {
-       constants.TYPE : SURVEY,
+       constants.TYPE : constants.SURVEY,
        constants.NAME : form_name,
        constants.TITLE : id_string,
        constants.ID_STRING : id_string,
@@ -338,24 +331,27 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     ########### Choices sheet ##########
     #Columns and "choices and columns" sheets are deprecated, but we combine them with the choices sheet for backwards-compatibility.
-    choices_and_columns_sheet = workbook_dict.get(CHOICES_AND_COLUMNS, {})
+    choices_and_columns_sheet = workbook_dict.get(constants.CHOICES_AND_COLUMNS, {})
     choices_and_columns_sheet = dealias_and_group_headers(choices_and_columns_sheet, list_header_aliases, use_double_colons, default_language)
     
-    columns_sheet = workbook_dict.get(COLUMNS, [])
+    columns_sheet = workbook_dict.get(constants.COLUMNS, [])
     columns_sheet = dealias_and_group_headers(columns_sheet, list_header_aliases, use_double_colons, default_language)
     
-    choices_sheet = workbook_dict.get(CHOICES, [])
+    choices_sheet = workbook_dict.get(constants.CHOICES, [])
     choices_sheet = dealias_and_group_headers(choices_sheet, list_header_aliases, use_double_colons, default_language)
     
-    combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, LIST_NAME)
+    combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, constants.LIST_NAME)
     
                 
     choices = combined_lists
+
+    ########### Cascading Select sheet ###########
+    cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, {})
     
     ########### Survey sheet ###########
-    if SURVEY not in workbook_dict:
-        raise PyXFormError("You must have a sheet named: " + SURVEY)
-    survey_sheet = workbook_dict[SURVEY]
+    if constants.SURVEY not in workbook_dict:
+        raise PyXFormError("You must have a sheet named (case-sensitive): " + constants.SURVEY)
+    survey_sheet = workbook_dict[constants.SURVEY]
     #Process the headers:
     survey_sheet = clean_unicode_values(survey_sheet)
     survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, use_double_colons, default_language)
@@ -379,6 +375,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     select_regexp = re.compile(r"^(?P<select_command>("
                                + '|'.join(select_aliases.keys())
                                + r")) (?P<list_name>\S+)( (?P<specify_other>(or specify other|or_other|or other)))?$")
+    cascading_regexp = re.compile(r"^(?P<cascading_command>("
+                               + '|'.join(cascading_aliases.keys())
+                               + r")) (?P<cascading_level>\S+)?$")
     for row in survey_sheet:
         row_number += 1
         prev_control_type, parent_children_array = stack[-1]
@@ -418,7 +417,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
             if parse_dict.get("end") and "type" in parse_dict:
                 control_type = control_aliases[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
-                    raise PyXFormError("Unmatched end statement. Previous control type: " + prev_control_type + ", Control type: " + control_type)   
+                    raise PyXFormError("Unmatched end statement. Previous control type: " + str(prev_control_type) + ", Control type: " + str(control_type))
                 stack.pop()
                 table_list = None
                 continue
@@ -463,13 +462,27 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                     new_json_dict[constants.COLUMNS] = choices[list_name]
                 
                 #Code to deal with table_list appearance flags (for groups of selects)
-                if new_json_dict.get(u"control",{}).get(u"appearance") == TABLE_LIST:
+                if new_json_dict.get(u"control",{}).get(u"appearance") == constants.TABLE_LIST:
                     begin_table_list = True
                     new_json_dict[u"control"][u"appearance"] = u"field-list"
                     
                 parent_children_array.append(new_json_dict)
                 stack.append((control_type, child_list))
                 continue
+
+        # try to parse as a cascading select
+        cascading_parse = cascading_regexp.search(question_type)
+        if cascading_parse:
+            parse_dict = cascading_parse.groupdict()
+            if parse_dict.get("cascading_command"):
+                cascading_level = parse_dict["cascading_level"]
+                cascading_prefix = row.get(constants.NAME)
+                if not cascading_prefix:
+                    raise PyXFormError("Cascading select needs a name. Error on row: %s" % row_number)
+                cascading_json = get_cascading_json(cascading_choices, cascading_prefix, cascading_level)
+                
+                for c in cascading_json: parent_children_array.append(c)
+                continue # so the row isn't put in as is
 
         #Try to parse question as a select:
         select_parse = select_regexp.search(question_type)
