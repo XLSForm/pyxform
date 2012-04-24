@@ -24,12 +24,7 @@ class XFormValidator(object):
 
     def _run_odk_validate(self, path_to_xform):
         self._path_to_xform = path_to_xform
-        try:
-            stdout, stderr = Popen(["java", "-jar", ODK_VALIDATE_JAR, self._path_to_xform], stdout=PIPE, stderr=PIPE).communicate()
-        except OSError:
-            raise OSError("Error trying to call %s on %s" % \
-                              (ODK_VALIDATE_JAR, self._path_to_xform),
-                          "You may need to install java.")
+        stdout, stderr = Popen(["java", "-jar", ODK_VALIDATE_JAR, self._path_to_xform], stdout=PIPE, stderr=PIPE).communicate()
         self._odk_validate_output = (stdout + stderr).split('\n')
 
     def get_odk_validate_output(self):
