@@ -71,6 +71,7 @@ class Survey(Section):
         """
         self._setup_translations()
         self._setup_media()
+        self._add_empty_translations()
         model_children = [node("instance", self.xml_instance())] + self.xml_bindings()
         if self._translations:
             model_children.insert(0, self.itext())
@@ -104,7 +105,6 @@ class Survey(Section):
         for element in self.iter_descendants():
             for d in element.get_translations(self.default_language):
                 self._translations[d['lang']][d['path']] = {"long" : d['text']}
-        self._add_empty_translations()
 
     def _add_empty_translations(self):
         """
@@ -126,6 +126,8 @@ class Survey(Section):
             for path in paths:
                 if path not in d:
                     self._translations[lang][path] = {"long":u"-"}
+                if "long" not in d[path] and self.get("add_text_labels_to_image_only_questions", False):
+                    self._translations[lang][path]["long"] = u"-"
 
     def _setup_media(self):
         """
