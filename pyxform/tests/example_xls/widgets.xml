@@ -102,6 +102,9 @@
             <happy_sad_brian/>
             <happy_sad_michael/>
           </happy_sad_table>
+          <orx:meta>
+            <orx:instanceID/>
+          </orx:meta>
         </widgets>
       </instance>
       <bind nodeset="/widgets/my_string" type="string"/>
@@ -137,6 +140,7 @@
       <bind nodeset="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39" type="select"/>
       <bind nodeset="/widgets/happy_sad_table/happy_sad_brian" type="select"/>
       <bind nodeset="/widgets/happy_sad_table/happy_sad_michael" type="select"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/widgets/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

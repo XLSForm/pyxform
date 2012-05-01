@@ -96,12 +96,14 @@ yes_no_aliases = {
     "true": "true()",
     "True": "true()",
     "TRUE": "true()",
+    "true()": "true()",
     "no": "false()",
     "No": "false()",
     "NO": "false()",
     "false": "false()",
     "False": "false()",
-    "FALSE": "false()"
+    "FALSE": "false()",
+    "false()": "false()",
 }
 label_optional_types = [
     u"deviceid",
@@ -216,14 +218,15 @@ def dealias_types(dict_array):
             row[constants.TYPE] = type_aliases[found_type]
     return dict_array
 
-def clean_unicode_values(dict_array):
+def clean_text_values(dict_array):
     """
-    Go though the dict array and removing double spaces and trailing and leading spaces from all unicode values
+    Go though the dict array and strips all text values.
+    Also replaces multiple spaces with single spaces.
     Note that the keys don't get cleaned, which could be an issue.
     """
     for row in dict_array:
         for key, value in row.items():
-            if type(value) is unicode:
+            if isinstance(value, basestring):
                 row[key] = re.sub(r"\s+", " ", value.strip())
     return dict_array
 
@@ -353,7 +356,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         raise PyXFormError("You must have a sheet named (case-sensitive): " + constants.SURVEY)
     survey_sheet = workbook_dict[constants.SURVEY]
     #Process the headers:
-    survey_sheet = clean_unicode_values(survey_sheet)
+    clean_text_values_enabled = yes_no_aliases.get(settings.get("clean_text_values", u"true()"), u"true()") == u"true()"
+    if clean_text_values_enabled:
+        survey_sheet = clean_text_values(survey_sheet)
     survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, use_double_colons, default_language)
     survey_sheet = dealias_types(survey_sheet)
     ##################################
