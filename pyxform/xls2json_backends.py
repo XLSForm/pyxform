@@ -1,4 +1,5 @@
 import xlrd
+from xlrd import XLRDError
 from collections import defaultdict
 import csv
 import cStringIO
@@ -122,10 +123,13 @@ def xls_to_dict(path_or_file):
                     "bind": {u'calculate' : calc_formula_string}}} )
             result2.append({"stopper" : level['name']})
         return result2
-    if isinstance(path_or_file, basestring):
-        workbook = xlrd.open_workbook(filename=path_or_file)
-    else:
-        workbook = xlrd.open_workbook(file_contents=path_or_file.read())
+    try:
+        if isinstance(path_or_file, basestring):
+            workbook = xlrd.open_workbook(filename=path_or_file)
+        else:
+            workbook = xlrd.open_workbook(file_contents=path_or_file.read())
+    except XLRDError, e:
+        raise PyXFormError("Error reading .xls file: %s" % e.message)
 
     result = {}
     for sheet in workbook.sheets():

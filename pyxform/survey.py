@@ -1,3 +1,4 @@
+import tempfile
 from section import Section
 from question import Question
 from utils import node, XFORM_TAG_REGEXP
@@ -307,11 +308,9 @@ class Survey(Section):
             check_xform(path)
 
     def to_xml(self, validate=True, pretty=True):
-        temporary_file_name = "_temporary_file_used_to_validate_xform.xml"
-        temporary_file_path = os.path.abspath(temporary_file_name)
-        # this will throw an exception if the xml is not valid
-        self.print_xform_to_file(temporary_file_path)
-        os.remove(temporary_file_name)
+        with tempfile.NamedTemporaryFile() as tmp:
+            # this will throw an exception if the xml is not valid
+            self.print_xform_to_file(tmp.name)
         return self._to_pretty_xml()
     
     def instantiate(self):
