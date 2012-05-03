@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest2 import TestCase
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
@@ -15,7 +15,7 @@ class BuilderTests(TestCase):
         path = utils.path_to_text_fixture('widgets.xml')
         survey.to_xml
         with open(path) as f:
-            self.assertEqual(survey.to_xml(), f.read())
+            self.assertMultiLineEqual(survey.to_xml(), f.read())
 
     def test_unknown_question_type(self):
         survey = utils.build_survey('unknown_question_type.xls')

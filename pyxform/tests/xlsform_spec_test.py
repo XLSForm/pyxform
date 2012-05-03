@@ -2,7 +2,7 @@
 Some tests for the new (v0.9) spec is properly implemented.  
 """
 
-from unittest import TestCase
+from unittest2 import TestCase
 import pyxform
 from pyxform import xls2json
 import os, sys

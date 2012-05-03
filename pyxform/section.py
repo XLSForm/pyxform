@@ -96,7 +96,8 @@ class GroupedSection(Section):
     def xml_control(self):
         control_dict = self.control
         xml_label = self.xml_label()
-
+        if control_dict.get("bodyless"):
+            return None
         if u"appearance" in control_dict and xml_label:
             group_node = node(
                 u"group", xml_label, ref=self.get_xpath(),

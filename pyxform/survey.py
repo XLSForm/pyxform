@@ -35,7 +35,6 @@ class Survey(Section):
             u"_translations": dict,
             u"submission_url": unicode,
             u"public_key": unicode,
-            u"omit_instanceID": bool
             }
         )
         
@@ -81,21 +80,14 @@ class Survey(Section):
             if self.submission_url:
                 submission_attrs["action"] = self.submission_url
             if self.public_key:
-                if self.omit_instanceID:
-                    raise PyXFormError("Cannot omit instanceID, it is required for encryption.")
                 submission_attrs["base64RsaPublicKey"] = self.public_key
             submission_node = node("submission", method="form-data-post", **submission_attrs)
             model_children.insert(0, submission_node)
-        if not self.omit_instanceID:
-            #Warning, this will cause errors on old versions of collect because uuid is not a function.
-            model_children.append(node("bind", nodeset="/"+self.name+"/meta/instanceID", type="string", readonly="true()", calculate="concat('uuid:', uuid())"))
         return node("model",  *model_children)
 
     def xml_instance(self):
         result = Section.xml_instance(self)
         result.setAttribute(u"id", self.id_string)
-        if not self.omit_instanceID:
-            result.appendChild(node("orx:meta", node("orx:instanceID")))
         return result
 
     def _setup_translations(self):
@@ -106,30 +98,26 @@ class Survey(Section):
         for element in self.iter_descendants():
             for d in element.get_translations(self.default_language):
                 self._translations[d['lang']][d['path']] = {"long" : d['text']}
-
+              
     def _add_empty_translations(self):
         """
-        For every path used, if a language does not include that path, add it,
-        and give it a "-" value. Added because for hints, you want to allow empty
-        translations for the default language (otherwise the validator complains).
+        Adds translations so that every itext element has the same elements accross every language.
+        When translations are not provided "-" will be used.
+        This disables any of the default_language fallback functionality.
         """
-        paths = []
-        for lang, d in self._translations.items():
-            for path, text in d.items():
-                if path not in paths:
-                    paths.append(path)
-        
-        #We lose the ability to have the default language be the fallback by adding empty translations for everything.
-        #we could just add them for the default language by using the following two lines of code instead of the for loop          
-        #lang = self.default_language
-        #d = self._translations[self.default_language]
-        for lang, d in self._translations.items():
-            for path in paths:
-                if path not in d:
-                    self._translations[lang][path] = {"long":u"-"}
-                if "long" not in d[path] and self.get("add_text_labels_to_image_only_questions", False):
-                    self._translations[lang][path]["long"] = u"-"
-
+        paths = {}
+        for lang, translation in self._translations.items():
+            for path, content in translation.items():
+                paths[path] = paths.get(path, set()).union(content.keys())
+                
+        for lang, translation in self._translations.items():
+            for path, content_types in paths.items():
+                if path not in self._translations[lang]:
+                    self._translations[lang][path] = {}
+                for content_type in content_types:
+                    if content_type not in self._translations[lang][path]:
+                        self._translations[lang][path][content_type] = u"-"
+                        
     def _setup_media(self):
         """
         Traverse the survey, find all the media, and put in into the _translations data structure which looks like this:
