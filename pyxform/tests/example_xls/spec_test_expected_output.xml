@@ -618,10 +618,10 @@
             <phonenumber_test_output/>
             <_1/>
             <FALSE/>
-            <meta>
-              <instanceID/>
-            </meta>
           </everything>
+          <meta>
+            <instanceID/>
+          </meta>
         </xlsform_spec_test>
       </instance>
       <bind nodeset="/xlsform_spec_test/skip_to_end" type="select1"/>
@@ -669,7 +669,7 @@
       <bind nodeset="/xlsform_spec_test/everything/phonenumber_test_output" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/_1" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/FALSE" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/xlsform_spec_test/everything/meta/instanceID" readonly="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/xlsform_spec_test/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

@@ -552,18 +552,18 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     else:
         meta_element = \
         {
-        "name":"orx:meta",
+        "name":"meta",
         "type":"group",
         "control": {
                     "bodyless": True
                     },
-        "children":[{
-                    "name":"orx:instanceID",
+        "children": [{
+                    "name": "instanceID",
                     "bind": {
-                             "readonly" : "true()",
+                             "readonly": "true()",
                              "calculate": "concat('uuid:', uuid())"
                              }, 
-                     "type": "calculate",
+                    "type": "calculate",
                     }]
         }
         noop, survey_children_array = stack[0]
