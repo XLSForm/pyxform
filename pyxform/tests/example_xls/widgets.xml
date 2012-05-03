@@ -102,9 +102,9 @@
             <happy_sad_brian/>
             <happy_sad_michael/>
           </happy_sad_table>
-          <orx:meta>
-            <orx:instanceID/>
-          </orx:meta>
+          <meta>
+            <instanceID/>
+          </meta>
         </widgets>
       </instance>
       <bind nodeset="/widgets/my_string" type="string"/>

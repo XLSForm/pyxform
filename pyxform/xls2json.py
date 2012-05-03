@@ -90,20 +90,20 @@ type_aliases = {
     u"add video prompt" : u"video"
 }
 yes_no_aliases = {
-    "yes": "true()",
-    "Yes": "true()",
-    "YES": "true()",
-    "true": "true()",
-    "True": "true()",
-    "TRUE": "true()",
-    "true()": "true()",
-    "no": "false()",
-    "No": "false()",
-    "NO": "false()",
-    "false": "false()",
-    "False": "false()",
-    "FALSE": "false()",
-    "false()": "false()",
+    "yes": True,
+    "Yes": True,
+    "YES": True,
+    "true": True,
+    "True": True,
+    "TRUE": True,
+    "true()": True,
+    "no": False,
+    "No": False,
+    "NO": False,
+    "false": False,
+    "False": False,
+    "FALSE": False,
+    "false()": False,
 }
 label_optional_types = [
     u"deviceid",
@@ -317,7 +317,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     #add_none_option is a boolean that when true, indicates a none option should automatically be added to selects.
     #It should probably be deprecated but I haven't checked yet.
     if u"add_none_option" in settings:
-        settings[u"add_none_option"] = yes_no_aliases.get(settings[u"add_none_option"], u"false()") == u"true()"
+        settings[u"add_none_option"] = yes_no_aliases.get(settings[u"add_none_option"], False)
     
     #Here we create our json dict root with default settings:
     id_string = settings.get(constants.ID_STRING, form_name)
@@ -356,7 +356,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         raise PyXFormError("You must have a sheet named (case-sensitive): " + constants.SURVEY)
     survey_sheet = workbook_dict[constants.SURVEY]
     #Process the headers:
-    clean_text_values_enabled = yes_no_aliases.get(settings.get("clean_text_values", u"true()"), u"true()") == u"true()"
+    clean_text_values_enabled = yes_no_aliases.get(settings.get("clean_text_values", "true()"))
     if clean_text_values_enabled:
         survey_sheet = clean_text_values(survey_sheet)
     survey_sheet = dealias_and_group_headers(survey_sheet, survey_header_aliases, use_double_colons, default_language)
@@ -391,9 +391,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         if u"disabled" in row:
             warnings.append("The 'disabled' column header is not part of the current spec. We recommend using relevant instead.")
             disabled = row.pop(u"disabled")
-            if disabled in yes_no_aliases:
-                disabled = yes_no_aliases[disabled]
-            if disabled == 'true()':
+            if yes_no_aliases.get(disabled):
                 continue
         
         #skip empty rows
@@ -422,7 +420,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
             if parse_dict.get("end") and "type" in parse_dict:
                 control_type = control_aliases[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
-                    raise PyXFormError("Unmatched end statement. Previous control type: " + str(prev_control_type) + ", Control type: " + str(control_type))
+                    raise PyXFormError("Unmatched end statement. Previous control type: " + str(prev_control_type) +
+                                       ", Control type: " + str(control_type) +
+                                       ", Error on row: " + str(row_number))
                 stack.pop()
                 table_list = None
                 continue
@@ -544,7 +544,33 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     if len(stack) != 1:
         raise PyXFormError("unmatched begin statement: " + str(stack[-1][0]))
+    
+    #Automatically add an instanceID element:
+    if yes_no_aliases.get(settings.get("omit_instanceID")):
+        if settings.get("public_key"):
+            raise PyXFormError("Cannot omit instanceID, it is required for encryption.")
+    else:
+        meta_element = \
+        {
+        "name":"meta",
+        "type":"group",
+        "control": {
+                    "bodyless": True
+                    },
+        "children": [{
+                    "name": "instanceID",
+                    "bind": {
+                             "readonly": "true()",
+                             "calculate": "concat('uuid:', uuid())"
+                             }, 
+                    "type": "calculate",
+                    }]
+        }
+        noop, survey_children_array = stack[0]
+        survey_children_array.append(meta_element)
+    
     #print_pyobj_to_json(json_dict)
+    
     return json_dict
 
 def parse_file_to_workbook_dict(path, file_object=None):

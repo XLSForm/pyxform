@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest2 import TestCase
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
@@ -15,7 +15,7 @@ class BuilderTests(TestCase):
         path = utils.path_to_text_fixture('widgets.xml')
         survey.to_xml
         with open(path) as f:
-            self.assertEqual(survey.to_xml(), f.read())
+            self.assertMultiLineEqual(survey.to_xml(), f.read())
 
     def test_unknown_question_type(self):
         survey = utils.build_survey('unknown_question_type.xls')
@@ -183,37 +183,37 @@ class BuilderTests(TestCase):
         self.maxDiff = None
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
-    def test_include(self):
-        survey = utils.create_survey_from_fixture(u"include", filetype=FIXTURE_FILETYPE,
-                                                  include_directory=True)
-        expected_dict = {
-            u'name': u'include',
-            u'title': u'include',
-            u'id_string': u'include',
-            u'default_language': u'default',
-            u'type': u'survey',
-            u'children': [
-                {
-                    u'name': u'name',
-                    u'label': {u'English': u"What's your name?"},
-                    u'type': u'text'
-                    },
-                    {
-                        u'name': u'good_day',
-                        u'label': {u'english': u'have you had a good day today?'},
-                        u'type': u'select one',
-                        u'children': [
-                            {
-                                u'name': u'yes',
-                                u'label': {u'english': u'yes'}
-                                },
-                            {
-                                u'name': u'no',
-                                u'label': {u'english': u'no'}
-                                }
-                            ]}]}
-        
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+#    def test_include(self):
+#        survey = utils.create_survey_from_fixture(u"include", filetype=FIXTURE_FILETYPE,
+#                                                  include_directory=True)
+#        expected_dict = {
+#            u'name': u'include',
+#            u'title': u'include',
+#            u'id_string': u'include',
+#            u'default_language': u'default',
+#            u'type': u'survey',
+#            u'children': [
+#                {
+#                    u'name': u'name',
+#                    u'label': {u'English': u"What's your name?"},
+#                    u'type': u'text'
+#                    },
+#                    {
+#                        u'name': u'good_day',
+#                        u'label': {u'english': u'have you had a good day today?'},
+#                        u'type': u'select one',
+#                        u'children': [
+#                            {
+#                                u'name': u'yes',
+#                                u'label': {u'english': u'yes'}
+#                                },
+#                            {
+#                                u'name': u'no',
+#                                u'label': {u'english': u'no'}
+#                                }
+#                            ]}]}
+#        
+#        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_include_json(self):
         survey_in = utils.create_survey_from_fixture(
