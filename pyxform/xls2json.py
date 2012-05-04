@@ -227,7 +227,7 @@ def clean_text_values(dict_array):
     for row in dict_array:
         for key, value in row.items():
             if isinstance(value, basestring):
-                row[key] = re.sub(r"\s+", " ", value.strip())
+                row[key] = re.sub(r"( )+", " ", value.strip())
     return dict_array
 
 #This is currently unused because name uniqueness is checked in the json2xform code.
