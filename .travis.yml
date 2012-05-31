@@ -1,0 +1,9 @@
+language: python
+python:
+  - "2.7.3"
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install openjdk-6-jre
+script: nosetests
+notifications:
+  irc: "irc.freenode.org#modilabs"
