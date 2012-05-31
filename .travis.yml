@@ -1,9 +1,6 @@
 language: python
 python:
   - "2.7.3"
-before_install:
-  - sudo apt-get update
-  - sudo apt-get install openjdk-6-jre
 install:
   - sudo pip install -r requirements.pip --use-mirrors
 script: nosetests
