@@ -5,7 +5,7 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install openjdk-6-jre
 install:
-  - pip install -r requirements.pip --user-mirrors
+  - pip install -r requirements.pip --use-mirrors
 script: nosetests
 notifications:
   irc: "irc.freenode.org#modilabs"
