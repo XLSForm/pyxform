@@ -2,6 +2,8 @@
 Some tests for the new (v0.9) spec is properly implemented.  
 """
 
+from lxml import etree
+from formencode.doctest_xml_compare import xml_compare
 from unittest import TestCase
 import pyxform
 from pyxform import xls2json
@@ -30,7 +32,9 @@ class main_test(TestCase):
         #Compare with the expected output:
         expected_path = utils.path_to_text_fixture("spec_test_expected_output.xml")
         with codecs.open(expected_path, 'rb', encoding="utf-8") as expected_file:
-            self.assertMultiLineEqual(expected_file.read(), survey.to_xml())
+            expected = etree.fromstring(expected_file.read())
+            result = etree.fromstring(survey.to_xml())
+            self.assertTrue(xml_compare(expected, result))
 
 class warnings_test(TestCase):
     """
