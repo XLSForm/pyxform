@@ -1,2 +1,4 @@
 nose==1.0.0
 xlrd==0.7.1
+FormEncode==1.2.4
+lxml==2.3.4
