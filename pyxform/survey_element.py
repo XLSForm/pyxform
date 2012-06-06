@@ -190,6 +190,21 @@ class SurveyElement(dict):
         return self.get_xpath() + ":" + display_element
 
     def get_translations(self, default_language):
+        """
+        Returns translations used by this element so they can be included in the <itext> block
+        @see survey._setup_translations
+        """
+        bind_dict = self.get(u'bind')
+        if bind_dict and type(bind_dict) is dict:
+            constraintMsg = bind_dict.get(u'jr:constraintMsg')
+            if type(constraintMsg) is dict:
+                for lang, text in constraintMsg.items():
+                    yield {
+                            'path': self._translation_path(u'jr:constraintMsg'),
+                            'lang': lang,
+                            'text': text,
+                           }
+        
         for display_element in [u'label', u'hint']:
             label_or_hint = self[display_element]
             
@@ -268,6 +283,8 @@ class SurveyElement(dict):
                 #I think all the binding conversions should be happening on the xls2json side.
                 if hashable(v) and v in self.binding_conversions:
                     v = self.binding_conversions[v]
+                if k == u'jr:constraintMsg' and type(v) is dict:
+                    v = "jr:itext('%s')" % self._translation_path(u'jr:constraintMsg')
                 d[k] = survey.insert_xpaths(v)
             return node(u"bind", nodeset=self.get_xpath(), **d)
         return None
