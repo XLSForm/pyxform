@@ -35,6 +35,7 @@ class Survey(Section):
             u"_translations": dict,
             u"submission_url": unicode,
             u"public_key": unicode,
+            u"version": unicode,
             }
         )
         
@@ -88,6 +89,8 @@ class Survey(Section):
     def xml_instance(self):
         result = Section.xml_instance(self)
         result.setAttribute(u"id", self.id_string)
+        if self.version:
+            result.setAttribute(u"version", self.version)
         return result
 
     def _setup_translations(self):
