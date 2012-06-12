@@ -10,6 +10,7 @@ import constants
 from errors import PyXFormError
 from xls2json_backends import xls_to_dict, csv_to_dict, get_cascading_json
 from utils import is_valid_xml_tag
+import datetime
 
 ####### STATIC DATA #######
 
@@ -227,7 +228,7 @@ def clean_text_values(dict_array):
     for row in dict_array:
         for key, value in row.items():
             if isinstance(value, basestring):
-                row[key] = re.sub(r"\s+", " ", value.strip())
+                row[key] = re.sub(r"( )+", " ", value.strip())
     return dict_array
 
 #This is currently unused because name uniqueness is checked in the json2xform code.
@@ -327,6 +328,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
        constants.TITLE : id_string,
        constants.ID_STRING : id_string,
        constants.DEFAULT_LANGUAGE : default_language,
+       #By default the version is based on the date and time yyyymmddhh
+       #Leaving default version out for now since it might cause problems for formhub.
+       #constants.VERSION : datetime.datetime.now().strftime("%Y%m%d%H"), 
        constants.CHILDREN : []
     }
     #Here the default settings are overridden by those in the settings sheet

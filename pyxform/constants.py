@@ -9,6 +9,7 @@ TYPE = u"type"
 TITLE = u"title"
 NAME = u"name"
 ID_STRING = u"id_string"
+VERSION = u"version"
 PUBLIC_KEY = u"public_key"
 SUBMISSION_URL = u"submission_url"
 DEFAULT_LANGUAGE = u"default_language"
@@ -44,3 +45,4 @@ CHOICES = u"choices"
 COLUMNS = u"columns" #this is for loop statements
 CHOICES_AND_COLUMNS = u"choices and columns"
 CASCADING_CHOICES = u"cascades"
+
