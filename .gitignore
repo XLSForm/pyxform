@@ -13,3 +13,6 @@ pyxform.egg-info
 
 # a virtual environment
 env
+
+# ignore pypi manifest
+MANIFEST
