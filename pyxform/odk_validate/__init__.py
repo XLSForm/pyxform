@@ -42,7 +42,7 @@ class XFormValidator(object):
         except Exception:
             pass
 
-    def _run_odk_validate(self, path_to_xform):
+    def _run_odk_validate(self, path_to_xform, timeout):
         stdout_w = stderr_w = None
         self._path_to_xform = path_to_xform
 
@@ -54,7 +54,7 @@ class XFormValidator(object):
                     shell=False,
                     stdout=stdout_w,
                     stderr=stderr_w,
-                ).run(timeout=5)
+                ).run(timeout=timeout)
 
             with self.open_r(stdout_w) as stdout_r:
                 output = stdout_r.read()
@@ -81,8 +81,8 @@ class XFormValidator(object):
     def is_valid(self):
         return self._errors_and_result['result']==['Valid']
 
-    def validate(self, path_to_xform):
-        self._run_odk_validate(path_to_xform)
+    def validate(self, path_to_xform, timeout=15):
+        self._run_odk_validate(path_to_xform, timeout)
         self._parse_odk_validate_output()
         if not self.is_valid():
             raise ValidationError(self.get_odk_validate_output())
