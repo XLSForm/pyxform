@@ -230,11 +230,11 @@ class Survey(Section):
         # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
         xml_with_linebreaks = self.xml().toprettyxml(indent='  ')
         text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
-        output_re = re.compile('\n.*(<output.*>)\n(\s\s\s\s)*')
+        output_re = re.compile('\n.*(<output.*>)\n(  )*')
         prettyXml = text_re.sub('>\g<1></', xml_with_linebreaks)
         inlineOutput = output_re.sub('\g<1>', prettyXml)
         return '<?xml version="1.0"?>\n' + inlineOutput
-
+    
     def __unicode__(self):
         return "<survey name='%s' element_count='%s'>" % (self.name, len(self.children))
 
@@ -271,8 +271,8 @@ class Survey(Section):
 
     def _var_repl_output_function(self,matchobj):
         """
-        Given a dictionary of xpaths, return a function we can use to
-        replace ${varname} with the xpath to varname.
+        A regex substitution function that will replace
+        ${varname} with an output element that has the xpath to varname.
         """
         if matchobj.group(1) not in self._xpath:
             raise PyXFormError("There is no survey element with this name.",
