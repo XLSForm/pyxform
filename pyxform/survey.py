@@ -36,8 +36,9 @@ class Survey(Section):
             u"submission_url": unicode,
             u"public_key": unicode,
             u"version": unicode,
-            }
-        )
+            u"choices": dict,
+        }
+    )
         
     def validate(self):
         super(Survey, self).validate()
@@ -65,6 +66,36 @@ class Survey(Section):
                     node(u"h:body", *self.xml_control()),
                     **nsmap
                     )
+    def _generate_static_instance_itext(self):
+        """
+        Generates <itext> elements for static data (e.g. choices for select type questions)
+        """
+        for list_name, choice_list in self.choices.items():
+            for idx, choice in zip(range(len(choice_list)), choice_list):
+                for choicePropertyName, choicePropertyValue in choice.items():
+                    if isinstance(choicePropertyValue, dict):
+                        itextId = '-'.join(['static_instance', list_name, str(idx)])
+                        itextNode = node("text", id=itextId)
+                        for key, value in choicePropertyValue.items():
+                            itextNode.appendChild(node("value", value, form=key))
+                        yield itextNode
+
+    def _generate_static_instances(self):
+        """
+        Generates <instance> elements for static data (e.g. choices for select type questions)
+        """
+        for list_name, choice_list in self.choices.items():
+            instance_element_list = []
+            for idx, choice in zip(range(len(choice_list)), choice_list):
+                choice_element_list = []
+                for choicePropertyName, choicePropertyValue in choice.items():
+                    if isinstance(choicePropertyValue, basestring):
+                        choice_element_list.append(node(choicePropertyName, unicode(choicePropertyValue)))
+                    elif isinstance(choicePropertyValue, dict):
+                        itextId = '-'.join(['static_instance', list_name, str(idx)])
+                        choice_element_list.append(node("itextId", itextId))
+                instance_element_list.append(node("item", *choice_element_list))
+            yield node("instance", node("root", *instance_element_list), id=list_name)
 
     def xml_model(self):
         """
@@ -73,9 +104,13 @@ class Survey(Section):
         self._setup_translations()
         self._setup_media()
         self._add_empty_translations()
-        model_children = [node("instance", self.xml_instance())] + self.xml_bindings()
-        if self._translations:
-            model_children.insert(0, self.itext())
+        
+        model_children = []
+        model_children.append(self.itext())#This will in many cases add an unnessairy itext node
+        model_children += [node("instance", self.xml_instance())]
+        model_children += list(self._generate_static_instances()) 
+        model_children += self.xml_bindings()
+        
         if self.submission_url or self.public_key:
             submission_attrs = dict()
             if self.submission_url:
@@ -101,7 +136,22 @@ class Survey(Section):
         for element in self.iter_descendants():
             for d in element.get_translations(self.default_language):
                 self._translations[d['lang']][d['path']] = {"long" : d['text']}
-              
+                
+        for list_name, choice_list in self.choices.items():
+            for idx, choice in zip(range(len(choice_list)), choice_list):
+                for choicePropertyName, choicePropertyValue in choice.items():
+                    if isinstance(choicePropertyValue, dict):
+                        itextId = '-'.join(['static_instance', list_name, str(idx)])
+                        for mediatypeorlanguage, value in choicePropertyValue.items():
+                            if isinstance(value, dict):
+                                for langauge, value in value.items():
+                                    self._translations[langauge][itextId] = {mediatypeorlanguage : value}
+                            else:
+                                if choicePropertyName is 'media':
+                                    self._translations['default'][itextId] = {mediatypeorlanguage : value}
+                                else:
+                                    self._translations[mediatypeorlanguage][itextId] = {'long' : value}
+
     def _add_empty_translations(self):
         """
         Adds translations so that every itext element has the same elements accross every language.
@@ -181,7 +231,7 @@ class Survey(Section):
         result = []
         for lang, translation in self._translations.items():
             if lang == self.default_language:
-                result.append(node("translation", lang=lang,default=u"true()"))
+                result.append(node("translation", lang=lang, default=u"true()"))
                 #result.append(node("translation", lang=lang))
             else:
                 result.append(node("translation", lang=lang))
