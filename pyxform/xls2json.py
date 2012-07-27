@@ -71,7 +71,9 @@ survey_header_aliases = {
     u"image": u"media::image",
     u"audio": u"media::audio",
     u"video": u"media::video",
-    u"count": u"bind::jr:count"
+    u"count": u"control::jr:count",
+    u"repeat_count": u"control::jr:count",
+    u"jr:count": u"control::jr:count",
 }
 list_header_aliases = {
     u"caption" : constants.LABEL,

@@ -54,18 +54,13 @@ class RepeatingSection(Section):
         </repeat>
         </group>
         """
-        control_dict = self.control
-        kwargs = {}
-        if u"jr:count" in self and self[u"jr:count"] != "":
-            kwargs = {u"jr:count" : self[u"jr:count"]}
-        if u"appearance" in control_dict:
-            repeat_node = node(
-                u"repeat", nodeset=self.get_xpath(),
-                appearance=control_dict[u"appearance"],
-                **kwargs
-                )
-        else:
-            repeat_node = node(u"repeat", nodeset=self.get_xpath(), **kwargs)
+        control_dict = self.control.copy()
+        jrcount = control_dict.get('jr:count')
+        if jrcount:
+            survey = self.get_root()
+            control_dict['jr:count'] = survey.insert_xpaths(jrcount)
+        repeat_node = node(u"repeat", nodeset=self.get_xpath(), **control_dict)
+
         for n in Section.xml_control(self):
             repeat_node.appendChild(n)
 
