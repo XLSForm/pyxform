@@ -351,7 +351,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
                 
     choices = combined_lists
-    json_dict['choices'] = choices
     ########### Cascading Select sheet ###########
     cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, {})
     
@@ -512,30 +511,36 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 
                 specify_other_question = None
                 if parse_dict.get("specify_other") is not None:
-                    #With this code we no longer need to handle or_other questions in survey builder.
-                    choices[list_name].append(
-                        {
-                            'name': 'other',
-                            'label': 'Other',
-                            'or_other': 'true',
-                        })
-                    if 'choice_filter' in row:
-                        row['choice_filter'] += ' and or_other="true"'
-                    else:
-                        row['choice_filter'] = 'or_other="true"'
-                        
-                    specify_other_question = \
-                        {
-                          'type':'text',
-                          'name': row['name'] + '_specify_other',
-                          'label':'Specify Other for:\n"' + row['label'] + '"',
-                          'bind' : {'relevant': "selected(../%s, 'other')" % row['name']},
-                        }
+                    select_type += u" or specify other"
+#                    #With this code we no longer need to handle or_other questions in survey builder.
+#                    #However, it depends on being able to use choice filters and xpath expressions that return empty sets.
+#                    choices[list_name].append(
+#                        {
+#                            'name': 'other',
+#                            'label': {default_language : 'Other'},
+#                            'orOther': 'true',
+#                        })
+#                    or_other_xpath = 'isNull(orOther)'
+#                    if 'choice_filter' in row:
+#                        row['choice_filter'] += ' or ' + or_other_xpath
+#                    else:
+#                        row['choice_filter'] = or_other_xpath
+#                        
+#                    specify_other_question = \
+#                        {
+#                          'type':'text',
+#                          'name': row['name'] + '_specify_other',
+#                          'label':'Specify Other for:\n"' + row['label'] + '"',
+#                          'bind' : {'relevant': "selected(../%s, 'other')" % row['name']},
+#                        }
                     
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
-                #new_json_dict[constants.CHOICES] = choices[list_name]
-                new_json_dict['itemset'] = list_name
+                if row.get('choice_filter'):
+                    json_dict['choices'] = choices
+                    new_json_dict['itemset'] = list_name
+                else:
+                    new_json_dict[constants.CHOICES] = choices[list_name]
                 
                 #Code to deal with table_list appearance flags (for groups of selects)
                 if table_list or begin_table_list:
@@ -545,8 +550,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                             constants.TYPE : select_type,
                             constants.NAME : "reserved_name_for_field_list_labels_" + str(row_number), #Adding row number for uniqueness
                             constants.CONTROL : { u"appearance" : u"label" },
-                            #constants.CHOICES : choices[list_name]
-                            'itemset' : list_name,
+                            constants.CHOICES : choices[list_name],
+                            #Do we care about filtered selects in table lists?
+                            #'itemset' : list_name,
                         }
                         parent_children_array.append(table_list_header)
                         begin_table_list = False

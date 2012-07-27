@@ -66,19 +66,6 @@ class Survey(Section):
                     node(u"h:body", *self.xml_control()),
                     **nsmap
                     )
-    def _generate_static_instance_itext(self):
-        """
-        Generates <itext> elements for static data (e.g. choices for select type questions)
-        """
-        for list_name, choice_list in self.choices.items():
-            for idx, choice in zip(range(len(choice_list)), choice_list):
-                for choicePropertyName, choicePropertyValue in choice.items():
-                    if isinstance(choicePropertyValue, dict):
-                        itextId = '-'.join(['static_instance', list_name, str(idx)])
-                        itextNode = node("text", id=itextId)
-                        for key, value in choicePropertyValue.items():
-                            itextNode.appendChild(node("value", value, form=key))
-                        yield itextNode
 
     def _generate_static_instances(self):
         """
@@ -88,12 +75,13 @@ class Survey(Section):
             instance_element_list = []
             for idx, choice in zip(range(len(choice_list)), choice_list):
                 choice_element_list = []
+                #Add a unique id to the choice element incase there is itext it refrences
+                itextId = '-'.join(['static_instance', list_name, str(idx)])
+                choice_element_list.append(node("itextId", itextId))
+                
                 for choicePropertyName, choicePropertyValue in choice.items():
                     if isinstance(choicePropertyValue, basestring):
                         choice_element_list.append(node(choicePropertyName, unicode(choicePropertyValue)))
-                    elif isinstance(choicePropertyValue, dict):
-                        itextId = '-'.join(['static_instance', list_name, str(idx)])
-                        choice_element_list.append(node("itextId", itextId))
                 instance_element_list.append(node("item", *choice_element_list))
             yield node("instance", node("root", *instance_element_list), id=list_name)
 
@@ -106,7 +94,8 @@ class Survey(Section):
         self._add_empty_translations()
         
         model_children = []
-        model_children.append(self.itext())#This will in many cases add an unnessairy itext node
+        if self._translations:
+            model_children.append(self.itext())
         model_children += [node("instance", self.xml_instance())]
         model_children += list(self._generate_static_instances()) 
         model_children += self.xml_bindings()
@@ -128,6 +117,14 @@ class Survey(Section):
             result.setAttribute(u"version", self.version)
         return result
 
+    def _add_to_nested_dict(self, dicty, path, value):
+        if len(path) == 1:
+            dicty[path[0]] = value
+            return
+        if path[0] not in dicty:
+            dicty[path[0]] = {}
+        self._add_to_nested_dict(dicty[path[0]], path[1:], value)
+        
     def _setup_translations(self):
         """
         set up the self._translations dict which will be referenced in the setup media and itext functions
@@ -137,6 +134,7 @@ class Survey(Section):
             for d in element.get_translations(self.default_language):
                 self._translations[d['lang']][d['path']] = {"long" : d['text']}
                 
+        #This code sets up translations for choiced in filtered selects.
         for list_name, choice_list in self.choices.items():
             for idx, choice in zip(range(len(choice_list)), choice_list):
                 for choicePropertyName, choicePropertyValue in choice.items():
@@ -145,12 +143,12 @@ class Survey(Section):
                         for mediatypeorlanguage, value in choicePropertyValue.items():
                             if isinstance(value, dict):
                                 for langauge, value in value.items():
-                                    self._translations[langauge][itextId] = {mediatypeorlanguage : value}
+                                    self._add_to_nested_dict(self._translations, [langauge, itextId, mediatypeorlanguage], value)
                             else:
-                                if choicePropertyName is 'media':
-                                    self._translations['default'][itextId] = {mediatypeorlanguage : value}
+                                if choicePropertyName == 'media':
+                                    self._add_to_nested_dict(self._translations, [self.default_language, itextId, mediatypeorlanguage], value)
                                 else:
-                                    self._translations[mediatypeorlanguage][itextId] = {'long' : value}
+                                    self._add_to_nested_dict(self._translations, [mediatypeorlanguage, itextId, 'long'], value)
 
     def _add_empty_translations(self):
         """
