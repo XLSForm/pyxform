@@ -295,45 +295,45 @@ class Survey(Section):
                 else:
                     self._xpath[element.name] = element.get_xpath()
 
-    def _var_repl_function(self):
+    def _var_repl_function(self, matchobj):
         """
         Given a dictionary of xpaths, return a function we can use to
         replace ${varname} with the xpath to varname.
         """
-        def repl(matchobj):
-            name = matchobj.group(1)
-            intro = "There has been a problem trying to replace ${%s} with the XPath to the survey element named '%s'." % (name, name)
-            if name not in self._xpath:
-                raise PyXFormError(intro + " There is no survey element with this name.")
-            if self._xpath[name] is None:
-                raise PyXFormError(intro + " There are multiple survey elements with this name.")
-            return self._xpath[name]
-        return repl
+        name = matchobj.group(1)
+        intro = "There has been a problem trying to replace ${%s} with the XPath to the survey element named '%s'." % (name, name)
+        if name not in self._xpath:
+            raise PyXFormError(intro + " There is no survey element with this name.")
+        if self._xpath[name] is None:
+            raise PyXFormError(intro + " There are multiple survey elements with this name.")
+        return self._xpath[name]
+
 
     def insert_xpaths(self, text):
         """
         Replace all instances of ${var} with the xpath to var.
         """
-        bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
-        return re.sub(bracketed_tag, self._var_repl_function(), unicode(text))
+        #bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
+        bracketed_tag = r"\$\{(.*?)\}"
+        return re.sub(bracketed_tag, self._var_repl_function, unicode(text))
 
     def _var_repl_output_function(self,matchobj):
         """
         A regex substitution function that will replace
         ${varname} with an output element that has the xpath to varname.
         """
-        if matchobj.group(1) not in self._xpath:
-            raise PyXFormError("There is no survey element with this name.",
-                            matchobj.group(1))
-        return '<output value="' + self._xpath[matchobj.group(1)] + '" />'
-
+#        if matchobj.group(1) not in self._xpath:
+#            raise PyXFormError("There is no survey element with this name.",
+#                            matchobj.group(1))
+        return '<output value="' + self._var_repl_function(matchobj) + '" />'
 
     def insert_output_values(self, text):
         """
         Replace all the ${variables} in text with xpaths.
         Returns that and a boolean indicating if there were any ${variables} present.
         """
-        bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
+        #bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
+        bracketed_tag = r"\$\{(.*?)\}"
         result = re.sub(bracketed_tag, self._var_repl_output_function, unicode(text))
         return result, not result == text
 
