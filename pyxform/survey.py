@@ -80,7 +80,7 @@ class Survey(Section):
                 choice_element_list.append(node("itextId", itextId))
                 
                 for choicePropertyName, choicePropertyValue in choice.items():
-                    if isinstance(choicePropertyValue, basestring):
+                    if isinstance(choicePropertyValue, basestring) and choicePropertyName != 'label':
                         choice_element_list.append(node(choicePropertyName, unicode(choicePropertyValue)))
                 instance_element_list.append(node("item", *choice_element_list))
             yield node("instance", node("root", *instance_element_list), id=list_name)
@@ -149,7 +149,9 @@ class Survey(Section):
                                     self._add_to_nested_dict(self._translations, [self.default_language, itextId, mediatypeorlanguage], value)
                                 else:
                                     self._add_to_nested_dict(self._translations, [mediatypeorlanguage, itextId, 'long'], value)
-
+                    elif choicePropertyName == 'label':
+                        self._add_to_nested_dict(self._translations, [self.default_language, itextId, 'long'], choicePropertyValue)
+                        
     def _add_empty_translations(self):
         """
         Adds translations so that every itext element has the same elements accross every language.
