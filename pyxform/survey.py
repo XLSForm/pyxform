@@ -138,8 +138,8 @@ class Survey(Section):
         for list_name, choice_list in self.choices.items():
             for idx, choice in zip(range(len(choice_list)), choice_list):
                 for choicePropertyName, choicePropertyValue in choice.items():
+                    itextId = '-'.join(['static_instance', list_name, str(idx)])
                     if isinstance(choicePropertyValue, dict):
-                        itextId = '-'.join(['static_instance', list_name, str(idx)])
                         for mediatypeorlanguage, value in choicePropertyValue.items():
                             if isinstance(value, dict):
                                 for langauge, value in value.items():

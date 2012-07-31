@@ -163,12 +163,13 @@ class MultipleChoiceQuestion(Question):
         result = node(**control_dict)
         for element in self.xml_label_and_hint():
             result.appendChild(element)
-        choice_filter = self.get('choice_filter')
-        if choice_filter:
+        survey = self.get_root()
+        if len(survey.choices) > 0: #i.e. If global choices are specified for the survey in a static instance
+            choice_filter = self.get('choice_filter')
             nodeset = "instance('" + self['itemset'] + "')/root/item"
-            survey = self.get_root()
             choice_filter = survey.insert_xpaths(choice_filter)
-            nodeset += '[' + choice_filter + ']'
+            if choice_filter:
+                nodeset += '[' + choice_filter + ']'
             itemset_label_ref = "jr:itext(itextId)"
             itemset_children = [node('value', ref='name'), node('label', ref=itemset_label_ref)]
             result.appendChild(node('itemset', *itemset_children, nodeset=nodeset))
