@@ -109,7 +109,29 @@ class Option(SurveyElement):
     def validate(self):
         pass
 
-
+#class MultipleChoiceQuestion(Question):
+#
+#    def xml_control(self):
+#        assert self.bind[u"type"] in [u"select", u"select1"]
+#        control_dict = self.control.copy()
+#        control_dict['ref'] = self.get_xpath()
+#        nodeset = "instance('" + self['itemset'] + "')/root/item"
+#        choice_filter = self.get('choice_filter')
+#        if choice_filter:
+#            survey = self.get_root()
+#            choice_filter = survey.insert_xpaths(choice_filter)
+#            nodeset += '[' + choice_filter + ']'
+#        result = node(**control_dict)
+#        for element in self.xml_label_and_hint():
+#            result.appendChild(element)
+#        itemset_label_ref = "jr:itext(itextId)"
+#        itemset_children = [node('value', ref='name'), node('label', ref=itemset_label_ref)]
+#        result.appendChild(node('itemset', *itemset_children, nodeset=nodeset))
+#        return result
+#        
+#class SelectOneQuestion(MultipleChoiceQuestion):
+#    pass
+    
 class MultipleChoiceQuestion(Question):
 
     def __init__(self, *args, **kwargs):
@@ -134,24 +156,25 @@ class MultipleChoiceQuestion(Question):
             choice.validate()
 
     def xml_control(self):
-        assert self.bind[u"type"] in [u"select", u"select1"] #Why select1? -- odk/jr use select1 for single-option-select
+        assert self.bind[u"type"] in [u"select", u"select1"]
 
-        control_dict = self.control
-        if u"appearance" in control_dict:
-            result = node(
-                self.bind[u"type"],
-                ref=self.get_xpath(),
-                appearance=control_dict[u"appearance"]
-                )
+        control_dict = self.control.copy()
+        control_dict['ref'] = self.get_xpath()
+        result = node(**control_dict)
+        for element in self.xml_label_and_hint():
+            result.appendChild(element)
+        choice_filter = self.get('choice_filter')
+        if choice_filter:
+            nodeset = "instance('" + self['itemset'] + "')/root/item"
+            survey = self.get_root()
+            choice_filter = survey.insert_xpaths(choice_filter)
+            nodeset += '[' + choice_filter + ']'
+            itemset_label_ref = "jr:itext(itextId)"
+            itemset_children = [node('value', ref='name'), node('label', ref=itemset_label_ref)]
+            result.appendChild(node('itemset', *itemset_children, nodeset=nodeset))
         else:
-            result = node(
-                self.bind[u"type"],
-                ref=self.get_xpath()
-                )
-        for n in self.xml_label_and_hint():
-            result.appendChild(n)
-        for n in [o.xml() for o in self.children]:
-            result.appendChild(n)
+            for n in [o.xml() for o in self.children]:
+                result.appendChild(n)
         return result
 
 

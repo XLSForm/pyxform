@@ -13,7 +13,7 @@ class main_test(TestCase):
     maxDiff = None
     
     def runTest(self):
-        filename = "xlsform_spec_test.xls"
+        filename = "new_cascading_select.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
         #Get the xform output path:
         root_filename, ext = os.path.splitext(filename)
@@ -28,15 +28,3 @@ class main_test(TestCase):
         with codecs.open(expected_output_path, 'rb', encoding="utf-8") as expected_file:
             with codecs.open(output_path, 'rb', encoding="utf-8") as actual_file:
                 self.assertMultiLineEqual(expected_file.read(), actual_file.read())
-
-class warnings_test(TestCase):
-    """
-    Just checks that the number of warnings thrown when reading warnings.xls doesn't change.
-    """
-    def runTest(self):
-        filename = "warnings.xls"
-        path_to_excel_file = os.path.join(DIR, "example_xls", filename)
-        warnings = []
-        xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
-        #print '\n'.join(warnings)
-        self.assertEquals(len(warnings), 17, "Found " + str(len(warnings)) + " warnings")

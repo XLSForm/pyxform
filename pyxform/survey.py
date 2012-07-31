@@ -36,8 +36,9 @@ class Survey(Section):
             u"submission_url": unicode,
             u"public_key": unicode,
             u"version": unicode,
-            }
-        )
+            u"choices": dict,
+        }
+    )
         
     def validate(self):
         super(Survey, self).validate()
@@ -66,6 +67,24 @@ class Survey(Section):
                     **nsmap
                     )
 
+    def _generate_static_instances(self):
+        """
+        Generates <instance> elements for static data (e.g. choices for select type questions)
+        """
+        for list_name, choice_list in self.choices.items():
+            instance_element_list = []
+            for idx, choice in zip(range(len(choice_list)), choice_list):
+                choice_element_list = []
+                #Add a unique id to the choice element incase there is itext it refrences
+                itextId = '-'.join(['static_instance', list_name, str(idx)])
+                choice_element_list.append(node("itextId", itextId))
+                
+                for choicePropertyName, choicePropertyValue in choice.items():
+                    if isinstance(choicePropertyValue, basestring) and choicePropertyName != 'label':
+                        choice_element_list.append(node(choicePropertyName, unicode(choicePropertyValue)))
+                instance_element_list.append(node("item", *choice_element_list))
+            yield node("instance", node("root", *instance_element_list), id=list_name)
+
     def xml_model(self):
         """
         Generate the xform <model> element
@@ -73,9 +92,14 @@ class Survey(Section):
         self._setup_translations()
         self._setup_media()
         self._add_empty_translations()
-        model_children = [node("instance", self.xml_instance())] + self.xml_bindings()
+        
+        model_children = []
         if self._translations:
-            model_children.insert(0, self.itext())
+            model_children.append(self.itext())
+        model_children += [node("instance", self.xml_instance())]
+        model_children += list(self._generate_static_instances()) 
+        model_children += self.xml_bindings()
+        
         if self.submission_url or self.public_key:
             submission_attrs = dict()
             if self.submission_url:
@@ -93,6 +117,14 @@ class Survey(Section):
             result.setAttribute(u"version", self.version)
         return result
 
+    def _add_to_nested_dict(self, dicty, path, value):
+        if len(path) == 1:
+            dicty[path[0]] = value
+            return
+        if path[0] not in dicty:
+            dicty[path[0]] = {}
+        self._add_to_nested_dict(dicty[path[0]], path[1:], value)
+        
     def _setup_translations(self):
         """
         set up the self._translations dict which will be referenced in the setup media and itext functions
@@ -101,7 +133,25 @@ class Survey(Section):
         for element in self.iter_descendants():
             for d in element.get_translations(self.default_language):
                 self._translations[d['lang']][d['path']] = {"long" : d['text']}
-              
+                
+        #This code sets up translations for choiced in filtered selects.
+        for list_name, choice_list in self.choices.items():
+            for idx, choice in zip(range(len(choice_list)), choice_list):
+                for choicePropertyName, choicePropertyValue in choice.items():
+                    if isinstance(choicePropertyValue, dict):
+                        itextId = '-'.join(['static_instance', list_name, str(idx)])
+                        for mediatypeorlanguage, value in choicePropertyValue.items():
+                            if isinstance(value, dict):
+                                for langauge, value in value.items():
+                                    self._add_to_nested_dict(self._translations, [langauge, itextId, mediatypeorlanguage], value)
+                            else:
+                                if choicePropertyName == 'media':
+                                    self._add_to_nested_dict(self._translations, [self.default_language, itextId, mediatypeorlanguage], value)
+                                else:
+                                    self._add_to_nested_dict(self._translations, [mediatypeorlanguage, itextId, 'long'], value)
+                    elif choicePropertyName == 'label':
+                        self._add_to_nested_dict(self._translations, [self.default_language, itextId, 'long'], choicePropertyValue)
+                        
     def _add_empty_translations(self):
         """
         Adds translations so that every itext element has the same elements accross every language.
@@ -181,7 +231,7 @@ class Survey(Section):
         result = []
         for lang, translation in self._translations.items():
             if lang == self.default_language:
-                result.append(node("translation", lang=lang,default=u"true()"))
+                result.append(node("translation", lang=lang, default=u"true()"))
                 #result.append(node("translation", lang=lang))
             else:
                 result.append(node("translation", lang=lang))
@@ -247,45 +297,45 @@ class Survey(Section):
                 else:
                     self._xpath[element.name] = element.get_xpath()
 
-    def _var_repl_function(self):
+    def _var_repl_function(self, matchobj):
         """
         Given a dictionary of xpaths, return a function we can use to
         replace ${varname} with the xpath to varname.
         """
-        def repl(matchobj):
-            name = matchobj.group(1)
-            intro = "There has been a problem trying to replace ${%s} with the XPath to the survey element named '%s'." % (name, name)
-            if name not in self._xpath:
-                raise PyXFormError(intro + " There is no survey element with this name.")
-            if self._xpath[name] is None:
-                raise PyXFormError(intro + " There are multiple survey elements with this name.")
-            return self._xpath[name]
-        return repl
+        name = matchobj.group(1)
+        intro = "There has been a problem trying to replace ${%s} with the XPath to the survey element named '%s'." % (name, name)
+        if name not in self._xpath:
+            raise PyXFormError(intro + " There is no survey element with this name.")
+        if self._xpath[name] is None:
+            raise PyXFormError(intro + " There are multiple survey elements with this name.")
+        return self._xpath[name]
+
 
     def insert_xpaths(self, text):
         """
         Replace all instances of ${var} with the xpath to var.
         """
-        bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
-        return re.sub(bracketed_tag, self._var_repl_function(), unicode(text))
+        #bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
+        bracketed_tag = r"\$\{(.*?)\}"
+        return re.sub(bracketed_tag, self._var_repl_function, unicode(text))
 
     def _var_repl_output_function(self,matchobj):
         """
         A regex substitution function that will replace
         ${varname} with an output element that has the xpath to varname.
         """
-        if matchobj.group(1) not in self._xpath:
-            raise PyXFormError("There is no survey element with this name.",
-                            matchobj.group(1))
-        return '<output value="' + self._xpath[matchobj.group(1)] + '" />'
-
+#        if matchobj.group(1) not in self._xpath:
+#            raise PyXFormError("There is no survey element with this name.",
+#                            matchobj.group(1))
+        return '<output value="' + self._var_repl_function(matchobj) + '" />'
 
     def insert_output_values(self, text):
         """
         Replace all the ${variables} in text with xpaths.
         Returns that and a boolean indicating if there were any ${variables} present.
         """
-        bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
+        #bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
+        bracketed_tag = r"\$\{(.*?)\}"
         result = re.sub(bracketed_tag, self._var_repl_output_function, unicode(text))
         return result, not result == text
 
