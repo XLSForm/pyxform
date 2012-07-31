@@ -538,9 +538,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                     
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
+                new_json_dict['itemset'] = list_name
                 if row.get('choice_filter'):
                     json_dict['choices'] = choices
-                    new_json_dict['itemset'] = list_name
                 else:
                     new_json_dict[constants.CHOICES] = choices[list_name]
                 
