@@ -39,4 +39,4 @@ class warnings_test(TestCase):
         warnings = []
         xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
         #print '\n'.join(warnings)
-        self.assertEquals(len(warnings), 17, "Found " + str(len(warnings)) + " warnings")
+        self.assertEquals(len(warnings), 21, "Found " + str(len(warnings)) + " warnings")

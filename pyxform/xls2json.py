@@ -351,8 +351,16 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, constants.LIST_NAME)
     
-                
     choices = combined_lists
+    #Make sure all the options have the required properties:
+    for list_name, options in choices.items():
+        for option in options:
+            if 'name' not in option:
+                info = "[list_name : " + list_name + ']'
+                raise PyXFormError("On the choices sheet there is a option with no name. " + info)
+            if 'label' not in option:
+                info = "[list_name : " + list_name + ']'
+                warnings.append("On the choices sheet there is a option with no label. " + info)
     ########### Cascading Select sheet ###########
     cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, {})
     
