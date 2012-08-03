@@ -44,8 +44,8 @@ def xls_to_dict(path_or_file):
             row_dict = {}
             for column in range(0, sheet.ncols):
                 #Changing to cell_value function
-                key = sheet.cell_value(0, column)#.value
-                value = sheet.cell_value(row, column)#.value
+                key = sheet.cell_value(0, column).strip()
+                value = sheet.cell_value(row, column)
                 value_type = sheet.cell_type(row, column)
                 if value is not None and value != "":
                     row_dict[key] = xls_value_to_unicode(value, value_type)
