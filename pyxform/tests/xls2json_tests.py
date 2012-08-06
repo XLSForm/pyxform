@@ -37,6 +37,18 @@ class BasicXls2JsonApiTests(TestCase):
             ]
         self.assertEqual(x_results[u"children"], expected_dict)
 
+    def test_hidden(self):
+        x = SurveyReader(utils.path_to_text_fixture("hidden.xls"))
+        x_results = x.to_json_dict()
+
+        expected_dict = [
+            {
+                u'type': u'hidden',
+                u'name': u'hidden_test',
+                }
+        ]
+        self.assertEqual(x_results[u"children"], expected_dict)
+
     def test_gps(self):
         x = SurveyReader(utils.path_to_text_fixture("gps.xls"))
 
