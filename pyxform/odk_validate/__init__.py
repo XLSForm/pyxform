@@ -43,7 +43,9 @@ def check_xform(path_to_xform):
     #stdout is not used because it has some warnings that always appear and can be ignored.
     #stderr is treated as a warning if the form is valid or an error if it is invalid.
     returncode, timeout, stdout, stderr = run_popen_with_timeout(["java", "-jar", ODK_VALIDATE_JAR, path_to_xform], 60)
-    warnings = ['ODK Validate Warnings:\n' + stderr]
+    warnings = []
+    if stderr:
+        warnings.append('ODK Validate Warnings:\n' + stderr)
     if timeout:
         warnings.append("XForm took to long to completely validate.")
     if returncode > 0: #Error invalid
