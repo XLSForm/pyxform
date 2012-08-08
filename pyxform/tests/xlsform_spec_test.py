@@ -20,10 +20,11 @@ class main_test(TestCase):
         output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
         expected_output_path = os.path.join(DIR, "test_expected_output", root_filename + ".xml")
         #Do the conversion:
-        json_survey = xls2json.parse_file_to_json(path_to_excel_file)
+        warnings = []
+        json_survey = xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
         survey = pyxform.create_survey_element_from_dict(json_survey)
-        survey.print_xform_to_file(output_path)
-        
+        survey.print_xform_to_file(output_path, warnings=warnings)
+        #print warnings
         #Compare with the expected output:
         with codecs.open(expected_output_path, 'rb', encoding="utf-8") as expected_file:
             with codecs.open(output_path, 'rb', encoding="utf-8") as actual_file:

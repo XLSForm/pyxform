@@ -339,14 +339,20 @@ class Survey(Section):
         result = re.sub(bracketed_tag, self._var_repl_output_function, unicode(text))
         return result, not result == text
 
-    def print_xform_to_file(self, path="", validate=True):
+    def print_xform_to_file(self, path="", validate=True, warnings=None):
+        """
+        Print the xForm to a file and optionally validate it as well by throwing exceptions
+        and adding warnings to the warnings array.
+        """
+        if warnings is None:
+            warnings = []
         if not path:
             path = self._print_name + ".xml"
         fp = codecs.open(path, mode="w", encoding="utf-8")
         fp.write(self._to_pretty_xml())
         fp.close()
         if validate:
-            check_xform(path)
+            warnings.extend(check_xform(path))
 
     def to_xml(self, validate=True, pretty=True):
         with tempfile.NamedTemporaryFile() as tmp:
