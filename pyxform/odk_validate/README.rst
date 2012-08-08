@@ -1,11 +1,6 @@
 pyxform_validate
 ================
-A Python Wrapper for ODK Validate/the JavaRosa XForm Validator.
-
-Wrapping a headless version of this library:
-https://validate.opendatakit.googlecode.com/hg/
-
-(Modified FormValidator class included.)
+A Python Wrapper for ODK Validate 1.2.2
 
 How to use:
 -----------

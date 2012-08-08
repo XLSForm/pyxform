@@ -351,7 +351,6 @@ class Survey(Section):
         fp = codecs.open(path, mode="w", encoding="utf-8")
         fp.write(self._to_pretty_xml())
         fp.close()
-        warnings.append('asdf')
         if validate:
             warnings.extend(check_xform(path))
 
