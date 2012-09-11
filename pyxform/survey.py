@@ -34,7 +34,8 @@ class Survey(Section):
             u"default_language": unicode,
             u"_translations": dict,
             u"submission_url": unicode,
-            u"public_key": unicode
+            u"public_key": unicode,
+            u"instance_xmlns": unicode
             }
         )
         
@@ -88,6 +89,10 @@ class Survey(Section):
     def xml_instance(self):
         result = Section.xml_instance(self)
         result.setAttribute(u"id", self.id_string)
+
+        #add instance xmlns attribute to the instance node
+        if self.instance_xmlns:
+            result.setAttribute(u"xmlns", self.instance_xmlns)
         
         #We need to add a unique form instance id if the form is to be submitted.
         if self.submission_url:
