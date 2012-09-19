@@ -13,7 +13,7 @@ class main_test(TestCase):
     maxDiff = None
     
     def runTest(self):
-        filename = "xlsform_spec_test.xls"
+        filename = "xlsform_spec_test.xlsx"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
         #Get the xform output path:
         root_filename, ext = os.path.splitext(filename)

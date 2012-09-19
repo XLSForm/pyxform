@@ -627,12 +627,10 @@ def parse_file_to_workbook_dict(path, file_object=None):
     (shortname, extension) = os.path.splitext(filename)
     if not extension: raise PyXFormError("No extension.")
     
-    if extension == ".xls":
+    if extension == ".xls" or extension == ".xlsx":
         return xls_to_dict(file_object if file_object is not None else path)
     elif extension == ".csv":
         return csv_to_dict(file_object if file_object is not None else path)
-    elif extension == ".xlsx":
-        raise PyXFormError("XLSX files are not supported at this time. Please save the spreadsheet as an XLS file (97).")
     else:
         raise PyXFormError("File was not recognized")
 
