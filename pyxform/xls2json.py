@@ -383,7 +383,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     stack = [(None, json_dict.get(constants.CHILDREN))]
     #If a group has a table-list appearance flag this will be set to the name of the list
     table_list = None
-    begin_table_list = False
     #For efficiency we compile all the regular expressions that will be used to parse types:
     end_control_regex = re.compile(r"^(?P<end>end)(\s|_)(?P<type>("
                                    + '|'.join(control_aliases.keys()) + r"))$")
@@ -481,7 +480,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 
                 #Code to deal with table_list appearance flags (for groups of selects)
                 if new_json_dict.get(u"control",{}).get(u"appearance") == constants.TABLE_LIST:
-                    begin_table_list = True
+                    table_list = True
                     new_json_dict[u"control"][u"appearance"] = u"field-list"
                     
                 parent_children_array.append(new_json_dict)
@@ -553,8 +552,8 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                     new_json_dict[constants.CHOICES] = choices[list_name]
                 
                 #Code to deal with table_list appearance flags (for groups of selects)
-                if table_list or begin_table_list:
-                    if begin_table_list: #If this row is the first select in a table list
+                if table_list is not None:
+                    if not isinstance(table_list, basestring): #Then this row is the first select in a table list
                         table_list = list_name
                         table_list_header = {
                             constants.TYPE : select_type,
@@ -565,7 +564,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                             #'itemset' : list_name,
                         }
                         parent_children_array.append(table_list_header)
-                        begin_table_list = False
 
                     if table_list <> list_name:
                         error_message = "Error on row: " + str(row_number) + "\n"
