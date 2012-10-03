@@ -5,4 +5,4 @@ install:
   - sudo pip -q install -r requirements.pip --use-mirrors
 script: nosetests
 notifications:
-  irc: "irc.freenode.org#modilabs"
+  irc: "irc.freenode.org#moditest"
