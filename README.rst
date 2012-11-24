@@ -13,8 +13,10 @@ Running pyxform as a Python script:
 
 1. install xlrd.
 
-    #On ubuntu these shell commands should do it:
+    #On ubuntu these terminal commands should do it:
+
     easy_install pip
+
     pip install xlrd
 
 2. Run this command:
@@ -25,13 +27,8 @@ Installation
 ============
 Installing pyxform from github is easy with pip::
 
-	# If you fork this make sure the link to the repo is correct
-
-    # If pulling from Modi Research Group version:
+	#If you fork this make sure the link to the repo is correct
 	pip install -e git+https://github.com/modilabs/pyxform.git@master#egg=pyxform
-
-    # If pulling from the University of Washington version:
-	pip install -e git+https://github.com/UW-ICTD/pyxform.git@master#egg=pyxform
 
 Testing
 =======
