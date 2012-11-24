@@ -9,6 +9,7 @@ TYPE = u"type"
 TITLE = u"title"
 NAME = u"name"
 ID_STRING = u"id_string"
+VERSION = u"version"
 PUBLIC_KEY = u"public_key"
 SUBMISSION_URL = u"submission_url"
 DEFAULT_LANGUAGE = u"default_language"
@@ -30,4 +31,18 @@ CHILDREN = u"children"
 SELECT_ONE = u"select one"
 SELECT_ALL_THAT_APPLY = u"select all that apply"
 CHOICES = u"choices"
+
+# XLS Specific constants
+LIST_NAME = u"list name"
+CASCADING_SELECT = u"cascading_select"
+TABLE_LIST = u"table-list" # hyphenated because it goes in appearance, and convention for appearance column is dashes
+
+# The following are the possible sheet names:
+SURVEY = u"survey"
+SETTINGS = u"settings"
+# These sheet names are for list sheets
+CHOICES = u"choices"
+COLUMNS = u"columns" #this is for loop statements
+CHOICES_AND_COLUMNS = u"choices and columns"
+CASCADING_CHOICES = u"cascades"
 

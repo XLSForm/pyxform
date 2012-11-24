@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest2 import TestCase
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
@@ -8,7 +8,6 @@ import os
 
 FIXTURE_FILETYPE = "xls"
 
-
 class BuilderTests(TestCase):
     maxDiff = None
     def test_new_widgets(self):
@@ -16,7 +15,7 @@ class BuilderTests(TestCase):
         path = utils.path_to_text_fixture('widgets.xml')
         survey.to_xml
         with open(path) as f:
-            self.assertEqual(survey.to_xml(), f.read())
+            self.assertMultiLineEqual(survey.to_xml(), f.read())
 
     def test_unknown_question_type(self):
         survey = utils.build_survey('unknown_question_type.xls')
@@ -155,37 +154,66 @@ class BuilderTests(TestCase):
         #print json.dumps(survey, indent=4, ensure_ascii=False)
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
-    def test_include(self):
-        survey = utils.create_survey_from_fixture(u"include", filetype=FIXTURE_FILETYPE,
-                                                  include_directory=True)
+    def test_select_one_question_with_identical_choice_name(self):
+        """
+        testing to make sure that select ones whose choice names are the same as
+        the name of the select one get compiled.
+        """
+        survey = utils.create_survey_from_fixture("choice_name_same_as_select_name", filetype=FIXTURE_FILETYPE)
         expected_dict = {
-            u'name': u'include',
-            u'title': u'include',
-            u'id_string': u'include',
-            u'default_language': u'default',
-            u'type': u'survey',
-            u'children': [
+                u'name': u'choice_name_same_as_select_name', 
+                u'title': u'choice_name_same_as_select_name', 
+                u'default_language': u'default', 
+                u'id_string': u'choice_name_same_as_select_name', 
+                u'type': u'survey', 
+                u'children':  [
                 {
-                    u'name': u'name',
-                    u'label': {u'English': u"What's your name?"},
-                    u'type': u'text'
-                    },
-                    {
-                        u'name': u'good_day',
-                        u'label': {u'english': u'have you had a good day today?'},
-                        u'type': u'select one',
-                        u'children': [
-                            {
-                                u'name': u'yes',
-                                u'label': {u'english': u'yes'}
-                                },
-                            {
-                                u'name': u'no',
-                                u'label': {u'english': u'no'}
-                                }
-                            ]}]}
-        
+                       u'children':  [
+                        {
+                               u'name': u'zone', 
+                               u'label': u'Zone'
+                        }
+                        ], 
+                               u'type': u'select one', 
+                               u'name': u'zone', 
+                               u'label': u'Zone'
+                }
+                ]
+        }
+        self.maxDiff = None
         self.assertEqual(survey.to_json_dict(), expected_dict)
+
+#    def test_include(self):
+#        survey = utils.create_survey_from_fixture(u"include", filetype=FIXTURE_FILETYPE,
+#                                                  include_directory=True)
+#        expected_dict = {
+#            u'name': u'include',
+#            u'title': u'include',
+#            u'id_string': u'include',
+#            u'default_language': u'default',
+#            u'type': u'survey',
+#            u'children': [
+#                {
+#                    u'name': u'name',
+#                    u'label': {u'English': u"What's your name?"},
+#                    u'type': u'text'
+#                    },
+#                    {
+#                        u'name': u'good_day',
+#                        u'label': {u'english': u'have you had a good day today?'},
+#                        u'type': u'select one',
+#                        u'children': [
+#                            {
+#                                u'name': u'yes',
+#                                u'label': {u'english': u'yes'}
+#                                },
+#                            {
+#                                u'name': u'no',
+#                                u'label': {u'english': u'no'}
+#                                }
+#                            ]}]}
+#        
+#        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_include_json(self):
         survey_in = utils.create_survey_from_fixture(
@@ -287,11 +315,11 @@ class BuilderTests(TestCase):
                             u'type': u'integer'
                             }
                         ]
-                    },
-                {
-                    u'name': u'other',
-                    u'label': u'Other',
-                    u'type' : u'group',
-                    u'children': [{u'name': u'number', u'label': {u'english': u'How many Other are on the premises?'}, u'type': u'integer'}]}]}
+                    }]}
         self.maxDiff = None
         self.assertEqual(survey.to_json_dict(), expected_dict)
+
+    def test_cascading_selects(self):
+        survey_cs = utils.create_survey_from_fixture("cascading_select_test", filetype=FIXTURE_FILETYPE)
+        survey_eq = utils.create_survey_from_fixture("cascading_select_test_equivalent", filetype=FIXTURE_FILETYPE)
+        self.assertEqual(survey_cs.to_json_dict(), survey_eq.to_json_dict())

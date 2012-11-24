@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest2 import TestCase
 from pyxform import create_survey_from_xls
 import re
 import utils
@@ -30,9 +30,13 @@ class XMLTests(TestCase):
       <instance>
         <yes_or_no_question id="yes_or_no_question_2011_04_22">
           <good_day/>
+          <orx:meta>
+            <orx:instanceID/>
+          </orx:meta>
         </yes_or_no_question>
       </instance>
       <bind nodeset="/yes_or_no_question/good_day" type="select1"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/yes_or_no_question/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
@@ -52,4 +56,4 @@ class XMLTests(TestCase):
 '''
         xml_str = re.sub(r"yes_or_no_question_2011_04_22", self.survey.id_string, xml_str)
         self.maxDiff = None
-        self.assertEquals(xml_str, self.survey.to_xml())
+        self.assertMultiLineEqual(xml_str, self.survey.to_xml())

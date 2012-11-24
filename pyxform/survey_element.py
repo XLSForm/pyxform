@@ -1,7 +1,7 @@
 import json
 from utils import is_valid_xml_tag, node
 from xls2json import print_pyobj_to_json
-from question_type_dictionary import DEFAULT_QUESTION_TYPE_DICTIONARY
+from question_type_dictionary import QUESTION_TYPE_DICT
 from errors import PyXFormError
 
 
@@ -29,18 +29,21 @@ class SurveyElement(dict):
         u"default": unicode,
         u"type": unicode,
         u"appearance": unicode,
+        u"jr:count" : unicode,
         u"bind": dict,
         u"control": dict,
         u"media": dict,
         # this node will also have a parent and children, like a tree!
         u"parent": lambda: None,
         u"children": list,
+        u"itemset": dict,
+        u"choice_filter": unicode,
         }
 
     def _default(self):
         # TODO: need way to override question type dictionary
-        defaults = DEFAULT_QUESTION_TYPE_DICTIONARY
-        return defaults.get_definition(self.get(u"type"))
+        defaults = QUESTION_TYPE_DICT
+        return defaults.get(self.get(u"type"), {})
 
     def __getattr__(self, key):
         """
@@ -189,6 +192,21 @@ class SurveyElement(dict):
         return self.get_xpath() + ":" + display_element
 
     def get_translations(self, default_language):
+        """
+        Returns translations used by this element so they can be included in the <itext> block
+        @see survey._setup_translations
+        """
+        bind_dict = self.get(u'bind')
+        if bind_dict and type(bind_dict) is dict:
+            constraintMsg = bind_dict.get(u'jr:constraintMsg')
+            if type(constraintMsg) is dict:
+                for lang, text in constraintMsg.items():
+                    yield {
+                            'path': self._translation_path(u'jr:constraintMsg'),
+                            'lang': lang,
+                            'text': text,
+                           }
+        
         for display_element in [u'label', u'hint']:
             label_or_hint = self[display_element]
             
@@ -267,6 +285,8 @@ class SurveyElement(dict):
                 #I think all the binding conversions should be happening on the xls2json side.
                 if hashable(v) and v in self.binding_conversions:
                     v = self.binding_conversions[v]
+                if k == u'jr:constraintMsg' and type(v) is dict:
+                    v = "jr:itext('%s')" % self._translation_path(u'jr:constraintMsg')
                 d[k] = survey.insert_xpaths(v)
             return node(u"bind", nodeset=self.get_xpath(), **d)
         return None
