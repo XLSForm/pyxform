@@ -1,21 +1,22 @@
 """
 xls2xform converts properly formatted Excel documents into XForms for
-use with ODK Collect. xl2xform is called at the command line using::
-
-    python xls2xform.py path-to-excel-file
-
-This will create a new XForm in the directory containing the excel
-file.
+use with ODK Collect.
 """
 import os, sys
-from builder import create_survey_from_path
+import xls2json
+import builder
 
 if __name__ == '__main__':
-    path_to_excel_file = sys.argv[1]
-    survey = create_survey_from_path(path_to_excel_file)
-    directory, filename = os.path.split(path_to_excel_file)
-    path_to_xform = os.path.join(directory, survey.id_string + ".xml")
-    survey.print_xform_to_file(path_to_xform)
-    #Dump Json (maybe add a flag for this).
-    path_to_json = os.path.join(directory, survey.id_string + ".json")
-    survey.json_dump(path_to_json)
+    argv = sys.argv
+    if len(argv) < 3:
+        print __doc__
+        print 'Usage:'
+        print argv[0] + ' path_to_XLSForm output_path'
+    else:
+        warnings = []
+        json_survey = xls2json.parse_file_to_json(argv[1], warnings=warnings)
+        survey = builder.create_survey_element_from_dict(json_survey)
+        survey.print_xform_to_file(argv[2])
+        for w in warnings:
+            print w
+        print 'Conversion complete!'
