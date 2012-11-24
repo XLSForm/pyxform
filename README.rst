@@ -8,6 +8,19 @@ pyxform is a major rewrite of `xls2xform
 <http://github.com/mvpdev/xls2xform/>`_. A new user of pyxform should
 look at the tutorial spreadsheet in the docs.
 
+Running pyxform as a Python script:
+===========================
+
+1. install xlrd.
+
+    #On ubuntu these shell commands should do it:
+    easy_install pip
+    pip install xlrd
+
+2. Run this command:
+
+    python pyxform/xls2xform.py path_to_XLSForm output_path
+
 Installation
 ============
 Installing pyxform from github is easy with pip::
