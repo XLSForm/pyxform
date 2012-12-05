@@ -39,6 +39,14 @@ def xls_to_dict(path_or_file):
     All the keys and leaf elements are unicode text.
     """
     def xls_to_dict_normal_sheet(sheet):
+        #Check for duplicate column headers
+        column_header_set = set()
+        for column in range(0, sheet.ncols):
+            column_header = sheet.cell_value(0, column)
+            if column_header in column_header_set:
+                raise PyXFormError("Duplicate column header: " + column_header)
+            column_header_set.add(column_header)
+        
         result = []
         for row in range(1, sheet.nrows):
             row_dict = {}
@@ -133,8 +141,10 @@ def xls_to_dict(path_or_file):
 
     result = {}
     for sheet in workbook.sheets():
-        if sheet.name==constants.CASCADING_CHOICES: result[sheet.name] = xls_to_dict_cascade_sheet(sheet)
-        else: result[sheet.name] = xls_to_dict_normal_sheet(sheet)
+        if sheet.name==constants.CASCADING_CHOICES:
+            result[sheet.name] = xls_to_dict_cascade_sheet(sheet)
+        else:
+            result[sheet.name] = xls_to_dict_normal_sheet(sheet)
     return result
 
 def get_cascading_json(sheet_list, prefix, level):

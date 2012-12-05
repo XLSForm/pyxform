@@ -21,6 +21,7 @@ class main_test(unittest.TestCase):
         filename = "xlsform_spec_test.xlsx"
         #filename = "group_name_test.xls"
         #filename = "table-list.xls"
+        #filename = "duplicate_columns.xlsx"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
         #Get the xform output path:
         root_filename, ext = os.path.splitext(filename)
@@ -51,4 +52,3 @@ class warnings_test(unittest.TestCase):
         
 if __name__ == '__main__':
     unittest.main()
-    
