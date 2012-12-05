@@ -20,6 +20,7 @@ class main_test(unittest.TestCase):
         
         filename = "xlsform_spec_test.xlsx"
         #filename = "group_name_test.xls"
+        #filename = "table-list.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
         #Get the xform output path:
         root_filename, ext = os.path.splitext(filename)

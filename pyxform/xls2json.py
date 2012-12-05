@@ -492,6 +492,21 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 if new_json_dict.get(u"control",{}).get(u"appearance") == constants.TABLE_LIST:
                     table_list = True
                     new_json_dict[u"control"][u"appearance"] = u"field-list"
+                    #Generate a note label element so hints and labels
+                    #work as expected in table-lists.
+                    #see https://github.com/modilabs/pyxform/issues/62
+                    if 'label' in new_json_dict or 'hint' in new_json_dict:
+                        generated_label_element = {
+                            "type":"note",
+                            "name": "generated_table_list_label_" + str(row_number)
+                        }
+                        if 'label' in new_json_dict:
+                            generated_label_element[constants.LABEL] = new_json_dict[constants.LABEL]
+                            del new_json_dict[constants.LABEL]
+                        if 'hint' in new_json_dict:
+                            generated_label_element['hint'] = new_json_dict['hint']
+                            del new_json_dict['hint']
+                        child_list.append(generated_label_element)
                     
                 parent_children_array.append(new_json_dict)
                 stack.append((control_type, child_list))
