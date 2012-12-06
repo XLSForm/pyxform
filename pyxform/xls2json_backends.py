@@ -1,3 +1,6 @@
+"""
+XLS-to-dict and csv-to-dict are essentially backends for xls2json.
+"""
 import xlrd
 from xlrd import XLRDError
 from collections import defaultdict
@@ -5,29 +8,9 @@ import csv
 import cStringIO
 import constants
 import re
+import datetime
 from errors import PyXFormError
 
-"""
-XLS-to-dict and csv-to-dict are essentially backends for xls2json.
-"""
-
-
-def xls_value_to_unicode(value, value_type):
-    """
-    Take a xls formatted value and try to make a unicode string representation.
-    """
-    if value_type == xlrd.XL_CELL_BOOLEAN:
-        return u"TRUE" if value else u"FALSE"
-    if value_type == xlrd.XL_CELL_NUMBER:
-        #Try to display as an int if possible.
-        int_value = int(value)
-        if int_value == value:
-            return unicode(int_value)
-        else:
-            return unicode(value)
-    else:
-        return unicode(value)
-        
 
 def xls_to_dict(path_or_file):
     """
@@ -38,6 +21,35 @@ def xls_to_dict(path_or_file):
     equal to the cell value for that row and column.
     All the keys and leaf elements are unicode text.
     """
+    try:
+        if isinstance(path_or_file, basestring):
+            workbook = xlrd.open_workbook(filename=path_or_file)
+        else:
+            workbook = xlrd.open_workbook(file_contents=path_or_file.read())
+    except XLRDError, e:
+        raise PyXFormError("Error reading .xls file: %s" % e.message)
+    
+    def xls_value_to_unicode(value, value_type):
+        """
+        Take a xls formatted value and try to make a unicode string representation.
+        """
+        if value_type == xlrd.XL_CELL_BOOLEAN:
+            return u"TRUE" if value else u"FALSE"
+        elif value_type == xlrd.XL_CELL_NUMBER:
+            #Try to display as an int if possible.
+            int_value = int(value)
+            if int_value == value:
+                return unicode(int_value)
+            else:
+                return unicode(value)
+        elif value_type is xlrd.XL_CELL_DATE:
+            #Warn that it is better to single quote as a string.
+            #error_location = cellFormatString % (ss_row_idx, ss_col_idx)
+            #raise Exception("Cannot handle excel formatted date at " + error_location)
+            return unicode(datetime.datetime(*xlrd.xldate_as_tuple(value, workbook.datemode)))
+        else:
+            return unicode(value)
+    
     def xls_to_dict_normal_sheet(sheet):
         #Check for duplicate column headers
         column_header_set = set()
@@ -131,13 +143,7 @@ def xls_to_dict(path_or_file):
                     "bind": {u'calculate' : calc_formula_string}}} )
             result2.append({"stopper" : level['name']})
         return result2
-    try:
-        if isinstance(path_or_file, basestring):
-            workbook = xlrd.open_workbook(filename=path_or_file)
-        else:
-            workbook = xlrd.open_workbook(file_contents=path_or_file.read())
-    except XLRDError, e:
-        raise PyXFormError("Error reading .xls file: %s" % e.message)
+
 
     result = {}
     for sheet in workbook.sheets():

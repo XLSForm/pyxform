@@ -17,11 +17,12 @@ class main_test(unittest.TestCase):
     maxDiff = None
     
     def runTest(self):
-        
-        filename = "xlsform_spec_test.xlsx"
+        #filename = "xlsform_spec_test.xlsx"
         #filename = "group_name_test.xls"
         #filename = "table-list.xls"
         #filename = "duplicate_columns.xlsx"
+        #filename = "repeat_date_test.xls"
+        filename = "xml_escaping.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
         #Get the xform output path:
         root_filename, ext = os.path.splitext(filename)

@@ -449,7 +449,11 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         if not constants.NAME in row:
             #TODO: It could be slick if had nameless groups generate a flat model
             #      with only a body element.
-            raise PyXFormError(rowFormatString % row_number + "Question or group with no name.")
+            if row['type'] == 'note':
+                #autogenerate names for notes without them
+                row['name'] = "generated_note_name_" + str(row_number)
+            else:
+                raise PyXFormError(rowFormatString % row_number + " Question or group with no name.")
         question_name = unicode(row[constants.NAME])
         if not is_valid_xml_tag(question_name):
             error_message =  rowFormatString % row_number
@@ -466,7 +470,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
             #      Warnings can be ignored so I'm not too concerned about false positives.
             warnings.append(rowFormatString % row_number + " Question has no label: " +  str(row))
         
-        #Try to parse question as begin control statement (i.e. begin loop/repeat/group:
+        #Try to parse question as begin control statement (i.e. begin loop/repeat/group):
         begin_control_parse = begin_control_regex.search(question_type)
         if begin_control_parse:
             parse_dict = begin_control_parse.groupdict()

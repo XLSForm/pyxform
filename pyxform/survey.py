@@ -334,7 +334,15 @@ class Survey(Section):
         Replace all the ${variables} in text with xpaths.
         Returns that and a boolean indicating if there were any ${variables} present.
         """
-        #bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
+        #There was a bug where escaping is completely turned off in labels where
+        #variable replacement is used.
+        #For exampke, `${name} < 3` causes an error but `< 3` does not.
+        #This is my hacky fix for it, which does string escaping prior to variable replacement:
+        from xml.dom.minidom import Text
+        text_node = Text()
+        text_node.data = text
+        text = text_node.toxml()
+        
         bracketed_tag = r"\$\{(.*?)\}"
         result = re.sub(bracketed_tag, self._var_repl_output_function, unicode(text))
         return result, not result == text
