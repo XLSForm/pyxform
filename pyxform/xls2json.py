@@ -301,6 +301,8 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         #Set warnings to a list that will be discarded.
         warnings = []
     
+    rowFormatString = '[row : %s]'
+    
     #Make sure the passed in vars are unicode
     form_name = unicode(form_name)
     default_language = unicode(default_language)
@@ -401,7 +403,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         
         #Disabled should probably be first so the attributes below can be disabled.
         if u"disabled" in row:
-            warnings.append("The 'disabled' column header is not part of the current spec. We recommend using relevant instead.")
+            warnings.append(rowFormatString % row_number +
+                            " The 'disabled' column header is not part of the current spec." +
+                            "We recommend using relevant instead.")
             disabled = row.pop(u"disabled")
             if yes_no_aliases.get(disabled):
                 continue
@@ -414,9 +418,10 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         if not question_type:
             # if name and label are also missing, then its a comment row, and we skip it with warning
             if not ((constants.NAME in row) and (constants.LABEL in row)):
-                    warnings.append("Row wihtout name, text, or label is being skipped " + str(row_number) + ": " + str(row))
+                    warnings.append(rowFormatString % row_number +
+                        " Row without name, text, or label is being skipped:\n" + str(row))
                     continue
-            raise PyXFormError("Question with no type on row " + str(row_number))
+            raise PyXFormError(rowFormatString % row_number + " Question with no type.")
             continue
         
         #Check if the question is actually a setting specified on the survey sheet
@@ -432,20 +437,29 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
             if parse_dict.get("end") and "type" in parse_dict:
                 control_type = control_aliases[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
-                    raise PyXFormError("Unmatched end statement. Previous control type: " + str(prev_control_type) +
-                                       ", Control type: " + str(control_type) +
-                                       ", Error on row: " + str(row_number))
+                    raise PyXFormError(rowFormatString % row_number +
+                                       " Unmatched end statement. Previous control type: " +
+                                       str(prev_control_type) +
+                                       ", Control type: " + str(control_type))
                 stack.pop()
                 table_list = None
                 continue
         
-        #Make sure the question has a valid name
-        question_name = unicode(row.get(constants.NAME))
-        if not question_name:
-            raise PyXFormError("Question with no name on row " + str(row_number))
+        #Make sure the row has a valid name
+        if not constants.NAME in row:
+            #TODO: It could be slick if had nameless groups generate a flat model
+            #      with only a body element.
+            if row['type'] == 'note':
+                #autogenerate names for notes without them
+                row['name'] = "generated_note_name_" + str(row_number)
+            else:
+                raise PyXFormError(rowFormatString % row_number + " Question or group with no name.")
+        question_name = unicode(row[constants.NAME])
         if not is_valid_xml_tag(question_name):
-            error_message = "Invalid question name [" + question_name + "] on row " + str(row_number) + "\n"
-            error_message += "Names must begin with a letter, colon, or underscore. Subsequent characters can include numbers, dashes, and periods."
+            error_message =  rowFormatString % row_number
+            error_message += " Invalid question name [" + question_name + "]"
+            error_message += "Names must begin with a letter, colon, or underscore."
+            error_message += "Subsequent characters can include numbers, dashes, and periods."
             raise PyXFormError(error_message)
         
         if constants.LABEL not in row and \
@@ -454,9 +468,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
             #TODO: Should there be a default label?
             #      Not sure if we should throw warnings for groups...
             #      Warnings can be ignored so I'm not too concerned about false positives.
-            warnings.append("Warning unlabeled question in row " + str(row_number) + ": " + str(row))
+            warnings.append(rowFormatString % row_number + " Question has no label: " +  str(row))
         
-        #Try to parse question as begin control statement (i.e. begin loop/repeat/group:
+        #Try to parse question as begin control statement (i.e. begin loop/repeat/group):
         begin_control_parse = begin_control_regex.search(question_type)
         if begin_control_parse:
             parse_dict = begin_control_parse.groupdict()
@@ -472,16 +486,31 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 if control_type is constants.LOOP:
                     if not parse_dict.get("list_name"):
                         #TODO: Perhaps warn and make repeat into a group?
-                        raise PyXFormError("Repeat without list name " + " Error on row: " + str(row_number))
+                        raise PyXFormError(rowFormatString % row_number + " Repeat loop without list name.")
                     list_name = parse_dict["list_name"]
                     if list_name not in choices:
-                        raise PyXFormError("List name not in columns sheet: " + list_name + " Error on row: " + str(row_number))
+                        raise PyXFormError(rowFormatString % row_number + " List name not in columns sheet: " + list_name)
                     new_json_dict[constants.COLUMNS] = choices[list_name]
                 
                 #Code to deal with table_list appearance flags (for groups of selects)
                 if new_json_dict.get(u"control",{}).get(u"appearance") == constants.TABLE_LIST:
                     table_list = True
                     new_json_dict[u"control"][u"appearance"] = u"field-list"
+                    #Generate a note label element so hints and labels
+                    #work as expected in table-lists.
+                    #see https://github.com/modilabs/pyxform/issues/62
+                    if 'label' in new_json_dict or 'hint' in new_json_dict:
+                        generated_label_element = {
+                            "type":"note",
+                            "name": "generated_table_list_label_" + str(row_number)
+                        }
+                        if 'label' in new_json_dict:
+                            generated_label_element[constants.LABEL] = new_json_dict[constants.LABEL]
+                            del new_json_dict[constants.LABEL]
+                        if 'hint' in new_json_dict:
+                            generated_label_element['hint'] = new_json_dict['hint']
+                            del new_json_dict['hint']
+                        child_list.append(generated_label_element)
                     
                 parent_children_array.append(new_json_dict)
                 stack.append((control_type, child_list))
@@ -495,7 +524,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 cascading_level = parse_dict["cascading_level"]
                 cascading_prefix = row.get(constants.NAME)
                 if not cascading_prefix:
-                    raise PyXFormError("Cascading select needs a name. Error on row: %s" % row_number)
+                    raise PyXFormError(rowFormatString % row_number + " Cascading select needs a name.")
                 cascading_json = get_cascading_json(cascading_choices, cascading_prefix, cascading_level)
                 
                 for c in cascading_json: parent_children_array.append(c)
@@ -510,7 +539,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 list_name = parse_dict["list_name"]
 
                 if list_name not in choices:
-                    raise PyXFormError("List name not in choices sheet: " + list_name + " Error on row: " + str(row_number))
+                    raise PyXFormError(rowFormatString % row_number + " List name not in choices sheet: " + list_name)
 
                 #Validate select_multiple choice names by making sure they have no spaces (will cause errors in exports).
                 if select_type == constants.SELECT_ALL_THAT_APPLY:
@@ -566,8 +595,8 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                         parent_children_array.append(table_list_header)
 
                     if table_list <> list_name:
-                        error_message = "Error on row: " + str(row_number) + "\n"
-                        error_message += "Badly formatted table list, list names don't match: " + table_list + " vs. " + list_name
+                        error_message = rowFormatString % row_number
+                        error_message += " Badly formatted table list, list names don't match: " + table_list + " vs. " + list_name
                         raise PyXFormError(error_message)
                     
                     control = new_json_dict[u"control"] = new_json_dict.get(u"control", {})
@@ -584,7 +613,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         parent_children_array.append(row)
     
     if len(stack) != 1:
-        raise PyXFormError("unmatched begin statement: " + str(stack[-1][0]))
+        raise PyXFormError("Unmatched begin statement: " + str(stack[-1][0]))
     
     #Automatically add an instanceID element:
     if yes_no_aliases.get(settings.get("omit_instanceID")):

@@ -16,7 +16,9 @@ if __name__ == '__main__':
         warnings = []
         json_survey = xls2json.parse_file_to_json(argv[1], warnings=warnings)
         survey = builder.create_survey_element_from_dict(json_survey)
-        survey.print_xform_to_file(argv[2])
+        #Setting validate to false will cause the form not to be processed by ODK Validate.
+        #This may be desirable since ODK Validate requires launching a subprocess that runs some java code.
+        survey.print_xform_to_file(argv[2], validate=True, warnings=warnings)
         for w in warnings:
             print w
         print 'Conversion complete!'

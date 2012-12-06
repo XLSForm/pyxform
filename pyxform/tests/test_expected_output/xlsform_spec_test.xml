@@ -789,7 +789,6 @@
             </input>
             <select appearance="minimal" ref="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test">
               <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:label')"/>
-              <hint>Select all that apply.</hint>
               <item>
                 <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test/yes:label')"/>
                 <value>yes</value>

@@ -120,8 +120,7 @@ QUESTION_TYPE_DICT = \
         }, 
         "bind": {
             "type": "select"
-        }, 
-        "hint": "Select all that apply."
+        }
     }, 
     "simserial": {
         "bind": {
@@ -308,8 +307,7 @@ QUESTION_TYPE_DICT = \
         }, 
         "bind": {
             "type": "select"
-        }, 
-        "hint": "Select all that apply."
+        }
     }, 
     "get end time": {
         "bind": {
