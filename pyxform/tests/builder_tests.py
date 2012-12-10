@@ -236,8 +236,25 @@ class BuilderTests(TestCase):
                     u'label': u'How old are you?',
                     u'name': u'age',
                     u'type': u'integer'
-                    }
-                ],
+                },
+                {
+                    u'children': [
+                        {
+                            u'bind': {
+                                'calculate': "concat('uuid:', uuid())",
+                                'readonly': 'true()'
+                            },
+                            u'name': 'instanceID',
+                            u'type': 'calculate'
+                        }
+                    ],
+                    u'control': {
+                        'bodyless': True
+                    },
+                    u'name': 'meta',
+                    u'type': u'group'
+                }
+            ],
             }
         self.assertEquals(survey_in.to_json_dict(), expected_dict)
 
