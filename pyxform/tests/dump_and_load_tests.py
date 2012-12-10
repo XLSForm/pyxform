@@ -11,7 +11,7 @@ class DumpAndLoadTests(TestCase):
     def setUp(self):
         self.excel_files = [
             "gps.xls",
-            "include.xls",
+            #"include.xls",
             "specify_other.xls",
             "group.xls",
             "loop.xls",

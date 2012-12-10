@@ -187,37 +187,37 @@ class BuilderTests(TestCase):
         self.maxDiff = None
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
-    def test_include(self):
-        survey = utils.create_survey_from_fixture(u"include", filetype=FIXTURE_FILETYPE,
-                                                  include_directory=True)
-        expected_dict = {
-            u'name': u'include',
-            u'title': u'include',
-            u'id_string': u'include',
-            u'default_language': u'default',
-            u'type': u'survey',
-            u'children': [
-                {
-                    u'name': u'name',
-                    u'label': {u'English': u"What's your name?"},
-                    u'type': u'text'
-                    },
-                    {
-                        u'name': u'good_day',
-                        u'label': {u'english': u'have you had a good day today?'},
-                        u'type': u'select one',
-                        u'children': [
-                            {
-                                u'name': u'yes',
-                                u'label': {u'english': u'yes'}
-                                },
-                            {
-                                u'name': u'no',
-                                u'label': {u'english': u'no'}
-                                }
-                            ]}]}
-        
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+#    def test_include(self):
+#        survey = utils.create_survey_from_fixture(u"include", filetype=FIXTURE_FILETYPE,
+#                                                  include_directory=True)
+#        expected_dict = {
+#            u'name': u'include',
+#            u'title': u'include',
+#            u'id_string': u'include',
+#            u'default_language': u'default',
+#            u'type': u'survey',
+#            u'children': [
+#                {
+#                    u'name': u'name',
+#                    u'label': {u'English': u"What's your name?"},
+#                    u'type': u'text'
+#                    },
+#                    {
+#                        u'name': u'good_day',
+#                        u'label': {u'english': u'have you had a good day today?'},
+#                        u'type': u'select one',
+#                        u'children': [
+#                            {
+#                                u'name': u'yes',
+#                                u'label': {u'english': u'yes'}
+#                                },
+#                            {
+#                                u'name': u'no',
+#                                u'label': {u'english': u'no'}
+#                                }
+#                            ]}]}
+#        
+#        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_include_json(self):
         survey_in = utils.create_survey_from_fixture(

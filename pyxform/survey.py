@@ -22,7 +22,7 @@ nsmap = {
     }
 
 class Survey(Section):
-    
+
     FIELDS = Section.FIELDS.copy()
     FIELDS.update(
         {
@@ -35,10 +35,12 @@ class Survey(Section):
             u"_translations": dict,
             u"submission_url": unicode,
             u"public_key": unicode,
-            u"instance_xmlns": unicode
-            }
-        )
-        
+            u"instance_xmlns": unicode,
+            u"version": unicode,
+            u"choices": dict,
+        }
+    )
+
     def validate(self):
         super(Survey, self).validate()
         self._validate_uniqueness_of_section_names()
@@ -66,23 +68,46 @@ class Survey(Section):
                     **nsmap
                     )
 
+    def _generate_static_instances(self):
+        """
+        Generates <instance> elements for static data (e.g. choices for select type questions)
+        """
+        for list_name, choice_list in self.choices.items():
+            instance_element_list = []
+            for idx, choice in zip(range(len(choice_list)), choice_list):
+                choice_element_list = []
+                #Add a unique id to the choice element incase there is itext it refrences
+                itextId = '-'.join(['static_instance', list_name, str(idx)])
+                choice_element_list.append(node("itextId", itextId))
+                
+                for choicePropertyName, choicePropertyValue in choice.items():
+                    if isinstance(choicePropertyValue, basestring) and choicePropertyName != 'label':
+                        choice_element_list.append(node(choicePropertyName, unicode(choicePropertyValue)))
+                instance_element_list.append(node("item", *choice_element_list))
+            yield node("instance", node("root", *instance_element_list), id=list_name)
+
     def xml_model(self):
         """
         Generate the xform <model> element
         """
         self._setup_translations()
         self._setup_media()
-        model_children = [node("instance", self.xml_instance())] + self.xml_bindings()
+        self._add_empty_translations()
+        
+        model_children = []
         if self._translations:
-            model_children.insert(0, self.itext())
-        if self.submission_url:
-            #We need to add a unique form instance id if the form is to be submitted. 
-            model_children.append(node("bind", nodeset="/"+self.name+"/meta/instanceID", type="string", readonly="true()", calculate="concat('uuid:', uuid())"))
-            
+            model_children.append(self.itext())
+        model_children += [node("instance", self.xml_instance())]
+        model_children += list(self._generate_static_instances()) 
+        model_children += self.xml_bindings()
+
+        if self.submission_url or self.public_key:
+            submission_attrs = dict()
+            if self.submission_url:
+                submission_attrs["action"] = self.submission_url
             if self.public_key:
-                submission_node = node("submission", method="form-data-post", action=self.submission_url, base64RsaPublicKey=self.public_key)
-            else:
-                submission_node = node("submission", method="form-data-post", action=self.submission_url)
+                submission_attrs["base64RsaPublicKey"] = self.public_key
+            submission_node = node("submission", method="form-data-post", **submission_attrs)
             model_children.insert(0, submission_node)
         return node("model",  *model_children)
 
@@ -93,12 +118,22 @@ class Survey(Section):
         #add instance xmlns attribute to the instance node
         if self.instance_xmlns:
             result.setAttribute(u"xmlns", self.instance_xmlns)
-        
+
         #We need to add a unique form instance id if the form is to be submitted.
         if self.submission_url:
             result.appendChild(node("orx:meta", node("orx:instanceID")))
-            
+
+        if self.version:
+            result.setAttribute(u"version", self.version)
         return result
+
+    def _add_to_nested_dict(self, dicty, path, value):
+        if len(path) == 1:
+            dicty[path[0]] = value
+            return
+        if path[0] not in dicty:
+            dicty[path[0]] = {}
+        self._add_to_nested_dict(dicty[path[0]], path[1:], value)
 
     def _setup_translations(self):
         """
@@ -108,28 +143,43 @@ class Survey(Section):
         for element in self.iter_descendants():
             for d in element.get_translations(self.default_language):
                 self._translations[d['lang']][d['path']] = {"long" : d['text']}
-        self._add_empty_translations()
+
+        #This code sets up translations for choiced in filtered selects.
+        for list_name, choice_list in self.choices.items():
+            for idx, choice in zip(range(len(choice_list)), choice_list):
+                for choicePropertyName, choicePropertyValue in choice.items():
+                    itextId = '-'.join(['static_instance', list_name, str(idx)])
+                    if isinstance(choicePropertyValue, dict):
+                        for mediatypeorlanguage, value in choicePropertyValue.items():
+                            if isinstance(value, dict):
+                                for langauge, value in value.items():
+                                    self._add_to_nested_dict(self._translations, [langauge, itextId, mediatypeorlanguage], value)
+                            else:
+                                if choicePropertyName == 'media':
+                                    self._add_to_nested_dict(self._translations, [self.default_language, itextId, mediatypeorlanguage], value)
+                                else:
+                                    self._add_to_nested_dict(self._translations, [mediatypeorlanguage, itextId, 'long'], value)
+                    elif choicePropertyName == 'label':
+                        self._add_to_nested_dict(self._translations, [self.default_language, itextId, 'long'], choicePropertyValue)
 
     def _add_empty_translations(self):
         """
-        For every path used, if a language does not include that path, add it,
-        and give it a "-" value. Added because for hints, you want to allow empty
-        translations for the default language (otherwise the validator complains).
+        Adds translations so that every itext element has the same elements accross every language.
+        When translations are not provided "-" will be used.
+        This disables any of the default_language fallback functionality.
         """
-        paths = []
-        for lang, d in self._translations.items():
-            for path, text in d.items():
-                if path not in paths:
-                    paths.append(path)
-        
-        #We lose the ability to have the default language be the fallback by adding empty translations for everything.
-        #we could just add them for the default language by using the following two lines of code instead of the for loop          
-        #lang = self.default_language
-        #d = self._translations[self.default_language]
-        for lang, d in self._translations.items():
-            for path in paths:
-                if path not in d:
-                    self._translations[lang][path] = {"long":u"-"}
+        paths = {}
+        for lang, translation in self._translations.items():
+            for path, content in translation.items():
+                paths[path] = paths.get(path, set()).union(content.keys())
+
+        for lang, translation in self._translations.items():
+            for path, content_types in paths.items():
+                if path not in self._translations[lang]:
+                    self._translations[lang][path] = {}
+                for content_type in content_types:
+                    if content_type not in self._translations[lang][path]:
+                        self._translations[lang][path][content_type] = u"-"
 
     def _setup_media(self):
         """
@@ -191,7 +241,7 @@ class Survey(Section):
         result = []
         for lang, translation in self._translations.items():
             if lang == self.default_language:
-                result.append(node("translation", lang=lang,default=u"true()"))
+                result.append(node("translation", lang=lang, default=u"true()"))
                 #result.append(node("translation", lang=lang))
             else:
                 result.append(node("translation", lang=lang))
@@ -240,11 +290,11 @@ class Survey(Section):
         # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
         xml_with_linebreaks = self.xml().toprettyxml(indent='  ')
         text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
-        output_re = re.compile('\n.*(<output.*>)\n(\s\s\s\s)*')
+        output_re = re.compile('\n.*(<output.*>)\n(  )*')
         prettyXml = text_re.sub('>\g<1></', xml_with_linebreaks)
         inlineOutput = output_re.sub('\g<1>', prettyXml)
-        return inlineOutput
-
+        return '<?xml version="1.0"?>\n' + inlineOutput
+    
     def __unicode__(self):
         return "<survey name='%s' element_count='%s'>" % (self.name, len(self.children))
 
@@ -257,56 +307,70 @@ class Survey(Section):
                 else:
                     self._xpath[element.name] = element.get_xpath()
 
-    def _var_repl_function(self):
+    def _var_repl_function(self, matchobj):
         """
         Given a dictionary of xpaths, return a function we can use to
         replace ${varname} with the xpath to varname.
         """
-        def repl(matchobj):
-            name = matchobj.group(1)
-            intro = "There has been a problem trying to replace ${%s} with the XPath to the survey element named '%s'." % (name, name)
-            if name not in self._xpath:
-                raise PyXFormError(intro + " There is no survey element with this name.")
-            if self._xpath[name] is None:
-                raise PyXFormError(intro + " There are multiple survey elements with this name.")
-            return self._xpath[name]
-        return repl
+        name = matchobj.group(1)
+        intro = "There has been a problem trying to replace ${%s} with the XPath to the survey element named '%s'." % (name, name)
+        if name not in self._xpath:
+            raise PyXFormError(intro + " There is no survey element with this name.")
+        if self._xpath[name] is None:
+            raise PyXFormError(intro + " There are multiple survey elements with this name.")
+        return self._xpath[name]
+
 
     def insert_xpaths(self, text):
         """
         Replace all instances of ${var} with the xpath to var.
         """
-        bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
-        return re.sub(bracketed_tag, self._var_repl_function(), unicode(text))
+        #bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
+        bracketed_tag = r"\$\{(.*?)\}"
+        return re.sub(bracketed_tag, self._var_repl_function, unicode(text))
 
     def _var_repl_output_function(self,matchobj):
         """
-        Given a dictionary of xpaths, return a function we can use to
-        replace ${varname} with the xpath to varname.
+        A regex substitution function that will replace
+        ${varname} with an output element that has the xpath to varname.
         """
-        if matchobj.group(1) not in self._xpath:
-            raise PyXFormError("There is no survey element with this name.",
-                            matchobj.group(1))
-        return '<output value="' + self._xpath[matchobj.group(1)] + '" />'
-
+#        if matchobj.group(1) not in self._xpath:
+#            raise PyXFormError("There is no survey element with this name.",
+#                            matchobj.group(1))
+        return '<output value="' + self._var_repl_function(matchobj) + '" />'
 
     def insert_output_values(self, text):
         """
         Replace all the ${variables} in text with xpaths.
         Returns that and a boolean indicating if there were any ${variables} present.
         """
-        bracketed_tag = r"\$\{(" + XFORM_TAG_REGEXP + r")\}"
+        #There was a bug where escaping is completely turned off in labels where
+        #variable replacement is used.
+        #For exampke, `${name} < 3` causes an error but `< 3` does not.
+        #This is my hacky fix for it, which does string escaping prior to variable replacement:
+        from xml.dom.minidom import Text
+        text_node = Text()
+        text_node.data = text
+        text = text_node.toxml()
+        
+        bracketed_tag = r"\$\{(.*?)\}"
         result = re.sub(bracketed_tag, self._var_repl_output_function, unicode(text))
         return result, not result == text
 
-    def print_xform_to_file(self, path="", validate=True):
+    def print_xform_to_file(self, path="", validate=True, warnings=None):
+        """
+        Print the xForm to a file and optionally validate it as well by throwing exceptions
+        and adding warnings to the warnings array.
+        """
+        if warnings is None:
+            warnings = []
         if not path:
             path = self._print_name + ".xml"
         fp = codecs.open(path, mode="w", encoding="utf-8")
         fp.write(self._to_pretty_xml())
         fp.close()
         if validate:
-            check_xform(path)
+            warnings.extend(check_xform(path))
 
     def to_xml(self, validate=True, pretty=True):
         with tempfile.NamedTemporaryFile() as tmp:

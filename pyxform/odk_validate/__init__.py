@@ -92,5 +92,7 @@ def check_xform(path):
     validator = XFormValidator()
     validator.validate(path)
 
+
 if __name__ == '__main__':
+    print __doc__
     check_xform(sys.argv[1])
