@@ -16,8 +16,8 @@ except ImportError:
 
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "java_lib",
-        "ODK Validate.jar")
+ODK_VALIDATE_JAR = os.path.join(
+        CURRENT_DIRECTORY, "ODK_Validate.jar")
 
 # Only the modded headless version of ODK Validate returns these codes.
 # see: lonely_java_src/FormValidator.java
