@@ -19,7 +19,7 @@ class group_names(unittest.TestCase):
 
     def runTest(self):
         filename = "group_name_test.xls"
-        path_to_excel_file = os.path.join(DIR, "example_xls", filename)
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
         #Get the xform output path:
         root_filename, ext = os.path.splitext(filename)
         output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
