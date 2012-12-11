@@ -196,7 +196,25 @@ class BuilderTests(TestCase):
                         ], 
                                u'type': u'select one', 
                                u'name': u'zone', 
-                               u'label': u'Zone'
+                               u'label': u'Zone',
+                               u'itemset': u'zone'
+                },
+                {
+                    u'children': [
+                        {
+                            u'bind': {
+                                'calculate': "concat('uuid:', uuid())",
+                                'readonly': 'true()'
+                            },
+                            u'name': 'instanceID',
+                            u'type': 'calculate'
+                        }
+                    ],
+                    u'control': {
+                        'bodyless': True
+                    },
+                    u'name': 'meta',
+                    u'type': u'group'
                 }
                 ]
         }
