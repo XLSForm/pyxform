@@ -305,6 +305,7 @@ class BuilderTests(TestCase):
                     u'name': u'available_toilet_types',
                     u'label': {u'english': u'What type of toilets are on the premises?'},
                     u'type': u'select all that apply',
+                    u'itemset': u'toilet_type',
                     #u'bind': {u'constraint': u"(.='none' or not(selected(., 'none')))"},
                     u'children': [
                         {
@@ -338,39 +339,60 @@ class BuilderTests(TestCase):
                     u'type': u'text'
                     },
                 {
-                    u'name': u'pit_latrine_with_slab',
-                    u'label': {u'english': u'Pit latrine with slab'},
-                    u'type' : u'group',
+                    u'name': u'loop_toilet_types',
+                    u'type': u'group',
                     u'children': [
                         {
-                            u'name': u'number',
-                            u'label': {u'english': u'How many Pit latrine with slab are on the premises?'},
-                            u'type': u'integer'
-                            }]},
+                            u'name': u'pit_latrine_with_slab',
+                            u'label': {u'english': u'Pit latrine with slab'},
+                            u'type' : u'group',
+                            u'children': [
+                                {
+                                    u'name': u'number',
+                                    u'label': {u'english': u'How many Pit latrine with slab are on the premises?'},
+                                    u'type': u'integer'
+                                }]},
+                        {
+                            u'name': u'open_pit_latrine',
+                            u'label': {u'english': u'Pit latrine without slab/open pit'},
+                            u'type' : u'group',
+                            u'children': [
+                                {
+                                    u'name': u'number',
+                                    u'label': {u'english': u'How many Pit latrine without slab/open pit are on the premises?'},
+                                    u'type': u'integer'
+                                    }
+                                ]
+                        },
+                        {
+                            u'name': u'bucket_system',
+                            u'label': {u'english': u'Bucket system'},
+                            u'type' : u'group',
+                            u'children': [
+                                {
+                                    u'name': u'number',
+                                    u'label': {u'english': u'How many Bucket system are on the premises?'},
+                                    u'type': u'integer'
+                                    }
+                                ]
+                    }]},
                 {
-                    u'name': u'open_pit_latrine',
-                    u'label': {u'english': u'Pit latrine without slab/open pit'},
-                    u'type' : u'group',
                     u'children': [
                         {
-                            u'name': u'number',
-                            u'label': {u'english': u'How many Pit latrine without slab/open pit are on the premises?'},
-                            u'type': u'integer'
-                            }
-                        ]
+                            u'bind': {
+                                'calculate': "concat('uuid:', uuid())",
+                                'readonly': 'true()'
+                            },
+                            u'name': 'instanceID',
+                            u'type': 'calculate'
+                        }
+                    ],
+                    u'control': {
+                        'bodyless': True
                     },
-                {
-                    u'name': u'bucket_system',
-                    u'label': {u'english': u'Bucket system'},
-                    u'type' : u'group',
-                    u'children': [
-                        {
-                            u'name': u'number',
-                            u'label': {u'english': u'How many Bucket system are on the premises?'},
-                            u'type': u'integer'
-                            }
-                        ]
-                    }]}
+                    u'name': 'meta',
+                    u'type': u'group'
+                }]}
         self.maxDiff = None
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
