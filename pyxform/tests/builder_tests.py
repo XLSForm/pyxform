@@ -131,6 +131,7 @@ class BuilderTests(TestCase):
                     u'name': u'sex',
                     u'label': {u'English': u'What sex are you?'},
                     u'type': u'select one',
+                    u'itemset': u'sexes',
                     u'children': [ #TODO Change to choices (there is stuff in the json2xform half that will need to change)
                         {
                             u'name': u'male',
@@ -150,12 +151,27 @@ class BuilderTests(TestCase):
                     u'name': u'sex_other',
                     u'bind': {u'relevant': u"selected(../sex, 'other')"},
                     u'label': u'Specify other.',
-                    u'type': u'text'}
+                    u'type': u'text'},
+                {
+                    u'children': [
+                        {
+                            u'bind': {
+                                'calculate': "concat('uuid:', uuid())",
+                                'readonly': 'true()'
+                            },
+                            u'name': 'instanceID',
+                            u'type': 'calculate'
+                        }
+                    ],
+                    u'control': {
+                        'bodyless': True
+                    },
+                    u'name': 'meta',
+                    u'type': u'group'
+                }
                 ]
             }
         self.maxDiff = None
-        #import json
-        #print json.dumps(survey, indent=4, ensure_ascii=False)
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_select_one_question_with_identical_choice_name(self):
