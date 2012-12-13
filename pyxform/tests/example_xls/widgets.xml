@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
     <h:title>widgets</h:title>
@@ -88,6 +89,7 @@
             <table_list_2/>
           </table_list_test>
           <table_list_test2>
+            <generated_table_list_label_29/>
             <reserved_name_for_field_list_labels_30/>
             <table_list_3/>
             <table_list_4/>
@@ -98,6 +100,7 @@
             <happy_sad_michael2/>
           </happy_sad_table_2>
           <happy_sad_table>
+            <generated_table_list_label_38/>
             <reserved_name_for_field_list_labels_39/>
             <happy_sad_brian/>
             <happy_sad_michael/>
@@ -131,12 +134,14 @@
       <bind nodeset="/widgets/table_list_test/table_list_test_label" type="select1"/>
       <bind nodeset="/widgets/table_list_test/table_list_1" type="select1"/>
       <bind nodeset="/widgets/table_list_test/table_list_2" type="select1"/>
+      <bind nodeset="/widgets/table_list_test2/generated_table_list_label_29" readonly="true()" type="string"/>
       <bind nodeset="/widgets/table_list_test2/reserved_name_for_field_list_labels_30" type="select1"/>
       <bind nodeset="/widgets/table_list_test2/table_list_3" type="select1"/>
       <bind nodeset="/widgets/table_list_test2/table_list_4" type="select1"/>
       <bind nodeset="/widgets/happy_sad_table_2/happy_sad_second_method" type="select"/>
       <bind nodeset="/widgets/happy_sad_table_2/happy_sad_brian2" type="select"/>
       <bind nodeset="/widgets/happy_sad_table_2/happy_sad_michael2" type="select"/>
+      <bind nodeset="/widgets/happy_sad_table/generated_table_list_label_38" readonly="true()" type="string"/>
       <bind nodeset="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39" type="select"/>
       <bind nodeset="/widgets/happy_sad_table/happy_sad_brian" type="select"/>
       <bind nodeset="/widgets/happy_sad_table/happy_sad_michael" type="select"/>
@@ -280,7 +285,6 @@
     </select1>
     <select appearance="minimal" ref="/widgets/spinner_all">
       <label>Spinner Widget: Select All</label>
-      <hint>Select all that apply.</hint>
       <item>
         <label>option a</label>
         <value>a</value>
@@ -378,11 +382,12 @@
       </select1>
     </group>
     <group appearance="field-list" ref="/widgets/table_list_test2">
-      <label>(An easier to specify list group)</label>
+      <label></label>
+      <input ref="/widgets/table_list_test2/generated_table_list_label_29">
+        <label>(An easier to specify list group)</label>
+      </input>
       <select1 appearance="label" ref="/widgets/table_list_test2/reserved_name_for_field_list_labels_30">
-        <label>
-           
-        </label>
+        <label> </label>
         <item>
           <label>Yes</label>
           <value>yes</value>
@@ -419,7 +424,6 @@
       <label>Multi List Group</label>
       <select appearance="label" ref="/widgets/happy_sad_table_2/happy_sad_second_method">
         <label>Multi Choice List</label>
-        <hint>Select all that apply.</hint>
         <item>
           <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_second_method/happy:label')"/>
           <value>happy</value>
@@ -431,7 +435,6 @@
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table_2/happy_sad_brian2">
         <label>Brian</label>
-        <hint>Select all that apply.</hint>
         <item>
           <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_brian2/happy:label')"/>
           <value>happy</value>
@@ -443,7 +446,6 @@
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table_2/happy_sad_michael2">
         <label>Michael</label>
-        <hint>Select all that apply.</hint>
         <item>
           <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_michael2/happy:label')"/>
           <value>happy</value>
@@ -455,12 +457,12 @@
       </select>
     </group>
     <group appearance="field-list" ref="/widgets/happy_sad_table">
-      <label>(An easier to specify multi list group)</label>
+      <label></label>
+      <input ref="/widgets/happy_sad_table/generated_table_list_label_38">
+        <label>(An easier to specify multi list group)</label>
+      </input>
       <select appearance="label" ref="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39">
-        <label>
-           
-        </label>
-        <hint>Select all that apply.</hint>
+        <label> </label>
         <item>
           <label ref="jr:itext('/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/happy:label')"/>
           <value>happy</value>
@@ -472,7 +474,6 @@
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table/happy_sad_brian">
         <label>Brian</label>
-        <hint>Select all that apply.</hint>
         <item>
           <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_brian/happy:label')"/>
           <value>happy</value>
@@ -484,7 +485,6 @@
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table/happy_sad_michael">
         <label>Michael</label>
-        <hint>Select all that apply.</hint>
         <item>
           <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_michael/happy:label')"/>
           <value>happy</value>
