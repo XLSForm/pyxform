@@ -22,8 +22,8 @@ ODK_VALIDATE_JAR = os.path.join(
 # Only the modded headless version of ODK Validate returns these codes.
 # see: lonely_java_src/FormValidator.java
 HEADLESS_ODK_VALIDATE_REGEXS = {
-    'result': r"^Result: (.*)$",
-    'error': r"^Error: (.*)$",
+    'result': r"^>> (Xform is valid!) (.*)$",
+    'error': r"^>> XML is invalid.: (.*)$",
     }
 
 
@@ -79,7 +79,7 @@ class XFormValidator(object):
                     self._errors_and_result[key].append(m.group(1))
 
     def is_valid(self):
-        return self._errors_and_result['result']==['Valid']
+        return self._errors_and_result['result']==['Xform is valid!']
 
     def validate(self, path_to_xform, timeout=15):
         self._run_odk_validate(path_to_xform, timeout)
@@ -91,7 +91,7 @@ class XFormValidator(object):
 def check_xform(path):
     validator = XFormValidator()
     validator.validate(path)
-
+    return validator.get_odk_validate_output()
 
 if __name__ == '__main__':
     print __doc__
