@@ -351,11 +351,18 @@ class Survey(Section):
         from xml.dom.minidom import Text
         text_node = Text()
         text_node.data = text
-        text = text_node.toxml()
+        xml_text = text_node.toxml()
         
         bracketed_tag = r"\$\{(.*?)\}"
-        result = re.sub(bracketed_tag, self._var_repl_output_function, unicode(text))
-        return result, not result == text
+        # need to make sure we have reason to replace
+        # since at this point < is &lt,
+        # the net effect &lt gets translated again to &amp;lt;
+        if unicode(xml_text).find('{') != -1:
+            result = re.sub(
+                bracketed_tag, self._var_repl_output_function,
+                unicode(xml_text))
+            return result, not result == xml_text
+        return text, False
 
     def print_xform_to_file(self, path="", validate=True, warnings=None):
         """
