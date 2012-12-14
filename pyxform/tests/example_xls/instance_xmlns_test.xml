@@ -5,9 +5,13 @@
       <instance>
         <instance_xmlns_test id="instance_xmlns_test" xmlns="1234">
           <yes_or_no/>
+            <meta>
+                <instanceID/>
+            </meta>
         </instance_xmlns_test>
       </instance>
       <bind nodeset="/instance_xmlns_test/yes_or_no" type="select1"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/instance_xmlns_test/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

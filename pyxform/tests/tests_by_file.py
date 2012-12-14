@@ -36,6 +36,6 @@ class main_test(TestCase):
             with codecs.open(path_to_expected_xform, 'rb', encoding="utf-8") as expected_file:
                 expected = etree.fromstring(expected_file.read())
                 result = etree.fromstring(survey.to_xml())
-                reporter = lambda x: sys.stdout.write(x + "\n") 
+                reporter = lambda x: sys.stdout.write(x + "\n")
                 self.assertTrue(xml_compare(expected, result, reporter=reporter))
             os.remove(path_to_output_xform)
