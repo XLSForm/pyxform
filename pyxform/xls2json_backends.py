@@ -150,6 +150,9 @@ def xls_to_dict(path_or_file):
     def _xls_to_dict_cascade_sheet(sheet):
         result = []
         rs_dict = {}  # tmp dict to hold entire structure
+
+        def slugify(s): return re.sub(r'\W+', '_', s.strip().lower())
+
         # get col headers and position first, ignore first column
         for column in range(1, sheet.ncols):
             col_name = sheet.cell_value(0, column)
@@ -181,21 +184,21 @@ def xls_to_dict(path_or_file):
                 column = rs_dict[col_name]['pos']
                 cell_data = xls_value_from_sheet(sheet, row, column)
                 try:
-                    rs_dict[col_name]['data'].index(cell_data)
+                    rs_dict[col_name]['data'].index(slugify(cell_data))
                 except ValueError:
-                    rs_dict[col_name]['data'].append(cell_data)
+                    rs_dict[col_name]['data'].append(slugify(cell_data))
                     if rs_dict[col_name].has_key('choices'):
-                        l={'name': cell_data, 'label': cell_data}
+                        l={'name': slugify(cell_data), 'label': cell_data}
                         rs_dict[col_name]['choices'].append(l)
                 data = {
-                    'name': cell_data,
-                    'label': cell_data,
+                    'name': slugify(cell_data),
+                    'label': cell_data.strip(),
                     constants.LIST_NAME: col_name
                 }
                 for prev_column in range(1, column):
                     prev_col_name = sheet.cell_value(0, prev_column)
-                    data[prev_col_name] = xls_value_from_sheet(
-                        sheet, row, prev_column)
+                    data[prev_col_name] = slugify(xls_value_from_sheet(
+                        sheet, row, prev_column))
                 result.append(data)
         # order
         kl = []
