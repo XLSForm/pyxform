@@ -14,7 +14,8 @@ class main_test(unittest.TestCase):
     maxDiff = None
     
     def runTest(self):
-        for filename in ["new_cascading_select.xls", "old_cascades.xls"]:
+        for filename in ["new_cascading_select.xls", "old_cascades.xls",
+                         "cascading_select_test.xls"]:
             path_to_excel_file = os.path.join(DIR, "example_xls", filename)
             #Get the xform output path:
             root_filename, ext = os.path.splitext(filename)
