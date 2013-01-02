@@ -30,9 +30,7 @@
       <label>2012-12-12 00:00:00</label>
     </input>
     <group ref="/repeat_date_test/repeat_test">
-      <label>
-        
-      </label>
+      <label></label>
       <repeat jr:count="/repeat_date_test/repeat_count" nodeset="/repeat_date_test/repeat_test">
         <select1 ref="/repeat_date_test/repeat_test/table_list_3">
           <label>Q1</label>
