@@ -27,7 +27,7 @@ Installation
 ============
 Installing pyxform from github is easy with pip::
 
-	pip install -e git+https://github.com/INSERT GH USER NAME HERE/pyxform.git@master#egg=pyxform
+	pip install -e git+https://github.com/bderenzi/pyxform.git@master#egg=pyxform
 
 Testing
 =======

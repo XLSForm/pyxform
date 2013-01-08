@@ -55,6 +55,10 @@ def xls_to_dict(path_or_file):
         column_header_set = set()
         for column in range(0, sheet.ncols):
             column_header = sheet.cell_value(0, column)
+            # 2013-1-8 Brian DeRenzi
+            # If formatting happens on blank columns, sometimes those are read in.
+            if column_header == '':
+                continue
             if column_header in column_header_set:
                 raise PyXFormError("Duplicate column header: " + column_header)
             column_header_set.add(column_header)
