@@ -23,7 +23,7 @@ setup(
     packages=['pyxform'],
     long_description=read('README.rst'),
     install_requires=[
-        'xlrd==0.7.1',
+        'xlrd==0.8.0',
         ],
     classifiers=[
         "Development Status :: 4 - Beta",
