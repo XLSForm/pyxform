@@ -36,7 +36,7 @@ class SurveyElement(dict):
         # this node will also have a parent and children, like a tree!
         u"parent": lambda: None,
         u"children": list,
-        u"itemset": dict,
+        u"itemset": unicode,
         u"choice_filter": unicode,
         }
 

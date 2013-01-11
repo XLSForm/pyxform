@@ -156,10 +156,14 @@
   <h:body>
     <select1 ref="/new_cascading_select/state">
       <label>state</label>
-      <itemset nodeset="instance('states')/root/item">
-        <value ref="name"/>
-        <label ref="jr:itext(itextId)"/>
-      </itemset>
+      <item>
+        <label>Texas</label>
+        <value>texas</value>
+      </item>
+      <item>
+        <label>Washington</label>
+        <value>washington</value>
+      </item>
     </select1>
     <select1 ref="/new_cascading_select/county">
       <label>county</label>
