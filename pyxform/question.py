@@ -164,7 +164,7 @@ class MultipleChoiceQuestion(Question):
         for element in self.xml_label_and_hint():
             result.appendChild(element)
         survey = self.get_root()
-        if len(survey.choices) > 0: #i.e. If global choices are specified for the survey in a static instance
+        if self['itemset']:
             choice_filter = self.get('choice_filter')
             nodeset = "instance('" + self['itemset'] + "')/root/item"
             choice_filter = survey.insert_xpaths(choice_filter)
