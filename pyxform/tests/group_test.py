@@ -40,7 +40,24 @@ class GroupTests(TestCase):
                             u'label': {u'English': u'How old is your father?'}
                             }
                         ],
-                    }
+                    },
+                {
+                    u'children': [
+                        {
+                            u'bind': {
+                                'calculate': "concat('uuid:', uuid())",
+                                'readonly': 'true()'
+                            },
+                            u'name': 'instanceID',
+                            u'type': 'calculate'
+                        }
+                    ],
+                    u'control': {
+                        'bodyless': True
+                    },
+                    u'name': 'meta',
+                    u'type': u'group'
+                }
                 ],
             }
         self.maxDiff = None

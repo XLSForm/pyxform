@@ -184,7 +184,7 @@ class SurveyElementBuilder(object):
 
     def _create_loop_from_dict(self, d, group_each_iteration=True):
         """
-        Takes a json_dict in the proper format
+        Takes a json_dict of "loop" type
         Returns a GroupedSection
         """
         d_copy = d.copy()

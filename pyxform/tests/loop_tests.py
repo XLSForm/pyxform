@@ -18,6 +18,10 @@ class LoopTests(TestCase):
             u'type': u'survey',
             u'children': [
                 {
+                    u'name': u'loop_vehicle_types',
+                    u'type': u'group',
+            u'children': [
+                {
                     u'label': {u'English': u'Car', u'French': u'Voiture'},
                     u'name': u'car',
                     u'type': u'group',
@@ -64,7 +68,24 @@ class LoopTests(TestCase):
                             u'type': u'integer'
                             }
                         ],
-                    }
+                    }]},
+                {
+                    u'children': [
+                        {
+                            u'bind': {
+                                'calculate': "concat('uuid:', uuid())",
+                                'readonly': 'true()'
+                            },
+                            u'name': 'instanceID',
+                            u'type': 'calculate'
+                        }
+                    ],
+                    u'control': {
+                        'bodyless': True
+                    },
+                    u'name': 'meta',
+                    u'type': u'group'
+                }
                 ],
             }
         self.assertEquals(survey.to_json_dict(), expected_dict)

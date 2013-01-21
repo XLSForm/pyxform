@@ -22,12 +22,29 @@ class SettingsTests(TestCase):
                     u'name': u'your_name',
                     u'text': {u'english': u'What is your name?'},
                     u'type': u'text'
-                    },
+                },
                 {
                     u'name': u'your_age',
                     u'text': {u'english': u'How many years old are you?'},
                     u'type': u'integer'
-                    }
+                },
+                {
+                    'children': [
+                        {
+                            'bind': {
+                                'calculate': "concat('uuid:', uuid())",
+                                'readonly': 'true()'
+                            },
+                            'name': 'instanceID',
+                            'type': 'calculate'
+                        }
+                    ],
+                    'control': {
+                        'bodyless': True
+                    },
+                    'name': 'meta',
+                    'type': 'group'
+                }
                 ],
             }
         self.assertEqual(survey_reader.to_json_dict(), expected_dict)
