@@ -152,7 +152,7 @@ def xls_to_dict(path_or_file):
         rs_dict = {}  # tmp dict to hold entire structure
 
         def slugify(s): return re.sub(r'\W+', '_', s.strip().lower())
-
+        prefix = "$PREFIX$"
         # get col headers and position first, ignore first column
         for column in range(1, sheet.ncols):
             col_name = sheet.cell_value(0, column)
@@ -161,7 +161,9 @@ def xls_to_dict(path_or_file):
                 'data': [],
                 'itemset': col_name,
                 'type': constants.SELECT_ONE,
-                'name': col_name,
+                'name':
+                    prefix if (column == sheet.ncols - 1) else u''.join(
+                        [prefix, '_', col_name]),
                 'label': sheet.cell_value(1, column)}
             if column > 1:
                 rs_dict[col_name]['parent'] = sheet.cell_value(0, column - 1)
@@ -171,11 +173,11 @@ def xls_to_dict(path_or_file):
             for a in range(1, column):
                 prev_col_name = sheet.cell_value(0, a)
                 if choice_filter != '':
-                    choice_filter += ' and %s=${%s}' %\
-                                     (prev_col_name, prev_col_name)
+                    choice_filter += ' and %s=${%s_%s}' %\
+                                     (prev_col_name, prefix, prev_col_name)
                 else:
-                    choice_filter += '%s=${%s}' % \
-                                     (prev_col_name, prev_col_name)
+                    choice_filter += '%s=${%s_%s}' % \
+                                     (prev_col_name, prefix, prev_col_name)
             rs_dict[col_name]['choice_filter'] = choice_filter
         # get data, use new cascade dict structure, data starts on 3 row
         for row in range(2, sheet.nrows):

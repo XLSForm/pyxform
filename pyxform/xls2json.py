@@ -530,8 +530,17 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 #cascading_json = get_cascading_json(cascading_choices, cascading_prefix, cascading_level)
                 cascading_json = cascading_choices[0]['questions']
                 json_dict['choices'] = choices
-                for c in cascading_json:
-                    parent_children_array.append(c)
+                for cq in cascading_json:
+                    def replace_prefix(d, prefix):
+                        for k, v in d.items():
+                            if isinstance(v, basestring):
+                                d[k] = v.replace('$PREFIX$', prefix)
+                            elif isinstance(v, dict):
+                                d[k] = replace_prefix(v, prefix)
+                            elif isinstance(v, list):
+                                d[k] = map(lambda x:replace_prefix(x, prefix), v)
+                        return d
+                    parent_children_array.append(replace_prefix(cq, cascading_prefix))
                 continue # so the row isn't put in as is
 
         #Try to parse question as a select:
