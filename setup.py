@@ -2,15 +2,14 @@ from distutils.core import setup
 
 setup(
      name='pyxform',
-     version='0.9.9.1',
+     version='0.9.9.2',
      author='modilabs',
      author_email='info@modilabs.org',
      packages=['pyxform', 'pyxform.odk_validate'],
      package_dir={'pyxform': 'pyxform'},
      package_data={
         'pyxform': [
-            'odk_validate/java_lib/ODK Validate.jar',
-            'odk_validate/java_lib/lonely_java_src/FormValidator.java',
+            'odk_validate/ODK_Validate.jar',
         ],
      },
      url='http://pypi.python.org/pypi/pyxform/',
