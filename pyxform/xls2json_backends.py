@@ -56,7 +56,7 @@ def xls_to_dict(path_or_file):
         for column in range(0, sheet.ncols):
             column_header = sheet.cell_value(0, column)
             if column_header in column_header_set:
-                raise PyXFormError("Duplicate column header: " + column_header)
+                raise PyXFormError(u"Duplicate column header: %s" % column_header)
             # xls file with 3 columns mostly have a 3 more columns that are
             # blank by default or something, skip during check
             if column_header is not None and column_header != "":
