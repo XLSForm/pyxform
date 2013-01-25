@@ -46,7 +46,11 @@ def xls_to_dict(path_or_file):
             #Warn that it is better to single quote as a string.
             #error_location = cellFormatString % (ss_row_idx, ss_col_idx)
             #raise Exception("Cannot handle excel formatted date at " + error_location)
-            return unicode(datetime.datetime(*xlrd.xldate_as_tuple(value, workbook.datemode)))
+            datetime_or_time_only = xlrd.xldate_as_tuple(value, workbook.datemode)
+            if datetime_or_time_only[:3] == (0, 0, 0):
+                # must be time only
+                return unicode(datetime.time(*datetime_or_time_only[3:]))
+            return unicode(datetime.datetime(*datetime_or_time_only))
         else:
             return unicode(value)
     
