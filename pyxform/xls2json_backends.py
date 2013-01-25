@@ -71,7 +71,8 @@ def xls_to_dict(path_or_file):
             row_dict = {}
             for column in range(0, sheet.ncols):
                 #Changing to cell_value function
-                key = sheet.cell_value(0, column).strip()
+                key = u"%s" % sheet.cell_value(0, column)  # convert to string, in case it is not string
+                key = key.strip()
                 value = sheet.cell_value(row, column)
                 value_type = sheet.cell_type(row, column)
                 if value is not None and value != "":
