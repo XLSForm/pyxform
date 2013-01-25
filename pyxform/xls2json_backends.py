@@ -46,7 +46,11 @@ def xls_to_dict(path_or_file):
             #Warn that it is better to single quote as a string.
             #error_location = cellFormatString % (ss_row_idx, ss_col_idx)
             #raise Exception("Cannot handle excel formatted date at " + error_location)
-            return unicode(datetime.datetime(*xlrd.xldate_as_tuple(value, workbook.datemode)))
+            datetime_or_time_only = xlrd.xldate_as_tuple(value, workbook.datemode)
+            if datetime_or_time_only[:3] == (0, 0, 0):
+                # must be time only
+                return unicode(datetime.time(*datetime_or_time_only[3:]))
+            return unicode(datetime.datetime(*datetime_or_time_only))
         else:
             return unicode(value)
     
@@ -56,7 +60,7 @@ def xls_to_dict(path_or_file):
         for column in range(0, sheet.ncols):
             column_header = sheet.cell_value(0, column)
             if column_header in column_header_set:
-                raise PyXFormError("Duplicate column header: " + column_header)
+                raise PyXFormError(u"Duplicate column header: %s" % column_header)
             # xls file with 3 columns mostly have a 3 more columns that are
             # blank by default or something, skip during check
             if column_header is not None and column_header != "":
@@ -67,7 +71,8 @@ def xls_to_dict(path_or_file):
             row_dict = {}
             for column in range(0, sheet.ncols):
                 #Changing to cell_value function
-                key = sheet.cell_value(0, column).strip()
+                key = u"%s" % sheet.cell_value(0, column)  # convert to string, in case it is not string
+                key = key.strip()
                 value = sheet.cell_value(row, column)
                 value_type = sheet.cell_type(row, column)
                 if value is not None and value != "":
@@ -152,7 +157,7 @@ def xls_to_dict(path_or_file):
         rs_dict = {}  # tmp dict to hold entire structure
 
         def slugify(s): return re.sub(r'\W+', '_', s.strip().lower())
-
+        prefix = "$PREFIX$"
         # get col headers and position first, ignore first column
         for column in range(1, sheet.ncols):
             col_name = sheet.cell_value(0, column)
@@ -161,7 +166,9 @@ def xls_to_dict(path_or_file):
                 'data': [],
                 'itemset': col_name,
                 'type': constants.SELECT_ONE,
-                'name': col_name,
+                'name':
+                    prefix if (column == sheet.ncols - 1) else u''.join(
+                        [prefix, '_', col_name]),
                 'label': sheet.cell_value(1, column)}
             if column > 1:
                 rs_dict[col_name]['parent'] = sheet.cell_value(0, column - 1)
@@ -171,11 +178,11 @@ def xls_to_dict(path_or_file):
             for a in range(1, column):
                 prev_col_name = sheet.cell_value(0, a)
                 if choice_filter != '':
-                    choice_filter += ' and %s=${%s}' %\
-                                     (prev_col_name, prev_col_name)
+                    choice_filter += ' and %s=${%s_%s}' %\
+                                     (prev_col_name, prefix, prev_col_name)
                 else:
-                    choice_filter += '%s=${%s}' % \
-                                     (prev_col_name, prev_col_name)
+                    choice_filter += '%s=${%s_%s}' % \
+                                     (prev_col_name, prefix, prev_col_name)
             rs_dict[col_name]['choice_filter'] = choice_filter
         # get data, use new cascade dict structure, data starts on 3 row
         for row in range(2, sheet.nrows):

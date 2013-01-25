@@ -51,9 +51,9 @@
       </itext>
       <instance>
         <cascading_select_test id="cascading_select_test">
-          <zone/>
-          <state/>
-          <lga/>
+          <mylga_zone/>
+          <mylga_state/>
+          <mylga/>
           <meta>
             <instanceID/>
           </meta>
@@ -147,30 +147,30 @@
           </item>
         </root>
       </instance>
-      <bind nodeset="/cascading_select_test/zone" type="select1"/>
-      <bind nodeset="/cascading_select_test/state" type="select1"/>
-      <bind nodeset="/cascading_select_test/lga" type="select1"/>
+      <bind nodeset="/cascading_select_test/mylga_zone" type="select1"/>
+      <bind nodeset="/cascading_select_test/mylga_state" type="select1"/>
+      <bind nodeset="/cascading_select_test/mylga" type="select1"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/cascading_select_test/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
-    <select1 ref="/cascading_select_test/zone">
+    <select1 ref="/cascading_select_test/mylga_zone">
       <label>Choose your zone:</label>
       <itemset nodeset="instance('zone')/root/item">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
-    <select1 ref="/cascading_select_test/state">
+    <select1 ref="/cascading_select_test/mylga_state">
       <label>Choose your state:</label>
-      <itemset nodeset="instance('state')/root/item[zone=/cascading_select_test/zone]">
+      <itemset nodeset="instance('state')/root/item[zone=/cascading_select_test/mylga_zone]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
-    <select1 ref="/cascading_select_test/lga">
+    <select1 ref="/cascading_select_test/mylga">
       <label>Choose your lga:</label>
-      <itemset nodeset="instance('lga')/root/item[zone=/cascading_select_test/zone and state=/cascading_select_test/state]">
+      <itemset nodeset="instance('lga')/root/item[zone=/cascading_select_test/mylga_zone and state=/cascading_select_test/mylga_state]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>

@@ -51,9 +51,9 @@
       </itext>
       <instance>
         <old_cascades id="old_cascades">
-          <states/>
-          <counties/>
-          <cities/>
+          <state_states/>
+          <state_counties/>
+          <state/>
           <meta>
             <instanceID/>
           </meta>
@@ -147,30 +147,30 @@
           </item>
         </root>
       </instance>
-      <bind nodeset="/old_cascades/states" type="select1"/>
-      <bind nodeset="/old_cascades/counties" type="select1"/>
-      <bind nodeset="/old_cascades/cities" type="select1"/>
+      <bind nodeset="/old_cascades/state_states" type="select1"/>
+      <bind nodeset="/old_cascades/state_counties" type="select1"/>
+      <bind nodeset="/old_cascades/state" type="select1"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/old_cascades/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
-    <select1 ref="/old_cascades/states">
+    <select1 ref="/old_cascades/state_states">
       <label>State:</label>
       <itemset nodeset="instance('states')/root/item">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
-    <select1 ref="/old_cascades/counties">
+    <select1 ref="/old_cascades/state_counties">
       <label>County:</label>
-      <itemset nodeset="instance('counties')/root/item[states=/old_cascades/states]">
+      <itemset nodeset="instance('counties')/root/item[states=/old_cascades/state_states]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
-    <select1 ref="/old_cascades/cities">
+    <select1 ref="/old_cascades/state">
       <label>City:</label>
-      <itemset nodeset="instance('cities')/root/item[states=/old_cascades/states and counties=/old_cascades/counties]">
+      <itemset nodeset="instance('cities')/root/item[states=/old_cascades/state_states and counties=/old_cascades/state_counties]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
