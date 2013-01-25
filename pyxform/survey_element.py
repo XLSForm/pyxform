@@ -254,7 +254,8 @@ class SurveyElement(dict):
             path = self._translation_path("hint")
             return node(u"hint", ref="jr:itext('%s')" % path)
         else:
-            hint, outputInserted = self.get_root().insert_output_values(self.hint)
+            hint, outputInserted = self.get_root().insert_output_values(
+                self.hint)
             return node(u"hint", hint, toParseString=outputInserted)
 
     def xml_label_and_hint(self):

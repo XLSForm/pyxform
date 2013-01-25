@@ -699,6 +699,12 @@ QUESTION_TYPE_DICT = \
         "bind": {
             "type": "select1"
         }
+    },
+    "hidden": {
+        "bind": {
+            "type": "string"
+        }
+
     }
 }
 

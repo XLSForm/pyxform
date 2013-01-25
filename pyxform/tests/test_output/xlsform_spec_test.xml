@@ -652,6 +652,9 @@
           <meta>
             <instanceID/>
           </meta>
+          <orx:meta>
+            <orx:instanceID/>
+          </orx:meta>
         </xlsform_spec_test>
       </instance>
       <bind nodeset="/xlsform_spec_test/skip_to_end" type="select1"/>

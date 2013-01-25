@@ -164,7 +164,8 @@ class MultipleChoiceQuestion(Question):
         for element in self.xml_label_and_hint():
             result.appendChild(element)
         survey = self.get_root()
-        if self['itemset']:
+        # itemset are only supposed to be strings, check to prevent the rare dicts that show up
+        if self['itemset'] and isinstance( self['itemset'] , basestring):
             choice_filter = self.get('choice_filter')
             nodeset = "instance('" + self['itemset'] + "')/root/item"
             choice_filter = survey.insert_xpaths(choice_filter)
