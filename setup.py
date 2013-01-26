@@ -1,32 +1,21 @@
-# This file is adapted from:
-# http://packages.python.org/an_example_pypi_project/setuptools.html
-
-import os
-from setuptools import setup
-
-# Utility function to read the README file.
-# Used for the long_description.  It's nice, because now 1) we have a top level
-# README file and 2) it's easier to type in the README file than to put a raw
-# string in below ...
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+from distutils.core import setup
 
 setup(
-    name = "pyxform",
-    version = "0.89",
-    author = "Columbia University, Modi Research Group",
-    author_email = "andrew.ei.marder@gmail.com",
-    description = ("A library for authoring XForms for ODK Collect."),
-    license = "BSD",
-    keywords = "XForm ODK Collect",
-    url = "http://github.com/mvpdev/pyxform",
-    packages=['pyxform'],
-    long_description=read('README.rst'),
-    install_requires=[
-        'xlrd==0.8.0',
+     name='pyxform',
+     version='0.9.9.2',
+     author='modilabs',
+     author_email='info@modilabs.org',
+     packages=['pyxform', 'pyxform.odk_validate'],
+     package_dir={'pyxform': 'pyxform'},
+     package_data={
+        'pyxform': [
+            'odk_validate/ODK_Validate.jar',
         ],
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        "License :: OSI Approved :: BSD License",
+     },
+     url='http://pypi.python.org/pypi/pyxform/',
+     description='A Python package to create XForms for ODK Collect.',
+     long_description=open('README.rst', 'rt').read(),
+     install_requires=[
+        'xlrd==0.8.0',
     ],
 )

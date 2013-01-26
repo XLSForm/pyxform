@@ -46,7 +46,11 @@ def xls_to_dict(path_or_file):
             #Warn that it is better to single quote as a string.
             #error_location = cellFormatString % (ss_row_idx, ss_col_idx)
             #raise Exception("Cannot handle excel formatted date at " + error_location)
-            return unicode(datetime.datetime(*xlrd.xldate_as_tuple(value, workbook.datemode)))
+            datetime_or_time_only = xlrd.xldate_as_tuple(value, workbook.datemode)
+            if datetime_or_time_only[:3] == (0, 0, 0):
+                # must be time only
+                return unicode(datetime.time(*datetime_or_time_only[3:]))
+            return unicode(datetime.datetime(*datetime_or_time_only))
         else:
             return unicode(value)
     
@@ -60,15 +64,19 @@ def xls_to_dict(path_or_file):
             if column_header == '':
                 continue
             if column_header in column_header_set:
-                raise PyXFormError("Duplicate column header: " + column_header)
-            column_header_set.add(column_header)
+                raise PyXFormError(u"Duplicate column header: %s" % column_header)
+            # xls file with 3 columns mostly have a 3 more columns that are
+            # blank by default or something, skip during check
+            if column_header is not None and column_header != "":
+                column_header_set.add(column_header)
         
         result = []
         for row in range(1, sheet.nrows):
             row_dict = {}
             for column in range(0, sheet.ncols):
                 #Changing to cell_value function
-                key = sheet.cell_value(0, column).strip()
+                key = u"%s" % sheet.cell_value(0, column)  # convert to string, in case it is not string
+                key = key.strip()
                 value = sheet.cell_value(row, column)
                 value_type = sheet.cell_type(row, column)
                 if value is not None and value != "":
@@ -104,12 +112,12 @@ def xls_to_dict(path_or_file):
                     col_dict[key] = xls_value_from_sheet(sheet, row, column)
 
                 # pass 1: make sure choice_labels are unique, while keeping the paired prev_choice_label consistent 
-                def f((l1,l2), (x1,x2)):
-                    if x1 in l1: return (l1,l2)
-                    else: return (l1 + [x1], l2 + [x2]) 
-                zipped = reduce(f, zip(col_dict["choice_labels"], col_dict["prev_choice_labels"] or col_dict["choice_labels"]), ([], []))
-                col_dict["choice_labels"] = zipped[0]
-                if column > 1: col_dict["prev_choice_labels"] = zipped[1]
+                def f(l, (x1,x2)):
+                    if (x1,x2) in l: return l
+                    else: return l + [(x1,x2)]
+                zipped = reduce(f, zip(col_dict["choice_labels"], col_dict["prev_choice_labels"] or col_dict["choice_labels"]), [])
+                col_dict["choice_labels"] = [a for a,b in zipped]
+                if column > 1: col_dict["prev_choice_labels"] = [b for a,b in zipped]
                 # end make things unique
             result.append(col_dict)
 
@@ -148,11 +156,94 @@ def xls_to_dict(path_or_file):
             result2.append({"stopper" : level['name']})
         return result2
 
+    def _xls_to_dict_cascade_sheet(sheet):
+        result = []
+        rs_dict = {}  # tmp dict to hold entire structure
+
+        def slugify(s): return re.sub(r'\W+', '_', s.strip().lower())
+        prefix = "$PREFIX$"
+        # get col headers and position first, ignore first column
+        for column in range(1, sheet.ncols):
+            col_name = sheet.cell_value(0, column)
+            rs_dict[col_name] = {
+                'pos': column,
+                'data': [],
+                'itemset': col_name,
+                'type': constants.SELECT_ONE,
+                'name':
+                    prefix if (column == sheet.ncols - 1) else u''.join(
+                        [prefix, '_', col_name]),
+                'label': sheet.cell_value(1, column)}
+            if column > 1:
+                rs_dict[col_name]['parent'] = sheet.cell_value(0, column - 1)
+            else:
+                rs_dict[col_name]['choices'] = []
+            choice_filter = ''
+            for a in range(1, column):
+                prev_col_name = sheet.cell_value(0, a)
+                if choice_filter != '':
+                    choice_filter += ' and %s=${%s_%s}' %\
+                                     (prev_col_name, prefix, prev_col_name)
+                else:
+                    choice_filter += '%s=${%s_%s}' % \
+                                     (prev_col_name, prefix, prev_col_name)
+            rs_dict[col_name]['choice_filter'] = choice_filter
+        # get data, use new cascade dict structure, data starts on 3 row
+        for row in range(2, sheet.nrows):
+            # go through each header aka column
+            for col_name in rs_dict:
+                column = rs_dict[col_name]['pos']
+                cell_data = xls_value_from_sheet(sheet, row, column)
+                try:
+                    rs_dict[col_name]['data'].index(slugify(cell_data))
+                except ValueError:
+                    rs_dict[col_name]['data'].append(slugify(cell_data))
+                    if rs_dict[col_name].has_key('choices'):
+                        l={'name': slugify(cell_data), 'label': cell_data}
+                        rs_dict[col_name]['choices'].append(l)
+                data = {
+                    'name': slugify(cell_data),
+                    'label': cell_data.strip(),
+                    constants.LIST_NAME: col_name
+                }
+                for prev_column in range(1, column):
+                    prev_col_name = sheet.cell_value(0, prev_column)
+                    data[prev_col_name] = slugify(xls_value_from_sheet(
+                        sheet, row, prev_column))
+                result.append(data)
+        # order
+        kl = []
+        for column in range(1, sheet.ncols):
+            col_name = sheet.cell_value(0, column)
+            if rs_dict[col_name].has_key('parent'):
+                rs_dict[col_name].pop('parent')
+            if rs_dict[col_name].has_key('pos'):
+                rs_dict[col_name].pop('pos')
+            if rs_dict[col_name].has_key('data'):
+                rs_dict[col_name].pop('data')
+            kl.append(rs_dict[col_name])
+
+    # create list with no duplicates
+        choices = []
+        for rec in result:
+            c = 0
+            for check in result:
+                if rec == check:
+                    c += 1
+            if c == 1:
+                choices.append(rec)
+            else:
+                try:
+                    choices.index(rec)
+                except ValueError:
+                    choices.append(rec)
+        return [{'choices': choices, 'questions': kl}]
+
 
     result = {}
     for sheet in workbook.sheets():
         if sheet.name==constants.CASCADING_CHOICES:
-            result[sheet.name] = xls_to_dict_cascade_sheet(sheet)
+            result[sheet.name] = _xls_to_dict_cascade_sheet(sheet)
         else:
             result[sheet.name] = xls_to_dict_normal_sheet(sheet)
     return result
@@ -177,7 +268,9 @@ def get_cascading_json(sheet_list, prefix, level):
                         d[k] = map(lambda x:replace_prefix(x, prefix), v)
                 return d
             return_list.append(replace_prefix(row['lambda'], prefix))
-    raise PyXFormError("Found a cascading_select " + level + ", but could not find " + level + "in cascades sheet.")
+    raise PyXFormError(
+        "Found a cascading_select " + level + ", but could not"
+        " find " + level + "in cascades sheet.")
 
 def csv_to_dict(path_or_file):
     if isinstance(path_or_file, basestring):

@@ -652,6 +652,9 @@
           <meta>
             <instanceID/>
           </meta>
+          <orx:meta>
+            <orx:instanceID/>
+          </orx:meta>
         </xlsform_spec_test>
       </instance>
       <bind nodeset="/xlsform_spec_test/skip_to_end" type="select1"/>
@@ -739,7 +742,7 @@
         <label ref="jr:itext('/xlsform_spec_test/everything/number_label:label')"/>
         <hint ref="jr:itext('/xlsform_spec_test/everything/number_label:hint')"/>
       </input>
-      <input ref="/xlsform_spec_test/everything/text_image_audio_video_test">
+      <input autoplay="audio" ref="/xlsform_spec_test/everything/text_image_audio_video_test">
         <label ref="jr:itext('/xlsform_spec_test/everything/text_image_audio_video_test:label')"/>
         <hint ref="jr:itext('/xlsform_spec_test/everything/text_image_audio_video_test:hint')"/>
       </input>

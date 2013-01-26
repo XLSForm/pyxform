@@ -74,6 +74,7 @@ survey_header_aliases = {
     u"count": u"control::jr:count",
     u"repeat_count": u"control::jr:count",
     u"jr:count": u"control::jr:count",
+    u"autoplay": u"control::autoplay",
 }
 list_header_aliases = {
     u"caption" : constants.LABEL,
@@ -350,7 +351,12 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     choices_sheet = workbook_dict.get(constants.CHOICES, [])
     choices_sheet = dealias_and_group_headers(choices_sheet, list_header_aliases, use_double_colons, default_language)
-    
+    ########### Cascading Select sheet ###########
+    cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, [])
+    if len(cascading_choices):
+        if cascading_choices[0].has_key('choices'):
+            choices_sheet = choices_sheet + cascading_choices[0]['choices']
+
     combined_lists = group_dictionaries_by_key(choices_and_columns_sheet + choices_sheet + columns_sheet, constants.LIST_NAME)
     
     choices = combined_lists
@@ -363,9 +369,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
             if 'label' not in option:
                 info = "[list_name : " + list_name + ']'
                 warnings.append("On the choices sheet there is a option with no label. " + info)
-    ########### Cascading Select sheet ###########
-    cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, {})
-    
+
     ########### Survey sheet ###########
     if constants.SURVEY not in workbook_dict:
         raise PyXFormError("You must have a sheet named (case-sensitive): " + constants.SURVEY)
@@ -400,7 +404,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     for row in survey_sheet:
         row_number += 1
         prev_control_type, parent_children_array = stack[-1]
-        
         #Disabled should probably be first so the attributes below can be disabled.
         if u"disabled" in row:
             warnings.append(rowFormatString % row_number +
@@ -412,7 +415,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         
         #skip empty rows
         if len(row) == 0: continue
-        
+
         #Get question type
         question_type = row.get(constants.TYPE)
         if not question_type:
@@ -525,9 +528,20 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 cascading_prefix = row.get(constants.NAME)
                 if not cascading_prefix:
                     raise PyXFormError(rowFormatString % row_number + " Cascading select needs a name.")
-                cascading_json = get_cascading_json(cascading_choices, cascading_prefix, cascading_level)
-                
-                for c in cascading_json: parent_children_array.append(c)
+                #cascading_json = get_cascading_json(cascading_choices, cascading_prefix, cascading_level)
+                cascading_json = cascading_choices[0]['questions']
+                json_dict['choices'] = choices
+                for cq in cascading_json:
+                    def replace_prefix(d, prefix):
+                        for k, v in d.items():
+                            if isinstance(v, basestring):
+                                d[k] = v.replace('$PREFIX$', prefix)
+                            elif isinstance(v, dict):
+                                d[k] = replace_prefix(v, prefix)
+                            elif isinstance(v, list):
+                                d[k] = map(lambda x:replace_prefix(x, prefix), v)
+                        return d
+                    parent_children_array.append(replace_prefix(cq, cascading_prefix))
                 continue # so the row isn't put in as is
 
         #Try to parse question as a select:
@@ -602,7 +616,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                     
                     control = new_json_dict[u"control"] = new_json_dict.get(u"control", {})
                     control[u"appearance"] = "list-nolabel"
-                        
                 parent_children_array.append(new_json_dict)
                 if specify_other_question:
                     parent_children_array.append(specify_other_question)
@@ -641,7 +654,6 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         survey_children_array.append(meta_element)
     
     #print_pyobj_to_json(json_dict)
-    
     return json_dict
 
 def parse_file_to_workbook_dict(path, file_object=None):

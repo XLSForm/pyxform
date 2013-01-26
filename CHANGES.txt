@@ -1,0 +1,6 @@
+v0.9.5, 2012 06 21 -- Initial PyPI release.
+v0.9.6, 2012 06 21 -- Including necessary java files.
+v0.9.7, 2012 ?? ?? -- Undocumented.
+v0.9.8, 2012 10 12 -- Include xmlns for instances.
+v0.9.9, 2013 01 22 -- InstanceId always added, new cascade format support.
+v0.9.9.1, 2013 01 24 -- bug fix on old xls cascade format support.

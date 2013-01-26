@@ -62,17 +62,13 @@
       <label>Table-list tests</label>
     </input>
     <group appearance="field-list" ref="/table-list/table_list_test2">
-      <label>
-        
-      </label>
+      <label></label>
       <input ref="/table-list/table_list_test2/generated_table_list_label_3">
         <label>Table (made with an easier method)</label>
         <hint>This is a user-defined hint for the 1st row</hint>
       </input>
       <select1 appearance="label" ref="/table-list/table_list_test2/reserved_name_for_field_list_labels_4">
-        <label>
-           
-        </label>
+        <label> </label>
         <item>
           <label>Yes</label>
           <value>yes</value>
@@ -108,17 +104,13 @@
       </select1>
     </group>
     <group appearance="field-list" ref="/table-list/happy_sad_table">
-      <label>
-        
-      </label>
+      <label></label>
       <input ref="/table-list/happy_sad_table/generated_table_list_label_7">
         <label>Table with image labels (made using an easier method)</label>
         <hint>This is a user-defined hint for the 1st row</hint>
       </input>
       <select appearance="label" ref="/table-list/happy_sad_table/reserved_name_for_field_list_labels_8">
-        <label>
-           
-        </label>
+        <label> </label>
         <item>
           <label ref="jr:itext('/table-list/happy_sad_table/reserved_name_for_field_list_labels_8/happy:label')"/>
           <value>happy</value>

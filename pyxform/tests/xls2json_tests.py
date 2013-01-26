@@ -23,6 +23,7 @@ class BasicXls2JsonApiTests(TestCase):
                 u'label': {u'english': u'have you had a good day today?'},
                 u'type': u'select one',
                 u'name': u'good_day',
+                'itemset': u'yes_or_no',
                 u'choices': [
                     {
                         u'label': {u'english': u'yes'},
@@ -33,21 +34,118 @@ class BasicXls2JsonApiTests(TestCase):
                         u'name': u'no'
                         }
                     ]
+                },
+                {
+                    'children': [
+                        {
+                            'bind': {
+                                'calculate': "concat('uuid:', uuid())",
+                                'readonly': 'true()'
+                            },
+                            'name': 'instanceID',
+                            'type': 'calculate'
+                        }
+                    ],
+                    'control': {
+                        'bodyless': True
+                    },
+                    'name': 'meta',
+                    'type': 'group'
                 }
             ]
+        self.assertEqual(x_results[u"children"], expected_dict)
+
+    def test_hidden(self):
+        x = SurveyReader(utils.path_to_text_fixture("hidden.xls"))
+        x_results = x.to_json_dict()
+
+        expected_dict = [
+            {
+                u'type': u'hidden',
+                u'name': u'hidden_test'
+            },
+            {
+                'children': [
+                    {
+                        'bind': {
+                            'calculate': "concat('uuid:', uuid())",
+                            'readonly': 'true()'
+                        },
+                        'name': 'instanceID',
+                        'type': 'calculate'
+                    }
+                ],
+                'control': {
+                    'bodyless': True
+                },
+                'name': 'meta',
+                'type': 'group'
+            }
+        ]
         self.assertEqual(x_results[u"children"], expected_dict)
 
     def test_gps(self):
         x = SurveyReader(utils.path_to_text_fixture("gps.xls"))
 
-        expected_dict = [{u'type': u'gps', u'name': u'location', u'label': u'GPS'}]
+        expected_dict = [
+            {
+                u'type': u'gps', u'name': u'location', u'label': u'GPS'},
+            {
+                'children': [
+                    {
+                        'bind': {
+                            'calculate': "concat('uuid:', uuid())",
+                            'readonly': 'true()'
+                        },
+                        'name': 'instanceID',
+                        'type': 'calculate'
+                    }
+                ],
+                'control': {
+                    'bodyless': True
+                },
+                'name': 'meta',
+                'type': 'group'
+            }]
 
         self.assertEqual(x.to_json_dict()[u"children"], expected_dict)
 
     def test_text_and_integer(self):
         x = SurveyReader(utils.path_to_text_fixture("text_and_integer.xls"))
 
-        expected_dict = [{u'text': {u'english': u'What is your name?'}, u'type': u'text', u'name': u'your_name'}, {u'text': {u'english': u'How many years old are you?'}, u'type': u'integer', u'name': u'your_age'}]
+        expected_dict = [
+            {
+                u'text': {
+                    u'english': u'What is your name?'
+                },
+                u'type': u'text',
+                u'name': u'your_name'
+            },
+            {
+                u'text': {
+                    u'english': u'How many years old are you?'
+                },
+                u'type': u'integer',
+                u'name': u'your_age'
+            },
+            {
+                u'children': [
+                    {
+                        u'bind': {
+                            'calculate': "concat('uuid:', uuid())",
+                            'readonly': 'true()'
+                        },
+                        u'name': 'instanceID',
+                        u'type': 'calculate'
+                    }
+                ],
+                u'control': {
+                    'bodyless': True
+                },
+                u'name': 'meta',
+                u'type': u'group'
+            }
+        ]
 
         self.assertEqual(x.to_json_dict()[u"children"], expected_dict)
 
@@ -81,17 +179,34 @@ class BasicXls2JsonApiTests(TestCase):
                             u'label': {u'English': u'Column 2'}
                             }
                         ],
-                    u'label': {u'English': u'My Table'}
-                    }]}
+                    u'label': {u'English': u'My Table'
+                    }
+                },
+                {
+                    u'children': [
+                        {
+                            u'bind': {
+                                'calculate': "concat('uuid:', uuid())",
+                                'readonly': 'true()'
+                            },
+                            u'name': 'instanceID',
+                            u'type': 'calculate'
+                        }
+                    ],
+                    u'control': {
+                        'bodyless': True
+                    },
+                    u'name': 'meta',
+                    u'type': u'group'
+                }
+            ]
+        }
         self.maxDiff = None
         self.assertEqual(x.to_json_dict(), expected_dict)
 
-    def test_xlsx_fails(self):
-        def load_xlsx_file():
-            x = SurveyReader(utils.path_to_text_fixture("text_and_integer_xlsx.xlsx"))
-        self.assertRaises(Exception, load_xlsx_file)
 
 from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
+
 
 class CsvReaderEquivalencyTest(TestCase):
     def test_equivalency(self):

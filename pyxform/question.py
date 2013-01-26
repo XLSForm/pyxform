@@ -35,25 +35,12 @@ class InputQuestion(Question):
     def xml_control(self):
         control_dict = self.control
         label_and_hint = self.xml_label_and_hint()
-        if u"appearance" in control_dict and label_and_hint:
-            return node(
-                u"input", ref=self.get_xpath(),
-                appearance=control_dict[u"appearance"],
-                *self.xml_label_and_hint()
-                )
-        elif not u"appearance" in control_dict and label_and_hint:
-            return node(u"input",
-                ref=self.get_xpath(),
-                *self.xml_label_and_hint()
-                )
-        elif u"appearance" in control_dict and not label_and_hint:
-            return node(
-                u"input", ref=self.get_xpath(),
-                appearance=control_dict[u"appearance"]
-                )
-        else:
-            return node(u"input", ref=self.get_xpath())
-
+        control_dict['ref'] = self.get_xpath()
+        result = node(**control_dict)
+        if label_and_hint:
+            for element in self.xml_label_and_hint():
+                result.appendChild(element)
+        return result
 
 class TriggerQuestion(Question):
 
@@ -164,7 +151,8 @@ class MultipleChoiceQuestion(Question):
         for element in self.xml_label_and_hint():
             result.appendChild(element)
         survey = self.get_root()
-        if self['itemset']:
+        # itemset are only supposed to be strings, check to prevent the rare dicts that show up
+        if self['itemset'] and isinstance( self['itemset'] , basestring):
             choice_filter = self.get('choice_filter')
             nodeset = "instance('" + self['itemset'] + "')/root/item"
             choice_filter = survey.insert_xpaths(choice_filter)

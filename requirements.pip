@@ -1,2 +1,6 @@
 nose==1.0.0
+FormEncode==1.2.4
+lxml==2.3.4
+modilabs-python-utils==0.1.5
 xlrd==0.8.0
+unittest2==0.5.1

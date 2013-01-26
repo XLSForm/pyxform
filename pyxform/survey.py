@@ -22,7 +22,7 @@ nsmap = {
     }
 
 class Survey(Section):
-    
+
     FIELDS = Section.FIELDS.copy()
     FIELDS.update(
         {
@@ -35,11 +35,12 @@ class Survey(Section):
             u"_translations": dict,
             u"submission_url": unicode,
             u"public_key": unicode,
+            u"instance_xmlns": unicode,
             u"version": unicode,
             u"choices": dict,
         }
     )
-        
+
     def validate(self):
         super(Survey, self).validate()
         self._validate_uniqueness_of_section_names()
@@ -99,7 +100,7 @@ class Survey(Section):
         model_children += [node("instance", self.xml_instance())]
         model_children += list(self._generate_static_instances()) 
         model_children += self.xml_bindings()
-        
+
         if self.submission_url or self.public_key:
             submission_attrs = dict()
             if self.submission_url:
@@ -113,6 +114,15 @@ class Survey(Section):
     def xml_instance(self):
         result = Section.xml_instance(self)
         result.setAttribute(u"id", self.id_string)
+
+        #add instance xmlns attribute to the instance node
+        if self.instance_xmlns:
+            result.setAttribute(u"xmlns", self.instance_xmlns)
+
+        #We need to add a unique form instance id if the form is to be submitted.
+        if self.submission_url:
+            result.appendChild(node("orx:meta", node("orx:instanceID")))
+
         if self.version:
             result.setAttribute(u"version", self.version)
         return result
@@ -124,7 +134,7 @@ class Survey(Section):
         if path[0] not in dicty:
             dicty[path[0]] = {}
         self._add_to_nested_dict(dicty[path[0]], path[1:], value)
-        
+
     def _setup_translations(self):
         """
         set up the self._translations dict which will be referenced in the setup media and itext functions
@@ -133,7 +143,7 @@ class Survey(Section):
         for element in self.iter_descendants():
             for d in element.get_translations(self.default_language):
                 self._translations[d['lang']][d['path']] = {"long" : d['text']}
-                
+
         #This code sets up translations for choiced in filtered selects.
         for list_name, choice_list in self.choices.items():
             for idx, choice in zip(range(len(choice_list)), choice_list):
@@ -151,7 +161,7 @@ class Survey(Section):
                                     self._add_to_nested_dict(self._translations, [mediatypeorlanguage, itextId, 'long'], value)
                     elif choicePropertyName == 'label':
                         self._add_to_nested_dict(self._translations, [self.default_language, itextId, 'long'], choicePropertyValue)
-                        
+
     def _add_empty_translations(self):
         """
         Adds translations so that every itext element has the same elements accross every language.
@@ -162,7 +172,7 @@ class Survey(Section):
         for lang, translation in self._translations.items():
             for path, content in translation.items():
                 paths[path] = paths.get(path, set()).union(content.keys())
-                
+
         for lang, translation in self._translations.items():
             for path, content_types in paths.items():
                 if path not in self._translations[lang]:
@@ -170,7 +180,7 @@ class Survey(Section):
                 for content_type in content_types:
                     if content_type not in self._translations[lang][path]:
                         self._translations[lang][path][content_type] = u"-"
-                        
+
     def _setup_media(self):
         """
         Traverse the survey, find all the media, and put in into the _translations data structure which looks like this:
@@ -341,11 +351,18 @@ class Survey(Section):
         from xml.dom.minidom import Text
         text_node = Text()
         text_node.data = text
-        text = text_node.toxml()
+        xml_text = text_node.toxml()
         
         bracketed_tag = r"\$\{(.*?)\}"
-        result = re.sub(bracketed_tag, self._var_repl_output_function, unicode(text))
-        return result, not result == text
+        # need to make sure we have reason to replace
+        # since at this point < is &lt,
+        # the net effect &lt gets translated again to &amp;lt;
+        if unicode(xml_text).find('{') != -1:
+            result = re.sub(
+                bracketed_tag, self._var_repl_output_function,
+                unicode(xml_text))
+            return result, not result == xml_text
+        return text, False
 
     def print_xform_to_file(self, path="", validate=True, warnings=None):
         """
