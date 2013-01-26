@@ -38,6 +38,7 @@ class SurveyElement(dict):
         u"children": list,
         u"itemset": unicode,
         u"choice_filter": unicode,
+        u"autoplay": unicode,
         }
 
     def _default(self):

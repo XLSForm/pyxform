@@ -74,6 +74,7 @@ survey_header_aliases = {
     u"count": u"control::jr:count",
     u"repeat_count": u"control::jr:count",
     u"jr:count": u"control::jr:count",
+    u"autoplay": u"control::autoplay",
 }
 list_header_aliases = {
     u"caption" : constants.LABEL,
