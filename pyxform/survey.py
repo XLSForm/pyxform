@@ -293,6 +293,7 @@ class Survey(Section):
         output_re = re.compile('\n.*(<output.*>)\n(  )*')
         prettyXml = text_re.sub('>\g<1></', xml_with_linebreaks)
         inlineOutput = output_re.sub('\g<1>', prettyXml)
+        inlineOutput = re.compile('<label>\s*\n\s*\n\s*</label>').sub('<label></label>', inlineOutput)
         return '<?xml version="1.0"?>\n' + inlineOutput
     
     def __unicode__(self):
