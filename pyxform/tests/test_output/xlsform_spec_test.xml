@@ -721,9 +721,7 @@
       </item>
     </select1>
     <group ref="/xlsform_spec_test/everything">
-      <label>
-        
-      </label>
+      <label></label>
       <input ref="/xlsform_spec_test/everything/my_name">
         <label ref="jr:itext('/xlsform_spec_test/everything/my_name:label')"/>
       </input>
@@ -784,9 +782,7 @@
         <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test:label')"/>
         <repeat jr:count="/xlsform_spec_test/everything/num_repeat_times" nodeset="/xlsform_spec_test/everything/repeat_test">
           <group appearance="field-list" ref="/xlsform_spec_test/everything/repeat_test/group_test">
-            <label>
-              
-            </label>
+            <label></label>
             <input ref="/xlsform_spec_test/everything/repeat_test/group_test/required_text">
               <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test/group_test/required_text:label')"/>
             </input>
@@ -828,13 +824,9 @@
             </select1>
           </group>
           <group appearance="field-list" ref="/xlsform_spec_test/everything/repeat_test/name">
-            <label>
-              
-            </label>
+            <label></label>
             <select1 appearance="label" ref="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26">
-              <label>
-                 
-              </label>
+              <label></label>
               <item>
                 <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26/yes:label')"/>
                 <value>yes</value>
