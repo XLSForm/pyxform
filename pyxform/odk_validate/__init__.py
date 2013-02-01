@@ -51,7 +51,8 @@ def check_xform(path_to_xform):
         if returncode > 0: #Error invalid
             raise Exception('ODK Validate Errors:\n' + stderr)
         elif returncode == 0:
-            warnings.append('ODK Validate Warnings:\n' + stderr)
+            if stderr:
+                warnings.append('ODK Validate Warnings:\n' + stderr)
             return warnings
         elif returncode < 0:
             return ["Bad return code from ODK Validate."]
