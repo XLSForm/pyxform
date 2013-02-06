@@ -51,6 +51,7 @@ class duplicate_columns(unittest.TestCase):
             survey.print_xform_to_file(output_path, warnings=warnings)
 
 
+'''TODO remove this test, table-list are already covered in 
 class table_list_test(unittest.TestCase):
 
     maxDiff = None
@@ -71,7 +72,7 @@ class table_list_test(unittest.TestCase):
         #Compare with the expected output:
         with codecs.open(expected_output_path, 'rb', encoding="utf-8") as expected_file:
             with codecs.open(output_path, 'rb', encoding="utf-8") as actual_file:
-                self.assertMultiLineEqual(expected_file.read(), actual_file.read())
+                self.assertMultiLineEqual(expected_file.read(), actual_file.read())'''
 
 
 class repeat_date_test(unittest.TestCase):
