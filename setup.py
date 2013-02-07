@@ -16,6 +16,6 @@ setup(
      description='A Python package to create XForms for ODK Collect.',
      long_description=open('README.rst', 'rt').read(),
      install_requires=[
-        'modilabs-python-utils==0.1.5',
+        'xlrd==0.8.0',
     ],
 )

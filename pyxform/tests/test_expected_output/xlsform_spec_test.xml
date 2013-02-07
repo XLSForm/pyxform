@@ -740,7 +740,7 @@
         <label ref="jr:itext('/xlsform_spec_test/everything/number_label:label')"/>
         <hint ref="jr:itext('/xlsform_spec_test/everything/number_label:hint')"/>
       </input>
-      <input ref="/xlsform_spec_test/everything/text_image_audio_video_test">
+      <input autoplay="audio" ref="/xlsform_spec_test/everything/text_image_audio_video_test">
         <label ref="jr:itext('/xlsform_spec_test/everything/text_image_audio_video_test:label')"/>
         <hint ref="jr:itext('/xlsform_spec_test/everything/text_image_audio_video_test:hint')"/>
       </input>
@@ -826,7 +826,7 @@
           <group appearance="field-list" ref="/xlsform_spec_test/everything/repeat_test/name">
             <label></label>
             <select1 appearance="label" ref="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26">
-              <label> </label>
+              <label></label>
               <item>
                 <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26/yes:label')"/>
                 <value>yes</value>

@@ -74,6 +74,7 @@ survey_header_aliases = {
     u"count": u"control::jr:count",
     u"repeat_count": u"control::jr:count",
     u"jr:count": u"control::jr:count",
+    u"autoplay": u"control::autoplay",
 }
 list_header_aliases = {
     u"caption" : constants.LABEL,
@@ -587,8 +588,9 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                     
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
-                new_json_dict['itemset'] = list_name
+                
                 if row.get('choice_filter'):
+                    new_json_dict['itemset'] = list_name
                     json_dict['choices'] = choices
                 else:
                     new_json_dict[constants.CHOICES] = choices[list_name]
