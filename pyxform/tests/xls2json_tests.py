@@ -23,7 +23,6 @@ class BasicXls2JsonApiTests(TestCase):
                 u'label': {u'english': u'have you had a good day today?'},
                 u'type': u'select one',
                 u'name': u'good_day',
-                'itemset': u'yes_or_no',
                 u'choices': [
                     {
                         u'label': {u'english': u'yes'},
