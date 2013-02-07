@@ -131,7 +131,6 @@ class BuilderTests(TestCase):
                     u'name': u'sex',
                     u'label': {u'English': u'What sex are you?'},
                     u'type': u'select one',
-                    u'itemset': u'sexes',
                     u'children': [ #TODO Change to choices (there is stuff in the json2xform half that will need to change)
                         {
                             u'name': u'male',
@@ -197,7 +196,6 @@ class BuilderTests(TestCase):
                                u'type': u'select one', 
                                u'name': u'zone', 
                                u'label': u'Zone',
-                               u'itemset': u'zone'
                 },
                 {
                     u'children': [
@@ -305,7 +303,6 @@ class BuilderTests(TestCase):
                     u'name': u'available_toilet_types',
                     u'label': {u'english': u'What type of toilets are on the premises?'},
                     u'type': u'select all that apply',
-                    u'itemset': u'toilet_type',
                     #u'bind': {u'constraint': u"(.='none' or not(selected(., 'none')))"},
                     u'children': [
                         {
