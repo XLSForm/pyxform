@@ -173,7 +173,7 @@ class cascade_old_format_index_error(unittest.TestCase):
         output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
         #Do the conversion:
         warnings = []
-        with self.assertRaises(IndexError):
+        with self.assertRaises(pyxform.errors.PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(output_path, warnings=warnings)
