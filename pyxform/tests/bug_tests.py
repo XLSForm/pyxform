@@ -161,5 +161,23 @@ class cascade_old_format(unittest.TestCase):
         survey.print_xform_to_file(output_path, warnings=warnings)
 
 
+class cascade_old_format_index_error(unittest.TestCase):
+
+    maxDiff = None
+
+    def runTest(self):
+        filename = "cascades_old_with_no_cascade_sheet.xls"
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
+        #Get the xform output path:
+        root_filename, ext = os.path.splitext(filename)
+        output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
+        #Do the conversion:
+        warnings = []
+        with self.assertRaises(IndexError):
+            json_survey = pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
+            survey = pyxform.create_survey_element_from_dict(json_survey)
+            survey.print_xform_to_file(output_path, warnings=warnings)
+
+
 if __name__ == '__main__':
     unittest.main()
