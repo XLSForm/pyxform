@@ -1,59 +1,73 @@
 """
 Testing simple cases for Xls2Json
 """
-from unittest import TestCase
+from unittest2 import TestCase
 from pyxform.xls2json import SurveyReader
 import utils
 import os
+import json, codecs
 
 #Nothing calls this AFAICT
 def absolute_path(f, file_name):
     directory = os.path.dirname(f)
     return os.path.join(directory, file_name)
 
+DIR = os.path.dirname(__file__)
 
 class BasicXls2JsonApiTests(TestCase):
 
     def test_simple_yes_or_no_question(self):
-        x = SurveyReader(utils.path_to_text_fixture("yes_or_no_question.xls"))
+        filename = "yes_or_no_question.xls"
+        path_to_excel_file = os.path.join(DIR, "example_xls", filename)
+        #Get the xform output path:
+        root_filename, ext = os.path.splitext(filename)
+        output_path = os.path.join(DIR, "test_output", root_filename + ".json")
+        expected_output_path = os.path.join(DIR, "test_expected_output", root_filename + ".json")
+        x = SurveyReader(path_to_excel_file)
         x_results = x.to_json_dict()
+        with codecs.open(output_path, mode="w", encoding="utf-8") as fp:
+            json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
+        #Compare with the expected output:
+        with codecs.open(expected_output_path, 'rb', encoding="utf-8") as expected_file:
+            with codecs.open(output_path, 'rb', encoding="utf-8") as actual_file:
+                self.assertMultiLineEqual(expected_file.read(), actual_file.read())
 
-        expected_dict = [
-            {
-                u'label': {u'english': u'have you had a good day today?'},
-                u'type': u'select one',
-                u'name': u'good_day',
-                'itemset': u'yes_or_no',
-                u'choices': [
-                    {
-                        u'label': {u'english': u'yes'},
-                        u'name': u'yes'
-                        },
-                    {
-                        u'label': {u'english': u'no'},
-                        u'name': u'no'
-                        }
-                    ]
-                },
-                {
-                    'children': [
-                        {
-                            'bind': {
-                                'calculate': "concat('uuid:', uuid())",
-                                'readonly': 'true()'
-                            },
-                            'name': 'instanceID',
-                            'type': 'calculate'
-                        }
-                    ],
-                    'control': {
-                        'bodyless': True
-                    },
-                    'name': 'meta',
-                    'type': 'group'
-                }
-            ]
-        self.assertEqual(x_results[u"children"], expected_dict)
+#        expected_dict = [
+#            {
+#                u'label': {u'english': u'have you had a good day today?'},
+#                u'type': u'select one',
+#                u'name': u'good_day',
+#                'itemset': u'yes_or_no',
+#                u'choices': [
+#                    {
+#                        u'label': {u'english': u'yes'},
+#                        u'name': u'yes'
+#                        },
+#                    {
+#                        u'label': {u'english': u'no'},
+#                        u'name': u'no'
+#                        }
+#                    ]
+#                },
+#                {
+#                    'children': [
+#                        {
+#                            'bind': {
+#                                'calculate': "concat('uuid:', uuid())",
+#                                'readonly': 'true()'
+#                            },
+#                            'name': 'instanceID',
+#                            'type': 'calculate'
+#                        }
+#                    ],
+#                    'control': {
+#                        'bodyless': True
+#                    },
+#                    'name': 'meta',
+#                    'type': 'group'
+#                }
+#            ]
+#        self.assertEqual(x_results[u"children"], expected_dict)
 
     def test_hidden(self):
         x = SurveyReader(utils.path_to_text_fixture("hidden.xls"))

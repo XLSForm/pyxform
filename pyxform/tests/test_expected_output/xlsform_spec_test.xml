@@ -18,7 +18,7 @@
           <text id="/xlsform_spec_test/everything/autocomplete_chars_test/no:label">
             <value>No</value>
           </text>
-          <text id="/xlsform_spec_test/everything/datetime_test:label">
+          <text id="/xlsform_spec_test/everything/uri_deviceid_test_output:label">
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/skip_to_end/no:label">
@@ -96,6 +96,9 @@
           <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test/yes:label">
             <value>Yes</value>
           </text>
+          <text id="/xlsform_spec_test/launch:label">
+            <value>-</value>
+          </text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-test/a:label">
             <value form="image">jr://images/a.jpg</value>
           </text>
@@ -162,6 +165,9 @@
           <text id="/xlsform_spec_test/everything/autocomplete_chars_test:label">
             <value>-</value>
           </text>
+          <text id="/xlsform_spec_test/everything/datetime_test:label">
+            <value>-</value>
+          </text>
           <text id="/xlsform_spec_test/everything/repeat_test/labeled_select_group:label">
             <value>-</value>
           </text>
@@ -215,7 +221,7 @@
           <text id="/xlsform_spec_test/everything/autocomplete_chars_test/no:label">
             <value>没有</value>
           </text>
-          <text id="/xlsform_spec_test/everything/datetime_test:label">
+          <text id="/xlsform_spec_test/everything/uri_deviceid_test_output:label">
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/skip_to_end/no:label">
@@ -293,6 +299,9 @@
           <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test/yes:label">
             <value>是</value>
           </text>
+          <text id="/xlsform_spec_test/launch:label">
+            <value>-</value>
+          </text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-test/a:label">
             <value form="image">jr://images/-</value>
           </text>
@@ -362,6 +371,9 @@
           <text id="/xlsform_spec_test/everything/autocomplete_chars_test:label">
             <value>-</value>
           </text>
+          <text id="/xlsform_spec_test/everything/datetime_test:label">
+            <value>-</value>
+          </text>
           <text id="/xlsform_spec_test/everything/repeat_test/labeled_select_group:label">
             <value>-</value>
           </text>
@@ -409,9 +421,8 @@
           <text id="/xlsform_spec_test/everything/autocomplete_chars_test/no:label">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/autocomplete_test/no:label">
-            <value>-</value>
-          </text>
+          <text id="/xlsform_spec_test/everything/uri_deviceid_test_output:label">
+            <value>deviceid_test_output: <output value="/xlsform_spec_test/everything/uri_deviceid"/></value></text>
           <text id="/xlsform_spec_test/skip_to_end/no:label">
             <value>-</value>
           </text>
@@ -419,6 +430,9 @@
             <value>end test output: <output value="/xlsform_spec_test/everything/end"/></value></text>
           <text id="/xlsform_spec_test/everything/today_test_output:label">
             <value>today_test_output: <output value="/xlsform_spec_test/everything/today"/></value></text>
+          <text id="/xlsform_spec_test/everything/autocomplete_test/no:label">
+            <value>-</value>
+          </text>
           <text id="/xlsform_spec_test/everything/autocomplete_chars_test/yes:label">
             <value>-</value>
           </text>
@@ -480,6 +494,9 @@
           </text>
           <text id="/xlsform_spec_test/everything/barcode_test:label">
             <value>barcode_test</value>
+          </text>
+          <text id="/xlsform_spec_test/launch:label">
+            <value>This launches a fictional application to get an integer result.</value>
           </text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-test/a:label">
             <value form="image">jr://images/-</value>
@@ -642,6 +659,8 @@
             <today_test_output/>
             <deviceid/>
             <deviceid_test_output/>
+            <uri_deviceid/>
+            <uri_deviceid_test_output/>
             <simserial/>
             <simserial_test_output/>
             <phonenumber/>
@@ -649,12 +668,11 @@
             <_1/>
             <FALSE/>
           </everything>
+          <launch/>
           <meta>
             <instanceID/>
+            <instanceName/>
           </meta>
-          <orx:meta>
-            <orx:instanceID/>
-          </orx:meta>
         </xlsform_spec_test>
       </instance>
       <bind nodeset="/xlsform_spec_test/skip_to_end" type="select1"/>
@@ -699,13 +717,17 @@
       <bind nodeset="/xlsform_spec_test/everything/today_test_output" readonly="true()" type="string"/>
       <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/xlsform_spec_test/everything/deviceid" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/deviceid_test_output" readonly="true()" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="uri:deviceid" nodeset="/xlsform_spec_test/everything/uri_deviceid" type="string"/>
+      <bind nodeset="/xlsform_spec_test/everything/uri_deviceid_test_output" readonly="true()" type="string"/>
       <bind jr:preload="property" jr:preloadParams="simserial" nodeset="/xlsform_spec_test/everything/simserial" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/simserial_test_output" readonly="true()" type="string"/>
       <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/xlsform_spec_test/everything/phonenumber" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/phonenumber_test_output" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/_1" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/FALSE" type="string"/>
+      <bind nodeset="/xlsform_spec_test/launch" type="int"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/xlsform_spec_test/meta/instanceID" readonly="true()" type="string"/>
+      <bind calculate="/xlsform_spec_test/everything/my_name" nodeset="/xlsform_spec_test/meta/instanceName" type="string"/>
     </model>
   </h:head>
   <h:body>
@@ -919,6 +941,9 @@
       <input ref="/xlsform_spec_test/everything/deviceid_test_output">
         <label ref="jr:itext('/xlsform_spec_test/everything/deviceid_test_output:label')"/>
       </input>
+      <input ref="/xlsform_spec_test/everything/uri_deviceid_test_output">
+        <label ref="jr:itext('/xlsform_spec_test/everything/uri_deviceid_test_output:label')"/>
+      </input>
       <input ref="/xlsform_spec_test/everything/simserial_test_output">
         <label ref="jr:itext('/xlsform_spec_test/everything/simserial_test_output:label')"/>
       </input>
@@ -932,5 +957,8 @@
         <label ref="jr:itext('/xlsform_spec_test/everything/FALSE:label')"/>
       </input>
     </group>
+    <input appearance="ex:org.thirdparty.app.ActivityName" ref="/xlsform_spec_test/launch">
+      <label ref="jr:itext('/xlsform_spec_test/launch:label')"/>
+    </input>
   </h:body>
 </h:html>

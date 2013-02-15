@@ -363,7 +363,7 @@ QUESTION_TYPE_DICT = \
             "type": "string", 
             "jr:preloadParams": "deviceid"
         }
-    }, 
+    },
     "subscriberid": {
         "bind": {
             "jr:preload": "property", 
@@ -704,8 +704,49 @@ QUESTION_TYPE_DICT = \
         "bind": {
             "type": "string"
         }
-
-    }
+    },
+    "uri:subscriberid": {
+        "bind": {
+            "jr:preload": "property", 
+            "type": "string", 
+            "jr:preloadParams": "uri:subscriberid"
+        }
+    },
+    "uri:phonenumber": {
+        "bind": {
+            "jr:preload": "property", 
+            "type": "string", 
+            "jr:preloadParams": "uri:phonenumber"
+        }
+    },
+    "uri:simserial": {
+        "bind": {
+            "jr:preload": "property", 
+            "type": "string", 
+            "jr:preloadParams": "uri:simserial"
+        }
+    },
+    "uri:deviceid": {
+        "bind": {
+            "jr:preload": "property", 
+            "type": "string", 
+            "jr:preloadParams": "uri:deviceid"
+        }
+    }, 
+    "uri:username": {
+        "bind": {
+            "jr:preload": "property", 
+            "type": "string", 
+            "jr:preloadParams": "uri:username"
+        }
+    }, 
+    "uri:email": {
+        "bind": {
+            "jr:preload": "property", 
+            "type": "string", 
+            "jr:preloadParams": "uri:email"
+        }
+    }, 
 }
 
 #import os
