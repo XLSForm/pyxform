@@ -159,6 +159,21 @@ class cascade_old_format(unittest.TestCase):
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
 
+class validate_wrapper(unittest.TestCase):
+
+    maxDiff = None
+
+    def runTest(self):
+        filename = "ODKValidateWarnings.xlsx"
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
+        #Get the xform output path:
+        root_filename, ext = os.path.splitext(filename)
+        output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
+        #Do the conversion:
+        warnings = []
+        json_survey = pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
+        survey = pyxform.create_survey_element_from_dict(json_survey)
+        survey.print_xform_to_file(output_path, warnings=warnings)
 
 if __name__ == '__main__':
     unittest.main()
