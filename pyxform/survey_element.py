@@ -38,8 +38,8 @@ class SurveyElement(dict):
         u"children": list,
         u"itemset": unicode,
         u"choice_filter": unicode,
-        u"autoplay": unicode,
-        }
+        u"autoplay": unicode
+    }
 
     def _default(self):
         # TODO: need way to override question type dictionary

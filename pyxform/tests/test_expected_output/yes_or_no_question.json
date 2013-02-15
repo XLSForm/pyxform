@@ -1,0 +1,47 @@
+{
+    "name": "yes_or_no_question", 
+    "title": "yes_or_no_question", 
+    "default_language": "default", 
+    "id_string": "yes_or_no_question", 
+    "type": "survey", 
+    "children": [
+        {
+            "choices": [
+                {
+                    "name": "yes", 
+                    "label": {
+                        "english": "yes"
+                    }
+                }, 
+                {
+                    "name": "no", 
+                    "label": {
+                        "english": "no"
+                    }
+                }
+            ], 
+            "type": "select one", 
+            "name": "good_day", 
+            "label": {
+                "english": "have you had a good day today?"
+            }
+        }, 
+        {
+            "control": {
+                "bodyless": true
+            }, 
+            "type": "group", 
+            "name": "meta", 
+            "children": [
+                {
+                    "bind": {
+                        "readonly": "true()", 
+                        "calculate": "concat('uuid:', uuid())"
+                    }, 
+                    "type": "calculate", 
+                    "name": "instanceID"
+                }
+            ]
+        }
+    ]
+}

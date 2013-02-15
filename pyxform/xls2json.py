@@ -75,6 +75,9 @@ survey_header_aliases = {
     u"repeat_count": u"control::jr:count",
     u"jr:count": u"control::jr:count",
     u"autoplay": u"control::autoplay",
+    #New elements that have to go into itext elements:
+    #u"noAppErrorString" : u"itext::noAppErrorString",
+    #u"requiredMsg" : u"itext::requiredMsg",
 }
 list_header_aliases = {
     u"caption" : constants.LABEL,
@@ -634,6 +637,22 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         if settings.get("public_key"):
             raise PyXFormError("Cannot omit instanceID, it is required for encryption.")
     else:
+        meta_children = [{
+            "name": "instanceID",
+            "bind": {
+                     "readonly": "true()",
+                     "calculate": settings.get("instanceID", "concat('uuid:', uuid())"),
+                     }, 
+            "type": "calculate",
+            }]
+        if 'instanceName' in settings:
+            meta_children.append({
+                "name": "instanceName",
+                "bind": {
+                    "calculate": settings['instanceName']
+                },
+                "type": "calculate",
+                })
         meta_element = \
         {
         "name":"meta",
@@ -641,14 +660,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
         "control": {
                     "bodyless": True
                     },
-        "children": [{
-                    "name": "instanceID",
-                    "bind": {
-                             "readonly": "true()",
-                             "calculate": "concat('uuid:', uuid())"
-                             }, 
-                    "type": "calculate",
-                    }]
+        "children": meta_children
         }
         noop, survey_children_array = stack[0]
         survey_children_array.append(meta_element)
