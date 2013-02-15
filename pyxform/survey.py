@@ -119,10 +119,6 @@ class Survey(Section):
         if self.instance_xmlns:
             result.setAttribute(u"xmlns", self.instance_xmlns)
 
-        #We need to add a unique form instance id if the form is to be submitted.
-        if self.submission_url:
-            result.appendChild(node("orx:meta", node("orx:instanceID")))
-
         if self.version:
             result.setAttribute(u"version", self.version)
         return result
@@ -144,7 +140,7 @@ class Survey(Section):
             for d in element.get_translations(self.default_language):
                 self._translations[d['lang']][d['path']] = {"long" : d['text']}
 
-        #This code sets up translations for choiced in filtered selects.
+        #This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
             for idx, choice in zip(range(len(choice_list)), choice_list):
                 for choicePropertyName, choicePropertyValue in choice.items():
