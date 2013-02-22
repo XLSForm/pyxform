@@ -30,6 +30,9 @@
           <text id="/xlsform_spec_test/everything/today_test_output:label">
             <value>-</value>
           </text>
+          <text id="/xlsform_spec_test/everything/audio_test:label">
+            <value>-</value>
+          </text>
           <text id="/xlsform_spec_test/everything/text_image_audio_video_test:hint">
             <value>The goal of this test is to try out all the different media types in many languages to see if there are any bugs inserting media.</value>
           </text>
@@ -45,8 +48,8 @@
           <text id="/xlsform_spec_test/everything/email_note:label">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26/no:label">
-            <value>No</value>
+          <text id="/xlsform_spec_test/everything/autocomplete_test:label">
+            <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-2-test/a:label">
             <value form="image">jr://images/a.jpg</value>
@@ -72,14 +75,14 @@
             <value form="video">jr://video/test.mov</value>
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/autocomplete_test:label">
+          <text id="/xlsform_spec_test/skip_to_end:label">
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-2-test:label">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/audio_test:label">
-            <value>-</value>
+          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/no:label">
+            <value>No</value>
           </text>
           <text id="/xlsform_spec_test/everything/display_image_test:label">
             <value form="image">jr://images/img_test.jpg</value>
@@ -90,7 +93,7 @@
           <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:label">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/num_repeat_times:label">
+          <text id="/xlsform_spec_test/everything/barcode_test:label">
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test/yes:label">
@@ -111,8 +114,8 @@
           <text id="/xlsform_spec_test/everything/repeat_test/labeled_select_group/list-nolabel-test/no:label">
             <value>No</value>
           </text>
-          <text id="/xlsform_spec_test/everything/barcode_test:label">
-            <value>-</value>
+          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/yes:label">
+            <value>Yes</value>
           </text>
           <text id="/xlsform_spec_test/everything/autocomplete_test/no:label">
             <value>No</value>
@@ -124,6 +127,9 @@
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/note_test:label">
+            <value>-</value>
+          </text>
+          <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/number_label:label">
@@ -177,9 +183,6 @@
           <text id="/xlsform_spec_test/everything/address:hint">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26/yes:label">
-            <value>Yes</value>
-          </text>
           <text id="/xlsform_spec_test/everything/autocomplete_test/yes:label">
             <value>Yes</value>
           </text>
@@ -202,9 +205,6 @@
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-test:label">
-            <value>-</value>
-          </text>
-          <text id="/xlsform_spec_test/skip_to_end:label">
             <value>-</value>
           </text>
         </translation>
@@ -233,6 +233,9 @@
           <text id="/xlsform_spec_test/everything/today_test_output:label">
             <value>-</value>
           </text>
+          <text id="/xlsform_spec_test/everything/audio_test:label">
+            <value>-</value>
+          </text>
           <text id="/xlsform_spec_test/everything/text_image_audio_video_test:hint">
             <value>ni hao</value>
           </text>
@@ -248,8 +251,8 @@
           <text id="/xlsform_spec_test/everything/display_image_test:label">
             <value form="image">jr://images/-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26/no:label">
-            <value>没有</value>
+          <text id="/xlsform_spec_test/everything/autocomplete_test:label">
+            <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/repeat_test/labeled_select_group/list-nolabel-test:label">
             <value>-</value>
@@ -275,14 +278,14 @@
             <value form="video">jr://video/-</value>
             <value>您好</value>
           </text>
-          <text id="/xlsform_spec_test/everything/autocomplete_test:label">
+          <text id="/xlsform_spec_test/skip_to_end:label">
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-2-test:label">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/audio_test:label">
-            <value>-</value>
+          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/no:label">
+            <value>没有</value>
           </text>
           <text id="/xlsform_spec_test/everything/email_note:label">
             <value>-</value>
@@ -293,7 +296,7 @@
           <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:label">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/num_repeat_times:label">
+          <text id="/xlsform_spec_test/everything/barcode_test:label">
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test/yes:label">
@@ -314,8 +317,8 @@
           <text id="/xlsform_spec_test/everything/repeat_test/labeled_select_group/list-nolabel-test/no:label">
             <value>没有</value>
           </text>
-          <text id="/xlsform_spec_test/everything/barcode_test:label">
-            <value>-</value>
+          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/yes:label">
+            <value>是</value>
           </text>
           <text id="/xlsform_spec_test/everything/autocomplete_test/no:label">
             <value>没有</value>
@@ -328,6 +331,9 @@
           </text>
           <text id="/xlsform_spec_test/everything/note_test:label">
             <value>-</value>
+          </text>
+          <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:jr:constraintMsg">
+            <value>對不起 <output value=" /xlsform_spec_test/everything/my_name "/>，你可以不選擇“是”和“否”。</value>
           </text>
           <text id="/xlsform_spec_test/everything/number_label:label">
             <value>-</value>
@@ -383,9 +389,6 @@
           <text id="/xlsform_spec_test/everything/address:hint">
             <value>ni hao</value>
           </text>
-          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26/yes:label">
-            <value>是</value>
-          </text>
           <text id="/xlsform_spec_test/everything/autocomplete_test/yes:label">
             <value>是</value>
           </text>
@@ -407,9 +410,6 @@
           <text id="/xlsform_spec_test/everything/repeat_test/compact-test:label">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/skip_to_end:label">
-            <value>-</value>
-          </text>
         </translation>
         <translation lang="english">
           <text id="/xlsform_spec_test/everything/repeat_test/labeled_select_group/label-test/yes:label">
@@ -422,15 +422,18 @@
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/uri_deviceid_test_output:label">
-            <value>deviceid_test_output: <output value="/xlsform_spec_test/everything/uri_deviceid"/></value></text>
+            <value>deviceid_test_output: <output value=" /xlsform_spec_test/everything/uri_deviceid "/></value></text>
           <text id="/xlsform_spec_test/skip_to_end/no:label">
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/end_test_output:label">
-            <value>end test output: <output value="/xlsform_spec_test/everything/end"/></value></text>
+            <value>end test output: <output value=" /xlsform_spec_test/everything/end "/></value></text>
           <text id="/xlsform_spec_test/everything/today_test_output:label">
-            <value>today_test_output: <output value="/xlsform_spec_test/everything/today"/></value></text>
+            <value>today_test_output: <output value=" /xlsform_spec_test/everything/today "/></value></text>
           <text id="/xlsform_spec_test/everything/autocomplete_test/no:label">
+            <value>-</value>
+          </text>
+          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/no:label">
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/autocomplete_chars_test/yes:label">
@@ -443,7 +446,7 @@
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/calculate_test_output:label">
-            <value><output value="/xlsform_spec_test/everything/calculate_test"/></value>
+            <value><output value=" /xlsform_spec_test/everything/calculate_test "/></value>
           </text>
           <text id="/xlsform_spec_test/everything/image_test:label">
             <value>image_test</value>
@@ -464,7 +467,7 @@
             <value>time_test</value>
           </text>
           <text id="/xlsform_spec_test/everything/deviceid_test_output:label">
-            <value>deviceid_test_output: <output value="/xlsform_spec_test/everything/deviceid"/></value></text>
+            <value>deviceid_test_output: <output value=" /xlsform_spec_test/everything/deviceid "/></value></text>
           <text id="/xlsform_spec_test/everything/repeat_test/labeled_select_group/list-nolabel-test/yes:label">
             <value>-</value>
           </text>
@@ -488,9 +491,6 @@
           </text>
           <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:label">
             <value>select multiple test</value>
-          </text>
-          <text id="/xlsform_spec_test/everything/num_repeat_times:label">
-            <value>no label</value>
           </text>
           <text id="/xlsform_spec_test/everything/barcode_test:label">
             <value>barcode_test</value>
@@ -516,6 +516,9 @@
           <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test/yes:label">
             <value>-</value>
           </text>
+          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/yes:label">
+            <value>-</value>
+          </text>
           <text id="/xlsform_spec_test/everything/datetime_test:label">
             <value>datetime_test</value>
           </text>
@@ -527,6 +530,9 @@
           </text>
           <text id="/xlsform_spec_test/everything/autocomplete_chars_test:label">
             <value>autocomplete_chars_test</value>
+          </text>
+          <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:jr:constraintMsg">
+            <value>Sorry <output value=" /xlsform_spec_test/everything/my_name "/>, you can't select yes and no.</value>
           </text>
           <text id="/xlsform_spec_test/everything/number_label:label">
             <value>1</value>
@@ -559,7 +565,7 @@
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/phonenumber_test_output:label">
-            <value>phonenumber_test_output: <output value="/xlsform_spec_test/everything/phonenumber"/></value></text>
+            <value>phonenumber_test_output: <output value=" /xlsform_spec_test/everything/phonenumber "/></value></text>
           <text id="/xlsform_spec_test/everything/repeat_test/labeled_select_group/label-test:label">
             <value>label-test</value>
           </text>
@@ -575,9 +581,6 @@
           <text id="/xlsform_spec_test/everything/address:hint">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26/yes:label">
-            <value>-</value>
-          </text>
           <text id="/xlsform_spec_test/everything/autocomplete_test/yes:label">
             <value>-</value>
           </text>
@@ -588,7 +591,7 @@
             <value form="image">jr://images/-</value>
           </text>
           <text id="/xlsform_spec_test/everything/invalid_variable:label">
-            <value>Your name is <output value="/xlsform_spec_test/everything/my_name"/></value></text>
+            <value>Your name is <output value=" /xlsform_spec_test/everything/my_name "/></value></text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-test/b:label">
             <value form="image">jr://images/-</value>
           </text>
@@ -596,14 +599,11 @@
             <value>a integer</value>
           </text>
           <text id="/xlsform_spec_test/everything/start_test_output:label">
-            <value>start test output: <output value="/xlsform_spec_test/everything/start"/></value></text>
+            <value>start test output: <output value=" /xlsform_spec_test/everything/start "/></value></text>
           <text id="/xlsform_spec_test/everything/simserial_test_output:label">
-            <value>simserial_test_output: <output value="/xlsform_spec_test/everything/simserial"/></value></text>
+            <value>simserial_test_output: <output value=" /xlsform_spec_test/everything/simserial "/></value></text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-test:label">
             <value>compact-test</value>
-          </text>
-          <text id="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26/no:label">
-            <value>-</value>
           </text>
         </translation>
       </itext>
@@ -622,7 +622,7 @@
             <autocomplete_chars_test/>
             <a_integer/>
             <a_decimal/>
-            <num_repeat_times>3</num_repeat_times>
+            <repeat_test_count/>
             <repeat_test jr:template="">
               <group_test>
                 <required_text/>
@@ -633,7 +633,7 @@
                 <list-nolabel-test/>
               </labeled_select_group>
               <name>
-                <reserved_name_for_field_list_labels_26/>
+                <reserved_name_for_field_list_labels_25/>
                 <table_list_question/>
               </name>
               <compact-test/>
@@ -676,24 +676,24 @@
         </xlsform_spec_test>
       </instance>
       <bind nodeset="/xlsform_spec_test/skip_to_end" type="select1"/>
-      <bind nodeset="/xlsform_spec_test/everything" relevant="not(selected(/xlsform_spec_test/skip_to_end, 'yes'))"/>
+      <bind nodeset="/xlsform_spec_test/everything" relevant="not(selected( /xlsform_spec_test/skip_to_end , 'yes'))"/>
       <bind nodeset="/xlsform_spec_test/everything/my_name" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/invalid_variable" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/address" type="string"/>
-      <bind nodeset="/xlsform_spec_test/everything/email_note" readonly="true()" relevant="regex(/xlsform_spec_test/everything/address, '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}')" type="string"/>
+      <bind nodeset="/xlsform_spec_test/everything/email_note" readonly="true()" relevant="regex( /xlsform_spec_test/everything/address , '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}')" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/number_label" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/text_image_audio_video_test" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/display_image_test" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/autocomplete_test" type="select1"/>
       <bind nodeset="/xlsform_spec_test/everything/autocomplete_chars_test" type="select1"/>
       <bind nodeset="/xlsform_spec_test/everything/a_integer" type="int"/>
-      <bind constraint=". &lt;= /xlsform_spec_test/everything/a_integer" nodeset="/xlsform_spec_test/everything/a_decimal" type="decimal"/>
-      <bind nodeset="/xlsform_spec_test/everything/num_repeat_times" relevant="false()" type="int"/>
+      <bind constraint=". &lt;=  /xlsform_spec_test/everything/a_integer " nodeset="/xlsform_spec_test/everything/a_decimal" type="decimal"/>
+      <bind calculate="2" nodeset="/xlsform_spec_test/everything/repeat_test_count" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/group_test/required_text" required="true()" type="string"/>
-      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="you can't select yes and no" nodeset="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test" required="false()" type="select"/>
+      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="jr:itext('/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:jr:constraintMsg')" nodeset="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test" required="false()" type="select"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/labeled_select_group/label-test" type="select1"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/labeled_select_group/list-nolabel-test" required="true()" type="select1"/>
-      <bind nodeset="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25" type="select1"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/name/table_list_question" type="select1"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/compact-test" type="select1"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/compact-2-test" type="select1"/>
@@ -727,7 +727,7 @@
       <bind nodeset="/xlsform_spec_test/everything/FALSE" type="string"/>
       <bind nodeset="/xlsform_spec_test/launch" type="int"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/xlsform_spec_test/meta/instanceID" readonly="true()" type="string"/>
-      <bind calculate="/xlsform_spec_test/everything/my_name" nodeset="/xlsform_spec_test/meta/instanceName" type="string"/>
+      <bind calculate=" /xlsform_spec_test/everything/my_name " nodeset="/xlsform_spec_test/meta/instanceName" type="string"/>
     </model>
   </h:head>
   <h:body>
@@ -797,12 +797,9 @@
       <input ref="/xlsform_spec_test/everything/a_decimal">
         <label ref="jr:itext('/xlsform_spec_test/everything/a_decimal:label')"/>
       </input>
-      <input ref="/xlsform_spec_test/everything/num_repeat_times">
-        <label ref="jr:itext('/xlsform_spec_test/everything/num_repeat_times:label')"/>
-      </input>
       <group ref="/xlsform_spec_test/everything/repeat_test">
         <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test:label')"/>
-        <repeat jr:count="/xlsform_spec_test/everything/num_repeat_times" nodeset="/xlsform_spec_test/everything/repeat_test">
+        <repeat jr:count=" /xlsform_spec_test/everything/repeat_test_count " nodeset="/xlsform_spec_test/everything/repeat_test">
           <group appearance="field-list" ref="/xlsform_spec_test/everything/repeat_test/group_test">
             <label></label>
             <input ref="/xlsform_spec_test/everything/repeat_test/group_test/required_text">
@@ -847,14 +844,14 @@
           </group>
           <group appearance="field-list" ref="/xlsform_spec_test/everything/repeat_test/name">
             <label></label>
-            <select1 appearance="label" ref="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26">
+            <select1 appearance="label" ref="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25">
               <label></label>
               <item>
-                <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26/yes:label')"/>
+                <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/yes:label')"/>
                 <value>yes</value>
               </item>
               <item>
-                <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_26/no:label')"/>
+                <label ref="jr:itext('/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/no:label')"/>
                 <value>no</value>
               </item>
             </select1>

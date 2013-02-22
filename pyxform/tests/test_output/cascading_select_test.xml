@@ -163,14 +163,14 @@
     </select1>
     <select1 ref="/cascading_select_test/mylga_state">
       <label>Choose your state:</label>
-      <itemset nodeset="instance('state')/root/item[zone=/cascading_select_test/mylga_zone]">
+      <itemset nodeset="instance('state')/root/item[zone= /cascading_select_test/mylga_zone ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
     <select1 ref="/cascading_select_test/mylga">
       <label>Choose your lga:</label>
-      <itemset nodeset="instance('lga')/root/item[zone=/cascading_select_test/mylga_zone and state=/cascading_select_test/mylga_state]">
+      <itemset nodeset="instance('lga')/root/item[zone= /cascading_select_test/mylga_zone  and state= /cascading_select_test/mylga_state ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>

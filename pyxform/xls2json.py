@@ -170,7 +170,7 @@ def list_to_nested_dict(lst):
     else:
         return lst[0]
 
-def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, default_language=u"default"):
+def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, default_language=u"default", ignore_case=True):
     """
     For each row in the worksheet, group all keys that contain a double colon. So
     {"text::english": "hello", "text::french" : "bonjour"}
@@ -183,12 +183,15 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, def
     out_dict_array = list()
     for row in dict_array:
         out_row = dict()
-        for key, val in row.items():
+        for header, val in row.items():
+            
+            if ignore_case:
+                header = header.lower()
             
             tokens = list()
             
             if use_double_colons:
-                tokens = key.split(GROUP_DELIMITER)
+                tokens = header.split(GROUP_DELIMITER)
 
 #            else:
 #                #We do the initial parse using single colons for backwards compatibility and
@@ -198,7 +201,7 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, def
             else:
                 #I think the commented out section above break if there is something like media:image:english
                 #so maybe a better backwards compatibility hack is to join any jr token with the next token
-                tokens = key.split(u":")
+                tokens = header.split(u":")
                 if "jr" in tokens:
                     jr_idx = tokens.index("jr")
                     tokens[jr_idx] = u":".join(tokens[jr_idx:jr_idx+2])
@@ -498,6 +501,21 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                         raise PyXFormError(rowFormatString % row_number + " List name not in columns sheet: " + list_name)
                     new_json_dict[constants.COLUMNS] = choices[list_name]
                 
+                #Generate a new node for the jr:count column so  
+                #xpath expressions can be used.
+                repeat_count_expression = new_json_dict.get('control', {}).get('jr:count')
+                if repeat_count_expression:
+                    generated_node_name = new_json_dict['name'] + "_count"
+                    parent_children_array.append({
+                        "name": generated_node_name,
+                        "bind": {
+                                 "readonly": "true()",
+                                 "calculate": repeat_count_expression,
+                                 }, 
+                        "type": "calculate",
+                        })
+                    new_json_dict['control']['jr:count'] = "${" + generated_node_name + "}"
+                
                 #Code to deal with table_list appearance flags (for groups of selects)
                 if new_json_dict.get(u"control",{}).get(u"appearance") == constants.TABLE_LIST:
                     table_list = True
@@ -632,27 +650,33 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     if len(stack) != 1:
         raise PyXFormError("Unmatched begin statement: " + str(stack[-1][0]))
     
-    #Automatically add an instanceID element:
-    if yes_no_aliases.get(settings.get("omit_instanceID")):
+    meta_children = []
+    
+    if yes_no_aliases.get(settings.get("omit_instanceid")):
         if settings.get("public_key"):
             raise PyXFormError("Cannot omit instanceID, it is required for encryption.")
     else:
-        meta_children = [{
+        #Automatically add an instanceID element:
+        meta_children.append({
             "name": "instanceID",
             "bind": {
                      "readonly": "true()",
-                     "calculate": settings.get("instanceID", "concat('uuid:', uuid())"),
+                     "calculate": settings.get("instance_id", "concat('uuid:', uuid())"),
                      }, 
             "type": "calculate",
-            }]
-        if 'instanceName' in settings:
-            meta_children.append({
-                "name": "instanceName",
-                "bind": {
-                    "calculate": settings['instanceName']
-                },
-                "type": "calculate",
-                })
+            })
+    
+    if 'instance_name' in settings:
+        #Automatically add an instanceName element:
+        meta_children.append({
+            "name": "instanceName",
+            "bind": {
+                "calculate": settings['instance_name']
+            },
+            "type": "calculate",
+        })
+    
+    if len(meta_children) > 0:
         meta_element = \
         {
         "name":"meta",

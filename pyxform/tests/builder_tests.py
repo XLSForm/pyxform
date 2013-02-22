@@ -12,14 +12,16 @@ FIXTURE_FILETYPE = "xls"
 
 class BuilderTests(TestCase):
     maxDiff = None
-    def test_new_widgets(self):
-        survey = utils.build_survey('widgets.xls')
-        path = utils.path_to_text_fixture('widgets.xml')
-        survey.to_xml
-        with open(path) as f:
-            expected = etree.fromstring(survey.to_xml())
-            result = etree.fromstring(f.read())
-            self.assertTrue(xml_compare(expected, result))
+
+#   Moving to spec tests
+#    def test_new_widgets(self):
+#        survey = utils.build_survey('widgets.xls')
+#        path = utils.path_to_text_fixture('widgets.xml')
+#        survey.to_xml
+#        with open(path) as f:
+#            expected = etree.fromstring(survey.to_xml())
+#            result = etree.fromstring(f.read())
+#            self.assertTrue(xml_compare(expected, result))
 
     def test_unknown_question_type(self):
         survey = utils.build_survey('unknown_question_type.xls')
@@ -62,22 +64,22 @@ class BuilderTests(TestCase):
         d = {
             u"type" : u"loop",
             u"name" : u"my_loop",
-            u"label" : {u"English" : u"My Loop"},
+            u"label" : {u"english" : u"My Loop"},
             u"columns" : [
                 {
                     u"name" : u"col1",
-                    u"label" : {u"English" : u"column 1"},
+                    u"label" : {u"english" : u"column 1"},
                     },
                 {
                     u"name" : u"col2",
-                    u"label" : {u"English" : u"column 2"},
+                    u"label" : {u"english" : u"column 2"},
                     },
                 ],
             u"children" : [
                 {
                     u"type": u"integer",
                     u"name": u"count",
-                    u"label": {u"English": u"How many are there in this group?"}
+                    u"label": {u"english": u"How many are there in this group?"}
                     },
                 ]
             }
@@ -86,29 +88,29 @@ class BuilderTests(TestCase):
 
         expected_dict = {
             u'name': u'my_loop',
-            u'label': {u'English': u'My Loop'},
+            u'label': {u'english': u'My Loop'},
             u'type' : u'group',
             u'children': [
                 {
                     u'name': u'col1',
-                    u'label': {u'English': u'column 1'},
+                    u'label': {u'english': u'column 1'},
                     u'type' : u'group',
                     u'children': [
                         {
                             u'name': u'count',
-                            u'label': {u'English': u'How many are there in this group?'},
+                            u'label': {u'english': u'How many are there in this group?'},
                             u'type': u'integer'
                             }
                         ]
                     },
                 {
                     u'name': u'col2',
-                    u'label': {u'English': u'column 2'},
+                    u'label': {u'english': u'column 2'},
                     u'type' : u'group',
                     u'children': [
                         {
                             u'name': u'count',
-                            u'label': {u'English': u'How many are there in this group?'},
+                            u'label': {u'english': u'How many are there in this group?'},
                             u'type': u'integer'
                             }
                         ]
@@ -129,16 +131,16 @@ class BuilderTests(TestCase):
             u'children': [
                 {
                     u'name': u'sex',
-                    u'label': {u'English': u'What sex are you?'},
+                    u'label': {u'english': u'What sex are you?'},
                     u'type': u'select one',
                     u'children': [ #TODO Change to choices (there is stuff in the json2xform half that will need to change)
                         {
                             u'name': u'male',
-                            u'label': {u'English': u'Male'}
+                            u'label': {u'english': u'Male'}
                             },
                         {
                             u'name': u'female',
-                            u'label': {u'English': u'Female'}
+                            u'label': {u'english': u'Female'}
                             },
                         {
                             u'name': u'other',
@@ -231,7 +233,7 @@ class BuilderTests(TestCase):
 #            u'children': [
 #                {
 #                    u'name': u'name',
-#                    u'label': {u'English': u"What's your name?"},
+#                    u'label': {u'english': u"What's your name?"},
 #                    u'type': u'text'
 #                    },
 #                    {
