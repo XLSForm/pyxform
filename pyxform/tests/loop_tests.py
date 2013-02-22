@@ -22,14 +22,14 @@ class LoopTests(TestCase):
                     u'type': u'group',
             u'children': [
                 {
-                    u'label': {u'English': u'Car', u'French': u'Voiture'},
+                    u'label': {u'english': u'Car', u'french': u'Voiture'},
                     u'name': u'car',
                     u'type': u'group',
                     u'children': [
                         {
                             u'label': {
-                                u'English': u'How many do you have?',
-                                u'French': u'Combien avoir?'
+                                u'english': u'How many do you have?',
+                                u'french': u'Combien avoir?'
                                 },
                             u'name': u'total',
                             u'type': u'integer'
@@ -37,8 +37,8 @@ class LoopTests(TestCase):
                         {
                             u'bind': {u'constraint': u'. <= ../total'},
                             u'label': {
-                                u'English': u'How many are working?',
-                                u'French': u'Combien marcher?'
+                                u'english': u'How many are working?',
+                                u'french': u'Combien marcher?'
                                 },
                             u'name': u'working',
                             u'type': u'integer'
@@ -46,14 +46,14 @@ class LoopTests(TestCase):
                         ],
                     },
                 {
-                    u'label': {u'English': u'Motorcycle', u'French': u'Moto'},
+                    u'label': {u'english': u'Motorcycle', u'french': u'Moto'},
                     u'name': u'motor_cycle',
                     u'type': u'group',
                     u'children': [
                         {
                             u'label': {
-                                u'English': u'How many do you have?',
-                                u'French': u'Combien avoir?'
+                                u'english': u'How many do you have?',
+                                u'french': u'Combien avoir?'
                                 },
                             u'name': u'total',
                             u'type': u'integer'
@@ -61,8 +61,8 @@ class LoopTests(TestCase):
                         {
                             u'bind': {u'constraint': u'. <= ../total'},
                             u'label': {
-                                u'English': u'How many are working?',
-                                u'French': u'Combien marcher?'
+                                u'english': u'How many are working?',
+                                u'french': u'Combien marcher?'
                                 },
                             u'name': u'working',
                             u'type': u'integer'

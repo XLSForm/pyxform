@@ -167,14 +167,14 @@
     </select1>
     <select1 ref="/new_cascading_select/county">
       <label>county</label>
-      <itemset nodeset="instance('counties')/root/item[state=/new_cascading_select/state]">
+      <itemset nodeset="instance('counties')/root/item[state= /new_cascading_select/state ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
     <select1 ref="/new_cascading_select/city">
       <label>city</label>
-      <itemset nodeset="instance('cities')/root/item[state=/new_cascading_select/state and county=/new_cascading_select/county]">
+      <itemset nodeset="instance('cities')/root/item[state= /new_cascading_select/state  and county= /new_cascading_select/county ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>

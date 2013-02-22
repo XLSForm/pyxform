@@ -163,14 +163,14 @@
     </select1>
     <select1 ref="/old_cascades/state_counties">
       <label>County:</label>
-      <itemset nodeset="instance('counties')/root/item[states=/old_cascades/state_states]">
+      <itemset nodeset="instance('counties')/root/item[states= /old_cascades/state_states ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
     <select1 ref="/old_cascades/state">
       <label>City:</label>
-      <itemset nodeset="instance('cities')/root/item[states=/old_cascades/state_states and counties=/old_cascades/state_counties]">
+      <itemset nodeset="instance('cities')/root/item[states= /old_cascades/state_states  and counties= /old_cascades/state_counties ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>

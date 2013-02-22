@@ -315,7 +315,7 @@ class Survey(Section):
             raise PyXFormError(intro + " There is no survey element with this name.")
         if self._xpath[name] is None:
             raise PyXFormError(intro + " There are multiple survey elements with this name.")
-        return self._xpath[name]
+        return " " + self._xpath[name] + " "
 
 
     def insert_xpaths(self, text):

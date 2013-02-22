@@ -22,7 +22,7 @@
   <h:body>
     <select1 ref="/xml_escaping/table_list_3">
       <label>
-        <output value="/xml_escaping/a"/>&lt; <output value="/xml_escaping/b"/></label><item>
+        <output value=" /xml_escaping/a "/>&lt; <output value=" /xml_escaping/b "/></label><item>
         <label>Yes</label>
         <value>yes</value>
       </item>
