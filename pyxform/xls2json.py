@@ -52,6 +52,10 @@ settings_header_aliases = {
 #TODO: Check on bind prefix approach in json.
 #Conversion dictionary from user friendly column names to meaningful values
 survey_header_aliases = {
+    u"Label" : u"label",
+    u"Name" : u"name",
+    u"Type" : u"type",
+    u"List_name" : u"list_name",
     u"repeat_count" : u"jr:count",
     u"read_only" : u"bind::readonly",
     u"readonly" : u"bind::readonly",
@@ -170,7 +174,8 @@ def list_to_nested_dict(lst):
     else:
         return lst[0]
 
-def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, default_language=u"default", ignore_case=True):
+def dealias_and_group_headers(dict_array, header_aliases, use_double_colons,
+        default_language=u"default", ignore_case=False):
     """
     For each row in the worksheet, group all keys that contain a double colon. So
     {"text::english": "hello", "text::french" : "bonjour"}
@@ -184,7 +189,7 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons, def
     for row in dict_array:
         out_row = dict()
         for header, val in row.items():
-            
+
             if ignore_case:
                 header = header.lower()
             
@@ -652,7 +657,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
     
     meta_children = []
     
-    if yes_no_aliases.get(settings.get("omit_instanceid")):
+    if yes_no_aliases.get(settings.get("omit_instanceID")):
         if settings.get("public_key"):
             raise PyXFormError("Cannot omit instanceID, it is required for encryption.")
     else:
@@ -664,7 +669,7 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                      "calculate": settings.get("instance_id", "concat('uuid:', uuid())"),
                      }, 
             "type": "calculate",
-            })
+        })
     
     if 'instance_name' in settings:
         #Automatically add an instanceName element:

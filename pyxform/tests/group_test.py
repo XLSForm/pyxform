@@ -22,22 +22,22 @@ class GroupTests(TestCase):
                 {
                     u'name': u'family_name',
                     u'type': u'text',
-                    u'label': {u'english': u"What's your family name?"}
+                    u'label': {u'English': u"What's your family name?"}
                     },
                 {
                     u'name': u'father',
                     u'type': u'group',
-                    u'label': {u'english': u'Father'},
+                    u'label': {u'English': u'Father'},
                     u'children': [
                         {
                             u'name': u'phone_number',
                             u'type': u'phone number',
-                            u'label': {u'english': u"What's your father's phone number?"}
+                            u'label': {u'English': u"What's your father's phone number?"}
                             },
                         {
                             u'name': u'age',
                             u'type': u'integer',
-                            u'label': {u'english': u'How old is your father?'}
+                            u'label': {u'English': u'How old is your father?'}
                             }
                         ],
                     },

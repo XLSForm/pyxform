@@ -11,7 +11,7 @@
                     "type": "integer", 
                     "name": "count", 
                     "label": {
-                        "english": "How many are there in this group?"
+                        "English": "How many are there in this group?"
                     }
                 }
             ], 
@@ -21,18 +21,18 @@
                 {
                     "name": "col1", 
                     "label": {
-                        "english": "Column 1"
+                        "English": "Column 1"
                     }
                 }, 
                 {
                     "name": "col2", 
                     "label": {
-                        "english": "Column 2"
+                        "English": "Column 2"
                     }
                 }
             ], 
             "label": {
-                "english": "My Table"
+                "English": "My Table"
             }
         }, 
         {
