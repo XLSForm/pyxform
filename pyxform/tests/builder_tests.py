@@ -64,22 +64,22 @@ class BuilderTests(TestCase):
         d = {
             u"type" : u"loop",
             u"name" : u"my_loop",
-            u"label" : {u"english" : u"My Loop"},
+            u"label" : {u"English" : u"My Loop"},
             u"columns" : [
                 {
                     u"name" : u"col1",
-                    u"label" : {u"english" : u"column 1"},
+                    u"label" : {u"English" : u"column 1"},
                     },
                 {
                     u"name" : u"col2",
-                    u"label" : {u"english" : u"column 2"},
+                    u"label" : {u"English" : u"column 2"},
                     },
                 ],
             u"children" : [
                 {
                     u"type": u"integer",
                     u"name": u"count",
-                    u"label": {u"english": u"How many are there in this group?"}
+                    u"label": {u"English": u"How many are there in this group?"}
                     },
                 ]
             }
@@ -88,29 +88,29 @@ class BuilderTests(TestCase):
 
         expected_dict = {
             u'name': u'my_loop',
-            u'label': {u'english': u'My Loop'},
+            u'label': {u'English': u'My Loop'},
             u'type' : u'group',
             u'children': [
                 {
                     u'name': u'col1',
-                    u'label': {u'english': u'column 1'},
+                    u'label': {u'English': u'column 1'},
                     u'type' : u'group',
                     u'children': [
                         {
                             u'name': u'count',
-                            u'label': {u'english': u'How many are there in this group?'},
+                            u'label': {u'English': u'How many are there in this group?'},
                             u'type': u'integer'
                             }
                         ]
                     },
                 {
                     u'name': u'col2',
-                    u'label': {u'english': u'column 2'},
+                    u'label': {u'English': u'column 2'},
                     u'type' : u'group',
                     u'children': [
                         {
                             u'name': u'count',
-                            u'label': {u'english': u'How many are there in this group?'},
+                            u'label': {u'English': u'How many are there in this group?'},
                             u'type': u'integer'
                             }
                         ]
@@ -131,16 +131,16 @@ class BuilderTests(TestCase):
             u'children': [
                 {
                     u'name': u'sex',
-                    u'label': {u'english': u'What sex are you?'},
+                    u'label': {u'English': u'What sex are you?'},
                     u'type': u'select one',
                     u'children': [ #TODO Change to choices (there is stuff in the json2xform half that will need to change)
                         {
                             u'name': u'male',
-                            u'label': {u'english': u'Male'}
+                            u'label': {u'English': u'Male'}
                             },
                         {
                             u'name': u'female',
-                            u'label': {u'english': u'Female'}
+                            u'label': {u'English': u'Female'}
                             },
                         {
                             u'name': u'other',
@@ -233,21 +233,21 @@ class BuilderTests(TestCase):
 #            u'children': [
 #                {
 #                    u'name': u'name',
-#                    u'label': {u'english': u"What's your name?"},
+#                    u'label': {u'English': u"What's your name?"},
 #                    u'type': u'text'
 #                    },
 #                    {
 #                        u'name': u'good_day',
-#                        u'label': {u'english': u'have you had a good day today?'},
+#                        u'label': {u'English': u'have you had a good day today?'},
 #                        u'type': u'select one',
 #                        u'children': [
 #                            {
 #                                u'name': u'yes',
-#                                u'label': {u'english': u'yes'}
+#                                u'label': {u'English': u'yes'}
 #                                },
 #                            {
 #                                u'name': u'no',
-#                                u'label': {u'english': u'no'}
+#                                u'label': {u'English': u'no'}
 #                                }
 #                            ]}]}
 #        

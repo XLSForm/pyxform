@@ -15,6 +15,8 @@ def absolute_path(f, file_name):
 DIR = os.path.dirname(__file__)
 
 class BasicXls2JsonApiTests(TestCase):
+    
+    madDiff = None
 
     def test_simple_yes_or_no_question(self):
         filename = "yes_or_no_question.xls"
@@ -34,17 +36,17 @@ class BasicXls2JsonApiTests(TestCase):
 
 #        expected_dict = [
 #            {
-#                u'label': {u'english': u'have you had a good day today?'},
+#                u'label': {u'English': u'have you had a good day today?'},
 #                u'type': u'select one',
 #                u'name': u'good_day',
 #                'itemset': u'yes_or_no',
 #                u'choices': [
 #                    {
-#                        u'label': {u'english': u'yes'},
+#                        u'label': {u'English': u'yes'},
 #                        u'name': u'yes'
 #                        },
 #                    {
-#                        u'label': {u'english': u'no'},
+#                        u'label': {u'English': u'no'},
 #                        u'name': u'no'
 #                        }
 #                    ]

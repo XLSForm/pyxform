@@ -111,11 +111,11 @@
         </widgets>
       </instance>
       <bind nodeset="/widgets/my_string" type="string"/>
-      <bind constraint=". &lt; 10" jr:constraintmsg="number must be less than 10" nodeset="/widgets/my_int" type="int"/>
-      <bind constraint=". &gt; 10.51 and . &lt; 18.39" jr:constraintmsg="number must be between 10.51 and 18.39" nodeset="/widgets/my_decimal" type="decimal"/>
-      <bind constraint=". &gt;= today()" jr:constraintmsg="only future dates allowed" nodeset="/widgets/my_date" type="date"/>
+      <bind constraint=". &lt; 10" jr:constraintMsg="number must be less than 10" nodeset="/widgets/my_int" type="int"/>
+      <bind constraint=". &gt; 10.51 and . &lt; 18.39" jr:constraintMsg="number must be between 10.51 and 18.39" nodeset="/widgets/my_decimal" type="decimal"/>
+      <bind constraint=". &gt;= today()" jr:constraintMsg="only future dates allowed" nodeset="/widgets/my_date" type="date"/>
       <bind nodeset="/widgets/my_time" type="time"/>
-      <bind constraint="not(selected(., 'c') and selected(., 'd'))" jr:constraintmsg="option c and d cannot be selected together" nodeset="/widgets/my_select" type="select"/>
+      <bind constraint="not(selected(., 'c') and selected(., 'd'))" jr:constraintMsg="option c and d cannot be selected together" nodeset="/widgets/my_select" type="select"/>
       <bind nodeset="/widgets/my_select1" type="select1"/>
       <bind nodeset="/widgets/my_output" readonly="true()" type="string"/>
       <bind nodeset="/widgets/my_geopoint" type="geopoint"/>

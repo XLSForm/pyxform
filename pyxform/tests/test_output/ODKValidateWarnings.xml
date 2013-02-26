@@ -4,7 +4,7 @@
     <h:title>ODKValidateWarnings</h:title>
     <model>
       <itext>
-        <translation lang="english">
+        <translation lang="English">
           <text id="/ODKValidateWarnings/phone_number:label">
             <value>What's your father's phone number?</value>
           </text>
