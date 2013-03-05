@@ -425,18 +425,24 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 continue
         
         #skip empty rows
-        if len(row) == 0: continue
+        if len(row) == 0:
+            continue
 
         #Get question type
         question_type = row.get(constants.TYPE)
         if not question_type:
             # if name and label are also missing, then its a comment row, and we skip it with warning
-            if not ((constants.NAME in row) and (constants.LABEL in row)):
+            if not ((constants.NAME in row) or (constants.LABEL in row)):
                     warnings.append(rowFormatString % row_number +
                         " Row without name, text, or label is being skipped:\n" + str(row))
                     continue
-            raise PyXFormError(rowFormatString % row_number + " Question with no type.")
+            raise PyXFormError(rowFormatString % row_number + " Question with no type.\n" + str(row))
             continue
+        
+        if question_type == 'calculate':
+            calculation = row.get('bind', {}).get('calculate')
+            if not calculation:
+                raise PyXFormError(rowFormatString % row_number + " Missing calculation.")
         
         #Check if the question is actually a setting specified on the survey sheet
         settings_type = settings_header_aliases.get(question_type)

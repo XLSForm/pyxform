@@ -55,20 +55,20 @@ def xls_to_dict(path_or_file):
             return unicode(value)
     
     def xls_to_dict_normal_sheet(sheet):
+        def iswhitespace(string):
+            return (isinstance(string, basestring) and len(string.strip()) == 0)
+            
         #Check for duplicate column headers
         column_header_set = set()
         for column in range(0, sheet.ncols):
             column_header = sheet.cell_value(0, column)
-            # 2013-1-8 Brian DeRenzi
-            # If formatting happens on blank columns, sometimes those are read in.
-            if column_header == '':
-                continue
             if column_header in column_header_set:
                 raise PyXFormError(u"Duplicate column header: %s" % column_header)
             # xls file with 3 columns mostly have a 3 more columns that are
             # blank by default or something, skip during check
-            if column_header is not None and column_header != "":
-                column_header_set.add(column_header)
+            if column_header is not None:
+                if not iswhitespace(column_header):
+                    column_header_set.add(column_header)
         
         result = []
         for row in range(1, sheet.nrows):
@@ -79,8 +79,9 @@ def xls_to_dict(path_or_file):
                 key = key.strip()
                 value = sheet.cell_value(row, column)
                 value_type = sheet.cell_type(row, column)
-                if value is not None and value != "":
-                    row_dict[key] = xls_value_to_unicode(value, value_type)
+                if value is not None:
+                    if not iswhitespace(value):
+                        row_dict[key] = xls_value_to_unicode(value, value_type)
 #            Taking this condition out so I can get accurate row numbers.
 #            TODO: Do the same for csvs
 #            if row_dict != {}:

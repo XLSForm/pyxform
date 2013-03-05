@@ -90,26 +90,22 @@ class GroupedSection(Section):
         
     def xml_control(self):
         control_dict = self.control
-        xml_label = self.xml_label()
+        
         if control_dict.get("bodyless"):
             return None
-        if u"appearance" in control_dict and xml_label:
-            group_node = node(
-                u"group", xml_label, ref=self.get_xpath(),
-                appearance=control_dict[u"appearance"]
-                )
-        elif u"appearance" in control_dict and not xml_label:
-            group_node = node(
-                u"group", ref=self.get_xpath(),
-                appearance=control_dict[u"appearance"]
-                )
-        elif not u"appearance" in control_dict and xml_label:
-            group_node = node(u"group", self.xml_label(), ref=self.get_xpath())
-        else:
-            group_node = node(u"group", ref=self.get_xpath())
+            
+        children = []
+        attrs = { 'ref':self.get_xpath() }
+        
+        if 'label' in self and len(self['label']) > 0:
+            children.append(self.xml_label())
         for n in Section.xml_control(self):
-            group_node.appendChild(n)
-        return group_node
+            children.append(n)
+        
+        if u"appearance" in control_dict:
+            attrs['appearance'] = control_dict['appearance']
+        
+        return node(u"group", *children, **attrs)
 
     def to_json_dict(self):
         # This is quite hacky, might want to think about a smart way

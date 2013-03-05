@@ -62,7 +62,6 @@
       <label>Table-list tests</label>
     </input>
     <group appearance="field-list" ref="/table-list/table_list_test2">
-      <label></label>
       <input ref="/table-list/table_list_test2/generated_table_list_label_3">
         <label>Table (made with an easier method)</label>
         <hint>This is a user-defined hint for the 1st row</hint>
@@ -104,7 +103,6 @@
       </select1>
     </group>
     <group appearance="field-list" ref="/table-list/happy_sad_table">
-      <label></label>
       <input ref="/table-list/happy_sad_table/generated_table_list_label_7">
         <label>Table with image labels (made using an easier method)</label>
         <hint>This is a user-defined hint for the 1st row</hint>
