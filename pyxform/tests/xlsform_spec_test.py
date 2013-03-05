@@ -9,6 +9,7 @@ import sys
 parentdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0,parentdir)
 import pyxform
+from pyxform.errors import PyXFormError
 
 DIR = os.path.dirname(__file__)
 
@@ -68,6 +69,17 @@ class warnings_test(unittest.TestCase):
         pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
         #print '\n'.join(warnings)
         self.assertEquals(len(warnings), 21, "Found " + str(len(warnings)) + " warnings")
+        
+        
+class calculate_without_calculation_test(unittest.TestCase):
+    """
+    Just checks that the number of warnings thrown when reading warnings.xls doesn't change.
+    """
+    def runTest(self):
+        filename = "calculate_without_calculation.xls"
+        path_to_excel_file = os.path.join(DIR, "example_xls", filename)
+        warnings = []
+        self.assertRaises(PyXFormError,  pyxform.xls2json.parse_file_to_json, path_to_excel_file)
         
 if __name__ == '__main__':
     unittest.main()

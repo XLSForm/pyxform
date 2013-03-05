@@ -382,7 +382,6 @@
       </select1>
     </group>
     <group appearance="field-list" ref="/widgets/table_list_test2">
-      <label></label>
       <input ref="/widgets/table_list_test2/generated_table_list_label_29">
         <label>(An easier to specify list group)</label>
       </input>
@@ -457,7 +456,6 @@
       </select>
     </group>
     <group appearance="field-list" ref="/widgets/happy_sad_table">
-      <label></label>
       <input ref="/widgets/happy_sad_table/generated_table_list_label_38">
         <label>(An easier to specify multi list group)</label>
       </input>

@@ -252,45 +252,45 @@ class BuilderTests(TestCase):
 #                            ]}]}
 #        
 #        self.assertEqual(survey.to_json_dict(), expected_dict)
-
-    def test_include_json(self):
-        survey_in = utils.create_survey_from_fixture(
-            u"include_json",
-            filetype=FIXTURE_FILETYPE,
-            include_directory=True
-            )
-        expected_dict = {
-            u'name': u'include_json',
-            u'title': u'include_json',
-            u'default_language': u'default',
-            u'id_string': u'include_json',
-            u'type': u'survey',
-            u'children': [
-                {
-                    u'label': u'How old are you?',
-                    u'name': u'age',
-                    u'type': u'integer'
-                },
-                {
-                    u'children': [
-                        {
-                            u'bind': {
-                                'calculate': "concat('uuid:', uuid())",
-                                'readonly': 'true()'
-                            },
-                            u'name': 'instanceID',
-                            u'type': 'calculate'
-                        }
-                    ],
-                    u'control': {
-                        'bodyless': True
-                    },
-                    u'name': 'meta',
-                    u'type': u'group'
-                }
-            ],
-            }
-        self.assertEquals(survey_in.to_json_dict(), expected_dict)
+#
+#    def test_include_json(self):
+#        survey_in = utils.create_survey_from_fixture(
+#            u"include_json",
+#            filetype=FIXTURE_FILETYPE,
+#            include_directory=True
+#            )
+#        expected_dict = {
+#            u'name': u'include_json',
+#            u'title': u'include_json',
+#            u'default_language': u'default',
+#            u'id_string': u'include_json',
+#            u'type': u'survey',
+#            u'children': [
+#                {
+#                    u'label': u'How old are you?',
+#                    u'name': u'age',
+#                    u'type': u'integer'
+#                },
+#                {
+#                    u'children': [
+#                        {
+#                            u'bind': {
+#                                'calculate': "concat('uuid:', uuid())",
+#                                'readonly': 'true()'
+#                            },
+#                            u'name': 'instanceID',
+#                            u'type': 'calculate'
+#                        }
+#                    ],
+#                    u'control': {
+#                        'bodyless': True
+#                    },
+#                    u'name': 'meta',
+#                    u'type': u'group'
+#                }
+#            ],
+#            }
+#        self.assertEquals(survey_in.to_json_dict(), expected_dict)
 
     def test_loop(self):
         survey = utils.create_survey_from_fixture("loop", filetype=FIXTURE_FILETYPE)

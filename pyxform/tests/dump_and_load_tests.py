@@ -27,13 +27,17 @@ class DumpAndLoadTests(TestCase):
         self.this_directory = os.path.dirname(__file__)
         for filename in self.excel_files:
             path = utils.path_to_text_fixture(filename)
-            self.surveys[filename] = create_survey_from_path(path, include_directory=True)
+            try:
+                self.surveys[filename] = create_survey_from_path(path)
+            except Exception as e:
+                print("Error on : " + filename)
+                raise e
 
     def test_load_from_dump(self):
         for filename, survey in self.surveys.items():
             survey.json_dump()
             path = survey.name + ".json"
-            survey_from_dump = create_survey_from_path(path, include_directory=True)
+            survey_from_dump = create_survey_from_path(path)
             self.assertEqual(survey.to_json_dict(), survey_from_dump.to_json_dict())
 
     def tearDown(self):

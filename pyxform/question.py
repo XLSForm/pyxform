@@ -89,6 +89,7 @@ class Option(SurveyElement):
 
     def xml(self):
         item = node(u"item")
+        xml_label = self.xml_label()
         item.appendChild(self.xml_label())
         item.appendChild(self.xml_value())
         return item
