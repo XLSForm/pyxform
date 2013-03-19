@@ -28,7 +28,7 @@ def xls_to_dict(path_or_file):
             workbook = xlrd.open_workbook(file_contents=path_or_file.read())
     except XLRDError, e:
         raise PyXFormError("Error reading .xls file: %s" % e.message)
-    
+
     def xls_value_to_unicode(value, value_type):
         """
         Take a xls formatted value and try to make a unicode string representation.
@@ -53,7 +53,7 @@ def xls_to_dict(path_or_file):
             return unicode(datetime.datetime(*datetime_or_time_only))
         else:
             return unicode(value)
-    
+
     def xls_to_dict_normal_sheet(sheet):
         #Check for duplicate column headers
         column_header_set = set()
@@ -69,7 +69,7 @@ def xls_to_dict(path_or_file):
             # blank by default or something, skip during check
             if column_header is not None and column_header != "":
                 column_header_set.add(column_header)
-        
+
         result = []
         for row in range(1, sheet.nrows):
             row_dict = {}
@@ -78,6 +78,9 @@ def xls_to_dict(path_or_file):
                 key = u"%s" % sheet.cell_value(0, column)  # convert to string, in case it is not string
                 key = key.strip()
                 value = sheet.cell_value(row, column)
+                # remove whitespace at the beginning and end of value
+                if isinstance(value, basestring):
+                    value = value.strip()
                 value_type = sheet.cell_type(row, column)
                 if value is not None and value != "":
                     row_dict[key] = xls_value_to_unicode(value, value_type)
@@ -98,11 +101,11 @@ def xls_to_dict(path_or_file):
             # first row value for this column is the key
             col_dict = {}
             col_name = sheet.cell_value(0, column)
-            col_dict["name"] = col_name 
+            col_dict["name"] = col_name
             col_dict["choice_labels"] = []
-            col_dict["prev_choice_labels"] = [] 
+            col_dict["prev_choice_labels"] = []
             for row in range(1, sheet.nrows):
-                
+
                 # pass 0: build col_dict for first time
                 key = sheet.cell_value(row , 0)
                 if key=="choice_label":
@@ -111,7 +114,7 @@ def xls_to_dict(path_or_file):
                 else:
                     col_dict[key] = xls_value_from_sheet(sheet, row, column)
 
-                # pass 1: make sure choice_labels are unique, while keeping the paired prev_choice_label consistent 
+                # pass 1: make sure choice_labels are unique, while keeping the paired prev_choice_label consistent
                 def f(l, (x1,x2)):
                     if (x1,x2) in l: return l
                     else: return l + [(x1,x2)]
@@ -121,12 +124,12 @@ def xls_to_dict(path_or_file):
                 # end make things unique
             result.append(col_dict)
 
-        # pass 2: explode things according to prev_choices 
+        # pass 2: explode things according to prev_choices
         result2 = []
         def slugify(s): return re.sub(r'\W+', '_', s.lower())
         prefix = "$PREFIX$"
         for index,level in enumerate(result):
-            if index==0: 
+            if index==0:
                 result2.append({'lambda': {
                     "name": prefix + '_' + level['name'],
                     "label": level['label'],
@@ -141,9 +144,9 @@ def xls_to_dict(path_or_file):
                 my_name = prefix + '_' + level["name"] + "_in_" + prev_choice_name
                 prev_choice_val = "${" + prefix + "_" + result[index-1]["name"] + "}"
                 result2.append({'lambda': {
-                    "name" : my_name, 
+                    "name" : my_name,
                     "label" : level["label"],
-                    "children" : [{'name': slugify(x), 'label': x} 
+                    "children" : [{'name': slugify(x), 'label': x}
                                   for (x,y) in zip(level["choice_labels"], level["prev_choice_labels"]) if y==prev_choice_label],
                     "bind": {u'relevant' : prev_choice_val + "='" + prev_choice_name + "'"},
                     "type" : "select one"
