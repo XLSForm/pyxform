@@ -195,5 +195,28 @@ class cascade_old_format_index_error(unittest.TestCase):
             survey.print_xform_to_file(output_path, warnings=warnings)
 
 
+class EmptyStringOnRelevantColumnTest(unittest.TestCase):
+
+    def runTest(self):
+        filename = "ict_survey_fails.xls"
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
+        root_filename, ext = os.path.splitext(filename)
+        warnings = []
+        json_survey = pyxform.xls2json.parse_file_to_json(
+            path_to_excel_file, warnings=warnings)
+        workbook_dict = pyxform.xls2json.parse_file_to_workbook_dict(
+            path_to_excel_file)
+        self.assertTrue(
+            workbook_dict['survey'][0][u'bind: relevant'].strip() == u'')
+        emptystring_relevant_included = False
+        for child in json_survey['children']:
+            if 'bind' in child:
+                for key in child['bind'].keys():
+                    if key.find('relevant') != -1 \
+                            and child['bind'][key].strip() == u'':
+                        emptystring_relevant_included = True
+        self.assertTrue(emptystring_relevant_included is False)
+
+
 if __name__ == '__main__':
     unittest.main()
