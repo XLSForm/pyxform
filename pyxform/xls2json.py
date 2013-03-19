@@ -405,6 +405,12 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                                + '|'.join(cascading_aliases.keys())
                                + r")) (?P<cascading_level>\S+)?$")
     for row in survey_sheet:
+        # check relevant has no empty string
+        if row.has_key('bind'):
+            for bind_key in row.get('bind').keys():
+                if bind_key.find('relevant') != -1:
+                    if row['bind'][bind_key].strip() == u'':
+                        row.pop('bind')
         row_number += 1
         prev_control_type, parent_children_array = stack[-1]
         #Disabled should probably be first so the attributes below can be disabled.
