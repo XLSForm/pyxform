@@ -1,5 +1,5 @@
 """
-Some tests for the new (v0.9) spec is properly implemented.  
+Some tests for the new (v0.9) spec is properly implemented.
 """
 import unittest2 as unittest
 import codecs
@@ -51,7 +51,7 @@ class duplicate_columns(unittest.TestCase):
             survey.print_xform_to_file(output_path, warnings=warnings)
 
 
-'''TODO remove this test, table-list are already covered in 
+'''TODO remove this test, table-list are already covered in
 class table_list_test(unittest.TestCase):
 
     maxDiff = None
@@ -76,9 +76,9 @@ class table_list_test(unittest.TestCase):
 
 
 class repeat_date_test(unittest.TestCase):
-    
+
     maxDiff = None
-    
+
     def runTest(self):
         filename = "repeat_date_test.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
@@ -175,6 +175,7 @@ class validate_wrapper(unittest.TestCase):
         json_survey = pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
+        os.remove(output_path)
 
 class cascade_old_format_index_error(unittest.TestCase):
 
