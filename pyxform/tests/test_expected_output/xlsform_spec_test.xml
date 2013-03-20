@@ -743,7 +743,7 @@
       </item>
     </select1>
     <group ref="/xlsform_spec_test/everything">
-      <input ref="/xlsform_spec_test/everything/my_name">
+      <input ref="/xlsform_spec_test/everything/my_name" rows="12">
         <label ref="jr:itext('/xlsform_spec_test/everything/my_name:label')"/>
       </input>
       <input ref="/xlsform_spec_test/everything/invalid_variable">

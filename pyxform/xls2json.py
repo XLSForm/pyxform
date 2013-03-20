@@ -79,6 +79,7 @@ survey_header_aliases = {
     u"repeat_count": u"control::jr:count",
     u"jr:count": u"control::jr:count",
     u"autoplay": u"control::autoplay",
+    u"rows": u"control::rows",
     #New elements that have to go into itext elements:
     #u"noAppErrorString" : u"itext::noAppErrorString",
     #u"requiredMsg" : u"itext::requiredMsg",
