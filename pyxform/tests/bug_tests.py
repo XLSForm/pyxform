@@ -51,6 +51,7 @@ class duplicate_columns(unittest.TestCase):
             survey.print_xform_to_file(output_path, warnings=warnings)
 
 
+'''TODO remove this test, table-list are already covered in 
 class table_list_test(unittest.TestCase):
 
     maxDiff = None
@@ -71,7 +72,7 @@ class table_list_test(unittest.TestCase):
         #Compare with the expected output:
         with codecs.open(expected_output_path, 'rb', encoding="utf-8") as expected_file:
             with codecs.open(output_path, 'rb', encoding="utf-8") as actual_file:
-                self.assertMultiLineEqual(expected_file.read(), actual_file.read())
+                self.assertMultiLineEqual(expected_file.read(), actual_file.read())'''
 
 
 class repeat_date_test(unittest.TestCase):
@@ -174,6 +175,24 @@ class validate_wrapper(unittest.TestCase):
         json_survey = pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
+
+class cascade_old_format_index_error(unittest.TestCase):
+
+    maxDiff = None
+
+    def runTest(self):
+        filename = "cascades_old_with_no_cascade_sheet.xls"
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
+        #Get the xform output path:
+        root_filename, ext = os.path.splitext(filename)
+        output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
+        #Do the conversion:
+        warnings = []
+        with self.assertRaises(pyxform.errors.PyXFormError):
+            json_survey = pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
+            survey = pyxform.create_survey_element_from_dict(json_survey)
+            survey.print_xform_to_file(output_path, warnings=warnings)
+
 
 if __name__ == '__main__':
     unittest.main()

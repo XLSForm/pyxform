@@ -561,6 +561,10 @@ def workbook_to_json(workbook_dict, form_name=None, default_language=u"default",
                 if not cascading_prefix:
                     raise PyXFormError(rowFormatString % row_number + " Cascading select needs a name.")
                 #cascading_json = get_cascading_json(cascading_choices, cascading_prefix, cascading_level)
+                if len(cascading_choices) <= 0 or not cascading_choices[0].has_key('questions'):
+                    raise PyXFormError(
+                        "Found a cascading_select " + cascading_level + ", but could not"
+                        " find " + cascading_level + "in cascades sheet.")
                 cascading_json = cascading_choices[0]['questions']
                 json_dict['choices'] = choices
                 for cq in cascading_json:
