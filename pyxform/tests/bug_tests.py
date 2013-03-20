@@ -1,5 +1,5 @@
 """
-Some tests for the new (v0.9) spec is properly implemented
+Some tests for the new (v0.9) spec is properly implemented.
 """
 import unittest2 as unittest
 import codecs
@@ -24,8 +24,6 @@ class group_names(unittest.TestCase):
         #Get the xform output path:
         root_filename, ext = os.path.splitext(filename)
         output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
-        expected_output_path = os.path.join(
-            DIR, "test_expected_output", root_filename + ".xml")
         #Do the conversion:
         warnings = []
         with self.assertRaises(Exception):
@@ -45,8 +43,6 @@ class duplicate_columns(unittest.TestCase):
         #Get the xform output path:
         root_filename, ext = os.path.splitext(filename)
         output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
-        expected_output_path = os.path.join(
-            DIR, "test_expected_output", root_filename + ".xml")
         #Do the conversion:
         warnings = []
         with self.assertRaises(Exception):
@@ -174,6 +170,7 @@ class validate_wrapper(unittest.TestCase):
             path_to_excel_file, warnings=warnings)
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
+        os.remove(output_path)
 
 
 class cascade_old_format_index_error(unittest.TestCase):
