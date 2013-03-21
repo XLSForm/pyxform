@@ -170,7 +170,6 @@ class validate_wrapper(unittest.TestCase):
             path_to_excel_file, warnings=warnings)
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
-        os.remove(output_path)
 
 
 class cascade_old_format_index_error(unittest.TestCase):
