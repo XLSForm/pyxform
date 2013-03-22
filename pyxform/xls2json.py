@@ -345,6 +345,8 @@ def workbook_to_json(
     survey_header_sheet = u'%s_header' % constants.SURVEY
     if survey_header_sheet in workbook_dict:
         survey_headers = workbook_dict.get(survey_header_sheet)
+        if not survey_headers:
+            raise PyXFormError(u"The survey sheet is missing column headers.")
         tmp = [h for h in [u'type', u'name'] if h in survey_headers[0].keys()]
         if tmp.__len__() is not 2:
             raise PyXFormError(u"The survey sheet must have on the first row"
@@ -353,6 +355,8 @@ def workbook_to_json(
     choices_header_sheet = u'%s_header' % constants.CHOICES
     if choices_header_sheet in workbook_dict:
         choices_headers = workbook_dict.get(choices_header_sheet)
+        if not choices_headers:
+            raise PyXFormError(u"The choices sheet is missing column headers.")
         choices_header_list = [u'list name', u'list_name', u'name']
         tmp = [
             h for h in choices_header_list if h in choices_headers[0].keys()]
