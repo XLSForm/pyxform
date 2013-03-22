@@ -94,7 +94,10 @@ def xls_to_dict(path_or_file):
 #            TODO: Do the same for csvs
 #            if row_dict != {}:
             result.append(row_dict)
-        return result
+        column_headers = {}
+        for colh in column_header_set:
+            column_headers[colh] = u''
+        return result, [column_headers]
 
     def xls_value_from_sheet(sheet, row, column):
         value = sheet.cell_value(row, column)
@@ -283,7 +286,8 @@ def xls_to_dict(path_or_file):
         if sheet.name == constants.CASCADING_CHOICES:
             result[sheet.name] = _xls_to_dict_cascade_sheet(sheet)
         else:
-            result[sheet.name] = xls_to_dict_normal_sheet(sheet)
+            result[sheet.name], result[u"%s_header" % sheet.name] = \
+                xls_to_dict_normal_sheet(sheet)
     return result
 
 

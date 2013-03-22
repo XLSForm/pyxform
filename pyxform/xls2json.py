@@ -341,6 +341,25 @@ def workbook_to_json(
     returns a nested dictionary equivalent to the format specified in the
     json form spec.
     """
+    # ensure required headers are present
+    survey_header_sheet = u'%s_header' % constants.SURVEY
+    if survey_header_sheet in workbook_dict:
+        survey_headers = workbook_dict.get(survey_header_sheet)
+        tmp = [h for h in [u'type', u'name'] if h in survey_headers[0].keys()]
+        if tmp.__len__() is not 2:
+            raise PyXFormError(u"The survey sheet must have on the first row"
+                               u" name and type columns.")
+        del workbook_dict[survey_header_sheet]
+    choices_header_sheet = u'%s_header' % constants.CHOICES
+    if choices_header_sheet in workbook_dict:
+        choices_headers = workbook_dict.get(choices_header_sheet)
+        choices_header_list = [u'list name', u'list_name', u'name']
+        tmp = [
+            h for h in choices_header_list if h in choices_headers[0].keys()]
+        if tmp.__len__() is not 2:
+            raise PyXFormError(u"The choices sheet must have on the first row"
+                               u" list_name and name.")
+        del workbook_dict[choices_header_sheet]
     if warnings is None:
         #Set warnings to a list that will be discarded.
         warnings = []
