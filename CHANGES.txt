@@ -4,3 +4,7 @@ v0.9.7, 2012 ?? ?? -- Undocumented.
 v0.9.8, 2012 10 12 -- Include xmlns for instances.
 v0.9.9, 2013 01 22 -- InstanceId always added, new cascade format support.
 v0.9.9.1, 2013 01 24 -- bug fix on old xls cascade format support.
+v0.9.10, 2013 02 15 -- bug fixes.
+v0.9.11, 2013 03 20
+    -- cascade as a required field support
+    -- bind: relvant with white space ignored
