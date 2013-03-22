@@ -3,7 +3,6 @@ XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
 import xlrd
 from xlrd import XLRDError
-from collections import defaultdict
 import csv
 import cStringIO
 import constants
@@ -28,10 +27,11 @@ def xls_to_dict(path_or_file):
             workbook = xlrd.open_workbook(file_contents=path_or_file.read())
     except XLRDError, e:
         raise PyXFormError("Error reading .xls file: %s" % e.message)
-    
+
     def xls_value_to_unicode(value, value_type):
         """
-        Take a xls formatted value and try to make a unicode string representation.
+        Take a xls formatted value and try to make a unicode string
+        representation.
         """
         if value_type == xlrd.XL_CELL_BOOLEAN:
             return u"TRUE" if value else u"FALSE"
@@ -45,39 +45,50 @@ def xls_to_dict(path_or_file):
         elif value_type is xlrd.XL_CELL_DATE:
             #Warn that it is better to single quote as a string.
             #error_location = cellFormatString % (ss_row_idx, ss_col_idx)
-            #raise Exception("Cannot handle excel formatted date at " + error_location)
-            datetime_or_time_only = xlrd.xldate_as_tuple(value, workbook.datemode)
+            #raise Exception(
+            #   "Cannot handle excel formatted date at " + error_location)
+            datetime_or_time_only = xlrd.xldate_as_tuple(
+                value, workbook.datemode)
             if datetime_or_time_only[:3] == (0, 0, 0):
                 # must be time only
                 return unicode(datetime.time(*datetime_or_time_only[3:]))
             return unicode(datetime.datetime(*datetime_or_time_only))
         else:
-            return unicode(value)
-    
+            #ensure unicode and replace nbsp spaces with normal ones
+            #to avoid this issue:
+            #https://github.com/modilabs/pyxform/issues/83
+            return unicode(value).replace(unichr(160), ' ')
+
     def xls_to_dict_normal_sheet(sheet):
         def iswhitespace(string):
-            return (isinstance(string, basestring) and len(string.strip()) == 0)
-            
+            return (
+                isinstance(string, basestring) and len(string.strip()) == 0)
+
         #Check for duplicate column headers
         column_header_set = set()
         for column in range(0, sheet.ncols):
             column_header = sheet.cell_value(0, column)
             if column_header in column_header_set:
-                raise PyXFormError(u"Duplicate column header: %s" % column_header)
+                raise PyXFormError(
+                    u"Duplicate column header: %s" % column_header)
             # xls file with 3 columns mostly have a 3 more columns that are
             # blank by default or something, skip during check
             if column_header is not None:
                 if not iswhitespace(column_header):
                     column_header_set.add(column_header)
-        
+
         result = []
         for row in range(1, sheet.nrows):
             row_dict = {}
             for column in range(0, sheet.ncols):
                 #Changing to cell_value function
-                key = u"%s" % sheet.cell_value(0, column)  # convert to string, in case it is not string
+                # convert to string, in case it is not string
+                key = u"%s" % sheet.cell_value(0, column)
                 key = key.strip()
                 value = sheet.cell_value(row, column)
+                # remove whitespace at the beginning and end of value
+                if isinstance(value, basestring):
+                    value = value.strip()
                 value_type = sheet.cell_type(row, column)
                 if value is not None:
                     if not iswhitespace(value):
@@ -87,81 +98,111 @@ def xls_to_dict(path_or_file):
 #            if row_dict != {}:
             result.append(row_dict)
         return result
+
     def xls_value_from_sheet(sheet, row, column):
         value = sheet.cell_value(row, column)
         value_type = sheet.cell_type(row, column)
         if value is not None and value != "":
             return xls_value_to_unicode(value, value_type)
-        else: raise PyXFormError("Empty Value")
+        else:
+            raise PyXFormError("Empty Value")
+
     def xls_to_dict_cascade_sheet(sheet):
         result = []
-        for column in range(1, sheet.ncols): # col 1 = headers; don't process
+        for column in range(1, sheet.ncols):  # col 1 = headers; don't process
             # first row value for this column is the key
             col_dict = {}
             col_name = sheet.cell_value(0, column)
-            col_dict["name"] = col_name 
+            col_dict["name"] = col_name
             col_dict["choice_labels"] = []
-            col_dict["prev_choice_labels"] = [] 
+            col_dict["prev_choice_labels"] = []
             for row in range(1, sheet.nrows):
-                
+
                 # pass 0: build col_dict for first time
-                key = sheet.cell_value(row , 0)
-                if key=="choice_label":
-                    col_dict["choice_labels"].append(xls_value_from_sheet(sheet, row, column))
-                    if column > 1: col_dict["prev_choice_labels"].append(xls_value_from_sheet(sheet, row, column - 1))
+                key = sheet.cell_value(row, 0)
+                if key == "choice_label":
+                    col_dict["choice_labels"].append(
+                        xls_value_from_sheet(sheet, row, column))
+                    if column > 1:
+                        col_dict["prev_choice_labels"].append(
+                            xls_value_from_sheet(sheet, row, column - 1))
                 else:
                     col_dict[key] = xls_value_from_sheet(sheet, row, column)
 
-                # pass 1: make sure choice_labels are unique, while keeping the paired prev_choice_label consistent 
-                def f(l, (x1,x2)):
-                    if (x1,x2) in l: return l
-                    else: return l + [(x1,x2)]
-                zipped = reduce(f, zip(col_dict["choice_labels"], col_dict["prev_choice_labels"] or col_dict["choice_labels"]), [])
-                col_dict["choice_labels"] = [a for a,b in zipped]
-                if column > 1: col_dict["prev_choice_labels"] = [b for a,b in zipped]
+                # pass 1: make sure choice_labels are unique,
+                # while keeping the paired prev_choice_label consistent
+                def f(l, (x1, x2)):
+                    if (x1, x2) in l:
+                        return l
+                    else:
+                        return l + [(x1, x2)]
+                zipped = reduce(
+                    f,
+                    zip(col_dict["choice_labels"],
+                        col_dict["prev_choice_labels"]
+                        or col_dict["choice_labels"]), [])
+                col_dict["choice_labels"] = [a for a, b in zipped]
+                if column > 1:
+                    col_dict["prev_choice_labels"] = [b for a, b in zipped]
                 # end make things unique
             result.append(col_dict)
 
-        # pass 2: explode things according to prev_choices 
+        # pass 2: explode things according to prev_choices
         result2 = []
-        def slugify(s): return re.sub(r'\W+', '_', s.lower())
+
+        def slugify(s):
+            return re.sub(r'\W+', '_', s.lower())
         prefix = "$PREFIX$"
-        for index,level in enumerate(result):
-            if index==0: 
+        for index, level in enumerate(result):
+            if index == 0:
                 result2.append({'lambda': {
                     "name": prefix + '_' + level['name'],
                     "label": level['label'],
-                    "children": [{'name': slugify(x), 'label': x} for x in level['choice_labels']],
+                    "children": [
+                        {'name': slugify(x),
+                         'label': x} for x in level['choice_labels']],
                     "type": "select one",
                 }})
-                result2.append({"stopper" : level['name']})
+                result2.append({"stopper": level['name']})
                 continue
             calc_formula_string = "'ERROR'"
             for prev_choice_label in set(level["prev_choice_labels"]):
                 prev_choice_name = slugify(prev_choice_label)
-                my_name = prefix + '_' + level["name"] + "_in_" + prev_choice_name
-                prev_choice_val = "${" + prefix + "_" + result[index-1]["name"] + "}"
+                my_name = \
+                    prefix + '_' + level["name"] + "_in_" + prev_choice_name
+                prev_choice_val = \
+                    "${" + prefix + "_" + result[index - 1]["name"] + "}"
                 result2.append({'lambda': {
-                    "name" : my_name, 
-                    "label" : level["label"],
-                    "children" : [{'name': slugify(x), 'label': x} 
-                                  for (x,y) in zip(level["choice_labels"], level["prev_choice_labels"]) if y==prev_choice_label],
-                    "bind": {u'relevant' : prev_choice_val + "='" + prev_choice_name + "'"},
-                    "type" : "select one"
+                    "name": my_name,
+                    "label": level["label"],
+                    "children": [
+                        {'name': slugify(x), 'label': x}
+                        for (x, y) in zip(
+                            level["choice_labels"],
+                            level["prev_choice_labels"])
+                        if y == prev_choice_label],
+                    "bind": {
+                        u'relevant':
+                        prev_choice_val + "='" + prev_choice_name + "'"},
+                    "type": "select one"
                 }})
-                calc_formula_string = calc_formula_string.replace("'ERROR'", "if(" + prev_choice_val + "='" + prev_choice_name + "', ${" + my_name + "}, 'ERROR')")
+                calc_formula_string = calc_formula_string.replace(
+                    "'ERROR'",
+                    "if(" + prev_choice_val + "='" + prev_choice_name
+                    + "', ${" + my_name + "}, 'ERROR')")
             result2.append({'lambda': {
-                    "name" : prefix + '_' + level["name"],
-                    "type" : "calculate",
-                    "bind": {u'calculate' : calc_formula_string}}} )
-            result2.append({"stopper" : level['name']})
+                "name": prefix + '_' + level["name"],
+                "type": "calculate",
+                "bind": {u'calculate': calc_formula_string}}})
+            result2.append({"stopper": level['name']})
         return result2
 
     def _xls_to_dict_cascade_sheet(sheet):
         result = []
         rs_dict = {}  # tmp dict to hold entire structure
 
-        def slugify(s): return re.sub(r'\W+', '_', s.strip().lower())
+        def slugify(s):
+            return re.sub(r'\W+', '_', s.strip().lower())
         prefix = "$PREFIX$"
         # get col headers and position first, ignore first column
         for column in range(1, sheet.ncols):
@@ -172,7 +213,7 @@ def xls_to_dict(path_or_file):
                 'itemset': col_name,
                 'type': constants.SELECT_ONE,
                 'name':
-                    prefix if (column == sheet.ncols - 1) else u''.join(
+                prefix if (column == sheet.ncols - 1) else u''.join(
                         [prefix, '_', col_name]),
                 'label': sheet.cell_value(1, column)}
             if column > 1:
@@ -199,8 +240,8 @@ def xls_to_dict(path_or_file):
                     rs_dict[col_name]['data'].index(slugify(cell_data))
                 except ValueError:
                     rs_dict[col_name]['data'].append(slugify(cell_data))
-                    if rs_dict[col_name].has_key('choices'):
-                        l={'name': slugify(cell_data), 'label': cell_data}
+                    if 'choices' in rs_dict[col_name]:
+                        l = {'name': slugify(cell_data), 'label': cell_data}
                         rs_dict[col_name]['choices'].append(l)
                 data = {
                     'name': slugify(cell_data),
@@ -216,11 +257,11 @@ def xls_to_dict(path_or_file):
         kl = []
         for column in range(1, sheet.ncols):
             col_name = sheet.cell_value(0, column)
-            if rs_dict[col_name].has_key('parent'):
+            if 'parent' in rs_dict[col_name]:
                 rs_dict[col_name].pop('parent')
-            if rs_dict[col_name].has_key('pos'):
+            if 'pos' in rs_dict[col_name]:
                 rs_dict[col_name].pop('pos')
-            if rs_dict[col_name].has_key('data'):
+            if 'data' in rs_dict[col_name]:
                 rs_dict[col_name].pop('data')
             kl.append(rs_dict[col_name])
 
@@ -240,25 +281,26 @@ def xls_to_dict(path_or_file):
                     choices.append(rec)
         return [{'choices': choices, 'questions': kl}]
 
-
     result = {}
     for sheet in workbook.sheets():
-        if sheet.name==constants.CASCADING_CHOICES:
+        if sheet.name == constants.CASCADING_CHOICES:
             result[sheet.name] = _xls_to_dict_cascade_sheet(sheet)
         else:
             result[sheet.name] = xls_to_dict_normal_sheet(sheet)
     return result
 
+
 def get_cascading_json(sheet_list, prefix, level):
     return_list = []
     for row in sheet_list:
-        if row.has_key('stopper'):
+        if 'stopper' in row:
             if row['stopper'] == level:
-                return_list[-1]["name"] = prefix # last element's name IS the prefix; doesn't need level
+                # last element's name IS the prefix; doesn't need level
+                return_list[-1]["name"] = prefix
                 return return_list
             else:
                 continue
-        elif row.has_key('lambda'):
+        elif 'lambda' in row:
             def replace_prefix(d, prefix):
                 for k, v in d.items():
                     if isinstance(v, basestring):
@@ -266,12 +308,13 @@ def get_cascading_json(sheet_list, prefix, level):
                     elif isinstance(v, dict):
                         d[k] = replace_prefix(v, prefix)
                     elif isinstance(v, list):
-                        d[k] = map(lambda x:replace_prefix(x, prefix), v)
+                        d[k] = map(lambda x: replace_prefix(x, prefix), v)
                 return d
             return_list.append(replace_prefix(row['lambda'], prefix))
     raise PyXFormError(
         "Found a cascading_select " + level + ", but could not"
         " find " + level + "in cascades sheet.")
+
 
 def csv_to_dict(path_or_file):
     if isinstance(path_or_file, basestring):
@@ -281,6 +324,7 @@ def csv_to_dict(path_or_file):
         csv_data = path_or_file.read()
 
     _dict = {}
+
     def first_column_as_sheet_name(row):
         if len(row) == 0:
             return (None, None)
@@ -292,7 +336,7 @@ def csv_to_dict(path_or_file):
             if s_or_c == '':
                 s_or_c = None
             #concatenate all the strings in content
-            if reduce(lambda x, y: x+y, content) == '':
+            if reduce(lambda x, y: x + y, content) == '':
                 # content is a list of empty strings
                 content = None
             return (s_or_c, content)
@@ -302,20 +346,21 @@ def csv_to_dict(path_or_file):
     current_headers = None
     for row in reader:
         survey_or_choices, content = first_column_as_sheet_name(row)
-        if survey_or_choices != None:
+        if survey_or_choices is not None:
             sheet_name = survey_or_choices
             if sheet_name not in _dict:
                 _dict[unicode(sheet_name)] = []
             current_headers = None
-        if content != None:
-            if current_headers == None:
+        if content is not None:
+            if current_headers is None:
                 current_headers = content
             else:
                 _d = {}
                 for key, val in zip(current_headers, content):
                     if val != "":
                         #Slight modification so values are striped
-                        #this is because csvs often spaces following commas (but the csv reader might already handle that.)
+                        #this is because csvs often spaces following commas
+                        #(but the csv reader might already handle that.)
                         _d[unicode(key)] = unicode(val.strip())
                 _dict[sheet_name].append(_d)
     return _dict
@@ -332,6 +377,7 @@ and some day:
     csv => xls
 
 """
+
 
 def convert_file_to_csv_string(path):
     """
@@ -353,7 +399,8 @@ def convert_file_to_csv_string(path):
     else:
         imported_sheets = xls_to_dict(path)
     foo = cStringIO.StringIO()
-    writer = csv.writer(foo, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    writer = csv.writer(
+        foo, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     for sheet_name, rows in imported_sheets.items():
         writer.writerow([sheet_name])
         out_keys = []

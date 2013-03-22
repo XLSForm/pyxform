@@ -288,7 +288,7 @@
             <value>Maluke (MH-473)</value>
           </text>
           <text id="static_instance-name_list-3">
-            <value>Other </value>
+            <value>Other</value>
           </text>
           <text id="static_instance-yes_no_list-1">
             <value>No</value>
@@ -2749,9 +2749,9 @@
       <bind nodeset="/cascades_old/sectionA/q2_surveyor2" relevant=" /cascades_old/sectionA/q1_surveyor1  = 'othername'" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionA/q3_datetime" required="true()" type="dateTime"/>
       <bind nodeset="/cascades_old/sectionA/q4_gps_location" required="false()" type="geopoint"/>
-      <bind nodeset="/cascades_old/sectionB/q5_construction_site_phase" type="select1"/>
-      <bind nodeset="/cascades_old/sectionB/q5_construction_site_district" type="select1"/>
-      <bind nodeset="/cascades_old/sectionB/q5_construction_site" type="select1"/>
+      <bind nodeset="/cascades_old/sectionB/q5_construction_site_phase" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionB/q5_construction_site_district" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionB/q5_construction_site" required="true()" type="select1"/>
       <bind nodeset="/cascades_old/sectionB/q6_construction_site_summary1" required="true()" type="select1"/>
       <bind nodeset="/cascades_old/sectionB/q7_construction_site_summary2" relevant=" /cascades_old/sectionB/q6_construction_site_summary1 ='no'" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionC/sectionC1/q10_wm_trained_aftercare" required="true()" type="select1"/>
@@ -2821,7 +2821,7 @@
           <value>name3</value>
         </item>
         <item>
-          <label>Other </label>
+          <label>Other</label>
           <value>othername</value>
         </item>
       </select1>
