@@ -67,7 +67,10 @@ def xls_to_dict(path_or_file):
                 return unicode(datetime.time(*datetime_or_time_only[3:]))
             return unicode(datetime.datetime(*datetime_or_time_only))
         else:
-            return unicode(value)
+            #ensure unicode and replace nbsp spaces with normal ones
+            #to avoid this issue:
+            #https://github.com/modilabs/pyxform/issues/83
+            return unicode(value).replace(unichr(160), ' ')
 
     def xls_to_dict_normal_sheet(sheet):
         def iswhitespace(string):
