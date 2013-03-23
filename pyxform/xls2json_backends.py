@@ -11,6 +11,19 @@ import datetime
 from errors import PyXFormError
 
 
+def _list_to_dict_list(list_items):
+    """
+    Takes a list and creates a dict with the list values as keys.
+    Returns a list of the created dict or an empty list
+    """
+    if list_items:
+        k = {}
+        for item in list_items:
+            k[u'%s' % item] = u''
+        return [k]
+    return []
+
+
 def xls_to_dict(path_or_file):
     """
     Return a Python dictionary with a key for each worksheet
@@ -97,7 +110,7 @@ def xls_to_dict(path_or_file):
 #            TODO: Do the same for csvs
 #            if row_dict != {}:
             result.append(row_dict)
-        return result
+        return result, _list_to_dict_list(column_header_set)
 
     def xls_value_from_sheet(sheet, row, column):
         value = sheet.cell_value(row, column)
@@ -286,7 +299,8 @@ def xls_to_dict(path_or_file):
         if sheet.name == constants.CASCADING_CHOICES:
             result[sheet.name] = _xls_to_dict_cascade_sheet(sheet)
         else:
-            result[sheet.name] = xls_to_dict_normal_sheet(sheet)
+            result[sheet.name], result[u"%s_header" % sheet.name] = \
+                xls_to_dict_normal_sheet(sheet)
     return result
 
 
@@ -354,6 +368,8 @@ def csv_to_dict(path_or_file):
         if content is not None:
             if current_headers is None:
                 current_headers = content
+                _dict[u"%s_header" % sheet_name] = \
+                    _list_to_dict_list(current_headers)
             else:
                 _d = {}
                 for key, val in zip(current_headers, content):
