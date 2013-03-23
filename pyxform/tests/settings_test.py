@@ -20,12 +20,12 @@ class SettingsTests(TestCase):
             u'children': [
                 {
                     u'name': u'your_name',
-                    u'text': {u'english': u'What is your name?'},
+                    u'label': {u'english': u'What is your name?'},
                     u'type': u'text'
                 },
                 {
                     u'name': u'your_age',
-                    u'text': {u'english': u'How many years old are you?'},
+                    u'label': {u'english': u'How many years old are you?'},
                     u'type': u'integer'
                 },
                 {
@@ -45,8 +45,8 @@ class SettingsTests(TestCase):
                     'name': 'meta',
                     'type': 'group'
                 }
-                ],
-            }
+            ],
+        }
         self.assertEqual(survey_reader.to_json_dict(), expected_dict)
 
     def test_settings(self):
