@@ -3,6 +3,7 @@
 *.swp
 *.venv
 *.~lock.*#
+*.ropeproject
 .DS_Store
 .noseids
 tests/how_old_are_you.json
