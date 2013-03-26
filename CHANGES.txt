@@ -11,3 +11,4 @@ v0.9.11, 2013 03 20
 v0.9.12, 2013 03 23
     -- better error reporting in missing headers, missing calculations
     -- support for rows column
+v0.9.13, 2013 03 26 -- remove java elements in exception during odk validate.
