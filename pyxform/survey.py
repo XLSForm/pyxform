@@ -30,6 +30,11 @@ class Survey(Section):
             u"_created": datetime.now, #This can't be dumped to json
             u"title": unicode,
             u"id_string": unicode,
+            u"sms_keyword": unicode,
+            u"sms_separator": unicode,
+            u"sms_allow_medias": bool,
+            u"sms_date_format": unicode,
+            u"sms_datetime_format": unicode,
             u"file_name": unicode,
             u"default_language": unicode,
             u"_translations": dict,
@@ -79,7 +84,7 @@ class Survey(Section):
                 #Add a unique id to the choice element incase there is itext it refrences
                 itextId = '-'.join(['static_instance', list_name, str(idx)])
                 choice_element_list.append(node("itextId", itextId))
-                
+
                 for choicePropertyName, choicePropertyValue in choice.items():
                     if isinstance(choicePropertyValue, basestring) and choicePropertyName != 'label':
                         choice_element_list.append(node(choicePropertyName, unicode(choicePropertyValue)))
@@ -93,12 +98,12 @@ class Survey(Section):
         self._setup_translations()
         self._setup_media()
         self._add_empty_translations()
-        
+
         model_children = []
         if self._translations:
             model_children.append(self.itext())
         model_children += [node("instance", self.xml_instance())]
-        model_children += list(self._generate_static_instances()) 
+        model_children += list(self._generate_static_instances())
         model_children += self.xml_bindings()
 
         if self.submission_url or self.public_key:
@@ -185,46 +190,46 @@ class Survey(Section):
         """
         if not self._translations:
             self._translations = defaultdict(dict)
-        
+
         for survey_element in self.iter_descendants():
-            
+
             translation_key = survey_element.get_xpath() + ":label"
             media_dict = survey_element.get(u"media")
-            
+
             for media_type, possibly_localized_media in media_dict.items():
-                
+
                 if media_type not in SurveyElement.SUPPORTED_MEDIA:
                     raise PyXFormError("Media type: " + media_type + " not supported")
-                
+
                 localized_media = dict()
-                
+
                 if type(possibly_localized_media) is dict:
                     #media is localized
                     localized_media = possibly_localized_media
-                else:    
+                else:
                     #media is not localized so create a localized version using the default language
                     localized_media = { self.default_language : possibly_localized_media }
-                    
+
                 for language, media in localized_media.items():
-                    
+
                     #Create the required dictionaries in _translations, then add media as a leaf value:
-                    
+
                     if language not in self._translations:
                         self._translations[language] = {}
-                    
+
                     translations_language = self._translations[language]
-                    
+
                     if translation_key not in translations_language:
                         translations_language[translation_key] = {}
-                    
+
                     #if type(translations_language[translation_key]) is not dict:
                     #    translations_language[translation_key] = {"long" : translations_language[translation_key]}
-                    
+
                     translations_trans_key = translations_language[translation_key]
-                    
+
                     if media_type not in translations_trans_key:
                             translations_trans_key[media_type] = {}
-                        
+
                     translations_trans_key[media_type] = media
 
     def itext(self):
@@ -247,16 +252,16 @@ class Survey(Section):
                 label_type = label_name.partition(":")[-1]
 
                 if type(content) is not dict: raise Exception()
-                
+
                 for media_type, media_value in content.items():
-                    
+
                     #There is a odk/jr bug where hints can't have a value for the "form" attribute.
                     #This is my workaround.
                     if label_type == u"hint":
                         value, outputInserted = self.insert_output_values(media_value)
                         itext_nodes.append(node("value", value, toParseString=outputInserted))
                         continue
-                    
+
                     if media_type == "long":
                         value, outputInserted = self.insert_output_values(media_value)
                         #I'm ignoring long types for now because I don't know how they are supposed to work.
@@ -269,7 +274,7 @@ class Survey(Section):
 
 
                 result[-1].appendChild(node("text", *itext_nodes, id=label_name))
-                
+
         return node("itext", *result)
 
     def date_stamp(self):
@@ -291,7 +296,7 @@ class Survey(Section):
         inlineOutput = output_re.sub('\g<1>', prettyXml)
         inlineOutput = re.compile('<label>\s*\n*\s*\n*\s*</label>').sub('<label></label>', inlineOutput)
         return '<?xml version="1.0"?>\n' + inlineOutput
-    
+
     def __unicode__(self):
         return "<survey name='%s' element_count='%s'>" % (self.name, len(self.children))
 
@@ -349,7 +354,7 @@ class Survey(Section):
         text_node = Text()
         text_node.data = text
         xml_text = text_node.toxml()
-        
+
         bracketed_tag = r"\$\{(.*?)\}"
         # need to make sure we have reason to replace
         # since at this point < is &lt,
@@ -381,7 +386,7 @@ class Survey(Section):
             # this will throw an exception if the xml is not valid
             self.print_xform_to_file(tmp.name)
         return self._to_pretty_xml()
-    
+
     def instantiate(self):
         """
         Instantiate as in return a instance of SurveyInstance for collected data.

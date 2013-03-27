@@ -24,6 +24,7 @@ class SurveyElement(dict):
     # describes this survey element
     FIELDS = {
         u"name": unicode,
+        u"sms_id": unicode,
         u"label": unicode,
         u"hint": unicode,
         u"default": unicode,
@@ -66,7 +67,7 @@ class SurveyElement(dict):
         for key, default in self.FIELDS.items():
             self[key] = kwargs.get(key, default())
         self._link_children()
-        
+
         #Create a space label for unlabeled elements with the label appearance tag.
         #This is because such elements are used to label the options for selects in a field-list
         #and might want blank labels for themselves.
@@ -174,7 +175,7 @@ class SurveyElement(dict):
         for k, v in result.items():
             if not v:
                 del result[k]
-                
+
         return result
 
     def to_json(self):
@@ -207,16 +208,16 @@ class SurveyElement(dict):
                         'lang': lang,
                         'text': text
                     }
-        
+
         for display_element in [u'label', u'hint']:
             label_or_hint = self[display_element]
-            
+
             if display_element is u'label' \
                and self.needs_itext_ref() \
                and type(label_or_hint) is not dict \
                and label_or_hint:
                 label_or_hint = {default_language : label_or_hint}
-                
+
             if type(label_or_hint) is dict:
                 for lang, text in label_or_hint.items():
                     yield {
@@ -270,13 +271,13 @@ class SurveyElement(dict):
             result.append(self.xml_label())
         if self.hint:
             result.append(self.xml_hint())
-        
+
         if len(result) == 0:
             msg = "The survey element named '%s' has no label or hint." % self.name
             raise PyXFormError(msg)
-        
+
         return result
-    
+
     def xml_binding(self):
         """
         Return the binding for this survey element.
@@ -311,7 +312,7 @@ class SurveyElement(dict):
         doesn't make sense to implement here in the base class.
         """
         raise Exception("Control not implemented")
-    
+
 def hashable(v):
     """Determine whether `v` can be hashed."""
     try:

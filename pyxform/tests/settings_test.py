@@ -6,6 +6,8 @@ import utils
 
 class SettingsTests(TestCase):
 
+    maxDiff = None
+
     def setUp(self):
         self.path = utils.path_to_text_fixture("settings.xls")
 
@@ -13,6 +15,7 @@ class SettingsTests(TestCase):
         survey_reader = SurveyReader(self.path)
         expected_dict = {
             u'id_string': u'new_id',
+            u'sms_keyword': u'new_id',
             u'default_language': u'default',
             u'name': u'settings',
             u'title': u'My Survey',

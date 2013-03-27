@@ -1,6 +1,7 @@
 {
     "name": "yes_or_no_question", 
     "title": "yes_or_no_question", 
+    "sms_keyword": "yes_or_no_question", 
     "default_language": "default", 
     "id_string": "yes_or_no_question", 
     "type": "survey", 
