@@ -42,7 +42,7 @@ class BuilderTests(TestCase):
         self.this_directory = os.path.dirname(__file__)
         survey_out = Survey(
             name=u"age",
-            sms_id=u"age",
+            sms_keyword=u"age",
             type=u"survey"
             )
         question = InputQuestion(name=u"age")
@@ -65,7 +65,6 @@ class BuilderTests(TestCase):
         d = {
             u"type" : u"loop",
             u"name" : u"my_loop",
-            u"sms_id" : u"my_loop",
             u"label" : {u"English" : u"My Loop"},
             u"columns" : [
                 {
@@ -90,7 +89,6 @@ class BuilderTests(TestCase):
 
         expected_dict = {
             u'name': u'my_loop',
-            u'sms_id': u'my_loop',
             u'label': {u'English': u'My Loop'},
             u'type' : u'group',
             u'children': [
@@ -131,7 +129,7 @@ class BuilderTests(TestCase):
             u'title': u'specify_other',
             u'default_language': u'default',
             u'id_string': u'specify_other',
-            u'sms_id': u'specify_other',
+            u'sms_keyword': u'specify_other',
             u'children': [
                 {
                     u'name': u'sex',
@@ -188,7 +186,7 @@ class BuilderTests(TestCase):
         expected_dict = {
                 u'name': u'choice_name_same_as_select_name',
                 u'title': u'choice_name_same_as_select_name',
-                u'sms_id': u'choice_name_same_as_select_name',
+                u'sms_keyword': u'choice_name_same_as_select_name',
                 u'default_language': u'default',
                 u'id_string': u'choice_name_same_as_select_name',
                 u'type': u'survey',
@@ -302,7 +300,7 @@ class BuilderTests(TestCase):
         expected_dict = {
             u'name': u'loop',
             u'id_string': u'loop',
-            u'sms_id': u'loop',
+            u'sms_keyword': u'loop',
             u'title': u'loop',
             u'type': u'survey',
             u'default_language': u'default',
@@ -498,7 +496,7 @@ class BuilderTests(TestCase):
          u'sms_allow_medias': u'TRUE',
          u'sms_date_format': u'%Y-%m-%d',
          u'sms_datetime_format': u'%Y-%m-%d-%H:%M',
-         u'sms_id': u'inf',
+         u'sms_keyword': u'inf',
          u'sms_separator': u'+',
          u'title': u'SMS Example',
          u'type': u'survey'}

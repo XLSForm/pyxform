@@ -30,7 +30,7 @@ class Survey(Section):
             u"_created": datetime.now, #This can't be dumped to json
             u"title": unicode,
             u"id_string": unicode,
-            u"sms_id": unicode,
+            u"sms_keyword": unicode,
             u"sms_separator": unicode,
             u"sms_allow_medias": bool,
             u"sms_date_format": unicode,

@@ -15,7 +15,7 @@ class SettingsTests(TestCase):
         survey_reader = SurveyReader(self.path)
         expected_dict = {
             u'id_string': u'new_id',
-            u'sms_id': u'new_id',
+            u'sms_keyword': u'new_id',
             u'default_language': u'default',
             u'name': u'settings',
             u'title': u'My Survey',

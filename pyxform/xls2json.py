@@ -44,7 +44,7 @@ settings_header_aliases = {
     u"form_title": constants.TITLE,
     u"set form title": constants.TITLE,
     u"form_id": constants.ID_STRING,
-    u"sms_id": constants.SMS_ID,
+    u"sms_keyword": constants.SMS_KEYWORD,
     u"sms_separator": constants.SMS_SEPARATOR,
     u"sms_allow_medias": constants.SMS_ALLOW_MEDIAS,
     u"sms_date_format": constants.SMS_DATE_FORMAT,
@@ -411,13 +411,13 @@ def workbook_to_json(
 
     #Here we create our json dict root with default settings:
     id_string = settings.get(constants.ID_STRING, form_name)
-    sms_id = settings.get(constants.SMS_ID, id_string)
+    sms_keyword = settings.get(constants.SMS_KEYWORD, id_string)
     json_dict = {
         constants.TYPE: constants.SURVEY,
         constants.NAME: form_name,
         constants.TITLE: id_string,
         constants.ID_STRING: id_string,
-        constants.SMS_ID: sms_id,
+        constants.SMS_KEYWORD: sms_keyword,
         constants.DEFAULT_LANGUAGE: default_language,
         #By default the version is based on the date and time yyyymmddhh
         #Leaving default version out for now since it might cause
