@@ -43,5 +43,6 @@
                 }
             ]
         }
-    ]
+    ], 
+    "sms_id": "yes_or_no_question"
 }

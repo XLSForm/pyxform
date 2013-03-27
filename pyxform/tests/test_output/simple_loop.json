@@ -52,5 +52,6 @@
                 }
             ]
         }
-    ]
+    ], 
+    "sms_id": "simple_loop"
 }

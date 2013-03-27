@@ -16,7 +16,7 @@ DIR = os.path.dirname(__file__)
 
 class BasicXls2JsonApiTests(TestCase):
 
-    madDiff = None
+    maxDiff = None
 
     def test_simple_yes_or_no_question(self):
         filename = "yes_or_no_question.xls"
