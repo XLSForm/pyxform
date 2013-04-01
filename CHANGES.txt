@@ -8,3 +8,8 @@ v0.9.10, 2013 02 15 -- bug fixes.
 v0.9.11, 2013 03 20
     -- cascade as a required field support
     -- bind: relvant with white space ignored
+v0.9.12, 2013 03 23
+    -- better error reporting in missing headers, missing calculations
+    -- support for rows column
+v0.9.13, 2013 03 26 -- remove java elements in exception during odk validate.
+v0.9.14, 2013 03 27 -- add support for sms fields

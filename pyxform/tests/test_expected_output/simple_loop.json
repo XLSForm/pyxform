@@ -1,6 +1,7 @@
 {
     "name": "simple_loop", 
     "title": "simple_loop", 
+    "sms_keyword": "simple_loop", 
     "default_language": "default", 
     "id_string": "simple_loop", 
     "type": "survey", 

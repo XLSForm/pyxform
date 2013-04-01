@@ -39,6 +39,24 @@ def run_popen_with_timeout(command, timeout):
     return (p.returncode, timeout, stdout, stderr)
 
 
+def _cleanup_errors(error_message):
+    k = []
+    for line in error_message.splitlines():
+        # has a java filename
+        has_java_filename = line.find('.java') is not -1
+        # starts with '    at java class path or method path'
+        is_a_java_method = line.find('\tat') is not -1
+        if not has_java_filename and not is_a_java_method:
+            # remove java.lang.RuntimeException
+            if line.startswith('java.lang.RuntimeException: '):
+                line = line.replace('java.lang.RuntimeException: ', '')
+            # remove java.lang.NullPointerException
+            if line.startswith('java.lang.NullPointerException'):
+                continue
+            k.append(line)
+    return u'\n'.join(k)
+
+
 def check_xform(path_to_xform):
     """
     Returns an array of warnings if the form is valid.
@@ -58,7 +76,8 @@ def check_xform(path_to_xform):
         return ["XForm took to long to completely validate."]
     else:
         if returncode > 0:  # Error invalid
-            raise Exception('ODK Validate Errors:\n' + stderr)
+            raise Exception(
+                'ODK Validate Errors:\n' + _cleanup_errors(stderr))
         elif returncode == 0:
             if stderr:
                 warnings.append('ODK Validate Warnings:\n' + stderr)

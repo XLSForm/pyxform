@@ -44,6 +44,11 @@ settings_header_aliases = {
     u"form_title": constants.TITLE,
     u"set form title": constants.TITLE,
     u"form_id": constants.ID_STRING,
+    u"sms_keyword": constants.SMS_KEYWORD,
+    u"sms_separator": constants.SMS_SEPARATOR,
+    u"sms_allow_medias": constants.SMS_ALLOW_MEDIAS,
+    u"sms_date_format": constants.SMS_DATE_FORMAT,
+    u"sms_datetime_format": constants.SMS_DATETIME_FORMAT,
     u"set form id": constants.ID_STRING,
     u"public_key": constants.PUBLIC_KEY,
     u"submission_url": constants.SUBMISSION_URL
@@ -53,6 +58,11 @@ settings_header_aliases = {
 survey_header_aliases = {
     u"Label": u"label",
     u"Name": u"name",
+    u"SMS ID": constants.SMS_ID,
+    u"SMS Sepatator": constants.SMS_SEPARATOR,
+    u"SMS Allow Medias": constants.SMS_ALLOW_MEDIAS,
+    u"SMS Date Format": constants.SMS_DATE_FORMAT,
+    u"SMS DateTime Format": constants.SMS_DATETIME_FORMAT,
     u"Type": u"type",
     u"List_name": u"list_name",
     u"repeat_count": u"jr:count",
@@ -341,6 +351,29 @@ def workbook_to_json(
     returns a nested dictionary equivalent to the format specified in the
     json form spec.
     """
+    # ensure required headers are present
+    survey_header_sheet = u'%s_header' % constants.SURVEY
+    if survey_header_sheet in workbook_dict:
+        survey_headers = workbook_dict.get(survey_header_sheet)
+        if not survey_headers:
+            raise PyXFormError(u"The survey sheet is missing column headers.")
+        tmp = [h for h in [u'type', u'name'] if h in survey_headers[0].keys()]
+        if tmp.__len__() is not 2:
+            raise PyXFormError(u"The survey sheet must have on the first row"
+                               u" name and type columns.")
+        del workbook_dict[survey_header_sheet]
+    choices_header_sheet = u'%s_header' % constants.CHOICES
+    if choices_header_sheet in workbook_dict:
+        choices_headers = workbook_dict.get(choices_header_sheet)
+        if not choices_headers:
+            raise PyXFormError(u"The choices sheet is missing column headers.")
+        choices_header_list = [u'list name', u'list_name', u'name']
+        tmp = [
+            h for h in choices_header_list if h in choices_headers[0].keys()]
+        if tmp.__len__() is not 2:
+            raise PyXFormError(u"The choices sheet must have on the first row"
+                               u" list_name and name.")
+        del workbook_dict[choices_header_sheet]
     if warnings is None:
         #Set warnings to a list that will be discarded.
         warnings = []
@@ -378,11 +411,13 @@ def workbook_to_json(
 
     #Here we create our json dict root with default settings:
     id_string = settings.get(constants.ID_STRING, form_name)
+    sms_keyword = settings.get(constants.SMS_KEYWORD, id_string)
     json_dict = {
         constants.TYPE: constants.SURVEY,
         constants.NAME: form_name,
         constants.TITLE: id_string,
         constants.ID_STRING: id_string,
+        constants.SMS_KEYWORD: sms_keyword,
         constants.DEFAULT_LANGUAGE: default_language,
         #By default the version is based on the date and time yyyymmddhh
         #Leaving default version out for now since it might cause
@@ -697,6 +732,11 @@ def workbook_to_json(
                 list_name = parse_dict["list_name"]
 
                 if list_name not in choices:
+                    if not choices:
+                        raise PyXFormError(
+                            u"There should be a choices sheet in this xlsform."
+                            u" Please ensure that the choices sheet name is "
+                            u"all in small caps.")
                     raise PyXFormError(
                         rowFormatString % row_number +
                         " List name not in choices sheet: " + list_name)

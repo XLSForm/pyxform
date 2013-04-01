@@ -42,6 +42,7 @@ class BuilderTests(TestCase):
         self.this_directory = os.path.dirname(__file__)
         survey_out = Survey(
             name=u"age",
+            sms_keyword=u"age",
             type=u"survey"
             )
         question = InputQuestion(name=u"age")
@@ -128,6 +129,7 @@ class BuilderTests(TestCase):
             u'title': u'specify_other',
             u'default_language': u'default',
             u'id_string': u'specify_other',
+            u'sms_keyword': u'specify_other',
             u'children': [
                 {
                     u'name': u'sex',
@@ -182,21 +184,22 @@ class BuilderTests(TestCase):
         """
         survey = utils.create_survey_from_fixture("choice_name_same_as_select_name", filetype=FIXTURE_FILETYPE)
         expected_dict = {
-                u'name': u'choice_name_same_as_select_name', 
-                u'title': u'choice_name_same_as_select_name', 
-                u'default_language': u'default', 
-                u'id_string': u'choice_name_same_as_select_name', 
-                u'type': u'survey', 
+                u'name': u'choice_name_same_as_select_name',
+                u'title': u'choice_name_same_as_select_name',
+                u'sms_keyword': u'choice_name_same_as_select_name',
+                u'default_language': u'default',
+                u'id_string': u'choice_name_same_as_select_name',
+                u'type': u'survey',
                 u'children':  [
                 {
                        u'children':  [
                         {
-                               u'name': u'zone', 
+                               u'name': u'zone',
                                u'label': u'Zone'
                         }
-                        ], 
-                               u'type': u'select one', 
-                               u'name': u'zone', 
+                        ],
+                               u'type': u'select one',
+                               u'name': u'zone',
                                u'label': u'Zone',
                 },
                 {
@@ -250,7 +253,7 @@ class BuilderTests(TestCase):
 #                                u'label': {u'English': u'no'}
 #                                }
 #                            ]}]}
-#        
+#
 #        self.assertEqual(survey.to_json_dict(), expected_dict)
 #
 #    def test_include_json(self):
@@ -297,6 +300,7 @@ class BuilderTests(TestCase):
         expected_dict = {
             u'name': u'loop',
             u'id_string': u'loop',
+            u'sms_keyword': u'loop',
             u'title': u'loop',
             u'type': u'survey',
             u'default_language': u'default',
@@ -402,3 +406,98 @@ class BuilderTests(TestCase):
         survey_eq = utils.create_survey_from_fixture("cascading_select_test_equivalent", filetype=FIXTURE_FILETYPE)
         self.assertEqual(survey_cs.to_json_dict(), survey_eq.to_json_dict())'''
         pass
+
+    def test_sms_columns(self):
+        survey = utils.create_survey_from_fixture("sms_info", filetype=FIXTURE_FILETYPE)
+        expected_dict = {u'children': [{u'children': [{u'label': u'How old are you?',
+                                       u'name': u'age',
+                                       u'sms_id': u'q1',
+                                       u'type': u'integer'},
+                                      {u'children': [{u'label': u'no',
+                                                      u'name': u'0',
+                                                      u'sms_id': u'n'},
+                                                     {u'label': u'yes',
+                                                      u'name': u'1',
+                                                      u'sms_id': u'y'}],
+                                       u'label': u'Do you have any children?',
+                                       u'name': u'has_children',
+                                       u'sms_id': u'q2',
+                                       u'type': u'select one'},
+                                      {u'label': u"What's your birth day?",
+                                       u'name': u'bday',
+                                       u'sms_id': u'q3',
+                                       u'type': u'date'},
+                                      {u'label': u'What is your name?',
+                                       u'name': u'name',
+                                       u'sms_id': u'q4',
+                                       u'type': u'text'}],
+                        u'name': u'section1',
+                        u'sms_id': u'a',
+                        u'type': u'group'},
+                       {u'children': [{u'label': u'May I take your picture?',
+                                       u'name': u'picture',
+                                       u'type': u'photo'},
+                                      {u'label': u'Record your GPS coordinates.',
+                                       u'name': u'gps',
+                                       u'type': u'geopoint'}],
+                        u'name': u'medias',
+                        u'sms_id': u'c',
+                        u'type': u'group'},
+                       {u'children': [{u'children': [{u'label': u'Mozilla Firefox',
+                                                      u'name': u'firefox',
+                                                      u'sms_id': u'ff'},
+                                                     {u'label': u'Google Chrome',
+                                                      u'name': u'chrome',
+                                                      u'sms_id': u'gc'},
+                                                     {u'label': u'Internet Explorer',
+                                                      u'name': u'ie',
+                                                      u'sms_id': u'ie'},
+                                                     {u'label': u'Safari',
+                                                      u'name': u'safari',
+                                                      u'sms_id': u'saf'}],
+                                       u'label': u'What web browsers do you use?',
+                                       u'name': u'web_browsers',
+                                       u'sms_id': u'q5',
+                                       u'type': u'select all that apply'}],
+                        u'name': u'browsers',
+                        u'sms_id': u'b',
+                        u'type': u'group'},
+                       {u'children': [{u'label': u'Phone Number',
+                                       u'name': u'phone',
+                                       u'type': u'phonenumber'},
+                                      {u'label': u'Start DT',
+                                       u'name': u'start',
+                                       u'type': u'start'},
+                                      {u'label': u'End DT',
+                                       u'name': u'end',
+                                       u'type': u'end'},
+                                      {u'label': u'Send Day',
+                                       u'name': u'today',
+                                       u'type': u'today'},
+                                      {u'label': u'IMEI',
+                                       u'name': u'imei',
+                                       u'type': u'deviceid'},
+                                      {u'label': u'Hey!',
+                                       u'name': u'nope',
+                                       u'type': u'note'}],
+                        u'name': u'metadata',
+                        u'sms_id': u'meta',
+                        u'type': u'group'},
+                       {u'children': [{u'bind': {'calculate': "concat('uuid:', uuid())",
+                                                 'readonly': 'true()'},
+                                       u'name': 'instanceID',
+                                       u'type': 'calculate'}],
+                        u'control': {'bodyless': True},
+                        u'name': 'meta',
+                        u'type': u'group'}],
+         u'default_language': u'default',
+         u'id_string': u'sms_info_form',
+         u'name': u'sms_info',
+         u'sms_allow_medias': u'TRUE',
+         u'sms_date_format': u'%Y-%m-%d',
+         u'sms_datetime_format': u'%Y-%m-%d-%H:%M',
+         u'sms_keyword': u'inf',
+         u'sms_separator': u'+',
+         u'title': u'SMS Example',
+         u'type': u'survey'}
+        self.assertEqual(survey.to_json_dict(), expected_dict)

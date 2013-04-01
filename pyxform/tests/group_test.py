@@ -16,6 +16,7 @@ class GroupTests(TestCase):
             u'name': u'group',
             u'title': u'group',
             u'id_string': u'group',
+            u'sms_keyword': u'group',
             u'default_language': u'default',
             u'type': u'survey',
             u'children': [

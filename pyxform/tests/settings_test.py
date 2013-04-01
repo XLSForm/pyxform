@@ -6,6 +6,8 @@ import utils
 
 class SettingsTests(TestCase):
 
+    maxDiff = None
+
     def setUp(self):
         self.path = utils.path_to_text_fixture("settings.xls")
 
@@ -13,6 +15,7 @@ class SettingsTests(TestCase):
         survey_reader = SurveyReader(self.path)
         expected_dict = {
             u'id_string': u'new_id',
+            u'sms_keyword': u'new_id',
             u'default_language': u'default',
             u'name': u'settings',
             u'title': u'My Survey',
@@ -20,12 +23,12 @@ class SettingsTests(TestCase):
             u'children': [
                 {
                     u'name': u'your_name',
-                    u'text': {u'english': u'What is your name?'},
+                    u'label': {u'english': u'What is your name?'},
                     u'type': u'text'
                 },
                 {
                     u'name': u'your_age',
-                    u'text': {u'english': u'How many years old are you?'},
+                    u'label': {u'english': u'How many years old are you?'},
                     u'type': u'integer'
                 },
                 {
@@ -45,8 +48,8 @@ class SettingsTests(TestCase):
                     'name': 'meta',
                     'type': 'group'
                 }
-                ],
-            }
+            ],
+        }
         self.assertEqual(survey_reader.to_json_dict(), expected_dict)
 
     def test_settings(self):
