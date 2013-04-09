@@ -3,6 +3,7 @@ odk_validate.py
 A python wrapper around ODK Validate
 """
 import os
+import re
 import sys
 from subprocess import Popen, PIPE
 import threading
@@ -40,6 +41,18 @@ def run_popen_with_timeout(command, timeout):
 
 
 def _cleanup_errors(error_message):
+    def get_last_item(xpathStr):
+        l = xpathStr.split("/")
+        return l[len(l) - 1]
+
+    def replace_function(match):
+        strmatch = match.group()
+        # eliminate e.g /html/body/select1[@ref=/id_string/elId]/item/value
+        if re.search('([@=]+)', strmatch):
+            return strmatch
+        return "${%s}" % get_last_item(match.group())
+    pattern = "((?:/.*\\w(?:/[a-zAz_])?)/\\w+)"
+    error_message = re.sub(pattern, replace_function, error_message)
     k = []
     for line in error_message.splitlines():
         # has a java filename
@@ -54,7 +67,8 @@ def _cleanup_errors(error_message):
             if line.startswith('java.lang.NullPointerException'):
                 continue
             k.append(line)
-    return u'\n'.join(k)
+    errStr = u'\n'.join(k)
+    return errStr
 
 
 def check_xform(path_to_xform):
