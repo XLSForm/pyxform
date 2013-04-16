@@ -48,11 +48,14 @@ def _cleanup_errors(error_message):
     def replace_function(match):
         strmatch = match.group()
         # eliminate e.g /html/body/select1[@ref=/id_string/elId]/item/value
-        if re.search('([@=]+)', strmatch):
+        # instance('q4')/root/item[...]
+        if strmatch.startswith("/html/body") \
+                or strmatch.startswith("/root/item") \
+                or strmatch.endswith("/item/value"):
             return strmatch
         return "${%s}" % get_last_item(match.group())
-    pattern = "((?:/.*\\w(?:/[a-zAz_])?)/\\w+)"
-    error_message = re.sub(pattern, replace_function, error_message)
+    pattern = "(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)"
+    error_message = re.sub(pattern, replace_function, error_message, flags=re.I)
     k = []
     for line in error_message.splitlines():
         # has a java filename

@@ -24,6 +24,6 @@ Invalid XPath expression [ ${aDemo}  <> 'Inacc']!
 WARNING: choice value [Internationalcalltariffsareattractive] is too long"""
         expectedStr += """; max. suggested length 32 chars
 Problem found at nodeset: """
-        expectedStr += """/html/body/select1[@ref=/some/test1]/item/value
+        expectedStr += """/html/body/select1[@ref=${test1}]/item/value
     With element <value>"""
         self.assertEqual(_cleanup_errors(testStr), expectedStr)
