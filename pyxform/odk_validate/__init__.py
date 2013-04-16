@@ -55,7 +55,8 @@ def _cleanup_errors(error_message):
             return strmatch
         return "${%s}" % get_last_item(match.group())
     pattern = "(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)"
-    error_message = re.sub(pattern, replace_function, error_message, flags=re.I)
+    error_message = re.sub(
+        pattern, replace_function, error_message, flags=re.I)
     k = []
     for line in error_message.splitlines():
         # has a java filename
