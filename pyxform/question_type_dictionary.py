@@ -737,7 +737,7 @@ QUESTION_TYPE_DICT = \
         "bind": {
             "jr:preload": "property", 
             "type": "string", 
-            "jr:preloadParams": ":username"
+            "jr:preloadParams": "username"
         }
     }, 
     "uri:username": {
