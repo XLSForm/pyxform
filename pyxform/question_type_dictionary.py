@@ -733,6 +733,13 @@ QUESTION_TYPE_DICT = \
             "jr:preloadParams": "uri:deviceid"
         }
     }, 
+    "username": {
+        "bind": {
+            "jr:preload": "property", 
+            "type": "string", 
+            "jr:preloadParams": ":username"
+        }
+    }, 
     "uri:username": {
         "bind": {
             "jr:preload": "property", 
@@ -740,9 +747,16 @@ QUESTION_TYPE_DICT = \
             "jr:preloadParams": "uri:username"
         }
     }, 
-    "uri:email": {
+    "email": {
         "bind": {
             "jr:preload": "property", 
+            "type": "string", 
+            "jr:preloadParams": "email"
+        }
+    },
+    "uri:email": {
+        "bind": {
+            "jr:preload": "property",
             "type": "string", 
             "jr:preloadParams": "uri:email"
         }
