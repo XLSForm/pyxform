@@ -51,6 +51,7 @@ def _cleanup_errors(error_message):
         # instance('q4')/root/item[...]
         if strmatch.startswith("/html/body") \
                 or strmatch.startswith("/root/item") \
+                or strmatch.startswith("/html/head/model/bind") \
                 or strmatch.endswith("/item/value"):
             return strmatch
         return "${%s}" % get_last_item(match.group())
