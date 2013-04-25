@@ -63,6 +63,7 @@ survey_header_aliases = {
     u"SMS Allow Media": constants.SMS_ALLOW_MEDIA,
     u"SMS Date Format": constants.SMS_DATE_FORMAT,
     u"SMS DateTime Format": constants.SMS_DATETIME_FORMAT,
+    u"SMS Response": constants.SMS_RESPONSE,
     u"Type": u"type",
     u"List_name": u"list_name",
     u"repeat_count": u"jr:count",

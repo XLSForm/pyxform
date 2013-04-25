@@ -35,6 +35,7 @@ class Survey(Section):
             u"sms_allow_media": bool,
             u"sms_date_format": unicode,
             u"sms_datetime_format": unicode,
+            u"sms_response": unicode,
             u"file_name": unicode,
             u"default_language": unicode,
             u"_translations": dict,
