@@ -32,7 +32,7 @@ class Survey(Section):
             u"id_string": unicode,
             u"sms_keyword": unicode,
             u"sms_separator": unicode,
-            u"sms_allow_medias": bool,
+            u"sms_allow_media": bool,
             u"sms_date_format": unicode,
             u"sms_datetime_format": unicode,
             u"file_name": unicode,
