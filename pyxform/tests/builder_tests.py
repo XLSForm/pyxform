@@ -493,7 +493,7 @@ class BuilderTests(TestCase):
          u'default_language': u'default',
          u'id_string': u'sms_info_form',
          u'name': u'sms_info',
-         u'sms_allow_medias': u'TRUE',
+         u'sms_allow_media': u'TRUE',
          u'sms_date_format': u'%Y-%m-%d',
          u'sms_datetime_format': u'%Y-%m-%d-%H:%M',
          u'sms_keyword': u'inf',
