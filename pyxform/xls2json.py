@@ -58,7 +58,8 @@ settings_header_aliases = {
 survey_header_aliases = {
     u"Label": u"label",
     u"Name": u"name",
-    u"SMS ID": constants.SMS_ID,
+    u"SMS Field": constants.SMS_FIELD,
+    u"SMS Option": constants.SMS_OPTION,
     u"SMS Sepatator": constants.SMS_SEPARATOR,
     u"SMS Allow Media": constants.SMS_ALLOW_MEDIA,
     u"SMS Date Format": constants.SMS_DATE_FORMAT,

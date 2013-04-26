@@ -24,7 +24,8 @@ class SurveyElement(dict):
     # describes this survey element
     FIELDS = {
         u"name": unicode,
-        u"sms_id": unicode,
+        u"sms_field": unicode,
+        u"sms_option": unicode,
         u"label": unicode,
         u"hint": unicode,
         u"default": unicode,
