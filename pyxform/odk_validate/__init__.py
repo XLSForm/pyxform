@@ -59,21 +59,27 @@ def _cleanup_errors(error_message):
     error_message = re.sub(
         pattern, replace_function, error_message, flags=re.I)
     k = []
+    lastline = ''
     for line in error_message.splitlines():
-        # has a java filename
-        has_java_filename = line.find('.java') is not -1
+        # has a java filename (with line number)
+        has_java_filename = line.find('.java:') is not -1
         # starts with '    at java class path or method path'
         is_a_java_method = line.find('\tat') is not -1
-        if not has_java_filename and not is_a_java_method:
+        # is the same as the last line
+        is_duplicate = (line == lastline)
+        lastline = line
+        if not has_java_filename and not is_a_java_method and not is_duplicate:
             # remove java.lang.RuntimeException
             if line.startswith('java.lang.RuntimeException: '):
                 line = line.replace('java.lang.RuntimeException: ', '')
+            # remove org.javarosa.xpath.XPathUnhandledException
+            if line.startswith('org.javarosa.xpath.XPathUnhandledException: '):
+                line = line.replace('org.javarosa.xpath.XPathUnhandledException: ', '')
             # remove java.lang.NullPointerException
             if line.startswith('java.lang.NullPointerException'):
                 continue
             k.append(line)
-    errStr = u'\n'.join(k)
-    return errStr
+    return u'\n'.join(k)
 
 
 def check_xform(path_to_xform):
