@@ -176,7 +176,7 @@ class XFormToDict:
         return json.loads(json_str)
 
 
-def create_survey_xml_to_survey(xml_file, ignore_list=['formhub/uuid']):
+def create_survey_element_from_xml(xml_file, ignore_list=['formhub/uuid']):
     sb = XFormToDictBuilder(xml_file)
     return sb.survey()
 
