@@ -434,7 +434,10 @@ class XFormToDictBuilder:
     def _get_question_params_from_bindings(self, ref):
         for item in self.bindings:
             if item['nodeset'] == ref:
-                self._bind_list.remove(item)
+                try:
+                    self._bind_list.remove(item)
+                except ValueError:
+                    pass
                 rs = {}
                 for k, v in item.iteritems():
                     if k == 'nodeset':
