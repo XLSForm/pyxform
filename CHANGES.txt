@@ -17,3 +17,4 @@ v0.9.15, 2013 04 26
     -- missing preload fields: username and email
     -- typo fixes
 v0.9.16, 2013 04 26 -- changed sms field names
+v0.9.17, 2013 04 26 -- experimental xform to json
