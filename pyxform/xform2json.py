@@ -290,6 +290,11 @@ class XFormToDictBuilder:
             question['__order'] = self._get_question_order(ref)
             if 'calculate' in item:
                 question['type'] = 'calculate'
+            if ref.split('/').__len__() == 3:
+                # just append on root node, has no group
+                question['ref'] = ref
+                self.children.append(question)
+                continue
             for child in self.children:
                 if child['ref'] == parent_ref:
                     question['ref'] = ref
@@ -305,6 +310,8 @@ class XFormToDictBuilder:
                 new_ref = u'/'.join(ref.split('/')[2:])
                 root_ref = u'/'.join(ref.split('/')[:2])
                 q = self._get_item_func(root_ref, new_ref, item)
+                if 'type' not in q and 'type' in question:
+                    q.update(question)
                 if q['type'] == 'group' and q['name'] == 'meta':
                     q['control'] = {'bodyless': True}
                     q['__order'] = self._get_question_order(ref)
