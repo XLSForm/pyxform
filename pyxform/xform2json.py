@@ -594,7 +594,7 @@ class XFormToDictBuilder:
 
         def replace_function(match):
             return "${%s}" % get_last_item(match.group())
-        pattern = "( /[a-z0-9\-_]+(?:/[a-z0-9\-_ ]+)+)"
+        pattern = "( /[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+ )"
         text = re.sub(
             pattern, replace_function, text, flags=re.I)
         pattern = "(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)"
