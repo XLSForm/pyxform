@@ -56,8 +56,9 @@ def _cleanup_errors(error_message):
             return strmatch
         return "${%s}" % get_last_item(match.group())
     pattern = "(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)"
-    error_message = re.sub(
-        pattern, replace_function, error_message, flags=re.I)
+    #moving flags into compile for python 2.6 compat
+    error_message = re.compile(pattern, flags=re.I).sub(replace_function,
+        error_message)
     k = []
     lastline = ''
     for line in error_message.splitlines():

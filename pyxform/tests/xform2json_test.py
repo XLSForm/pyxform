@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest2 import TestCase
 from pyxform.builder import create_survey_from_path
 from pyxform.xform2json import create_survey_element_from_xml
 import os

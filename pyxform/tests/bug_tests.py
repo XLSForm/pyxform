@@ -213,6 +213,15 @@ class MissingOrBadlyNamedChoicesTest(unittest.TestCase):
         with self.assertRaises(pyxform.errors.PyXFormError):
             pyxform.xls2json.workbook_to_json(workbook_dict)
 
+class BadChoicesSheetHeaders(unittest.TestCase):
+
+    def runTest(self):
+        filename = "spaces_in_choices_header.xls"
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
+        warnings = []
+        pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
+        #print '\n'.join(warnings)
+        self.assertEquals(len(warnings), 1, "Found " + str(len(warnings)) + " warnings")
 
 class MissingHeaderColumnsTest(unittest.TestCase):
     def test_choices_headers_missing(self):

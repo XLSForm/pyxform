@@ -471,7 +471,23 @@ def workbook_to_json(
                 warnings.append(
                     "On the choices sheet there is a option with no label. "
                     + info)
-
+            # chrislrobert's fix for a cryptic error message:
+            # see: https://code.google.com/p/opendatakit/issues/detail?id=833&start=200
+            for headername in option.keys():
+                # Using warnings and removing the bad columns
+                # instead of throwing errors because some forms
+                # use choices column headers for notes.
+                if ' ' in headername:
+                    warnings.append("On the choices sheet there is " +
+                                    "a column (\"" + 
+                                    headername + 
+                                    "\") with an illegal header. " +
+                                    "Headers cannot include spaces.")
+                    del option[headername]
+                elif headername == '':
+                    warnings.append("On the choices sheet there is a value" + 
+                                    " in a column with no header.")
+                    del option[headername]
     ########### Survey sheet ###########
     if constants.SURVEY not in workbook_dict:
         raise PyXFormError(

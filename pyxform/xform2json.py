@@ -594,12 +594,11 @@ class XFormToDictBuilder:
 
         def replace_function(match):
             return "${%s}" % get_last_item(match.group())
+        #moving re flags into compile for python 2.6 compat
         pattern = "( /[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+ )"
-        text = re.sub(
-            pattern, replace_function, text, flags=re.I)
+        text = re.compile(pattern, flags=re.I).sub(replace_function, text)
         pattern = "(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)"
-        text = re.sub(
-            pattern, replace_function, text, flags=re.I)
+        text = re.compile(pattern, flags=re.I).sub(replace_function, text)
         return text
 
 
