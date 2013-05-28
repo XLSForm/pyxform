@@ -27,8 +27,23 @@ class Section(SurveyElement):
         """
         result = node(self.name, **kwargs)
         for child in self.children:
-            result.appendChild(child.xml_instance())
+            if child.get(u"flat"):
+                for grandchild in child.xml_instance_array():
+                    result.appendChild(grandchild)
+            else:
+                result.appendChild(child.xml_instance())
         return result
+
+    def xml_instance_array(self, **kwargs):
+        """
+        This method is used for generating flat instances.
+        """
+        for child in self.children:
+            if child.get(u"flat"):
+                for grandchild in child.xml_instance_array():
+                    yield grandchild
+            else:
+                yield child.xml_instance()
 
     def xml_control(self):
         """
@@ -71,6 +86,7 @@ class RepeatingSection(Section):
                 ref=self.get_xpath()
                 )
         return node(u"group", repeat_node, ref=self.get_xpath())
+
     #I'm anal about matching function signatures when overriding a function, but there's no reason for kwargs to be an argument
     def xml_instance(self, **kwargs):
         kwargs = {"jr:template": ""} #It might make more sense to add this as a child on initialization
@@ -95,7 +111,10 @@ class GroupedSection(Section):
             return None
             
         children = []
-        attrs = { 'ref':self.get_xpath() }
+        attrs = {}
+        
+        if not self.get('flat'):
+            attrs['ref'] = self.get_xpath()
         
         if 'label' in self and len(self['label']) > 0:
             children.append(self.xml_label())

@@ -331,6 +331,38 @@ def has_double_colon(workbook_dict):
                     return True
     return False
 
+def add_flat_annotations(prompt_list, parent_relevant = '', name_prefix = ''):
+    """
+    This is a helper function for generating flat instances 
+    for the benefit of ODK Tables.
+    It makes the following modifications to the survey:
+    X Renames prompts with their group name as a prefix
+      (Decided against chaning the names because it breaks formulas)
+      (However, there could be namespace collisions now.)
+    - "and"s group relevance formulas onto that of their children.
+    - Adds a flat property to groups
+      The flat property is used in the json2xform code
+    """
+    for prompt in prompt_list:
+        prompt_relevant = prompt.get('bind', {}).get('relevant', '')
+        new_relevant = ''
+        if parent_relevant != '':
+            new_relevant += parent_relevant
+            if prompt_relevant != '':
+                new_relevant += ' and (' + prompt_relevant + ')'
+        elif prompt_relevant != '':
+            new_relevant = prompt_relevant
+        children = prompt.get(constants.CHILDREN)
+        if children:
+            prompt['flat'] = True
+            add_flat_annotations(children, new_relevant,
+                                 name_prefix + '_' + prompt['name'])
+        else:
+            if new_relevant != '':
+                prompt['bind'] = prompt.get('bind', {})
+                prompt['bind']['relevant'] = parent_relevant
+            #if name_prefix != '':
+            #    prompt['name'] = name_prefix + prompt['name']
 
 def workbook_to_json(
         workbook_dict, form_name=None,
@@ -848,6 +880,11 @@ def workbook_to_json(
 
     if len(stack) != 1:
         raise PyXFormError("Unmatched begin statement: " + str(stack[-1][0]))
+
+
+    if settings.get('flat', False):
+        print "Generating flattened instance..."
+        add_flat_annotations(stack[0][1])
 
     meta_children = []
 
