@@ -887,7 +887,7 @@ def workbook_to_json(
 
 
     if settings.get('flat', False):
-        print "Generating flattened instance..."
+        #print "Generating flattened instance..."
         add_flat_annotations(stack[0][1])
 
     meta_children = []
