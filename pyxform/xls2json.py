@@ -492,6 +492,7 @@ def workbook_to_json(
 
     choices = combined_lists
     #Make sure all the options have the required properties:
+    warnedabout = set()
     for list_name, options in choices.items():
         for option in options:
             if 'name' not in option:
@@ -510,11 +511,13 @@ def workbook_to_json(
                 # instead of throwing errors because some forms
                 # use choices column headers for notes.
                 if ' ' in headername:
-                    warnings.append("On the choices sheet there is " +
-                                    "a column (\"" + 
-                                    headername + 
-                                    "\") with an illegal header. " +
-                                    "Headers cannot include spaces.")
+                    if headername not in warnedabout:
+                        warnedabout.add(headername)
+                        warnings.append("On the choices sheet there is " +
+                                        "a column (\"" + 
+                                        headername + 
+                                        "\") with an illegal header. " +
+                                        "Headers cannot include spaces.")
                     del option[headername]
                 elif headername == '':
                     warnings.append("On the choices sheet there is a value" + 
@@ -629,9 +632,9 @@ def workbook_to_json(
             if row['type'] == 'note':
                 #autogenerate names for notes without them
                 row['name'] = "generated_note_name_" + str(row_number)
-            elif 'group' in row['type'].lower():
-                #autogenerate names for groups without them
-                row['name'] = "generated_group_name_" + str(row_number)
+            # elif 'group' in row['type'].lower():
+            #     # autogenerate names for groups without them
+            #     row['name'] = "generated_group_name_" + str(row_number)
             else:
                 raise PyXFormError(rowFormatString % row_number +
                                    " Question or group with no name.")

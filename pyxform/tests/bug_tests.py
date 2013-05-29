@@ -220,8 +220,8 @@ class BadChoicesSheetHeaders(unittest.TestCase):
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
         warnings = []
         pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
-        #print '\n'.join(warnings)
-        self.assertEquals(len(warnings), 1, "Found " + str(len(warnings)) + " warnings")
+        self.assertEquals(len(warnings), 2,
+                          "Found " + str(len(warnings)) + " warnings")
 
 class MissingHeaderColumnsTest(unittest.TestCase):
     def test_choices_headers_missing(self):
