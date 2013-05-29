@@ -46,7 +46,7 @@ settings_header_aliases = {
     u"form_id": constants.ID_STRING,
     u"sms_keyword": constants.SMS_KEYWORD,
     u"sms_separator": constants.SMS_SEPARATOR,
-    u"sms_allow_medias": constants.SMS_ALLOW_MEDIAS,
+    u"sms_allow_media": constants.SMS_ALLOW_MEDIA,
     u"sms_date_format": constants.SMS_DATE_FORMAT,
     u"sms_datetime_format": constants.SMS_DATETIME_FORMAT,
     u"set form id": constants.ID_STRING,
@@ -58,11 +58,13 @@ settings_header_aliases = {
 survey_header_aliases = {
     u"Label": u"label",
     u"Name": u"name",
-    u"SMS ID": constants.SMS_ID,
+    u"SMS Field": constants.SMS_FIELD,
+    u"SMS Option": constants.SMS_OPTION,
     u"SMS Sepatator": constants.SMS_SEPARATOR,
-    u"SMS Allow Medias": constants.SMS_ALLOW_MEDIAS,
+    u"SMS Allow Media": constants.SMS_ALLOW_MEDIA,
     u"SMS Date Format": constants.SMS_DATE_FORMAT,
     u"SMS DateTime Format": constants.SMS_DATETIME_FORMAT,
+    u"SMS Response": constants.SMS_RESPONSE,
     u"Type": u"type",
     u"List_name": u"list_name",
     u"repeat_count": u"jr:count",
@@ -329,6 +331,38 @@ def has_double_colon(workbook_dict):
                     return True
     return False
 
+def add_flat_annotations(prompt_list, parent_relevant = '', name_prefix = ''):
+    """
+    This is a helper function for generating flat instances 
+    for the benefit of ODK Tables.
+    It makes the following modifications to the survey:
+    X Renames prompts with their group name as a prefix
+      (Decided against chaning the names because it breaks formulas)
+      (However, there could be namespace collisions now.)
+    - "and"s group relevance formulas onto that of their children.
+    - Adds a flat property to groups
+      The flat property is used in the json2xform code
+    """
+    for prompt in prompt_list:
+        prompt_relevant = prompt.get('bind', {}).get('relevant', '')
+        new_relevant = ''
+        if parent_relevant != '':
+            new_relevant += parent_relevant
+            if prompt_relevant != '':
+                new_relevant += ' and (' + prompt_relevant + ')'
+        elif prompt_relevant != '':
+            new_relevant = prompt_relevant
+        children = prompt.get(constants.CHILDREN)
+        if children:
+            prompt['flat'] = True
+            add_flat_annotations(children, new_relevant,
+                                 name_prefix + '_' + prompt['name'])
+        else:
+            if new_relevant != '':
+                prompt['bind'] = prompt.get('bind', {})
+                prompt['bind']['relevant'] = parent_relevant
+            #if name_prefix != '':
+            #    prompt['name'] = name_prefix + prompt['name']
 
 def workbook_to_json(
         workbook_dict, form_name=None,
@@ -469,7 +503,23 @@ def workbook_to_json(
                 warnings.append(
                     "On the choices sheet there is a option with no label. "
                     + info)
-
+            # chrislrobert's fix for a cryptic error message:
+            # see: https://code.google.com/p/opendatakit/issues/detail?id=833&start=200
+            for headername in option.keys():
+                # Using warnings and removing the bad columns
+                # instead of throwing errors because some forms
+                # use choices column headers for notes.
+                if ' ' in headername:
+                    warnings.append("On the choices sheet there is " +
+                                    "a column (\"" + 
+                                    headername + 
+                                    "\") with an illegal header. " +
+                                    "Headers cannot include spaces.")
+                    del option[headername]
+                elif headername == '':
+                    warnings.append("On the choices sheet there is a value" + 
+                                    " in a column with no header.")
+                    del option[headername]
     ########### Survey sheet ###########
     if constants.SURVEY not in workbook_dict:
         raise PyXFormError(
@@ -830,6 +880,11 @@ def workbook_to_json(
 
     if len(stack) != 1:
         raise PyXFormError("Unmatched begin statement: " + str(stack[-1][0]))
+
+
+    if settings.get('flat', False):
+        print "Generating flattened instance..."
+        add_flat_annotations(stack[0][1])
 
     meta_children = []
 

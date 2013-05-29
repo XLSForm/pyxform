@@ -13,3 +13,8 @@ v0.9.12, 2013 03 23
     -- support for rows column
 v0.9.13, 2013 03 26 -- remove java elements in exception during odk validate.
 v0.9.14, 2013 03 27 -- add support for sms fields
+v0.9.15, 2013 04 26
+    -- missing preload fields: username and email
+    -- typo fixes
+v0.9.16, 2013 04 26 -- changed sms field names
+v0.9.17, 2013 04 26 -- experimental xform to json

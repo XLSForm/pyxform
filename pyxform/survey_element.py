@@ -24,7 +24,8 @@ class SurveyElement(dict):
     # describes this survey element
     FIELDS = {
         u"name": unicode,
-        u"sms_id": unicode,
+        u"sms_field": unicode,
+        u"sms_option": unicode,
         u"label": unicode,
         u"hint": unicode,
         u"default": unicode,
@@ -39,7 +40,8 @@ class SurveyElement(dict):
         u"children": list,
         u"itemset": unicode,
         u"choice_filter": unicode,
-        u"autoplay": unicode
+        u"autoplay": unicode,
+        u"flat": lambda: False,
     }
 
     def _default(self):
@@ -138,7 +140,12 @@ class SurveyElement(dict):
         while current_element.parent:
             current_element = current_element.parent
             result = [current_element] + result
-        return result
+        #For some reason the root element has a True flat property...
+        output = [result[0]]
+        for item in result[1:]:
+            if not item.get(u"flat"):
+                output.append(item)
+        return output
 
     def get_root(self):
         return self.get_lineage()[0]
@@ -283,16 +290,16 @@ class SurveyElement(dict):
         Return the binding for this survey element.
         """
         survey = self.get_root()
-        d = self.bind.copy()
-        if d:
-            for k, v in d.items():
+        bind_dict = self.bind.copy()
+        if bind_dict:
+            for k, v in bind_dict.items():
                 #I think all the binding conversions should be happening on the xls2json side.
                 if hashable(v) and v in self.binding_conversions:
                     v = self.binding_conversions[v]
                 if k == u'jr:constraintMsg' and type(v) is dict:
                     v = "jr:itext('%s')" % self._translation_path(u'jr:constraintMsg')
-                d[k] = survey.insert_xpaths(v)
-            return node(u"bind", nodeset=self.get_xpath(), **d)
+                bind_dict[k] = survey.insert_xpaths(v)
+            return node(u"bind", nodeset=self.get_xpath(), **bind_dict)
         return None
 
     def xml_bindings(self):
