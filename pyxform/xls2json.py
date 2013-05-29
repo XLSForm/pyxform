@@ -626,11 +626,12 @@ def workbook_to_json(
 
         #Make sure the row has a valid name
         if not constants.NAME in row:
-            # TODO: It could be slick if had nameless groups generate
-            #       a flat model with only a body element.
             if row['type'] == 'note':
                 #autogenerate names for notes without them
                 row['name'] = "generated_note_name_" + str(row_number)
+            elif 'group' in row['type'].lower():
+                #autogenerate names for groups without them
+                row['name'] = "generated_group_name_" + str(row_number)
             else:
                 raise PyXFormError(rowFormatString % row_number +
                                    " Question or group with no name.")
