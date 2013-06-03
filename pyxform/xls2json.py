@@ -360,7 +360,7 @@ def add_flat_annotations(prompt_list, parent_relevant = '', name_prefix = ''):
         else:
             if new_relevant != '':
                 prompt['bind'] = prompt.get('bind', {})
-                prompt['bind']['relevant'] = parent_relevant
+                prompt['bind']['relevant'] = new_relevant
             #if name_prefix != '':
             #    prompt['name'] = name_prefix + prompt['name']
 
