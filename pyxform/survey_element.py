@@ -291,6 +291,9 @@ class SurveyElement(dict):
         """
         survey = self.get_root()
         bind_dict = self.bind.copy()
+        if self.get('flat'):
+            # Don't generate bind element for flat groups.
+            return None
         if bind_dict:
             for k, v in bind_dict.items():
                 #I think all the binding conversions should be happening on the xls2json side.

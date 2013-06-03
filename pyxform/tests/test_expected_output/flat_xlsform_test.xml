@@ -658,7 +658,6 @@
       <bind nodeset="/flat_xlsform_test/skip_to_end" type="select1"/>
       <bind nodeset="/flat_xlsform_test/email_note" readonly="true()" relevant="regex( /flat_xlsform_test/address , '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}')" type="string"/>
       <bind nodeset="/flat_xlsform_test/number_label" readonly="true()" type="string"/>
-      <bind nodeset="/flat_xlsform_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))"/>
       <bind nodeset="/flat_xlsform_test/my_name" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind nodeset="/flat_xlsform_test/invalid_variable" readonly="true()" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind nodeset="/flat_xlsform_test/address" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
