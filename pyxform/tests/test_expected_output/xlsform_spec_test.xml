@@ -689,7 +689,7 @@
       <bind nodeset="/xlsform_spec_test/everything/a_integer" type="int"/>
       <bind constraint=". &lt;=  /xlsform_spec_test/everything/a_integer " nodeset="/xlsform_spec_test/everything/a_decimal" type="decimal"/>
       <bind calculate="2" nodeset="/xlsform_spec_test/everything/repeat_test_count" readonly="true()" type="string"/>
-      <bind nodeset="/xlsform_spec_test/everything/repeat_test/group_test/required_text" required="true()" type="string"/>
+      <bind jr:requiredMsg="Custom required message." nodeset="/xlsform_spec_test/everything/repeat_test/group_test/required_text" required="true()" type="string"/>
       <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="jr:itext('/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:jr:constraintMsg')" nodeset="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test" required="false()" type="select"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/labeled_select_group/label-test" type="select1"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/labeled_select_group/list-nolabel-test" required="true()" type="select1"/>
@@ -725,7 +725,7 @@
       <bind nodeset="/xlsform_spec_test/everything/phonenumber_test_output" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/_1" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/FALSE" type="string"/>
-      <bind nodeset="/xlsform_spec_test/launch" type="int"/>
+      <bind jr:noAppErrorString="Sorry, app does not exist." nodeset="/xlsform_spec_test/launch" type="int"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/xlsform_spec_test/meta/instanceID" readonly="true()" type="string"/>
       <bind calculate=" /xlsform_spec_test/everything/my_name " nodeset="/xlsform_spec_test/meta/instanceName" type="string"/>
     </model>

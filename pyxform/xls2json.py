@@ -92,8 +92,10 @@ survey_header_aliases = {
     u"autoplay": u"control::autoplay",
     u"rows": u"control::rows",
     #New elements that have to go into itext elements:
-    #u"noAppErrorString" : u"itext::noAppErrorString",
-    #u"requiredMsg" : u"itext::requiredMsg",
+    u"noAppErrorString" : u"bind::jr:noAppErrorString",
+    u"no_app_error_string" : u"bind::jr:noAppErrorString",
+    u"requiredMsg" : u"bind::jr:requiredMsg",
+    u"required_message" : u"bind::jr:requiredMsg",
 }
 list_header_aliases = {
     u"caption": constants.LABEL,

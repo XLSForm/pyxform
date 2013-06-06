@@ -215,6 +215,22 @@ class SurveyElement(dict):
                         'lang': lang,
                         'text': text
                     }
+            requiredMsg = bind_dict.get(u'jr:requiredMsg')
+            if type(requiredMsg) is dict:
+                for lang, text in requiredMsg.items():
+                    yield {
+                        'path': self._translation_path(u'jr:requiredMsg'),
+                        'lang': lang,
+                        'text': text
+                    }
+            noAppErrorString = bind_dict.get(u'jr:noAppErrorString')
+            if type(noAppErrorString) is dict:
+                for lang, text in noAppErrorString.items():
+                    yield {
+                        'path': self._translation_path(u'jr:noAppErrorString'),
+                        'lang': lang,
+                        'text': text
+                    }
 
         for display_element in [u'label', u'hint']:
             label_or_hint = self[display_element]
@@ -301,6 +317,10 @@ class SurveyElement(dict):
                     v = self.binding_conversions[v]
                 if k == u'jr:constraintMsg' and type(v) is dict:
                     v = "jr:itext('%s')" % self._translation_path(u'jr:constraintMsg')
+                if k == u'jr:requiredMsg' and type(v) is dict:
+                    v = "jr:itext('%s')" % self._translation_path(u'jr:requiredMsg')
+                if k == u'jr:noAppErrorString' and type(v) is dict:
+                    v = "jr:itext('%s')" % self._translation_path(u'jr:noAppErrorString')
                 bind_dict[k] = survey.insert_xpaths(v)
             return node(u"bind", nodeset=self.get_xpath(), **bind_dict)
         return None
