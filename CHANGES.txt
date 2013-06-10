@@ -18,3 +18,4 @@ v0.9.15, 2013 04 26
     -- typo fixes
 v0.9.16, 2013 04 26 -- changed sms field names
 v0.9.17, 2013 04 26 -- experimental xform to json
+v0.9.18, 2013 06 10 -- col header warnings + adding instance flattening tag
