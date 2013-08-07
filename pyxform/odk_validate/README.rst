@@ -1,6 +1,6 @@
 pyxform_validate
 ================
-A Python Wrapper for ODK Validate 1.2.2
+A Python Wrapper for ODK Validate 1.4
 
 How to use:
 -----------
