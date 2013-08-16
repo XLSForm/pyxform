@@ -452,7 +452,12 @@ class XFormToDictBuilder:
                     if k == 'type':
                         v = self._get_question_type(v)
                     if k in ['relevant', 'required', 'constraint',
-                             'constraintMsg', 'readonly', 'calculate']:
+                             'constraintMsg', 'readonly', 'calculate',
+                             'noAppErrorString', 'requiredMsg']:
+                        if k == 'noAppErrorString':
+                            k = 'jr:noAppErrorString'
+                        if k == 'requiredMsg':
+                            k = 'jr:requiredMsg'
                         if k == 'constraintMsg':
                             k = "jr:constraintMsg"
                             v = self._get_constraintMsg(v)
