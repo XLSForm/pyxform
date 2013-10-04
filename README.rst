@@ -58,11 +58,12 @@ To check out the documentation for pyxform do the following::
 
 	make html
 
-Chage Log
+Change Log
 =========
 (since `v0.89
 <https://github.com/modilabs/pyxform/tree/39097db3da789fef9e33a6680df1e912dd29c5db>`_)
 
+- Update to ODK Validate 1.4 circa ODK Collect 1.4 rev 1038 (javarosa-libraries-2013-09-30.jar)
 - Added support for submission_url and public_key settings.
 - Added alternative syntax (\::) for grouping headers.
 - Added new example/test spreadsheets: (xlsform_spec_test.xls, calculate.xls, warnings.xls)
