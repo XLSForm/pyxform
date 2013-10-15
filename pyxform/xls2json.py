@@ -333,6 +333,7 @@ def has_double_colon(workbook_dict):
                     return True
     return False
 
+
 def add_flat_annotations(prompt_list, parent_relevant = '', name_prefix = ''):
     """
     This is a helper function for generating flat instances 
@@ -366,6 +367,7 @@ def add_flat_annotations(prompt_list, parent_relevant = '', name_prefix = ''):
                 prompt['bind']['relevant'] = new_relevant
             #if name_prefix != '':
             #    prompt['name'] = name_prefix + prompt['name']
+
 
 def workbook_to_json(
         workbook_dict, form_name=None,

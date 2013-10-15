@@ -1,9 +1,10 @@
+import re
 from lxml import etree
 from formencode.doctest_xml_compare import xml_compare
 from unittest import TestCase
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
-from pyxform import Survey, InputQuestion
+from pyxform import Survey, InputQuestion, constants
 from pyxform.errors import PyXFormError
 import utils
 import os
@@ -501,3 +502,70 @@ class BuilderTests(TestCase):
          u'title': u'SMS Example',
          u'type': u'survey'}
         self.assertEqual(survey.to_json_dict(), expected_dict)
+
+    def test_style_column(self):
+        survey = utils.create_survey_from_fixture(
+            "style_settings", filetype=FIXTURE_FILETYPE)
+        expected_dict = {
+            u'children': [
+                {
+                    u'label': {u'english': u'What is your name?'},
+                    u'name': u'your_name',
+                    u'type': u'text'
+                },
+                {
+                    u'label': {u'english': u'How many years old are you?'},
+                    u'name': u'your_age',
+                    u'type': u'integer'
+                },
+                {
+                    u'children': [
+                        {
+                            u'bind': {
+                                'calculate': "concat('uuid:', uuid())",
+                                'readonly': 'true()'
+                            },
+                            u'name': 'instanceID',
+                            u'type': 'calculate'
+                        }
+                    ],
+                    u'control': {'bodyless': True},
+                    u'name': 'meta',
+                    u'type': u'group'
+                }
+            ],
+            u'default_language': u'default',
+            u'id_string': u'new_id',
+            u'name': u'style_settings',
+            u'sms_keyword': u'new_id',
+            u'style': u'ltr',
+            u'title': u'My Survey',
+            u'type': u'survey',
+        }
+        self.assertEqual(survey.to_json_dict(), expected_dict)
+
+    STRIP_NS_FROM_TAG_RE = re.compile(r'\{.+\}')
+
+    def test_style_not_added_to_body_if_not_present(self):
+        survey = utils.create_survey_from_fixture(
+            "settings", filetype=FIXTURE_FILETYPE)
+        xml = survey.to_xml()
+        # find the body tag
+        root_elm = etree.fromstring(xml)
+        body_elms = filter(
+            lambda e: self.STRIP_NS_FROM_TAG_RE.sub('', e.tag) == 'body',
+            [c for c in root_elm.getchildren()])
+        self.assertEqual(len(body_elms), 1)
+        self.assertIsNone(body_elms[0].get(constants.STYLE))
+
+    def test_style_added_to_body_if_present(self):
+        survey = utils.create_survey_from_fixture(
+            "style_settings", filetype=FIXTURE_FILETYPE)
+        xml = survey.to_xml()
+        # find the body tag
+        root_elm = etree.fromstring(xml)
+        body_elms = filter(
+            lambda e: self.STRIP_NS_FROM_TAG_RE.sub('', e.tag) == 'body',
+            [c for c in root_elm.getchildren()])
+        self.assertEqual(len(body_elms), 1)
+        self.assertEqual(body_elms[0].get(constants.STYLE), 'ltr')
