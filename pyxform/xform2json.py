@@ -197,7 +197,7 @@ class XFormToDictBuilder:
 
         assert 'html' in doc_as_dict
         assert 'body' in doc_as_dict['html']
-        assert 'head'in doc_as_dict['html']
+        assert 'head' in doc_as_dict['html']
         assert 'model' in doc_as_dict['html']['head']
         assert 'title' in doc_as_dict['html']['head']
         assert 'bind' in doc_as_dict['html']['head']['model']
@@ -351,11 +351,12 @@ class XFormToDictBuilder:
     def _get_question_from_object(self, obj, type=None):
         ref = None
         try:
-            assert 'ref' in obj
             ref = obj['ref']
-        except AssertionError:
-            assert 'nodeset' in obj
-            ref = obj['nodeset']
+        except KeyError:
+            try:
+                ref = obj['nodeset']
+            except KeyError:
+                raise TypeError('cannot find "ref" or "nodeset" in {}'.format(repr(obj)))
         question = {'ref': ref, '__order': self._get_question_order(ref)}
         question['name'] = self._get_name_from_ref(ref)
         if 'hint' in obj:
