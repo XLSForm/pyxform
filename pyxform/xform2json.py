@@ -499,10 +499,31 @@ class XFormToDictBuilder:
 
     def _get_label(self, label_obj, key='label'):
         if isinstance(label_obj, dict):
-            ref = label_obj['ref'].replace(
-                'jr:itext(\'', '').replace('\')', '')
-            return self._get_text_from_translation(ref, key)
+            try:
+                ref = label_obj['ref'].replace(
+                    'jr:itext(\'', '').replace('\')', '')
+            except KeyError:
+                return key, self._get_output_text(label_obj)
+            else:
+                return self._get_text_from_translation(ref, key)
         return key, label_obj
+
+    def _get_output_text(self, value):
+        text = ''
+        if 'output' in value and '_text' in value:
+            v = [value['_text']]
+            v.append(self._get_bracketed_name(
+                value['output']['value']))
+            text = u' '.join(v)
+            if 'tail' in value['output']:
+                text = u''.join(
+                    [text, value['output']['tail']])
+        elif 'output' in value and '_text' not in value:
+            text = self._get_bracketed_name(
+                value['output']['value'])
+        else:
+            return value
+        return text
 
     def _get_text_from_translation(self, ref, key='label'):
         label = {}
@@ -515,17 +536,8 @@ class XFormToDictBuilder:
                 if l['id'] == ref:
                     text = value = l['value']
                     if isinstance(value, dict):
-                        if 'output' in value and '_text' in value:
-                            v = [value['_text']]
-                            v.append(self._get_bracketed_name(
-                                value['output']['value']))
-                            text = u' '.join(v)
-                            if 'tail' in value['output']:
-                                text = u''.join(
-                                    [text, value['output']['tail']])
-                        elif 'output' in value and '_text' not in value:
-                            text = self._get_bracketed_name(
-                                value['output']['value'])
+                        if 'output' in value:
+                            text = self._get_output_text(value)
                         if 'form' in value and '_text' in value:
                             key = u'media'
                             v = value['_text']
