@@ -45,7 +45,7 @@ class Survey(Section):
             u"instance_xmlns": unicode,
             u"version": unicode,
             u"choices": dict,
-            u"style": unicode
+            u"class": unicode
         }
     )
 
@@ -68,8 +68,10 @@ class Survey(Section):
         self.validate()
         self._setup_xpath_dictionary()
         body_kwargs = {}
-        if hasattr(self, constants.STYLE) and self.style:
-            body_kwargs[constants.STYLE] = self.style
+        if hasattr(self, constants.CLASS_ATTR) and getattr(
+                self, constants.CLASS_ATTR):
+            body_kwargs[constants.CLASS_ATTR] = getattr(
+                self, constants.CLASS_ATTR)
         return node(u"h:html",
                     node(u"h:head",
                          node(u"h:title", self.title),

@@ -538,7 +538,7 @@ class BuilderTests(TestCase):
             u'id_string': u'new_id',
             u'name': u'style_settings',
             u'sms_keyword': u'new_id',
-            u'style': u'ltr',
+            u'class': u'ltr',
             u'title': u'My Survey',
             u'type': u'survey',
         }
@@ -556,7 +556,7 @@ class BuilderTests(TestCase):
             lambda e: self.STRIP_NS_FROM_TAG_RE.sub('', e.tag) == 'body',
             [c for c in root_elm.getchildren()])
         self.assertEqual(len(body_elms), 1)
-        self.assertIsNone(body_elms[0].get(constants.STYLE))
+        self.assertIsNone(body_elms[0].get(constants.CLASS_ATTR))
 
     def test_style_added_to_body_if_present(self):
         survey = utils.create_survey_from_fixture(
@@ -568,4 +568,4 @@ class BuilderTests(TestCase):
             lambda e: self.STRIP_NS_FROM_TAG_RE.sub('', e.tag) == 'body',
             [c for c in root_elm.getchildren()])
         self.assertEqual(len(body_elms), 1)
-        self.assertEqual(body_elms[0].get(constants.STYLE), 'ltr')
+        self.assertEqual(body_elms[0].get(constants.CLASS_ATTR), 'ltr')
