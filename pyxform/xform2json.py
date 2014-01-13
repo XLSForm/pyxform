@@ -161,10 +161,11 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
 class XFormToDict:
     def __init__(self, root):
         if isinstance(root, basestring):
+            parser = etree.XMLParser(remove_comments=True)
             if os.path.exists(root):
-                self._root = etree.parse(root).getroot()
+                self._root = etree.parse(root, parser=parser).getroot()
             else:
-                self._root = etree.fromstring(root)
+                self._root = etree.fromstring(root, parser)
             self._dict = ConvertXmlToDict(self._root)
         elif not isinstance(root, etree.Element):
             raise TypeError('Expected ElementTree.Element or file path string')
