@@ -25,3 +25,4 @@ v0.9.19, 2014 01 13
     -- xform2json: convert lable obj with no reference/translation to text
     -- xform2json: set id_string from model/instance/id path
     -- xform2json: remove comments when parsing xml file
+v0.9.20, 2014 01 27 -- use style column to defined body class attribute
