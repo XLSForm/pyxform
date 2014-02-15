@@ -198,3 +198,14 @@ class CsvReaderEquivalencyTest(TestCase):
             csv_inp = csv_to_dict(csv_path)
             self.maxDiff = None
             self.assertEqual(csv_inp, xls_inp)
+
+class UnicodeCsvTest(TestCase):
+    def test_a_unicode_csv_works(self):
+        """
+        Simply tests that xls2json_backends.csv_to_dict does not have a problem
+        with a csv with unicode characters
+        """
+        utf_csv_path = utils.path_to_text_fixture("utf_csv.csv")
+        dict_value = csv_to_dict(utf_csv_path)
+        self.assertTrue("\ud83c" in json.dumps(dict_value))
+

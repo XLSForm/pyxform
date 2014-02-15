@@ -358,7 +358,8 @@ def csv_to_dict(path_or_file):
     reader = csv.reader(csv_data.split("\n"))
     sheet_name = None
     current_headers = None
-    for row in reader:
+    for ascii_row in reader:
+        row = [unicode(cell, "utf-8") for cell in ascii_row]
         survey_or_choices, content = first_column_as_sheet_name(row)
         if survey_or_choices is not None:
             sheet_name = survey_or_choices
