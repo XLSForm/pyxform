@@ -7,140 +7,10 @@ import sys
 import codecs
 import os
 import constants
+import aliases
 from errors import PyXFormError
 from xls2json_backends import xls_to_dict, csv_to_dict
 from utils import is_valid_xml_tag
-
-####### STATIC DATA #######
-
-#Aliases:
-#Ideally aliases should resolve to elements in the json form schema
-
-#select, control and settings alias keys used for parsing,
-#which is why self mapped keys are necessary.
-control_aliases = {
-    u"group": constants.GROUP,
-    u"lgroup": constants.REPEAT,
-    u"repeat": constants.REPEAT,
-    u"loop": constants.LOOP,
-    u"looped group": constants.REPEAT
-}
-select_aliases = {
-    u"add select one prompt using": constants.SELECT_ONE,
-    u"add select multiple prompt using": constants.SELECT_ALL_THAT_APPLY,
-    u"select all that apply from": constants.SELECT_ALL_THAT_APPLY,
-    u"select one from": constants.SELECT_ONE,
-    u"select1": constants.SELECT_ONE,
-    u"select_one": constants.SELECT_ONE,
-    u"select one": constants.SELECT_ONE,
-    u"select_multiple": constants.SELECT_ALL_THAT_APPLY,
-    u"select all that apply": constants.SELECT_ALL_THAT_APPLY
-}
-cascading_aliases = {
-    u'cascading select': constants.CASCADING_SELECT,
-    u'cascading_select': constants.CASCADING_SELECT,
-}
-settings_header_aliases = {
-    u"form_title": constants.TITLE,
-    u"set form title": constants.TITLE,
-    u"form_id": constants.ID_STRING,
-    u"sms_keyword": constants.SMS_KEYWORD,
-    u"sms_separator": constants.SMS_SEPARATOR,
-    u"sms_allow_media": constants.SMS_ALLOW_MEDIA,
-    u"sms_date_format": constants.SMS_DATE_FORMAT,
-    u"sms_datetime_format": constants.SMS_DATETIME_FORMAT,
-    u"set form id": constants.ID_STRING,
-    u"public_key": constants.PUBLIC_KEY,
-    u"submission_url": constants.SUBMISSION_URL
-}
-#TODO: Check on bind prefix approach in json.
-#Conversion dictionary from user friendly column names to meaningful values
-survey_header_aliases = {
-    u"Label": u"label",
-    u"Name": u"name",
-    u"SMS Field": constants.SMS_FIELD,
-    u"SMS Option": constants.SMS_OPTION,
-    u"SMS Sepatator": constants.SMS_SEPARATOR,
-    u"SMS Allow Media": constants.SMS_ALLOW_MEDIA,
-    u"SMS Date Format": constants.SMS_DATE_FORMAT,
-    u"SMS DateTime Format": constants.SMS_DATETIME_FORMAT,
-    u"SMS Response": constants.SMS_RESPONSE,
-    u"Type": u"type",
-    u"List_name": u"list_name",
-    u"repeat_count": u"jr:count",
-    u"read_only": u"bind::readonly",
-    u"readonly": u"bind::readonly",
-    u"relevant": u"bind::relevant",
-    u"caption": constants.LABEL,
-    u"appearance": u"control::appearance",  # TODO: this is also an issue
-    u"relevance": u"bind::relevant",
-    u"required": u"bind::required",
-    u"constraint": u"bind::constraint",
-    u"constraining message": u"bind::jr:constraintMsg",
-    u"constraint message": u"bind::jr:constraintMsg",
-    u"constraint_message": u"bind::jr:constraintMsg",
-    u"calculation": u"bind::calculate",
-    u"command": constants.TYPE,
-    u"tag": constants.NAME,
-    u"value": constants.NAME,
-    u"image": u"media::image",
-    u"audio": u"media::audio",
-    u"video": u"media::video",
-    u"count": u"control::jr:count",
-    u"repeat_count": u"control::jr:count",
-    u"jr:count": u"control::jr:count",
-    u"autoplay": u"control::autoplay",
-    u"rows": u"control::rows",
-    #New elements that have to go into itext elements:
-    u"noAppErrorString" : u"bind::jr:noAppErrorString",
-    u"no_app_error_string" : u"bind::jr:noAppErrorString",
-    u"requiredMsg" : u"bind::jr:requiredMsg",
-    u"required_message" : u"bind::jr:requiredMsg",
-}
-list_header_aliases = {
-    u"caption": constants.LABEL,
-    u"list_name": constants.LIST_NAME,
-    u"value": constants.NAME,
-    u"image": u"media::image",
-    u"audio": u"media::audio",
-    u"video": u"media::video"
-}
-#Note that most of the type aliasing happens in all.xls
-type_aliases = {
-    u"imei": u"deviceid",
-    u"image": u"photo",
-    u"add image prompt": u"photo",
-    u"add photo prompt": u"photo",
-    u"add audio prompt": u"audio",
-    u"add video prompt": u"video"
-}
-yes_no_aliases = {
-    "yes": True,
-    "Yes": True,
-    "YES": True,
-    "true": True,
-    "True": True,
-    "TRUE": True,
-    "true()": True,
-    "no": False,
-    "No": False,
-    "NO": False,
-    "false": False,
-    "False": False,
-    "FALSE": False,
-    "false()": False,
-}
-label_optional_types = [
-    u"deviceid",
-    u"phonenumber",
-    u"simserial",
-    u"calculate",
-    u"start",
-    u"end",
-    u"today"
-]
-####### END OF STATIC DATA #######
-
 
 def print_pyobj_to_json(pyobj, path=None):
     """
@@ -258,8 +128,8 @@ def dealias_types(dict_array):
     """
     for row in dict_array:
         found_type = row.get(constants.TYPE)
-        if found_type in type_aliases.keys():
-            row[constants.TYPE] = type_aliases[found_type]
+        if found_type in aliases.type.keys():
+            row[constants.TYPE] = aliases.type[found_type]
     return dict_array
 
 
@@ -435,7 +305,7 @@ def workbook_to_json(
     ########### Settings sheet ##########
     settings_sheet = dealias_and_group_headers(
         workbook_dict.get(constants.SETTINGS, []),
-        settings_header_aliases, use_double_colons)
+        aliases.settings_header, use_double_colons)
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
 
     default_language = settings.get(
@@ -445,7 +315,7 @@ def workbook_to_json(
     #indicates a none option should automatically be added to selects.
     #It should probably be deprecated but I haven't checked yet.
     if u"add_none_option" in settings:
-        settings[u"add_none_option"] = yes_no_aliases.get(
+        settings[u"add_none_option"] = aliases.yes_no.get(
             settings[u"add_none_option"], False)
 
     #Here we create our json dict root with default settings:
@@ -473,17 +343,17 @@ def workbook_to_json(
     choices_and_columns_sheet = workbook_dict.get(
         constants.CHOICES_AND_COLUMNS, {})
     choices_and_columns_sheet = dealias_and_group_headers(
-        choices_and_columns_sheet, list_header_aliases,
+        choices_and_columns_sheet, aliases.list_header,
         use_double_colons, default_language)
 
     columns_sheet = workbook_dict.get(constants.COLUMNS, [])
     columns_sheet = dealias_and_group_headers(
-        columns_sheet, list_header_aliases,
+        columns_sheet, aliases.list_header,
         use_double_colons, default_language)
 
     choices_sheet = workbook_dict.get(constants.CHOICES, [])
     choices_sheet = dealias_and_group_headers(
-        choices_sheet, list_header_aliases, use_double_colons,
+        choices_sheet, aliases.list_header, use_double_colons,
         default_language)
     ########### Cascading Select sheet ###########
     cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, [])
@@ -535,12 +405,12 @@ def workbook_to_json(
             + constants.SURVEY)
     survey_sheet = workbook_dict[constants.SURVEY]
     #Process the headers:
-    clean_text_values_enabled = yes_no_aliases.get(
+    clean_text_values_enabled = aliases.yes_no.get(
         settings.get("clean_text_values", "true()"))
     if clean_text_values_enabled:
         survey_sheet = clean_text_values(survey_sheet)
     survey_sheet = dealias_and_group_headers(
-        survey_sheet, survey_header_aliases,
+        survey_sheet, aliases.survey_header,
         use_double_colons, default_language)
     survey_sheet = dealias_types(survey_sheet)
     ##################################
@@ -557,17 +427,17 @@ def workbook_to_json(
     #For efficiency we compile all the regular expressions
     # that will be used to parse types:
     end_control_regex = re.compile(r"^(?P<end>end)(\s|_)(?P<type>("
-                                   + '|'.join(control_aliases.keys()) + r"))$")
+                                   + '|'.join(aliases.control.keys()) + r"))$")
     begin_control_regex = re.compile(r"^(?P<begin>begin)(\s|_)(?P<type>("
-                                     + '|'.join(control_aliases.keys())
+                                     + '|'.join(aliases.control.keys())
                                      + r"))( (over )?(?P<list_name>\S+))?$")
     select_regexp = re.compile(
-        r"^(?P<select_command>(" + '|'.join(select_aliases.keys())
+        r"^(?P<select_command>(" + '|'.join(aliases.select.keys())
         + r")) (?P<list_name>\S+)"
         + "( (?P<specify_other>(or specify other|or_other|or other)))?$")
     cascading_regexp = re.compile(
         r"^(?P<cascading_command>("
-        + '|'.join(cascading_aliases.keys())
+        + '|'.join(aliases.cascading.keys())
         + r")) (?P<cascading_level>\S+)?$")
     for row in survey_sheet:
         row_number += 1
@@ -580,7 +450,7 @@ def workbook_to_json(
                 " The 'disabled' column header is not part of the current" +
                 " spec. We recommend using relevant instead.")
             disabled = row.pop(u"disabled")
-            if yes_no_aliases.get(disabled):
+            if aliases.yes_no.get(disabled):
                 continue
 
         #skip empty rows
@@ -610,7 +480,7 @@ def workbook_to_json(
 
         #Check if the question is actually a setting specified
         #on the survey sheet
-        settings_type = settings_header_aliases.get(question_type)
+        settings_type = aliases.settings_header.get(question_type)
         if settings_type:
             json_dict[settings_type] = unicode(row.get(constants.NAME))
             continue
@@ -621,7 +491,7 @@ def workbook_to_json(
         if end_control_parse:
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
-                control_type = control_aliases[parse_dict["type"]]
+                control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
                         rowFormatString % row_number +
@@ -655,7 +525,7 @@ def workbook_to_json(
 
         if constants.LABEL not in row and \
            row.get(constants.MEDIA) is None and \
-           question_type not in label_optional_types:
+           question_type not in aliases.label_optional_types:
             #TODO: Should there be a default label?
             #      Not sure if we should throw warnings for groups...
             #      Warnings can be ignored so I'm not too concerned
@@ -675,7 +545,7 @@ def workbook_to_json(
                 #parent_children_array will then be set to its children array
                 #(so following questions are nested under it)
                 #until an end command is encountered.
-                control_type = control_aliases[parse_dict["type"]]
+                control_type = aliases.control[parse_dict["type"]]
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type
                 child_list = list()
@@ -787,7 +657,7 @@ def workbook_to_json(
         if select_parse:
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
-                select_type = select_aliases[parse_dict["select_command"]]
+                select_type = aliases.select[parse_dict["select_command"]]
                 list_name = parse_dict["list_name"]
 
                 if list_name not in choices:
@@ -897,7 +767,7 @@ def workbook_to_json(
 
     meta_children = []
 
-    if yes_no_aliases.get(settings.get("omit_instanceID")):
+    if aliases.yes_no.get(settings.get("omit_instanceID")):
         if settings.get("public_key"):
             raise PyXFormError(
                 "Cannot omit instanceID, it is required for encryption.")
@@ -960,7 +830,6 @@ def parse_file_to_workbook_dict(path, file_object=None):
         return csv_to_dict(file_object if file_object is not None else path)
     else:
         raise PyXFormError("File was not recognized")
-
 
 def get_filename(path):
     """
