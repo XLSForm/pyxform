@@ -36,6 +36,13 @@ class InputQuestion(Question):
         control_dict = self.control
         label_and_hint = self.xml_label_and_hint()
         control_dict['ref'] = self.get_xpath()
+
+        # for SurveyCTO's support for external intents, resolve field references in appearance column:
+        survey = self.get_root()
+        appearance=control_dict.get('appearance')
+        if appearance is not None:
+            control_dict['appearance'] = survey.insert_xpaths(appearance)
+
         result = node(**control_dict)
         if label_and_hint:
             for element in self.xml_label_and_hint():

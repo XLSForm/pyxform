@@ -73,6 +73,7 @@ survey_header_aliases = {
     u"relevant": u"bind::relevant",
     u"caption": constants.LABEL,
     u"appearance": u"control::appearance",  # TODO: this is also an issue
+    u"intent": u"control::intent",  # TODO: this is also an issue
     u"relevance": u"bind::relevant",
     u"required": u"bind::required",
     u"constraint": u"bind::constraint",
