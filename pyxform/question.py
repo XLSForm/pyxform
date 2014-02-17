@@ -146,8 +146,15 @@ class MultipleChoiceQuestion(Question):
     def xml_control(self):
         assert self.bind[u"type"] in [u"select", u"select1"]
 
+        survey = self.get_root()
         control_dict = self.control.copy()
         control_dict['ref'] = self.get_xpath()
+
+        # for SurveyCTO's dynamic-select support, resolve field references in appearance column:
+        appearance = control_dict.get('appearance')
+        if appearance is not None:
+            control_dict['appearance'] = survey.insert_xpaths(appearance)
+
         result = node(**control_dict)
         for element in self.xml_label_and_hint():
             result.appendChild(element)
