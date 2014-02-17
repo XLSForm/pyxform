@@ -96,6 +96,7 @@ survey_header_aliases = {
     u"no_app_error_string" : u"bind::jr:noAppErrorString",
     u"requiredMsg" : u"bind::jr:requiredMsg",
     u"required_message" : u"bind::jr:requiredMsg",
+    u"required message" : u"bind::jr:requiredMsg"
 }
 list_header_aliases = {
     u"caption": constants.LABEL,
