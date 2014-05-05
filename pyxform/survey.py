@@ -10,6 +10,7 @@ import os
 from odk_validate import check_xform
 from survey_element import SurveyElement
 from errors import PyXFormError
+from pyxform import constants
 
 
 nsmap = {
@@ -44,6 +45,7 @@ class Survey(Section):
             u"instance_xmlns": unicode,
             u"version": unicode,
             u"choices": dict,
+            u"style": unicode
         }
     )
 
@@ -65,12 +67,17 @@ class Survey(Section):
         """
         self.validate()
         self._setup_xpath_dictionary()
+        body_kwargs = {}
+        if hasattr(self, constants.STYLE) and getattr(
+                self, constants.STYLE):
+            body_kwargs['class'] = getattr(
+                self, constants.STYLE)
         return node(u"h:html",
                     node(u"h:head",
                          node(u"h:title", self.title),
                          self.xml_model()
                         ),
-                    node(u"h:body", *self.xml_control()),
+                    node(u"h:body", *self.xml_control(), **body_kwargs),
                     **nsmap
                     )
 
