@@ -217,6 +217,22 @@ QUESTION_TYPE_DICT = \
             "type": "geopoint"
         }
     }, 
+    "q geoshape": {
+        "control": {
+            "tag": "input"
+        }, 
+        "bind": {
+            "type": "geoshape"
+        }
+    }, 
+    "q geotrace": {
+        "control": {
+            "tag": "input"
+        }, 
+        "bind": {
+            "type": "geotrace"
+        }
+    }, 
     "q image": {
         "control": {
             "tag": "upload", 
