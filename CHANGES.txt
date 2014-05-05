@@ -19,3 +19,10 @@ v0.9.15, 2013 04 26
 v0.9.16, 2013 04 26 -- changed sms field names
 v0.9.17, 2013 04 26 -- experimental xform to json
 v0.9.18, 2013 06 10 -- col header warnings + adding instance flattening tag
+v0.9.19, 2014 01 13
+    -- add class attribute to body tag - theme support for enketo
+    -- add --json flag to output error messages in JSON format, danielfdsilva
+    -- xform2json: convert lable obj with no reference/translation to text
+    -- xform2json: set id_string from model/instance/id path
+    -- xform2json: remove comments when parsing xml file
+v0.9.20, 2014 01 27 -- use style column to defined body class attribute

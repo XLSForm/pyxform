@@ -161,10 +161,11 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
 class XFormToDict:
     def __init__(self, root):
         if isinstance(root, basestring):
+            parser = etree.XMLParser(remove_comments=True)
             if os.path.exists(root):
-                self._root = etree.parse(root).getroot()
+                self._root = etree.parse(root, parser=parser).getroot()
             else:
-                self._root = etree.fromstring(root)
+                self._root = etree.fromstring(root, parser)
             self._dict = ConvertXmlToDict(self._root)
         elif not isinstance(root, etree.Element):
             raise TypeError('Expected ElementTree.Element or file path string')
@@ -197,7 +198,7 @@ class XFormToDictBuilder:
 
         assert 'html' in doc_as_dict
         assert 'body' in doc_as_dict['html']
-        assert 'head'in doc_as_dict['html']
+        assert 'head' in doc_as_dict['html']
         assert 'model' in doc_as_dict['html']['head']
         assert 'title' in doc_as_dict['html']['head']
         assert 'bind' in doc_as_dict['html']['head']['model']
@@ -245,6 +246,7 @@ class XFormToDictBuilder:
         obj = self.bindings[0]
         name = obj['nodeset'].split('/')[1]
         self.new_doc['name'] = name
+        self.new_doc['id_string'] = self.model['instance'][name]['id']
 
     def _set_submission_info(self):
         if 'submission' in self.model:
@@ -351,11 +353,13 @@ class XFormToDictBuilder:
     def _get_question_from_object(self, obj, type=None):
         ref = None
         try:
-            assert 'ref' in obj
             ref = obj['ref']
-        except AssertionError:
-            assert 'nodeset' in obj
-            ref = obj['nodeset']
+        except KeyError:
+            try:
+                ref = obj['nodeset']
+            except KeyError:
+                raise TypeError(
+                    'cannot find "ref" or "nodeset" in {}'.format(repr(obj)))
         question = {'ref': ref, '__order': self._get_question_order(ref)}
         question['name'] = self._get_name_from_ref(ref)
         if 'hint' in obj:
@@ -452,7 +456,12 @@ class XFormToDictBuilder:
                     if k == 'type':
                         v = self._get_question_type(v)
                     if k in ['relevant', 'required', 'constraint',
-                             'constraintMsg', 'readonly', 'calculate']:
+                             'constraintMsg', 'readonly', 'calculate',
+                             'noAppErrorString', 'requiredMsg']:
+                        if k == 'noAppErrorString':
+                            k = 'jr:noAppErrorString'
+                        if k == 'requiredMsg':
+                            k = 'jr:requiredMsg'
                         if k == 'constraintMsg':
                             k = "jr:constraintMsg"
                             v = self._get_constraintMsg(v)
@@ -493,10 +502,31 @@ class XFormToDictBuilder:
 
     def _get_label(self, label_obj, key='label'):
         if isinstance(label_obj, dict):
-            ref = label_obj['ref'].replace(
-                'jr:itext(\'', '').replace('\')', '')
-            return self._get_text_from_translation(ref, key)
+            try:
+                ref = label_obj['ref'].replace(
+                    'jr:itext(\'', '').replace('\')', '')
+            except KeyError:
+                return key, self._get_output_text(label_obj)
+            else:
+                return self._get_text_from_translation(ref, key)
         return key, label_obj
+
+    def _get_output_text(self, value):
+        text = ''
+        if 'output' in value and '_text' in value:
+            v = [value['_text']]
+            v.append(self._get_bracketed_name(
+                value['output']['value']))
+            text = u' '.join(v)
+            if 'tail' in value['output']:
+                text = u''.join(
+                    [text, value['output']['tail']])
+        elif 'output' in value and '_text' not in value:
+            text = self._get_bracketed_name(
+                value['output']['value'])
+        else:
+            return value
+        return text
 
     def _get_text_from_translation(self, ref, key='label'):
         label = {}
@@ -509,17 +539,8 @@ class XFormToDictBuilder:
                 if l['id'] == ref:
                     text = value = l['value']
                     if isinstance(value, dict):
-                        if 'output' in value and '_text' in value:
-                            v = [value['_text']]
-                            v.append(self._get_bracketed_name(
-                                value['output']['value']))
-                            text = u' '.join(v)
-                            if 'tail' in value['output']:
-                                text = u''.join(
-                                    [text, value['output']['tail']])
-                        elif 'output' in value and '_text' not in value:
-                            text = self._get_bracketed_name(
-                                value['output']['value'])
+                        if 'output' in value:
+                            text = self._get_output_text(value)
                         if 'form' in value and '_text' in value:
                             key = u'media'
                             v = value['_text']
