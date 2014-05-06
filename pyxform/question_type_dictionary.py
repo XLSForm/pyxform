@@ -358,6 +358,24 @@ QUESTION_TYPE_DICT = \
         }, 
         "hint": "GPS coordinates can only be collected when outside."
     }, 
+    "geoshape": {
+        "control": {
+            "tag": "input"
+        }, 
+        "bind": {
+            "type": "geoshape"
+        }, 
+        "hint": "GPS coordinates can only be collected when outside."
+    }, 
+    "geotrace": {
+        "control": {
+            "tag": "input"
+        }, 
+        "bind": {
+            "type": "geotrace"
+        }, 
+        "hint": "GPS coordinates can only be collected when outside."
+    }, 
     "select multiple from": {
         "control": {
             "tag": "select"
