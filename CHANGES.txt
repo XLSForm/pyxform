@@ -29,5 +29,5 @@ v0.9.20, 2014 01 27 -- use style column to defined body class attribute
 v0.9.21, 2014 05 08
     -- update to ODK Validate 1.4.3
 	-- interim add of geoshape and geotrace prompts
-    -- add data preload with pulldata()
+    -- add data preload with pulldata function
     -- add search and select

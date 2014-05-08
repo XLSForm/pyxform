@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='pyxform',
-    version='0.9.20',
+    version='0.9.21',
     author='modilabs',
     author_email='info@modilabs.org',
     packages=['pyxform', 'pyxform.odk_validate'],
