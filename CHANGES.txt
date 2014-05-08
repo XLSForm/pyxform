@@ -26,6 +26,8 @@ v0.9.19, 2014 01 13
     -- xform2json: set id_string from model/instance/id path
     -- xform2json: remove comments when parsing xml file
 v0.9.20, 2014 01 27 -- use style column to defined body class attribute
-v0.9.20, 2014 05 05
+v0.9.21, 2014 05 08
     -- update to ODK Validate 1.4.3
 	-- interim add of geoshape and geotrace prompts
+    -- add data preload with pulldata function
+    -- add search and select

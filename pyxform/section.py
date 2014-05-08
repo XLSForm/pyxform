@@ -123,7 +123,11 @@ class GroupedSection(Section):
         
         if u"appearance" in control_dict:
             attrs['appearance'] = control_dict['appearance']
-        
+
+        if u"intent" in control_dict:
+            survey = self.get_root()
+            attrs['intent'] = survey.insert_xpaths(control_dict['intent'])
+
         return node(u"group", *children, **attrs)
 
     def to_json_dict(self):
