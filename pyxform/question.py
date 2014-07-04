@@ -47,7 +47,17 @@ class InputQuestion(Question):
         if label_and_hint:
             for element in self.xml_label_and_hint():
                 result.appendChild(element)
+        
+        # Input types are used for selects with external choices sheets.
+        if self['query']:
+            choice_filter = self.get('choice_filter')
+            query = "instance('" + self['query'] + "')/root/item"
+            choice_filter = survey.insert_xpaths(choice_filter)
+            if choice_filter:
+                query += '[' + choice_filter + ']'
+            result.setAttribute('query', query)
         return result
+
 
 class TriggerQuestion(Question):
 
