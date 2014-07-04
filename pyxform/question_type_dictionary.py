@@ -307,6 +307,14 @@ QUESTION_TYPE_DICT = \
         "bind": {
             "type": "select1"
         }
+    },
+    "select one external": {
+        "control": {
+            "tag": "input"
+        }, 
+        "bind": {
+            "type": "string"
+        }
     }, 
     "add image prompt": {
         "control": {

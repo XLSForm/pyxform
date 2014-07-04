@@ -2,7 +2,6 @@ import os
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
 
-
 def path_to_text_fixture(filename):
     directory = os.path.dirname(__file__)
     return os.path.join(directory, "example_xls", filename)

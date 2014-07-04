@@ -12,127 +12,7 @@ from errors import PyXFormError
 from xls2json_backends import xls_to_dict, csv_to_dict
 from utils import is_valid_xml_tag
 
-####### STATIC DATA #######
 
-#Aliases:
-#Ideally aliases should resolve to elements in the json form schema
-
-#select, control and settings alias keys used for parsing,
-#which is why self mapped keys are necessary.
-control_aliases = {
-    u"group": constants.GROUP,
-    u"lgroup": constants.REPEAT,
-    u"repeat": constants.REPEAT,
-    u"loop": constants.LOOP,
-    u"looped group": constants.REPEAT
-}
-select_aliases = {
-    u"add select one prompt using": constants.SELECT_ONE,
-    u"add select multiple prompt using": constants.SELECT_ALL_THAT_APPLY,
-    u"select all that apply from": constants.SELECT_ALL_THAT_APPLY,
-    u"select one from": constants.SELECT_ONE,
-    u"select1": constants.SELECT_ONE,
-    u"select_one": constants.SELECT_ONE,
-    u"select one": constants.SELECT_ONE,
-    u"select_multiple": constants.SELECT_ALL_THAT_APPLY,
-    u"select all that apply": constants.SELECT_ALL_THAT_APPLY
-}
-cascading_aliases = {
-    u'cascading select': constants.CASCADING_SELECT,
-    u'cascading_select': constants.CASCADING_SELECT,
-}
-settings_header_aliases = {
-    u"form_title": constants.TITLE,
-    u"set form title": constants.TITLE,
-    u"form_id": constants.ID_STRING,
-    u"sms_keyword": constants.SMS_KEYWORD,
-    u"sms_separator": constants.SMS_SEPARATOR,
-    u"sms_allow_media": constants.SMS_ALLOW_MEDIA,
-    u"sms_date_format": constants.SMS_DATE_FORMAT,
-    u"sms_datetime_format": constants.SMS_DATETIME_FORMAT,
-    u"set form id": constants.ID_STRING,
-    u"public_key": constants.PUBLIC_KEY,
-    u"submission_url": constants.SUBMISSION_URL
-}
-#TODO: Check on bind prefix approach in json.
-#Conversion dictionary from user friendly column names to meaningful values
-survey_header_aliases = {
-    u"Label": u"label",
-    u"Name": u"name",
-    u"SMS Field": constants.SMS_FIELD,
-    u"SMS Option": constants.SMS_OPTION,
-    u"SMS Sepatator": constants.SMS_SEPARATOR,
-    u"SMS Allow Media": constants.SMS_ALLOW_MEDIA,
-    u"SMS Date Format": constants.SMS_DATE_FORMAT,
-    u"SMS DateTime Format": constants.SMS_DATETIME_FORMAT,
-    u"SMS Response": constants.SMS_RESPONSE,
-    u"Type": u"type",
-    u"List_name": u"list_name",
-    u"repeat_count": u"jr:count",
-    u"read_only": u"bind::readonly",
-    u"readonly": u"bind::readonly",
-    u"relevant": u"bind::relevant",
-    u"caption": constants.LABEL,
-    u"appearance": u"control::appearance",  # TODO: this is also an issue
-    u"intent": u"control::intent",  # TODO: this is also an issue
-    u"relevance": u"bind::relevant",
-    u"required": u"bind::required",
-    u"constraint": u"bind::constraint",
-    u"constraining message": u"bind::jr:constraintMsg",
-    u"constraint message": u"bind::jr:constraintMsg",
-    u"constraint_message": u"bind::jr:constraintMsg",
-    u"calculation": u"bind::calculate",
-    u"command": constants.TYPE,
-    u"tag": constants.NAME,
-    u"value": constants.NAME,
-    u"image": u"media::image",
-    u"audio": u"media::audio",
-    u"video": u"media::video",
-    u"count": u"control::jr:count",
-    u"repeat_count": u"control::jr:count",
-    u"jr:count": u"control::jr:count",
-    u"autoplay": u"control::autoplay",
-    u"rows": u"control::rows",
-    #New elements that have to go into itext elements:
-    u"noAppErrorString" : u"bind::jr:noAppErrorString",
-    u"no_app_error_string" : u"bind::jr:noAppErrorString",
-    u"requiredMsg" : u"bind::jr:requiredMsg",
-    u"required_message" : u"bind::jr:requiredMsg",
-    u"required message" : u"bind::jr:requiredMsg"
-}
-list_header_aliases = {
-    u"caption": constants.LABEL,
-    u"list_name": constants.LIST_NAME,
-    u"value": constants.NAME,
-    u"image": u"media::image",
-    u"audio": u"media::audio",
-    u"video": u"media::video"
-}
-#Note that most of the type aliasing happens in all.xls
-type_aliases = {
-    u"imei": u"deviceid",
-    u"image": u"photo",
-    u"add image prompt": u"photo",
-    u"add photo prompt": u"photo",
-    u"add audio prompt": u"audio",
-    u"add video prompt": u"video"
-}
-yes_no_aliases = {
-    "yes": True,
-    "Yes": True,
-    "YES": True,
-    "true": True,
-    "True": True,
-    "TRUE": True,
-    "true()": True,
-    "no": False,
-    "No": False,
-    "NO": False,
-    "false": False,
-    "False": False,
-    "FALSE": False,
-    "false()": False,
-}
 label_optional_types = [
     u"deviceid",
     u"phonenumber",
@@ -142,7 +22,6 @@ label_optional_types = [
     u"end",
     u"today"
 ]
-####### END OF STATIC DATA #######
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -791,9 +670,16 @@ def workbook_to_json(
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
                 select_type = aliases.select[parse_dict["select_command"]]
+                if select_type == 'select one external'\
+                   and not 'choice_filter' in row:
+                    warnings.append(rowFormatString % row_number +
+                        u" select one external is only meant for"
+                        u" filtered selects.")
+                    select_type = aliases.select['select_one']
                 list_name = parse_dict["list_name"]
 
-                if list_name not in choices:
+                if list_name not in choices\
+                   and select_type != 'select one external':
                     if not choices:
                         raise PyXFormError(
                             u"There should be a choices sheet in this xlsform."
@@ -847,8 +733,11 @@ def workbook_to_json(
                 new_json_dict[constants.TYPE] = select_type
 
                 if row.get('choice_filter'):
-                    new_json_dict['itemset'] = list_name
-                    json_dict['choices'] = choices
+                    if select_type == 'select one external':
+                        new_json_dict['query'] = list_name
+                    else:
+                        new_json_dict['itemset'] = list_name
+                        json_dict['choices'] = choices
                 else:
                     new_json_dict[constants.CHOICES] = choices[list_name]
 
