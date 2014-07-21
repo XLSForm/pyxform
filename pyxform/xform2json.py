@@ -246,7 +246,13 @@ class XFormToDictBuilder:
         obj = self.bindings[0]
         name = obj['nodeset'].split('/')[1]
         self.new_doc['name'] = name
-        self.new_doc['id_string'] = self.model['instance'][name]['id']
+        try:
+            self.new_doc['id_string'] = self.model['instance'][name]['id']
+        except TypeError:
+            for i in self.model['instance']:
+                if name in i:
+                    self.new_doc['id_string'] = i[name]['id']
+                    break
 
     def _set_submission_info(self):
         if 'submission' in self.model:
