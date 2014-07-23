@@ -237,7 +237,31 @@ class XFormToDictBuilder:
                         self._get_question_from_object(item, type=key))
         self._cleanup_bind_list()
         self._cleanup_children()
+
+        choices = {}
+
+        if 'instance' in self.model:
+            for item in self.model['instance']:
+                if 'root' in item and 'id' in item:
+                    list_name = item['id']
+                    list_items = []
+
+                    for choice in item['root']['item']:
+                        data = {}
+
+                        for k, v in choice.iteritems():
+                            if k == 'itextId':
+                                k, v = self._get_text_from_translation(
+                                    choice['itextId'])
+
+                            data[k] = v
+
+                        list_items.append(data)
+
+                    choices[list_name] = list_items
+
         self.new_doc['children'] = self.children
+        self.new_doc['choices'] = choices
 
     def _set_binding_order(self):
         self.ordered_binding_refs = []
