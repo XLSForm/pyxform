@@ -574,20 +574,34 @@ class XFormToDictBuilder:
         return key, label_obj
 
     def _get_output_text(self, value):
-        text = ''
-        if 'output' in value and '_text' in value:
-            v = [value['_text']]
-            v.append(self._get_bracketed_name(
-                value['output']['value']))
-            text = u' '.join(v)
-            if 'tail' in value['output']:
+        def _get_output_with_tail(output, head_text=''):
+            text = ''
+            if isinstance(output, list):
                 text = u''.join(
-                    [text, value['output']['tail']])
+                    [u'%s%s' % (i['value'],
+                                i.get('tail') if i.get('tail') else '')
+                     for i in output])
+                text = self._shorten_xpaths_in_string(text)
+            elif isinstance(output, dict):
+                text = self._get_bracketed_name(output['value'])
+
+            if 'tail' in output:
+                text = u''.join([text, output['tail']])
+
+            if len(head_text):
+                text = u' '.join([head_text, text])
+
+            return text
+
+        text = ''
+
+        if 'output' in value and '_text' in value:
+            text = _get_output_with_tail(value['output'], value['_text'])
         elif 'output' in value and '_text' not in value:
-            text = self._get_bracketed_name(
-                value['output']['value'])
+            text = _get_output_with_tail(value['output'])
         else:
             return value
+
         return text
 
     def _get_text_from_translation(self, ref, key='label'):
