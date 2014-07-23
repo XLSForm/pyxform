@@ -9,8 +9,10 @@ from lxml.etree import ElementTree
 from operator import itemgetter
 from pyxform import builder
 
+ITEMSET_REGEX = re.compile(r"^instance\('(\w+)'\)/root/item\[(.*)\]")
 
-## {{{ http://code.activestate.com/recipes/573463/ (r7)
+
+# {{{ http://code.activestate.com/recipes/573463/ (r7)
 class XmlDictObject(dict):
     """
     Adds object like functionality to the standard dictionary.
@@ -155,7 +157,7 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
         raise TypeError('Expected ElementTree.Element or file path string')
 
     return dictclass({root.tag: _ConvertXmlToDictRecurse(root, dictclass)})
-## end of http://code.activestate.com/recipes/573463/ }}}
+# end of http://code.activestate.com/recipes/573463/ }}}
 
 
 class XFormToDict:
@@ -366,35 +368,47 @@ class XFormToDictBuilder:
             except KeyError:
                 raise TypeError(
                     'cannot find "ref" or "nodeset" in {}'.format(repr(obj)))
+
         question = {'ref': ref, '__order': self._get_question_order(ref)}
         question['name'] = self._get_name_from_ref(ref)
+
         if 'hint' in obj:
             k, v = self._get_label(obj['hint'], 'hint')
             question[k] = v
+
         if 'label' in obj:
             k, v = self._get_label(obj['label'])
+
             if isinstance(v, dict) and 'label' in v.keys() \
                     and 'media' in v.keys():
                 for _k, _v in v.iteritems():
                     question[_k] = _v
             else:
                 question[k] = v
+
         if 'autoplay' in obj or 'appearance' in obj \
                 or 'count' in obj or 'rows' in obj:
             question['control'] = {}
+
         if 'appearance' in obj:
             question["control"].update({'appearance': obj['appearance']})
+
         if 'rows' in obj:
             question['control'].update({'rows': obj['rows']})
+
         if 'autoplay' in obj:
             question['control'].update({'autoplay': obj['autoplay']})
+
         question_params = self._get_question_params_from_bindings(ref)
+
         if isinstance(question_params, dict):
             for k, v in question_params.iteritems():
                 question[k] = v
+
         # has to come after the above block
         if 'mediatype' in obj:
             question['type'] = obj['mediatype'].replace('/*', '')
+
         if 'item' in obj:
             children = []
             for i in obj['item']:
@@ -404,18 +418,23 @@ class XFormToDictBuilder:
                     children.append(
                         {'name': i['value'], k: v})
             question['children'] = children
+
         question_type = question['type'] if 'type' in question else type
+
         if question_type == 'text' and 'bind' in question \
                 and 'readonly' in question['bind']:
             question_type = question['type'] = 'note'
             del question['bind']['readonly']
+
             if len(question['bind'].keys()) == 0:
                 del question['bind']
+
         if question_type in ['group', 'repeat']:
             if question_type == 'group' and 'repeat' in obj:
                 question['children'] = \
                     self._get_children_questions(obj['repeat'])
                 question_type = 'repeat'
+
                 if 'count' in obj['repeat']:
                     if 'control' not in question:
                         question['control'] = {}
@@ -426,12 +445,25 @@ class XFormToDictBuilder:
             else:
                 question['children'] = self._get_children_questions(obj)
             question['type'] = question_type
+
         if type == 'trigger':
             question['type'] = 'acknowledge'
+
         if question_type == 'geopoint' and 'hint' in question:
             del question['hint']
+
         if 'type' not in question and type:
             question['type'] = question_type
+
+        if 'itemset' in obj:
+            if 'nodeset' in obj['itemset']:
+                itemset = obj['itemset']
+                nodeset = ITEMSET_REGEX.match(itemset['nodeset'])
+                if nodeset:
+                    question['itemset'] = nodeset.groups()[0]
+                    question['choice_filter'] = \
+                        self._shorten_xpaths_in_string(nodeset.groups()[1])
+
         return question
 
     def _get_children_questions(self, obj):
@@ -621,7 +653,7 @@ class XFormToDictBuilder:
 
         def replace_function(match):
             return "${%s}" % get_last_item(match.group())
-        #moving re flags into compile for python 2.6 compat
+        # moving re flags into compile for python 2.6 compat
         pattern = "( /[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+ )"
         text = re.compile(pattern, flags=re.I).sub(replace_function, text)
         pattern = "(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)"
