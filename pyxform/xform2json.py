@@ -488,6 +488,14 @@ class XFormToDictBuilder:
                     question['choice_filter'] = \
                         self._shorten_xpaths_in_string(nodeset.groups()[1])
 
+        if 'query' in obj:
+            question['type'] = 'select one external'
+            query = ITEMSET_REGEX.match(obj['query'])
+            if query:
+                question['query'] = query.groups()[0]
+                question['choice_filter'] = \
+                    self._shorten_xpaths_in_string(query.groups()[1])
+
         return question
 
     def _get_children_questions(self, obj):
