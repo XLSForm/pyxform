@@ -39,6 +39,9 @@ def run_popen_with_timeout(command, timeout):
     kill_check.clear()
     return (p.returncode, timeout, stdout, stderr)
 
+def _java_installed():
+    p = Popen(["which","java"], stdout=PIPE)
+    return len(p.stdout.readlines()) != 0
 
 def _cleanup_errors(error_message):
     def get_last_item(xpathStr):
@@ -88,6 +91,10 @@ def check_xform(path_to_xform):
     Returns an array of warnings if the form is valid.
     Throws an exception if it is not
     """
+    # provide useful error message if java is not installed
+    if not _java_installed():
+        raise EnvironmentError("pyxform odk validate dependency: java not found")
+
     #resultcode indicates validity of the form
     #timeout indicates whether validation ran out of time to complete
     #stdout is not used because it has some warnings that always

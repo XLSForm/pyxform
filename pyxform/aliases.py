@@ -22,7 +22,8 @@ select = {
     u"select_one": constants.SELECT_ONE,
     u"select one": constants.SELECT_ONE,
     u"select_multiple": constants.SELECT_ALL_THAT_APPLY,
-    u"select all that apply": constants.SELECT_ALL_THAT_APPLY
+    u"select all that apply": constants.SELECT_ALL_THAT_APPLY,
+    u"select_one_external": u"select one external"
 }
 cascading = {
     u'cascading select': constants.CASCADING_SELECT,
@@ -84,6 +85,7 @@ survey_header = {
     u"no_app_error_string" : u"bind::jr:noAppErrorString",
     u"requiredMsg" : u"bind::jr:requiredMsg",
     u"required_message" : u"bind::jr:requiredMsg",
+    u"required message" : u"bind::jr:requiredMsg",
 }
 list_header = {
     u"caption": constants.LABEL,
