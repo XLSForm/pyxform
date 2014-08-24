@@ -25,7 +25,14 @@ class Section(SurveyElement):
         """
         Creates an xml representation of the section
         """
-        result = node(self.name, **kwargs)
+        attributes = {}
+        attributes.update(kwargs)
+        attributes.update(self.get(u'instance', {}))
+        survey = self.get_root()
+        # Resolve field references in attributes
+        for key, value in attributes.items():
+            attributes[key] = survey.insert_xpaths(value)
+        result = node(self.name, **attributes)
         for child in self.children:
             if child.get(u"flat"):
                 for grandchild in child.xml_instance_array():
@@ -70,10 +77,10 @@ class RepeatingSection(Section):
         </group>
         """
         control_dict = self.control.copy()
-        jrcount = control_dict.get('jr:count')
-        if jrcount:
-            survey = self.get_root()
-            control_dict['jr:count'] = survey.insert_xpaths(jrcount)
+        survey = self.get_root()
+        # Resolve field references in attributes
+        for key, value in control_dict.items():
+            control_dict[key] = survey.insert_xpaths(value)
         repeat_node = node(u"repeat", nodeset=self.get_xpath(), **control_dict)
 
         for n in Section.xml_control(self):
@@ -85,7 +92,7 @@ class RepeatingSection(Section):
                 u"group", self.xml_label(), repeat_node,
                 ref=self.get_xpath()
                 )
-        return node(u"group", repeat_node, ref=self.get_xpath())
+        return node(u"group", repeat_node, ref=self.get_xpath(), **self.control)
 
     #I'm anal about matching function signatures when overriding a function, but there's no reason for kwargs to be an argument
     def xml_instance(self, **kwargs):
@@ -111,10 +118,17 @@ class GroupedSection(Section):
             return None
             
         children = []
-        attrs = {}
+        attributes = {}
+        attributes.update(self.control)
+        
+        survey = self.get_root()
+        
+        # Resolve field references in attributes
+        for key, value in attributes.items():
+            attributes[key] = survey.insert_xpaths(value)
         
         if not self.get('flat'):
-            attrs['ref'] = self.get_xpath()
+            attributes['ref'] = self.get_xpath()
         
         if 'label' in self and len(self['label']) > 0:
             children.append(self.xml_label())
@@ -122,13 +136,13 @@ class GroupedSection(Section):
             children.append(n)
         
         if u"appearance" in control_dict:
-            attrs['appearance'] = control_dict['appearance']
+            attributes['appearance'] = control_dict['appearance']
 
         if u"intent" in control_dict:
             survey = self.get_root()
-            attrs['intent'] = survey.insert_xpaths(control_dict['intent'])
+            attributes['intent'] = survey.insert_xpaths(control_dict['intent'])
 
-        return node(u"group", *children, **attrs)
+        return node(u"group", *children, **attributes)
 
     def to_json_dict(self):
         # This is quite hacky, might want to think about a smart way

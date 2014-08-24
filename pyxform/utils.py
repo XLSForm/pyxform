@@ -23,19 +23,24 @@ def is_valid_xml_tag(tag):
     """
     return re.search(r"^" + XFORM_TAG_REGEXP + r"$", tag)
 
-def node(tag, *args, **kwargs):
+def node(*args, **kwargs):
     """
-    tag -- a XML tag
-    args -- an array of children to append to the newly created node
+    args[0] -- a XML tag
+    args[1:] -- an array of children to append to the newly created node
             or if a unicode arg is supplied it will be used to make a text node
+    kwargs -- attributes
     returns a xml.dom.minidom.Element
     """
+    blocked_attributes = ['tag']
+    tag = args[0] if len(args) > 0 else kwargs['tag']
+    args = args[1:]
     result = Element(tag)
     unicode_args = [u for u in args if type(u) == unicode]
     assert len(unicode_args) <= 1
     parsedString = False
     #kwargs is an xml attribute dictionary, here we convert it to a xml.dom.minidom.Element
     for k, v in kwargs.iteritems():
+        if k in blocked_attributes: continue
         if k == 'toParseString':
             if v == True and len(unicode_args) == 1:
                 parsedString = True

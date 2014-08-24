@@ -85,6 +85,7 @@ survey_header = {
     u"no_app_error_string" : u"bind::jr:noAppErrorString",
     u"requiredMsg" : u"bind::jr:requiredMsg",
     u"required_message" : u"bind::jr:requiredMsg",
+    u"body":u"control"
 }
 list_header = {
     u"caption": constants.LABEL,

@@ -34,6 +34,7 @@ class SurveyElement(dict):
         u"intent": unicode,
         u"jr:count" : unicode,
         u"bind": dict,
+        u"instance": dict,
         u"control": dict,
         u"media": dict,
         # this node will also have a parent and children, like a tree!

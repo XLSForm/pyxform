@@ -17,11 +17,19 @@ class Question(SurveyElement):
                 )
 
     def xml_instance(self):
+        survey = self.get_root()
+        attributes = {}
+        attributes.update(self.get(u'instance', {}))
+        for key, value in attributes.items():
+            attributes[key] = survey.insert_xpaths(value)
         if self.get(u"default"):
             #survey = self.get_root()
             #return node(self.name, survey.insert_xpaths(unicode(self.get(u"default"))))
-            return node(self.name, unicode(self.get(u"default")))
-        return node(self.name)
+            return node(self.name,
+                unicode(self.get(u"default")),
+                **attributes
+                )
+        return node(self.name, **attributes)
 
     def xml_control(self):
         return None
@@ -35,14 +43,12 @@ class InputQuestion(Question):
     def xml_control(self):
         control_dict = self.control
         label_and_hint = self.xml_label_and_hint()
-        control_dict['ref'] = self.get_xpath()
-
-        # for SurveyCTO's support for external intents, resolve field references in appearance column:
         survey = self.get_root()
-        appearance=control_dict.get('appearance')
-        if appearance is not None:
-            control_dict['appearance'] = survey.insert_xpaths(appearance)
-
+        # Resolve field references in attributes
+        for key, value in control_dict.items():
+            control_dict[key] = survey.insert_xpaths(value)
+        control_dict['ref'] = self.get_xpath()
+        
         result = node(**control_dict)
         if label_and_hint:
             for element in self.xml_label_and_hint():
@@ -63,18 +69,16 @@ class TriggerQuestion(Question):
 
     def xml_control(self):
         control_dict = self.control
-        if u"appearance" in control_dict:
-            return node(
-                u"trigger", ref=self.get_xpath(),
-                appearance=control_dict[u"appearance"],
-                *self.xml_label_and_hint()
-                )
-        else:
-            return node(u"trigger",
-                ref=self.get_xpath(),
-                *self.xml_label_and_hint()
-                )
-
+        survey = self.get_root()
+        # Resolve field references in attributes
+        for key, value in control_dict.items():
+            control_dict[key] = survey.insert_xpaths(value)
+        control_dict['ref'] = self.get_xpath()
+        return node(
+            u"trigger",
+            *self.xml_label_and_hint(),
+            **control_dict
+            )
 
 class UploadQuestion(Question):
     def _get_media_type(self):
@@ -82,22 +86,13 @@ class UploadQuestion(Question):
 
     def xml_control(self):
         control_dict = self.control
-        if u"appearance" in control_dict:
-            return node(
-                u"upload",
-                ref=self.get_xpath(),
-                mediatype=self._get_media_type(),
-                appearance=control_dict[u"appearance"],
-                *self.xml_label_and_hint()
-                )
-        else:
-            return node(
-                u"upload",
-                ref=self.get_xpath(),
-                mediatype=self._get_media_type(),
-                *self.xml_label_and_hint()
-                )
-
+        control_dict['ref'] = self.get_xpath()
+        control_dict['mediatype'] = self._get_media_type()
+        return node(
+            u"upload",
+            *self.xml_label_and_hint(),
+            **control_dict
+            )
 
 class Option(SurveyElement):
 
@@ -162,20 +157,16 @@ class MultipleChoiceQuestion(Question):
 
     def xml_control(self):
         assert self.bind[u"type"] in [u"select", u"select1"]
-
         survey = self.get_root()
         control_dict = self.control.copy()
+        # Resolve field references in attributes
+        for key, value in control_dict.items():
+            control_dict[key] = survey.insert_xpaths(value)
         control_dict['ref'] = self.get_xpath()
-
-        # for SurveyCTO's dynamic-select support, resolve field references in appearance column:
-        appearance = control_dict.get('appearance')
-        if appearance is not None:
-            control_dict['appearance'] = survey.insert_xpaths(appearance)
 
         result = node(**control_dict)
         for element in self.xml_label_and_hint():
             result.appendChild(element)
-        survey = self.get_root()
         # itemset are only supposed to be strings, check to prevent the rare dicts that show up
         if self['itemset'] and isinstance( self['itemset'] , basestring):
             choice_filter = self.get('choice_filter')
