@@ -1,10 +1,10 @@
 import constants
 
-#Aliases:
-#Ideally aliases should resolve to elements in the json form schema
+# Aliases:
+# Ideally aliases should resolve to elements in the json form schema
 
-#select, control and settings alias keys used for parsing,
-#which is why self mapped keys are necessary.
+# select, control and settings alias keys used for parsing,
+# which is why self mapped keys are necessary.
 
 control = {
     u"group": constants.GROUP,
@@ -42,8 +42,8 @@ settings_header = {
     u"public_key": constants.PUBLIC_KEY,
     u"submission_url": constants.SUBMISSION_URL
 }
-#TODO: Check on bind prefix approach in json.
-#Conversion dictionary from user friendly column names to meaningful values
+# TODO: Check on bind prefix approach in json.
+# Conversion dictionary from user friendly column names to meaningful values
 survey_header = {
     u"Label": u"label",
     u"Name": u"name",
@@ -80,12 +80,13 @@ survey_header = {
     u"jr:count": u"control::jr:count",
     u"autoplay": u"control::autoplay",
     u"rows": u"control::rows",
-    #New elements that have to go into itext elements:
-    u"noAppErrorString" : u"bind::jr:noAppErrorString",
-    u"no_app_error_string" : u"bind::jr:noAppErrorString",
-    u"requiredMsg" : u"bind::jr:requiredMsg",
-    u"required_message" : u"bind::jr:requiredMsg",
-    u"body":u"control"
+    # New elements that have to go into itext elements:
+    u"noAppErrorString": u"bind::jr:noAppErrorString",
+    u"no_app_error_string": u"bind::jr:noAppErrorString",
+    u"requiredMsg": u"bind::jr:requiredMsg",
+    u"required_message": u"bind::jr:requiredMsg",
+    u"required message": u"bind::jr:requiredMsg",
+    u"body": u"control"
 }
 list_header = {
     u"caption": constants.LABEL,
@@ -95,7 +96,7 @@ list_header = {
     u"audio": u"media::audio",
     u"video": u"media::video"
 }
-#Note that most of the type aliasing happens in all.xls
+# Note that most of the type aliasing happens in all.xls
 type = {
     u"imei": u"deviceid",
     u"image": u"photo",

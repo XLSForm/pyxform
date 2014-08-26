@@ -12,18 +12,6 @@ from errors import PyXFormError
 from xls2json_backends import xls_to_dict, csv_to_dict
 from utils import is_valid_xml_tag
 
-
-label_optional_types = [
-    u"deviceid",
-    u"phonenumber",
-    u"simserial",
-    u"calculate",
-    u"start",
-    u"end",
-    u"today"
-]
-
-
 def print_pyobj_to_json(pyobj, path=None):
     """
     dump a python nested array/dict structure to the specified file
