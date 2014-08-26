@@ -31,3 +31,7 @@ v0.9.21, 2014 05 08
 	-- interim add of geoshape and geotrace prompts
     -- add data preload with pulldata function
     -- add search and select
+v0.9.22
+    -- Adding support for attribute columns
+    -- Update to the 1.4.4 build of ODK Validate
+    --  Adding external itemset support
