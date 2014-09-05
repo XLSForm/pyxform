@@ -246,22 +246,29 @@ class XFormToDictBuilder:
                     list_name = item['id']
                     list_items = []
 
-                    for choice in item['root']['item']:
-                        data = {}
-
-                        for k, v in choice.iteritems():
-                            if k == 'itextId':
-                                k, v = self._get_text_from_translation(
-                                    choice['itextId'])
-
-                            data[k] = v
-
+                    if isinstance(item['root']['item'], dict):
+                        data = self._get_choice_data(item['root']['item'])
                         list_items.append(data)
+                    else:
+                        for choice in item['root']['item']:
+                            data = self._get_choice_data(choice)
+                            list_items.append(data)
 
                     choices[list_name] = list_items
 
         self.new_doc['children'] = self.children
         self.new_doc['choices'] = choices
+
+    def _get_choice_data(self, choice):
+        data = {}
+
+        for k, v in choice.iteritems():
+            if k == 'itextId':
+                k, v = self._get_text_from_translation(choice['itextId'])
+
+            data[k] = v
+
+        return data
 
     def _set_binding_order(self):
         self.ordered_binding_refs = []
