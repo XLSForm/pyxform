@@ -55,10 +55,12 @@ class Section(SurveyElement):
     def xml_control(self):
         """
         Ideally, we'll have groups up and rolling soon, but for now
-        let's just return a list of controls from all the children of
-        this section.
+        let's just yield controls from all the children of this section
         """
-        return [e.xml_control() for e in self.children if e.xml_control() is not None]
+        for e in self.children:
+            control = e.xml_control()
+            if control is not None:
+                yield control
 
 
 class RepeatingSection(Section):
