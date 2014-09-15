@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Area of a geoshape</h:title>
+    <model>
+      <instance>
+        <area id="area" version="2013070811">
+          <geoshape1>38.253094215699576 21.756382658677467;38.25021274773806 21.756382658677467;38.25007793942195 21.763892843919166;38.25290886154963 21.763935759263404;38.25146813817506 21.758421137528785</geoshape1>
+          <result/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </area>
+      </instance>
+      <bind nodeset="/area/geoshape1" type="geoshape"/>
+      <bind calculate="enclosed-area( /area/geoshape1 )" nodeset="/area/result" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/area/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/area/geoshape1">
+      <label>Draw your shape here...</label>
+      <hint>GPS coordinates can only be collected when outside.</hint>
+    </input>
+  </h:body>
+</h:html>
