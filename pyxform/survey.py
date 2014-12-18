@@ -309,8 +309,11 @@ class Survey(Section):
         inlineOutput = re.compile('<label>\s*\n*\s*\n*\s*</label>').sub('<label></label>', inlineOutput)
         return '<?xml version="1.0"?>\n' + inlineOutput
 
+    def __repr__(self):
+        return unicode(self)
+
     def __unicode__(self):
-        return "<survey name='%s' element_count='%s'>" % (self.name, len(self.children))
+        return "<pyxform.survey.Survey instance at %s>" % hex(id(self))
 
     def _setup_xpath_dictionary(self):
         self._xpath = {}
