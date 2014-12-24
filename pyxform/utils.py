@@ -103,14 +103,15 @@ def sheet_to_csv(workbook_path, csv_path, sheet_name):
         for r in range(sheet.nrows):
             writer.writerow([v for v,m in zip(sheet.row_values(r), mask)  if m])
     return True
-    
+
 def has_external_choices(json_struct):
     """
     Returns true if a select one external prompt is used in the survey.
     """
     if isinstance(json_struct, dict):
         for k,v in json_struct.items():
-            if k == u"type" and v.startswith(u"select one external"):
+            if k == u"type" and isinstance(v, basestring) \
+                    and v.startswith(u"select one external"):
                 return True
             elif has_external_choices(v):
                 return True
@@ -118,4 +119,4 @@ def has_external_choices(json_struct):
         for v in json_struct:
             if has_external_choices(v):
                 return True
-    return False    
+    return False

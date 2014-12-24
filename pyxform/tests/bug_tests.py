@@ -10,6 +10,8 @@ parentdir = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, parentdir)
 import pyxform
+from pyxform.utils import has_external_choices
+from pyxform.xls2json import SurveyReader
 
 DIR = os.path.dirname(__file__)
 
@@ -239,6 +241,15 @@ class MissingHeaderColumnsTest(unittest.TestCase):
             path_to_excel_file)
         with self.assertRaises(pyxform.errors.PyXFormError):
             pyxform.xls2json.workbook_to_json(workbook_dict)
+
+
+class TestChoiceNameAsType(unittest.TestCase):
+    def test_choice_name_as_type(self):
+        filename = "choice_name_as_type.xls"
+        path_to_excel_file = os.path.join(DIR, "example_xls", filename)
+        xls_reader = SurveyReader(path_to_excel_file)
+        survey_dict = xls_reader.to_json_dict()
+        self.assertTrue(has_external_choices(survey_dict))
 
 
 if __name__ == '__main__':
