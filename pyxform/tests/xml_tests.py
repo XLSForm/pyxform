@@ -7,7 +7,8 @@ import utils
 class XMLTests(TestCase):
 
     def setUp(self):
-        self.survey = create_survey_from_xls(utils.path_to_text_fixture("yes_or_no_question.xls"))
+        self.survey = create_survey_from_xls(
+            utils.path_to_text_fixture("yes_or_no_question.xls"))
 
     def test_to_xml(self):
         xml_str = u'''<?xml version="1.0"?>
@@ -55,6 +56,7 @@ class XMLTests(TestCase):
   </h:body>
 </h:html>
 '''
-        xml_str = re.sub(r"yes_or_no_question_2011_04_22", self.survey.id_string, xml_str)
+        xml_str = re.sub(r"yes_or_no_question_2011_04_22",
+                         self.survey.id_string, xml_str)
         self.maxDiff = None
         self.assertMultiLineEqual(xml_str, self.survey.to_xml())
