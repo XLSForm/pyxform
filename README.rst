@@ -2,6 +2,9 @@
 pyxform v0.9
 ============
 
+.. image:: https://travis-ci.org/XLSForm/pyxform.svg?branch=master
+    :target: https://travis-ci.org/XLSForm/pyxform
+
 pyxform is a Python library that makes writing XForms for ODK Collect and enketo
 easy by converting XLS(X) spreadsheets into XForms. A new user of pyxform should
 look at the documentation `here <https://formhub.org/syntax/>`_ or
@@ -15,7 +18,7 @@ https://github.com/uw-ictd/pyxform
 * formhub.org uses the repo here:
 https://github.com/modilabs/pyxform
 
-pyxform is a major rewrite of `xls2xform <http://github.com/mvpdev/xls2xform/>`_. 
+pyxform is a major rewrite of `xls2xform <http://github.com/mvpdev/xls2xform/>`_.
 
 Running pyxform as a Python script:
 ===========================
