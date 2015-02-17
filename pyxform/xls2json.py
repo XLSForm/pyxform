@@ -12,6 +12,7 @@ from errors import PyXFormError
 from xls2json_backends import xls_to_dict, csv_to_dict
 from utils import is_valid_xml_tag
 
+
 def print_pyobj_to_json(pyobj, path=None):
     """
     dump a python nested array/dict structure to the specified file
@@ -92,17 +93,17 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons,
             if use_double_colons:
                 tokens = header.split(GROUP_DELIMITER)
 
-#            else:
-#                #We do the initial parse using single colons
-#                #for backwards compatibility and
-#                #only the first single is used
-#                #in order to avoid nesting jr:something tokens.
-#                if len(tokens) > 1:
-#                    tokens[1:] = [u":".join(tokens[1:])]
+            # else:
+            #   We do the initial parse using single colons
+            #   for backwards compatibility and
+            #   only the first single is used
+            #   in order to avoid nesting jr:something tokens.
+            #   if len(tokens) > 1:
+            #       tokens[1:] = [u":".join(tokens[1:])]
             else:
-                #I think the commented out section above
+                # I think the commented out section above
                 # break if there is something like media:image:english
-                #so maybe a better backwards compatibility hack
+                # so maybe a better backwards compatibility hack
                 # is to join any jr token with the next token
                 tokens = header.split(u":")
                 if "jr" in tokens:
@@ -146,13 +147,13 @@ def clean_text_values(dict_array):
     return dict_array
 
 
-#This is currently unused because name uniqueness is checked in json2xform.
+# This is currently unused because name uniqueness is checked in json2xform.
 def check_name_uniqueness(dict_array):
     """
     Make sure all names are unique
     Raises and exception if a duplicate is found
     """
-    #This set is used to validate the uniqueness of names.
+    # This set is used to validate the uniqueness of names.
     name_set = set()
     row_number = 0  # TODO: There might be a bug with row numbers...
     for row in dict_array:
@@ -161,8 +162,8 @@ def check_name_uniqueness(dict_array):
         if name:
             if name in name_set:
                 raise PyXFormError(
-                    "Question name is not unique: "
-                    + str(name) + " Row: " + str(row_number))
+                    "Question name is not unique: " +
+                    str(name) + " Row: " + str(row_number))
             else:
                 name_set.add(name)
     return dict_array
@@ -204,7 +205,7 @@ def has_double_colon(workbook_dict):
     return False
 
 
-def add_flat_annotations(prompt_list, parent_relevant = '', name_prefix = ''):
+def add_flat_annotations(prompt_list, parent_relevant='', name_prefix=''):
     """
     This is a helper function for generating flat instances
     for the benefit of ODK Tables.
@@ -235,7 +236,7 @@ def add_flat_annotations(prompt_list, parent_relevant = '', name_prefix = ''):
             if new_relevant != '':
                 prompt['bind'] = prompt.get('bind', {})
                 prompt['bind']['relevant'] = new_relevant
-            #if name_prefix != '':
+            # if name_prefix != '':
             #    prompt['name'] = name_prefix + prompt['name']
 
 
@@ -284,25 +285,25 @@ def workbook_to_json(
                                u" list_name and name.")
         del workbook_dict[choices_header_sheet]
     if warnings is None:
-        #Set warnings to a list that will be discarded.
+        # Set warnings to a list that will be discarded.
         warnings = []
 
     rowFormatString = '[row : %s]'
 
-    #Make sure the passed in vars are unicode
+    # Make sure the passed in vars are unicode
     form_name = unicode(form_name)
     default_language = unicode(default_language)
 
-    #We check for double columns to determine whether to use them
-    #or single colons to delimit grouped headers.
-    #Single colons are bad because they conflict with with the xform namespace
-    #syntax (i.e. jr:constraintMsg),
-    #so we only use them if we have to for backwards compatibility.
+    # We check for double columns to determine whether to use them
+    # or single colons to delimit grouped headers.
+    # Single colons are bad because they conflict with with the xform namespace
+    # syntax (i.e. jr:constraintMsg),
+    # so we only use them if we have to for backwards compatibility.
     use_double_colons = has_double_colon(workbook_dict)
 
-    #Break the spreadsheet dict into easier to access objects
-    #(settings, choices, survey_sheet):
-    ########### Settings sheet ##########
+    # Break the spreadsheet dict into easier to access objects
+    # (settings, choices, survey_sheet):
+    # ########## Settings sheet ##########
     settings_sheet = dealias_and_group_headers(
         workbook_dict.get(constants.SETTINGS, []),
         aliases.settings_header, use_double_colons)
@@ -311,14 +312,14 @@ def workbook_to_json(
     default_language = settings.get(
         constants.DEFAULT_LANGUAGE, default_language)
 
-    #add_none_option is a boolean that when true,
-    #indicates a none option should automatically be added to selects.
-    #It should probably be deprecated but I haven't checked yet.
+    # add_none_option is a boolean that when true,
+    # indicates a none option should automatically be added to selects.
+    # It should probably be deprecated but I haven't checked yet.
     if u"add_none_option" in settings:
         settings[u"add_none_option"] = aliases.yes_no.get(
             settings[u"add_none_option"], False)
 
-    #Here we create our json dict root with default settings:
+    # Here we create our json dict root with default settings:
     id_string = settings.get(constants.ID_STRING, form_name)
     sms_keyword = settings.get(constants.SMS_KEYWORD, id_string)
     json_dict = {
@@ -328,18 +329,18 @@ def workbook_to_json(
         constants.ID_STRING: id_string,
         constants.SMS_KEYWORD: sms_keyword,
         constants.DEFAULT_LANGUAGE: default_language,
-        #By default the version is based on the date and time yyyymmddhh
-        #Leaving default version out for now since it might cause
-        #problems for formhub.
-        #constants.VERSION : datetime.datetime.now().strftime("%Y%m%d%H"),
+        # By default the version is based on the date and time yyyymmddhh
+        # Leaving default version out for now since it might cause
+        # problems for formhub.
+        # constants.VERSION : datetime.datetime.now().strftime("%Y%m%d%H"),
         constants.CHILDREN: []
     }
-    #Here the default settings are overridden by those in the settings sheet
+    # Here the default settings are overridden by those in the settings sheet
     json_dict.update(settings)
 
-    ########### Choices sheet ##########
-    #Columns and "choices and columns" sheets are deprecated,
-    #but we combine them with the choices sheet for backwards-compatibility.
+    # ########## Choices sheet ##########
+    # Columns and "choices and columns" sheets are deprecated,
+    # but we combine them with the choices sheet for backwards-compatibility.
     choices_and_columns_sheet = workbook_dict.get(
         constants.CHOICES_AND_COLUMNS, {})
     choices_and_columns_sheet = dealias_and_group_headers(
@@ -355,7 +356,7 @@ def workbook_to_json(
     choices_sheet = dealias_and_group_headers(
         choices_sheet, aliases.list_header, use_double_colons,
         default_language)
-    ########### Cascading Select sheet ###########
+    # ########## Cascading Select sheet ###########
     cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, [])
     if len(cascading_choices):
         if 'choices' in cascading_choices[0]:
@@ -366,7 +367,7 @@ def workbook_to_json(
         constants.LIST_NAME)
 
     choices = combined_lists
-    #Make sure all the options have the required properties:
+    # Make sure all the options have the required properties:
     warnedabout = set()
     for list_name, options in choices.items():
         for option in options:
@@ -377,10 +378,10 @@ def workbook_to_json(
             if 'label' not in option:
                 info = "[list_name : " + list_name + ']'
                 warnings.append(
-                    "On the choices sheet there is a option with no label. "
-                    + info)
+                    "On the choices sheet there is a option with no label. " +
+                    info)
             # chrislrobert's fix for a cryptic error message:
-            # see: https://code.google.com/p/opendatakit/issues/detail?id=833&start=200
+            # see: https://code.google.com/p/opendatakit/issues/detail?id=832&start=200 # noqa
             for headername in option.keys():
                 # Using warnings and removing the bad columns
                 # instead of throwing errors because some forms
@@ -398,13 +399,13 @@ def workbook_to_json(
                     warnings.append("On the choices sheet there is a value" +
                                     " in a column with no header.")
                     del option[headername]
-    ########### Survey sheet ###########
+    # ########## Survey sheet ###########
     if constants.SURVEY not in workbook_dict:
         raise PyXFormError(
-            "You must have a sheet named (case-sensitive): "
-            + constants.SURVEY)
+            "You must have a sheet named (case-sensitive): " +
+            constants.SURVEY)
     survey_sheet = workbook_dict[constants.SURVEY]
-    #Process the headers:
+    # Process the headers:
     clean_text_values_enabled = aliases.yes_no.get(
         settings.get("clean_text_values", "true()"))
     if clean_text_values_enabled:
@@ -413,37 +414,37 @@ def workbook_to_json(
         survey_sheet, aliases.survey_header,
         use_double_colons, default_language)
     survey_sheet = dealias_types(survey_sheet)
-    ##################################
+    # #################################
 
-    #Parse the survey sheet while generating a survey in our json format:
+    # Parse the survey sheet while generating a survey in our json format:
 
     row_number = 1  # We start at 1 because the column header row is not
-                    # included in the survey sheet (presumably).
-    #A stack is used to keep track of begin/end expressions
+    #                 included in the survey sheet (presumably).
+    # A stack is used to keep track of begin/end expressions
     stack = [(None, json_dict.get(constants.CHILDREN))]
-    #If a group has a table-list appearance flag
-    #this will be set to the name of the list
+    # If a group has a table-list appearance flag
+    # this will be set to the name of the list
     table_list = None
-    #For efficiency we compile all the regular expressions
+    # For efficiency we compile all the regular expressions
     # that will be used to parse types:
-    end_control_regex = re.compile(r"^(?P<end>end)(\s|_)(?P<type>("
-                                   + '|'.join(aliases.control.keys()) + r"))$")
-    begin_control_regex = re.compile(r"^(?P<begin>begin)(\s|_)(?P<type>("
-                                     + '|'.join(aliases.control.keys())
-                                     + r"))( (over )?(?P<list_name>\S+))?$")
+    end_control_regex = re.compile(r"^(?P<end>end)(\s|_)(?P<type>(" +
+                                   '|'.join(aliases.control.keys()) + r"))$")
+    begin_control_regex = re.compile(r"^(?P<begin>begin)(\s|_)(?P<type>(" +
+                                     '|'.join(aliases.control.keys()) +
+                                     r"))( (over )?(?P<list_name>\S+))?$")
     select_regexp = re.compile(
-        r"^(?P<select_command>(" + '|'.join(aliases.select.keys())
-        + r")) (?P<list_name>\S+)"
-        + "( (?P<specify_other>(or specify other|or_other|or other)))?$")
+        r"^(?P<select_command>(" + '|'.join(aliases.select.keys()) +
+        r")) (?P<list_name>\S+)" +
+        "( (?P<specify_other>(or specify other|or_other|or other)))?$")
     cascading_regexp = re.compile(
-        r"^(?P<cascading_command>("
-        + '|'.join(aliases.cascading.keys())
-        + r")) (?P<cascading_level>\S+)?$")
+        r"^(?P<cascading_command>(" +
+        '|'.join(aliases.cascading.keys()) +
+        r")) (?P<cascading_level>\S+)?$")
     for row in survey_sheet:
         row_number += 1
         prev_control_type, parent_children_array = stack[-1]
-        #Disabled should probably be first
-        #so the attributes below can be disabled.
+        # Disabled should probably be first
+        # so the attributes below can be disabled.
         if u"disabled" in row:
             warnings.append(
                 rowFormatString % row_number +
@@ -453,15 +454,15 @@ def workbook_to_json(
             if aliases.yes_no.get(disabled):
                 continue
 
-        #skip empty rows
+        # skip empty rows
         if len(row) == 0:
             continue
 
-        #Get question type
+        # Get question type
         question_type = row.get(constants.TYPE)
         if not question_type:
             # if name and label are also missing,
-            #then its a comment row, and we skip it with warning
+            # then its a comment row, and we skip it with warning
             if not ((constants.NAME in row) or (constants.LABEL in row)):
                     warnings.append(
                         rowFormatString % row_number + " Row without name,"
@@ -478,15 +479,15 @@ def workbook_to_json(
                 raise PyXFormError(
                     rowFormatString % row_number + " Missing calculation.")
 
-        #Check if the question is actually a setting specified
-        #on the survey sheet
+        # Check if the question is actually a setting specified
+        # on the survey sheet
         settings_type = aliases.settings_header.get(question_type)
         if settings_type:
             json_dict[settings_type] = unicode(row.get(constants.NAME))
             continue
 
-        #Try to parse question as a end control statement
-        #(i.e. end loop/repeat/group):
+        # Try to parse question as a end control statement
+        # (i.e. end loop/repeat/group):
         end_control_parse = end_control_regex.search(question_type)
         if end_control_parse:
             parse_dict = end_control_parse.groupdict()
@@ -502,10 +503,10 @@ def workbook_to_json(
                 table_list = None
                 continue
 
-        #Make sure the row has a valid name
-        if not constants.NAME in row:
+        # Make sure the row has a valid name
+        if constants.NAME not in row:
             if row['type'] == 'note':
-                #autogenerate names for notes without them
+                # autogenerate names for notes without them
                 row['name'] = "generated_note_name_" + str(row_number)
             # elif 'group' in row['type'].lower():
             #     # autogenerate names for groups without them
@@ -526,7 +527,7 @@ def workbook_to_json(
         if constants.LABEL not in row and \
            row.get(constants.MEDIA) is None and \
            question_type not in aliases.label_optional_types:
-            #TODO: Should there be a default label?
+            # TODO: Should there be a default label?
             #      Not sure if we should throw warnings for groups...
             #      Warnings can be ignored so I'm not too concerned
             #      about false positives.
@@ -534,17 +535,17 @@ def workbook_to_json(
                 rowFormatString % row_number +
                 " Question has no label: " + str(row))
 
-        #Try to parse question as begin control statement
-        #(i.e. begin loop/repeat/group):
+        # Try to parse question as begin control statement
+        # (i.e. begin loop/repeat/group):
         begin_control_parse = begin_control_regex.search(question_type)
         if begin_control_parse:
             parse_dict = begin_control_parse.groupdict()
             if parse_dict.get("begin") and "type" in parse_dict:
-                #Create a new json dict with children, and the proper type,
-                #and add it to parent_children_array in place of a question.
-                #parent_children_array will then be set to its children array
-                #(so following questions are nested under it)
-                #until an end command is encountered.
+                # Create a new json dict with children, and the proper type,
+                # and add it to parent_children_array in place of a question.
+                # parent_children_array will then be set to its children array
+                # (so following questions are nested under it)
+                # until an end command is encountered.
                 control_type = aliases.control[parse_dict["type"]]
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type
@@ -552,7 +553,7 @@ def workbook_to_json(
                 new_json_dict[constants.CHILDREN] = child_list
                 if control_type is constants.LOOP:
                     if not parse_dict.get("list_name"):
-                        #TODO: Perhaps warn and make repeat into a group?
+                        # TODO: Perhaps warn and make repeat into a group?
                         raise PyXFormError(
                             rowFormatString % row_number +
                             " Repeat loop without list name.")
@@ -563,8 +564,8 @@ def workbook_to_json(
                             " List name not in columns sheet: " + list_name)
                     new_json_dict[constants.COLUMNS] = choices[list_name]
 
-                #Generate a new node for the jr:count column so
-                #xpath expressions can be used.
+                # Generate a new node for the jr:count column so
+                # xpath expressions can be used.
                 repeat_count_expression = new_json_dict.get(
                     'control', {}).get('jr:count')
                 if repeat_count_expression:
@@ -580,15 +581,15 @@ def workbook_to_json(
                     new_json_dict['control']['jr:count'] = \
                         "${" + generated_node_name + "}"
 
-                #Code to deal with table_list appearance flags
+                # Code to deal with table_list appearance flags
                 # (for groups of selects)
                 ctrl_ap = new_json_dict.get(u"control", {}).get(u"appearance")
                 if ctrl_ap == constants.TABLE_LIST:
                     table_list = True
                     new_json_dict[u"control"][u"appearance"] = u"field-list"
-                    #Generate a note label element so hints and labels
-                    #work as expected in table-lists.
-                    #see https://github.com/modilabs/pyxform/issues/62
+                    # Generate a note label element so hints and labels
+                    # work as expected in table-lists.
+                    # see https://github.com/modilabs/pyxform/issues/62
                     if 'label' in new_json_dict or 'hint' in new_json_dict:
                         generated_label_element = {
                             "type": "note",
@@ -620,8 +621,8 @@ def workbook_to_json(
                     raise PyXFormError(
                         rowFormatString % row_number +
                         " Cascading select needs a name.")
-                #cascading_json = get_cascading_json(
-                #cascading_choices, cascading_prefix, cascading_level)
+                # cascading_json = get_cascading_json(
+                # cascading_choices, cascading_prefix, cascading_level)
                 if len(cascading_choices) <= 0 or\
                         'questions' not in cascading_choices[0]:
                     raise PyXFormError(
@@ -652,15 +653,16 @@ def workbook_to_json(
                         replace_prefix(cq, cascading_prefix))
                 continue  # so the row isn't put in as is
 
-        #Try to parse question as a select:
+        # Try to parse question as a select:
         select_parse = select_regexp.search(question_type)
         if select_parse:
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
                 select_type = aliases.select[parse_dict["select_command"]]
                 if select_type == 'select one external'\
-                   and not 'choice_filter' in row:
-                    warnings.append(rowFormatString % row_number +
+                        and 'choice_filter' not in row:
+                    warnings.append(
+                        rowFormatString % row_number +
                         u" select one external is only meant for"
                         u" filtered selects.")
                     select_type = aliases.select['select_one']
@@ -677,8 +679,8 @@ def workbook_to_json(
                         rowFormatString % row_number +
                         " List name not in choices sheet: " + list_name)
 
-                #Validate select_multiple choice names by making sure
-                #they have no spaces (will cause errors in exports).
+                # Validate select_multiple choice names by making sure
+                # they have no spaces (will cause errors in exports).
                 if select_type == constants.SELECT_ALL_THAT_APPLY:
                     for choice in choices[list_name]:
                         if ' ' in choice[constants.NAME]:
@@ -691,31 +693,31 @@ def workbook_to_json(
                 specify_other_question = None
                 if parse_dict.get("specify_other") is not None:
                     select_type += u" or specify other"
-#                    #With this code we no longer need to handle or_other
-#                    #questions in survey builder.
-#                    #However, it depends on being able to use choice filters
-#                    #and xpath expressions that return empty sets.
-#                    choices[list_name].append(
-#                        {
-#                            'name': 'other',
-#                            'label': {default_language : 'Other'},
-#                            'orOther': 'true',
-#                        })
-#                    or_other_xpath = 'isNull(orOther)'
-#                    if 'choice_filter' in row:
-#                        row['choice_filter'] += ' or ' + or_other_xpath
-#                    else:
-#                        row['choice_filter'] = or_other_xpath
-#
-#                    specify_other_question = \
-#                        {
-#                          'type':'text',
-#                          'name': row['name'] + '_specify_other',
-#                          'label':
-#                           'Specify Other for:\n"' + row['label'] + '"',
-#                          'bind' : {'relevant':
-#                                   "selected(../%s, 'other')" % row['name']},
-#                        }
+                    # With this code we no longer need to handle or_other
+                    # questions in survey builder.
+                    # However, it depends on being able to use choice filters
+                    # and xpath expressions that return empty sets.
+                    # choices[list_name].append(
+                    # {
+                    #     'name': 'other',
+                    #     'label': {default_language : 'Other'},
+                    #     'orOther': 'true',
+                    # })
+                    # or_other_xpath = 'isNull(orOther)'
+                    # if 'choice_filter' in row:
+                    #   row['choice_filter'] += ' or ' + or_other_xpath
+                    # else:
+                    #   row['choice_filter'] = or_other_xpath
+
+                    # specify_other_question = \
+                    # {
+                    #       'type':'text',
+                    #       'name': row['name'] + '_specify_other',
+                    #       'label':
+                    #        'Specify Other for:\n"' + row['label'] + '"',
+                    #       'bind' : {'relevant':
+                    #                "selected(../%s, 'other')" % row['name']},
+                    #     }
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
@@ -729,25 +731,25 @@ def workbook_to_json(
                 else:
                     new_json_dict[constants.CHOICES] = choices[list_name]
 
-                #Code to deal with table_list appearance flags
-                #(for groups of selects)
+                # Code to deal with table_list appearance flags
+                # (for groups of selects)
                 if table_list is not None:
-                    #Then this row is the first select in a table list
+                    # Then this row is the first select in a table list
                     if not isinstance(table_list, basestring):
                         table_list = list_name
                         table_list_header = {
                             constants.TYPE: select_type,
                             constants.NAME:
                             "reserved_name_for_field_list_labels_" +
-                            str(row_number),  # Adding row number for uniqueness
+                            str(row_number),  # Adding row number for uniqueness # noqa
                             constants.CONTROL: {u"appearance": u"label"},
                             constants.CHOICES: choices[list_name],
-                            #Do we care about filtered selects in table lists?
-                            #'itemset' : list_name,
+                            # Do we care about filtered selects in table lists?
+                            # 'itemset' : list_name,
                         }
                         parent_children_array.append(table_list_header)
 
-                    if table_list <> list_name:
+                    if table_list != list_name:
                         error_message = rowFormatString % row_number
                         error_message += " Badly formatted table list,"\
                                          " list names don't match: " +\
@@ -762,17 +764,16 @@ def workbook_to_json(
                     parent_children_array.append(specify_other_question)
                 continue
 
-        #TODO: Consider adding some question_type validation here.
+        # TODO: Consider adding some question_type validation here.
 
-        #Put the row in the json dict as is:
+        # Put the row in the json dict as is:
         parent_children_array.append(row)
 
     if len(stack) != 1:
         raise PyXFormError("Unmatched begin statement: " + str(stack[-1][0]))
 
-
     if settings.get('flat', False):
-        #print "Generating flattened instance..."
+        # print "Generating flattened instance..."
         add_flat_annotations(stack[0][1])
 
     meta_children = []
@@ -782,7 +783,7 @@ def workbook_to_json(
             raise PyXFormError(
                 "Cannot omit instanceID, it is required for encryption.")
     else:
-        #Automatically add an instanceID element:
+        # Automatically add an instanceID element:
         meta_children.append({
             "name": "instanceID",
             "bind": {
@@ -794,7 +795,7 @@ def workbook_to_json(
         })
 
     if 'instance_name' in settings:
-        #Automatically add an instanceName element:
+        # Automatically add an instanceName element:
         meta_children.append({
             "name": "instanceName",
             "bind": {
@@ -816,7 +817,7 @@ def workbook_to_json(
         noop, survey_children_array = stack[0]
         survey_children_array.append(meta_element)
 
-    #print_pyobj_to_json(json_dict)
+    # print_pyobj_to_json(json_dict)
     return json_dict
 
 
@@ -840,6 +841,7 @@ def parse_file_to_workbook_dict(path, file_object=None):
         return csv_to_dict(file_object if file_object is not None else path)
     else:
         raise PyXFormError("File was not recognized")
+
 
 def get_filename(path):
     """
@@ -893,7 +895,7 @@ class SpreadsheetReader(object):
     def to_json_dict(self):
         return self._dict
 
-    #TODO: Make sure the unicode chars don't show up
+    # TODO: Make sure the unicode chars don't show up
     def print_json_to_file(self, filename=""):
         if not filename:
             filename = self._path[:-4] + ".json"
@@ -920,7 +922,7 @@ class SurveyReader(SpreadsheetReader):
         self._path = path
 
     def print_warning_log(self, warn_out_file):
-        #Open file to print warning log to.
+        # Open file to print warning log to.
         warn_out = open(warn_out_file, 'w')
         warn_out.write('\n'.join(self._warnings))
 
@@ -944,8 +946,8 @@ class QuestionTypesReader(SpreadsheetReader):
         self._dict = organize_by_values(self._dict, u"name")
 
 
-#Not used internally (or on formhub)
-#TODO: If this is used anywhere else it is probably broken
+# Not used internally (or on formhub)
+# TODO: If this is used anywhere else it is probably broken
 #      from the changes I made to SpreadsheetReader.
 class VariableNameReader(SpreadsheetReader):
     def __init__(self, path):
@@ -970,7 +972,7 @@ if __name__ == "__main__":
     # Open the excel file specified by the argument of this python call,
     # convert that file to json, then print it
     if len(sys.argv) < 2:
-        #print "You must supply a file argument."
+        # print "You must supply a file argument."
         filename = "xlsform_spec_test.xls"
         path = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/"
         path += filename

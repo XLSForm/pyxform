@@ -17,7 +17,8 @@ class Section(SurveyElement):
         for element in self.children:
             if element.name in element_slugs:
                 raise PyXFormError(
-                    "There are two survey elements named '%s' in the section named '%s'." % (element.name, self.name)
+                    "There are two survey elements named '%s' in the section"
+                    " named '%s'." % (element.name, self.name)
                     )
             element_slugs.append(element.name)
 
@@ -73,7 +74,7 @@ class RepeatingSection(Section):
             <label ref="jr:itext('fav')" />
             <item><label ref="jr:itext('red')" /><value>red</value></item>
             <item><label ref="jr:itext('green')" /><value>green</value></item>
-            <item><label ref="jr:itext('yellow')" /><value>yellow</value></item>
+            <item><label ref="jr:itext('blue')" /><value>blue</value></item>
           </select1>
         </repeat>
         </group>
@@ -94,49 +95,55 @@ class RepeatingSection(Section):
                 u"group", self.xml_label(), repeat_node,
                 ref=self.get_xpath()
                 )
-        return node(u"group", repeat_node, ref=self.get_xpath(), **self.control)
+        return node(u"group", repeat_node, ref=self.get_xpath(),
+                    **self.control)
 
-    #I'm anal about matching function signatures when overriding a function, but there's no reason for kwargs to be an argument
+    # I'm anal about matching function signatures when overriding a function,
+    # but there's no reason for kwargs to be an argument
     def xml_instance(self, **kwargs):
-        kwargs = {"jr:template": ""} #It might make more sense to add this as a child on initialization
+        kwargs = {"jr:template": ""}  # It might make more sense to add this
+        #                               as a child on initialization
+
         return super(RepeatingSection, self).xml_instance(**kwargs)
 
+
 class GroupedSection(Section):
-#    I think this might be a better place for the table-list stuff, however it doesn't allow for as good of validation as putting it in xls2json
-#    def __init__(self, **kwargs):
-#        control = kwargs.get(u"control")
-#        if control:
-#            appearance = control.get(u"appearance")
-#            if appearance is u"table-list":
-#                print "HI"
-#                control[u"appearance"] = "field-list"
-#                kwargs["children"].insert(0, kwargs["children"][0])
-#        super(GroupedSection, self).__init__(kwargs)
-        
+    # I think this might be a better place for the table-list stuff, however it
+    # doesn't allow for as good of validation as putting it in xls2json
+    # def __init__(self, **kwargs):
+    #        control = kwargs.get(u"control")
+    #        if control:
+    #            appearance = control.get(u"appearance")
+    #            if appearance is u"table-list":
+    #                print "HI"
+    #                control[u"appearance"] = "field-list"
+    #                kwargs["children"].insert(0, kwargs["children"][0])
+    #        super(GroupedSection, self).__init__(kwargs)
+
     def xml_control(self):
         control_dict = self.control
-        
+
         if control_dict.get("bodyless"):
             return None
-            
+
         children = []
         attributes = {}
         attributes.update(self.control)
-        
+
         survey = self.get_root()
-        
+
         # Resolve field references in attributes
         for key, value in attributes.items():
             attributes[key] = survey.insert_xpaths(value)
-        
+
         if not self.get('flat'):
             attributes['ref'] = self.get_xpath()
-        
+
         if 'label' in self and len(self['label']) > 0:
             children.append(self.xml_label())
         for n in Section.xml_control(self):
             children.append(n)
-        
+
         if u"appearance" in control_dict:
             attributes['appearance'] = control_dict['appearance']
 
