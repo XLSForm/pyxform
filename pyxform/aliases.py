@@ -130,3 +130,6 @@ label_optional_types = [
     u"end",
     u"today"
 ]
+osm = {
+    u"osm": constants.OSM_TYPE
+}

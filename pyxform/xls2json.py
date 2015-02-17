@@ -440,6 +440,10 @@ def workbook_to_json(
         r"^(?P<cascading_command>(" +
         '|'.join(aliases.cascading.keys()) +
         r")) (?P<cascading_level>\S+)?$")
+    osm_regexp = re.compile(
+        r"(?P<osm_command>(" + '|'.join(aliases.osm.keys()) +
+        ')) (?P<list_name>\S+)')
+
     for row in survey_sheet:
         row_number += 1
         prev_control_type, parent_children_array = stack[-1]
@@ -763,6 +767,14 @@ def workbook_to_json(
                 if specify_other_question:
                     parent_children_array.append(specify_other_question)
                 continue
+
+        # Try to parse question as a select:
+        osm_parse = osm_regexp.search(question_type)
+        if osm_parse:
+            new_dict = row.copy()
+            new_dict['type'] = constants.OSM
+            parent_children_array.append(new_dict)
+            continue
 
         # TODO: Consider adding some question_type validation here.
 

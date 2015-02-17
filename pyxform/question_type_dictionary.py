@@ -808,6 +808,15 @@ QUESTION_TYPE_DICT = \
                 "jr:preloadParams": "uri:email"
             }
         },
+        "osm": {
+            "control": {
+                "tag": "upload",
+                "mediatype": "osm/*"
+            },
+            "bind": {
+                "type": "binary"
+            }
+        },
     }
 
 # import os
