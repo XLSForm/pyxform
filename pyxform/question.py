@@ -171,3 +171,47 @@ class SelectOneQuestion(MultipleChoiceQuestion):
     def __init__(self, *args, **kwargs):
         super(SelectOneQuestion, self).__init__(*args, **kwargs)
         self._dict[self.TYPE] = u"select one"
+
+
+class Tag(SurveyElement):
+
+    def xml(self):
+        item = node(u"tag", key=self.name)
+        self.xml_label()
+        item.appendChild(self.xml_label())
+
+        return item
+
+    def validate(self):
+        pass
+
+
+class OsmUploadQuestion(UploadQuestion):
+    def __init__(self, *args, **kwargs):
+        super(OsmUploadQuestion, self).__init__(*args, **kwargs)
+        kwargs_copy = kwargs.copy()
+        tags = kwargs_copy.pop('tags', [])
+        if tags:
+            self.children = []
+
+            for tag in tags:
+                self.add_tag(**tag)
+
+    def add_tag(self, **kwargs):
+        tag = Tag(**kwargs)
+        self.add_child(tag)
+
+    def xml_control(self):
+        control_dict = self.control
+        control_dict['ref'] = self.get_xpath()
+        control_dict['mediatype'] = self._get_media_type()
+        result = node(
+            u"upload",
+            *self.xml_label_and_hint(),
+            **control_dict
+            )
+
+        for osm_tag in self.children:
+            result.appendChild(osm_tag.xml())
+
+        return result

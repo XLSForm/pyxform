@@ -7,7 +7,7 @@ from errors import PyXFormError
 from section import RepeatingSection, GroupedSection
 from survey import Survey
 from question import Question, InputQuestion, TriggerQuestion, \
-    UploadQuestion, MultipleChoiceQuestion
+    UploadQuestion, MultipleChoiceQuestion, OsmUploadQuestion
 from question_type_dictionary import QUESTION_TYPE_DICT
 from xls2json import SurveyReader
 
@@ -44,6 +44,7 @@ class SurveyElementBuilder(object):
         u"select": MultipleChoiceQuestion,
         u"select1": MultipleChoiceQuestion,
         u"upload": UploadQuestion,
+        u"osm": OsmUploadQuestion,
         }
 
     SECTION_CLASSES = {
@@ -172,6 +173,9 @@ class SurveyElementBuilder(object):
         question_type = question_type_dictionary.get(question_type_str, {})
         control_dict = question_type.get(u"control", {})
         control_tag = control_dict.get(u"tag", u"")
+        if control_tag == u"upload" \
+                and control_dict.get(u"mediatype") == "osm/*":
+            control_tag = u"osm"
 
         return SurveyElementBuilder.QUESTION_CLASSES[control_tag]
 

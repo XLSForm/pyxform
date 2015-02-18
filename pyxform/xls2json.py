@@ -414,6 +414,9 @@ def workbook_to_json(
         survey_sheet, aliases.survey_header,
         use_double_colons, default_language)
     survey_sheet = dealias_types(survey_sheet)
+
+    osm_sheet = workbook_dict.get(constants.OSM, [])
+    osm_tags = group_dictionaries_by_key(osm_sheet, constants.LIST_NAME)
     # #################################
 
     # Parse the survey sheet while generating a survey in our json format:
@@ -768,12 +771,18 @@ def workbook_to_json(
                     parent_children_array.append(specify_other_question)
                 continue
 
-        # Try to parse question as a select:
+        # Try to parse question as osm:
         osm_parse = osm_regexp.search(question_type)
         if osm_parse:
+            parse_dict = osm_parse.groupdict()
             new_dict = row.copy()
             new_dict['type'] = constants.OSM
+
+            if parse_dict.get('list_name') is not None:
+                new_dict['tags'] = osm_tags.get(parse_dict.get('list_name'))
+
             parent_children_array.append(new_dict)
+
             continue
 
         # TODO: Consider adding some question_type validation here.

@@ -35,6 +35,30 @@
     <upload mediatype="osm/*" ref="/osm/osm_building">
       <label>Building</label>
       <hint>Tag attributes about this building.</hint>
+      <tag key="name">
+        <label>Name</label>
+      </tag>
+      <tag key="name:fr">
+        <label>Nom en Francais</label>
+      </tag>
+      <tag key="addr:housenumber">
+        <label>House Number</label>
+      </tag>
+      <tag key="addr:street">
+        <label>Street Name</label>
+      </tag>
+      <tag key="addr:city">
+        <label>City</label>
+      </tag>
+      <tag key="addr:postcode">
+        <label>Zip Code</label>
+      </tag>
+      <tag key="building">
+        <label>Building</label>
+      </tag>
+      <tag key="amenity">
+        <label>Building Type</label>
+      </tag>
     </upload>
     <select1 ref="/osm/fav_color">
       <label>What is your favourite color?</label>
