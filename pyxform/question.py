@@ -188,9 +188,12 @@ class Tag(SurveyElement):
 
 class OsmUploadQuestion(UploadQuestion):
     def __init__(self, *args, **kwargs):
-        super(OsmUploadQuestion, self).__init__(*args, **kwargs)
         kwargs_copy = kwargs.copy()
-        tags = kwargs_copy.pop('tags', [])
+        tags = kwargs_copy.pop(u"tags", []) + \
+            kwargs_copy.pop(u"children", [])
+
+        super(OsmUploadQuestion, self).__init__(*args, **kwargs_copy)
+
         if tags:
             self.children = []
 

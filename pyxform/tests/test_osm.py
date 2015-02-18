@@ -1,5 +1,6 @@
 from unittest import TestCase
 from pyxform.builder import create_survey_from_path
+from pyxform.builder import create_survey_element_from_json
 import utils
 import os
 import codecs
@@ -16,4 +17,8 @@ class OSMTests(TestCase):
             os.path.dirname(__file__), 'test_expected_output', 'osm.xml')
 
         with codecs.open(path, encoding='utf-8') as f:
-            self.assertMultiLineEqual(survey.to_xml(), f.read())
+            expected_xml = f.read()
+            self.assertMultiLineEqual(survey.to_xml(), expected_xml)
+
+            survey = create_survey_element_from_json(survey.to_json())
+            self.assertMultiLineEqual(survey.to_xml(), expected_xml)
