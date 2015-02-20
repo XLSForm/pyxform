@@ -58,6 +58,18 @@
       </tag>
       <tag key="amenity">
         <label>Building Type</label>
+        <item>
+          <label>School</label>
+          <value>school</value>
+        </item>
+        <item>
+          <label>Church</label>
+          <value>church</value>
+        </item>
+        <item>
+          <label>Office Building</label>
+          <value>office</value>
+        </item>
       </tag>
     </upload>
     <select1 ref="/osm/fav_color">

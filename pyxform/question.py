@@ -174,13 +174,28 @@ class SelectOneQuestion(MultipleChoiceQuestion):
 
 
 class Tag(SurveyElement):
+    def __init__(self, *args, **kwargs):
+        kwargs_copy = kwargs.copy()
+        choices = kwargs_copy.pop(u"choices", []) + \
+            kwargs_copy.pop(u"children", [])
+
+        super(Tag, self).__init__(*args, **kwargs_copy)
+
+        if choices:
+            self.children = []
+
+            for choice in choices:
+                option = Option(**choice)
+                self.add_child(option)
 
     def xml(self):
-        item = node(u"tag", key=self.name)
+        result = node(u"tag", key=self.name)
         self.xml_label()
-        item.appendChild(self.xml_label())
+        result.appendChild(self.xml_label())
+        for choice in self.children:
+            result.appendChild(choice.xml())
 
-        return item
+        return result
 
     def validate(self):
         pass

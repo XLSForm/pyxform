@@ -779,7 +779,11 @@ def workbook_to_json(
             new_dict['type'] = constants.OSM
 
             if parse_dict.get('list_name') is not None:
-                new_dict['tags'] = osm_tags.get(parse_dict.get('list_name'))
+                tags = osm_tags.get(parse_dict.get('list_name'))
+                for tag in tags:
+                    if osm_tags.get(tag.get('name')):
+                        tag['choices'] = osm_tags.get(tag.get('name'))
+                new_dict['tags'] = tags
 
             parent_children_array.append(new_dict)
 
