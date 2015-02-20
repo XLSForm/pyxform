@@ -2,7 +2,7 @@ language: python
 python:
   - "2.7"
 install:
-  - pip install -q -r requirements.pip --use-mirrors
+  - pip install -q -r requirements.pip
 script: nosetests
 notifications:
   irc: "irc.freenode.org#moditest"
