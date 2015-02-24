@@ -432,7 +432,7 @@ class Survey(Section):
             return result, not result == xml_text
         return text, False
 
-    def print_xform_to_file(self, path="", validate=True, warnings=None):
+    def print_xform_to_file(self, path=None, validate=True, warnings=None):
         """
         Print the xForm to a file and optionally validate it as well by
         throwing exceptions and adding warnings to the warnings array.
@@ -447,10 +447,10 @@ class Survey(Section):
         if validate:
             warnings.extend(check_xform(path))
 
-    def to_xml(self, validate=True, pretty=True):
+    def to_xml(self, validate=True, warnings=None):
         with tempfile.NamedTemporaryFile() as tmp:
             # this will throw an exception if the xml is not valid
-            self.print_xform_to_file(tmp.name)
+            self.print_xform_to_file(tmp.name, validate=validate, warnings=warnings)
         return self._to_pretty_xml()
 
     def instantiate(self):
