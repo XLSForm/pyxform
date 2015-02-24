@@ -197,7 +197,7 @@ class SurveyElement(dict):
         print_pyobj_to_json(self.to_json_dict(), path)
 
     def __eq__(self, y):
-        return hasattr(y, 'to_json_dict') and callable(y, 'to_json_dict') and \
+        return hasattr(y, 'to_json_dict') and callable(y.to_json_dict) and \
                     self.to_json_dict() == y.to_json_dict()
 
     def _translation_path(self, display_element):
