@@ -1,0 +1,282 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>sample</h:title>
+    <model>
+      <submission action="https://example-odk-aggregate.appspot.com/submission" base64RsaPublicKey="MIIBIjANBgkqhkiG8w0BAQEFAAOCAQ8AMIIBCgKCAQEAo93+Dgn3iDleC9XMTDH7ez1MOm/BOt287DgkldNkdvrtdC4oUegx3N8Say9tq47k2EOzeLYkezVnKdtserx+g/+R6pDIOS66bwbH+HoslDEUaZRZ47EipSGC1JhtOp/nQGQCsdVc5q/fPvw8d2rLLi+PQUZPBOiBxUo9h/CFc41hl/quUELmylSdL4O06OAP8OCEDA+tl0C2Ik+uCYMDJLD4m7YVbkV7jJXjtILj+GW+noLriFMRsgg7WKQe2j9fw5+v46nzhokOnDnHh+yGwQMfs/B0jfFAgXllLNjIPlXQf2UVzuxEax6wLCyqUXMIjCPSNfnzDRgFB4Qw3QbJCwIDAQAB" method="form-data-post"/>
+      <itext>
+        <translation default="true()" lang="english">
+          <text id="static_instance-cities_with_other-0">
+            <value>Dumont</value>
+          </text>
+          <text id="static_instance-cities_with_other-1">
+            <value>Finney</value>
+          </text>
+          <text id="static_instance-cities_with_other-2">
+            <value>brownsville</value>
+          </text>
+          <text id="static_instance-cities_with_other-3">
+            <value>harlingen</value>
+          </text>
+          <text id="static_instance-states-0">
+            <value>Texas</value>
+          </text>
+          <text id="static_instance-states-1">
+            <value>Washington</value>
+          </text>
+          <text id="static_instance-cities_with_other-6">
+            <value>Tacoma</value>
+          </text>
+          <text id="static_instance-cities_with_other-7">
+            <value>Puyallup</value>
+          </text>
+          <text id="static_instance-cities_with_other-8">
+            <value>Other</value>
+          </text>
+          <text id="static_instance-cities_with_other-4">
+            <value>Seattle</value>
+          </text>
+          <text id="static_instance-cities_with_other-5">
+            <value>Redmond</value>
+          </text>
+          <text id="static_instance-counties-2">
+            <value>King</value>
+          </text>
+          <text id="static_instance-counties-3">
+            <value>Cameron</value>
+          </text>
+          <text id="static_instance-counties-0">
+            <value>King</value>
+          </text>
+          <text id="static_instance-counties-1">
+            <value>Pierce</value>
+          </text>
+          <text id="static_instance-cities-3">
+            <value>harlingen</value>
+          </text>
+          <text id="static_instance-cities-2">
+            <value>brownsville</value>
+          </text>
+          <text id="static_instance-cities-1">
+            <value>Finney</value>
+          </text>
+          <text id="static_instance-cities-0">
+            <value>Dumont</value>
+          </text>
+          <text id="static_instance-cities-7">
+            <value>Puyallup</value>
+          </text>
+          <text id="static_instance-cities-6">
+            <value>Tacoma</value>
+          </text>
+          <text id="static_instance-cities-5">
+            <value>Redmond</value>
+          </text>
+          <text id="static_instance-cities-4">
+            <value>Seattle</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <new_cascading_select_with_other id="sample">
+          <state/>
+          <county/>
+          <city/>
+          <city2/>
+          <city2_other/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </new_cascading_select_with_other>
+      </instance>
+      <instance id="states">
+        <root>
+          <item>
+            <itextId>static_instance-states-0</itextId>
+            <name>texas</name>
+          </item>
+          <item>
+            <itextId>static_instance-states-1</itextId>
+            <name>washington</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="cities">
+        <root>
+          <item>
+            <itextId>static_instance-cities-0</itextId>
+            <county>king</county>
+            <state>texas</state>
+            <name>dumont</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-1</itextId>
+            <county>king</county>
+            <state>texas</state>
+            <name>finney</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-2</itextId>
+            <county>cameron</county>
+            <state>texas</state>
+            <name>brownsville</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-3</itextId>
+            <county>cameron</county>
+            <state>texas</state>
+            <name>harlingen</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-4</itextId>
+            <county>king</county>
+            <state>washington</state>
+            <name>seattle</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-5</itextId>
+            <county>king</county>
+            <state>washington</state>
+            <name>redmond</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-6</itextId>
+            <county>pierce</county>
+            <state>washington</state>
+            <name>tacoma</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-7</itextId>
+            <county>pierce</county>
+            <state>washington</state>
+            <name>puyallup</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="cities_with_other">
+        <root>
+          <item>
+            <itextId>static_instance-cities_with_other-0</itextId>
+            <county>king</county>
+            <state>texas</state>
+            <name>dumont</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities_with_other-1</itextId>
+            <county>king</county>
+            <state>texas</state>
+            <name>finney</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities_with_other-2</itextId>
+            <county>cameron</county>
+            <state>texas</state>
+            <name>brownsville</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities_with_other-3</itextId>
+            <county>cameron</county>
+            <state>texas</state>
+            <name>harlingen</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities_with_other-4</itextId>
+            <county>king</county>
+            <state>washington</state>
+            <name>seattle</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities_with_other-5</itextId>
+            <county>king</county>
+            <state>washington</state>
+            <name>redmond</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities_with_other-6</itextId>
+            <county>pierce</county>
+            <state>washington</state>
+            <name>tacoma</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities_with_other-7</itextId>
+            <county>pierce</county>
+            <state>washington</state>
+            <name>puyallup</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities_with_other-8</itextId>
+            <name>other</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="counties">
+        <root>
+          <item>
+            <itextId>static_instance-counties-0</itextId>
+            <state>washington</state>
+            <name>king</name>
+          </item>
+          <item>
+            <itextId>static_instance-counties-1</itextId>
+            <state>washington</state>
+            <name>pierce</name>
+          </item>
+          <item>
+            <itextId>static_instance-counties-2</itextId>
+            <state>texas</state>
+            <name>king</name>
+          </item>
+          <item>
+            <itextId>static_instance-counties-3</itextId>
+            <state>texas</state>
+            <name>cameron</name>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/new_cascading_select_with_other/state" type="select1"/>
+      <bind nodeset="/new_cascading_select_with_other/county" type="select1"/>
+      <bind nodeset="/new_cascading_select_with_other/city" type="select1"/>
+      <bind nodeset="/new_cascading_select_with_other/city2" type="select1"/>
+      <bind nodeset="/new_cascading_select_with_other/city2_other" relevant="selected(../city2, 'other')" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/new_cascading_select_with_other/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <select1 ref="/new_cascading_select_with_other/state">
+      <label>state</label>
+      <item>
+        <label>Texas</label>
+        <value>texas</value>
+      </item>
+      <item>
+        <label>Washington</label>
+        <value>washington</value>
+      </item>
+    </select1>
+    <select1 ref="/new_cascading_select_with_other/county">
+      <label>county</label>
+      <itemset nodeset="instance('counties')/root/item[state= /new_cascading_select_with_other/state ]">
+        <value ref="name"/>
+        <label ref="jr:itext(itextId)"/>
+      </itemset>
+    </select1>
+    <select1 ref="/new_cascading_select_with_other/city">
+      <label>city</label>
+      <itemset nodeset="instance('cities')/root/item[state= /new_cascading_select_with_other/state  and county= /new_cascading_select_with_other/county ]">
+        <value ref="name"/>
+        <label ref="jr:itext(itextId)"/>
+      </itemset>
+    </select1>
+    <select1 ref="/new_cascading_select_with_other/city2">
+      <label>city2</label>
+      <itemset nodeset="instance('cities_with_other')/root/item[state= /new_cascading_select_with_other/state  and county= /new_cascading_select_with_other/county ]">
+        <value ref="name"/>
+        <label ref="jr:itext(itextId)"/>
+      </itemset>
+    </select1>
+    <input ref="/new_cascading_select_with_other/city2_other">
+      <label>city2
+Specify other:</label>
+    </input>
+  </h:body>
+</h:html>

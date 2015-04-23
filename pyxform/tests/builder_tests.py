@@ -166,7 +166,7 @@ class BuilderTests(TestCase):
                 {
                     u'name': u'sex_other',
                     u'bind': {u'relevant': u"selected(../sex, 'other')"},
-                    u'label': u'Specify other.',
+                    u'label': 'Specify other:',
                     u'type': u'text'},
                 {
                     u'children': [
@@ -290,7 +290,7 @@ class BuilderTests(TestCase):
                         u'relevant':
                         u"selected(../available_toilet_types, 'other')"
                     },
-                    u'label': u'Specify other.',
+                    u'label': 'Specify other:',
                     u'type': u'text'
                 },
                 {

@@ -690,32 +690,26 @@ def workbook_to_json(
 
                 specify_other_question = None
                 if parse_dict.get("specify_other") is not None:
-                    select_type += u" or specify other"
-#                    #With this code we no longer need to handle or_other
-#                    #questions in survey builder.
-#                    #However, it depends on being able to use choice filters
-#                    #and xpath expressions that return empty sets.
-#                    choices[list_name].append(
-#                        {
-#                            'name': 'other',
-#                            'label': {default_language : 'Other'},
-#                            'orOther': 'true',
-#                        })
-#                    or_other_xpath = 'isNull(orOther)'
-#                    if 'choice_filter' in row:
-#                        row['choice_filter'] += ' or ' + or_other_xpath
-#                    else:
-#                        row['choice_filter'] = or_other_xpath
-#
-#                    specify_other_question = \
-#                        {
-#                          'type':'text',
-#                          'name': row['name'] + '_specify_other',
-#                          'label':
-#                           'Specify Other for:\n"' + row['label'] + '"',
-#                          'bind' : {'relevant':
-#                                   "selected(../%s, 'other')" % row['name']},
-#                        }
+                    original_choices = choices[list_name]
+                    list_name += "_with_other"
+                    choices[list_name] = original_choices + [{
+                        'name': u"other",
+                        'label': u"Other"
+                    }]
+                    if isinstance(row['label'], basestring):
+                        specify_other_label = row['label'] + "\nSpecify other:"
+                    else:
+                        specify_other_label = "Specify other:"
+                    specify_other_question = \
+                        {
+                            'type': u"text",
+                            'name': row['name'] + "_other",
+                            'label': specify_other_label,
+                            'bind' : {
+                                u'relevant':
+                                    u"selected(../%s, 'other')" % row['name']
+                            }
+                        }
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type

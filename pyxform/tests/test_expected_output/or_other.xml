@@ -5,8 +5,17 @@
     <model>
       <itext>
         <translation default="true()" lang="default">
+          <text id="static_instance-colors_with_other-3">
+            <value>mauve</value>
+          </text>
+          <text id="static_instance-colors_with_other-2">
+            <value>blue</value>
+          </text>
           <text id="static_instance-colors-4">
             <value>apricot</value>
+          </text>
+          <text id="static_instance-colors_with_other-0">
+            <value>red</value>
           </text>
           <text id="static_instance-colors-2">
             <value>blue</value>
@@ -19,6 +28,15 @@
           </text>
           <text id="static_instance-colors-1">
             <value>green</value>
+          </text>
+          <text id="static_instance-colors_with_other-4">
+            <value>apricot</value>
+          </text>
+          <text id="static_instance-colors_with_other-1">
+            <value>green</value>
+          </text>
+          <text id="static_instance-colors_with_other-5">
+            <value>Other</value>
           </text>
         </translation>
       </itext>
@@ -61,6 +79,39 @@
           </item>
         </root>
       </instance>
+      <instance id="colors_with_other">
+        <root>
+          <item>
+            <itextId>static_instance-colors_with_other-0</itextId>
+            <pastel>no</pastel>
+            <name>red</name>
+          </item>
+          <item>
+            <itextId>static_instance-colors_with_other-1</itextId>
+            <pastel>no</pastel>
+            <name>green</name>
+          </item>
+          <item>
+            <itextId>static_instance-colors_with_other-2</itextId>
+            <pastel>no</pastel>
+            <name>blue</name>
+          </item>
+          <item>
+            <itextId>static_instance-colors_with_other-3</itextId>
+            <pastel>yes</pastel>
+            <name>mauve</name>
+          </item>
+          <item>
+            <itextId>static_instance-colors_with_other-4</itextId>
+            <pastel>yes</pastel>
+            <name>apricot</name>
+          </item>
+          <item>
+            <itextId>static_instance-colors_with_other-5</itextId>
+            <name>other</name>
+          </item>
+        </root>
+      </instance>
       <bind nodeset="/or_other/fav_color" type="select1"/>
       <bind nodeset="/or_other/fav_color_other" relevant="selected(../fav_color, 'other')" type="string"/>
       <bind nodeset="/or_other/fav_pastel" type="select1"/>
@@ -96,7 +147,8 @@
       </item>
     </select1>
     <input ref="/or_other/fav_color_other">
-      <label>Specify other.</label>
+      <label>What is your favorite color?
+Specify other:</label>
     </input>
     <select1 ref="/or_other/fav_pastel">
       <label>What is your favorite pastel?</label>
