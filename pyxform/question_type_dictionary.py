@@ -1,5 +1,18 @@
 from xls2json import QuestionTypesReader, print_pyobj_to_json
 
+FILE_MEDIA_TYPES = ",".join([
+    "text/plain",
+    "application/pdf",
+    "application/vnd.ms-excel",
+    "application/msword",
+    "text/richtext",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/zip",
+    "application/x-zip",
+    "application/x-zip-compressed"
+])
+
 
 def generate_new_dict():
     """
@@ -820,7 +833,7 @@ QUESTION_TYPE_DICT = \
         "file": {
             "control": {
                 "tag": "upload",
-                "mediatype": "application/*"
+                "mediatype": FILE_MEDIA_TYPES
             },
             "bind": {
                 "type": "binary"
@@ -829,7 +842,7 @@ QUESTION_TYPE_DICT = \
         "add file prompt": {
             "control": {
                 "tag": "upload",
-                "mediatype": "application/*"
+                "mediatype": FILE_MEDIA_TYPES
             },
             "bind": {
                 "type": "binary"
