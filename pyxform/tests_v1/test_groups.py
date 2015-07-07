@@ -1,5 +1,6 @@
 from pyxform_test_case import PyxformTestCase
 
+
 class GroupsTests(PyxformTestCase):
 
     def test_group_type(self):
@@ -17,8 +18,9 @@ class GroupsTests(PyxformTestCase):
             model__contains=[
                 '<pregrp/>',
                 '<xgrp>',
-                  '<xgrp_q1/>',
-                  '<xgrp_q2/>',
+                    '<xgrp_q1/>',  # nopep8
+                    '<xgrp_q1/>',  # nopep8
+                    '<xgrp_q2/>',  # nopep8
                 '</xgrp>',
                 '<postgrp/>',
                 ])

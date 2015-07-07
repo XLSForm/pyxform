@@ -1,32 +1,36 @@
 from pyxform_test_case import PyxformTestCase
 
+
 '''
-Ensuring that the pyxform_test_case.PyxformTestCase class does some internal conversions
-correctly.
+Ensuring that the pyxform_test_case.PyxformTestCase class does some
+internal conversions correctly.
 '''
+
 
 class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
     def test_tainted_vanilla_survey_failure(self):
         '''
-        the _invalid_ss_structure structure should fail to compile because the note
-        has no label.
+        the _invalid_ss_structure structure should fail to compile
+        because the note has no label.
 
-        if "errored" parameter is not set to False, it should raise an exception
+        if "errored" parameter is not set to False, it should
+        raise an exception
         '''
-        _invalid_ss_structure = {'survey': [{'type':'note','name':'n1'}]}
+        _invalid_ss_structure = {'survey': [{'type': 'note', 'name': 'n1'}]}
+
         def _no_valid_flag():
             '''
-            when the 'errored' flag is set to false (default) and the survey fails to compile,
-            the test should raise an exception.
+            when the 'errored' flag is set to false (default) and the survey
+            fails to compile, the test should raise an exception.
             '''
             self.assertPyxformXform(
-                    ss_structure=_invalid_ss_structure,
-                    errored=False, #errored=False by default
-                )
+                ss_structure=_invalid_ss_structure,
+                errored=False,  # errored=False by default
+            )
 
         self.assertRaises(Exception, _no_valid_flag)
 
-        # however when errored=True is present, 
+        # however when errored=True is present,
         self.assertPyxformXform(
             ss_structure=_invalid_ss_structure,
             errored=True,
@@ -38,15 +42,17 @@ class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
         testing that a survey can be passed as a _spreadsheet structure_ named
         'ss_structure'.
 
-        this will be helpful when testing whitespace constraints and cell data types
-        since markdown'd surveys strip spaces and cast empty strings to None values
+        this will be helpful when testing whitespace constraints and
+        cell data types since markdown'd surveys strip spaces and
+        cast empty strings to None values
         '''
         self.assertPyxformXform(
             ss_structure={
-                'survey': [{'type':'note','name':'n1', 'label':'Note 1'}]
+                'survey': [{'type': 'note', 'name': 'n1', 'label': 'Note 1'}]
             },
             errored=False,
         )
+
 
 class XlsFormPyxformSurveyTest(PyxformTestCase):
     def test_formid_is_not_none(self):

@@ -1,11 +1,13 @@
 import re
-from collections import OrderedDict
+
 
 def _strp_cell(cell):
     val = cell.strip()
     if val == '':
         return None
+
     return val
+
 
 def _extract_array(mdtablerow):
     match = re.match('\s*\|(.*)\|\s*', mdtablerow)
@@ -15,13 +17,17 @@ def _extract_array(mdtablerow):
             return False
         else:
             return [_strp_cell(c) for c in mtchstr.split('|')]
+
     return False
+
 
 def _is_null_row(r_arr):
     for cell in r_arr:
-        if cell != None:
+        if cell is not None:
             return False
+
     return True
+
 
 def md_table_to_ss_structure(mdstr):
     ss_arr = []
@@ -29,12 +35,11 @@ def md_table_to_ss_structure(mdstr):
         arr = _extract_array(item)
         if arr:
             ss_arr.append(arr)
-    out = {}
     sheet_name = False
     sheet_arr = False
     sheets = []
     for row in ss_arr:
-        if row[0] != None:
+        if row[0] is not None:
             if sheet_arr:
                 sheets.append((sheet_name, sheet_arr,))
             sheet_arr = []
@@ -43,4 +48,5 @@ def md_table_to_ss_structure(mdstr):
         if sheet_name and not _is_null_row(excluding_first_col):
             sheet_arr.append(excluding_first_col)
     sheets.append((sheet_name, sheet_arr,))
+
     return sheets

@@ -1,5 +1,6 @@
 from pyxform_test_case import PyxformTestCase
 
+
 class TestWarnings(PyxformTestCase):
     def test_l1(self):
         self.assertPyxformXform(
@@ -17,20 +18,22 @@ class TestWarnings(PyxformTestCase):
                 ],
             body__contains=[
                 '<input ref="/test_l1/some_text">',
-                  '<hint>a hint</hint>',
+                  '<hint>a hint</hint>',  # nopep8
                 '</input>',
             ],
         )
 
     def test_l2(self):
-        self.assertPyxformXform(name="img_test",
+        self.assertPyxformXform(
+            name="img_test",
             md="""
                 | survey |      |                  |              |
                 |        | type | name             | image        |
                 |        | note | display_img_test | img_test.jpg |
                 """,
             model__contains=[
-                '<bind nodeset="/img_test/display_img_test" readonly="true()" type="string"/>',
+                '<bind nodeset="/img_test/display_img_test" readonly="true()" type="string"/>',  # nopep8
+
                 ],
             instance__contains=[
                 '<display_img_test/>',
@@ -38,6 +41,7 @@ class TestWarnings(PyxformTestCase):
             xml__contains=[
                 '<translation default="true()" lang="default">',
                 # and further down...
-                """<label ref="jr:itext('/img_test/display_img_test:label')"/>"""
+                """<label ref="jr:itext('/img_test/display_img_test:label')"/>"""  # nopep8
+
             ],
         )
