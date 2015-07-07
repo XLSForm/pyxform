@@ -103,7 +103,8 @@ type = {
     u"add image prompt": u"photo",
     u"add photo prompt": u"photo",
     u"add audio prompt": u"audio",
-    u"add video prompt": u"video"
+    u"add video prompt": u"video",
+    u"add file prompt": u"file"
 }
 yes_no = {
     "yes": True,

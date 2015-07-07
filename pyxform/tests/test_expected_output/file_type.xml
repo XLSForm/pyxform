@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>File Type Example</h:title>
+    <model>
+      <instance>
+        <file_type id="file_type">
+          <photo/>
+          <doc_file/>
+          <a_file/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </file_type>
+      </instance>
+      <bind nodeset="/file_type/photo" type="binary"/>
+      <bind nodeset="/file_type/doc_file" type="binary"/>
+      <bind nodeset="/file_type/a_file" type="binary"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/file_type/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <upload mediatype="image/*" ref="/file_type/photo">
+      <label>Take a picture of something.</label>
+      <hint>We don't care what it is.</hint>
+    </upload>
+    <upload mediatype="text/plain,application/pdf,application/vnd.ms-excel,application/msword,text/richtext,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip,application/x-zip,application/x-zip-compressed" ref="/file_type/doc_file">
+      <label>Upload a file</label>
+      <hint>Select file to upload</hint>
+    </upload>
+    <upload mediatype="text/plain,application/pdf,application/vnd.ms-excel,application/msword,text/richtext,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip,application/x-zip,application/x-zip-compressed" ref="/file_type/a_file">
+      <label>Upload a file</label>
+      <hint>Select file to upload</hint>
+    </upload>
+  </h:body>
+</h:html>
