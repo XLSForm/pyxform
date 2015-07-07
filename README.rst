@@ -64,3 +64,8 @@ To check out the documentation for pyxform do the following::
 Change Log
 =========
 https://github.com/UW-ICTD/pyxform/blob/master/CHANGES.txt
+
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/XLSForm/pyxform
+   :target: https://gitter.im/XLSForm/pyxform?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
