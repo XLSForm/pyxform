@@ -13,6 +13,9 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "ODK_Validate.jar")
 
 
+class ODKValidateError(Exception):
+    pass
+
 #Adapted from:
 #http://betabug.ch/blogs/ch-athens/1093
 def run_popen_with_timeout(command, timeout):
@@ -81,8 +84,10 @@ def _cleanup_errors(error_message):
                 line = line.replace('org.javarosa.xpath.XPathUnhandledException: ', '')
             # remove java.lang.NullPointerException
             if line.startswith('java.lang.NullPointerException'):
-                continue
-            k.append(line)
+                line = line.replace('java.lang.NullPointerException', '')
+            if line.startswith('org.javarosa.xform.parse.XFormParseException'):
+                line = line.replace('org.javarosa.xform.parse.XFormParseException: ', '')
+            k.append(line.decode('utf-8'))
     return u'\n'.join(k)
 
 
@@ -109,7 +114,7 @@ def check_xform(path_to_xform):
         return ["XForm took to long to completely validate."]
     else:
         if returncode > 0:  # Error invalid
-            raise Exception(
+            raise ODKValidateError(
                 'ODK Validate Errors:\n' + _cleanup_errors(stderr))
         elif returncode == 0:
             if stderr:
