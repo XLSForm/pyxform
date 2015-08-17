@@ -21,3 +21,4 @@ env
 
 # ignore pypi manifest
 MANIFEST
+.idea
