@@ -27,6 +27,7 @@ DEFAULT_LANGUAGE = u"default_language"
 LABEL = u"label"
 HINT = u"hint"
 STYLE = u"style"
+ATTRIBUTE = u"attribute"
 
 BIND = u"bind"  # TODO: What should I do with the nested types? (readonly and relevant) # noqa
 MEDIA = u"media"

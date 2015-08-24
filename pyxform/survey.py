@@ -45,7 +45,8 @@ class Survey(Section):
             u"instance_xmlns": unicode,
             u"version": unicode,
             u"choices": dict,
-            u"style": unicode
+            u"style": unicode,
+            u"attribute": dict
         }
     )
 
@@ -138,6 +139,11 @@ class Survey(Section):
 
     def xml_instance(self):
         result = Section.xml_instance(self)
+
+        # set these first to prevent overwriting id and version
+        for key, value in self.attribute.items():
+            result.setAttribute(unicode(key), value)
+
         result.setAttribute(u"id", self.id_string)
 
         # add instance xmlns attribute to the instance node
@@ -146,6 +152,7 @@ class Survey(Section):
 
         if self.version:
             result.setAttribute(u"version", self.version)
+
         return result
 
     def _add_to_nested_dict(self, dicty, path, value):
