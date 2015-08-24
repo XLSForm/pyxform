@@ -20,6 +20,10 @@ class SettingsTests(TestCase):
             u'name': u'settings',
             u'title': u'My Survey',
             u'type': u'survey',
+            u'attribute': {
+                u'my_number': u'1234567890',
+                u'my_string': u'lor\xe9m ipsum'
+            },
             u'children': [
                 {
                     u'name': u'your_name',
