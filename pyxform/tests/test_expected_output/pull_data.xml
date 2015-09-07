@@ -12,6 +12,7 @@
           </meta>
         </pull_data>
       </instance>
+      <instance id="fruits" src="jr://file-csv/fruits.csv"/>
       <bind calculate="pulldata('fruits', 'name','name', 'mango')" nodeset="/pull_data/fruit" type="string"/>
       <bind nodeset="/pull_data/note_fruite" readonly="true()" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/pull_data/meta/instanceID" readonly="true()" type="string"/>

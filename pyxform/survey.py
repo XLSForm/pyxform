@@ -111,6 +111,22 @@ class Survey(Section):
             yield node("instance", node("root", *instance_element_list),
                        id=list_name)
 
+    def _generate_pulldata_instances(self):
+        pulldata = []
+        for i in self.iter_descendants():
+            if 'calculate' in i['bind']:
+                calculate = i['bind']['calculate']
+                if calculate.startswith('pulldata('):
+                    pieces = calculate.split('"') \
+                        if '"' in calculate else calculate.split("'")
+                    if len(pieces) > 1 and pieces[1] not in pulldata:
+                        csv_id = pieces[1]
+                        pulldata.append(csv_id)
+
+                        yield node("instance", id=csv_id,
+                                   src="jr://file-csv/{}.csv".format(csv_id)
+                                   )
+
     def xml_model(self):
         """
         Generate the xform <model> element
@@ -124,6 +140,7 @@ class Survey(Section):
             model_children.append(self.itext())
         model_children += [node("instance", self.xml_instance())]
         model_children += list(self._generate_static_instances())
+        model_children += list(self._generate_pulldata_instances())
         model_children += self.xml_bindings()
 
         if self.submission_url or self.public_key:
@@ -135,6 +152,7 @@ class Survey(Section):
             submission_node = node("submission", method="form-data-post",
                                    **submission_attrs)
             model_children.insert(0, submission_node)
+
         return node("model",  *model_children)
 
     def xml_instance(self):
