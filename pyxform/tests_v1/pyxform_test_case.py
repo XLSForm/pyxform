@@ -101,12 +101,20 @@ class PyxformTestCase(TestCase):
 
                 return (contains_str, check_content)
 
+            if 'body_contains' in kwargs or 'body__contains' in kwargs:
+                raise SyntaxError("'body__contains' is not a valid parameter. " +
+                                    "Use 'xml__contains' instead")
+
             for code in ['xml', 'instance', 'model', 'itext']:
                 (code__str, checker) = _check_contains(code)
                 if kwargs.get(code__str):
                     checker(etree.tounicode(xml_nodes[code]))
                 bad_kwarg = '%s_contains' % code
-                    checker(etree.tostring(xml_nodes[code]))
+                if bad_kwarg in kwargs:
+                    good_kwarg = '%s__contains' % code
+                    raise SyntaxError(("'%s' is not a valid parameter. " +
+                                        "Use double underscores: '%s'") % (
+                                            bad_kwarg, good_kwarg))
 
         if 'error__contains' in kwargs:
             joined_error = '\n'.join(errors)

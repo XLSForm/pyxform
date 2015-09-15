@@ -16,7 +16,7 @@ class TestWarnings(PyxformTestCase):
             model__contains=[
                 '<bind nodeset="/test_l1/some_text" type="string"/>',
                 ],
-            body__contains=[
+            xml__contains=[
                 '<input ref="/test_l1/some_text">',
                   '<hint>a hint</hint>',  # nopep8
                 '</input>',
