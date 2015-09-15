@@ -1,4 +1,6 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from unittest import TestCase
 from pyxform.errors import PyXFormError
 from lxml import etree
@@ -102,6 +104,8 @@ class PyxformTestCase(TestCase):
             for code in ['xml', 'instance', 'model', 'itext']:
                 (code__str, checker) = _check_contains(code)
                 if kwargs.get(code__str):
+                    checker(etree.tounicode(xml_nodes[code]))
+                bad_kwarg = '%s_contains' % code
                     checker(etree.tostring(xml_nodes[code]))
 
         if 'error__contains' in kwargs:
