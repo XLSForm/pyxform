@@ -12,6 +12,8 @@ import signal
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "ODK_Validate.jar")
 
+class ODKValidateError(Exception):
+    pass
 
 #Adapted from:
 #http://betabug.ch/blogs/ch-athens/1093
@@ -109,7 +111,7 @@ def check_xform(path_to_xform):
         return ["XForm took to long to completely validate."]
     else:
         if returncode > 0:  # Error invalid
-            raise Exception(
+            raise ODKValidateError(
                 'ODK Validate Errors:\n' + _cleanup_errors(stderr))
         elif returncode == 0:
             if stderr:
