@@ -34,7 +34,9 @@ class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
         self.assertPyxformXform(
             ss_structure=_invalid_ss_structure,
             errored=True,
-            error__contains=['label'],
+            error__contains=[
+                "The survey element named 'n1' has no label or hint.",
+            ],
         )
 
     def test_vanilla_survey(self):
