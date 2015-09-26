@@ -1,31 +1,35 @@
 from pyxform_test_case import PyxformTestCase
 
+
 class GeoWidgetsTest(PyxformTestCase):
     def test_gps_type(self):
-        self.assertPyxformXform(name="geo",
+        self.assertPyxformXform(
+            name="geo",
             md="""
             | survey |      |          |       |
             |        | type |   name   | label |
             |        | gps  | location | GPS   |
             """,
-            xml__contains= ['geopoint',],
-                )
+            xml__contains=['geopoint'],
+        )
 
     def test_gps_alias(self):
-        self.assertPyxformXform(name="geo_alias",
+        self.assertPyxformXform(
+            name="geo_alias",
             md="""
             | survey |          |          |       |
             |        | type     | name     | label |
             |        | geopoint | location | GPS   |
             """,
-            xml__contains= ['geopoint',],
-                )
+            xml__contains=['geopoint'],
+        )
 
     def test_geo_widgets_types(self):
         '''
         this test could be broken into multiple smaller tests.
         '''
-        self.assertPyxformXform(name="geos",
+        self.assertPyxformXform(
+            name="geos",
             md="""
             | survey |              |            |                   |
             |        | type         | name       | label             |
@@ -38,7 +42,7 @@ class GeoWidgetsTest(PyxformTestCase):
             |        | note         | shape_note | Shape: ${shape}   |
             |        | end_repeat   |            |                   |
             """,
-            xml__contains= [
+            xml__contains=[
                 '<point/>',
                 '<point_note/>',
 
@@ -49,12 +53,15 @@ class GeoWidgetsTest(PyxformTestCase):
                 '<shape_note/>',
 
                 '<bind nodeset="/geos/repeat/point" type="geopoint"/>',
-                '<bind nodeset="/geos/repeat/point_note" readonly="true()" type="string"/>',
+                '<bind nodeset="/geos/repeat/point_note" readonly="true()" '
+                'type="string"/>',
 
                 '<bind nodeset="/geos/repeat/trace" type="geotrace"/>',
-                '<bind nodeset="/geos/repeat/trace_note" readonly="true()" type="string"/>',
+                '<bind nodeset="/geos/repeat/trace_note" readonly="true()" '
+                'type="string"/>',
 
                 '<bind nodeset="/geos/repeat/shape" type="geoshape"/>',
-                '<bind nodeset="/geos/repeat/shape_note" readonly="true()" type="string"/>',
+                '<bind nodeset="/geos/repeat/shape_note" readonly="true()" '
+                'type="string"/>',
                 ],
             )
