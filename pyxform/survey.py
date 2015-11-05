@@ -363,22 +363,7 @@ class Survey(Section):
         return self._created.strftime("%Y_%m_%d")
 
     def _to_pretty_xml(self):
-        """
-        I want the to_xml method to by default validate the xml we are
-        producing.
-        """
-        # Hacky way of pretty printing xml without adding extra white
-        # space to text
-        # TODO: check out pyxml
-        # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
-        xml_with_linebreaks = self.xml().toprettyxml(indent='  ')
-        text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
-        output_re = re.compile('\n.*(<output.*>)\n(  )*')
-        prettyXml = text_re.sub('>\g<1></', xml_with_linebreaks)
-        inlineOutput = output_re.sub('\g<1>', prettyXml)
-        inlineOutput = re.compile('<label>\s*\n*\s*\n*\s*</label>')\
-            .sub('<label></label>', inlineOutput)
-        return '<?xml version="1.0"?>\n' + inlineOutput
+        return '<?xml version="1.0"?>\n' + self.xml().toprettyxml(indent='  ')
 
     def __repr__(self):
         return unicode(self)
