@@ -18,13 +18,16 @@ class LabelTests(PyxformTestCase):
                     'name': 'n1',
                     'label': label_with_newlines_wrap,
                   }
+                ],
+                'settings': [{
+                    'clean_text_values': 'false()',
+                  }
                 ]
             },
             xml__contains=[
                 label_with_newlines_wrap,
                 ]
             )
-
 
 class HintTests(PyxformTestCase):
     def test_label_whitespace_preserved(self):
@@ -43,6 +46,10 @@ class HintTests(PyxformTestCase):
                     'name': 'n1',
                     'label': 'label 1',
                     'hint': whitespace_hint,
+                  }
+                ],
+                'settings': [{
+                    'clean_text_values': 'false()',
                   }
                 ]
             },
