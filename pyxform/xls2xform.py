@@ -9,8 +9,9 @@ import json
 import argparse
 from utils import sheet_to_csv, has_external_choices
 import os
+import odk_validate
 
-def xls2xform_convert(xlsform_path, xform_path):
+def xls2xform_convert(xlsform_path, xform_path, validate=True):
     warnings = []
 
     json_survey = xls2json.parse_file_to_json(xlsform_path, warnings=warnings)
@@ -19,7 +20,7 @@ def xls2xform_convert(xlsform_path, xform_path):
     # ODK Validate.
     # This may be desirable since ODK Validate requires launching a subprocess
     # that runs some java code.
-    survey.print_xform_to_file(xform_path, validate=True, warnings=warnings)
+    survey.print_xform_to_file(xform_path, validate=validate, warnings=warnings)
     output_dir = os.path.split(xform_path)[0]
     if has_external_choices(json_survey):
         itemsets_csv = os.path.join(output_dir, "itemsets.csv")
@@ -36,8 +37,12 @@ if __name__ == '__main__':
     parser.add_argument('path_to_XLSForm')
     parser.add_argument('output_path')
     parser.add_argument('--json',
-        action='store_true',
-        help="Capture everything and report in JSON format.")
+                        action='store_true',
+                        help="Capture everything and report in JSON format.")
+    parser.add_argument('--novalidate',
+                        action='store_false',
+                        help=("Do not validate XForm with ODK Validate. "
+                              "Default is to validate."))
     args = parser.parse_args()
     
     if args.json:
@@ -46,7 +51,9 @@ if __name__ == '__main__':
         response = {'code': None, 'message': None, 'warnings': []}
 
         try:
-            response['warnings'] = xls2xform_convert(args.path_to_XLSForm, args.output_path)
+            response['warnings'] = xls2xform_convert(args.path_to_XLSForm,
+                                                     args.output_path,
+                                                     validate=args.novalidate)
 
             response['code'] = 100
             response['message'] = "Ok!"
@@ -62,8 +69,22 @@ if __name__ == '__main__':
 
         print json.dumps(response)
     else:
-        warnings = xls2xform_convert(args.path_to_XLSForm, args.output_path)
-        if len(warnings) > 0: print "Warnings:"
-        for w in warnings:
-            print w
-        print 'Conversion complete!'
+        try:
+            warnings = xls2xform_convert(args.path_to_XLSForm, args.output_path,
+                                         validate=args.novalidate)
+            if len(warnings) > 0:
+                print "Warnings:"
+            for w in warnings:
+                print w
+            print 'Conversion complete!'
+        except EnvironmentError as e:
+            # Do not crash if 'java' not installed
+            print e.message
+        except odk_validate.ODKValidateError as e:
+            # Remove output file if there is an error
+            os.remove(args.output_path)
+            print e.message
+        except Exception as e:
+            print '### Unexpected error! ###'
+            print e
+            print '### Perhaps Java is not installed? ###'

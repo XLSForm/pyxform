@@ -15,6 +15,9 @@ ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "ODK_Validate.jar")
 class ODKValidateError(Exception):
     pass
 
+class ODKValidateError(Exception):
+    pass
+
 #Adapted from:
 #http://betabug.ch/blogs/ch-athens/1093
 def run_popen_with_timeout(command, timeout):
@@ -42,8 +45,9 @@ def run_popen_with_timeout(command, timeout):
     return (p.returncode, timeout, stdout, stderr)
 
 def _java_installed():
-    p = Popen(["which","java"], stdout=PIPE)
-    return len(p.stdout.readlines()) != 0
+#    p = Popen(["which","java"], stdout=PIPE)
+#    return len(p.stdout.readlines()) != 0
+    return True
 
 def _cleanup_errors(error_message):
     def get_last_item(xpathStr):
@@ -83,8 +87,10 @@ def _cleanup_errors(error_message):
                 line = line.replace('org.javarosa.xpath.XPathUnhandledException: ', '')
             # remove java.lang.NullPointerException
             if line.startswith('java.lang.NullPointerException'):
-                continue
-            k.append(line)
+                line = line.replace('java.lang.NullPointerException', '')
+            if line.startswith('org.javarosa.xform.parse.XFormParseException'):
+                line = line.replace('org.javarosa.xform.parse.XFormParseException: ', '')
+            k.append(line.decode('utf-8'))
     return u'\n'.join(k)
 
 

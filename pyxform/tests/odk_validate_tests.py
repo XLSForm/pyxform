@@ -1,9 +1,15 @@
 from pyxform.odk_validate import _cleanup_errors
+from pyxform.odk_validate import check_xform
+from pyxform.odk_validate import ODKValidateError
 
 from unittest2 import TestCase
+import os.path
 
 
 class ODKValidateTests(TestCase):
+
+    DIR = os.path.dirname(__file__)
+
     def test_cleanup_error_message(self):
         testStr = """
 Invalid XPath expression [ /Frm13/Section4/pictures_repeat  <> 'Inacc']!
@@ -56,3 +62,8 @@ XPath evaluation: cannot handle function 'testfunc'
 >> Something broke the parser. See above for a hint.
 Result: Invalid"""
         self.assertEqual(_cleanup_errors(testStr), expectedStr.strip())
+
+    def test_bad_calculate_javarosa_error(self):
+        filename = 'bad_calc.xml'
+        test_xml = os.path.join(self.DIR, 'test_output', filename)
+        self.assertRaises(ODKValidateError, check_xform, test_xml)
