@@ -43,8 +43,9 @@ def run_popen_with_timeout(command, timeout):
     return (p.returncode, timeout, stdout, stderr)
 
 def _java_installed():
-    p = Popen(["which","java"], stdout=PIPE)
-    return len(p.stdout.readlines()) != 0
+#    p = Popen(["which","java"], stdout=PIPE)
+#    return len(p.stdout.readlines()) != 0
+    return True
 
 def _cleanup_errors(error_message):
     def get_last_item(xpathStr):

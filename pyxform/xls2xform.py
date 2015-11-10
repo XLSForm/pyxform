@@ -84,3 +84,7 @@ if __name__ == '__main__':
             # Remove output file if there is an error
             os.remove(args.output_path)
             print e.message
+        except Exception as e:
+            print '### Unexpected error! ###'
+            print e
+            print '### Perhaps Java is not installed? ###'
