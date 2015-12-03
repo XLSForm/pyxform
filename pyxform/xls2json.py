@@ -834,6 +834,9 @@ def workbook_to_json(
             is True:
         meta_children.append({
             "name": "logging",
+            "bind": {
+                "calculate": "string('log.txt')"
+            },
             "type": "hidden attachment"
         })
     # PMA2020 Logging END
