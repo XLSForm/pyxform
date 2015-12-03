@@ -829,6 +829,15 @@ def workbook_to_json(
             "type": "calculate",
         })
 
+    # PMA2020 Logging BEGIN
+    if 'logging' in settings and aliases.yes_no.get(settings.get('logging')) \
+            is True:
+        meta_children.append({
+            "name": "logging",
+            "type": "hidden attachment"
+        })
+    # PMA2020 Logging END
+
     if len(meta_children) > 0:
         meta_element = \
             {

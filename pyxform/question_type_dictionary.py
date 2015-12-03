@@ -848,4 +848,11 @@ QUESTION_TYPE_DICT = \
                 "type": "binary"
             }
         },
+        # PMA2020 Logging BEGIN
+        "hidden attachment": {
+            "bind": {
+                "type": "binary"
+            }
+        }
+        # PMA2020 Logging END
     }

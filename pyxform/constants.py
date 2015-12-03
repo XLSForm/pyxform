@@ -27,6 +27,9 @@ DEFAULT_LANGUAGE = u"default_language"
 LABEL = u"label"
 HINT = u"hint"
 STYLE = u"style"
+# PMA2020 Logging BEGIN
+LOGGING = u"logging"
+# PMA2020 Logging END
 
 BIND = u"bind"  # TODO: What should I do with the nested types? (readonly and relevant) # noqa
 MEDIA = u"media"
