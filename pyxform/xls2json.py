@@ -129,8 +129,8 @@ def dealias_types(dict_array):
     """
     for row in dict_array:
         found_type = row.get(constants.TYPE)
-        if found_type in aliases.type.keys():
-            row[constants.TYPE] = aliases.type[found_type]
+        if found_type in aliases._type.keys():
+            row[constants.TYPE] = aliases._type[found_type]
     return dict_array
 
 
