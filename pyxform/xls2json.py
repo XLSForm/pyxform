@@ -261,6 +261,12 @@ def workbook_to_json(
     returns a nested dictionary equivalent to the format specified in the
     json form spec.
     """
+    # ensure required headers are present
+    survey_rows = workbook_dict.get('survey', [])
+    if len(survey_rows) is 0 or 'type' not in survey_rows[0]:
+        raise PyXFormError(u"The survey sheet is either empty or missing important "
+                            u"column headers.")
+
     rowFormatString = '[row : %s]'
 
     # Make sure the passed in vars are unicode
