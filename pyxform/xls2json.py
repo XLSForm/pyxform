@@ -660,7 +660,8 @@ def workbook_to_json(
                         raise PyXFormError(
                             u"There should be a choices sheet in this xlsform."
                             u" Please ensure that the choices sheet name is "
-                            u"all in small caps.")
+                            u"all in small caps and has columns 'list name', "
+                            u"'name', and 'label' (or aliased column names).")
                     raise PyXFormError(
                         rowFormatString % row_number +
                         " List name not in choices sheet: " + list_name)

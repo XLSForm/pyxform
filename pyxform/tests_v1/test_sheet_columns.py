@@ -66,7 +66,6 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
             error__contains=['option with no name'],
             )
 
-''' # uncomment when re-implemented
     def test_missing_list_name(self):
         self.assertPyxformXform(
             name='missing_list_name',
@@ -80,8 +79,13 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
                 ]),
             debug=True,
             errored=True,
-            )
-'''
+            # some basic keywords that should be in the error:
+            error__contains=[
+                'choices',
+                'name',
+                'list name',
+            ])
+
 
 class AliasesTests(PyxformTestCase):
     def test_value_and_name(self):
