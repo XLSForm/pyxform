@@ -129,8 +129,8 @@ def dealias_types(dict_array):
     """
     for row in dict_array:
         found_type = row.get(constants.TYPE)
-        if found_type in aliases.type.keys():
-            row[constants.TYPE] = aliases.type[found_type]
+        if found_type in aliases._type.keys():
+            row[constants.TYPE] = aliases._type[found_type]
     return dict_array
 
 
@@ -242,7 +242,7 @@ def add_flat_annotations(prompt_list, parent_relevant='', name_prefix=''):
 
 def workbook_to_json(
         workbook_dict, form_name=None,
-        default_language=u"default", warnings=None):
+        default_language=u"default", warnings=[]):
     """
     workbook_dict -- nested dictionaries representing a spreadsheet.
                     should be similar to those returned by xls_to_dict
@@ -262,31 +262,10 @@ def workbook_to_json(
     json form spec.
     """
     # ensure required headers are present
-    survey_header_sheet = u'%s_header' % constants.SURVEY
-    if survey_header_sheet in workbook_dict:
-        survey_headers = workbook_dict.get(survey_header_sheet)
-        if not survey_headers:
-            raise PyXFormError(u"The survey sheet is missing column headers.")
-        tmp = [h for h in [u'type', u'name'] if h in survey_headers[0].keys()]
-        if tmp.__len__() is not 2:
-            raise PyXFormError(u"The survey sheet must have on the first row"
-                               u" name and type columns.")
-        del workbook_dict[survey_header_sheet]
-    choices_header_sheet = u'%s_header' % constants.CHOICES
-    if choices_header_sheet in workbook_dict:
-        choices_headers = workbook_dict.get(choices_header_sheet)
-        if not choices_headers:
-            raise PyXFormError(u"The choices sheet is missing column headers.")
-        choices_header_list = [u'list name', u'list_name', u'name']
-        tmp = [
-            h for h in choices_header_list if h in choices_headers[0].keys()]
-        if tmp.__len__() is not 2:
-            raise PyXFormError(u"The choices sheet must have on the first row"
-                               u" list_name and name.")
-        del workbook_dict[choices_header_sheet]
-    if warnings is None:
-        # Set warnings to a list that will be discarded.
-        warnings = []
+    survey_rows = workbook_dict.get('survey', [])
+    if len(survey_rows) is 0 or 'type' not in survey_rows[0]:
+        raise PyXFormError(u"The survey sheet is either empty or missing important "
+                            u"column headers.")
 
     rowFormatString = '[row : %s]'
 
@@ -681,7 +660,8 @@ def workbook_to_json(
                         raise PyXFormError(
                             u"There should be a choices sheet in this xlsform."
                             u" Please ensure that the choices sheet name is "
-                            u"all in small caps.")
+                            u"all in small caps and has columns 'list name', "
+                            u"'name', and 'label' (or aliased column names).")
                     raise PyXFormError(
                         rowFormatString % row_number +
                         " List name not in choices sheet: " + list_name)
@@ -876,7 +856,7 @@ def get_filename(path):
 
 
 def parse_file_to_json(path, default_name=None, default_language=u"default",
-                       warnings=None, file_object=None):
+                       warnings=[], file_object=None):
     """
     A wrapper for workbook_to_json
     """

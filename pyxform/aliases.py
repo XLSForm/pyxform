@@ -97,7 +97,7 @@ list_header = {
     u"video": u"media::video"
 }
 # Note that most of the type aliasing happens in all.xls
-type = {
+_type = {
     u"imei": u"deviceid",
     u"image": u"photo",
     u"add image prompt": u"photo",

@@ -229,24 +229,6 @@ class BadChoicesSheetHeaders(unittest.TestCase):
                           "Found " + str(len(warnings)) + " warnings")
 
 
-class MissingHeaderColumnsTest(unittest.TestCase):
-    def test_choices_headers_missing(self):
-        filename = "no_header_on_choices_sheet.xls"
-        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
-        workbook_dict = pyxform.xls2json.parse_file_to_workbook_dict(
-            path_to_excel_file)
-        with self.assertRaises(pyxform.errors.PyXFormError):
-            pyxform.xls2json.workbook_to_json(workbook_dict)
-
-    def test_survey_headers_missing(self):
-        filename = "no_header_on_survey_sheet.xls"
-        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
-        workbook_dict = pyxform.xls2json.parse_file_to_workbook_dict(
-            path_to_excel_file)
-        with self.assertRaises(pyxform.errors.PyXFormError):
-            pyxform.xls2json.workbook_to_json(workbook_dict)
-
-
 class TestChoiceNameAsType(unittest.TestCase):
     def test_choice_name_as_type(self):
         filename = "choice_name_as_type.xls"
