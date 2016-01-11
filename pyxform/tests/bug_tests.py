@@ -237,6 +237,14 @@ class TestChoiceNameAsType(unittest.TestCase):
         survey_dict = xls_reader.to_json_dict()
         self.assertTrue(has_external_choices(survey_dict))
 
+class TestBlankSecondRow(unittest.TestCase):
+    def test_blank_second_row(self):
+        filename = "blank_second_row.xls"
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
+        xls_reader = SurveyReader(path_to_excel_file)
+        survey_dict = xls_reader.to_json_dict()
+        self.assertTrue(len(survey_dict) > 0)
+
 
 if __name__ == '__main__':
     unittest.main()
