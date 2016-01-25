@@ -21,7 +21,7 @@ setup(
     description='A Python package to create XForms for ODK Collect.',
     long_description=open('README.rst', 'rt').read(),
     install_requires=[
-        'xlrd==0.8.0',
-        'lxml==2.3.4',
+        'xlrd==0.9.4',
+        'lxml==3.5.0',
     ],
 )
