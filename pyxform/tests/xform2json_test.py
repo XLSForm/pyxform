@@ -1,11 +1,10 @@
-from unittest2 import TestCase
 from pyxform.builder import create_survey_from_path
 from pyxform.xform2json import create_survey_element_from_xml
 import os
 import utils
 
 
-class DumpAndLoadXForm2JsonTests(TestCase):
+class DumpAndLoadXForm2JsonTests(utils.XFormTestCase):
 
     maxDiff = None
 
@@ -39,7 +38,7 @@ class DumpAndLoadXForm2JsonTests(TestCase):
         for filename, survey in self.surveys.items():
             survey.json_dump()
             survey_from_dump = create_survey_element_from_xml(survey.to_xml())
-            self.assertMultiLineEqual(
+            self.assertXFormEqual(
                 survey.to_xml(), survey_from_dump.to_xml())
 
     def tearDown(self):

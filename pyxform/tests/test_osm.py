@@ -1,4 +1,3 @@
-from unittest import TestCase
 from pyxform.builder import create_survey_from_path
 from pyxform.builder import create_survey_element_from_json
 import utils
@@ -6,7 +5,7 @@ import os
 import codecs
 
 
-class OSMTests(TestCase):
+class OSMTests(utils.XFormTestCase):
 
     maxDiff = None
 
@@ -18,7 +17,7 @@ class OSMTests(TestCase):
 
         with codecs.open(path, encoding='utf-8') as f:
             expected_xml = f.read()
-            self.assertMultiLineEqual(survey.to_xml(), expected_xml)
+            self.assertXFormEqual(survey.to_xml(), expected_xml)
 
             survey = create_survey_element_from_json(survey.to_json())
-            self.assertMultiLineEqual(survey.to_xml(), expected_xml)
+            self.assertXFormEqual(survey.to_xml(), expected_xml)
