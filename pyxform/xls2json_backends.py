@@ -3,8 +3,8 @@ XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
 import xlrd
 from xlrd import XLRDError
-import csv
-import cStringIO
+import unicodecsv as csv
+from io import BytesIO
 import constants
 import re
 import datetime
@@ -332,10 +332,9 @@ def get_cascading_json(sheet_list, prefix, level):
 
 def csv_to_dict(path_or_file):
     if isinstance(path_or_file, basestring):
-        with open(path_or_file) as f:
-            csv_data = f.read()
+        csv_data = open(path_or_file, 'rb')
     else:
-        csv_data = path_or_file.read()
+        csv_data = path_or_file
 
     _dict = {}
 
@@ -355,11 +354,10 @@ def csv_to_dict(path_or_file):
                 content = None
             return (s_or_c, content)
 
-    reader = csv.reader(csv_data.split("\n"))
+    reader = csv.reader(csv_data, encoding='utf-8')
     sheet_name = None
     current_headers = None
-    for ascii_row in reader:
-        row = [unicode(cell, "utf-8") for cell in ascii_row]
+    for row in reader:
         survey_or_choices, content = first_column_as_sheet_name(row)
         if survey_or_choices is not None:
             sheet_name = survey_or_choices
@@ -380,6 +378,7 @@ def csv_to_dict(path_or_file):
                         #(but the csv reader might already handle that.)
                         _d[unicode(key)] = unicode(val.strip())
                 _dict[sheet_name].append(_d)
+    csv_data.close()
     return _dict
 
 
@@ -415,7 +414,7 @@ def convert_file_to_csv_string(path):
         imported_sheets = csv_to_dict(path)
     else:
         imported_sheets = xls_to_dict(path)
-    foo = cStringIO.StringIO()
+    foo = BytesIO()
     writer = csv.writer(
         foo, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     for sheet_name, rows in imported_sheets.items():
@@ -433,4 +432,4 @@ def convert_file_to_csv_string(path):
         writer.writerow([None] + out_keys)
         for out_row in out_rows:
             writer.writerow([None] + out_row)
-    return foo.getvalue()
+    return foo.getvalue().decode('utf-8')

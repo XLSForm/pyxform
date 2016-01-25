@@ -56,7 +56,7 @@ class BuilderTests(TestCase):
 
     def test_create_from_file_object(self):
         path = utils.path_to_text_fixture('yes_or_no_question.xls')
-        with open(path) as f:
+        with open(path, 'rb') as f:
             create_survey_from_xls(f)
 
     def tearDown(self):
