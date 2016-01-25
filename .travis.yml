@@ -5,7 +5,7 @@ install:
   - pip install -q -r requirements.pip
 env:
   - "RUNTESTS=nosetests"
-  - "RUNTESTS='nosetests -w pyxform/tests_v1/ -s'"
-script: $RUNTESTS
+  - "RUNTESTS='nosetests --tests pyxform/tests_v1/'"
+script: python setup.py $RUNTESTS
 notifications:
   irc: "irc.freenode.org#moditest"
