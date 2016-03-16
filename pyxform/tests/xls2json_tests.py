@@ -32,7 +32,9 @@ class BasicXls2JsonApiTests(TestCase):
         #Compare with the expected output:
         with codecs.open(expected_output_path, 'rb', encoding="utf-8") as expected_file:
             with codecs.open(output_path, 'rb', encoding="utf-8") as actual_file:
-                self.assertMultiLineEqual(expected_file.read(), actual_file.read())
+                expected_json = json.load(expected_file)
+                actual_json = json.load(actual_file)
+                self.assertEqual(expected_json, actual_json)
 
 #        expected_dict = [
 #            {
@@ -179,7 +181,9 @@ class BasicXls2JsonApiTests(TestCase):
         #Compare with the expected output:
         with codecs.open(expected_output_path, 'rb', encoding="utf-8") as expected_file:
             with codecs.open(output_path, 'rb', encoding="utf-8") as actual_file:
-                self.assertMultiLineEqual(expected_file.read(), actual_file.read())
+                expected_json = json.load(expected_file)
+                actual_json = json.load(actual_file)
+                self.assertEqual(expected_json, actual_json)
 
 
 

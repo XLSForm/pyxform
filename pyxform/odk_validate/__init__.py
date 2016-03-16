@@ -106,6 +106,7 @@ def check_xform(path_to_xform):
     returncode, timeout, stdout, stderr = run_popen_with_timeout(
         ["java", "-jar", ODK_VALIDATE_JAR, path_to_xform], 100)
     warnings = []
+    stderr = stderr.decode('utf-8')
 
     if timeout:
         return ["XForm took to long to completely validate."]

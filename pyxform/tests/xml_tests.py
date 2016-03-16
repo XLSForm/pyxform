@@ -1,10 +1,9 @@
-from unittest2 import TestCase
 from pyxform import create_survey_from_xls
 import re
 import utils
 
 
-class XMLTests(TestCase):
+class XMLTests(utils.XFormTestCase):
 
     def setUp(self):
         self.survey = create_survey_from_xls(
@@ -59,4 +58,4 @@ class XMLTests(TestCase):
         xml_str = re.sub(r"yes_or_no_question_2011_04_22",
                          self.survey.id_string, xml_str)
         self.maxDiff = None
-        self.assertMultiLineEqual(xml_str, self.survey.to_xml())
+        self.assertXFormEqual(xml_str, self.survey.to_xml())

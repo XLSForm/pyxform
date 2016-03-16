@@ -3,7 +3,7 @@ import re
 import codecs
 import json
 import copy
-import csv
+import unicodecsv as csv
 import xlrd
 
 SEP = "_"
@@ -15,6 +15,20 @@ XFORM_TAG_REGEXP = "%(start)s%(char)s*" % {
     "start": TAG_START_CHAR,
     "char": TAG_CHAR
     }
+
+class DetachableElement(Element):
+    """
+    Element classes are not meant to be instantiated directly.   This
+    restriction was not strictly enforced in Python 2, but is effectively
+    enforced in Python 3 via http://bugs.python.org/issue15290.
+
+    A simple workaround (for now) is to set an extra attribute on the Element
+    class.  The long term fix will probably be to rewrite node() to use
+    document.createElement rather than Element.
+    """
+    def __init__(self, *args, **kwargs):
+        Element.__init__(self, *args, **kwargs)
+        self.ownerDocument = None
 
 
 def is_valid_xml_tag(tag):
@@ -35,7 +49,7 @@ def node(*args, **kwargs):
     blocked_attributes = ['tag']
     tag = args[0] if len(args) > 0 else kwargs['tag']
     args = args[1:]
-    result = Element(tag)
+    result = DetachableElement(tag)
     unicode_args = [u for u in args if type(u) == unicode]
     assert len(unicode_args) <= 1
     parsedString = False
@@ -63,7 +77,7 @@ def node(*args, **kwargs):
         text_node.data = unicode_args[0]
         result.appendChild(text_node)
     for n in args:
-        if type(n) == int or type(n) == float or type(n) == str:
+        if type(n) == int or type(n) == float or type(n) == bytes:
             text_node = Text()
             text_node.data = unicode(n)
             result.appendChild(text_node)

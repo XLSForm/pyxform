@@ -6,10 +6,11 @@ import sys
 parentdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0,parentdir)
 import pyxform
+from .utils import XFormTestCase
 
 DIR = os.path.dirname(__file__)
 
-class main_test(unittest.TestCase):
+class main_test(XFormTestCase):
     
     maxDiff = None
     
@@ -36,8 +37,7 @@ class main_test(unittest.TestCase):
                     expected_file:
                 with codecs.open(output_path, 'rb', encoding="utf-8") as \
                         actual_file:
-                    self.assertMultiLineEqual(
-                        expected_file.read(), actual_file.read())
+                    self.assertXFormEqual(expected_file.read(), actual_file.read())
                 
 if __name__ == '__main__':
     unittest.main()
