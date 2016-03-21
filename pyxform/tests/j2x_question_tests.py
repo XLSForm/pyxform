@@ -15,7 +15,7 @@ TESTING_BINDINGS = True
 def ctw(control):
     """
     ctw stands for control_test_wrap, but ctw is shorter and easier. using begin_str and end_str to
-    take out the wrap that lxml gives us
+    take out the wrap that xml gives us
     """
     return control.toxml()
 

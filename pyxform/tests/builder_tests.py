@@ -1,5 +1,5 @@
 import re
-from lxml import etree
+import xml.etree.ElementTree as ET
 from unittest import TestCase
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
@@ -20,8 +20,8 @@ class BuilderTests(TestCase):
 #        path = utils.path_to_text_fixture('widgets.xml')
 #        survey.to_xml
 #        with open(path) as f:
-#            expected = etree.fromstring(survey.to_xml())
-#            result = etree.fromstring(f.read())
+#            expected = ET.fromstring(survey.to_xml())
+#            result = ET.fromstring(f.read())
 #            self.assertTrue(xml_compare(expected, result))
 
     def test_unknown_question_type(self):
@@ -567,7 +567,7 @@ class BuilderTests(TestCase):
             "settings", filetype=FIXTURE_FILETYPE)
         xml = survey.to_xml()
         # find the body tag
-        root_elm = etree.fromstring(xml)
+        root_elm = ET.fromstring(xml.encode('utf-8'))
         body_elms = filter(
             lambda e: self.STRIP_NS_FROM_TAG_RE.sub('', e.tag) == 'body',
             [c for c in root_elm.getchildren()])
@@ -579,7 +579,7 @@ class BuilderTests(TestCase):
             "style_settings", filetype=FIXTURE_FILETYPE)
         xml = survey.to_xml()
         # find the body tag
-        root_elm = etree.fromstring(xml)
+        root_elm = ET.fromstring(xml.encode('utf-8'))
         body_elms = filter(
             lambda e: self.STRIP_NS_FROM_TAG_RE.sub('', e.tag) == 'body',
             [c for c in root_elm.getchildren()])

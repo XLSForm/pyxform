@@ -9,8 +9,9 @@ import re
 from odk_validate import check_xform
 from survey_element import SurveyElement
 from errors import PyXFormError
-import constants
+from pyxform import constants
 import os
+import xml.etree.ElementTree as ET
 
 
 nsmap = {
@@ -22,6 +23,9 @@ nsmap = {
     u"xmlns:orx": u"http://openrosa.org/xforms"
     }
 
+for prefix, uri in nsmap.items():
+    prefix = prefix.replace("xmlns", "").replace(":", "")
+    ET.register_namespace(prefix, uri)
 
 class Survey(Section):
 
