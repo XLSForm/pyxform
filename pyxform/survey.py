@@ -9,7 +9,7 @@ import re
 from odk_validate import check_xform
 from survey_element import SurveyElement
 from errors import PyXFormError
-from pyxform import constants
+import constants
 
 
 nsmap = {
