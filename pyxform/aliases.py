@@ -42,7 +42,8 @@ settings_header = {
     u"public_key": constants.PUBLIC_KEY,
     u"submission_url": constants.SUBMISSION_URL,
     # PMA2020 BEGIN
-    u"logging": constants.LOGGING
+    u"logging": constants.LOGGING,
+    u"xml_root": constants.XML_ROOT
     # PMA2020 END
 }
 # TODO: Check on bind prefix approach in json.
