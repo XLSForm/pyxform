@@ -765,6 +765,26 @@ QUESTION_TYPE_DICT = \
                 "type": "string"
             }
         },
+        "hidden string": {
+            "bind": {
+                "type": "string"
+            }
+        },
+        "hidden int": {
+            "bind": {
+                "type": "int"
+            }
+        },
+        "hidden geopoint": {
+            "bind": {
+                "type": "geopoint"
+            }
+        },
+        "hidden binary": {
+            "bind": {
+                "type": "binary"
+            }
+        },
         "uri:subscriberid": {
             "bind": {
                 "jr:preload": "property",

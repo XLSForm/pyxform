@@ -322,9 +322,10 @@ def workbook_to_json(
     # Here we create our json dict root with default settings:
     id_string = settings.get(constants.ID_STRING, form_name)
     sms_keyword = settings.get(constants.SMS_KEYWORD, id_string)
+    xml_root = settings.get(constants.XML_ROOT, form_name)
     json_dict = {
         constants.TYPE: constants.SURVEY,
-        constants.NAME: form_name,
+        constants.NAME: xml_root,
         constants.TITLE: id_string,
         constants.ID_STRING: id_string,
         constants.SMS_KEYWORD: sms_keyword,

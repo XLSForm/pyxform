@@ -91,6 +91,21 @@ def _cleanup_errors(error_message):
             k.append(line.decode('utf-8'))
     return u'\n'.join(k)
 
+def _cleanup_warnings(warning_message):
+    unrecognized_ok = ['saveInstance', 'saveForm', 'deleteForm']
+    k = []
+    in_chunk_to_remove = False
+    for line in warning_message.splitlines():
+        has_ok_attr = any([attr in line for attr in unrecognized_ok])
+        if line.startswith('XForm Parse Warning') and has_ok_attr:
+            in_chunk_to_remove = True
+        elif re.match(r'\w', line):
+            in_chunk_to_remove = False
+
+        if not in_chunk_to_remove:
+            k.append(line.decode('utf-8'))
+    return u'\n'.join(k)
+
 
 def check_xform(path_to_xform):
     """
@@ -118,6 +133,7 @@ def check_xform(path_to_xform):
             raise ODKValidateError(
                 'ODK Validate Errors:\n' + _cleanup_errors(stderr))
         elif returncode == 0:
+            stderr = _cleanup_warnings(stderr)
             if stderr:
                 warnings.append('ODK Validate Warnings:\n' + stderr)
             return warnings
