@@ -1,18 +1,18 @@
 from distutils.core import setup
 
 setup(
-    name='pyxform',
-    version='0.9.22',
-    author='modilabs',
-    author_email='info@modilabs.org',
-    packages=['pyxform', 'pyxform.odk_validate'],
-    package_dir={'pyxform': 'pyxform'},
+    name='pmaxform',
+    version='1.0.0',
+    author='James K. Pringle',
+    author_email='jpringle@jhu.edu',
+    packages=['pmaxform', 'pmaxform.odk_validate'],
+    package_dir={'pmaxform': 'pmaxform'},
     package_data={
-        'pyxform': [
+        'pmaxform': [
             'odk_validate/ODK_Validate.jar',
         ],
     },
-    url='http://pypi.python.org/pypi/pyxform/',
+    url='https://github.com/jkpr/pmaxform',
     description='A Python package to create XForms for ODK Collect.',
     long_description=open('README.rst', 'rt').read(),
     install_requires=[

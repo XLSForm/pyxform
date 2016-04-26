@@ -1,6 +1,14 @@
-============
-pyxform v0.9
-============
+=============
+pmaxform v1.0
+=============
+
+pmaxform is an improved version of pyxform `https://github.com/XLSForm/pyxform`
+
+
+
+======================
+Previous documentation
+======================
 
 .. image:: https://travis-ci.org/XLSForm/pyxform.svg?branch=master
     :target: https://travis-ci.org/XLSForm/pyxform
