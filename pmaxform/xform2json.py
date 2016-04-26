@@ -7,7 +7,7 @@ import codecs
 from lxml import etree
 from lxml.etree import ElementTree
 from operator import itemgetter
-from pyxform import builder
+from pmaxform import builder
 
 
 ## {{{ http://code.activestate.com/recipes/573463/ (r7)

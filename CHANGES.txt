@@ -35,7 +35,7 @@ v0.9.22
     -- Adding support for attribute columns
     -- Update to the 1.4.4 build of ODK Validate
     --  Adding external itemset support
-v1.0.0, 2016 04 26 -- Initial pmaxform release
+v1.0.1, 2016 04 26 -- Initial pmaxform release
     -- Added various 'hidden' fields
     -- Added support for 'save_instance', 'save_form', 'delete_form' columns
     -- Accept xml_root in settings to fix the XForm root.
