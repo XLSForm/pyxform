@@ -41,9 +41,9 @@ settings_header = {
     u"set form id": constants.ID_STRING,
     u"public_key": constants.PUBLIC_KEY,
     u"submission_url": constants.SUBMISSION_URL,
-    # PMA2020 Logging BEGIN
+    # PMA2020 BEGIN
     u"logging": constants.LOGGING
-    # PMA2020 Logging END
+    # PMA2020 END
 }
 # TODO: Check on bind prefix approach in json.
 # Conversion dictionary from user friendly column names to meaningful values
@@ -89,7 +89,12 @@ survey_header = {
     u"requiredMsg": u"bind::jr:requiredMsg",
     u"required_message": u"bind::jr:requiredMsg",
     u"required message": u"bind::jr:requiredMsg",
-    u"body": u"control"
+    u"body": u"control",
+    # PMA2020 BEGIN
+    u"save_form": u"bind::saveForm",
+    u"save_instance": u"bind::saveInstance",
+    u"delete_form": u"bind::deleteForm"
+    # PMA2020 END
 }
 list_header = {
     u"caption": constants.LABEL,
@@ -126,6 +131,13 @@ yes_no = {
     "false()": False,
 }
 label_optional_types = [
+    # PMA2020 BEGIN
+    u"hidden",
+    u"hidden string",
+    u"hidden int",
+    u"hidden geopoint",
+    u"hidden binary",
+    # PMA2020 END
     u"deviceid",
     u"phonenumber",
     u"simserial",
