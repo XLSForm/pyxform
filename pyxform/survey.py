@@ -10,6 +10,7 @@ from odk_validate import check_xform
 from survey_element import SurveyElement
 from errors import PyXFormError
 import constants
+import os
 
 
 nsmap = {
@@ -466,16 +467,22 @@ class Survey(Section):
             warnings = []
         if not path:
             path = self._print_name + ".xml"
-        fp = codecs.open(path, mode="w", encoding="utf-8")
-        fp.write(self._to_pretty_xml())
-        fp.close()
+        with codecs.open(path, mode="w", encoding="utf-8") as fp:
+            fp.write(self._to_pretty_xml())
         if validate:
             warnings.extend(check_xform(path))
 
     def to_xml(self, validate=True, warnings=None):
-        with tempfile.NamedTemporaryFile() as tmp:
+        # On Windows, NamedTemporaryFile must be opened exclusively.
+        # So it must be explicitly created, opened, closed, and removed.
+        tmp = tempfile.NamedTemporaryFile(delete=False)
+        tmp.close()
+        try:
             # this will throw an exception if the xml is not valid
-            self.print_xform_to_file(tmp.name, validate=validate, warnings=warnings)
+            self.print_xform_to_file(tmp.name, validate=validate,
+                                     warnings=warnings)
+        finally:
+            os.remove(tmp.name)
         return self._to_pretty_xml()
 
     def instantiate(self):
