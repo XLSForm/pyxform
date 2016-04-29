@@ -10,7 +10,8 @@ import argparse
 from utils import sheet_to_csv, has_external_choices
 import os
 
-def xls2xform_convert(xlsform_path, xform_path):
+
+def xls2xform_convert(xlsform_path, xform_path, validate=True):
     warnings = []
 
     json_survey = xls2json.parse_file_to_json(xlsform_path, warnings=warnings)
@@ -19,7 +20,7 @@ def xls2xform_convert(xlsform_path, xform_path):
     # ODK Validate.
     # This may be desirable since ODK Validate requires launching a subprocess
     # that runs some java code.
-    survey.print_xform_to_file(xform_path, validate=True, warnings=warnings)
+    survey.print_xform_to_file(xform_path, validate=validate, warnings=warnings)
     output_dir = os.path.split(xform_path)[0]
     if has_external_choices(json_survey):
         itemsets_csv = os.path.join(output_dir, "itemsets.csv")
@@ -31,13 +32,31 @@ def xls2xform_convert(xlsform_path, xform_path):
     return warnings
 
 
-if __name__ == '__main__':
+def _create_parser():
+    """
+    Parse command line arguments.
+    """
     parser = argparse.ArgumentParser()
-    parser.add_argument('path_to_XLSForm')
-    parser.add_argument('output_path')
-    parser.add_argument('--json',
-        action='store_true',
+    parser.add_argument(
+        "path_to_XLSForm",
+        help="Path to the Excel XSLX file with the XLSForm definition.")
+    parser.add_argument(
+        "output_path",
+        help="Path to save the output to.")
+    parser.add_argument(
+        "--json",
+        action="store_true",
         help="Capture everything and report in JSON format.")
+    parser.add_argument(
+        "--skip_validate",
+        action="store_false",
+        default=True,
+        help="Skip default running of ODK Validate on the output XForm XML.")
+    return parser
+
+
+def main_cli():
+    parser = _create_parser()
     args = parser.parse_args()
     
     if args.json:
@@ -46,7 +65,8 @@ if __name__ == '__main__':
         response = {'code': None, 'message': None, 'warnings': []}
 
         try:
-            response['warnings'] = xls2xform_convert(args.path_to_XLSForm, args.output_path)
+            response['warnings'] = xls2xform_convert(
+                args.path_to_XLSForm, args.output_path, args.skip_validate)
 
             response['code'] = 100
             response['message'] = "Ok!"
@@ -62,8 +82,13 @@ if __name__ == '__main__':
 
         print json.dumps(response)
     else:
-        warnings = xls2xform_convert(args.path_to_XLSForm, args.output_path)
+        warnings = xls2xform_convert(
+            args.path_to_XLSForm, args.output_path, args.skip_validate)
         if len(warnings) > 0: print "Warnings:"
         for w in warnings:
             print w
         print 'Conversion complete!'
+
+
+if __name__ == '__main__':
+    main_cli()
