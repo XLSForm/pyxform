@@ -11,6 +11,7 @@ from pyxform.tests_v1.test_utils.md_table import md_table_to_ss_structure
 from pyxform.xls2json import workbook_to_json
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.odk_validate import check_xform, ODKValidateError
+import os
 
 
 class PyxformTestError(Exception):
@@ -88,13 +89,23 @@ class PyxformTestCase(TestCase):
             if debug:
                 print xml
             if run_odk_validate:
-                with tempfile.NamedTemporaryFile(suffix='.xml') as tmp:
-                    fp = codecs.open(tmp.name, mode="w", encoding="utf-8")
-                    if '_xml_append' in kwargs:
-                        xml += kwargs['_xml_append']
-                    fp.write(xml)
-                    fp.close()
+                # On Windows, NamedTemporaryFile must be opened exclusively.
+                # So it must be explicitly created, opened, closed, and removed.
+                tmp = tempfile.NamedTemporaryFile(suffix='.xml', delete=False)
+                tmp.close()
+                try:
+                    with codecs.open(
+                            tmp.name, mode="w", encoding="utf-8") as fp:
+                        if '_xml_append' in kwargs:
+                            xml += kwargs['_xml_append']
+                        fp.write(xml)
+                        fp.close()
                     check_xform(tmp.name)
+                finally:
+                    # Clean up the temporary file
+                    os.remove(tmp.name)
+                    assert not os.path.isfile(tmp.name)
+
                 if len(odk_validate_error__contains) > 0:
                     raise PyxformTestError(
                         "ODKValidateError was not raised"
