@@ -850,7 +850,6 @@
       </input>
       <input ref="/xlsform_spec_test/everything/geopoint_test">
         <label ref="jr:itext('/xlsform_spec_test/everything/geopoint_test:label')"/>
-        <hint>GPS coordinates can only be collected when outside.</hint>
       </input>
       <input ref="/xlsform_spec_test/everything/barcode_test">
         <label ref="jr:itext('/xlsform_spec_test/everything/barcode_test:label')"/>
