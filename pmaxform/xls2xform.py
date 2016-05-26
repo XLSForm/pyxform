@@ -27,8 +27,6 @@ def xls2xform_convert(xlsform_path, xform_path, validate=True):
         choices_exported = sheet_to_csv(xlsform_path, itemsets_csv, "external_choices")
         if not choices_exported:
             warnings.append("Could not export itemsets.csv, perhaps the external choices sheet is missing.")
-        else:
-            print 'External choices csv is located at:', itemsets_csv
     return warnings
 
 

@@ -98,6 +98,7 @@ def flatten(li):
 
 
 def sheet_to_csv(workbook_path, csv_path, sheet_name):
+    # TODO add UTF-8 support
     wb = xlrd.open_workbook(workbook_path)
     try:
         sheet = wb.sheet_by_name(sheet_name)
