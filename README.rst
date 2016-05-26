@@ -5,6 +5,31 @@ pmaxform v1.0
 pmaxform is an improved version of pyxform `https://github.com/XLSForm/pyxform`
 
 
+============
+Form Linking
+============
+
+First, all variables that you want to link must be placed inside a repeat,
+perhaps a household roster. You can generate those variables outside of a
+repeat, but then inside the repeat, have a calculate statement that has that
+outside variable as the calculation.
+
+Second, inside the repeat, you also need a calculate variable that will
+calculate a form name for the child form. It should have a relevant statement
+that reflects your inclusion criteria.
+
+In the settings tab, use the setting "xml_root" to set the XML root of the
+instance in the XForm. If it is not defined, then by default, the XML root is
+the file name.
+
+Next, in the parent xlsform, you need to include columns "save_instance" and
+"save_form". For the values you want linked, add under "save_instance" the
+xpath in the child form to which you want the value saved. For a hint, look at
+the "bind" tag in the child form and copy the "nodeset" value. For the
+calculated instance name, under the "save_form" enter the form_id of the child
+form.
+
+
 
 ======================
 Previous documentation
