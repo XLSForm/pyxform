@@ -92,7 +92,8 @@ def _cleanup_errors(error_message):
     return u'\n'.join(k)
 
 def _cleanup_warnings(warning_message):
-    unrecognized_ok = ['saveInstance', 'saveForm', 'deleteForm']
+    unrecognized_ok = ['saveInstance', 'saveForm', 'deleteForm',
+                       'Element [input] and will be ignored: [query]']
     k = []
     in_chunk_to_remove = False
     for line in warning_message.splitlines():
