@@ -61,3 +61,5 @@ CASCADING_CHOICES = u"cascades"
 
 OSM = u"osm"
 OSM_TYPE = u"binary"
+
+NAMESPACES = u'namespaces'
