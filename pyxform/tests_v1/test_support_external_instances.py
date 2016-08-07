@@ -34,6 +34,39 @@ class ExternalCSVInstancesTest(PyxformTestCase):
             ], debug=True
         )
 
+    def test_external_csv_instances_w_choice_filter(self):
+        # re: https://github.com/XLSForm/pyxform/issues/30
+        self.assertPyxformXform(
+            name="ecsv",
+            md="""
+            | survey |                                              |                |                |
+            |        | type                                         | name           | label          | choice_filter |
+            |        | select_one_from_file cities.csv              | city           | City           |               |
+            |        | select_multiple_from_file neighbourhoods.csv | neighbourhoods | Neighbourhoods | city=${city}  |
+            """,  # noqa
+            xml__contains=[
+                """<instance id="cities" src="jr://file-csv/cities.csv">
+        <root>
+          <item>
+            <name/>
+            <label/>
+          </item>
+        </root>
+      </instance>""",  # noqa
+                '<select1 ref="/ecsv/city">',
+                """<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv">
+        <root>
+          <item>
+            <name/>
+            <label/>
+          </item>
+        </root>
+      </instance>""",  # noqa
+                '<select ref="/ecsv/neighbourhoods">',
+                '<itemset nodeset="instance(\'neighbourhoods\')/root/item[city= /ecsv/city ]">',
+            ], debug=True
+        )
+
 
 class ExternalXMLInstancesTest(PyxformTestCase):
     def test_external_xml_instances(self):
