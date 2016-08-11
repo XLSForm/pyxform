@@ -47,7 +47,8 @@ class Survey(Section):
             u"version": unicode,
             u"choices": dict,
             u"style": unicode,
-            u"attribute": dict
+            u"attribute": dict,
+            u"namespaces": unicode,
         }
     )
 
@@ -66,6 +67,23 @@ class Survey(Section):
                         "There are two sections with the name %s." % e.name)
                 section_names.append(e.name)
 
+    def get_nsmap(self):
+        """Add additional namespaces"""
+        namespaces = getattr(self, constants.NAMESPACES, None)
+
+        if namespaces and isinstance(namespaces, basestring):
+            nslist = [
+                ns.split('=') for ns in namespaces.split()
+                if len(ns.split('=')) == 2 and ns.split('=')[0] != ''
+            ]
+            XMLNS = u'xmlns:'
+            nsmap.update(dict([
+                (XMLNS + k, v.replace('"', '').replace("'", ""))
+                for k, v in nslist if XMLNS + k not in nsmap
+            ]))
+
+        return nsmap
+
     def xml(self):
         """
         calls necessary preparation methods, then returns the xml.
@@ -77,6 +95,8 @@ class Survey(Section):
                 self, constants.STYLE):
             body_kwargs['class'] = getattr(
                 self, constants.STYLE)
+        nsmap = self.get_nsmap()
+
         return node(u"h:html",
                     node(u"h:head",
                          node(u"h:title", self.title),
