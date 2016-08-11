@@ -33,7 +33,7 @@ class ExternalCSVInstancesTest(PyxformTestCase):
       </instance>""",  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
                 '<itemset nodeset="instance(\'neighbourhoods\')/root/item">',
-            ], debug=True
+            ],
         )
 
     def test_external_csv_instances_w_choice_filter(self):
@@ -66,7 +66,7 @@ class ExternalCSVInstancesTest(PyxformTestCase):
       </instance>""",  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
                 '<itemset nodeset="instance(\'neighbourhoods\')/root/item[city= /ecsv/city ]">',
-            ], debug=True
+            ],
         )
 
 
@@ -102,7 +102,7 @@ class ExternalXMLInstancesTest(PyxformTestCase):
       </instance>""",  # noqa
                 '<select ref="/exml/neighbourhoods">',
                 '<itemset nodeset="instance(\'neighbourhoods\')/root/item">',
-            ], debug=True
+            ],
         )
 
 
@@ -118,8 +118,7 @@ class InvalidExternalFileInstancesTest(PyxformTestCase):
             |        | select_multiple_from_file neighbourhoods.pdf | neighbourhoods | Neighbourhoods |
             """,  # noqa
             errored=True,
-            error_contains=["There. should be a choices sheet in this xlsform"],
-            debug=True
+            error_contains=["should be a choices sheet in this xlsform"],
         )
 
     def test_external_choices_sheet_included_instances(self):
@@ -138,5 +137,4 @@ class InvalidExternalFileInstancesTest(PyxformTestCase):
             """,  # noqa
             errored=True,
             error__contains=["List name not in choices sheet: cities.pdf"],
-            debug=True
         )
