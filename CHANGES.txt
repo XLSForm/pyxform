@@ -39,3 +39,4 @@ v1.0.1, 2016 04 26 -- Initial pmaxform release
     -- Added various 'hidden' fields
     -- Added support for 'save_instance', 'save_form', 'delete_form' columns
     -- Accept xml_root in settings to fix the XForm root.
+v1.0.2, 2016 08 23 -- External choices UTF-8 support

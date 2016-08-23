@@ -98,6 +98,7 @@ def flatten(li):
 
 
 def sheet_to_csv(workbook_path, csv_path, sheet_name):
+    print "inside sheet_to_csv"
     # TODO add UTF-8 support
     wb = xlrd.open_workbook(workbook_path)
     try:
@@ -111,7 +112,7 @@ def sheet_to_csv(workbook_path, csv_path, sheet_name):
         mask = [v and len(v.strip()) > 0 for v in sheet.row_values(0)]
         for r in range(sheet.nrows):
             writer.writerow(
-                [v for v, m in zip(sheet.row_values(r), mask) if m])
+                [unicode(v).encode("utf-8") for v, m in zip(sheet.row_values(r), mask) if m])
     return True
 
 
