@@ -65,7 +65,7 @@ class ExternalCSVInstancesTest(PyxformTestCase):
         </root>
       </instance>""",  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
-                '<itemset nodeset="instance(\'neighbourhoods\')/root/item[city= /ecsv/city ]">',
+                '<itemset nodeset="instance(\'neighbourhoods\')/root/item[city= /ecsv/city ]">',  # noqa
             ],
         )
 
@@ -137,4 +137,24 @@ class InvalidExternalFileInstancesTest(PyxformTestCase):
             """,  # noqa
             errored=True,
             error__contains=["List name not in choices sheet: cities.pdf"],
+        )
+
+
+class ExternalCSVInstancesBugsTest(PyxformTestCase):
+    def test_non_existent_itext_reference(self):
+        # re: https://github.com/XLSForm/pyxform/issues/80
+        self.assertPyxformXform(
+            name="ecsv",
+            md="""
+            | survey |                                              |                |                |
+            |        | type                                         | name           | label          |
+            |        | select_one_from_file cities.csv              | city           | City           |
+            |        | select_multiple_from_file neighbourhoods.csv | neighbourhoods | Neighbourhoods |
+            """,  # noqa
+            xml__contains=[
+                """<itemset nodeset="instance('cities')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>"""
+            ],
         )

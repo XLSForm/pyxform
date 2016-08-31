@@ -155,13 +155,16 @@ class MultipleChoiceQuestion(Question):
         if self['itemset'] and isinstance(self['itemset'], basestring):
             choice_filter = self.get('choice_filter')
             itemset, file_extension = os.path.splitext(self['itemset'])
-            itemset = itemset \
-                if file_extension in ['.csv', '.xml'] else self['itemset']
+            if file_extension in ['.csv', '.xml']:
+                itemset = itemset
+                itemset_label_ref = "label"
+            else:
+                itemset = self['itemset']
+                itemset_label_ref = "jr:itext(itextId)"
             nodeset = "instance('" + itemset + "')/root/item"
             choice_filter = survey.insert_xpaths(choice_filter)
             if choice_filter:
                 nodeset += '[' + choice_filter + ']'
-            itemset_label_ref = "jr:itext(itextId)"
             itemset_children = [node('value', ref='name'),
                                 node('label', ref=itemset_label_ref)]
             result.appendChild(node('itemset', *itemset_children,
