@@ -48,7 +48,7 @@ def _java_installed():
         found = len(p) != 0
     except WindowsError:
         p = Popen('java -version', stderr=PIPE, stdout=PIPE).stderr.read()
-        found = p.startswith('java version')
+        found = p.startswith('java version'.encode())
     return found
 
 def _cleanup_errors(error_message):
