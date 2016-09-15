@@ -167,6 +167,17 @@ def _try_parse(root, parser=None):
     return parsed_root
 
 
+def _try_parse(root, parser=None):
+    """
+    Try to parse the root from a string or a file/file-like object.
+    """
+    try:
+        parsed_root = etree.fromstring(root, parser)
+    except etree.ParseError:
+        parsed_root = etree.parse(root, parser=parser).getroot()
+    return parsed_root
+
+
 class XFormToDict:
     def __init__(self, root):
         if isinstance(root, basestring):
