@@ -1,6 +1,9 @@
 from pyxform import create_survey_from_xls
 import re
 import utils
+from unittest2 import TestCase
+from xml.dom.minidom import getDOMImplementation
+from pyxform.utils import node
 
 
 class XMLTests(utils.XFormTestCase):
@@ -59,3 +62,24 @@ class XMLTests(utils.XFormTestCase):
                          self.survey.id_string, xml_str)
         self.maxDiff = None
         self.assertXFormEqual(xml_str, self.survey.to_xml())
+
+
+class MinidomTextWriterMonkeyPatchTest(TestCase):
+
+    def test_patch_lets_node_func_escape_only_necessary(self):
+        """Should only escape text chars that should be: ["<", ">", "&"]."""
+        text = u"' \" & < >"
+        expected = u"<root>' \" &amp; &lt; &gt;</root>".format(text)
+        observed = node(u"root", text).toprettyxml(indent="", newl="")
+        self.assertEqual(expected, observed)
+
+    def test_original_escape_escapes_more_than_necessary(self):
+        """Should fail if the original is updated (the patch can be removed)."""
+        text = u"' \" & < >"
+        expected = u"<root>' &quot; &amp; &lt; &gt;</root>".format(text)
+        document = getDOMImplementation().createDocument(None, u"root", None)
+        root = document.documentElement
+        text_node = document.createTextNode(text)
+        root.appendChild(text_node)
+        observed = root.toprettyxml(indent="", newl="")
+        self.assertEqual(expected, observed)

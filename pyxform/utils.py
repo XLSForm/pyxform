@@ -31,6 +31,17 @@ class DetachableElement(Element):
         self.ownerDocument = None
 
 
+class PatchedText(Text):
+
+    def writexml(self, writer, indent="", addindent="", newl=""):
+        """Same as original but no replacing double quotes with '&quot;'."""
+        data = "%s%s%s" % (indent, self.data, newl)
+        if data:
+            data = data.replace("&", "&amp;").replace("<", "&lt;"). \
+                replace(">", "&gt;")
+        writer.write(data)
+
+
 def is_valid_xml_tag(tag):
     """
     Use a regex to see if there are any invalid characters (i.e. spaces).
@@ -73,12 +84,12 @@ def node(*args, **kwargs):
             result.setAttribute(k, v)
 
     if len(unicode_args) == 1 and not parsedString:
-        text_node = Text()
+        text_node = PatchedText()
         text_node.data = unicode_args[0]
         result.appendChild(text_node)
     for n in args:
         if type(n) == int or type(n) == float or type(n) == bytes:
-            text_node = Text()
+            text_node = PatchedText()
             text_node.data = unicode(n)
             result.appendChild(text_node)
         elif type(n) is not unicode:
