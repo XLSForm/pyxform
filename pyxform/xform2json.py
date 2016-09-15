@@ -144,13 +144,9 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
     """
     Converts an XML file or ElementTree Element to a dictionary
     """
-
     # If a string is passed in, try to open it as a file
     if isinstance(root, basestring):
-        if os.path.exists(root):
-            root = etree.parse(root).getroot()
-        else:
-            root = etree.fromstring(root)
+        root = _try_parse(root)
     elif not isinstance(root, etree._Element):
         raise TypeError('Expected ElementTree.Element or file path string')
 
@@ -158,15 +154,25 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
 ## end of http://code.activestate.com/recipes/573463/ }}}
 
 
+def _try_parse(root, parser=None):
+    """
+    Try to parse the root from a string or a file/file-like object.
+    """
+    try:
+        parsed_root = etree.fromstring(root, parser)
+    except etree.ParseError:
+        parsed_root = etree.parse(root, parser=parser).getroot()
+    return parsed_root
+
+
 class XFormToDict:
     def __init__(self, root):
         if isinstance(root, basestring):
             parser = etree.XMLParser(remove_comments=True)
-            if os.path.exists(root):
-                self._root = etree.parse(root, parser=parser).getroot()
-            else:
-                self._root = etree.fromstring(root, parser)
-            self._dict = ConvertXmlToDict(self._root)
+            self._root = _try_parse(root, parser)
+            self._dict = XmlDictObject(
+                {self._root.tag: _ConvertXmlToDictRecurse(
+                    self._root, XmlDictObject)})
         elif not isinstance(root, etree.Element):
             raise TypeError('Expected ElementTree.Element or file path string')
 
