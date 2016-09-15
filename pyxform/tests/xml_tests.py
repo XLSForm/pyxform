@@ -64,6 +64,10 @@ class XMLTests(utils.XFormTestCase):
 
 
 class MinidomTextWriterMonkeyPatchTest(TestCase):
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3e7bedd... chg: xml text escape only replace necessary characters
     def test_patch_lets_node_func_escape_only_necessary(self):
         """Should only escape text chars that should be: ["<", ">", "&"]."""
         text = u"' \" & < >"
