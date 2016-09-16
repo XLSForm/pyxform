@@ -2,7 +2,6 @@
 Testing simple cases for pyxform
 """
 from unittest import TestCase
-#from ..pyxform import survey_from_json
 from pyxform.survey import Survey
 
 from pyxform.builder import create_survey_element_from_dict
@@ -13,7 +12,6 @@ from pyxform.builder import create_survey_element_from_dict
 #     (get this working in json2xform)
 
 class BasicJson2XFormTests(TestCase):
-
     def test_survey_can_have_to_xml_called_twice(self):
         """
         Test: Survey can have "to_xml" called multiple times
@@ -25,10 +23,11 @@ class BasicJson2XFormTests(TestCase):
         both times.
         """
         survey = Survey(name=u"SampleSurvey")
-        q = create_survey_element_from_dict({u'type':u'text', u'name':u'name', u'label':u'label'})
+        q = create_survey_element_from_dict(
+            {u'type': u'text', u'name': u'name', u'label': u'label'})
         survey.add_child(q)
-        
+
         str1 = survey.to_xml()
         str2 = survey.to_xml()
-        
+
         self.assertEqual(str1, str2)

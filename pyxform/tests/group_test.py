@@ -4,7 +4,7 @@ Testing simple cases for Xls2Json
 from unittest import TestCase
 from pyxform.xls2json import SurveyReader
 from pyxform.builder import create_survey_element_from_dict
-import utils
+from pyxform.tests import utils
 
 
 class GroupTests(TestCase):
@@ -33,7 +33,9 @@ class GroupTests(TestCase):
                         {
                             u'name': u'phone_number',
                             u'type': u'phone number',
-                            u'label': {u'English': u"What's your father's phone number?"}
+                            u'label': {
+                                u'English':
+                                    u"What's your father's phone number?"}
                             },
                         {
                             u'name': u'age',
@@ -74,6 +76,6 @@ class GroupTests(TestCase):
         # this won't happen through reading the excel file as done by
         # SurveyReader.
         # Now it happens.
-        #del survey_dict[u'title']
+        # del survey_dict[u'title']
         self.maxDiff = None
         self.assertEqual(x_results, survey_dict)

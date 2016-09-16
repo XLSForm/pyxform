@@ -1,7 +1,7 @@
-from utils import node
-from survey_element import SurveyElement
-from question_type_dictionary import QUESTION_TYPE_DICT
-from errors import PyXFormError
+from pyxform.utils import node, unicode, basestring
+from pyxform.survey_element import SurveyElement
+from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
+from pyxform.errors import PyXFormError
 
 
 class Question(SurveyElement):
@@ -112,15 +112,15 @@ class Option(SurveyElement):
 
 class MultipleChoiceQuestion(Question):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         kwargs_copy = kwargs.copy()
         # Notice that choices can be specified under choices or children.
         # I'm going to try to stick to just choices.
         # Aliases in the json format will make it more difficult
         # to use going forward.
-        choices = kwargs_copy.pop(u"choices", []) + \
-            kwargs_copy.pop(u"children", [])
-        Question.__init__(self, *args, **kwargs_copy)
+        choices = list(kwargs_copy.pop(u"choices", [])) + \
+            list(kwargs_copy.pop(u"children", []))
+        Question.__init__(self, **kwargs_copy)
         for choice in choices:
             self.add_choice(**choice)
 
@@ -131,7 +131,7 @@ class MultipleChoiceQuestion(Question):
     def validate(self):
         Question.validate(self)
         descendants = self.iter_descendants()
-        descendants.next()  # iter_descendants includes self; we need to pop it
+        next(descendants)  # iter_descendants includes self; we need to pop it
 
         for choice in descendants:
             choice.validate()
@@ -168,18 +168,18 @@ class MultipleChoiceQuestion(Question):
 
 
 class SelectOneQuestion(MultipleChoiceQuestion):
-    def __init__(self, *args, **kwargs):
-        super(SelectOneQuestion, self).__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super(SelectOneQuestion, self).__init__(**kwargs)
         self._dict[self.TYPE] = u"select one"
 
 
 class Tag(SurveyElement):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         kwargs_copy = kwargs.copy()
         choices = kwargs_copy.pop(u"choices", []) + \
             kwargs_copy.pop(u"children", [])
 
-        super(Tag, self).__init__(*args, **kwargs_copy)
+        super(Tag, self).__init__(**kwargs_copy)
 
         if choices:
             self.children = []
@@ -202,12 +202,12 @@ class Tag(SurveyElement):
 
 
 class OsmUploadQuestion(UploadQuestion):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         kwargs_copy = kwargs.copy()
         tags = kwargs_copy.pop(u"tags", []) + \
             kwargs_copy.pop(u"children", [])
 
-        super(OsmUploadQuestion, self).__init__(*args, **kwargs_copy)
+        super(OsmUploadQuestion, self).__init__(**kwargs_copy)
 
         if tags:
             self.children = []

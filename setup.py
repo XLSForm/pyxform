@@ -23,8 +23,6 @@ setup(
     install_requires=[
         'xlrd==0.9.4',
         'lxml==3.5.0',
-        'unicodecsv==0.14.1',
+        'unicodecsv==0.14.1', 'formencode',
     ],
-    use_2to3=True,
-    use_2to3_fixers=['fixers'],
 )

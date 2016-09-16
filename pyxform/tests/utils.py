@@ -16,13 +16,15 @@ def build_survey(filename):
     return create_survey_from_path(path)
 
 
-def create_survey_from_fixture(fixture_name, filetype="xls", include_directory=False):
+def create_survey_from_fixture(fixture_name, filetype="xls",
+                               include_directory=False):
     fixture_path = path_to_text_fixture("%s.%s" % (fixture_name, filetype))
     noop, section_dict = file_utils.load_file_to_dict(fixture_path)
     pkg = {u'main_section': section_dict}
     if include_directory:
         directory, noop = os.path.split(fixture_path)
-        pkg[u'sections'] = file_utils.collect_compatible_files_in_directory(directory)
+        pkg[u'sections'] = file_utils.collect_compatible_files_in_directory(
+            directory)
     return create_survey(**pkg)
 
 
@@ -48,6 +50,7 @@ class XFormTestCase(TestCase):
 
         # Report any errors returned from xform_compare
         errs = []
+
         def reporter(msg):
             errs.append(msg)
 
@@ -57,11 +60,11 @@ class XFormTestCase(TestCase):
         )
 
     def sort_elems(self, elems, attr=None):
-         if attr:
-             key = lambda elem: elem.get(attr, '')
-         else:
-             key = lambda elem: elem.tag
-         elems[:] = sorted(elems, key=key)
+        if attr:
+            key = lambda elem: elem.get(attr, '')
+        else:
+            key = lambda elem: elem.tag
+        elems[:] = sorted(elems, key=key)
 
     def sort_model(self, xform):
         ns = "{http://www.w3.org/2002/xforms}"

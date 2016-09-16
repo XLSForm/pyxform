@@ -1,15 +1,16 @@
 import tempfile
-from section import Section
-from question import Question
-from utils import node
+from pyxform.section import Section
+from pyxform.question import Question
+from pyxform.utils import node, unicode, basestring, PatchedText
 from collections import defaultdict
 import codecs
 from datetime import datetime
 import re
-from odk_validate import check_xform
-from survey_element import SurveyElement
-from errors import PyXFormError
-import constants
+from pyxform.odk_validate import check_xform
+from pyxform.survey_element import SurveyElement
+from pyxform.errors import PyXFormError
+from pyxform import constants
+from pyxform.instance import SurveyInstance
 import os
 
 
@@ -201,10 +202,10 @@ class Survey(Section):
                     if isinstance(choicePropertyValue, dict):
                         for mediatypeorlanguage, value in choicePropertyValue.items():  # noqa
                             if isinstance(value, dict):
-                                for langauge, value in value.items():
+                                for language, value in value.items():
                                     self._add_to_nested_dict(
                                         self._translations,
-                                        [langauge, itextId,
+                                        [language, itextId,
                                          mediatypeorlanguage],
                                         value)
                             else:
@@ -260,13 +261,21 @@ class Survey(Section):
             translation_key = survey_element.get_xpath() + ":label"
             media_dict = survey_element.get(u"media")
 
+            # This is probably papering over a real problem, but anyway,
+            # in py3, sometimes if an item is on an xform with multiple
+            # languages and the item only has media defined in # "default"
+            # (e.g. no "image" vs. "image::lang"), the media dict will be
+            # nested inside of a dict with key "default", e.g.
+            # {"default": {"image": "my_image.jpg"}}
+            media_dict_default = media_dict.get("default", None)
+            if isinstance(media_dict_default, dict):
+                media_dict = media_dict_default
+
             for media_type, possibly_localized_media in media_dict.items():
 
                 if media_type not in SurveyElement.SUPPORTED_MEDIA:
                     raise PyXFormError(
                         "Media type: " + media_type + " not supported")
-
-                localized_media = dict()
 
                 if type(possibly_localized_media) is dict:
                     # media is localized
@@ -442,8 +451,7 @@ class Survey(Section):
         # For exampke, `${name} < 3` causes an error but `< 3` does not.
         # This is my hacky fix for it, which does string escaping prior to
         # variable replacement:
-        from xml.dom.minidom import Text
-        text_node = Text()
+        text_node = PatchedText()
         text_node.data = text
         xml_text = text_node.toxml()
 
@@ -490,6 +498,4 @@ class Survey(Section):
         Instantiate as in return a instance of SurveyInstance for collected
         data.
         """
-        from instance import SurveyInstance
-
         return SurveyInstance(self)

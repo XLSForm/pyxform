@@ -10,7 +10,7 @@ How to use:
   xform_status = pyxform_validate.check_xform("/path/to/xform.xml")
 
   if xform_status.valid:
-	  print "Your XForm is valid!"
+      print "Your XForm is valid!"
   else:
       print "Your XForm is not valid"
       print status

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from pyxform_test_case import PyxformTestCase
+from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class UnicodeRtl(PyxformTestCase):

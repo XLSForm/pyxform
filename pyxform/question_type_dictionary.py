@@ -1,4 +1,4 @@
-from xls2json import QuestionTypesReader, print_pyobj_to_json
+from pyxform.xls2json import QuestionTypesReader, print_pyobj_to_json
 
 FILE_MEDIA_TYPES = ",".join([
     "text/plain",

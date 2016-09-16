@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from pyxform_test_case import PyxformTestCase
+from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class DoubleColonTranslations(PyxformTestCase):

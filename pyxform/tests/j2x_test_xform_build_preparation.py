@@ -6,13 +6,14 @@ from pyxform import *
 
 import json
 
+
 class Json2XformExportingPrepTests(TestCase):
     
     def test_dictionary_consolidates_duplicate_entries(self):
         
         yes_or_no_dict_array = [
-            {"label": {"French":"Oui", "English":"Yes"}, "name":"yes"},
-            {"label": {"French":"Non", "English":"No"}, "name":"no"}
+            {"label": {"French": "Oui", "English": "Yes"}, "name": "yes"},
+            {"label": {"French": "Non", "English": "No"}, "name": "no"}
             ]
 
         first_yesno_question = MultipleChoiceQuestion(
@@ -24,7 +25,7 @@ class Json2XformExportingPrepTests(TestCase):
         s.add_child(first_yesno_question)
         s.add_child(second_yesno_question)
         
-        #begin the processes in survey.to_xml()
+        # begin the processes in survey.to_xml()
         # 1. validate()
         s.validate()
         
@@ -32,7 +33,7 @@ class Json2XformExportingPrepTests(TestCase):
         # options_list = s._build_options_list_from_descendants()
         # Is this method called somewhere else now?
         
-        desired_options_list = [first_yesno_question.children]
+        # desired_options_list = [first_yesno_question.children]
 
         # todo: we need to think about whether we care about
         # consolidating these options lists.

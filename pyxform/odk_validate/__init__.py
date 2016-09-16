@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """
 odk_validate.py
 A python wrapper around ODK Validate
@@ -12,11 +14,13 @@ import signal
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "ODK_Validate.jar")
 
+
 class ODKValidateError(Exception):
     pass
 
-#Adapted from:
-#http://betabug.ch/blogs/ch-athens/1093
+
+# Adapted from:
+# http://betabug.ch/blogs/ch-athens/1093
 def run_popen_with_timeout(command, timeout):
     """
     Run a sub-program in subprocess.Popen, pass it the input_data,
@@ -30,16 +34,18 @@ def run_popen_with_timeout(command, timeout):
         kill_check.set()  # tell the main routine that we had to kill
         # use SIGKILL if hard to kill...
         return
+
     p = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     pid = p.pid
     watchdog = threading.Timer(
-        timeout, _kill_process_after_a_timeout, args=(pid, ))
+        timeout, _kill_process_after_a_timeout, args=(pid,))
     watchdog.start()
     (stdout, stderr) = p.communicate()
     watchdog.cancel()  # if it's still waiting to run
     timeout = kill_check.isSet()
     kill_check.clear()
-    return (p.returncode, timeout, stdout, stderr)
+    return p.returncode, timeout, stdout, stderr
+
 
 def _java_installed():
     # This alternative allows for java detection on Windows.
@@ -50,6 +56,7 @@ def _java_installed():
         p = Popen('java -version', stderr=PIPE, stdout=PIPE).stderr.read()
         found = p.startswith('java version'.encode())
     return found
+
 
 def _cleanup_errors(error_message):
     def get_last_item(xpathStr):
@@ -66,10 +73,11 @@ def _cleanup_errors(error_message):
                 or strmatch.endswith("/item/value"):
             return strmatch
         return "${%s}" % get_last_item(match.group())
+
     pattern = "(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)"
-    #moving flags into compile for python 2.6 compat
+    # moving flags into compile for python 2.6 compat
     error_message = re.compile(pattern, flags=re.I).sub(replace_function,
-        error_message)
+                                                        error_message)
     k = []
     lastline = ''
     for line in error_message.splitlines():
@@ -86,7 +94,8 @@ def _cleanup_errors(error_message):
                 line = line.replace('java.lang.RuntimeException: ', '')
             # remove org.javarosa.xpath.XPathUnhandledException
             if line.startswith('org.javarosa.xpath.XPathUnhandledException: '):
-                line = line.replace('org.javarosa.xpath.XPathUnhandledException: ', '')
+                line = line.replace(
+                    'org.javarosa.xpath.XPathUnhandledException: ', '')
             # remove java.lang.NullPointerException
             if line.startswith('java.lang.NullPointerException'):
                 continue
@@ -101,14 +110,15 @@ def check_xform(path_to_xform):
     """
     # provide useful error message if java is not installed
     if not _java_installed():
-        raise EnvironmentError("pyxform odk validate dependency: java not found")
+        raise EnvironmentError(
+            "pyxform odk validate dependency: java not found")
 
-    #resultcode indicates validity of the form
-    #timeout indicates whether validation ran out of time to complete
-    #stdout is not used because it has some warnings that always
-    #appear and can be ignored.
-    #stderr is treated as a warning if the form is valid or an error
-    #if it is invalid.
+    # resultcode indicates validity of the form
+    # timeout indicates whether validation ran out of time to complete
+    # stdout is not used because it has some warnings that always
+    # appear and can be ignored.
+    # stderr is treated as a warning if the form is valid or an error
+    # if it is invalid.
     returncode, timeout, stdout, stderr = run_popen_with_timeout(
         ["java", "-jar", ODK_VALIDATE_JAR, path_to_xform], 100)
     warnings = []
@@ -138,6 +148,7 @@ def check_xform(path_to_xform):
         elif returncode < 0:
             return ["Bad return code from ODK Validate."]
 
+
 if __name__ == '__main__':
-    print __doc__
+    print(__doc__)
     check_xform(sys.argv[1])

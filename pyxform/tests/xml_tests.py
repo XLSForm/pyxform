@@ -1,13 +1,12 @@
 from pyxform import create_survey_from_xls
 import re
-import utils
+from pyxform.tests import utils
 from unittest2 import TestCase
 from xml.dom.minidom import getDOMImplementation
 from pyxform.utils import node
 
 
 class XMLTests(utils.XFormTestCase):
-
     def setUp(self):
         self.survey = create_survey_from_xls(
             utils.path_to_text_fixture("yes_or_no_question.xls"))
@@ -65,7 +64,6 @@ class XMLTests(utils.XFormTestCase):
 
 
 class MinidomTextWriterMonkeyPatchTest(TestCase):
-
     def test_patch_lets_node_func_escape_only_necessary(self):
         """Should only escape text chars that should be: ["<", ">", "&"]."""
         text = u"' \" & < >"

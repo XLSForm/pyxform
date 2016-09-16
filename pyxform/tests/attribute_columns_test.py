@@ -10,8 +10,7 @@ parentdir = os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, parentdir)
 import pyxform
-from pyxform.errors import PyXFormError
-from .utils import XFormTestCase
+from pyxform.tests.utils import XFormTestCase
 
 DIR = os.path.dirname(__file__)
 

@@ -3,9 +3,9 @@ from lxml import etree
 from unittest import TestCase
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
-from pyxform import Survey, InputQuestion, constants
+from pyxform import Survey, InputQuestion
 from pyxform.errors import PyXFormError
-import utils
+from pyxform.tests import utils
 import os
 
 FIXTURE_FILETYPE = "xls"
@@ -32,7 +32,7 @@ class BuilderTests(TestCase):
         )
 
     def test_uniqueness_of_section_names(self):
-        #Looking at the xls file, I think this test might be broken.
+        # Looking at the xls file, I think this test might be broken.
         survey = utils.build_survey('group_names_must_be_unique.xls')
         self.assertRaises(
             Exception,
@@ -60,8 +60,9 @@ class BuilderTests(TestCase):
             create_survey_from_xls(f)
 
     def tearDown(self):
-        import os
-        os.remove(utils.path_to_text_fixture("how_old_are_you.json"))
+        fixture_path = utils.path_to_text_fixture("how_old_are_you.json")
+        if os.path.exists(fixture_path):
+            os.remove(fixture_path)
 
     def test_create_table_from_dict(self):
         d = {
@@ -273,7 +274,7 @@ class BuilderTests(TestCase):
                         },
                         # Removing this because select alls shouldn't need
                         # an explicit none option
-                        #{
+                        # {
                         #    u'name': u'none',
                         #    u'label': u'None',
                         #    },
@@ -568,9 +569,9 @@ class BuilderTests(TestCase):
         xml = survey.to_xml()
         # find the body tag
         root_elm = etree.fromstring(xml)
-        body_elms = filter(
+        body_elms = list(filter(
             lambda e: self.STRIP_NS_FROM_TAG_RE.sub('', e.tag) == 'body',
-            [c for c in root_elm.getchildren()])
+            [c for c in root_elm.getchildren()]))
         self.assertEqual(len(body_elms), 1)
         self.assertIsNone(body_elms[0].get('class'))
 
@@ -580,8 +581,8 @@ class BuilderTests(TestCase):
         xml = survey.to_xml()
         # find the body tag
         root_elm = etree.fromstring(xml)
-        body_elms = filter(
+        body_elms = list(filter(
             lambda e: self.STRIP_NS_FROM_TAG_RE.sub('', e.tag) == 'body',
-            [c for c in root_elm.getchildren()])
+            [c for c in root_elm.getchildren()]))
         self.assertEqual(len(body_elms), 1)
         self.assertEqual(body_elms[0].get('class'), 'ltr')

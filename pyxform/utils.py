@@ -6,6 +6,17 @@ import copy
 import unicodecsv as csv
 import xlrd
 
+try:
+    unicode("str")
+except NameError:
+    unicode = str
+    basestring = str
+    unichr = chr
+else:
+    unicode = unicode
+    basestring = basestring
+    unichr = unichr
+
 SEP = "_"
 
 # http://www.w3.org/TR/REC-xml/
@@ -15,6 +26,7 @@ XFORM_TAG_REGEXP = "%(start)s%(char)s*" % {
     "start": TAG_START_CHAR,
     "char": TAG_CHAR
     }
+
 
 class DetachableElement(Element):
     """
@@ -66,7 +78,7 @@ def node(*args, **kwargs):
     parsedString = False
     # kwargs is an xml attribute dictionary,
     # here we convert it to a xml.dom.minidom.Element
-    for k, v in kwargs.iteritems():
+    for k, v in iter(kwargs.items()):
         if k in blocked_attributes:
             continue
         if k == 'toParseString':
@@ -75,10 +87,10 @@ def node(*args, **kwargs):
                 # Add this header string so parseString can be used?
                 s = u'<?xml version="1.0" ?><'+tag+'>' + unicode_args[0]\
                     + u'</'+tag+'>'
-                node = parseString(s.encode("utf-8")).documentElement
+                parsed_node = parseString(s.encode("utf-8")).documentElement
                 # Move node's children to the result Element
                 # discarding node's root
-                for child in node.childNodes:
+                for child in parsed_node.childNodes:
                     result.appendChild(copy.deepcopy(child))
         else:
             result.setAttribute(k, v)

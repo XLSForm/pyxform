@@ -5,16 +5,18 @@
 
 from xml.dom import minidom
 import re
+from pyxform.utils import unicode
 
 XFORM_ID_STRING = u"_xform_id_string"
 
+
 def _xml_node_to_dict(node):
     assert isinstance(node, minidom.Node)
-    if len(node.childNodes)==0:
+    if len(node.childNodes) == 0:
         # there's no data for this leaf node
         value = None
-    elif len(node.childNodes)==1 and \
-            node.childNodes[0].nodeType==node.TEXT_NODE:
+    elif len(node.childNodes) == 1 and \
+            node.childNodes[0].nodeType == node.TEXT_NODE:
         # there is data for this leaf node
         value = node.childNodes[0].nodeValue
     else:
@@ -23,11 +25,11 @@ def _xml_node_to_dict(node):
         for child in node.childNodes:
             d = _xml_node_to_dict(child)
             child_name = child.nodeName
-            assert d.keys()==[child_name]
+            assert list(d.keys()) == [child_name]
             if child_name not in value:
                 # copy the value into the dict
                 value[child_name] = d[child_name]
-            elif type(value[child_name])==list:
+            elif type(value[child_name]) == list:
                 # add to the existing list
                 value[child_name].append(d[child_name])
             else:
@@ -35,33 +37,35 @@ def _xml_node_to_dict(node):
                 value[child_name] = [value[child_name], d[child_name]]
     return {node.nodeName: value}
 
+
 def _flatten_dict(d, prefix):
     """
     Return a list of XPath, value pairs.
     """
-    assert type(d)==dict
-    assert type(prefix)==list
+    assert type(d) == dict
+    assert type(prefix) == list
 
     for key, value in d.items():
         new_prefix = prefix + [key]
-        if type(value)==dict:
+        if type(value) == dict:
             for pair in _flatten_dict(value, new_prefix):
                 yield pair
-        elif type(value)==list:
+        elif type(value) == list:
             for i, item in enumerate(value):
-                item_prefix = list(new_prefix) # make a copy
+                item_prefix = list(new_prefix)  # make a copy
                 # note on indexing xpaths: IE5 and later has
                 # implemented that [0] should be the first node, but
                 # according to the W3C standard it should have been
                 # [1]. I'm adding 1 to i to start at 1.
-                item_prefix[-1] += u"[%s]" % unicode(i+1)
-                if type(item)==dict:
+                item_prefix[-1] += u"[%s]" % unicode(i + 1)
+                if type(item) == dict:
                     for pair in _flatten_dict(item, item_prefix):
                         yield pair
                 else:
                     yield (item_prefix, item)
         else:
             yield (new_prefix, value)
+
 
 def _get_all_attributes(node):
     """
@@ -76,13 +80,12 @@ def _get_all_attributes(node):
 
 
 class XFormInstanceParser(object):
-
     def __init__(self, xml_str):
         self.parse(xml_str)
 
     def parse(self, xml_str):
         clean_xml_str = xml_str.strip()
-        clean_xml_str = re.sub(ur">\s+<", u"><", clean_xml_str)
+        clean_xml_str = re.sub(unicode(r">\s+<"), unicode("><"), clean_xml_str)
         self._xml_obj = minidom.parseString(clean_xml_str)
         self._root_node = self._xml_obj.documentElement
         self._dict = _xml_node_to_dict(self._root_node)
@@ -126,9 +129,11 @@ def xform_instance_to_dict(xml_str):
     parser = XFormInstanceParser(xml_str)
     return parser.to_json_dict()
 
+
 def xform_instance_to_flat_dict(xml_str):
     parser = XFormInstanceParser(xml_str)
     return parser.to_flat_dict()
+
 
 def parse_xform_instance(xml_str):
     parser = XFormInstanceParser(xml_str)

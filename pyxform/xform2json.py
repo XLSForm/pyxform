@@ -1,16 +1,16 @@
-import os
+from __future__ import print_function
 import re
 import json
 import copy
 import codecs
-
 from lxml import etree
 from lxml.etree import ElementTree
 from operator import itemgetter
 from pyxform import builder
+from pyxform.utils import basestring
 
 
-## {{{ http://code.activestate.com/recipes/573463/ (r7)
+# {{{ http://code.activestate.com/recipes/573463/ (r7)
 class XmlDictObject(dict):
     """
     Adds object like functionality to the standard dictionary.
@@ -41,7 +41,7 @@ class XmlDictObject(dict):
 
         if isinstance(x, dict):
             return XmlDictObject(
-                (k, XmlDictObject.Wrap(v)) for (k, v) in x.iteritems())
+                (k, XmlDictObject.Wrap(v)) for (k, v) in iter(x.items()))
         elif isinstance(x, list):
             return [XmlDictObject.Wrap(v) for v in x]
         else:
@@ -51,7 +51,7 @@ class XmlDictObject(dict):
     def _UnWrap(x):
         if isinstance(x, dict):
             return dict(
-                (k, XmlDictObject._UnWrap(v)) for (k, v) in x.iteritems())
+                (k, XmlDictObject._UnWrap(v)) for (k, v) in iter(x.items()))
         elif isinstance(x, list):
             return [XmlDictObject._UnWrap(v) for v in x]
         else:
@@ -70,7 +70,7 @@ def _ConvertDictToXmlRecurse(parent, dictitem):
     assert not isinstance(dictitem, list)
 
     if isinstance(dictitem, dict):
-        for (tag, child) in dictitem.iteritems():
+        for (tag, child) in iter(dictitem.items()):
             if str(tag) == '_text':
                 parent.text = str(child)
             elif isinstance(child, list):
@@ -151,7 +151,9 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
         raise TypeError('Expected ElementTree.Element or file path string')
 
     return dictclass({root.tag: _ConvertXmlToDictRecurse(root, dictclass)})
-## end of http://code.activestate.com/recipes/573463/ }}}
+
+
+# end of http://code.activestate.com/recipes/573463/ }}}
 
 
 def _try_parse(root, parser=None):
@@ -189,7 +191,7 @@ def create_survey_element_from_xml(xml_file):
 
 
 class XFormToDictBuilder:
-    '''Experimental XFORM xml to XFORM JSON'''
+    """Experimental XFORM xml to XFORM JSON"""
     QUESTION_TYPES = {
         'select': 'select all that apply',
         'select1': 'select one',
@@ -231,7 +233,7 @@ class XFormToDictBuilder:
         # set self.translations
         self._set_translations()
 
-        for key, obj in self.body.iteritems():
+        for key, obj in iter(self.body.items()):
             if isinstance(obj, dict):
                 self.children.append(
                     self._get_question_from_object(obj, type=key))
@@ -285,6 +287,7 @@ class XFormToDictBuilder:
                 for child in children:
                     if isinstance(child, dict) and 'children' in child:
                         order_children(child['children'])
+
         order_children(self.children)
         remove_refs(self.children)
 
@@ -357,7 +360,6 @@ class XFormToDictBuilder:
             return self.ordered_binding_refs.__len__() + 1
 
     def _get_question_from_object(self, obj, type=None):
-        ref = None
         try:
             ref = obj['ref']
         except KeyError:
@@ -366,8 +368,8 @@ class XFormToDictBuilder:
             except KeyError:
                 raise TypeError(
                     'cannot find "ref" or "nodeset" in {}'.format(repr(obj)))
-        question = {'ref': ref, '__order': self._get_question_order(ref)}
-        question['name'] = self._get_name_from_ref(ref)
+        question = {'ref': ref, '__order': self._get_question_order(ref),
+                    'name': self._get_name_from_ref(ref)}
         if 'hint' in obj:
             k, v = self._get_label(obj['hint'], 'hint')
             question[k] = v
@@ -375,7 +377,7 @@ class XFormToDictBuilder:
             k, v = self._get_label(obj['label'])
             if isinstance(v, dict) and 'label' in v.keys() \
                     and 'media' in v.keys():
-                for _k, _v in v.iteritems():
+                for _k, _v in iter(v.items()):
                     question[_k] = _v
             else:
                 question[k] = v
@@ -390,7 +392,7 @@ class XFormToDictBuilder:
             question['control'].update({'autoplay': obj['autoplay']})
         question_params = self._get_question_params_from_bindings(ref)
         if isinstance(question_params, dict):
-            for k, v in question_params.iteritems():
+            for k, v in iter(question_params.items()):
                 question[k] = v
         # has to come after the above block
         if 'mediatype' in obj:
@@ -398,8 +400,8 @@ class XFormToDictBuilder:
         if 'item' in obj:
             children = []
             for i in obj['item']:
-                if isinstance(i, dict) and\
-                        'label' in i.keys() and 'value' in i.keys():
+                if isinstance(i, dict) and \
+                                'label' in i.keys() and 'value' in i.keys():
                     k, v = self._get_label(i['label'])
                     children.append(
                         {'name': i['value'], k: v})
@@ -436,7 +438,7 @@ class XFormToDictBuilder:
 
     def _get_children_questions(self, obj):
         children = []
-        for k, v in obj.iteritems():
+        for k, v in iter(obj.items()):
             if k in ['ref', 'label', 'nodeset']:
                 continue
             if isinstance(v, dict):
@@ -456,7 +458,7 @@ class XFormToDictBuilder:
                 except ValueError:
                     pass
                 rs = {}
-                for k, v in item.iteritems():
+                for k, v in iter(item.items()):
                     if k == 'nodeset':
                         continue
                     if k == 'type':
@@ -518,11 +520,9 @@ class XFormToDictBuilder:
         return key, label_obj
 
     def _get_output_text(self, value):
-        text = ''
         if 'output' in value and '_text' in value:
-            v = [value['_text']]
-            v.append(self._get_bracketed_name(
-                value['output']['value']))
+            v = [value['_text'], self._get_bracketed_name(
+                value['output']['value'])]
             text = u' '.join(v)
             if 'tail' in value['output']:
                 text = u''.join(
@@ -602,9 +602,9 @@ class XFormToDictBuilder:
         return constraintMsg
 
     def _get_name_from_ref(self, ref):
-        '''given /xlsform_spec_test/launch,
+        """given /xlsform_spec_test/launch,
         return the string after the last occurance of the character '/'
-        '''
+        """
         pos = ref.rfind('/')
         if pos == -1:
             return ref
@@ -621,7 +621,8 @@ class XFormToDictBuilder:
 
         def replace_function(match):
             return "${%s}" % get_last_item(match.group())
-        #moving re flags into compile for python 2.6 compat
+
+        # moving re flags into compile for python 2.6 compat
         pattern = "( /[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+ )"
         text = re.compile(pattern, flags=re.I).sub(replace_function, text)
         pattern = "(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)"
@@ -633,4 +634,4 @@ def write_object_to_file(filename, obj):
     f = codecs.open(filename, 'w', encoding='utf-8')
     f.write(json.dumps(obj, indent=2))
     f.close()
-    print "object written to file: ", filename
+    print("object written to file: ", filename)

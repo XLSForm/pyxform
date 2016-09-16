@@ -13,13 +13,13 @@ sys.path.insert(0, parentdir)
 import pyxform
 from pyxform.utils import has_external_choices
 from pyxform.xls2json import SurveyReader
-from .utils import XFormTestCase
+from pyxform.tests.utils import XFormTestCase
+from pyxform.errors import PyXFormError
 
 DIR = os.path.dirname(__file__)
 
 
 class group_names(unittest.TestCase):
-
     maxDiff = None
 
     def runTest(self):
@@ -38,7 +38,6 @@ class group_names(unittest.TestCase):
 
 
 class duplicate_columns(unittest.TestCase):
-
     maxDiff = None
 
     def runTest(self):
@@ -57,7 +56,6 @@ class duplicate_columns(unittest.TestCase):
 
 
 class repeat_date_test(XFormTestCase):
-
     maxDiff = None
 
     def runTest(self):
@@ -84,7 +82,6 @@ class repeat_date_test(XFormTestCase):
 
 
 class xml_escaping(XFormTestCase):
-
     maxDiff = None
 
     def runTest(self):
@@ -111,7 +108,6 @@ class xml_escaping(XFormTestCase):
 
 
 class DefaultTimeTest(XFormTestCase):
-
     maxDiff = None
 
     def runTest(self):
@@ -138,7 +134,6 @@ class DefaultTimeTest(XFormTestCase):
 
 
 class cascade_old_format(unittest.TestCase):
-
     maxDiff = None
 
     def runTest(self):
@@ -156,7 +151,6 @@ class cascade_old_format(unittest.TestCase):
 
 
 class validate_wrapper(unittest.TestCase):
-
     maxDiff = None
 
     def runTest(self):
@@ -174,7 +168,6 @@ class validate_wrapper(unittest.TestCase):
 
 
 class cascade_old_format_index_error(unittest.TestCase):
-
     maxDiff = None
 
     def runTest(self):
@@ -185,7 +178,7 @@ class cascade_old_format_index_error(unittest.TestCase):
         output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
         # Do the conversion:
         warnings = []
-        with self.assertRaises(pyxform.errors.PyXFormError):
+        with self.assertRaises(PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(
                 path_to_excel_file, warnings=warnings)
             survey = pyxform.create_survey_element_from_dict(json_survey)
@@ -193,7 +186,6 @@ class cascade_old_format_index_error(unittest.TestCase):
 
 
 class EmptyStringOnRelevantColumnTest(unittest.TestCase):
-
     def runTest(self):
         filename = "ict_survey_fails.xls"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
@@ -205,7 +197,6 @@ class EmptyStringOnRelevantColumnTest(unittest.TestCase):
 
 
 class MissingOrBadlyNamedChoicesTest(unittest.TestCase):
-
     def runTest(self):
         filename = "badly_named_choices_sheet.xls"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
@@ -216,7 +207,6 @@ class MissingOrBadlyNamedChoicesTest(unittest.TestCase):
 
 
 class BadChoicesSheetHeaders(unittest.TestCase):
-
     def runTest(self):
         filename = "spaces_in_choices_header.xls"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
@@ -234,6 +224,7 @@ class TestChoiceNameAsType(unittest.TestCase):
         xls_reader = SurveyReader(path_to_excel_file)
         survey_dict = xls_reader.to_json_dict()
         self.assertTrue(has_external_choices(survey_dict))
+
 
 class TestBlankSecondRow(unittest.TestCase):
     def test_blank_second_row(self):

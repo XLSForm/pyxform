@@ -1,6 +1,6 @@
-from question import SurveyElement
-from utils import node
-from errors import PyXFormError
+from pyxform.question import SurveyElement
+from pyxform.utils import node
+from pyxform.errors import PyXFormError
 
 
 class Section(SurveyElement):
@@ -42,7 +42,7 @@ class Section(SurveyElement):
                 result.appendChild(child.xml_instance())
         return result
 
-    def xml_instance_array(self, **kwargs):
+    def xml_instance_array(self):
         """
         This method is used for generating flat instances.
         """
