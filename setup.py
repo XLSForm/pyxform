@@ -2,9 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyxform',
-    version='0.9.22',
-    author='modilabs',
-    author_email='info@modilabs.org',
+    version='0.9.23',
+    author='github.com/xlsform',
+    author_email='info@xlsform.org',
     packages=find_packages(),
     package_data={
         'pyxform.odk_validate': [

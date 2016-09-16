@@ -23,7 +23,11 @@ select = {
     u"select one": constants.SELECT_ONE,
     u"select_multiple": constants.SELECT_ALL_THAT_APPLY,
     u"select all that apply": constants.SELECT_ALL_THAT_APPLY,
-    u"select_one_external": u"select one external"
+    u"select_one_external": u"select one external",
+    u"select_one_from_file": constants.SELECT_ONE,
+    u"select_multiple_from_file": constants.SELECT_ALL_THAT_APPLY,
+    u"select one from file": constants.SELECT_ONE,
+    u"select multiple from file": constants.SELECT_ALL_THAT_APPLY,
 }
 cascading = {
     u'cascading select': constants.CASCADING_SELECT,

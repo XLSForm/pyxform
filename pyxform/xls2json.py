@@ -509,8 +509,8 @@ def workbook_to_json(
         question_name = unicode(row[constants.NAME])
         if not is_valid_xml_tag(question_name):
             error_message = rowFormatString % row_number
-            error_message += " Invalid question name [" + question_name + "]"
-            error_message += "Names must begin with a letter, colon," \
+            error_message += " Invalid question name [" + question_name.encode('utf-8') + "] "
+            error_message += "Names must begin with a letter, colon,"\
                              + " or underscore."
             error_message += "Subsequent characters can include numbers," \
                              + " dashes, and periods."
@@ -660,9 +660,11 @@ def workbook_to_json(
                         u" filtered selects.")
                     select_type = aliases.select['select_one']
                 list_name = parse_dict["list_name"]
+                list_file_name, file_extension = os.path.splitext(list_name)
 
                 if list_name not in choices \
-                        and select_type != 'select one external':
+                        and select_type != 'select one external' \
+                        and file_extension not in ['.csv', '.xml']:
                     if not choices:
                         raise PyXFormError(
                             u"There should be a choices sheet in this xlsform."
@@ -675,7 +677,8 @@ def workbook_to_json(
 
                 # Validate select_multiple choice names by making sure
                 # they have no spaces (will cause errors in exports).
-                if select_type == constants.SELECT_ALL_THAT_APPLY:
+                if select_type == constants.SELECT_ALL_THAT_APPLY \
+                        and file_extension not in ['.csv', '.xml']:
                     for choice in choices[list_name]:
                         if ' ' in choice[constants.NAME]:
                             raise PyXFormError(
@@ -722,6 +725,8 @@ def workbook_to_json(
                     else:
                         new_json_dict['itemset'] = list_name
                         json_dict['choices'] = choices
+                elif file_extension in ['.csv', '.xml']:
+                    new_json_dict['itemset'] = list_name
                 else:
                     new_json_dict[constants.CHOICES] = choices[list_name]
 

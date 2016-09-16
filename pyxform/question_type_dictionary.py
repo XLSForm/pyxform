@@ -381,8 +381,7 @@ QUESTION_TYPE_DICT = \
             },
             "bind": {
                 "type": "geopoint"
-            },
-            "hint": "GPS coordinates can only be collected when outside."
+            }
         },
         "geoshape": {
             "control": {
@@ -390,8 +389,7 @@ QUESTION_TYPE_DICT = \
             },
             "bind": {
                 "type": "geoshape"
-            },
-            "hint": "GPS coordinates can only be collected when outside."
+            }
         },
         "geotrace": {
             "control": {
@@ -399,8 +397,7 @@ QUESTION_TYPE_DICT = \
             },
             "bind": {
                 "type": "geotrace"
-            },
-            "hint": "GPS coordinates can only be collected when outside."
+            }
         },
         "select multiple from": {
             "control": {
@@ -542,8 +539,7 @@ QUESTION_TYPE_DICT = \
             },
             "bind": {
                 "type": "geopoint"
-            },
-            "hint": "GPS coordinates can only be collected when outside."
+            }
         },
         "q date": {
             "control": {

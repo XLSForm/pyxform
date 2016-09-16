@@ -48,7 +48,8 @@ class Survey(Section):
             u"version": unicode,
             u"choices": dict,
             u"style": unicode,
-            u"attribute": dict
+            u"attribute": dict,
+            u"namespaces": unicode,
         }
     )
 
@@ -67,6 +68,23 @@ class Survey(Section):
                         "There are two sections with the name %s." % e.name)
                 section_names.append(e.name)
 
+    def get_nsmap(self):
+        """Add additional namespaces"""
+        namespaces = getattr(self, constants.NAMESPACES, None)
+
+        if namespaces and isinstance(namespaces, basestring):
+            nslist = [
+                ns.split('=') for ns in namespaces.split()
+                if len(ns.split('=')) == 2 and ns.split('=')[0] != ''
+            ]
+            XMLNS = u'xmlns:'
+            nsmap.update(dict([
+                (XMLNS + k, v.replace('"', '').replace("'", ""))
+                for k, v in nslist if XMLNS + k not in nsmap
+            ]))
+
+        return nsmap
+
     def xml(self):
         """
         calls necessary preparation methods, then returns the xml.
@@ -78,6 +96,8 @@ class Survey(Section):
                 self, constants.STYLE):
             body_kwargs['class'] = getattr(
                 self, constants.STYLE)
+        nsmap = self.get_nsmap()
+
         return node(u"h:html",
                     node(u"h:head",
                          node(u"h:title", self.title),
@@ -129,6 +149,19 @@ class Survey(Section):
                                    src="jr://file-csv/{}.csv".format(csv_id)
                                    )
 
+    def _generate_from_file_instances(self):
+        for i in self.iter_descendants():
+            itemset = i.get('itemset')
+            if itemset and \
+                    (itemset.endswith('.csv') or itemset.endswith('.xml')):
+                file_id, file_extension = os.path.splitext(itemset)
+                yield node(
+                    "instance",
+                    node("root", node("item", node("name"), node("label"))),
+                    id=file_id,
+                    src="jr://file-%s/%s" % (file_extension[1:], itemset)
+                )
+
     def xml_model(self):
         """
         Generate the xform <model> element
@@ -143,6 +176,7 @@ class Survey(Section):
         model_children += [node("instance", self.xml_instance())]
         model_children += list(self._generate_static_instances())
         model_children += list(self._generate_pulldata_instances())
+        model_children += list(self._generate_from_file_instances())
         model_children += self.xml_bindings()
 
         if self.submission_url or self.public_key:

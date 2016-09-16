@@ -904,7 +904,6 @@
       </input>
       <input bodyAttribute="test" bodyAttribute2="test" ref="/attribute_columns_test/everything/geopoint_test">
         <label ref="jr:itext('/attribute_columns_test/everything/geopoint_test:label')"/>
-        <hint>GPS coordinates can only be collected when outside.</hint>
       </input>
       <input bodyAttribute="test" bodyAttribute2="test" ref="/attribute_columns_test/everything/barcode_test">
         <label ref="jr:itext('/attribute_columns_test/everything/barcode_test:label')"/>
