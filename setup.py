@@ -22,7 +22,6 @@ setup(
     long_description=open('README.rst', 'rt').read(),
     install_requires=[
         'xlrd==0.9.4',
-        'lxml==3.5.0',
         'unicodecsv==0.14.1',
     ],
     use_2to3=True,

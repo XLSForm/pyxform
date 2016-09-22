@@ -2,7 +2,7 @@ import os
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
 from unittest2 import TestCase
-from lxml import etree
+import xml.etree.ElementTree as ET
 from formencode.doctest_xml_compare import xml_compare
 
 
@@ -39,8 +39,8 @@ class XFormTestCase(TestCase):
     """
 
     def assertXFormEqual(self, xform1, xform2):
-        xform1 = etree.fromstring(xform1)
-        xform2 = etree.fromstring(xform2)
+        xform1 = ET.fromstring(xform1.encode('utf-8'))
+        xform2 = ET.fromstring(xform2.encode('utf-8'))
 
         # Sort tags under <model> section in each form
         self.sort_model(xform1)

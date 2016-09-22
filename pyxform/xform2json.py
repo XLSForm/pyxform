@@ -4,10 +4,10 @@ import json
 import copy
 import codecs
 
-from lxml import etree
-from lxml.etree import ElementTree
+import xml.etree.ElementTree as ET
 from operator import itemgetter
 from pyxform import builder
+from .survey import nsmap
 
 
 ## {{{ http://code.activestate.com/recipes/573463/ (r7)
@@ -93,7 +93,7 @@ def ConvertDictToXml(xmldict):
     """
 
     roottag = xmldict.keys()[0]
-    root = ElementTree.Element(roottag)
+    root = ET.Element(roottag)
     _ConvertDictToXmlRecurse(root, xmldict[roottag])
     return root
 
@@ -148,10 +148,10 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
     # If a string is passed in, try to open it as a file
     if isinstance(root, basestring):
         if os.path.exists(root):
-            root = etree.parse(root).getroot()
+            root = ET.parse(root).getroot()
         else:
-            root = etree.fromstring(root)
-    elif not isinstance(root, etree._Element):
+            root = ET.fromstring(root)
+    elif not isinstance(root, ET.Element):
         raise TypeError('Expected ElementTree.Element or file path string')
 
     return dictclass({root.tag: _ConvertXmlToDictRecurse(root, dictclass)})
@@ -161,19 +161,18 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
 class XFormToDict:
     def __init__(self, root):
         if isinstance(root, basestring):
-            parser = etree.XMLParser(remove_comments=True)
             if os.path.exists(root):
-                self._root = etree.parse(root, parser=parser).getroot()
+                self._root = ET.parse(root).getroot()
             else:
-                self._root = etree.fromstring(root, parser)
+                self._root = ET.fromstring(root.encode('utf-8'))
             self._dict = ConvertXmlToDict(self._root)
-        elif not isinstance(root, etree.Element):
+        elif not isinstance(root, ET.Element):
             raise TypeError('Expected ElementTree.Element or file path string')
 
     def get_dict(self):
         json_str = json.dumps(self._dict)
-        for k in self._root.nsmap:
-            json_str = json_str.replace('{%s}' % self._root.nsmap[k], '')
+        for uri in nsmap.values():
+            json_str = json_str.replace('{%s}' % uri, '')
         return json.loads(json_str)
 
 
