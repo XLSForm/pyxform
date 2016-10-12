@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from unittest import TestCase
 from pyxform.errors import PyXFormError
-from lxml import etree
+import xml.etree.ElementTree as ET
 import re
 import tempfile
 import codecs
@@ -13,6 +13,7 @@ from pyxform.xls2json import workbook_to_json
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.odk_validate import check_xform, ODKValidateError
 import os
+from pyxform.survey import nsmap
 
 
 class PyxformTestError(Exception):
@@ -74,14 +75,17 @@ class PyxformTestCase(TestCase):
                 survey = kwargs.get("survey")
 
             xml = survey._to_pretty_xml()
-            root = etree.fromstring(xml)
+            root = ET.fromstring(xml.encode('utf-8'))
+
+            # Ensure all namespaces are present, even if unused
+            root.attrib.update(**nsmap)
 
             xml_nodes['xml'] = root
 
             def _pull_xml_node_from_root(element_selector):
                 NS = 'http://www.w3.org/2002/xforms'
-                _r = etree.XPath('//n:%s' % element_selector,
-                                 namespaces={'n': NS})(root)
+                _r = root.findall('.//n:%s' % element_selector,
+                                  namespaces={'n': NS})
                 if len(_r) == 0:
                     return False
                 else:
@@ -148,7 +152,7 @@ class PyxformTestCase(TestCase):
             for code in ['xml', 'instance', 'model', 'itext']:
                 (code__str, checker) = _check_contains(code)
                 if kwargs.get(code__str):
-                    checker(etree.tounicode(xml_nodes[code]))
+                    checker(ET.tostring(xml_nodes[code], encoding='utf-8').decode('utf-8'))
                 bad_kwarg = '%s_contains' % code
                 if bad_kwarg in kwargs:
                     good_kwarg = '%s__contains' % code
@@ -228,7 +232,9 @@ class PyxformTestCase(TestCase):
         if msg_prefix:
             msg_prefix += ": "
 
+        # Account for space in self-closing tags
         text_repr = repr(text)
+        content = content.replace(" />", "/>")
         real_count = content.count(text)
 
         return (text_repr, real_count, msg_prefix)

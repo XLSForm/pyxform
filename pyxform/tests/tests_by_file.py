@@ -4,7 +4,7 @@ with a matching prefix before the . is as expected. Possibly risky: all tests in
 are defined according to matching files. 
 """
 
-from lxml import etree
+import xml.etree.ElementTree as ET
 from formencode.doctest_xml_compare import xml_compare
 from unittest import TestCase
 import pyxform
@@ -38,8 +38,8 @@ class MainTest(TestCase):
             # Compare with the expected output:
             with codecs.open(path_to_expected_xform, 'rb', encoding="utf-8"
                              ) as expected_file:
-                expected = etree.fromstring(expected_file.read())
-                result = etree.fromstring(survey.to_xml())
+                expected = ET.fromstring(expected_file.read())
+                result = ET.fromstring(survey.to_xml())
                 reporter = lambda x: sys.stdout.write(x + "\n")
                 self.assertTrue(xml_compare(
                     expected, result, reporter=reporter))

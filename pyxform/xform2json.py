@@ -3,11 +3,11 @@ import re
 import json
 import copy
 import codecs
-from lxml import etree
-from lxml.etree import ElementTree
+import xml.etree.ElementTree as ET
 from operator import itemgetter
 from pyxform import builder
 from pyxform.utils import basestring
+from pyxform.survey import nsmap
 
 
 # {{{ http://code.activestate.com/recipes/573463/ (r7)
@@ -93,7 +93,7 @@ def ConvertDictToXml(xmldict):
     """
 
     roottag = xmldict.keys()[0]
-    root = ElementTree.Element(roottag)
+    root = ET.Element(roottag)
     _ConvertDictToXmlRecurse(root, xmldict[roottag])
     return root
 
@@ -147,7 +147,7 @@ def ConvertXmlToDict(root, dictclass=XmlDictObject):
     # If a string is passed in, try to open it as a file
     if isinstance(root, basestring):
         root = _try_parse(root)
-    elif not isinstance(root, etree._Element):
+    elif not isinstance(root, ET.Element):
         raise TypeError('Expected ElementTree.Element or file path string')
 
     return dictclass({root.tag: _ConvertXmlToDictRecurse(root, dictclass)})
@@ -170,18 +170,18 @@ def _try_parse(root, parser=None):
 class XFormToDict:
     def __init__(self, root):
         if isinstance(root, basestring):
-            parser = etree.XMLParser(remove_comments=True)
+            parser = ET.XMLParser(remove_comments=True)
             self._root = _try_parse(root, parser)
             self._dict = XmlDictObject(
                 {self._root.tag: _ConvertXmlToDictRecurse(
                     self._root, XmlDictObject)})
-        elif not isinstance(root, etree.Element):
+        elif not isinstance(root, ET.Element):
             raise TypeError('Expected ElementTree.Element or file path string')
 
     def get_dict(self):
         json_str = json.dumps(self._dict)
-        for k in self._root.nsmap:
-            json_str = json_str.replace('{%s}' % self._root.nsmap[k], '')
+        for uri in nsmap.values():
+            json_str = json_str.replace('{%s}' % uri, '')
         return json.loads(json_str)
 
 

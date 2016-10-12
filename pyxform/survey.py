@@ -12,6 +12,7 @@ from pyxform.errors import PyXFormError
 from pyxform import constants
 from pyxform.instance import SurveyInstance
 import os
+import xml.etree.ElementTree as ET
 
 
 nsmap = {
@@ -23,6 +24,9 @@ nsmap = {
     u"xmlns:orx": u"http://openrosa.org/xforms"
     }
 
+for prefix, uri in nsmap.items():
+    prefix = prefix.replace("xmlns", "").replace(":", "")
+    ET.register_namespace(prefix, uri)
 
 class Survey(Section):
 
