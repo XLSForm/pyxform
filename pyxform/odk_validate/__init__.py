@@ -59,8 +59,8 @@ def _java_installed():
 
 
 def _cleanup_errors(error_message):
-    def get_last_item(xpathStr):
-        l = xpathStr.split("/")
+    def get_last_item(xpath_str):
+        l = xpath_str.split("/")
         return l[len(l) - 1]
 
     def replace_function(match):

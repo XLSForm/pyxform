@@ -79,7 +79,7 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons,
     default_language -- used to group labels/hints/etc
     without a language specified with localized versions.
     """
-    GROUP_DELIMITER = u"::"
+    group_delimiter = u"::"
     out_dict_array = list()
     for row in dict_array:
         out_row = dict()
@@ -89,7 +89,7 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons,
                 header = header.lower()
 
             if use_double_colons:
-                tokens = header.split(GROUP_DELIMITER)
+                tokens = header.split(group_delimiter)
 
             # else:
             #   We do the initial parse using single colons
@@ -110,7 +110,7 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons,
                     tokens.pop(jr_idx + 1)
 
             dealiased_first_token = header_aliases.get(tokens[0], tokens[0])
-            tokens = dealiased_first_token.split(GROUP_DELIMITER) + tokens[1:]
+            tokens = dealiased_first_token.split(group_delimiter) + tokens[1:]
             new_key = tokens[0]
             new_value = list_to_nested_dict(tokens[1:] + [val])
             out_row = merge_dicts(
@@ -272,7 +272,7 @@ def workbook_to_json(
             u"The survey sheet is either empty or missing important "
             u"column headers.")
 
-    rowFormatString = '[row : %s]'
+    row_format_string = '[row : %s]'
 
     # Make sure the passed in vars are unicode
     form_name = unicode(form_name)
@@ -439,7 +439,7 @@ def workbook_to_json(
         # so the attributes below can be disabled.
         if u"disabled" in row:
             warnings.append(
-                rowFormatString % row_number +
+                row_format_string % row_number +
                 " The 'disabled' column header is not part of the current" +
                 " spec. We recommend using relevant instead.")
             disabled = row.pop(u"disabled")
@@ -457,19 +457,19 @@ def workbook_to_json(
             # then its a comment row, and we skip it with warning
             if not ((constants.NAME in row) or (constants.LABEL in row)):
                 warnings.append(
-                    rowFormatString % row_number +
+                    row_format_string % row_number +
                     " Row without name, text, or label is being skipped:\n" +
                     str(row))
                 continue
             raise PyXFormError(
-                rowFormatString % row_number +
+                row_format_string % row_number +
                 " Question with no type.\n" + str(row))
 
         if question_type == 'calculate':
             calculation = row.get('bind', {}).get('calculate')
             if not calculation:
                 raise PyXFormError(
-                    rowFormatString % row_number + " Missing calculation.")
+                    row_format_string % row_number + " Missing calculation.")
 
         # Check if the question is actually a setting specified
         # on the survey sheet
@@ -487,7 +487,7 @@ def workbook_to_json(
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
-                        rowFormatString % row_number +
+                        row_format_string % row_number +
                         " Unmatched end statement. Previous control type: " +
                         str(prev_control_type) +
                         ", Control type: " + str(control_type))
@@ -504,12 +504,13 @@ def workbook_to_json(
             #     # autogenerate names for groups without them
             #     row['name'] = "generated_group_name_" + str(row_number)
             else:
-                raise PyXFormError(rowFormatString % row_number +
+                raise PyXFormError(row_format_string % row_number +
                                    " Question or group with no name.")
         question_name = unicode(row[constants.NAME])
         if not is_valid_xml_tag(question_name):
-            error_message = rowFormatString % row_number
-            error_message += " Invalid question name [" + question_name.encode('utf-8') + "] "
+            error_message = row_format_string % row_number
+            error_message += " Invalid question name [" + \
+                             question_name.encode('utf-8') + "] "
             error_message += "Names must begin with a letter, colon,"\
                              + " or underscore."
             error_message += "Subsequent characters can include numbers," \
@@ -524,7 +525,7 @@ def workbook_to_json(
             #      Warnings can be ignored so I'm not too concerned
             #      about false positives.
             warnings.append(
-                rowFormatString % row_number +
+                row_format_string % row_number +
                 " Question has no label: " + str(row))
 
         # Try to parse question as begin control statement
@@ -547,12 +548,12 @@ def workbook_to_json(
                     if not parse_dict.get("list_name"):
                         # TODO: Perhaps warn and make repeat into a group?
                         raise PyXFormError(
-                            rowFormatString % row_number +
+                            row_format_string % row_number +
                             " Repeat loop without list name.")
                     list_name = parse_dict["list_name"]
                     if list_name not in choices:
                         raise PyXFormError(
-                            rowFormatString % row_number +
+                            row_format_string % row_number +
                             " List name not in columns sheet: " + list_name)
                     new_json_dict[constants.COLUMNS] = choices[list_name]
 
@@ -611,7 +612,7 @@ def workbook_to_json(
                 cascading_prefix = row.get(constants.NAME)
                 if not cascading_prefix:
                     raise PyXFormError(
-                        rowFormatString % row_number +
+                        row_format_string % row_number +
                         " Cascading select needs a name.")
                 # cascading_json = get_cascading_json(
                 # cascading_choices, cascading_prefix, cascading_level)
@@ -655,7 +656,7 @@ def workbook_to_json(
                 if select_type == 'select one external' \
                         and 'choice_filter' not in row:
                     warnings.append(
-                        rowFormatString % row_number +
+                        row_format_string % row_number +
                         u" select one external is only meant for"
                         u" filtered selects.")
                     select_type = aliases.select['select_one']
@@ -672,7 +673,7 @@ def workbook_to_json(
                             u"all in small caps and has columns 'list name', "
                             u"'name', and 'label' (or aliased column names).")
                     raise PyXFormError(
-                        rowFormatString % row_number +
+                        row_format_string % row_number +
                         " List name not in choices sheet: " + list_name)
 
                 # Validate select_multiple choice names by making sure
@@ -750,7 +751,7 @@ def workbook_to_json(
                         parent_children_array.append(table_list_header)
 
                     if table_list != list_name:
-                        error_message = rowFormatString % row_number
+                        error_message = row_format_string % row_number
                         error_message += " Badly formatted table list," \
                                          " list names don't match: " + \
                                          table_list + " vs. " + list_name
@@ -961,8 +962,8 @@ class QuestionTypesReader(SpreadsheetReader):
 
     def _setup_question_types_dictionary(self):
         use_double_colons = has_double_colon(self._dict)
-        TYPES_SHEET = u"question types"
-        self._dict = self._dict[TYPES_SHEET]
+        types_sheet = u"question types"
+        self._dict = self._dict[types_sheet]
         self._dict = dealias_and_group_headers(
             self._dict, {}, use_double_colons, u"default")
         self._dict = organize_by_values(self._dict, u"name")

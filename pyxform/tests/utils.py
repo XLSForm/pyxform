@@ -2,8 +2,13 @@ import os
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
 from unittest2 import TestCase
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ETree
 from formencode.doctest_xml_compare import xml_compare
+try:
+    import ConfigParser
+    configparser = ConfigParser
+except ImportError:
+    import configparser
 
 
 def path_to_text_fixture(filename):
@@ -41,8 +46,8 @@ class XFormTestCase(TestCase):
     """
 
     def assertXFormEqual(self, xform1, xform2):
-        xform1 = ET.fromstring(xform1.encode('utf-8'))
-        xform2 = ET.fromstring(xform2.encode('utf-8'))
+        xform1 = ETree.fromstring(xform1.encode('utf-8'))
+        xform2 = ETree.fromstring(xform2.encode('utf-8'))
 
         # Sort tags under <model> section in each form
         self.sort_model(xform1)
@@ -61,9 +66,11 @@ class XFormTestCase(TestCase):
 
     def sort_elems(self, elems, attr=None):
         if attr:
-            key = lambda elem: elem.get(attr, '')
+            def elem_get_attr(elem): return elem.get(attr, '')
+            key = elem_get_attr
         else:
-            key = lambda elem: elem.tag
+            def elem_get_tag(elem): return elem.tag
+            key = elem_get_tag
         elems[:] = sorted(elems, key=key)
 
     def sort_model(self, xform):
@@ -91,3 +98,12 @@ class XFormTestCase(TestCase):
             self.sort_elems(translation, 'id')
             for text in translation:
                 self.sort_elems(text, 'form')
+
+
+def prep_class_config(cls, test_dir="tests"):
+    cls.config = configparser.ConfigParser()
+    here = os.path.dirname(__file__)
+    root = os.path.dirname(here)
+    strings = os.path.join(root, test_dir, "fixtures", "strings.ini")
+    cls.config.read(strings)
+    cls.cls_name = cls.__name__

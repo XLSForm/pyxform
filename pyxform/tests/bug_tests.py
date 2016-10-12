@@ -4,12 +4,6 @@ Some tests for the new (v0.9) spec is properly implemented.
 import unittest2 as unittest
 import codecs
 import os
-import sys
-
-# Hack to make sure that pyxform is on the python import path
-parentdir = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, parentdir)
 import pyxform
 from pyxform.utils import has_external_choices
 from pyxform.xls2json import SurveyReader
@@ -19,7 +13,7 @@ from pyxform.errors import PyXFormError
 DIR = os.path.dirname(__file__)
 
 
-class group_names(unittest.TestCase):
+class GroupNames(unittest.TestCase):
     maxDiff = None
 
     def runTest(self):
@@ -37,7 +31,7 @@ class group_names(unittest.TestCase):
             survey.print_xform_to_file(output_path, warnings=warnings)
 
 
-class duplicate_columns(unittest.TestCase):
+class DuplicateColumns(unittest.TestCase):
     maxDiff = None
 
     def runTest(self):
@@ -55,7 +49,7 @@ class duplicate_columns(unittest.TestCase):
             survey.print_xform_to_file(output_path, warnings=warnings)
 
 
-class repeat_date_test(XFormTestCase):
+class RepeatDateTest(XFormTestCase):
     maxDiff = None
 
     def runTest(self):
@@ -81,7 +75,7 @@ class repeat_date_test(XFormTestCase):
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
-class xml_escaping(XFormTestCase):
+class XmlEscaping(XFormTestCase):
     maxDiff = None
 
     def runTest(self):
@@ -133,7 +127,7 @@ class DefaultTimeTest(XFormTestCase):
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
-class cascade_old_format(unittest.TestCase):
+class CascadeOldFormat(unittest.TestCase):
     maxDiff = None
 
     def runTest(self):
@@ -150,7 +144,7 @@ class cascade_old_format(unittest.TestCase):
         survey.print_xform_to_file(output_path, warnings=warnings)
 
 
-class validate_wrapper(unittest.TestCase):
+class ValidateWrapper(unittest.TestCase):
     maxDiff = None
 
     def runTest(self):
@@ -167,7 +161,7 @@ class validate_wrapper(unittest.TestCase):
         survey.print_xform_to_file(output_path, warnings=warnings)
 
 
-class cascade_old_format_index_error(unittest.TestCase):
+class CascadeOldFormatIndexError(unittest.TestCase):
     maxDiff = None
 
     def runTest(self):

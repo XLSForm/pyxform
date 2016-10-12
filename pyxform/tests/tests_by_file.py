@@ -1,10 +1,10 @@
 """
-Tests by file. Runs through a list of *.xls files, and expects that the output for a *.xml
-with a matching prefix before the . is as expected. Possibly risky: all tests in this file
-are defined according to matching files. 
+Tests by file. Runs through a list of *.xls files, and expects that the output
+for a *.xml with a matching prefix before the . is as expected. Possibly risky:
+all tests in this file are defined according to matching files.
 """
 
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ETree
 from formencode.doctest_xml_compare import xml_compare
 from unittest import TestCase
 import pyxform
@@ -38,9 +38,11 @@ class MainTest(TestCase):
             # Compare with the expected output:
             with codecs.open(path_to_expected_xform, 'rb', encoding="utf-8"
                              ) as expected_file:
-                expected = ET.fromstring(expected_file.read())
-                result = ET.fromstring(survey.to_xml())
-                reporter = lambda x: sys.stdout.write(x + "\n")
+                expected = ETree.fromstring(expected_file.read())
+                result = ETree.fromstring(survey.to_xml())
+
+                def write_line(x): sys.stdout.write(x + "\n")
+                reporter = write_line
                 self.assertTrue(xml_compare(
                     expected, result, reporter=reporter))
             os.remove(path_to_output_xform)

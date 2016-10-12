@@ -217,25 +217,25 @@ class SurveyElement(dict):
         """
         bind_dict = self.get(u'bind')
         if bind_dict and type(bind_dict) is dict:
-            constraintMsg = bind_dict.get(u'jr:constraintMsg')
-            if type(constraintMsg) is dict:
-                for lang, text in constraintMsg.items():
+            constraint_msg = bind_dict.get(u'jr:constraintMsg')
+            if type(constraint_msg) is dict:
+                for lang, text in constraint_msg.items():
                     yield {
                         'path': self._translation_path(u'jr:constraintMsg'),
                         'lang': lang,
                         'text': text
                     }
-            requiredMsg = bind_dict.get(u'jr:requiredMsg')
-            if type(requiredMsg) is dict:
-                for lang, text in requiredMsg.items():
+            required_msg = bind_dict.get(u'jr:requiredMsg')
+            if type(required_msg) is dict:
+                for lang, text in required_msg.items():
                     yield {
                         'path': self._translation_path(u'jr:requiredMsg'),
                         'lang': lang,
                         'text': text
                     }
-            noAppErrorString = bind_dict.get(u'jr:noAppErrorString')
-            if type(noAppErrorString) is dict:
-                for lang, text in noAppErrorString.items():
+            no_app_error_string = bind_dict.get(u'jr:noAppErrorString')
+            if type(no_app_error_string) is dict:
+                for lang, text in no_app_error_string.items():
                     yield {
                         'path': self._translation_path(u'jr:noAppErrorString'),
                         'lang': lang,
@@ -283,17 +283,17 @@ class SurveyElement(dict):
             return node(u"label", ref=ref)
         else:
             survey = self.get_root()
-            label, outputInserted = survey.insert_output_values(self.label)
-            return node(u"label", label, toParseString=outputInserted)
+            label, output_inserted = survey.insert_output_values(self.label)
+            return node(u"label", label, toParseString=output_inserted)
 
     def xml_hint(self):
         if type(self.hint) == dict:
             path = self._translation_path("hint")
             return node(u"hint", ref="jr:itext('%s')" % path)
         else:
-            hint, outputInserted = self.get_root().insert_output_values(
+            hint, output_inserted = self.get_root().insert_output_values(
                 self.hint)
-            return node(u"hint", hint, toParseString=outputInserted)
+            return node(u"hint", hint, toParseString=output_inserted)
 
     def xml_label_and_hint(self):
         """

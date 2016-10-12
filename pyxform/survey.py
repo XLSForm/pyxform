@@ -12,7 +12,7 @@ from pyxform.errors import PyXFormError
 from pyxform import constants
 from pyxform.instance import SurveyInstance
 import os
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ETree
 
 
 nsmap = {
@@ -26,7 +26,8 @@ nsmap = {
 
 for prefix, uri in nsmap.items():
     prefix = prefix.replace("xmlns", "").replace(":", "")
-    ET.register_namespace(prefix, uri)
+    ETree.register_namespace(prefix, uri)
+
 
 class Survey(Section):
 
@@ -81,10 +82,10 @@ class Survey(Section):
                 ns.split('=') for ns in namespaces.split()
                 if len(ns.split('=')) == 2 and ns.split('=')[0] != ''
             ]
-            XMLNS = u'xmlns:'
+            xmlns = u'xmlns:'
             nsmap.update(dict([
-                (XMLNS + k, v.replace('"', '').replace("'", ""))
-                for k, v in nslist if XMLNS + k not in nsmap
+                (xmlns + k, v.replace('"', '').replace("'", ""))
+                for k, v in nslist if xmlns + k not in nsmap
             ]))
 
         return nsmap
@@ -122,8 +123,8 @@ class Survey(Section):
                 choice_element_list = []
                 # Add a unique id to the choice element incase there is itext
                 # it refrences
-                itextId = '-'.join(['static_instance', list_name, str(idx)])
-                choice_element_list.append(node("itextId", itextId))
+                itext_id = '-'.join(['static_instance', list_name, str(idx)])
+                choice_element_list.append(node("itextId", itext_id))
 
                 for choicePropertyName, choicePropertyValue in choice.items():
                     if isinstance(choicePropertyValue, basestring) \
@@ -235,33 +236,33 @@ class Survey(Section):
         for list_name, choice_list in self.choices.items():
             for idx, choice in zip(range(len(choice_list)), choice_list):
                 for choicePropertyName, choicePropertyValue in choice.items():
-                    itextId = '-'.join(
+                    itext_id = '-'.join(
                         ['static_instance', list_name, str(idx)])
                     if isinstance(choicePropertyValue, dict):
                         for mediatypeorlanguage, value in choicePropertyValue.items():  # noqa
                             if isinstance(value, dict):
-                                for language, value in value.items():
+                                for language, val in value.items():
                                     self._add_to_nested_dict(
                                         self._translations,
-                                        [language, itextId,
+                                        [language, itext_id,
                                          mediatypeorlanguage],
-                                        value)
+                                        val)
                             else:
                                 if choicePropertyName == 'media':
                                     self._add_to_nested_dict(
                                         self._translations,
-                                        [self.default_language, itextId,
+                                        [self.default_language, itext_id,
                                          mediatypeorlanguage],
                                         value)
                                 else:
                                     self._add_to_nested_dict(
                                         self._translations,
-                                        [mediatypeorlanguage, itextId, 'long'],
+                                        [mediatypeorlanguage, itext_id, 'long'],
                                         value)
                     elif choicePropertyName == 'label':
                         self._add_to_nested_dict(
                             self._translations,
-                            [self.default_language, itextId, 'long'],
+                            [self.default_language, itext_id, 'long'],
                             choicePropertyValue)
 
     def _add_empty_translations(self):
@@ -374,33 +375,33 @@ class Survey(Section):
                     # for the "form" attribute.
                     # This is my workaround.
                     if label_type == u"hint":
-                        value, outputInserted = \
+                        value, output_inserted = \
                             self.insert_output_values(media_value)
                         itext_nodes.append(
-                            node("value", value, toParseString=outputInserted))
+                            node("value", value, toParseString=output_inserted))
                         continue
 
                     if media_type == "long":
-                        value, outputInserted = \
+                        value, output_inserted = \
                             self.insert_output_values(media_value)
                         # I'm ignoring long types for now because I don't know
                         # how they are supposed to work.
                         itext_nodes.append(
-                            node("value", value, toParseString=outputInserted))
+                            node("value", value, toParseString=output_inserted))
                     elif media_type == "image":
-                        value, outputInserted = \
+                        value, output_inserted = \
                             self.insert_output_values(media_value)
                         itext_nodes.append(
                             node("value", "jr://images/" + value,
-                                 form=media_type, toParseString=outputInserted)
+                                 form=media_type, toParseString=output_inserted)
                         )
                     else:
-                        value, outputInserted = \
+                        value, output_inserted = \
                             self.insert_output_values(media_value)
                         itext_nodes.append(
                             node("value", "jr://" + media_type + "/" + value,
                                  form=media_type,
-                                 toParseString=outputInserted))
+                                 toParseString=output_inserted))
 
                 result[-1].appendChild(
                     node("text", *itext_nodes, id=label_name))
@@ -422,11 +423,11 @@ class Survey(Section):
         xml_with_linebreaks = self.xml().toprettyxml(indent='  ')
         text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
         output_re = re.compile('\n.*(<output.*>)\n(  )*')
-        prettyXml = text_re.sub('>\g<1></', xml_with_linebreaks)
-        inlineOutput = output_re.sub('\g<1>', prettyXml)
-        inlineOutput = re.compile('<label>\s*\n*\s*\n*\s*</label>')\
-            .sub('<label></label>', inlineOutput)
-        return '<?xml version="1.0"?>\n' + inlineOutput
+        pretty_xml = text_re.sub('>\g<1></', xml_with_linebreaks)
+        inline_output = output_re.sub('\g<1>', pretty_xml)
+        inline_output = re.compile('<label>\s*\n*\s*\n*\s*</label>')\
+            .sub('<label></label>', inline_output)
+        return '<?xml version="1.0"?>\n' + inline_output
 
     def __repr__(self):
         return unicode(self)

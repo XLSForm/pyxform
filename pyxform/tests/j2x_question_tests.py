@@ -2,13 +2,10 @@
 Testing creation of Surveys using verbose methods
 """
 from unittest import TestCase
+
 from pyxform import *
-from pyxform.question import Question
 from pyxform.builder import create_survey_element_from_dict
-
-import json
-
-from pyxform.utils import node
+from pyxform.tests.utils import prep_class_config
 
 TESTING_BINDINGS = True
 
@@ -23,6 +20,10 @@ def ctw(control):
 
 class Json2XformQuestionValidationTests(TestCase):
     maxDiff = None
+
+    @classmethod
+    def setUpClass(cls):
+        prep_class_config(cls=cls)
 
     def setUp(self):
         self.s = Survey(name=u"test")
@@ -39,11 +40,11 @@ class Json2XformQuestionValidationTests(TestCase):
 
         q = create_survey_element_from_dict(simple_string_json)
 
-        expected_string_control_xml = u"""<input ref="/test/enumerator_name"><label ref="jr:itext('/test/enumerator_name:label')"/></input>"""
+        expected_string_control_xml = self.config.get(
+            self.cls_name, "test_question_type_string_control")
 
-        expected_string_binding_xml = u"""
-        <bind nodeset="/test/enumerator_name" type="string"/>
-        """.strip()
+        expected_string_binding_xml = self.config.get(
+            self.cls_name, "test_question_type_string_binding")
 
         self.s.add_child(q)
         self.assertEqual(ctw(q.xml_control()), expected_string_control_xml)
@@ -67,11 +68,11 @@ class Json2XformQuestionValidationTests(TestCase):
 
         # I copied the response in, since this is not our method of testing
         # valid return values.
-        expected_select_one_control_xml = u"""<select1 ref="/test/qname"><label ref="jr:itext('/test/qname:label')"/><item><label ref="jr:itext('/test/qname/a:label')"/><value>a</value></item><item><label ref="jr:itext('/test/qname/b:label')"/><value>b</value></item></select1>"""
+        expected_select_one_control_xml = self.config.get(
+            self.cls_name, "test_select_one_question_multilingual_control")
 
-        expected_select_one_binding_xml = u"""
-        <bind nodeset="/test/qname" type="select1"/>
-        """.strip()
+        expected_select_one_binding_xml = self.config.get(
+            self.cls_name, "test_select_one_question_multilingual_binding")
 
         q = create_survey_element_from_dict(simple_select_one_json)
         self.s.add_child(q)
@@ -92,13 +93,13 @@ class Json2XformQuestionValidationTests(TestCase):
             u"attributes": {}
         }
 
-        expected_integer_control_xml = u"""
-        <input ref="/test/integer_q"><label ref="jr:itext('/test/integer_q:label')"/></input>
-        """.strip()
+        expected_integer_control_xml = self.config.get(
+            self.cls_name,
+            "test_simple_integer_question_type_multilingual_control")
 
-        expected_integer_binding_xml = u"""
-        <bind nodeset="/test/integer_q" type="int"/>
-        """.strip()
+        expected_integer_binding_xml = self.config.get(
+            self.cls_name,
+            "test_simple_integer_question_type_multilingual_binding")
 
         q = create_survey_element_from_dict(simple_integer_question)
 
@@ -117,13 +118,13 @@ class Json2XformQuestionValidationTests(TestCase):
                                 u"type": u"date", u"name": u"date_q",
                                 u"attributes": {}}
 
-        expected_date_control_xml = u"""
-        <input ref="/test/date_q"><label ref="jr:itext('/test/date_q:label')"/></input>
-        """.strip()
+        expected_date_control_xml = self.config.get(
+            self.cls_name,
+            "test_simple_date_question_type_multilingual_control")
 
-        expected_date_binding_xml = u"""
-        <bind nodeset="/test/date_q" type="date"/>
-        """.strip()
+        expected_date_binding_xml = self.config.get(
+            self.cls_name,
+            "test_simple_date_question_type_multilingual_binding")
 
         q = create_survey_element_from_dict(simple_date_question)
         self.s.add_child(q)
@@ -142,11 +143,13 @@ class Json2XformQuestionValidationTests(TestCase):
             u"name": u"phone_number_q",
         }
 
-        expected_phone_number_control_xml = u"""<input ref="/test/phone_number_q"><label ref="jr:itext('/test/phone_number_q:label')"/><hint>Enter numbers only.</hint></input>"""
+        expected_phone_number_control_xml = self.config.get(
+            self.cls_name,
+            "test_simple_phone_number_question_type_multilingual_control")
 
-        expected_phone_number_binding_xml = u"""
-        <bind constraint="regex(., '^\d*$')" nodeset="/test/phone_number_q" type="string"/>
-        """.strip()
+        expected_phone_number_binding_xml = self.config.get(
+            self.cls_name,
+            "test_simple_phone_number_question_type_multilingual_binding")
 
         q = create_survey_element_from_dict(simple_phone_number_question)
         self.s.add_child(q)
@@ -172,11 +175,13 @@ class Json2XformQuestionValidationTests(TestCase):
             ]
         }
 
-        expected_select_all_control_xml = u"""<select ref="/test/select_all_q"><label ref="jr:itext('/test/select_all_q:label')"/><item><label ref="jr:itext('/test/select_all_q/f:label')"/><value>f</value></item><item><label ref="jr:itext('/test/select_all_q/g:label')"/><value>g</value></item><item><label ref="jr:itext('/test/select_all_q/h:label')"/><value>h</value></item></select>"""
+        expected_select_all_control_xml = self.config.get(
+            self.cls_name,
+            "test_simple_select_all_question_multilingual_control")
 
-        expected_select_all_binding_xml = u"""
-<bind nodeset="/test/select_all_q" type="select"/>
-        """.strip()
+        expected_select_all_binding_xml = self.config.get(
+            self.cls_name,
+            "test_simple_select_all_question_multilingual_binding")
 
         q = create_survey_element_from_dict(simple_select_all_question)
         self.s.add_child(q)
@@ -194,13 +199,11 @@ class Json2XformQuestionValidationTests(TestCase):
                                    u"type": u"decimal", u"name": u"decimal_q",
                                    u"attributes": {}}
 
-        expected_decimal_control_xml = u"""
-        <input ref="/test/decimal_q"><label ref="jr:itext('/test/decimal_q:label')"/></input>
-        """.strip()
+        expected_decimal_control_xml = self.config.get(
+            self.cls_name, "test_simple_decimal_question_multilingual_control")
 
-        expected_decimal_binding_xml = u"""
-        <bind nodeset="/test/decimal_q" type="decimal"/>
-        """.strip()
+        expected_decimal_binding_xml = self.config.get(
+            self.cls_name, "test_simple_decimal_question_multilingual_binding")
 
         q = create_survey_element_from_dict(simple_decimal_question)
         self.s.add_child(q)

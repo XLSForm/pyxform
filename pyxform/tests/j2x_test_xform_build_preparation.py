@@ -2,9 +2,8 @@
 Testing preparation of values for XForm exporting
 """
 from unittest import TestCase
-from pyxform import *
 
-import json
+from pyxform import *
 
 
 class Json2XformExportingPrepTests(TestCase):

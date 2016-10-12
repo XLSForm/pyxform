@@ -75,7 +75,7 @@ def node(*args, **kwargs):
     result = DetachableElement(tag)
     unicode_args = [u for u in args if type(u) == unicode]
     assert len(unicode_args) <= 1
-    parsedString = False
+    parsed_string = False
     # kwargs is an xml attribute dictionary,
     # here we convert it to a xml.dom.minidom.Element
     for k, v in iter(kwargs.items()):
@@ -83,7 +83,7 @@ def node(*args, **kwargs):
             continue
         if k == 'toParseString':
             if v is True and len(unicode_args) == 1:
-                parsedString = True
+                parsed_string = True
                 # Add this header string so parseString can be used?
                 s = u'<?xml version="1.0" ?><'+tag+'>' + unicode_args[0]\
                     + u'</'+tag+'>'
@@ -95,7 +95,7 @@ def node(*args, **kwargs):
         else:
             result.setAttribute(k, v)
 
-    if len(unicode_args) == 1 and not parsedString:
+    if len(unicode_args) == 1 and not parsed_string:
         text_node = PatchedText()
         text_node.data = unicode_args[0]
         result.appendChild(text_node)

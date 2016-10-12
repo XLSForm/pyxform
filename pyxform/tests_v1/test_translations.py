@@ -5,6 +5,8 @@ from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 class DoubleColonTranslations(PyxformTestCase):
     def test_langs(self):
+        model_contains = """<bind nodeset="/translations/n1""" + \
+                         """" readonly="true()" type="string"/>"""
         self.assertPyxformXform(
             name='translations',
             id_string='transl',
@@ -29,7 +31,5 @@ class DoubleColonTranslations(PyxformTestCase):
             xml__contains=[
                 """<label ref="jr:itext('/translations/n1:label')"/>""",
             ],
-            model__contains=[
-                '<bind nodeset="/translations/n1" readonly="true()" type="string"/>',
-            ],
+            model__contains=[model_contains],
         )

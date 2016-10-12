@@ -2,9 +2,8 @@
 Testing our ability to import from a JSON text file.
 """
 from unittest import TestCase
-from pyxform.builder import create_survey_element_from_dict
 
-import json
+from pyxform.builder import create_survey_element_from_dict
 
 
 class Json2XformTestJsonImport(TestCase):

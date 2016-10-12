@@ -4,7 +4,7 @@ from pyxform.xform2json import create_survey_element_from_xml, _try_parse
 import os
 from pyxform.tests import utils
 from unittest2 import TestCase
-from lxml.etree import XMLSyntaxError
+from xml.etree.ElementTree import ParseError
 
 
 class DumpAndLoadXForm2JsonTests(utils.XFormTestCase):
@@ -94,5 +94,5 @@ class TestXMLParse(TestCase):
         self.tidy_file = xml_path
         with open(xml_path, "w") as xml_file:
             xml_file.write("not valid xml :(")
-        with self.assertRaises(XMLSyntaxError):
+        with self.assertRaises(ParseError):
             _try_parse(xml_path)

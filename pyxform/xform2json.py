@@ -3,7 +3,7 @@ import re
 import json
 import copy
 import codecs
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ETree
 from operator import itemgetter
 from pyxform import builder
 from pyxform.utils import basestring
@@ -34,7 +34,7 @@ class XmlDictObject(dict):
             return ''
 
     @staticmethod
-    def Wrap(x):
+    def wrap(x):
         """
         Static method to wrap a dictionary recursively as an XmlDictObject
         """
@@ -48,25 +48,25 @@ class XmlDictObject(dict):
             return x
 
     @staticmethod
-    def _UnWrap(x):
+    def _un_wrap(x):
         if isinstance(x, dict):
             return dict(
-                (k, XmlDictObject._UnWrap(v)) for (k, v) in iter(x.items()))
+                (k, XmlDictObject._un_wrap(v)) for (k, v) in iter(x.items()))
         elif isinstance(x, list):
-            return [XmlDictObject._UnWrap(v) for v in x]
+            return [XmlDictObject._un_wrap(v) for v in x]
         else:
             return x
 
-    def UnWrap(self):
+    def un_wrap(self):
         """
         Recursively converts an XmlDictObject to a standard dictionary
         and returns the result.
         """
 
-        return XmlDictObject._UnWrap(self)
+        return XmlDictObject._un_wrap(self)
 
 
-def _ConvertDictToXmlRecurse(parent, dictitem):
+def _convert_dict_to_xml_recurse(parent, dictitem):
     assert not isinstance(dictitem, list)
 
     if isinstance(dictitem, dict):
@@ -76,29 +76,29 @@ def _ConvertDictToXmlRecurse(parent, dictitem):
             elif isinstance(child, list):
                 # iterate through the array and convert
                 for listchild in child:
-                    elem = ElementTree.Element(tag)
+                    elem = ETree.Element(tag)
                     parent.append(elem)
-                    _ConvertDictToXmlRecurse(elem, listchild)
+                    _convert_dict_to_xml_recurse(elem, listchild)
             else:
-                elem = ElementTree.Element(tag)
+                elem = ETree.Element(tag)
                 parent.append(elem)
-                _ConvertDictToXmlRecurse(elem, child)
+                _convert_dict_to_xml_recurse(elem, child)
     else:
         parent.text = str(dictitem)
 
 
-def ConvertDictToXml(xmldict):
+def convert_dict_to_xml(xmldict):
     """
     Converts a dictionary to an XML ElementTree Element
     """
 
     roottag = xmldict.keys()[0]
-    root = ET.Element(roottag)
-    _ConvertDictToXmlRecurse(root, xmldict[roottag])
+    root = ETree.Element(roottag)
+    _convert_dict_to_xml_recurse(root, xmldict[roottag])
     return root
 
 
-def _ConvertXmlToDictRecurse(node, dictclass):
+def _convert_xml_to_dict_recurse(node, dictclass):
     nodedict = dictclass()
 
     if len(node.items()) > 0:
@@ -107,7 +107,7 @@ def _ConvertXmlToDictRecurse(node, dictclass):
 
     for child in node:
         # recursively add the element's children
-        newitem = _ConvertXmlToDictRecurse(child, dictclass)
+        newitem = _convert_xml_to_dict_recurse(child, dictclass)
         # if tag in between text node, capture the tail end
         if child.tail is not None and child.tail.strip() != '':
             newitem['tail'] = child.tail
@@ -140,17 +140,17 @@ def _ConvertXmlToDictRecurse(node, dictclass):
     return nodedict
 
 
-def ConvertXmlToDict(root, dictclass=XmlDictObject):
+def convert_xml_to_dict(root, dictclass=XmlDictObject):
     """
     Converts an XML file or ElementTree Element to a dictionary
     """
     # If a string is passed in, try to open it as a file
     if isinstance(root, basestring):
         root = _try_parse(root)
-    elif not isinstance(root, ET.Element):
+    elif not isinstance(root, ETree.Element):
         raise TypeError('Expected ElementTree.Element or file path string')
 
-    return dictclass({root.tag: _ConvertXmlToDictRecurse(root, dictclass)})
+    return dictclass({root.tag: _convert_xml_to_dict_recurse(root, dictclass)})
 
 
 # end of http://code.activestate.com/recipes/573463/ }}}
@@ -160,22 +160,23 @@ def _try_parse(root, parser=None):
     """
     Try to parse the root from a string or a file/file-like object.
     """
+    root = root.encode("UTF-8")
     try:
-        parsed_root = etree.fromstring(root, parser)
-    except etree.ParseError:
-        parsed_root = etree.parse(root, parser=parser).getroot()
+        parsed_root = ETree.fromstring(root, parser)
+    except ETree.ParseError:
+        parsed_root = ETree.parse(root, parser=parser).getroot()
     return parsed_root
 
 
 class XFormToDict:
     def __init__(self, root):
         if isinstance(root, basestring):
-            parser = ET.XMLParser(remove_comments=True)
+            parser = ETree.XMLParser(encoding="UTF-8")
             self._root = _try_parse(root, parser)
             self._dict = XmlDictObject(
-                {self._root.tag: _ConvertXmlToDictRecurse(
+                {self._root.tag: _convert_xml_to_dict_recurse(
                     self._root, XmlDictObject)})
-        elif not isinstance(root, ET.Element):
+        elif not isinstance(root, ETree.Element):
             raise TypeError('Expected ElementTree.Element or file path string')
 
     def get_dict(self):
@@ -472,7 +473,7 @@ class XFormToDictBuilder:
                             k = 'jr:requiredMsg'
                         if k == 'constraintMsg':
                             k = "jr:constraintMsg"
-                            v = self._get_constraintMsg(v)
+                            v = self._get_constraint_msg(v)
                         if k == 'required':
                             if v == 'true()':
                                 v = 'yes'
@@ -593,13 +594,13 @@ class XFormToDictBuilder:
         name = self._get_name_from_ref(ref)
         return u''.join([u'${', name.strip(), u'}'])
 
-    def _get_constraintMsg(self, constraintMsg):
-        if isinstance(constraintMsg, basestring):
-            if constraintMsg.find(':jr:constraintMsg') != -1:
-                ref = constraintMsg.replace(
+    def _get_constraint_msg(self, constraint_msg):
+        if isinstance(constraint_msg, basestring):
+            if constraint_msg.find(':jr:constraintMsg') != -1:
+                ref = constraint_msg.replace(
                     'jr:itext(\'', '').replace('\')', '')
-                k, constraintMsg = self._get_text_from_translation(ref)
-        return constraintMsg
+                k, constraint_msg = self._get_text_from_translation(ref)
+        return constraint_msg
 
     def _get_name_from_ref(self, ref):
         """given /xlsform_spec_test/launch,
@@ -615,8 +616,8 @@ class XFormToDictBuilder:
         return obj_list
 
     def _shorten_xpaths_in_string(self, text):
-        def get_last_item(xpathStr):
-            l = xpathStr.split("/")
+        def get_last_item(xpath_str):
+            l = xpath_str.split("/")
             return l[len(l) - 1].strip()
 
         def replace_function(match):

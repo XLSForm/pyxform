@@ -24,5 +24,6 @@ setup(
         'xlrd==0.9.4',
         'unicodecsv==0.14.1',
         'formencode',
+        'unittest2',
     ],
 )

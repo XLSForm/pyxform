@@ -17,7 +17,7 @@ class _StringWithLanguageTranslator(object):
     def __init__(self, dictionary):
         self._dict = dictionary
 
-    def to(self, language):
+    def to_language(self, language):
         if language in self._dict:
             return self._dict[language]
         return None
@@ -27,8 +27,7 @@ class _StringTranslator(object):
     def __init__(self, dictionary):
         self._dict = dictionary
 
-    def From(self, language):
-        # I had to capitalize From because from is a reserved keyword
+    def from_language(self, language):
         dictionary = self._dict[language]
         return _StringWithLanguageTranslator(dictionary)
 

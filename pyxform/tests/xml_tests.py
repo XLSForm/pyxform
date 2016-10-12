@@ -13,7 +13,12 @@ class XMLTests(utils.XFormTestCase):
 
     def test_to_xml(self):
         xml_str = u'''<?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:h="http://www.w3.org/1999/xhtml"
+    xmlns:jr="http://openrosa.org/javarosa"
+    xmlns:orx="http://openrosa.org/xforms"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
     <h:title>yes_or_no_question</h:title>
     <model>
@@ -39,7 +44,9 @@ class XMLTests(utils.XFormTestCase):
         </yes_or_no_question>
       </instance>
       <bind nodeset="/yes_or_no_question/good_day" type="select1"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/yes_or_no_question/meta/instanceID" readonly="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuid())"
+        nodeset="/yes_or_no_question/meta/instanceID"
+        readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

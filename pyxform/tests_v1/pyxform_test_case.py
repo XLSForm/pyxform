@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from unittest import TestCase
 from pyxform.errors import PyXFormError
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ETree
 import re
 import tempfile
 import codecs
@@ -75,7 +75,7 @@ class PyxformTestCase(TestCase):
                 survey = kwargs.get("survey")
 
             xml = survey._to_pretty_xml()
-            root = ET.fromstring(xml.encode('utf-8'))
+            root = ETree.fromstring(xml.encode('utf-8'))
 
             # Ensure all namespaces are present, even if unused
             root.attrib.update(**nsmap)
@@ -83,9 +83,9 @@ class PyxformTestCase(TestCase):
             xml_nodes['xml'] = root
 
             def _pull_xml_node_from_root(element_selector):
-                NS = 'http://www.w3.org/2002/xforms'
+                ns = 'http://www.w3.org/2002/xforms'
                 _r = root.findall('.//n:%s' % element_selector,
-                                  namespaces={'n': NS})
+                                  namespaces={'n': ns})
                 if len(_r) == 0:
                     return False
                 else:
@@ -152,7 +152,8 @@ class PyxformTestCase(TestCase):
             for code in ['xml', 'instance', 'model', 'itext']:
                 (code__str, checker) = _check_contains(code)
                 if kwargs.get(code__str):
-                    checker(ET.tostring(xml_nodes[code], encoding='utf-8').decode('utf-8'))
+                    checker(ETree.tostring(
+                        xml_nodes[code], encoding='utf-8').decode('utf-8'))
                 bad_kwarg = '%s_contains' % code
                 if bad_kwarg in kwargs:
                     good_kwarg = '%s__contains' % code
@@ -237,7 +238,7 @@ class PyxformTestCase(TestCase):
         content = content.replace(" />", "/>")
         real_count = content.count(text)
 
-        return (text_repr, real_count, msg_prefix)
+        return text_repr, real_count, msg_prefix
 
     def assertContains(self, content, text, count=None, msg_prefix=''):
         """
