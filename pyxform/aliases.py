@@ -1,4 +1,4 @@
-import constants
+from pyxform import constants
 
 # Aliases:
 # Ideally aliases should resolve to elements in the json form schema
@@ -60,7 +60,7 @@ survey_header = {
     u"SMS Response": constants.SMS_RESPONSE,
     u"Type": u"type",
     u"List_name": u"list_name",
-    u"repeat_count": u"jr:count",
+    # u"repeat_count": u"jr:count",  duplicate key
     u"read_only": u"bind::readonly",
     u"readonly": u"bind::readonly",
     u"relevant": u"bind::relevant",

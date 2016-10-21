@@ -1,11 +1,11 @@
-from pyxform_test_case import PyxformTestCase
+from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class InvalidSurveyColumnsTests(PyxformTestCase):
     def test_missing_name(self):
-        '''
+        """
         every question needs a name (or alias of name)
-        '''
+        """
         self.assertPyxformXform(
             name='invalidcols',
             ss_structure={'survey': [{'type': 'text',
@@ -34,7 +34,9 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
 
 
 class InvalidChoiceSheetColumnsTests(PyxformTestCase):
-    def _simple_choice_ss(self, choice_sheet=[]):
+    def _simple_choice_ss(self, choice_sheet=None):
+        if choice_sheet is None:
+            choice_sheet = []
         return {'survey': [{'type': 'select_one l1',
                             'name': 'l1choice',
                             'label': 'select one from list l1'}],
@@ -89,10 +91,10 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
 
 class AliasesTests(PyxformTestCase):
     def test_value_and_name(self):
-        '''
+        """
         confirm that both 'name' and 'value' both compile to xforms with the
         correct output.
-        '''
+        """
         for name_alias in ['name', 'value']:
             self.assertPyxformXform(
                 name="aliases",

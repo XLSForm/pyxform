@@ -54,8 +54,6 @@ TABLE_LIST = u"table-list"  # hyphenated because it goes in appearance, and conv
 SURVEY = u"survey"
 SETTINGS = u"settings"
 # These sheet names are for list sheets
-CHOICES = u"choices"
-COLUMNS = u"columns"  # this is for loop statements
 CHOICES_AND_COLUMNS = u"choices and columns"
 CASCADING_CHOICES = u"cascades"
 

@@ -1,8 +1,8 @@
 import os
 import glob
-import utils
+from pyxform import utils
 
-from xls2json import SurveyReader
+from pyxform.xls2json import SurveyReader
 
 
 def _section_name(path_or_file_name):
@@ -20,11 +20,11 @@ def load_file_to_dict(path):
     """
     if path.endswith(".json"):
         name = _section_name(path)
-        return (name, utils.get_pyobj_from_json(path))
+        return name, utils.get_pyobj_from_json(path)
     else:
         name = _section_name(path)
         excel_reader = SurveyReader(path)
-        return (name, excel_reader.to_json_dict())
+        return name, excel_reader.to_json_dict()
 
 
 def collect_compatible_files_in_directory(directory):

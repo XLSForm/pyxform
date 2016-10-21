@@ -1,7 +1,7 @@
 from unittest import TestCase
 from pyxform.builder import create_survey_from_path
 from pyxform.xls2json import SurveyReader
-import utils
+from pyxform.tests import utils
 
 
 class SettingsTests(TestCase):

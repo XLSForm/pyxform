@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 from __future__ import unicode_literals
 from unittest import TestCase
 from pyxform.errors import PyXFormError
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ETree
 import re
 import tempfile
 import codecs
@@ -20,8 +21,8 @@ class PyxformTestError(Exception):
 
 
 class PyxformTestCase(TestCase):
-    def assertPyxformXform(self, *args, **kwargs):
-        '''
+    def assertPyxformXform(self, **kwargs):
+        """
         PyxformTestCase.assertPyxformXform() named arguments:
         -----------------------------------------------------
 
@@ -52,7 +53,7 @@ class PyxformTestCase(TestCase):
           * title: (str)
           * run_odk_validate: (bool) when True, runs ODK Validate process
                 Default value = False because it slows down tests
-        '''
+        """
         debug = kwargs.get('debug', False)
         expecting_invalid_survey = kwargs.get('errored', False)
         errors = []
@@ -70,9 +71,11 @@ class PyxformTestCase(TestCase):
                 kwargs = self._autonameInputs(kwargs)
                 survey = self._ss_structure_to_pyxform_survey(
                     kwargs.get('ss_structure'), kwargs)
+            else:
+                survey = kwargs.get("survey")
 
             xml = survey._to_pretty_xml()
-            root = ET.fromstring(xml.encode('utf-8'))
+            root = ETree.fromstring(xml.encode('utf-8'))
 
             # Ensure all namespaces are present, even if unused
             root.attrib.update(**nsmap)
@@ -80,9 +83,9 @@ class PyxformTestCase(TestCase):
             xml_nodes['xml'] = root
 
             def _pull_xml_node_from_root(element_selector):
-                NS = 'http://www.w3.org/2002/xforms'
+                ns = 'http://www.w3.org/2002/xforms'
                 _r = root.findall('.//n:%s' % element_selector,
-                                  namespaces={'n': NS})
+                                  namespaces={'n': ns})
                 if len(_r) == 0:
                     return False
                 else:
@@ -91,7 +94,7 @@ class PyxformTestCase(TestCase):
             for _n in ['model', 'instance', 'itext']:
                 xml_nodes[_n] = _pull_xml_node_from_root(_n)
             if debug:
-                print xml
+                print(xml)
             if run_odk_validate:
                 # On Windows, NamedTemporaryFile must be opened exclusively.
                 # So it must be explicitly created, opened, closed, and removed.
@@ -114,15 +117,13 @@ class PyxformTestCase(TestCase):
                     raise PyxformTestError(
                         "ODKValidateError was not raised"
                         )
-        except PyXFormError, e:
+        except PyXFormError as e:
             survey = False
-            xml = ("<xml unavailable /> ! PyxformTestCaseError: "
-                   "Could not compile XForm. See errors")
             errors = [str(e)]
             if debug:
-                print "<xml unavailable />"
-                print "ERROR: '%s'" % errors[0]
-        except ODKValidateError, e:
+                print("<xml unavailable />")
+                print("ERROR: '%s'" % errors[0])
+        except ODKValidateError as e:
             if len(odk_validate_error__contains) is 0:
                 raise PyxformTestError("ODK Validate error was thrown but " +
                                        "'odk_validate_error__contains'" +
@@ -130,6 +131,8 @@ class PyxformTestCase(TestCase):
             for v_err in odk_validate_error__contains:
                 self.assertContains(e.message, v_err,
                                     msg_prefix='odk_validate_error__contains')
+        else:
+            survey = True
 
         if survey:
             def _check_contains(keyword):
@@ -140,7 +143,7 @@ class PyxformTestCase(TestCase):
                     for text in text_arr:
                         self.assertContains(content, text, msg_prefix=keyword)
 
-                return (contains_str, check_content)
+                return contains_str, check_content
 
             if 'body_contains' in kwargs or 'body__contains' in kwargs:
                 raise SyntaxError("Invalid parameter: 'body__contains'."
@@ -149,7 +152,8 @@ class PyxformTestCase(TestCase):
             for code in ['xml', 'instance', 'model', 'itext']:
                 (code__str, checker) = _check_contains(code)
                 if kwargs.get(code__str):
-                    checker(ET.tostring(xml_nodes[code], encoding='utf-8').decode('utf-8'))
+                    checker(ETree.tostring(
+                        xml_nodes[code], encoding='utf-8').decode('utf-8'))
                 bad_kwarg = '%s_contains' % code
                 if bad_kwarg in kwargs:
                     good_kwarg = '%s__contains' % code
@@ -164,8 +168,7 @@ class PyxformTestCase(TestCase):
                 "setting 'errored=True', "
                 "and or optionally 'error__contains=[...]'")
         elif survey and expecting_invalid_survey:
-            raise PyxformTestError(
-                "Expected survey to be invalid.")
+            raise PyxformTestError("Expected survey to be invalid.")
 
         if 'error__contains' in kwargs:
             joined_error = '\n'.join(errors)
@@ -173,7 +176,9 @@ class PyxformTestCase(TestCase):
                 self.assertContains(joined_error, text,
                                     msg_prefix="error__contains")
 
-    def md_to_pyxform_survey(self, md_raw, kwargs={}, autoname=True):
+    def md_to_pyxform_survey(self, md_raw, kwargs=None, autoname=True):
+        if kwargs is None:
+            kwargs = {}
         if autoname:
             kwargs = self._autonameInputs(kwargs)
         _md = []
@@ -191,7 +196,7 @@ class PyxformTestCase(TestCase):
         md = '\n'.join(_md)
 
         if kwargs.get('debug'):
-            print md
+            print(md)
 
         def list_to_dicts(arr):
             headers = arr[0]
@@ -233,7 +238,7 @@ class PyxformTestCase(TestCase):
         content = content.replace(" />", "/>")
         real_count = content.count(text)
 
-        return (text_repr, real_count, msg_prefix)
+        return text_repr, real_count, msg_prefix
 
     def assertContains(self, content, text, count=None, msg_prefix=''):
         """
@@ -270,11 +275,11 @@ class PyxformTestCase(TestCase):
             msg_prefix + "Response should not contain %s" % text_repr)
 
     def _autonameInputs(self, kwargs):
-        '''
+        """
         title and name are necessary for surveys, but not always convenient to
         include in test cases, so this will pull a default value
         from the stack trace.
-        '''
+        """
         test_name_root = 'pyxform'
         if 'name' not in kwargs.keys():
             kwargs['name'] = test_name_root + '_autotestname'

@@ -4,20 +4,14 @@ Some tests for the new (v0.9) spec is properly implemented.
 import unittest2 as unittest
 import codecs
 import os
-import sys
-# Hack to make sure that pyxform is on the python import path
-parentdir = os.path.dirname(os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, parentdir)
 import pyxform
 from pyxform.errors import PyXFormError
-from .utils import XFormTestCase
+from pyxform.tests.utils import XFormTestCase
 
 DIR = os.path.dirname(__file__)
 
 
-class main_test(XFormTestCase):
-
+class MainTest(XFormTestCase):
     maxDiff = None
 
     def runTest(self):
@@ -43,8 +37,7 @@ class main_test(XFormTestCase):
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
-class flat_xlsform_test(XFormTestCase):
-
+class FlatXlsformTest(XFormTestCase):
     maxDiff = None
 
     def runTest(self):
@@ -70,8 +63,7 @@ class flat_xlsform_test(XFormTestCase):
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
-class test_new_widgets(XFormTestCase):
-
+class TestNewWidgets(XFormTestCase):
     maxDiff = None
 
     def runTest(self):
@@ -97,11 +89,12 @@ class test_new_widgets(XFormTestCase):
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
-class warnings_test(unittest.TestCase):
+class WarningsTest(unittest.TestCase):
     """
     Just checks that the number of warnings thrown when reading warnings.xls
     doesn't change
     """
+
     def runTest(self):
         filename = "warnings.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
@@ -112,19 +105,19 @@ class warnings_test(unittest.TestCase):
             len(warnings), 21, "Found " + str(len(warnings)) + " warnings")
 
 
-class calculate_without_calculation_test(unittest.TestCase):
+class CalculateWithoutCalculationTest(unittest.TestCase):
     """
     Just checks that calculate field without calculation raises a PyXFormError.
     """
+
     def runTest(self):
         filename = "calculate_without_calculation.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
-        self.assertRaises(PyXFormError,  pyxform.xls2json.parse_file_to_json,
+        self.assertRaises(PyXFormError, pyxform.xls2json.parse_file_to_json,
                           path_to_excel_file)
 
 
 class PullDataTest(XFormTestCase):
-
     maxDiff = None
 
     def runTest(self):
@@ -154,7 +147,6 @@ class PullDataTest(XFormTestCase):
 
 
 class SeachAndSelectTest(XFormTestCase):
-
     maxDiff = None
 
     def runTest(self):

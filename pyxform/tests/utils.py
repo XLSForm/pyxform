@@ -2,8 +2,13 @@ import os
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
 from unittest2 import TestCase
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ETree
 from formencode.doctest_xml_compare import xml_compare
+try:
+    import ConfigParser
+    configparser = ConfigParser
+except ImportError:
+    import configparser
 
 
 def path_to_text_fixture(filename):
@@ -16,13 +21,15 @@ def build_survey(filename):
     return create_survey_from_path(path)
 
 
-def create_survey_from_fixture(fixture_name, filetype="xls", include_directory=False):
+def create_survey_from_fixture(fixture_name, filetype="xls",
+                               include_directory=False):
     fixture_path = path_to_text_fixture("%s.%s" % (fixture_name, filetype))
     noop, section_dict = file_utils.load_file_to_dict(fixture_path)
     pkg = {u'main_section': section_dict}
     if include_directory:
         directory, noop = os.path.split(fixture_path)
-        pkg[u'sections'] = file_utils.collect_compatible_files_in_directory(directory)
+        pkg[u'sections'] = file_utils.collect_compatible_files_in_directory(
+            directory)
     return create_survey(**pkg)
 
 
@@ -39,8 +46,8 @@ class XFormTestCase(TestCase):
     """
 
     def assertXFormEqual(self, xform1, xform2):
-        xform1 = ET.fromstring(xform1.encode('utf-8'))
-        xform2 = ET.fromstring(xform2.encode('utf-8'))
+        xform1 = ETree.fromstring(xform1.encode('utf-8'))
+        xform2 = ETree.fromstring(xform2.encode('utf-8'))
 
         # Sort tags under <model> section in each form
         self.sort_model(xform1)
@@ -48,6 +55,7 @@ class XFormTestCase(TestCase):
 
         # Report any errors returned from xform_compare
         errs = []
+
         def reporter(msg):
             errs.append(msg)
 
@@ -57,11 +65,13 @@ class XFormTestCase(TestCase):
         )
 
     def sort_elems(self, elems, attr=None):
-         if attr:
-             key = lambda elem: elem.get(attr, '')
-         else:
-             key = lambda elem: elem.tag
-         elems[:] = sorted(elems, key=key)
+        if attr:
+            def elem_get_attr(elem): return elem.get(attr, '')
+            key = elem_get_attr
+        else:
+            def elem_get_tag(elem): return elem.tag
+            key = elem_get_tag
+        elems[:] = sorted(elems, key=key)
 
     def sort_model(self, xform):
         ns = "{http://www.w3.org/2002/xforms}"
@@ -88,3 +98,12 @@ class XFormTestCase(TestCase):
             self.sort_elems(translation, 'id')
             for text in translation:
                 self.sort_elems(text, 'form')
+
+
+def prep_class_config(cls, test_dir="tests"):
+    cls.config = configparser.ConfigParser()
+    here = os.path.dirname(__file__)
+    root = os.path.dirname(here)
+    strings = os.path.join(root, test_dir, "fixtures", "strings.ini")
+    cls.config.read(strings)
+    cls.cls_name = cls.__name__

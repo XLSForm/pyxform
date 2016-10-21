@@ -1,8 +1,8 @@
 import json
-from utils import is_valid_xml_tag, node
-from xls2json import print_pyobj_to_json
-from question_type_dictionary import QUESTION_TYPE_DICT
-from errors import PyXFormError
+from pyxform.utils import is_valid_xml_tag, node, unicode
+from pyxform.xls2json import print_pyobj_to_json
+from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
+from pyxform.errors import PyXFormError
 
 
 def _overlay(over, under):
@@ -32,7 +32,7 @@ class SurveyElement(dict):
         u"type": unicode,
         u"appearance": unicode,
         u"intent": unicode,
-        u"jr:count" : unicode,
+        u"jr:count": unicode,
         u"bind": dict,
         u"instance": dict,
         u"control": dict,
@@ -65,6 +65,9 @@ class SurveyElement(dict):
             return _overlay(over, under)
         raise AttributeError(key)
 
+    def __name__(self):
+        return "SurveyElement"
+
     def __setattr__(self, key, value):
         self[key] = value
 
@@ -73,9 +76,10 @@ class SurveyElement(dict):
             self[key] = kwargs.get(key, default())
         self._link_children()
 
-        #Create a space label for unlabeled elements with the label appearance tag.
-        #This is because such elements are used to label the options for selects in a field-list
-        #and might want blank labels for themselves.
+        # Create a space label for unlabeled elements with the label
+        # appearance tag. # This is because such elements are used to label the
+        # options for selects in a field-list and might want blank labels for
+        # themselves.
         if self.control.get(u"appearance") == u"label" and not self.label:
             self[u"label"] = u" "
 
@@ -109,7 +113,7 @@ class SurveyElement(dict):
         "FALSE": "false()"
     }
 
-    #Supported media types for attaching to questions
+    # Supported media types for attaching to questions
     SUPPORTED_MEDIA = [
         "image",
         "audio",
@@ -118,15 +122,18 @@ class SurveyElement(dict):
 
     def validate(self):
         if not is_valid_xml_tag(self.name):
-            msg = "The name '%s' is an invalid xml tag. Names must begin with a letter, colon, or underscore, subsequent characters can include numbers, dashes, and periods." % self.name
+            msg = "The name '%s' is an invalid xml tag. Names must begin with" \
+                  " a letter, colon, or underscore, subsequent characters can" \
+                  " include numbers, dashes, and periods." % self.name
             raise PyXFormError(msg)
 
-    #TODO: Make sure renaming this doesn't cause any problems
+    # TODO: Make sure renaming this doesn't cause any problems
     def iter_descendants(self):
         """
         A survey_element is a dictionary of survey_elements
         This method does a preorder traversal over them.
-        For the time being this survery_element is included among its descendants
+        For the time being this survery_element is included among its
+        descendants
         """
         # it really seems like this method should not yield self
         yield self
@@ -143,7 +150,7 @@ class SurveyElement(dict):
         while current_element.parent:
             current_element = current_element.parent
             result = [current_element] + result
-        #For some reason the root element has a True flat property...
+        # For some reason the root element has a True flat property...
         output = [result[0]]
         for item in result[1:]:
             if not item.get(u"flat"):
@@ -168,8 +175,8 @@ class SurveyElement(dict):
 
     def to_json_dict(self):
         """
-        Create a dict copy of this survey element by removing inappropriate attributes
-        and converting its children to dicts
+        Create a dict copy of this survey element by removing inappropriate
+        attributes and converting its children to dicts
         """
         self.validate()
         result = self.copy()
@@ -182,7 +189,7 @@ class SurveyElement(dict):
         for child in children:
             result[u"children"].append(child.to_json_dict())
         # remove any keys with empty values
-        for k, v in result.items():
+        for k, v in list(result.items()):
             if not v:
                 del result[k]
 
@@ -198,37 +205,37 @@ class SurveyElement(dict):
 
     def __eq__(self, y):
         return hasattr(y, 'to_json_dict') and callable(y.to_json_dict) and \
-                    self.to_json_dict() == y.to_json_dict()
+               self.to_json_dict() == y.to_json_dict()
 
     def _translation_path(self, display_element):
         return self.get_xpath() + ":" + display_element
 
     def get_translations(self, default_language):
         """
-        Returns translations used by this element so they can be included in the <itext> block
-        @see survey._setup_translations
+        Returns translations used by this element so they can be included in
+        the <itext> block. @see survey._setup_translations
         """
         bind_dict = self.get(u'bind')
         if bind_dict and type(bind_dict) is dict:
-            constraintMsg = bind_dict.get(u'jr:constraintMsg')
-            if type(constraintMsg) is dict:
-                for lang, text in constraintMsg.items():
+            constraint_msg = bind_dict.get(u'jr:constraintMsg')
+            if type(constraint_msg) is dict:
+                for lang, text in constraint_msg.items():
                     yield {
                         'path': self._translation_path(u'jr:constraintMsg'),
                         'lang': lang,
                         'text': text
                     }
-            requiredMsg = bind_dict.get(u'jr:requiredMsg')
-            if type(requiredMsg) is dict:
-                for lang, text in requiredMsg.items():
+            required_msg = bind_dict.get(u'jr:requiredMsg')
+            if type(required_msg) is dict:
+                for lang, text in required_msg.items():
                     yield {
                         'path': self._translation_path(u'jr:requiredMsg'),
                         'lang': lang,
                         'text': text
                     }
-            noAppErrorString = bind_dict.get(u'jr:noAppErrorString')
-            if type(noAppErrorString) is dict:
-                for lang, text in noAppErrorString.items():
+            no_app_error_string = bind_dict.get(u'jr:noAppErrorString')
+            if type(no_app_error_string) is dict:
+                for lang, text in no_app_error_string.items():
                     yield {
                         'path': self._translation_path(u'jr:noAppErrorString'),
                         'lang': lang,
@@ -239,17 +246,17 @@ class SurveyElement(dict):
             label_or_hint = self[display_element]
 
             if display_element is u'label' \
-               and self.needs_itext_ref() \
-               and type(label_or_hint) is not dict \
-               and label_or_hint:
-                label_or_hint = {default_language : label_or_hint}
+                    and self.needs_itext_ref() \
+                    and type(label_or_hint) is not dict \
+                    and label_or_hint:
+                label_or_hint = {default_language: label_or_hint}
 
             if type(label_or_hint) is dict:
                 for lang, text in label_or_hint.items():
                     yield {
-                        'display_element': display_element, #Not used
+                        'display_element': display_element,  # Not used
                         'path': self._translation_path(display_element),
-                        'element': self, #Not used
+                        'element': self,  # Not used
                         'lang': lang,
                         'text': text,
                     }
@@ -261,31 +268,32 @@ class SurveyElement(dict):
         """
         return {
             u"media": u"%s:media" % self.get_xpath()
-            }
+        }
 
     def needs_itext_ref(self):
-        return type(self.label) is dict or (type(self.media) is dict and len(self.media) > 0)
+        return type(self.label) is dict or (
+            type(self.media) is dict and len(self.media) > 0)
 
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):
         if self.needs_itext_ref():
-            #If there is a dictionary label, or non-empty media dict,
-            #then we need to make a label with an itext ref
+            # If there is a dictionary label, or non-empty media dict,
+            # then we need to make a label with an itext ref
             ref = "jr:itext('%s')" % self._translation_path(u"label")
             return node(u"label", ref=ref)
         else:
             survey = self.get_root()
-            label, outputInserted = survey.insert_output_values(self.label)
-            return node(u"label", label, toParseString=outputInserted)
+            label, output_inserted = survey.insert_output_values(self.label)
+            return node(u"label", label, toParseString=output_inserted)
 
     def xml_hint(self):
         if type(self.hint) == dict:
             path = self._translation_path("hint")
             return node(u"hint", ref="jr:itext('%s')" % path)
         else:
-            hint, outputInserted = self.get_root().insert_output_values(
+            hint, output_inserted = self.get_root().insert_output_values(
                 self.hint)
-            return node(u"hint", hint, toParseString=outputInserted)
+            return node(u"hint", hint, toParseString=output_inserted)
 
     def xml_label_and_hint(self):
         """
@@ -299,7 +307,8 @@ class SurveyElement(dict):
             result.append(self.xml_hint())
 
         if len(result) == 0:
-            msg = "The survey element named '%s' has no label or hint." % self.name
+            msg = "The survey element named '%s' " \
+                  "has no label or hint." % self.name
             raise PyXFormError(msg)
 
         return result
@@ -315,15 +324,19 @@ class SurveyElement(dict):
             return None
         if bind_dict:
             for k, v in bind_dict.items():
-                #I think all the binding conversions should be happening on the xls2json side.
+                # I think all the binding conversions should be happening on
+                # the xls2json side.
                 if hashable(v) and v in self.binding_conversions:
                     v = self.binding_conversions[v]
                 if k == u'jr:constraintMsg' and type(v) is dict:
-                    v = "jr:itext('%s')" % self._translation_path(u'jr:constraintMsg')
+                    v = "jr:itext('%s')" % self._translation_path(
+                        u'jr:constraintMsg')
                 if k == u'jr:requiredMsg' and type(v) is dict:
-                    v = "jr:itext('%s')" % self._translation_path(u'jr:requiredMsg')
+                    v = "jr:itext('%s')" % self._translation_path(
+                        u'jr:requiredMsg')
                 if k == u'jr:noAppErrorString' and type(v) is dict:
-                    v = "jr:itext('%s')" % self._translation_path(u'jr:noAppErrorString')
+                    v = "jr:itext('%s')" % self._translation_path(
+                        u'jr:noAppErrorString')
                 bind_dict[k] = survey.insert_xpaths(v)
             return node(u"bind", nodeset=self.get_xpath(), **bind_dict)
         return None
@@ -335,7 +348,7 @@ class SurveyElement(dict):
         result = []
         for e in self.iter_descendants():
             xml_binding = e.xml_binding()
-            if xml_binding != None:
+            if xml_binding is not None:
                 result.append(xml_binding)
         return result
 
@@ -345,6 +358,7 @@ class SurveyElement(dict):
         doesn't make sense to implement here in the base class.
         """
         raise Exception("Control not implemented")
+
 
 def hashable(v):
     """Determine whether `v` can be hashed."""

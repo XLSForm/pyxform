@@ -1,6 +1,6 @@
 from pyxform.builder import create_survey_from_path
 from pyxform.builder import create_survey_element_from_json
-import utils
+from pyxform.tests import utils
 import os
 import codecs
 

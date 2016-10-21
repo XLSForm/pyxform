@@ -2,8 +2,10 @@
 
 from collections import defaultdict
 
+
 def infinite_dict():
     return defaultdict(infinite_dict)
+
 
 # The big idea with this class structure is I want to do the
 # following:
@@ -15,22 +17,23 @@ class _StringWithLanguageTranslator(object):
     def __init__(self, dictionary):
         self._dict = dictionary
 
-    def to(self, language):
+    def to_language(self, language):
         if language in self._dict:
             return self._dict[language]
         return None
 
+
 class _StringTranslator(object):
     def __init__(self, dictionary):
         self._dict = dictionary
-        
-    def From(self, language):
-        # I had to capitalize From because from is a reserved keyword
+
+    def from_language(self, language):
         dictionary = self._dict[language]
         return _StringWithLanguageTranslator(dictionary)
 
+
 class Translator(object):
-    def __init__(self, dictionary={}):
+    def __init__(self):
         """
         I'm being super lazy dictionary has to have the form:
         {'yes' : {'English' : {'French' : 'oui'}}}
@@ -43,7 +46,8 @@ class Translator(object):
         for lang in [source_language, destination_language]:
             if lang not in self._languages:
                 self._languages.append(lang)
-        self._dict[string][source_language][destination_language] = translated_string
+        self._dict[string][source_language][
+            destination_language] = translated_string
 
     def translate(self, string):
         dictionary = self._dict[string]
@@ -51,9 +55,6 @@ class Translator(object):
 
     def to_json_dict(self):
         return self._dict
-
-
-
 
 # code used to construct a translator from the excel files from phase II.
 # import glob, os

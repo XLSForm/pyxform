@@ -1,4 +1,4 @@
-from pyxform_test_case import PyxformTestCase
+from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class GeoWidgetsTest(PyxformTestCase):
@@ -25,9 +25,9 @@ class GeoWidgetsTest(PyxformTestCase):
         )
 
     def test_geo_widgets_types(self):
-        '''
+        """
         this test could be broken into multiple smaller tests.
-        '''
+        """
         self.assertPyxformXform(
             name="geos",
             md="""

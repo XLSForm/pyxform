@@ -1,16 +1,19 @@
-from pyxform_test_case import PyxformTestCase
+from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
+from pyxform.tests.utils import prep_class_config
 
 
 class AreaTest(PyxformTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        prep_class_config(cls=cls, test_dir="tests_v1")
+
     def test_area(self):
+        md = self.config.get(self.cls_name, "test_area_md")
+        xml_contains = self.config.get(self.cls_name, "test_area_contains")
         self.assertPyxformXform(
             name="area",
-            md="""
-            | survey |           |           |                          |                              |  |
-            |        | type      |   name    | label                    | calculation                    | default  |
-            |        | geoshape  | geoshape1 | Draw your shape here...  |                              | 38.253094215699576 21.756382658677467;38.25021274773806 21.756382658677467;38.25007793942195 21.763892843919166;38.25290886154963 21.763935759263404;38.25146813817506 21.758421137528785  |
-            |        | calculate | result    |                          | enclosed-area(${geoshape1})  |   |
-            """,
-            xml__contains=['<bind calculate="enclosed-area( /area/geoshape1 )" nodeset="/area/result" type="string"/>'],
+            md=md,
+            xml__contains=[xml_contains],
             debug=True
         )

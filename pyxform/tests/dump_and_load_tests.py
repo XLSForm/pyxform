@@ -1,9 +1,7 @@
 from unittest import TestCase
 from pyxform.builder import create_survey_from_path
-from pyxform.xls2json import SurveyReader, print_pyobj_to_json
-from pyxform import Survey, InputQuestion
 import os
-import utils
+from pyxform.tests import utils
 
 
 class DumpAndLoadTests(TestCase):
@@ -11,7 +9,7 @@ class DumpAndLoadTests(TestCase):
     def setUp(self):
         self.excel_files = [
             "gps.xls",
-            #"include.xls",
+            # "include.xls",
             "specify_other.xls",
             "group.xls",
             "loop.xls",
@@ -38,7 +36,8 @@ class DumpAndLoadTests(TestCase):
             survey.json_dump()
             path = survey.name + ".json"
             survey_from_dump = create_survey_from_path(path)
-            self.assertEqual(survey.to_json_dict(), survey_from_dump.to_json_dict())
+            self.assertEqual(survey.to_json_dict(),
+                             survey_from_dump.to_json_dict())
 
     def tearDown(self):
         for filename, survey in self.surveys.items():

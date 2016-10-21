@@ -1,15 +1,16 @@
 import copy
-import file_utils
+from pyxform import file_utils
 import os
-import utils
+from pyxform import utils
 
-from errors import PyXFormError
-from section import RepeatingSection, GroupedSection
-from survey import Survey
-from question import Question, InputQuestion, TriggerQuestion, \
+from pyxform.errors import PyXFormError
+from pyxform.section import RepeatingSection, GroupedSection
+from pyxform.survey import Survey
+from pyxform.question import Question, InputQuestion, TriggerQuestion, \
     UploadQuestion, MultipleChoiceQuestion, OsmUploadQuestion
-from question_type_dictionary import QUESTION_TYPE_DICT
-from xls2json import SurveyReader
+from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
+from pyxform.xls2json import SurveyReader
+from pyxform.utils import unicode
 
 
 def copy_json_dict(json_dict):
@@ -208,7 +209,7 @@ class SurveyElementBuilder(object):
 
         return result
 
-    def _create_loop_from_dict(self, d, group_each_iteration=True):
+    def _create_loop_from_dict(self, d):
         """
         Takes a json_dict of "loop" type
         Returns a GroupedSection
@@ -242,6 +243,7 @@ class SurveyElementBuilder(object):
     def _name_and_label_substitutions(self, question_template, column_headers):
         # if the label in column_headers has multiple languages setup a
         # dictionary by language to do substitutions.
+        info_by_lang = {}
         if type(column_headers[u"label"]) == dict:
             info_by_lang = dict(
                 [(lang, {u"name": column_headers[u"name"],
@@ -252,15 +254,15 @@ class SurveyElementBuilder(object):
         result = question_template.copy()
         for key in result.keys():
             if type(result[key]) == unicode:
-                result[key] = result[key] % column_headers
+                result[key] %= column_headers
             elif type(result[key]) == dict:
                 result[key] = result[key].copy()
                 for key2 in result[key].keys():
                     if type(column_headers[u"label"]) == dict:
-                        result[key][key2] = result[key][key2] \
-                            % info_by_lang.get(key2, column_headers)
+                        result[key][key2] %= info_by_lang.get(
+                            key2, column_headers)
                     else:
-                        result[key][key2] = result[key][key2] % column_headers
+                        result[key][key2] %= column_headers
         return result
 
     def create_survey_element_from_json(self, str_or_path):
@@ -268,10 +270,12 @@ class SurveyElementBuilder(object):
         return self.create_survey_element_from_dict(d)
 
 
-def create_survey_element_from_dict(d, sections={}):
+def create_survey_element_from_dict(d, sections=None):
     """
     Creates a Survey from a dictionary in the format provided by SurveyReader
     """
+    if sections is None:
+        sections = {}
     builder = SurveyElementBuilder()
     builder.set_sections(sections)
     return builder.create_survey_element_from_dict(d)
@@ -292,12 +296,11 @@ def create_survey_from_xls(path_or_file):
 
 
 def create_survey(
-        name_of_main_section=None, sections={},
+        name_of_main_section=None, sections=None,
         main_section=None,
         id_string=None,
         title=None,
         default_language=None,
-        question_type_dictionary=None
         ):
     """
     name_of_main_section -- a string key used to find the main section in the
@@ -308,6 +311,8 @@ def create_survey(
                 survey
     This function uses the builder class to create and return a survey.
     """
+    if sections is None:
+        sections = {}
     if main_section is None:
         main_section = sections[name_of_main_section]
     builder = SurveyElementBuilder()
@@ -344,7 +349,6 @@ def create_survey_from_path(path, include_directory=False):
     @see: create_survey
     """
     directory, file_name = os.path.split(path)
-    main_section_name = file_utils._section_name(file_name)
     if include_directory:
         main_section_name = file_utils._section_name(file_name)
         sections = file_utils.collect_compatible_files_in_directory(directory)

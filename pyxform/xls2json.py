@@ -1,16 +1,16 @@
 """
 A Python script to convert excel files into JSON.
 """
+from __future__ import print_function
 import json
 import re
 import sys
 import codecs
 import os
-import constants
-import aliases
-from errors import PyXFormError
-from xls2json_backends import xls_to_dict, csv_to_dict
-from utils import is_valid_xml_tag
+from pyxform import constants, aliases
+from pyxform.errors import PyXFormError
+from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
+from pyxform.utils import is_valid_xml_tag, unicode, basestring
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -23,7 +23,7 @@ def print_pyobj_to_json(pyobj, path=None):
         json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
         fp.close()
     else:
-        print json.dumps(pyobj, ensure_ascii=False, indent=4)
+        print(json.dumps(pyobj, ensure_ascii=False, indent=4))
 
 
 def merge_dicts(dict_a, dict_b, default_key="default"):
@@ -79,7 +79,7 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons,
     default_language -- used to group labels/hints/etc
     without a language specified with localized versions.
     """
-    GROUP_DELIMITER = u"::"
+    group_delimiter = u"::"
     out_dict_array = list()
     for row in dict_array:
         out_row = dict()
@@ -88,10 +88,8 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons,
             if ignore_case:
                 header = header.lower()
 
-            tokens = list()
-
             if use_double_colons:
-                tokens = header.split(GROUP_DELIMITER)
+                tokens = header.split(group_delimiter)
 
             # else:
             #   We do the initial parse using single colons
@@ -112,7 +110,7 @@ def dealias_and_group_headers(dict_array, header_aliases, use_double_colons,
                     tokens.pop(jr_idx + 1)
 
             dealiased_first_token = header_aliases.get(tokens[0], tokens[0])
-            tokens = dealiased_first_token.split(GROUP_DELIMITER) + tokens[1:]
+            tokens = dealiased_first_token.split(group_delimiter) + tokens[1:]
             new_key = tokens[0]
             new_value = list_to_nested_dict(tokens[1:] + [val])
             out_row = merge_dicts(
@@ -236,13 +234,13 @@ def add_flat_annotations(prompt_list, parent_relevant='', name_prefix=''):
             if new_relevant != '':
                 prompt['bind'] = prompt.get('bind', {})
                 prompt['bind']['relevant'] = new_relevant
-            # if name_prefix != '':
-            #    prompt['name'] = name_prefix + prompt['name']
+                # if name_prefix != '':
+                #    prompt['name'] = name_prefix + prompt['name']
 
 
 def workbook_to_json(
         workbook_dict, form_name=None,
-        default_language=u"default", warnings=[]):
+        default_language=u"default", warnings=None):
     """
     workbook_dict -- nested dictionaries representing a spreadsheet.
                     should be similar to those returned by xls_to_dict
@@ -262,16 +260,19 @@ def workbook_to_json(
     json form spec.
     """
     # ensure required headers are present
+    if warnings is None:
+        warnings = []
     is_valid = False
     for row in workbook_dict.get('survey', []):
         is_valid = 'type' in row
         if is_valid:
             break
     if not is_valid:
-        raise PyXFormError(u"The survey sheet is either empty or missing important "
-                            u"column headers.")
+        raise PyXFormError(
+            u"The survey sheet is either empty or missing important "
+            u"column headers.")
 
-    rowFormatString = '[row : %s]'
+    row_format_string = '[row : %s]'
 
     # Make sure the passed in vars are unicode
     form_name = unicode(form_name)
@@ -365,7 +366,8 @@ def workbook_to_json(
                     info)
             # chrislrobert's fix for a cryptic error message:
             # see: https://code.google.com/p/opendatakit/issues/detail?id=832&start=200 # noqa
-            for headername in option.keys():
+            option_keys = list(option.keys())
+            for headername in option_keys:
                 # Using warnings and removing the bad columns
                 # instead of throwing errors because some forms
                 # use choices column headers for notes.
@@ -437,7 +439,7 @@ def workbook_to_json(
         # so the attributes below can be disabled.
         if u"disabled" in row:
             warnings.append(
-                rowFormatString % row_number +
+                row_format_string % row_number +
                 " The 'disabled' column header is not part of the current" +
                 " spec. We recommend using relevant instead.")
             disabled = row.pop(u"disabled")
@@ -454,20 +456,20 @@ def workbook_to_json(
             # if name and label are also missing,
             # then its a comment row, and we skip it with warning
             if not ((constants.NAME in row) or (constants.LABEL in row)):
-                    warnings.append(
-                        rowFormatString % row_number + " Row without name,"
-                        " text, or label is being skipped:\n" + str(row))
-                    continue
+                warnings.append(
+                    row_format_string % row_number +
+                    " Row without name, text, or label is being skipped:\n" +
+                    str(row))
+                continue
             raise PyXFormError(
-                rowFormatString % row_number +
+                row_format_string % row_number +
                 " Question with no type.\n" + str(row))
-            continue
 
         if question_type == 'calculate':
             calculation = row.get('bind', {}).get('calculate')
             if not calculation:
                 raise PyXFormError(
-                    rowFormatString % row_number + " Missing calculation.")
+                    row_format_string % row_number + " Missing calculation.")
 
         # Check if the question is actually a setting specified
         # on the survey sheet
@@ -485,7 +487,7 @@ def workbook_to_json(
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
-                        rowFormatString % row_number +
+                        row_format_string % row_number +
                         " Unmatched end statement. Previous control type: " +
                         str(prev_control_type) +
                         ", Control type: " + str(control_type))
@@ -502,15 +504,16 @@ def workbook_to_json(
             #     # autogenerate names for groups without them
             #     row['name'] = "generated_group_name_" + str(row_number)
             else:
-                raise PyXFormError(rowFormatString % row_number +
+                raise PyXFormError(row_format_string % row_number +
                                    " Question or group with no name.")
         question_name = unicode(row[constants.NAME])
         if not is_valid_xml_tag(question_name):
-            error_message = rowFormatString % row_number
-            error_message += " Invalid question name [" + question_name.encode('utf-8') + "] "
+            error_message = row_format_string % row_number
+            error_message += " Invalid question name [" + \
+                             question_name.encode('utf-8') + "] "
             error_message += "Names must begin with a letter, colon,"\
                              + " or underscore."
-            error_message += "Subsequent characters can include numbers,"\
+            error_message += "Subsequent characters can include numbers," \
                              + " dashes, and periods."
             raise PyXFormError(error_message)
 
@@ -522,7 +525,7 @@ def workbook_to_json(
             #      Warnings can be ignored so I'm not too concerned
             #      about false positives.
             warnings.append(
-                rowFormatString % row_number +
+                row_format_string % row_number +
                 " Question has no label: " + str(row))
 
         # Try to parse question as begin control statement
@@ -545,12 +548,12 @@ def workbook_to_json(
                     if not parse_dict.get("list_name"):
                         # TODO: Perhaps warn and make repeat into a group?
                         raise PyXFormError(
-                            rowFormatString % row_number +
+                            row_format_string % row_number +
                             " Repeat loop without list name.")
                     list_name = parse_dict["list_name"]
                     if list_name not in choices:
                         raise PyXFormError(
-                            rowFormatString % row_number +
+                            row_format_string % row_number +
                             " List name not in columns sheet: " + list_name)
                     new_json_dict[constants.COLUMNS] = choices[list_name]
 
@@ -584,7 +587,7 @@ def workbook_to_json(
                         generated_label_element = {
                             "type": "note",
                             "name":
-                            "generated_table_list_label_" + str(row_number)
+                                "generated_table_list_label_" + str(row_number)
                         }
                         if 'label' in new_json_dict:
                             generated_label_element[constants.LABEL] = \
@@ -609,16 +612,16 @@ def workbook_to_json(
                 cascading_prefix = row.get(constants.NAME)
                 if not cascading_prefix:
                     raise PyXFormError(
-                        rowFormatString % row_number +
+                        row_format_string % row_number +
                         " Cascading select needs a name.")
                 # cascading_json = get_cascading_json(
                 # cascading_choices, cascading_prefix, cascading_level)
-                if len(cascading_choices) <= 0 or\
-                        'questions' not in cascading_choices[0]:
+                if len(cascading_choices) <= 0 or \
+                   'questions' not in cascading_choices[0]:
                     raise PyXFormError(
-                        "Found a cascading_select " +
-                        cascading_level + ", but could not"
-                        " find " + cascading_level + "in cascades sheet.")
+                        "Found a cascading_select " + cascading_level +
+                        ", but could not find " + cascading_level +
+                        "in cascades sheet.")
                 cascading_json = cascading_choices[0]['questions']
                 json_dict['choices'] = choices
                 include_bindings = False
@@ -639,6 +642,7 @@ def workbook_to_json(
                                 d[k] = map(
                                     lambda x: replace_prefix(x, prefix), v)
                         return d
+
                     parent_children_array.append(
                         replace_prefix(cq, cascading_prefix))
                 continue  # so the row isn't put in as is
@@ -649,10 +653,10 @@ def workbook_to_json(
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
                 select_type = aliases.select[parse_dict["select_command"]]
-                if select_type == 'select one external'\
+                if select_type == 'select one external' \
                         and 'choice_filter' not in row:
                     warnings.append(
-                        rowFormatString % row_number +
+                        row_format_string % row_number +
                         u" select one external is only meant for"
                         u" filtered selects.")
                     select_type = aliases.select['select_one']
@@ -669,7 +673,7 @@ def workbook_to_json(
                             u"all in small caps and has columns 'list name', "
                             u"'name', and 'label' (or aliased column names).")
                     raise PyXFormError(
-                        rowFormatString % row_number +
+                        row_format_string % row_number +
                         " List name not in choices sheet: " + list_name)
 
                 # Validate select_multiple choice names by making sure
@@ -736,8 +740,9 @@ def workbook_to_json(
                         table_list_header = {
                             constants.TYPE: select_type,
                             constants.NAME:
-                            "reserved_name_for_field_list_labels_" +
-                            str(row_number),  # Adding row number for uniqueness # noqa
+                                "reserved_name_for_field_list_labels_" +
+                                str(row_number),
+                            # Adding row number for uniqueness # noqa
                             constants.CONTROL: {u"appearance": u"label"},
                             constants.CHOICES: choices[list_name],
                             # Do we care about filtered selects in table lists?
@@ -746,9 +751,9 @@ def workbook_to_json(
                         parent_children_array.append(table_list_header)
 
                     if table_list != list_name:
-                        error_message = rowFormatString % row_number
-                        error_message += " Badly formatted table list,"\
-                                         " list names don't match: " +\
+                        error_message = row_format_string % row_number
+                        error_message += " Badly formatted table list," \
+                                         " list names don't match: " + \
                                          table_list + " vs. " + list_name
                         raise PyXFormError(error_message)
 
@@ -865,10 +870,12 @@ def get_filename(path):
 
 
 def parse_file_to_json(path, default_name=None, default_language=u"default",
-                       warnings=[], file_object=None):
+                       warnings=None, file_object=None):
     """
     A wrapper for workbook_to_json
     """
+    if warnings is None:
+        warnings = []
     workbook_dict = parse_file_to_workbook_dict(path, file_object)
     if default_name is None:
         default_name = unicode(get_filename(path))
@@ -922,6 +929,7 @@ class SurveyReader(SpreadsheetReader):
     It allows us to use the old interface where a SpreadsheetReader
     based object is created then a to_json_dict function is called on it.
     """
+
     def __init__(self, path_or_file):
         if isinstance(path_or_file, basestring):
             self._file_object = None
@@ -947,14 +955,15 @@ class QuestionTypesReader(SpreadsheetReader):
     question types.
     @see question_type_dictionary
     """
+
     def __init__(self, path):
         super(QuestionTypesReader, self).__init__(path)
         self._setup_question_types_dictionary()
 
     def _setup_question_types_dictionary(self):
         use_double_colons = has_double_colon(self._dict)
-        TYPES_SHEET = u"question types"
-        self._dict = self._dict[TYPES_SHEET]
+        types_sheet = u"question types"
+        self._dict = self._dict[types_sheet]
         self._dict = dealias_and_group_headers(
             self._dict, {}, use_double_colons, u"default")
         self._dict = organize_by_values(self._dict, u"name")
@@ -981,6 +990,7 @@ class VariableNameReader(SpreadsheetReader):
             else:
                 variable_names_so_far.append(d[u"XPath"])
         self._dict = new_dict
+
 
 if __name__ == "__main__":
     # Open the excel file specified by the argument of this python call,
