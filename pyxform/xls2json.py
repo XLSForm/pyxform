@@ -598,6 +598,11 @@ def workbook_to_json(
                                 new_json_dict['hint']
                             del new_json_dict['hint']
                         child_list.append(generated_label_element)
+                if 'intent' in new_json_dict:
+                    new_json_dict['control'] = \
+                        new_json_dict.get(u"control", {})
+                    new_json_dict['control']['intent'] = \
+                        new_json_dict['intent']
 
                 parent_children_array.append(new_json_dict)
                 stack.append((control_type, child_list))
