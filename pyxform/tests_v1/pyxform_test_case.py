@@ -97,7 +97,7 @@ class PyxformTestCase(TestCase):
                 print(xml)
             if run_odk_validate:
                 # On Windows, NamedTemporaryFile must be opened exclusively.
-                # So it must be explicitly created, opened, closed, and removed.
+                # So it must be explicitly created, opened, closed, and removed
                 tmp = tempfile.NamedTemporaryFile(suffix='.xml', delete=False)
                 tmp.close()
                 try:
