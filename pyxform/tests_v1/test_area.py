@@ -1,5 +1,4 @@
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
-from pyxform.tests.utils import prep_class_config
 
 
 MD = '''
@@ -15,11 +14,6 @@ XML_CONTAINS = '''
 
 
 class AreaTest(PyxformTestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        prep_class_config(cls=cls, test_dir="tests_v1")
-
     def test_area(self):
         self.assertPyxformXform(
             name="area",

@@ -1,5 +1,4 @@
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
-from pyxform.tests.utils import prep_class_config
 
 
 MD = '''
@@ -13,11 +12,6 @@ MD = '''
 
 
 class CustomXMLNamespacesTest(PyxformTestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        prep_class_config(cls=cls, test_dir="tests_v1")
-
     def test_custom_xml_name_spaces(self):
         # re: https://github.com/XLSForm/pyxform/issues/65
         self.assertPyxformXform(
