@@ -162,7 +162,7 @@ class Survey(Section):
                 file_id, file_extension = os.path.splitext(itemset)
                 yield node(
                     "instance",
-                    node("root", node("item", node("name"), node("label"))),
+                    node("root", node("item", node("name", "_"), node("label", "_"))),
                     id=file_id,
                     src="jr://file-%s/%s" % (file_extension[1:], itemset)
                 )
