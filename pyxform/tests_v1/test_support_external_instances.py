@@ -16,8 +16,8 @@ class ExternalCSVInstancesTest(PyxformTestCase):
                 """<instance id="cities" src="jr://file-csv/cities.csv">
         <root>
           <item>
-            <name/>
-            <label/>
+            <name>_</name>
+            <label>_</label>
           </item>
         </root>
       </instance>""",  # noqa
@@ -26,14 +26,15 @@ class ExternalCSVInstancesTest(PyxformTestCase):
                 """<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv">
         <root>
           <item>
-            <name/>
-            <label/>
+            <name>_</name>
+            <label>_</label>
           </item>
         </root>
       </instance>""",  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
                 '<itemset nodeset="instance(\'neighbourhoods\')/root/item">',
             ],
+            run_odk_validate=True,
         )
 
     def test_external_csv_instances_w_choice_filter(self):
@@ -50,8 +51,8 @@ class ExternalCSVInstancesTest(PyxformTestCase):
                 """<instance id="cities" src="jr://file-csv/cities.csv">
         <root>
           <item>
-            <name/>
-            <label/>
+            <name>_</name>
+            <label>_</label>
           </item>
         </root>
       </instance>""",  # noqa
@@ -59,14 +60,15 @@ class ExternalCSVInstancesTest(PyxformTestCase):
                 """<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv">
         <root>
           <item>
-            <name/>
-            <label/>
+            <name>_</name>
+            <label>_</label>
           </item>
         </root>
       </instance>""",  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
                 '<itemset nodeset="instance(\'neighbourhoods\')/root/item[city= /ecsv/city ]">',  # noqa
             ],
+            run_odk_validate=True,
         )
 
 
@@ -85,8 +87,8 @@ class ExternalXMLInstancesTest(PyxformTestCase):
                 """<instance id="cities" src="jr://file-xml/cities.xml">
         <root>
           <item>
-            <name/>
-            <label/>
+            <name>_</name>
+            <label>_</label>
           </item>
         </root>
       </instance>""",  # noqa
@@ -95,14 +97,15 @@ class ExternalXMLInstancesTest(PyxformTestCase):
                 """<instance id="neighbourhoods" src="jr://file-xml/neighbourhoods.xml">
         <root>
           <item>
-            <name/>
-            <label/>
+            <name>_</name>
+            <label>_</label>
           </item>
         </root>
       </instance>""",  # noqa
                 '<select ref="/exml/neighbourhoods">',
                 '<itemset nodeset="instance(\'neighbourhoods\')/root/item">',
             ],
+            run_odk_validate=True,
         )
 
 
