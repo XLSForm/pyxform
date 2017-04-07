@@ -84,7 +84,7 @@ class ExternalXMLInstancesTest(PyxformTestCase):
             |        | select_multiple_from_file neighbourhoods.xml | neighbourhoods | Neighbourhoods |
             """,  # noqa
             xml__contains=[
-                """<instance id="cities" src="jr://file-xml/cities.xml">
+                """<instance id="cities" src="jr://file/cities.xml">
         <root>
           <item>
             <name>_</name>
@@ -94,7 +94,7 @@ class ExternalXMLInstancesTest(PyxformTestCase):
       </instance>""",  # noqa
                 '<select1 ref="/exml/city">',
                 '<itemset nodeset="instance(\'cities\')/root/item">',
-                """<instance id="neighbourhoods" src="jr://file-xml/neighbourhoods.xml">
+                """<instance id="neighbourhoods" src="jr://file/neighbourhoods.xml">
         <root>
           <item>
             <name>_</name>

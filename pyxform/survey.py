@@ -159,12 +159,16 @@ class Survey(Section):
             itemset = i.get('itemset')
             if itemset and \
                     (itemset.endswith('.csv') or itemset.endswith('.xml')):
-                file_id, file_extension = os.path.splitext(itemset)
+                file_id, ext = os.path.splitext(itemset)
+                uri = 'jr://%s/%s' % (
+                    'file' if ext == '.xml' else "file-%s" % ext[1:],
+                    itemset)
                 yield node(
                     "instance",
-                    node("root", node("item", node("name", "_"), node("label", "_"))),
+                    node("root",
+                         node("item", node("name", "_"), node("label", "_"))),
                     id=file_id,
-                    src="jr://file-%s/%s" % (file_extension[1:], itemset)
+                    src=uri
                 )
 
     def xml_model(self):
