@@ -26,4 +26,9 @@ setup(
         'formencode',
         'unittest2',
     ],
+    entry_points={
+        'console_scripts': [
+            'xls2xform=pyxform.xls2xform:main_cli',
+        ],
+    },
 )
