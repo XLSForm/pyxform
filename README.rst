@@ -8,12 +8,9 @@ pyxform v0.9
 pyxform is a Python library that makes writing XForms for ODK Collect and enketo
 easy by converting XLS(X) spreadsheets into XForms. A new user of pyxform should
 look at the documentation `here <https://formhub.org/syntax/>`_ or
-`here <http://opendatakit.org/help/form-design/xlsform/>`_.
+`here <http://opendatakit.org/help/form-design/xlsform/>`_. 
 
-pyxform is used by `opendatakit.org <http://opendatakit.org>`_ and by `formhub.org <http://formhub.org>`_.
-
-* opendatakit.org uses the repo here:
-https://github.com/uw-ictd/pyxform
+XLS(X) documents used as input must follow to the `XLSForm standard <http://xlsform.org/>`_ and the resulting output follows the `ODK XForms <https://github.com/opendatakit/xforms-spec>`_ standard. 
 
 * formhub.org uses the repo here:
 https://github.com/modilabs/pyxform
@@ -67,4 +64,4 @@ To check out the documentation for pyxform do the following::
 
 Change Log
 =========
-https://github.com/UW-ICTD/pyxform/blob/master/CHANGES.txt
+`Changelog <CHANGES.txt>`_
