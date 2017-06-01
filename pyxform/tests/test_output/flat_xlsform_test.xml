@@ -300,7 +300,7 @@
             <value>-</value>
           </text>
           <text id="/flat_xlsform_test/select_multiple_test:jr:constraintMsg">
-            <value>對不起 <output value=" /flat_xlsform_test/my_name "/>，你可以不選擇“是”和“否”。</value>
+            <value>對不起 <output value=" /flat_xlsform_test/my_name "/>，你可以不選擇&quot;是&quot;和&quot;否&quot;。</value>
           </text>
           <text id="/flat_xlsform_test/autocomplete_chars_test:label">
             <value>-</value>
