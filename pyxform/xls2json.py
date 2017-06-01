@@ -1,7 +1,7 @@
 """
 A Python script to convert excel files into JSON.
 """
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 import json
 import re
 import sys
@@ -11,6 +11,13 @@ from pyxform import constants, aliases
 from pyxform.errors import PyXFormError
 from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 from pyxform.utils import is_valid_xml_tag, unicode, basestring
+
+SMART_QUOTES = {
+    '\u2018': "'",
+    '\u2019': "'",
+    '\u201c': '"',
+    '\u201d': '"',
+}
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -141,7 +148,11 @@ def clean_text_values(dict_array):
     for row in dict_array:
         for key, value in row.items():
             if isinstance(value, basestring):
-                row[key] = re.sub(r"( )+", " ", value.strip())
+                value = re.sub(r"( )+", " ", value.strip())
+                for smart_quote, dumb_quote in SMART_QUOTES.items():
+                    if smart_quote in value:
+                        value = value.replace(smart_quote, dumb_quote)
+                row[key] = value
     return dict_array
 
 
