@@ -20,24 +20,38 @@ https://github.com/modilabs/pyxform
 
 pyxform is a major rewrite of `xls2xform <http://github.com/mvpdev/xls2xform/>`_.
 
-Running pyxform as a Python script:
-===========================
+Running pyxform from local source
+=================================
 
-1. install xlrd::
+Note that you must uninstall any globally installed `pyxform` instance in order to use local modules.
 
-    # On ubuntu these terminal commands should do it:
+From the command line::
 
-    easy_install pip
-
-    pip install xlrd
-
-2. Run this command::
-
+    python setup.py develop
     python pyxform/xls2xform.py path_to_XLSForm output_path
 
-Installation
-============
-Installing pyxform from github is easy with pip::
+Consider using a `virtualenv <http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/>`_ and `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_ to make dependency management easier and keep your global site-packages directory clean::
+
+    pip install virtualenv
+    pip install virtualenvwrapper
+    mkvirtualenv local_pyxform                     # or whatever you want to name it
+    (local_pyxform)$ python setup.py develop       # install the local files
+    (local_pyxform)$ python pyxform/xls2xform.py --help
+    (local_pyxform)$ xls2xform --help              # same effect as previous line
+    (local_pyxform)$ which xls2xform.              # ~/.virtualenvs/local_pyxform/bin/xls2xform
+
+To leave and return to the virtual environment::
+
+    (local_pyxform)$ deactivate                    # leave the virtualenv
+    $ xls2xform --help 
+    # -bash: xls2xform: command not found
+    $ workon local_pyxform                         # reactivate the virtualenv
+    (local_pyxform)$ which xls2xform               # & we can access the scripts once again
+    ~/.virtualenvs/local_pyxform/bin/xls2xform
+
+Installing pyxform from remote source
+=====================================
+`pip` can install from any GitHub repository::
 
 	pip install -e git+https://github.com/INSERT GH USER NAME HERE/pyxform.git@master#egg=pyxform
 
