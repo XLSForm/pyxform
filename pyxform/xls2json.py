@@ -73,6 +73,17 @@ def list_to_nested_dict(lst):
         return lst[0]
 
 
+def replace_smart_quotes_in_dict(_d):
+    for key, value in _d.items():
+        _changed = False
+        for smart_quote, dumb_quote in SMART_QUOTES.items():
+            if smart_quote in value:
+                value = value.replace(smart_quote, dumb_quote)
+                _changed = True
+        if _changed:
+            _d[key] = value
+
+
 def dealias_and_group_headers(dict_array, header_aliases, use_double_colons,
                               default_language=u"default", ignore_case=False):
     """
@@ -146,13 +157,10 @@ def clean_text_values(dict_array):
     Note that the keys don't get cleaned, which could be an issue.
     """
     for row in dict_array:
+        replace_smart_quotes_in_dict(row)
         for key, value in row.items():
             if isinstance(value, basestring):
-                value = re.sub(r"( )+", " ", value.strip())
-                for smart_quote, dumb_quote in SMART_QUOTES.items():
-                    if smart_quote in value:
-                        value = value.replace(smart_quote, dumb_quote)
-                row[key] = value
+                row[key] = re.sub(r"( )+", " ", value.strip())
     return dict_array
 
 
@@ -303,6 +311,7 @@ def workbook_to_json(
         workbook_dict.get(constants.SETTINGS, []),
         aliases.settings_header, use_double_colons)
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
+    replace_smart_quotes_in_dict(settings)
 
     default_language = settings.get(
         constants.DEFAULT_LANGUAGE, default_language)
@@ -348,6 +357,9 @@ def workbook_to_json(
         use_double_colons, default_language)
 
     choices_sheet = workbook_dict.get(constants.CHOICES, [])
+    for choice_item in choices_sheet:
+        replace_smart_quotes_in_dict(choice_item)
+
     choices_sheet = dealias_and_group_headers(
         choices_sheet, aliases.list_header, use_double_colons,
         default_language)

@@ -37,19 +37,24 @@ class UnicodeStrings(PyxformTestCase):
                 'choices': [
                     {'list_name': 'xyz',
                      'name': 'xxx',
-                     'label': 'Xxx'},
+                     'label': '‘Xxx’'},
                     {'list_name': 'xyz',
                      'name': 'yyy',
-                     'label': 'Yyy'},
+                     'label': '“Yyy”'},
                 ],
+                'settings': [{'version': 'q(‘-’)p'}],
             },
             errored=False,
             validate=False,
             name="quoth",
-            debug=True,
             xml__contains=[
-                "'single-quoted'",
+                "'single-quoted",
                 '"double-quoted"',
                 "selected( /quoth/smart_single_quoted , 'xxx')",
+                "<label>'Xxx'</label>",
+                '<label>"Yyy"</label>',
+                '''
+                version="q('-')p"
+                '''.strip(),
             ],
         )
