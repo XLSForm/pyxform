@@ -327,7 +327,7 @@
             <value>-</value>
           </text>
           <text id="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test:jr:constraintMsg">
-            <value>對不起 <output value=" /attribute_columns_test/everything/my_name "/>，你可以不選擇“是”和“否”。</value>
+            <value>對不起 <output value=" /attribute_columns_test/everything/my_name "/>，你可以不選擇"是"和"否"。</value>
           </text>
           <text id="/attribute_columns_test/skip_to_end:label">
             <value>-</value>
