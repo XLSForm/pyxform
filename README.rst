@@ -50,7 +50,7 @@ Installing pyxform from remote source
 =====================================
 `pip` can install from any GitHub repository::
 
-	pip install -e git+https://github.com/INSERT GH USER NAME HERE/pyxform.git@master#egg=pyxform
+	pip install -e git+https://github.com/XLSForm/pyxform.git@master#egg=pyxform
 
 You can then run xls2xform from the commandline::
 
