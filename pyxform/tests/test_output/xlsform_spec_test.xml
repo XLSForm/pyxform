@@ -333,7 +333,7 @@
             <value>-</value>
           </text>
           <text id="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:jr:constraintMsg">
-            <value>對不起 <output value=" /xlsform_spec_test/everything/my_name "/>，你可以不選擇“是”和“否”。</value>
+            <value>對不起 <output value=" /xlsform_spec_test/everything/my_name "/>，你可以不選擇&quot;是&quot;和&quot;否&quot;。</value>
           </text>
           <text id="/xlsform_spec_test/everything/number_label:label">
             <value>-</value>
