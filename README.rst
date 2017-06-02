@@ -17,6 +17,16 @@ https://github.com/modilabs/pyxform
 
 pyxform is a major rewrite of `xls2xform <http://github.com/mvpdev/xls2xform/>`_.
 
+Installing pyxform from remote source
+=====================================
+`pip` can install from any GitHub repository::
+
+	pip install -e git+https://github.com/XLSForm/pyxform.git@master#egg=pyxform
+
+You can then run xls2xform from the commandline::
+
+	xls2xform path_to_XLSForm output_path
+
 Running pyxform from local source
 =================================
 
@@ -45,16 +55,6 @@ To leave and return to the virtual environment::
     $ workon local_pyxform                         # reactivate the virtualenv
     (local_pyxform)$ which xls2xform               # & we can access the scripts once again
     ~/.virtualenvs/local_pyxform/bin/xls2xform
-
-Installing pyxform from remote source
-=====================================
-`pip` can install from any GitHub repository::
-
-	pip install -e git+https://github.com/XLSForm/pyxform.git@master#egg=pyxform
-
-You can then run xls2xform from the commandline::
-
-	xls2xform path_to_XLSForm output_path
 
 Testing
 =======
