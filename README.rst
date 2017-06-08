@@ -17,6 +17,13 @@ pyxform is a major rewrite of `xls2xform <http://github.com/mvpdev/xls2xform/>`_
 
 Running the latest release of pyxform
 =====================================
+For those who want to convert forms at the command line, the latest official release of pyxform can be installed using `pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`::
+    
+    pip install pyxform
+
+The `xls2xform` command can then be used::
+
+    xls2xform path_to_XLSForm output_path
 
 Running pyxform from local source
 =================================
