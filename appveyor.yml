@@ -1,0 +1,53 @@
+environment:
+
+  matrix:
+
+    # For Python versions available on Appveyor, see
+    # http://www.appveyor.com/docs/installed-software#python
+    # The list here is complete (excluding Python 2.6, which
+    # isn't covered by this document) at the time of writing.
+
+    - PYTHON: "C:\\Python27"
+    - PYTHON: "C:\\Python34"
+    - PYTHON: "C:\\Python35"
+    - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python27-x64"
+    - PYTHON: "C:\\Python34-x64"
+      DISTUTILS_USE_SDK: "1"
+    - PYTHON: "C:\\Python35-x64"
+    - PYTHON: "C:\\Python36-x64"
+
+install:
+  - ps: $env:Path = "$env:PYTHON;$env:PYTHON\Scripts;$env:Path"
+
+  # Check that we have the expected version and architecture for Python
+  - python --version
+  - python -c "import struct; print(struct.calcsize('P') * 8)"
+
+  # Upgrade to the latest version of pip to avoid it displaying warnings
+  # about it being out of date.
+  - ps: pip install --disable-pip-version-check --user --upgrade pip
+
+  # We need wheel installed to build wheels
+  - ps: pip install wheel
+
+  - ps: pip install -q -r requirements.pip
+
+build: off
+
+test_script:
+  - python setup.py nosetests
+  - python setup.py nosetests --tests pyxform/tests_v1/
+
+after_test:
+  - python setup.py sdist
+  - python setup.py bdist_wheel
+  - ps: ls dist
+artifacts:
+  # bdist_wheel puts your built wheel in the dist directory
+  - path: dist\*
+
+#on_success:
+#  You can use this step to upload your artifacts to a public website.
+#  See Appveyor's documentation for more details. Or you can simply
+#  access your wheels from the Appveyor "artifacts" tab for your build.
