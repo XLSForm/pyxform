@@ -3,6 +3,7 @@ from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 class RangeWidgetTest(PyxformTestCase):
     def test_range_type(self):
+        # properties column
         self.assertPyxformXform(
             debug=True,
             name="data",
@@ -16,6 +17,35 @@ class RangeWidgetTest(PyxformTestCase):
                 '<range end="10" ref="/data/level" start="1" step="1">'],
         )
 
+        # parameters column
+        self.assertPyxformXform(
+            debug=True,
+            name="data",
+            md="""
+            | survey |        |          |       |                     |
+            |        | type   |   name   | label | parameters          |
+            |        | range  |   level  | Scale | min=1 max=10 step=2 |
+            """,
+            xml__contains=[
+                '<bind nodeset="/data/level" type="int"/>',
+                '<range end="10" ref="/data/level" start="1" step="2">'],
+        )
+
+        # attributes column
+        self.assertPyxformXform(
+            debug=True,
+            name="data",
+            md="""
+            | survey |        |          |       |                     |
+            |        | type   |   name   | label | attributes          |
+            |        | range  |   level  | Scale | min=1 max=10 step=2 |
+            """,
+            xml__contains=[
+                '<bind nodeset="/data/level" type="int"/>',
+                '<range end="10" ref="/data/level" start="1" step="2">'],
+        )
+
+        # mixed case parameters
         self.assertPyxformXform(
             debug=True,
             name="data",
