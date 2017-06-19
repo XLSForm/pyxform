@@ -265,9 +265,13 @@ def process_range_question_type(row):
     props = {}
     for prop in properties.split():
         k, v = prop.split('=')
-        key = properties_map.get(k)
+        key = properties_map.get(k.lower())
         if key:
             props[key] = v
+        else:
+            raise PyXFormError(
+                "Range properties have the properties 'min', 'max' and"
+                " 'step': '%s' is invalid." % k)
 
     # set defaults
     for key in properties_map.values():
