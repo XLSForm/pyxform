@@ -90,7 +90,8 @@ survey_header = {
     u"requiredMsg": u"bind::jr:requiredMsg",
     u"required_message": u"bind::jr:requiredMsg",
     u"required message": u"bind::jr:requiredMsg",
-    u"body": u"control"
+    u"body": u"control",
+    u"properties": u"properties",
 }
 list_header = {
     u"caption": constants.LABEL,

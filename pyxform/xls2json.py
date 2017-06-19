@@ -257,6 +257,33 @@ def add_flat_annotations(prompt_list, parent_relevant='', name_prefix=''):
                 #    prompt['name'] = name_prefix + prompt['name']
 
 
+def process_range_question_type(row):
+    new_dict = row.copy()
+    properties = new_dict.get('properties', '')
+    properties_map = {'min': 'start', 'max': 'end', 'step': 'step'}
+    props = {}
+    for prop in properties.split():
+        k, v = prop.split('=')
+        key = properties_map.get(k)
+        if key:
+            props[key] = v
+    try:
+        has_float = any(
+            [float(x) and '.' in str(x) for x in props.values()])
+    except ValueError:
+        raise PyXFormError("Range properties 'min', "
+                           "'max' or 'step' must all be numbers.")
+    else:
+        # is integer by default, convert to decimal if it has any float values
+        if has_float:
+            new_dict['bind'] = new_dict.get('bind', {})
+            new_dict['bind'].update({'type': 'decimal'})
+
+    new_dict['properties'] = props
+
+    return new_dict
+
+
 def workbook_to_json(
         workbook_dict, form_name=None,
         default_language=u"default", warnings=None):
@@ -809,6 +836,12 @@ def workbook_to_json(
 
             parent_children_array.append(new_dict)
 
+            continue
+
+        # range question_type
+        if question_type == 'range':
+            new_dict = process_range_question_type(row)
+            parent_children_array.append(new_dict)
             continue
 
         # TODO: Consider adding some question_type validation here.

@@ -1,8 +1,9 @@
 import os.path
-from pyxform.utils import node, unicode, basestring
-from pyxform.survey_element import SurveyElement
-from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
+
 from pyxform.errors import PyXFormError
+from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
+from pyxform.survey_element import SurveyElement
+from pyxform.utils import basestring, node, unicode
 
 
 class Question(SurveyElement):
@@ -238,5 +239,27 @@ class OsmUploadQuestion(UploadQuestion):
 
         for osm_tag in self.children:
             result.appendChild(osm_tag.xml())
+
+        return result
+
+
+class RangeQuestion(Question):
+    """
+    This control string is the same for: strings, integers, decimals,
+    dates, geopoints, barcodes ...
+    """
+    def xml_control(self):
+        control_dict = self.control
+        label_and_hint = self.xml_label_and_hint()
+        survey = self.get_root()
+        # Resolve field references in attributes
+        for key, value in control_dict.items():
+            control_dict[key] = survey.insert_xpaths(value)
+        control_dict['ref'] = self.get_xpath()
+        props = self.get('properties', {})
+        result = node(**control_dict, **props)
+        if label_and_hint:
+            for element in self.xml_label_and_hint():
+                result.appendChild(element)
 
         return result
