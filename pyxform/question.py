@@ -257,7 +257,8 @@ class RangeQuestion(Question):
             control_dict[key] = survey.insert_xpaths(value)
         control_dict['ref'] = self.get_xpath()
         props = self.get('properties', {})
-        result = node(**control_dict, **props)
+        control_dict.update(props)
+        result = node(**control_dict)
         if label_and_hint:
             for element in self.xml_label_and_hint():
                 result.appendChild(element)
