@@ -261,12 +261,19 @@ def process_range_question_type(row):
     new_dict = row.copy()
     properties = new_dict.get('properties', '')
     properties_map = {'min': 'start', 'max': 'end', 'step': 'step'}
+    defaults = {'start': '1', 'end': '10', 'step': '1'}
     props = {}
     for prop in properties.split():
         k, v = prop.split('=')
         key = properties_map.get(k)
         if key:
             props[key] = v
+
+    # set defaults
+    for key in properties_map.values():
+        if key not in props:
+            props[key] = defaults[key]
+
     try:
         has_float = any(
             [float(x) and '.' in str(x) for x in props.values()])
