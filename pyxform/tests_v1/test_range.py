@@ -5,7 +5,6 @@ class RangeWidgetTest(PyxformTestCase):
     def test_range_type(self):
         # parameters column
         self.assertPyxformXform(
-            debug=True,
             name="data",
             md="""
             | survey |        |          |       |                     |
@@ -19,7 +18,6 @@ class RangeWidgetTest(PyxformTestCase):
 
         # mixed case parameters
         self.assertPyxformXform(
-            debug=True,
             name="data",
             md="""
             | survey |        |          |       |                     |
@@ -33,7 +31,6 @@ class RangeWidgetTest(PyxformTestCase):
 
     def test_range_type_defaults(self):
         self.assertPyxformXform(
-            debug=True,
             name="data",
             md="""
             | survey |        |          |       |                     |
@@ -46,7 +43,6 @@ class RangeWidgetTest(PyxformTestCase):
         )
 
         self.assertPyxformXform(
-            debug=True,
             name="data",
             md="""
             | survey |        |          |       |                     |
@@ -59,7 +55,6 @@ class RangeWidgetTest(PyxformTestCase):
         )
 
         self.assertPyxformXform(
-            debug=True,
             name="data",
             md="""
             | survey |        |          |       |
@@ -73,7 +68,6 @@ class RangeWidgetTest(PyxformTestCase):
 
     def test_range_type_float(self):
         self.assertPyxformXform(
-            debug=True,
             name="data",
             md="""
             | survey |        |          |       |                     |
@@ -88,7 +82,6 @@ class RangeWidgetTest(PyxformTestCase):
     def test_range_type_invvalid_parameters(self):
         # 'increment' is an invalid property
         self.assertPyxformXform(
-            debug=True,
             name="data",
             md="""
             | survey |        |          |       |                        |
@@ -98,7 +91,6 @@ class RangeWidgetTest(PyxformTestCase):
             errored=True,
         )
         self.assertPyxformXform(
-            debug=True,
             name="data",
             md="""
             | survey |        |          |       |                     |
