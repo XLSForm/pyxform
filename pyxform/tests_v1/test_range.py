@@ -10,7 +10,7 @@ class RangeWidgetTest(PyxformTestCase):
             md="""
             | survey |        |          |       |                     |
             |        | type   |   name   | label | parameters          |
-            |        | range  |   level  | Scale | min=1 max=10 step=1 |
+            |        | range  |   level  | Scale | start=1 end=10 step=1 |
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
@@ -24,7 +24,7 @@ class RangeWidgetTest(PyxformTestCase):
             md="""
             | survey |        |          |       |                     |
             |        | type   |   name   | label | parameters          |
-            |        | range  |   level  | Scale | Min=3 Max=14 STEP=2 |
+            |        | range  |   level  | Scale | Start=3 End=14 STEP=2 |
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
@@ -51,7 +51,7 @@ class RangeWidgetTest(PyxformTestCase):
             md="""
             | survey |        |          |       |                     |
             |        | type   |   name   | label | parameters          |
-            |        | range  |   level  | Scale | max=20              |
+            |        | range  |   level  | Scale | end=20              |
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
@@ -78,7 +78,7 @@ class RangeWidgetTest(PyxformTestCase):
             md="""
             | survey |        |          |       |                     |
             |        | type   |   name   | label | parameters          |
-            |        | range  |   level  | Scale | min=0.5 max=5.0 step=0.5 |
+            |        | range  |   level  | Scale | start=0.5 end=5.0 step=0.5 |
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="decimal"/>',
@@ -93,7 +93,7 @@ class RangeWidgetTest(PyxformTestCase):
             md="""
             | survey |        |          |       |                        |
             |        | type   |   name   | label | parameters             |
-            |        | range  |   level  | Scale | increment=0.5 max=21.5 |
+            |        | range  |   level  | Scale | increment=0.5 end=21.5 |
             """,
             errored=True,
         )
@@ -103,7 +103,7 @@ class RangeWidgetTest(PyxformTestCase):
             md="""
             | survey |        |          |       |                     |
             |        | type   |   name   | label | parameters          |
-            |        | range  |   level  | Scale | min=0.5 max=X step=0.5 |
+            |        | range  |   level  | Scale | start=0.5 end=X step=0.5 |
             """,
             errored=True,
         )

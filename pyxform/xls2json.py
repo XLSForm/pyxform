@@ -258,9 +258,14 @@ def add_flat_annotations(prompt_list, parent_relevant='', name_prefix=''):
 
 
 def process_range_question_type(row):
+    """Returns a new row that includes the Range parameters start, end and
+    step.
+
+    Raises PyXFormError when invalid range parameters are used.
+    """
     new_dict = row.copy()
     parameters = new_dict.get('parameters', '')
-    parameters_map = {'min': 'start', 'max': 'end', 'step': 'step'}
+    parameters_map = {'start': 'start', 'end': 'end', 'step': 'step'}
     defaults = {'start': '1', 'end': '10', 'step': '1'}
     params = {}
     for prop in parameters.split():
@@ -270,7 +275,7 @@ def process_range_question_type(row):
             params[key] = v
         else:
             raise PyXFormError(
-                "Range parameters have the parameters 'min', 'max' and"
+                "Range parameters have the parameters 'start', 'end' and"
                 " 'step': '%s' is invalid." % k)
 
     # set defaults
@@ -282,8 +287,8 @@ def process_range_question_type(row):
         has_float = any(
             [float(x) and '.' in str(x) for x in params.values()])
     except ValueError:
-        raise PyXFormError("Range parameters 'min', "
-                           "'max' or 'step' must all be numbers.")
+        raise PyXFormError("Range parameters 'start', "
+                           "'end' or 'step' must all be numbers.")
     else:
         # is integer by default, convert to decimal if it has any float values
         if has_float:
