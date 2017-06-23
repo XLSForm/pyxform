@@ -425,9 +425,9 @@ class Survey(Section):
         # TODO: check out pyxml
         # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
         xml_with_linebreaks = self.xml().toprettyxml(indent='  ')
-        text_re = re.compile('>\n\s+([^<>\s].*?)\n\s+</', re.DOTALL)
+        text_re = re.compile('(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)', re.DOTALL)
         output_re = re.compile('\n.*(<output.*>)\n(  )*')
-        pretty_xml = text_re.sub('>\g<1></', xml_with_linebreaks)
+        pretty_xml = text_re.sub(lambda m: ''.join(m.group(1, 2, 3)), xml_with_linebreaks)
         inline_output = output_re.sub('\g<1>', pretty_xml)
         inline_output = re.compile('<label>\s*\n*\s*\n*\s*</label>')\
             .sub('<label></label>', inline_output)
