@@ -259,30 +259,30 @@ def add_flat_annotations(prompt_list, parent_relevant='', name_prefix=''):
 
 def process_range_question_type(row):
     new_dict = row.copy()
-    properties = new_dict.get('properties', '')
-    properties_map = {'min': 'start', 'max': 'end', 'step': 'step'}
+    parameters = new_dict.get('parameters', '')
+    parameters_map = {'min': 'start', 'max': 'end', 'step': 'step'}
     defaults = {'start': '1', 'end': '10', 'step': '1'}
-    props = {}
-    for prop in properties.split():
+    params = {}
+    for prop in parameters.split():
         k, v = prop.split('=')
-        key = properties_map.get(k.lower())
+        key = parameters_map.get(k.lower())
         if key:
-            props[key] = v
+            params[key] = v
         else:
             raise PyXFormError(
-                "Range properties have the properties 'min', 'max' and"
+                "Range parameters have the parameters 'min', 'max' and"
                 " 'step': '%s' is invalid." % k)
 
     # set defaults
-    for key in properties_map.values():
-        if key not in props:
-            props[key] = defaults[key]
+    for key in parameters_map.values():
+        if key not in params:
+            params[key] = defaults[key]
 
     try:
         has_float = any(
-            [float(x) and '.' in str(x) for x in props.values()])
+            [float(x) and '.' in str(x) for x in params.values()])
     except ValueError:
-        raise PyXFormError("Range properties 'min', "
+        raise PyXFormError("Range parameters 'min', "
                            "'max' or 'step' must all be numbers.")
     else:
         # is integer by default, convert to decimal if it has any float values
@@ -290,7 +290,7 @@ def process_range_question_type(row):
             new_dict['bind'] = new_dict.get('bind', {})
             new_dict['bind'].update({'type': 'decimal'})
 
-    new_dict['properties'] = props
+    new_dict['parameters'] = params
 
     return new_dict
 
