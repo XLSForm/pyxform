@@ -283,9 +283,9 @@ def process_range_question_type(row):
             raise PyXFormError("Expecting parameters to be in the form of "
                                "'start=X end=X step=X'.")
         k, v = param.split('=')[:2]
-        key = parameters_map.get(k.lower())
+        key = parameters_map.get(k.lower().strip())
         if key:
-            params[key] = v
+            params[key] = v.strip()
         else:
             raise PyXFormError(
                 "Range has the parameters 'start', 'end' and"
