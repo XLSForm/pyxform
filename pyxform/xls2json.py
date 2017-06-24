@@ -986,8 +986,10 @@ def organize_by_values(dict_list, key):
 class SpreadsheetReader(object):
     def __init__(self, path_or_file):
         path = path_or_file
-        if type(path_or_file) is file:
+        try:
             path = path.name
+        except AttributeError:
+            pass
         self._dict = parse_file_to_workbook_dict(path)
         self._path = path
         self._id = unicode(get_filename(path))
