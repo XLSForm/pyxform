@@ -275,8 +275,8 @@ def process_range_question_type(row):
             params[key] = v
         else:
             raise PyXFormError(
-                "Range parameters have the parameters 'start', 'end' and"
-                " 'step': '%s' is invalid." % k)
+                "Range has the parameters 'start', 'end' and"
+                " 'step': '%s' is an invalid parameter." % k)
 
     # set defaults
     for key in parameters_map.values():
