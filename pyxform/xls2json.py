@@ -268,11 +268,11 @@ def process_range_question_type(row):
     parameters_map = {'start': 'start', 'end': 'end', 'step': 'step'}
     defaults = {'start': '1', 'end': '10', 'step': '1'}
     params = {}
-    for prop in parameters.split():
-        if '=' not in prop:
+    for param in parameters.split():
+        if '=' not in param:
             raise PyXFormError("Expecting parameters to be in the form of "
                                "'start=X end=X step=X'.")
-        k, v = prop.split('=')
+        k, v = param.split('=')[:2]
         key = parameters_map.get(k.lower())
         if key:
             params[key] = v
