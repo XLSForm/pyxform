@@ -263,12 +263,22 @@ def process_range_question_type(row):
 
     Raises PyXFormError when invalid range parameters are used.
     """
+    def _parameters(parameters):
+        parts = parameters.split(';')
+        if len(parts) == 1:
+            parts = parameters.split(',')
+        if len(parts) == 1:
+            parts = parameters.split()
+
+        return parts
+
     new_dict = row.copy()
-    parameters = new_dict.get('parameters', '')
+    parameters = _parameters(new_dict.get('parameters', ''))
     parameters_map = {'start': 'start', 'end': 'end', 'step': 'step'}
     defaults = {'start': '1', 'end': '10', 'step': '1'}
     params = {}
-    for param in parameters.split():
+
+    for param in parameters:
         if '=' not in param:
             raise PyXFormError("Expecting parameters to be in the form of "
                                "'start=X end=X step=X'.")

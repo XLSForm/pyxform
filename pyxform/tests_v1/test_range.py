@@ -91,7 +91,6 @@ class RangeWidgetTest(PyxformTestCase):
             errored=True,
         )
 
-        # end=X
         self.assertPyxformXform(
             name="data",
             md="""
@@ -110,4 +109,30 @@ class RangeWidgetTest(PyxformTestCase):
             |        | range  |   level  | Scale | start               |
             """,
             errored=True,
+        )
+
+    def test_range_semicolon_separator(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |       |                       |
+            |        | type   |   name   | label | parameters            |
+            |        | range  |   level  | Scale | start=1;end=10;step=1 |
+            """,
+            xml__contains=[
+                '<bind nodeset="/data/level" type="int"/>',
+                '<range end="10" ref="/data/level" start="1" step="1">'],
+        )
+
+    def test_range_comma_separator(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |       |                       |
+            |        | type   |   name   | label | parameters            |
+            |        | range  |   level  | Scale | start=1,end=10,step=1 |
+            """,
+            xml__contains=[
+                '<bind nodeset="/data/level" type="int"/>',
+                '<range end="10" ref="/data/level" start="1" step="1">'],
         )
