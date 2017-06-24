@@ -90,12 +90,24 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             errored=True,
         )
+
+        # end=X
         self.assertPyxformXform(
             name="data",
             md="""
             | survey |        |          |       |                     |
             |        | type   |   name   | label | parameters          |
             |        | range  |   level  | Scale | start=0.5 end=X step=0.5 |
+            """,
+            errored=True,
+        )
+
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |       |                     |
+            |        | type   |   name   | label | parameters          |
+            |        | range  |   level  | Scale | start               |
             """,
             errored=True,
         )
