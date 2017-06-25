@@ -1,19 +1,19 @@
-import tempfile
-from pyxform.section import Section
-from pyxform.question import Question
-from pyxform.utils import node, unicode, basestring, PatchedText
-from collections import defaultdict
 import codecs
-from datetime import datetime
-import re
-from pyxform.odk_validate import check_xform
-from pyxform.survey_element import SurveyElement
-from pyxform.errors import PyXFormError
-from pyxform import constants
-from pyxform.instance import SurveyInstance
 import os
+import re
+import tempfile
 import xml.etree.ElementTree as ETree
+from collections import defaultdict
+from datetime import datetime
 
+from pyxform import constants
+from pyxform.errors import PyXFormError
+from pyxform.instance import SurveyInstance
+from pyxform.odk_validate import check_xform
+from pyxform.question import Question
+from pyxform.section import Section
+from pyxform.survey_element import SurveyElement
+from pyxform.utils import PatchedText, basestring, node, unicode
 
 nsmap = {
     u"xmlns": u"http://www.w3.org/2002/xforms",
@@ -261,8 +261,8 @@ class Survey(Section):
                                 else:
                                     self._add_to_nested_dict(
                                         self._translations,
-                                        [mediatypeorlanguage, itext_id, 'long'],
-                                        value)
+                                        [mediatypeorlanguage, itext_id,
+                                         'long'], value)
                     elif choicePropertyName == 'label':
                         self._add_to_nested_dict(
                             self._translations,
@@ -382,7 +382,8 @@ class Survey(Section):
                         value, output_inserted = \
                             self.insert_output_values(media_value)
                         itext_nodes.append(
-                            node("value", value, toParseString=output_inserted))
+                            node("value", value, toParseString=output_inserted)
+                        )
                         continue
 
                     if media_type == "long":
@@ -391,13 +392,15 @@ class Survey(Section):
                         # I'm ignoring long types for now because I don't know
                         # how they are supposed to work.
                         itext_nodes.append(
-                            node("value", value, toParseString=output_inserted))
+                            node("value", value, toParseString=output_inserted)
+                        )
                     elif media_type == "image":
                         value, output_inserted = \
                             self.insert_output_values(media_value)
                         itext_nodes.append(
                             node("value", "jr://images/" + value,
-                                 form=media_type, toParseString=output_inserted)
+                                 form=media_type,
+                                 toParseString=output_inserted)
                         )
                     else:
                         value, output_inserted = \
@@ -518,8 +521,12 @@ class Survey(Section):
             warnings = []
         if not path:
             path = self._print_name + ".xml"
-        with codecs.open(path, mode="w", encoding="utf-8") as fp:
-            fp.write(self._to_pretty_xml())
+        try:
+            with codecs.open(path, mode="w", encoding="utf-8") as fp:
+                fp.write(self._to_pretty_xml())
+        except Exception as e:
+            os.unlink(path)
+            raise e
         if validate:
             warnings.extend(check_xform(path))
 
