@@ -525,7 +525,8 @@ class Survey(Section):
             with codecs.open(path, mode="w", encoding="utf-8") as fp:
                 fp.write(self._to_pretty_xml())
         except Exception as e:
-            os.unlink(path)
+            if os.path.exists(path):
+                os.unlink(path)
             raise e
         if validate:
             warnings.extend(check_xform(path))
@@ -540,7 +541,8 @@ class Survey(Section):
             self.print_xform_to_file(tmp.name, validate=validate,
                                      warnings=warnings)
         finally:
-            os.remove(tmp.name)
+            if os.path.exists(tmp.name):
+                os.remove(tmp.name)
         return self._to_pretty_xml()
 
     def instantiate(self):
