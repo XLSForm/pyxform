@@ -423,7 +423,9 @@ def workbook_to_json(
         use_double_colons, default_language)
     survey_sheet = dealias_types(survey_sheet)
 
-    osm_sheet = workbook_dict.get(constants.OSM, [])
+    osm_sheet = dealias_and_group_headers(workbook_dict.get(constants.OSM, []),
+                                              aliases.list_header,
+                                              True)
     osm_tags = group_dictionaries_by_key(osm_sheet, constants.LIST_NAME)
     # #################################
 
