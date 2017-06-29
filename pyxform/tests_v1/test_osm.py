@@ -18,39 +18,7 @@ class OSMWidgetsTest(PyxformTestCase):
 
             """,
             xml__contains=[
-                """
-  <h:head>
-    <h:title>pyxform_autotesttitle</h:title>
-    <model>
-      <instance>
-        <osm id="pyxform_autotest_id_string">
-          <osm_road/>
-          <osm_building/>
-          <meta>
-            <instanceID/>
-          </meta>
-        </osm>
-      </instance>
-      <bind nodeset="/osm/osm_road" type="binary"/>
-      <bind nodeset="/osm/osm_building" type="binary"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/osm/meta/instanceID" readonly="true()" type="string"/>
-    </model>
-  </h:head>
-  <h:body>
-    <upload mediatype="osm/*" ref="/osm/osm_road">
-      <label>Road</label>
-    </upload>
-    <upload mediatype="osm/*" ref="/osm/osm_building">
-      <label>Building</label>
-      <tag key="name">
-        <label>Name</label>
-      </tag>
-      <tag key="addr:city">
-        <label>City</label>
-      </tag>
-    </upload>
-  </h:body>
-</h:html>"""
+                '<upload mediatype="osm/*" ref="/osm/osm_building">'
             ],
         )
 
@@ -69,38 +37,6 @@ class OSMWidgetsTest(PyxformTestCase):
 
             """,
             xml__contains=[
-                """
-  <h:head>
-    <h:title>pyxform_autotesttitle</h:title>
-    <model>
-      <instance>
-        <osm id="pyxform_autotest_id_string">
-          <osm_road/>
-          <osm_building/>
-          <meta>
-            <instanceID/>
-          </meta>
-        </osm>
-      </instance>
-      <bind nodeset="/osm/osm_road" type="binary"/>
-      <bind nodeset="/osm/osm_building" type="binary"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/osm/meta/instanceID" readonly="true()" type="string"/>
-    </model>
-  </h:head>
-  <h:body>
-    <upload mediatype="osm/*" ref="/osm/osm_road">
-      <label>Road</label>
-    </upload>
-    <upload mediatype="osm/*" ref="/osm/osm_building">
-      <label>Building</label>
-      <tag key="name">
-        <label>Name</label>
-      </tag>
-      <tag key="addr:city">
-        <label>City</label>
-      </tag>
-    </upload>
-  </h:body>
-</h:html>"""
+                '<upload mediatype="osm/*" ref="/osm/osm_building">'
             ],
         )
