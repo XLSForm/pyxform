@@ -91,17 +91,20 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
 
 class AliasesTests(PyxformTestCase):
     def test_value_and_name(self):
-        """
-        confirm that both 'name' and 'value' both compile to xforms with the
-        correct output.
-        """
+        '''
+        confirm that both 'name' and 'value' columns of choice list work
+        '''
         for name_alias in ['name', 'value']:
             self.assertPyxformXform(
                 name="aliases",
                 md="""
-                | survey |      |                |            |
-                |        | type | %(name_alias)s | label      |
-                |        | text | q1             | Question 1 |
+                | survey  |               |                |            |
+                |         | type          | name           | label      |
+                |         | select_one yn | q1             | Question 1 |
+                | choices |               |                |            |
+                |         | list name     | %(name_alias)s | label      |
+                |         | yn            | yes            | Yes        |
+                |         | yn            | no             | No         |
                 """ % ({
                         u'name_alias': name_alias
                     }),
@@ -109,12 +112,13 @@ class AliasesTests(PyxformTestCase):
                     '<q1/>',
                     ],
                 model__contains=[
-                    '<bind nodeset="/aliases/q1" type="string"/>',
+                    '<bind nodeset="/aliases/q1" type="select1"/>',
                     ],
                 xml__contains=[
-                    '<input ref="/aliases/q1">',
-                    '<label>Question 1</label>',
-                    '</input>',
+                    '<select1 ref="/aliases/q1">',
+                    '<value>yes</value>',
+                    '<value>no</value>',
+                    '</select1>',
                     ])
 ''' # uncomment when re-implemented
     # TODO: test that this fails for the correct reason
