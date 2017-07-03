@@ -1,5 +1,15 @@
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
+expected_xml_output = """
+    <upload mediatype="osm/*" ref="/osm/osm_building">
+      <label>Building</label>
+      <tag key="name">
+        <label>Name</label>
+      </tag>
+      <tag key="addr:city">
+        <label>City</label>
+      </tag>
+    </upload>"""
 
 class OSMWidgetsTest(PyxformTestCase):
     def test_osm_type(self):
@@ -17,9 +27,7 @@ class OSMWidgetsTest(PyxformTestCase):
             |        | building_tags     | addr:city    | City     |
 
             """,
-            xml__contains=[
-                '<upload mediatype="osm/*" ref="/osm/osm_building">'
-            ],
+            xml__contains=[expected_xml_output],
         )
 
     def test_osm_type_with_list_underscore_name(self):
@@ -36,7 +44,5 @@ class OSMWidgetsTest(PyxformTestCase):
             |        | building_tags     | addr:city    | City     |
 
             """,
-            xml__contains=[
-                '<upload mediatype="osm/*" ref="/osm/osm_building">'
-            ],
+            xml__contains=[expected_xml_output],
         )
