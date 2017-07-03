@@ -844,4 +844,12 @@ QUESTION_TYPE_DICT = \
                 "type": "binary"
             }
         },
+        "range": {
+            "control": {
+                "tag": "range"
+            },
+            "bind": {
+                "type": "int"
+            }
+        },
     }
