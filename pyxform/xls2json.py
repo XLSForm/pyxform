@@ -513,6 +513,59 @@ def workbook_to_json(
         r"(?P<osm_command>(" + '|'.join(aliases.osm.keys()) +
         ')) (?P<list_name>\S+)')
 
+    # Create and populate meta block
+    meta_children = []
+
+    if aliases.yes_no.get(settings.get("omit_instanceID")):
+        if settings.get("public_key"):
+            raise PyXFormError(
+                "Cannot omit instanceID, it is required for encryption.")
+    else:
+        # Automatically add an instanceID element:
+        meta_children.append({
+            "name": "instanceID",
+            "bind": {
+                "readonly": "true()",
+                "calculate": settings.get(
+                    "instance_id", "concat('uuid:', uuid())"),
+            },
+            "type": "calculate",
+        })
+
+    if 'instance_name' in settings:
+        # Automatically add an instanceName element:
+        meta_children.append({
+            "name": "instanceName",
+            "bind": {
+                "calculate": settings['instance_name']
+            },
+            "type": "calculate",
+        })
+
+    # audit goes in meta block
+    if {u'type': u'audit', u'name': u'audit'} in survey_sheet:
+        meta_children.append({
+            "name": "audit",
+            "bind": {
+                "type": "binary"
+            },
+            "type": "audit"
+        })
+        survey_sheet.remove({u'type': u'audit', u'name': u'audit'})
+
+    if len(meta_children) > 0:
+        meta_element = \
+            {
+                "name": "meta",
+                "type": "group",
+                "control": {
+                    "bodyless": True
+                },
+                "children": meta_children
+            }
+        noop, survey_children_array = stack[0]
+        survey_children_array.append(meta_element)
+
     for row in survey_sheet:
         row_number += 1
         prev_control_type, parent_children_array = stack[-1]
@@ -886,47 +939,6 @@ def workbook_to_json(
     if settings.get('flat', False):
         # print "Generating flattened instance..."
         add_flat_annotations(stack[0][1])
-
-    meta_children = []
-
-    if aliases.yes_no.get(settings.get("omit_instanceID")):
-        if settings.get("public_key"):
-            raise PyXFormError(
-                "Cannot omit instanceID, it is required for encryption.")
-    else:
-        # Automatically add an instanceID element:
-        meta_children.append({
-            "name": "instanceID",
-            "bind": {
-                "readonly": "true()",
-                "calculate": settings.get(
-                    "instance_id", "concat('uuid:', uuid())"),
-            },
-            "type": "calculate",
-        })
-
-    if 'instance_name' in settings:
-        # Automatically add an instanceName element:
-        meta_children.append({
-            "name": "instanceName",
-            "bind": {
-                "calculate": settings['instance_name']
-            },
-            "type": "calculate",
-        })
-
-    if len(meta_children) > 0:
-        meta_element = \
-            {
-                "name": "meta",
-                "type": "group",
-                "control": {
-                    "bodyless": True
-                },
-                "children": meta_children
-            }
-        noop, survey_children_array = stack[0]
-        survey_children_array.append(meta_element)
 
     # print_pyobj_to_json(json_dict)
     return json_dict
