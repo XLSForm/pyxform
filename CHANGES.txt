@@ -81,3 +81,13 @@ v0.9.24, 2016 10 26
     -- use built-in xml.etree rather than lxml
     -- python 3.5 compat (py2.7 still OK), pep8, cleanup
     -- use label for selects from file label references
+
+v0.9.25, 2017 07 07
+    -- Add support for numeric range questions (Issue #79)
+    -- Upgrade ODK Validate 1.6.0
+    -- Support `list_name` in osm sheet (Issue #109)
+    -- Whitespace after output variables should not be trimmed (Issue #96)
+    -- Test pyxform in windows with AppVeyor CI (Issue #125)
+    -- Updated install instructions
+    -- Fix external instance URI to take the documented form of jr://file-xml/data.xml (Issue #106)
+    -- Fix validation errors with external instances (Issue #87)
