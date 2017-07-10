@@ -6,9 +6,9 @@ class AuditTest(PyxformTestCase):
         self.assertPyxformXform(
             name="meta_audit",
             md="""
-            | survey |        |          |       |                     |
-            |        | type   |   name   | label | parameters          |
-            |        | audit  |   audit  |       |                     |
+            | survey |        |          |       |
+            |        | type   |   name   | label |
+            |        | audit  |   audit  |       |
             """,
             xml__contains=[
                 '<meta>',
