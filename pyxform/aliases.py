@@ -134,8 +134,7 @@ label_optional_types = [
     u"calculate",
     u"start",
     u"end",
-    u"today",
-    u"audit"
+    u"today"
 ]
 osm = {
     u"osm": constants.OSM_TYPE
