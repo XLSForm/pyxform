@@ -551,6 +551,8 @@ def workbook_to_json(
 
         # Pull out questions that will go in meta block
         if question_type == 'audit':
+            # Force audit name to always be "audit" to follow XForms spec
+            row['name'] = 'audit'
             survey_meta.append(row)
             continue
 
