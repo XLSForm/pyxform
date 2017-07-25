@@ -25,7 +25,8 @@ class AuditTest(PyxformTestCase):
             |        | type   |   name   | label |
             |        | audit  |   bobby  |       |
             """,
-            errored=True
+            errored=True,
+            error__contains=['Audits must always be named \'audit.\''],
         )
 
     def test_audit_blank_name(self):
