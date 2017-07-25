@@ -513,6 +513,9 @@ def workbook_to_json(
         r"(?P<osm_command>(" + '|'.join(aliases.osm.keys()) +
         ')) (?P<list_name>\S+)')
 
+    # Rows from the survey sheet that should be nested in meta
+    survey_meta = []
+
     for row in survey_sheet:
         row_number += 1
         prev_control_type, parent_children_array = stack[-1]
@@ -545,6 +548,18 @@ def workbook_to_json(
             raise PyXFormError(
                 row_format_string % row_number +
                 " Question with no type.\n" + str(row))
+
+        # Pull out questions that will go in meta block
+        if question_type == 'audit':
+            # Force audit name to always be "audit" to follow XForms spec
+            if 'name' in row and row['name'] not in [None, '', 'audit']:
+                raise PyXFormError(row_format_string % row_number +
+                    " Audits must always be named 'audit.'" +
+                    " The name column should be left blank.")
+
+            row['name'] = 'audit'
+            survey_meta.append(row)
+            continue
 
         if question_type == 'calculate':
             calculation = row.get('bind', {}).get('calculate')
@@ -887,7 +902,7 @@ def workbook_to_json(
         # print "Generating flattened instance..."
         add_flat_annotations(stack[0][1])
 
-    meta_children = []
+    meta_children = [] + survey_meta
 
     if aliases.yes_no.get(settings.get("omit_instanceID")):
         if settings.get("public_key"):

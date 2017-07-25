@@ -852,4 +852,9 @@ QUESTION_TYPE_DICT = \
                 "type": "int"
             }
         },
+        "audit": {
+            "bind": {
+                "type": "binary"
+            }
+        }
     }
