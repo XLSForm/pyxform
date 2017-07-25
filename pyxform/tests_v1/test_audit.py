@@ -25,11 +25,7 @@ class AuditTest(PyxformTestCase):
             |        | type   |   name   | label |
             |        | audit  |   bobby  |       |
             """,
-            xml__contains=[
-                '<meta>',
-                '<audit/>',
-                '</meta>',
-                '<bind nodeset="/meta_audit/meta/audit" type="binary"/>'],
+            errored=True
         )
 
     def test_audit_blank_name(self):
