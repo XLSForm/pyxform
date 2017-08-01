@@ -32,6 +32,23 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             error__contains=['no label or hint'],
         )
 
+    def test_column_case(self):
+        """
+        Ensure that column name is case insensitive
+        """
+        self.assertPyxformXform(
+            name="mixedcasecolumns",
+            md="""
+            | Survey |         |         |               |
+            |        | Type    | name    | Label         |
+            |        | text    | Name    | the name      |
+            |        | integer | age     | the age       |
+            |        | text    | gender  | the gender    |
+            """,
+            errored=False,
+            debug=True
+        )
+
 
 class InvalidChoiceSheetColumnsTests(PyxformTestCase):
     def _simple_choice_ss(self, choice_sheet=None):
