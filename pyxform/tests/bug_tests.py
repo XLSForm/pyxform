@@ -190,16 +190,6 @@ class EmptyStringOnRelevantColumnTest(unittest.TestCase):
             workbook_dict['survey'][0][u'bind: relevant'].strip()
 
 
-class MissingOrBadlyNamedChoicesTest(unittest.TestCase):
-    def runTest(self):
-        filename = "badly_named_choices_sheet.xls"
-        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
-        workbook_dict = pyxform.xls2json.parse_file_to_workbook_dict(
-            path_to_excel_file)
-        with self.assertRaises(pyxform.errors.PyXFormError):
-            pyxform.xls2json.workbook_to_json(workbook_dict)
-
-
 class BadChoicesSheetHeaders(unittest.TestCase):
     def runTest(self):
         filename = "spaces_in_choices_header.xls"
