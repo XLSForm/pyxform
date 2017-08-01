@@ -338,8 +338,9 @@ def workbook_to_json(
     if warnings is None:
         warnings = []
     is_valid = False
-    for row in workbook_dict.get('survey', []):
-        is_valid = 'type' in row
+    workbook_dict = {x.lower(): y for x,y in workbook_dict.items()}
+    for row in workbook_dict.get(constants.SURVEY, []):
+        is_valid = 'type' in [z.lower() for z in row]
         if is_valid:
             break
     if not is_valid:
