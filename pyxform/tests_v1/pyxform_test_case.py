@@ -1,26 +1,100 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from __future__ import print_function
-from __future__ import unicode_literals
-from unittest import TestCase
-from pyxform.errors import PyXFormError
-import xml.etree.ElementTree as ETree
+from __future__ import print_function, unicode_literals
+
+import codecs
+import os
 import re
 import tempfile
-import codecs
+import xml.etree.ElementTree as ETree
+from unittest import TestCase
+
+from pyxform.builder import create_survey_element_from_dict
+from pyxform.errors import PyXFormError
+from pyxform.odk_validate import ODKValidateError, check_xform
+from pyxform.survey import nsmap
 from pyxform.tests_v1.test_utils.md_table import md_table_to_ss_structure
 from pyxform.xls2json import workbook_to_json
-from pyxform.builder import create_survey_element_from_dict
-from pyxform.odk_validate import check_xform, ODKValidateError
-import os
-from pyxform.survey import nsmap
 
 
 class PyxformTestError(Exception):
     pass
 
 
-class PyxformTestCase(TestCase):
+class PyxformMarkdown(object):
+    """Transform markdown formatted xlsform to a pyxform survey object"""
+
+    def md_to_pyxform_survey(self, md_raw, kwargs=None, autoname=True):
+        if kwargs is None:
+            kwargs = {}
+        if autoname:
+            kwargs = self._autonameInputs(kwargs)
+        _md = []
+        for line in md_raw.split('\n'):
+            if re.match(r'^\s+\#', line):
+                # ignore lines which start with pound sign
+                continue
+            elif re.match(r'^(.*)(\#[^\|]+)$', line):
+                # keep everything before the # outside of the last occurrence
+                # of |
+                _md.append(
+                    re.match(r'^(.*)(\#[^\|]+)$', line).groups()[0].strip())
+            else:
+                _md.append(line.strip())
+        md = '\n'.join(_md)
+
+        if kwargs.get('debug'):
+            print(md)
+
+        def list_to_dicts(arr):
+            headers = arr[0]
+
+            def _row_to_dict(row):
+                out_dict = {}
+                for i in range(0, len(row)):
+                    col = row[i]
+                    if col not in [None, '']:
+                        out_dict[headers[i]] = col
+                return out_dict
+
+            return [_row_to_dict(r) for r in arr[1:]]
+
+        sheets = {}
+        for sheet, contents in md_table_to_ss_structure(md):
+            sheets[sheet] = list_to_dicts(contents)
+
+        return self._ss_structure_to_pyxform_survey(sheets, kwargs)
+
+    def _ss_structure_to_pyxform_survey(self, ss_structure, kwargs):
+        # using existing methods from the builder
+        imported_survey_json = workbook_to_json(ss_structure)
+        # ideally, when all these tests are working, this would be
+        # refactored as well
+        survey = create_survey_element_from_dict(imported_survey_json)
+        survey.name = kwargs.get('name')
+        survey.title = kwargs.get('title')
+        survey.id_string = kwargs.get('id_string')
+
+        return survey
+
+    def _autonameInputs(self, kwargs):
+        """
+        title and name are necessary for surveys, but not always convenient to
+        include in test cases, so this will pull a default value
+        from the stack trace.
+        """
+        test_name_root = 'pyxform'
+        if 'name' not in kwargs.keys():
+            kwargs['name'] = test_name_root + '_autotestname'
+        if 'title' not in kwargs.keys():
+            kwargs['title'] = test_name_root + "_autotesttitle"
+        if 'id_string' not in kwargs.keys():
+            kwargs['id_string'] = test_name_root + "_autotest_id_string"
+
+        return kwargs
+
+
+class PyxformTestCase(PyxformMarkdown, TestCase):
     def assertPyxformXform(self, **kwargs):
         """
         PyxformTestCase.assertPyxformXform() named arguments:
@@ -176,59 +250,6 @@ class PyxformTestCase(TestCase):
                 self.assertContains(joined_error, text,
                                     msg_prefix="error__contains")
 
-    def md_to_pyxform_survey(self, md_raw, kwargs=None, autoname=True):
-        if kwargs is None:
-            kwargs = {}
-        if autoname:
-            kwargs = self._autonameInputs(kwargs)
-        _md = []
-        for line in md_raw.split('\n'):
-            if re.match(r'^\s+\#', line):
-                # ignore lines which start with pound sign
-                continue
-            elif re.match(r'^(.*)(\#[^\|]+)$', line):
-                # keep everything before the # outside of the last occurrence
-                # of |
-                _md.append(
-                    re.match(r'^(.*)(\#[^\|]+)$', line).groups()[0].strip())
-            else:
-                _md.append(line.strip())
-        md = '\n'.join(_md)
-
-        if kwargs.get('debug'):
-            print(md)
-
-        def list_to_dicts(arr):
-            headers = arr[0]
-
-            def _row_to_dict(row):
-                out_dict = {}
-                for i in range(0, len(row)):
-                    col = row[i]
-                    if col not in [None, '']:
-                        out_dict[headers[i]] = col
-                return out_dict
-
-            return [_row_to_dict(r) for r in arr[1:]]
-
-        sheets = {}
-        for sheet, contents in md_table_to_ss_structure(md):
-            sheets[sheet] = list_to_dicts(contents)
-
-        return self._ss_structure_to_pyxform_survey(sheets, kwargs)
-
-    def _ss_structure_to_pyxform_survey(self, ss_structure, kwargs):
-        # using existing methods from the builder
-        imported_survey_json = workbook_to_json(ss_structure)
-        # ideally, when all these tests are working, this would be
-        # refactored as well
-        survey = create_survey_element_from_dict(imported_survey_json)
-        survey.name = kwargs.get('name')
-        survey.title = kwargs.get('title')
-        survey.id_string = kwargs.get('id_string')
-
-        return survey
-
     def _assert_contains(self, content, text, msg_prefix):
         if msg_prefix:
             msg_prefix += ": "
@@ -273,19 +294,3 @@ class PyxformTestCase(TestCase):
         self.assertEqual(
             real_count, 0,
             msg_prefix + "Response should not contain %s" % text_repr)
-
-    def _autonameInputs(self, kwargs):
-        """
-        title and name are necessary for surveys, but not always convenient to
-        include in test cases, so this will pull a default value
-        from the stack trace.
-        """
-        test_name_root = 'pyxform'
-        if 'name' not in kwargs.keys():
-            kwargs['name'] = test_name_root + '_autotestname'
-        if 'title' not in kwargs.keys():
-            kwargs['title'] = test_name_root + "_autotesttitle"
-        if 'id_string' not in kwargs.keys():
-            kwargs['id_string'] = test_name_root + "_autotest_id_string"
-
-        return kwargs
