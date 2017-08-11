@@ -73,6 +73,7 @@ survey_header = {
     u"constraint message": u"bind::jr:constraintMsg",
     u"constraint_message": u"bind::jr:constraintMsg",
     u"calculation": u"bind::calculate",
+    u"calculate": u"bind::calculate",
     u"command": constants.TYPE,
     u"tag": constants.NAME,
     u"value": constants.NAME,

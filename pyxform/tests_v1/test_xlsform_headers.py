@@ -18,3 +18,15 @@ class XlsFormHeadersTest(PyxformTestCase):
             |        | note | q    | Q     |
             """)
         self.assertEqual(s1.to_xml(), s2.to_xml())
+
+    def test_calculate_alias(self):
+        self.assertPyxformXform(
+            name="calculatealias",
+            md="""
+            | survey |           |         |         |               |
+            |        | type      | name    | label   | calculate     |
+            |        | decimal   | amount  | Counter |               |
+            |        | calculate | doubled | Doubled | ${amount} * 2 |
+            """,
+            errored=False,
+            debug=True)
