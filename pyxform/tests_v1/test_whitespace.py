@@ -8,7 +8,7 @@ class WhitespaceTest(PyxformTestCase):
                     { 'type':'text', 'label':'Ignored',    'name':'var'   },
                     { 'type':'note', 'label':'${var} end', 'name':'label' } ] },
             xml__contains=[
-                '<label><output value=" /issue96_issue146/var "/> end </label>',
+                '<label><output value=" /issue96_issue146/var "/> end</label>',
             ])
 
     def test_over_trim_middle(self):
@@ -18,7 +18,7 @@ class WhitespaceTest(PyxformTestCase):
                     { 'type':'text', 'label':'Ignored',          'name':'var'   },
                     { 'type':'note', 'label':'start ${var} end', 'name':'label' } ] },
             xml__contains=[
-                '<label> start <output value=" /issue96_issue146/var "/> end </label>',
+                '<label>start <output value=" /issue96_issue146/var "/> end</label>',
             ])
 
     def test_over_trim_after(self):
@@ -28,5 +28,5 @@ class WhitespaceTest(PyxformTestCase):
                     { 'type':'text', 'label':'Ignored',      'name':'var'   },
                     { 'type':'note', 'label':'start ${var}', 'name':'label' } ] },
             xml__contains=[
-                '<label> start <output value=" /issue96_issue146/var "/> </label>',
+                '<label>start <output value=" /issue96_issue146/var "/></label>',
             ])
