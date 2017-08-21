@@ -12,7 +12,7 @@ use with ODK Collect.
 """
 
 
-def xls2xform_convert(xlsform_path, xform_path, validate=True):
+def xls2xform_convert(xlsform_path, xform_path, validate=True, pretty_print=True):
     warnings = []
 
     json_survey = xls2json.parse_file_to_json(xlsform_path, warnings=warnings)
@@ -22,7 +22,8 @@ def xls2xform_convert(xlsform_path, xform_path, validate=True):
     # This may be desirable since ODK Validate requires launching a subprocess
     # that runs some java code.
     survey.print_xform_to_file(
-        xform_path, validate=validate, warnings=warnings)
+        xform_path, validate=validate,
+        pretty_print=pretty_print, warnings=warnings)
     output_dir = os.path.split(xform_path)[0]
     if has_external_choices(json_survey):
         itemsets_csv = os.path.join(output_dir, "itemsets.csv")
@@ -54,6 +55,11 @@ def _create_parser():
         action="store_false",
         default=True,
         help="Skip default running of ODK Validate on the output XForm XML.")
+    parser.add_argument(
+        "--no_pretty_print",
+        action="store_false",
+        default=True,
+        help="Print XML forms with collapsed whitespace instead of pretty-printed.")
     return parser
 
 
@@ -68,7 +74,7 @@ def main_cli():
 
         try:
             response['warnings'] = xls2xform_convert(
-                args.path_to_XLSForm, args.output_path, args.skip_validate)
+                args.path_to_XLSForm, args.output_path, args.skip_validate, args.no_pretty_print)
 
             response['code'] = 100
             response['message'] = "Ok!"
@@ -85,7 +91,7 @@ def main_cli():
         print(json.dumps(response))
     else:
         warnings = xls2xform_convert(args.path_to_XLSForm, args.output_path,
-                                     args.skip_validate)
+                                     args.skip_validate, args.no_pretty_print)
         if len(warnings) > 0:
             print("Warnings:")
         for w in warnings:
