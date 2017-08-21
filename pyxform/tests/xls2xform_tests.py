@@ -36,14 +36,14 @@ class XLS2XFormTests(TestCase):
         """Should parse the provided arguments."""
         arg_xlsform = 'xlsform.xlsx'
         arg_output = '.'
-        arg_json = '--json'
-        arg_skip_validate = '--skip_validate'
-        arg_list = [arg_json, arg_skip_validate, arg_xlsform, arg_output]
+        arg_list = ['--json', '--skip_validate', '--no_pretty_print',
+            arg_xlsform, arg_output]
         args = _create_parser().parse_args(arg_list)
         self.assertEqual(arg_xlsform, args.path_to_XLSForm)
         self.assertEqual(arg_output, args.output_path)
         self.assertEqual(True, args.json)
         self.assertEqual(False, args.skip_validate)
+        self.assertEqual(False, args.no_pretty_print)
 
     def test_create_parser_json_default_false(self):
         """Should have json=False if not specified."""
@@ -60,3 +60,11 @@ class XLS2XFormTests(TestCase):
         arg_list = [arg_xlsform, arg_output]
         args = _create_parser().parse_args(arg_list)
         self.assertEqual(True, args.skip_validate)
+
+    def test_create_parser_no_pretty_print_default_true(self):
+        """Should have no_pretty_print=True if not specified."""
+        args = _create_parser().parse_args([
+            'xlsform.xlsx',
+            '.',
+        ])
+        self.assertEqual(True, args.no_pretty_print)
