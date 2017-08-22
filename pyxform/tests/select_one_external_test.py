@@ -9,9 +9,9 @@ DIR = os.path.dirname(__file__)
 
 
 class MainTest(XFormTestCase):
-    
+
     maxDiff = None
-    
+
     def runTest(self):
         for filename in ["select_one_external.xlsx"]:
             path_to_excel_file = os.path.join(DIR, "example_xls", filename)
@@ -25,7 +25,7 @@ class MainTest(XFormTestCase):
                 DIR, "test_output", root_filename + ".csv")
             # Do the conversion:
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file)
+                path_to_excel_file, default_name="select_one_external")
 
             self.assertTrue(sheet_to_csv(
                 path_to_excel_file, output_csv, "external_choices"))
@@ -43,6 +43,7 @@ class MainTest(XFormTestCase):
                         actual_file:
                     self.assertXFormEqual(
                         expected_file.read(), actual_file.read())
-                
+
+
 if __name__ == '__main__':
     unittest.main()

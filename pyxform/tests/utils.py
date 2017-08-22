@@ -16,15 +16,17 @@ def path_to_text_fixture(filename):
     return os.path.join(directory, "example_xls", filename)
 
 
-def build_survey(filename):
+def build_survey(filename, default_name="data"):
     path = path_to_text_fixture(filename)
-    return create_survey_from_path(path)
+    return create_survey_from_path(path, default_name=default_name)
 
 
 def create_survey_from_fixture(fixture_name, filetype="xls",
-                               include_directory=False):
+                               include_directory=False, default_name="data"):
     fixture_path = path_to_text_fixture("%s.%s" % (fixture_name, filetype))
-    noop, section_dict = file_utils.load_file_to_dict(fixture_path)
+    noop, section_dict = file_utils.load_file_to_dict(
+        fixture_path,
+        default_name=default_name)
     pkg = {u'main_section': section_dict}
     if include_directory:
         directory, noop = os.path.split(fixture_path)
@@ -66,10 +68,12 @@ class XFormTestCase(TestCase):
 
     def sort_elems(self, elems, attr=None):
         if attr:
-            def elem_get_attr(elem): return elem.get(attr, '')
+            def elem_get_attr(elem):
+                return elem.get(attr, '')
             key = elem_get_attr
         else:
-            def elem_get_tag(elem): return elem.tag
+            def elem_get_tag(elem):
+                return elem.tag
             key = elem_get_tag
         elems[:] = sorted(elems, key=key)
 

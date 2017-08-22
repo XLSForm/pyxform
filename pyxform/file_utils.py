@@ -11,7 +11,7 @@ def _section_name(path_or_file_name):
     return section_name
 
 
-def load_file_to_dict(path):
+def load_file_to_dict(path, default_name="data"):
     """
     Takes a file path and loads it into a nested json dict
     following the format in json_form_schema.json
@@ -23,7 +23,7 @@ def load_file_to_dict(path):
         return name, utils.get_pyobj_from_json(path)
     else:
         name = _section_name(path)
-        excel_reader = SurveyReader(path)
+        excel_reader = SurveyReader(path, default_name=default_name)
         return name, excel_reader.to_json_dict()
 
 

@@ -5,23 +5,11 @@
     <model>
       <itext>
         <translation default="true()" lang="default">
-          <text id="static_instance-lga-1">
-            <value>LGA 2</value>
-          </text>
-          <text id="static_instance-lga-7">
-            <value>LGA 2</value>
-          </text>
           <text id="static_instance-zone-0">
             <value>Zone 1</value>
           </text>
-          <text id="static_instance-lga-0">
-            <value>LGA 1</value>
-          </text>
           <text id="static_instance-zone-1">
             <value>Zone 2</value>
-          </text>
-          <text id="static_instance-lga-3">
-            <value>LGA 4</value>
           </text>
           <text id="static_instance-state-0">
             <value>State 1</value>
@@ -35,17 +23,29 @@
           <text id="static_instance-state-3">
             <value>State 4</value>
           </text>
-          <text id="static_instance-lga-5">
-            <value>LGA 6</value>
+          <text id="static_instance-lga-0">
+            <value>LGA 1</value>
           </text>
-          <text id="static_instance-lga-4">
-            <value>LGA 5</value>
+          <text id="static_instance-lga-1">
+            <value>LGA 2</value>
           </text>
           <text id="static_instance-lga-2">
             <value>LGA 3</value>
           </text>
+          <text id="static_instance-lga-3">
+            <value>LGA 4</value>
+          </text>
+          <text id="static_instance-lga-4">
+            <value>LGA 5</value>
+          </text>
+          <text id="static_instance-lga-5">
+            <value>LGA 6</value>
+          </text>
           <text id="static_instance-lga-6">
             <value>LGA 1</value>
+          </text>
+          <text id="static_instance-lga-7">
+            <value>LGA 2</value>
           </text>
         </translation>
       </itext>
@@ -58,6 +58,18 @@
             <instanceID/>
           </meta>
         </cascading_select_test>
+      </instance>
+      <instance id="zone">
+        <root>
+          <item>
+            <itextId>static_instance-zone-0</itextId>
+            <name>zone_1</name>
+          </item>
+          <item>
+            <itextId>static_instance-zone-1</itextId>
+            <name>zone_2</name>
+          </item>
+        </root>
       </instance>
       <instance id="state">
         <root>
@@ -87,63 +99,51 @@
         <root>
           <item>
             <itextId>static_instance-lga-0</itextId>
-            <state>state_1</state>
             <name>lga_1</name>
             <zone>zone_1</zone>
+            <state>state_1</state>
           </item>
           <item>
             <itextId>static_instance-lga-1</itextId>
-            <state>state_1</state>
             <name>lga_2</name>
             <zone>zone_1</zone>
+            <state>state_1</state>
           </item>
           <item>
             <itextId>static_instance-lga-2</itextId>
-            <state>state_2</state>
             <name>lga_3</name>
             <zone>zone_1</zone>
+            <state>state_2</state>
           </item>
           <item>
             <itextId>static_instance-lga-3</itextId>
-            <state>state_2</state>
             <name>lga_4</name>
             <zone>zone_1</zone>
+            <state>state_2</state>
           </item>
           <item>
             <itextId>static_instance-lga-4</itextId>
-            <state>state_3</state>
             <name>lga_5</name>
             <zone>zone_2</zone>
+            <state>state_3</state>
           </item>
           <item>
             <itextId>static_instance-lga-5</itextId>
-            <state>state_3</state>
             <name>lga_6</name>
             <zone>zone_2</zone>
+            <state>state_3</state>
           </item>
           <item>
             <itextId>static_instance-lga-6</itextId>
-            <state>state_4</state>
             <name>lga_1</name>
             <zone>zone_2</zone>
+            <state>state_4</state>
           </item>
           <item>
             <itextId>static_instance-lga-7</itextId>
-            <state>state_4</state>
             <name>lga_2</name>
             <zone>zone_2</zone>
-          </item>
-        </root>
-      </instance>
-      <instance id="zone">
-        <root>
-          <item>
-            <itextId>static_instance-zone-0</itextId>
-            <name>zone_1</name>
-          </item>
-          <item>
-            <itextId>static_instance-zone-1</itextId>
-            <name>zone_2</name>
+            <state>state_4</state>
           </item>
         </root>
       </instance>

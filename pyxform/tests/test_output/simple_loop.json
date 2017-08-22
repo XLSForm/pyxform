@@ -1,55 +1,55 @@
 {
-    "name": "simple_loop", 
-    "title": "simple_loop", 
-    "sms_keyword": "simple_loop", 
-    "default_language": "default", 
-    "id_string": "simple_loop", 
-    "type": "survey", 
+    "type": "survey",
+    "name": "simple_loop",
+    "title": "simple_loop",
+    "id_string": "simple_loop",
+    "sms_keyword": "simple_loop",
+    "default_language": "default",
     "children": [
         {
-            "children": [
-                {
-                    "type": "integer", 
-                    "name": "count", 
-                    "label": {
-                        "English": "How many are there in this group?"
-                    }
-                }
-            ], 
-            "type": "loop", 
-            "name": "my_table", 
-            "columns": [
-                {
-                    "name": "col1", 
-                    "label": {
-                        "English": "Column 1"
-                    }
-                }, 
-                {
-                    "name": "col2", 
-                    "label": {
-                        "English": "Column 2"
-                    }
-                }
-            ], 
+            "type": "loop",
             "label": {
                 "English": "My Table"
-            }
-        }, 
-        {
-            "control": {
-                "bodyless": true
-            }, 
-            "type": "group", 
-            "name": "meta", 
+            },
+            "name": "my_table",
             "children": [
                 {
+                    "type": "integer",
+                    "label": {
+                        "English": "How many are there in this group?"
+                    },
+                    "name": "count"
+                }
+            ],
+            "columns": [
+                {
+                    "label": {
+                        "English": "Column 1"
+                    },
+                    "name": "col1"
+                },
+                {
+                    "label": {
+                        "English": "Column 2"
+                    },
+                    "name": "col2"
+                }
+            ]
+        },
+        {
+            "name": "meta",
+            "type": "group",
+            "control": {
+                "bodyless": true
+            },
+            "children": [
+                {
+                    "name": "instanceID",
                     "bind": {
-                        "readonly": "true()", 
+                        "readonly": "true()",
                         "calculate": "concat('uuid:', uuid())"
-                    }, 
-                    "type": "calculate", 
-                    "name": "instanceID"
+                    },
+                    "type": "calculate"
                 }
             ]
         }

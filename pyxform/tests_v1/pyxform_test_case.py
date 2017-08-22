@@ -190,7 +190,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 if len(odk_validate_error__contains) > 0:
                     raise PyxformTestError(
                         "ODKValidateError was not raised"
-                        )
+                    )
         except PyXFormError as e:
             survey = False
             errors = [str(e)]

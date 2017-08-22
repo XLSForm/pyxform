@@ -9,7 +9,8 @@ from pyxform.utils import node
 class XMLTests(utils.XFormTestCase):
     def setUp(self):
         self.survey = create_survey_from_xls(
-            utils.path_to_text_fixture("yes_or_no_question.xls"))
+            utils.path_to_text_fixture("yes_or_no_question.xls"),
+            default_name="yes_or_no_question")
 
     def test_to_xml(self):
         xml_str = u'''<?xml version="1.0"?>
@@ -80,7 +81,9 @@ class MinidomTextWriterMonkeyPatchTest(TestCase):
         self.assertEqual(expected, observed)
 
     def test_original_escape_escapes_more_than_necessary(self):
-        """Should fail if the original is updated (the patch can be removed)."""
+        """
+        Should fail if the original is updated (the patch can be removed).
+        """
         text = u"' \" & < >"
         expected = u"<root>' &quot; &amp; &lt; &gt;</root>".format(text)
         document = getDOMImplementation().createDocument(None, u"root", None)

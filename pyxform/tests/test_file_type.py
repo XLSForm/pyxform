@@ -11,7 +11,7 @@ class TestFileType(utils.XFormTestCase):
 
     def test_create_from_path(self):
         path = utils.path_to_text_fixture("file_type.xlsx")
-        survey = create_survey_from_path(path)
+        survey = create_survey_from_path(path, default_name="file_type")
         path = os.path.join(
             os.path.dirname(__file__), 'test_expected_output', 'file_type.xml')
 

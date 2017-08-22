@@ -30,7 +30,7 @@ class BasicXls2JsonApiTests(TestCase):
         output_path = os.path.join(DIR, "test_output", root_filename + ".json")
         expected_output_path = os.path.join(DIR, "test_expected_output",
                                             root_filename + ".json")
-        x = SurveyReader(path_to_excel_file)
+        x = SurveyReader(path_to_excel_file, default_name=root_filename)
         x_results = x.to_json_dict()
         with codecs.open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
@@ -44,7 +44,8 @@ class BasicXls2JsonApiTests(TestCase):
                 self.assertEqual(expected_json, actual_json)
 
     def test_hidden(self):
-        x = SurveyReader(utils.path_to_text_fixture("hidden.xls"))
+        x = SurveyReader(utils.path_to_text_fixture("hidden.xls"),
+                         default_name="hidden")
         x_results = x.to_json_dict()
 
         expected_dict = [
@@ -73,7 +74,8 @@ class BasicXls2JsonApiTests(TestCase):
         self.assertEqual(x_results[u"children"], expected_dict)
 
     def test_gps(self):
-        x = SurveyReader(utils.path_to_text_fixture("gps.xls"))
+        x = SurveyReader(utils.path_to_text_fixture("gps.xls"),
+                         default_name="gps")
 
         expected_dict = [
             {
@@ -99,7 +101,8 @@ class BasicXls2JsonApiTests(TestCase):
         self.assertEqual(x.to_json_dict()[u"children"], expected_dict)
 
     def test_text_and_integer(self):
-        x = SurveyReader(utils.path_to_text_fixture("text_and_integer.xls"))
+        x = SurveyReader(utils.path_to_text_fixture("text_and_integer.xls"),
+                         default_name="text_and_integer")
 
         expected_dict = [
             {
@@ -145,7 +148,7 @@ class BasicXls2JsonApiTests(TestCase):
         output_path = os.path.join(DIR, "test_output", root_filename + ".json")
         expected_output_path = os.path.join(DIR, "test_expected_output",
                                             root_filename + ".json")
-        x = SurveyReader(path_to_excel_file)
+        x = SurveyReader(path_to_excel_file, default_name=root_filename)
         x_results = x.to_json_dict()
         with codecs.open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)

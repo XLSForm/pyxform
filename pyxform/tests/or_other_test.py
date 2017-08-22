@@ -1,5 +1,5 @@
 """
-Some tests for the new (v0.9) spec is properly implemented.  
+Some tests for the new (v0.9) spec is properly implemented.
 """
 import unittest2 as unittest
 import codecs
@@ -23,8 +23,10 @@ class MainTest(XFormTestCase):
                                             root_filename + ".xml")
         # Do the conversion:
         warnings = []
-        json_survey = pyxform.xls2json.parse_file_to_json(path_to_excel_file,
-                                                          warnings=warnings)
+        json_survey = pyxform.xls2json.parse_file_to_json(
+            path_to_excel_file,
+            default_name="or_other",
+            warnings=warnings)
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
         # print warnings

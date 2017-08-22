@@ -21,7 +21,7 @@ def copy_json_dict(json_dict):
     items = None
 
     if type(json_dict) is list:
-        json_dict_copy = [None]*len(json_dict)
+        json_dict_copy = [None] * len(json_dict)
         items = enumerate(json_dict)
     elif type(json_dict) is dict:
         json_dict_copy = {}
@@ -47,13 +47,13 @@ class SurveyElementBuilder(object):
         u"upload": UploadQuestion,
         u"osm": OsmUploadQuestion,
         u'range': RangeQuestion,
-        }
+    }
 
     SECTION_CLASSES = {
         u"group": GroupedSection,
         u"repeat": RepeatingSection,
         u"survey": Survey,
-        }
+    }
 
     def __init__(self, **kwargs):
         # I don't know why we would need an explicit none option for
@@ -61,7 +61,7 @@ class SurveyElementBuilder(object):
         self._add_none_option = False
         self.set_sections(
             kwargs.get(u"sections", {})
-            )
+        )
 
     def set_sections(self, sections):
         """
@@ -142,7 +142,7 @@ class SurveyElementBuilder(object):
         other_choice = {
             u"name": u"other",
             u"label": u"Other",
-            }
+        }
         if other_choice not in choice_list:
             choice_list.append(other_choice)
 
@@ -154,7 +154,7 @@ class SurveyElementBuilder(object):
         none_choice = {
             u"name": u"none",
             u"label": u"None",
-            }
+        }
         if none_choice not in choice_list:
             choice_list.append(none_choice)
             none_constraint = u"(.='none' or not(selected(., 'none')))"
@@ -188,7 +188,7 @@ class SurveyElementBuilder(object):
             u"name": u"%s_other" % d[u"name"],
             u"label": u"Specify other.",
             u"bind": {u"relevant": u"selected(../%s, 'other')" % d[u"name"]},
-            }
+        }
         return InputQuestion(**kwargs)
 
     def _create_section_from_dict(self, d):
@@ -250,7 +250,7 @@ class SurveyElementBuilder(object):
                 [(lang, {u"name": column_headers[u"name"],
                          u"label": column_headers[u"label"][lang]})
                  for lang in column_headers[u"label"].keys()]
-                )
+            )
 
         result = question_template.copy()
         for key in result.keys():
@@ -287,8 +287,8 @@ def create_survey_element_from_json(str_or_path):
     return create_survey_element_from_dict(d)
 
 
-def create_survey_from_xls(path_or_file):
-    excel_reader = SurveyReader(path_or_file)
+def create_survey_from_xls(path_or_file, default_name="data"):
+    excel_reader = SurveyReader(path_or_file, default_name=default_name)
     d = excel_reader.to_json_dict()
     survey = create_survey_element_from_dict(d)
     if not survey.id_string:
@@ -301,8 +301,7 @@ def create_survey(
         main_section=None,
         id_string=None,
         title=None,
-        default_language=None,
-        ):
+        default_language=None):
     """
     name_of_main_section -- a string key used to find the main section in the
                             sections dict if it is not supplied in the
@@ -342,7 +341,9 @@ def create_survey(
     return survey
 
 
-def create_survey_from_path(path, include_directory=False):
+def create_survey_from_path(path,
+                            include_directory=False,
+                            default_name="data"):
     """
     include_directory -- Switch to indicate that all the survey forms in the
                          same directory as the specified file should be read
@@ -354,11 +355,15 @@ def create_survey_from_path(path, include_directory=False):
         main_section_name = file_utils._section_name(file_name)
         sections = file_utils.collect_compatible_files_in_directory(directory)
     else:
-        main_section_name, section = file_utils.load_file_to_dict(path)
+        main_section_name, section = file_utils.load_file_to_dict(
+            path,
+            default_name=default_name)
         sections = {main_section_name: section}
+    if default_name:
+        main_section_name = default_name
     pkg = {
         u'name_of_main_section': main_section_name,
         u'sections': sections
-        }
+    }
 
     return create_survey(**pkg)

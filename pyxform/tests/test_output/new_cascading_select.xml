@@ -5,32 +5,14 @@
     <model>
       <itext>
         <translation default="true()" lang="default">
-          <text id="static_instance-cities-3">
-            <value>harlingen</value>
-          </text>
-          <text id="static_instance-cities-2">
-            <value>brownsville</value>
-          </text>
-          <text id="static_instance-cities-1">
-            <value>Finney</value>
-          </text>
-          <text id="static_instance-cities-0">
-            <value>Dumont</value>
-          </text>
           <text id="static_instance-states-0">
             <value>Texas</value>
           </text>
           <text id="static_instance-states-1">
             <value>Washington</value>
           </text>
-          <text id="static_instance-cities-5">
-            <value>Redmond</value>
-          </text>
-          <text id="static_instance-cities-4">
-            <value>Seattle</value>
-          </text>
-          <text id="static_instance-cities-7">
-            <value>Puyallup</value>
+          <text id="static_instance-counties-0">
+            <value>King</value>
           </text>
           <text id="static_instance-counties-1">
             <value>Pierce</value>
@@ -41,11 +23,29 @@
           <text id="static_instance-counties-3">
             <value>Cameron</value>
           </text>
-          <text id="static_instance-counties-0">
-            <value>King</value>
+          <text id="static_instance-cities-0">
+            <value>Dumont</value>
+          </text>
+          <text id="static_instance-cities-1">
+            <value>Finney</value>
+          </text>
+          <text id="static_instance-cities-2">
+            <value>brownsville</value>
+          </text>
+          <text id="static_instance-cities-3">
+            <value>harlingen</value>
+          </text>
+          <text id="static_instance-cities-4">
+            <value>Seattle</value>
+          </text>
+          <text id="static_instance-cities-5">
+            <value>Redmond</value>
           </text>
           <text id="static_instance-cities-6">
             <value>Tacoma</value>
+          </text>
+          <text id="static_instance-cities-7">
+            <value>Puyallup</value>
           </text>
         </translation>
       </itext>
@@ -71,58 +71,6 @@
           </item>
         </root>
       </instance>
-      <instance id="cities">
-        <root>
-          <item>
-            <itextId>static_instance-cities-0</itextId>
-            <county>king</county>
-            <state>texas</state>
-            <name>dumont</name>
-          </item>
-          <item>
-            <itextId>static_instance-cities-1</itextId>
-            <county>king</county>
-            <state>texas</state>
-            <name>finney</name>
-          </item>
-          <item>
-            <itextId>static_instance-cities-2</itextId>
-            <county>cameron</county>
-            <state>texas</state>
-            <name>brownsville</name>
-          </item>
-          <item>
-            <itextId>static_instance-cities-3</itextId>
-            <county>cameron</county>
-            <state>texas</state>
-            <name>harlingen</name>
-          </item>
-          <item>
-            <itextId>static_instance-cities-4</itextId>
-            <county>king</county>
-            <state>washington</state>
-            <name>seattle</name>
-          </item>
-          <item>
-            <itextId>static_instance-cities-5</itextId>
-            <county>king</county>
-            <state>washington</state>
-            <name>redmond</name>
-          </item>
-          <item>
-            <itextId>static_instance-cities-6</itextId>
-            <county>pierce</county>
-            <state>washington</state>
-            <name>tacoma</name>
-          </item>
-          <item>
-            <itextId>static_instance-cities-7</itextId>
-            <county>pierce</county>
-            <state>washington</state>
-            <name>puyallup</name>
-          </item>
-        </root>
-      </instance>
       <instance id="counties">
         <root>
           <item>
@@ -144,6 +92,58 @@
             <itextId>static_instance-counties-3</itextId>
             <state>texas</state>
             <name>cameron</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="cities">
+        <root>
+          <item>
+            <itextId>static_instance-cities-0</itextId>
+            <county>king</county>
+            <name>dumont</name>
+            <state>texas</state>
+          </item>
+          <item>
+            <itextId>static_instance-cities-1</itextId>
+            <county>king</county>
+            <name>finney</name>
+            <state>texas</state>
+          </item>
+          <item>
+            <itextId>static_instance-cities-2</itextId>
+            <county>cameron</county>
+            <name>brownsville</name>
+            <state>texas</state>
+          </item>
+          <item>
+            <itextId>static_instance-cities-3</itextId>
+            <county>cameron</county>
+            <name>harlingen</name>
+            <state>texas</state>
+          </item>
+          <item>
+            <itextId>static_instance-cities-4</itextId>
+            <county>king</county>
+            <name>seattle</name>
+            <state>washington</state>
+          </item>
+          <item>
+            <itextId>static_instance-cities-5</itextId>
+            <county>king</county>
+            <name>redmond</name>
+            <state>washington</state>
+          </item>
+          <item>
+            <itextId>static_instance-cities-6</itextId>
+            <county>pierce</county>
+            <name>tacoma</name>
+            <state>washington</state>
+          </item>
+          <item>
+            <itextId>static_instance-cities-7</itextId>
+            <county>pierce</county>
+            <name>puyallup</name>
+            <state>washington</state>
           </item>
         </root>
       </instance>

@@ -15,9 +15,9 @@ class BasicJson2XFormTests(TestCase):
     def test_survey_can_have_to_xml_called_twice(self):
         """
         Test: Survey can have "to_xml" called multiple times
-        
+
         (This was not being allowed before.)
-        
+
         It would be good to know (with confidence) that a survey object
         can be exported to_xml twice, and the same thing will be returned
         both times.

@@ -338,7 +338,7 @@ def workbook_to_json(
     if warnings is None:
         warnings = []
     is_valid = False
-    workbook_dict = {x.lower(): y for x,y in workbook_dict.items()}
+    workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
     for row in workbook_dict.get(constants.SURVEY, []):
         is_valid = 'type' in [z.lower() for z in row]
         if is_valid:
@@ -481,8 +481,8 @@ def workbook_to_json(
     survey_sheet = dealias_types(survey_sheet)
 
     osm_sheet = dealias_and_group_headers(workbook_dict.get(constants.OSM, []),
-                                              aliases.list_header,
-                                              True)
+                                          aliases.list_header,
+                                          True)
     osm_tags = group_dictionaries_by_key(osm_sheet, constants.LIST_NAME)
     # #################################
 
@@ -554,7 +554,8 @@ def workbook_to_json(
         if question_type == 'audit':
             # Force audit name to always be "audit" to follow XForms spec
             if 'name' in row and row['name'] not in [None, '', 'audit']:
-                raise PyXFormError(row_format_string % row_number +
+                raise PyXFormError(
+                    row_format_string % row_number +
                     " Audits must always be named 'audit.'" +
                     " The name column should be left blank.")
 
@@ -977,7 +978,7 @@ def get_filename(path):
     return os.path.splitext((os.path.basename(path)))[0]
 
 
-def parse_file_to_json(path, default_name=None, default_language=u"default",
+def parse_file_to_json(path, default_name="data", default_language=u"default",
                        warnings=None, file_object=None):
     """
     A wrapper for workbook_to_json
@@ -1040,7 +1041,7 @@ class SurveyReader(SpreadsheetReader):
     based object is created then a to_json_dict function is called on it.
     """
 
-    def __init__(self, path_or_file):
+    def __init__(self, path_or_file, default_name="data"):
         if isinstance(path_or_file, basestring):
             self._file_object = None
             path = path_or_file
@@ -1049,8 +1050,10 @@ class SurveyReader(SpreadsheetReader):
             path = path_or_file.name
 
         self._warnings = []
-        self._dict = parse_file_to_json(
-            path, warnings=self._warnings, file_object=self._file_object)
+        self._dict = parse_file_to_json(path,
+                                        default_name=default_name,
+                                        warnings=self._warnings,
+                                        file_object=self._file_object)
         self._path = path
 
     def print_warning_log(self, warn_out_file):

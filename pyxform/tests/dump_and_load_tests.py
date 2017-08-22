@@ -20,13 +20,15 @@ class DumpAndLoadTests(TestCase):
             # "include_json.xls",
             "simple_loop.xls",
             "yes_or_no_question.xls",
-            ]
+        ]
         self.surveys = {}
         self.this_directory = os.path.dirname(__file__)
         for filename in self.excel_files:
             path = utils.path_to_text_fixture(filename)
             try:
-                self.surveys[filename] = create_survey_from_path(path)
+                self.surveys[filename] = create_survey_from_path(
+                    path,
+                    default_name=filename[:-4])  # remove the .xls
             except Exception as e:
                 print("Error on : " + filename)
                 raise e
@@ -35,7 +37,9 @@ class DumpAndLoadTests(TestCase):
         for filename, survey in self.surveys.items():
             survey.json_dump()
             path = survey.name + ".json"
-            survey_from_dump = create_survey_from_path(path)
+            survey_from_dump = create_survey_from_path(
+                path,
+                default_name=filename[:-4])  # remove the .xls
             self.assertEqual(survey.to_json_dict(),
                              survey_from_dump.to_json_dict())
 

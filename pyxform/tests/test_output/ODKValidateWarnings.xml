@@ -1,47 +1,47 @@
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
-    <h:title>ODKValidateWarnings</h:title>
+    <h:title>data</h:title>
     <model>
       <itext>
         <translation lang="English">
-          <text id="/ODKValidateWarnings/phone_number:label">
-            <value>What's your father's phone number?</value>
-          </text>
-          <text id="/ODKValidateWarnings/family_name:label">
+          <text id="/data/family_name:label">
             <value>What's your family name?</value>
           </text>
-          <text id="/ODKValidateWarnings/age:label">
+          <text id="/data/phone_number:label">
+            <value>What's your father's phone number?</value>
+          </text>
+          <text id="/data/age:label">
             <value>asdf</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <ODKValidateWarnings id="ODKValidateWarnings">
+        <data id="data">
           <family_name/>
           <phone_number/>
           <age/>
           <meta>
             <instanceID/>
           </meta>
-        </ODKValidateWarnings>
+        </data>
       </instance>
-      <bind nodeset="/ODKValidateWarnings/family_name" type="string"/>
-      <bind constraint="regex(., '^\d*$')" nodeset="/ODKValidateWarnings/phone_number" type="string"/>
-      <bind nodeset="/ODKValidateWarnings/age" type="int"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/ODKValidateWarnings/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/family_name" type="string"/>
+      <bind constraint="regex(., '^\d*$')" nodeset="/data/phone_number" type="string"/>
+      <bind nodeset="/data/age" type="int"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
-    <input ref="/ODKValidateWarnings/family_name">
-      <label ref="jr:itext('/ODKValidateWarnings/family_name:label')"/>
+    <input ref="/data/family_name">
+      <label ref="jr:itext('/data/family_name:label')"/>
     </input>
-    <input ref="/ODKValidateWarnings/phone_number">
-      <label ref="jr:itext('/ODKValidateWarnings/phone_number:label')"/>
+    <input ref="/data/phone_number">
+      <label ref="jr:itext('/data/phone_number:label')"/>
       <hint>Enter numbers only.</hint>
     </input>
-    <input ref="/ODKValidateWarnings/age">
-      <label ref="jr:itext('/ODKValidateWarnings/age:label')"/>
+    <input ref="/data/age">
+      <label ref="jr:itext('/data/age:label')"/>
     </input>
   </h:body>
 </h:html>

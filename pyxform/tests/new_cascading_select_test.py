@@ -8,9 +8,9 @@ DIR = os.path.dirname(__file__)
 
 
 class MainTest(XFormTestCase):
-    
+
     maxDiff = None
-    
+
     def runTest(self):
         for filename in ["new_cascading_select.xls", "old_cascades.xls",
                          "cascading_select_test.xls"]:
@@ -23,7 +23,8 @@ class MainTest(XFormTestCase):
                 DIR, "test_expected_output", root_filename + ".xml")
             # Do the conversion:
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file)
+                path_to_excel_file,
+                default_name=root_filename)
 
             survey = pyxform.create_survey_element_from_dict(json_survey)
 
@@ -36,6 +37,7 @@ class MainTest(XFormTestCase):
                         actual_file:
                     self.assertXFormEqual(expected_file.read(),
                                           actual_file.read())
-                
+
+
 if __name__ == '__main__':
     unittest.main()

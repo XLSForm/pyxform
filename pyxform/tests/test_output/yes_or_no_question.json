@@ -1,46 +1,46 @@
 {
-    "name": "yes_or_no_question", 
-    "title": "yes_or_no_question", 
-    "sms_keyword": "yes_or_no_question", 
-    "default_language": "default", 
-    "id_string": "yes_or_no_question", 
-    "type": "survey", 
+    "type": "survey",
+    "name": "yes_or_no_question",
+    "title": "yes_or_no_question",
+    "id_string": "yes_or_no_question",
+    "sms_keyword": "yes_or_no_question",
+    "default_language": "default",
     "children": [
         {
-            "choices": [
-                {
-                    "name": "yes", 
-                    "label": {
-                        "english": "yes"
-                    }
-                }, 
-                {
-                    "name": "no", 
-                    "label": {
-                        "english": "no"
-                    }
-                }
-            ], 
-            "type": "select one", 
-            "name": "good_day", 
+            "type": "select one",
             "label": {
                 "english": "have you had a good day today?"
-            }
-        }, 
+            },
+            "name": "good_day",
+            "choices": [
+                {
+                    "label": {
+                        "english": "yes"
+                    },
+                    "name": "yes"
+                },
+                {
+                    "label": {
+                        "english": "no"
+                    },
+                    "name": "no"
+                }
+            ]
+        },
         {
+            "name": "meta",
+            "type": "group",
             "control": {
                 "bodyless": true
-            }, 
-            "type": "group", 
-            "name": "meta", 
+            },
             "children": [
                 {
+                    "name": "instanceID",
                     "bind": {
-                        "readonly": "true()", 
+                        "readonly": "true()",
                         "calculate": "concat('uuid:', uuid())"
-                    }, 
-                    "type": "calculate", 
-                    "name": "instanceID"
+                    },
+                    "type": "calculate"
                 }
             ]
         }

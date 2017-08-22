@@ -5,56 +5,56 @@
     <model>
       <itext>
         <translation default="true()" lang="default">
+          <text id="/widgets/grid_test/a:label">
+            <value>a</value>
+            <value form="image">jr://images/a.jpg</value>
+          </text>
+          <text id="/widgets/grid_test/b:label">
+            <value>b</value>
+            <value form="image">jr://images/b.jpg</value>
+          </text>
+          <text id="/widgets/grid_test_audio/a:label">
+            <value>a</value>
+            <value form="image">jr://images/a.jpg</value>
+          </text>
+          <text id="/widgets/grid_test_audio/b:label">
+            <value>b</value>
+            <value form="image">jr://images/b.jpg</value>
+          </text>
           <text id="/widgets/happy_sad_table_2/happy_sad_second_method/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table/happy_sad_michael/sad:label">
-            <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/happy:label">
             <value form="image">jr://images/happy.jpg</value>
           </text>
           <text id="/widgets/happy_sad_table_2/happy_sad_second_method/sad:label">
             <value form="image">jr://images/sad.jpg</value>
           </text>
+          <text id="/widgets/happy_sad_table_2/happy_sad_brian2/happy:label">
+            <value form="image">jr://images/happy.jpg</value>
+          </text>
           <text id="/widgets/happy_sad_table_2/happy_sad_brian2/sad:label">
             <value form="image">jr://images/sad.jpg</value>
           </text>
-          <text id="/widgets/happy_sad_table/happy_sad_brian/happy:label">
+          <text id="/widgets/happy_sad_table_2/happy_sad_michael2/happy:label">
+            <value form="image">jr://images/happy.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table_2/happy_sad_michael2/sad:label">
+            <value form="image">jr://images/sad.jpg</value>
+          </text>
+          <text id="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/happy:label">
             <value form="image">jr://images/happy.jpg</value>
           </text>
           <text id="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/sad:label">
             <value form="image">jr://images/sad.jpg</value>
           </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_brian2/happy:label">
+          <text id="/widgets/happy_sad_table/happy_sad_brian/happy:label">
             <value form="image">jr://images/happy.jpg</value>
           </text>
-          <text id="/widgets/grid_test_audio/a:label">
-            <value form="image">jr://images/a.jpg</value>
-            <value>a</value>
-          </text>
-          <text id="/widgets/grid_test_audio/b:label">
-            <value form="image">jr://images/b.jpg</value>
-            <value>b</value>
-          </text>
-          <text id="/widgets/grid_test/b:label">
-            <value form="image">jr://images/b.jpg</value>
-            <value>b</value>
-          </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_michael2/sad:label">
+          <text id="/widgets/happy_sad_table/happy_sad_brian/sad:label">
             <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/grid_test/a:label">
-            <value form="image">jr://images/a.jpg</value>
-            <value>a</value>
           </text>
           <text id="/widgets/happy_sad_table/happy_sad_michael/happy:label">
             <value form="image">jr://images/happy.jpg</value>
           </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_michael2/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table/happy_sad_brian/sad:label">
+          <text id="/widgets/happy_sad_table/happy_sad_michael/sad:label">
             <value form="image">jr://images/sad.jpg</value>
           </text>
         </translation>
@@ -230,7 +230,7 @@
       <hint>need to push button</hint>
     </trigger>
     <input ref="/widgets/my_output">
-      <label>review widget. is your email still <output value=" /widgets/my_trigger "/>?</label>
+      <label> review widget. is your email still <output value=" /widgets/my_trigger "/>? </label>
       <hint>long hint: there is an upcoming section.</hint>
     </input>
     <input ref="/widgets/my_geopoint">

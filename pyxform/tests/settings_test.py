@@ -12,7 +12,7 @@ class SettingsTests(TestCase):
         self.path = utils.path_to_text_fixture("settings.xls")
 
     def test_survey_reader(self):
-        survey_reader = SurveyReader(self.path)
+        survey_reader = SurveyReader(self.path, default_name="settings")
         expected_dict = {
             u'id_string': u'new_id',
             u'sms_keyword': u'new_id',
@@ -57,6 +57,6 @@ class SettingsTests(TestCase):
         self.assertEqual(survey_reader.to_json_dict(), expected_dict)
 
     def test_settings(self):
-        survey = create_survey_from_path(self.path)
+        survey = create_survey_from_path(self.path, default_name="settings")
         self.assertEqual(survey.id_string, "new_id")
         self.assertEqual(survey.title, "My Survey")

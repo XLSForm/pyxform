@@ -6,7 +6,7 @@ from pyxform.tests import utils
 class LoopTests(TestCase):
     def test_loop(self):
         path = utils.path_to_text_fixture('another_loop.xls')
-        survey = create_survey_from_xls(path)
+        survey = create_survey_from_xls(path, default_name="another_loop")
         self.maxDiff = None
         expected_dict = {
             u'name': u'another_loop',

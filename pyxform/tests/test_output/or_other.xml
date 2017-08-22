@@ -5,8 +5,11 @@
     <model>
       <itext>
         <translation default="true()" lang="default">
-          <text id="static_instance-colors-4">
-            <value>apricot</value>
+          <text id="static_instance-colors-0">
+            <value>red</value>
+          </text>
+          <text id="static_instance-colors-1">
+            <value>green</value>
           </text>
           <text id="static_instance-colors-2">
             <value>blue</value>
@@ -14,11 +17,8 @@
           <text id="static_instance-colors-3">
             <value>mauve</value>
           </text>
-          <text id="static_instance-colors-0">
-            <value>red</value>
-          </text>
-          <text id="static_instance-colors-1">
-            <value>green</value>
+          <text id="static_instance-colors-4">
+            <value>apricot</value>
           </text>
         </translation>
       </itext>

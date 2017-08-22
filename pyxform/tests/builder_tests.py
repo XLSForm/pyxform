@@ -1,6 +1,5 @@
 import re
 import xml.etree.ElementTree as ETree
-from unittest import TestCase
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform import Survey, InputQuestion
@@ -11,7 +10,7 @@ import os
 FIXTURE_FILETYPE = "xls"
 
 
-class BuilderTests(TestCase):
+class BuilderTests(utils.XFormTestCase):
     maxDiff = None
 
 #   Moving to spec tests
@@ -25,7 +24,8 @@ class BuilderTests(TestCase):
 #            self.assertTrue(xml_compare(expected, result))
 
     def test_unknown_question_type(self):
-        survey = utils.build_survey('unknown_question_type.xls')
+        survey = utils.build_survey('unknown_question_type.xls',
+                                    default_name='unknown_question_type')
         self.assertRaises(
             PyXFormError,
             survey.to_xml
@@ -33,7 +33,9 @@ class BuilderTests(TestCase):
 
     def test_uniqueness_of_section_names(self):
         # Looking at the xls file, I think this test might be broken.
-        survey = utils.build_survey('group_names_must_be_unique.xls')
+        survey = utils.build_survey(
+            'group_names_must_be_unique.xls',
+            default_name='group_names_must_be_unique')
         self.assertRaises(
             Exception,
             survey.to_xml
@@ -58,6 +60,118 @@ class BuilderTests(TestCase):
         path = utils.path_to_text_fixture('yes_or_no_question.xls')
         with open(path, 'rb') as f:
             create_survey_from_xls(f)
+
+    def test_create_from_file_object_noname(self):
+        xml_str = """<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms"
+xmlns:ev="http://www.w3.org/2001/xml-events"
+xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa"
+xmlns:orx="http://openrosa.org/xforms"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>data</h:title>
+    <model>
+      <itext>
+        <translation lang="english">
+          <text id="/data/good_day:label">
+            <value>have you had a good day today?</value>
+          </text>
+          <text id="/data/good_day/yes:label">
+            <value>yes</value>
+          </text>
+          <text id="/data/good_day/no:label">
+            <value>no</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="data">
+          <good_day/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/good_day" type="select1"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID"
+      readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <select1 ref="/data/good_day">
+      <label ref="jr:itext('/data/good_day:label')"/>
+      <item>
+        <label ref="jr:itext('/data/good_day/yes:label')"/>
+        <value>yes</value>
+      </item>
+      <item>
+        <label ref="jr:itext('/data/good_day/no:label')"/>
+        <value>no</value>
+      </item>
+    </select1>
+  </h:body>
+</h:html>
+        """
+        path = utils.path_to_text_fixture('yes_or_no_question.xls')
+        with open(path, 'rb') as f:
+            survey = create_survey_from_xls(f)
+        self.assertXFormEqual(xml_str, survey.to_xml())
+
+    def test_create_from_file_object_withname(self):
+        xml_str = """<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms"
+xmlns:ev="http://www.w3.org/2001/xml-events"
+xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa"
+xmlns:orx="http://openrosa.org/xforms"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>fancy-name</h:title>
+    <model>
+      <itext>
+        <translation lang="english">
+          <text id="/fancy-name/good_day:label">
+            <value>have you had a good day today?</value>
+          </text>
+          <text id="/fancy-name/good_day/yes:label">
+            <value>yes</value>
+          </text>
+          <text id="/fancy-name/good_day/no:label">
+            <value>no</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <fancy-name id="fancy-name">
+          <good_day/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </fancy-name>
+      </instance>
+      <bind nodeset="/fancy-name/good_day" type="select1"/>
+      <bind calculate="concat('uuid:', uuid())"
+      nodeset="/fancy-name/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <select1 ref="/fancy-name/good_day">
+      <label ref="jr:itext('/fancy-name/good_day:label')"/>
+      <item>
+        <label ref="jr:itext('/fancy-name/good_day/yes:label')"/>
+        <value>yes</value>
+      </item>
+      <item>
+        <label ref="jr:itext('/fancy-name/good_day/no:label')"/>
+        <value>no</value>
+      </item>
+    </select1>
+  </h:body>
+</h:html>
+        """
+        path = utils.path_to_text_fixture('yes_or_no_question.xls')
+        with open(path, 'rb') as f:
+            survey = create_survey_from_xls(f, default_name="fancy-name")
+        self.assertXFormEqual(xml_str, survey.to_xml())
 
     def tearDown(self):
         fixture_path = utils.path_to_text_fixture("how_old_are_you.json")
@@ -134,7 +248,8 @@ class BuilderTests(TestCase):
 
     def test_specify_other(self):
         survey = utils.create_survey_from_fixture("specify_other",
-                                                  filetype=FIXTURE_FILETYPE)
+                                                  filetype=FIXTURE_FILETYPE,
+                                                  default_name="specify_other")
         expected_dict = {
             u'name': u'specify_other',
             u'type': u'survey',
@@ -197,7 +312,9 @@ class BuilderTests(TestCase):
         as the name of the select one get compiled.
         """
         survey = utils.create_survey_from_fixture(
-            "choice_name_same_as_select_name", filetype=FIXTURE_FILETYPE)
+            "choice_name_same_as_select_name",
+            filetype=FIXTURE_FILETYPE,
+            default_name="choice_name_same_as_select_name")
         expected_dict = {
             u'name': u'choice_name_same_as_select_name',
             u'title': u'choice_name_same_as_select_name',
@@ -205,9 +322,9 @@ class BuilderTests(TestCase):
             u'default_language': u'default',
             u'id_string': u'choice_name_same_as_select_name',
             u'type': u'survey',
-            u'children':  [
+            u'children': [
                 {
-                    u'children':  [
+                    u'children': [
                         {
                             u'name': u'zone',
                             u'label': u'Zone'
@@ -229,7 +346,7 @@ class BuilderTests(TestCase):
                 ],
                     u'control': {
                         'bodyless': True
-                    },
+                },
                     u'name': 'meta',
                     u'type': u'group'
                 }
@@ -240,7 +357,9 @@ class BuilderTests(TestCase):
 
     def test_loop(self):
         survey = utils.create_survey_from_fixture(
-            "loop", filetype=FIXTURE_FILETYPE)
+            "loop",
+            filetype=FIXTURE_FILETYPE,
+            default_name="loop")
         expected_dict = {
             u'name': u'loop',
             u'id_string': u'loop',
@@ -368,7 +487,9 @@ class BuilderTests(TestCase):
 
     def test_sms_columns(self):
         survey = utils.create_survey_from_fixture(
-            "sms_info", filetype=FIXTURE_FILETYPE)
+            "sms_info",
+            filetype=FIXTURE_FILETYPE,
+            default_name="sms_info")
         expected_dict = {
             u'children': [{
                 u'children': [
@@ -429,7 +550,8 @@ class BuilderTests(TestCase):
                     u'name': u'medias',
                     u'sms_field': u'c',
                     u'type': u'group'
-                }, {
+            },
+                {
                     u'children': [
                         {
                             u'children': [{
@@ -441,18 +563,18 @@ class BuilderTests(TestCase):
                                     u'label': u'Google Chrome',
                                     u'name': u'chrome',
                                     u'sms_option': u'gc'
-                                },
+                            },
                                 {
                                     u'label':
                                     u'Internet Explorer',
                                     u'name': u'ie',
                                     u'sms_option': u'ie'
-                                },
+                            },
                                 {
                                     u'label': u'Safari',
                                     u'name': u'safari',
                                     u'sms_option': u'saf'
-                                }
+                            }
                             ],
                             u'label':
                             u'What web browsers do you use?',
@@ -464,7 +586,7 @@ class BuilderTests(TestCase):
                     u'name': u'browsers',
                     u'sms_field': u'b',
                     u'type': u'group'
-                }, {
+            }, {
                     u'children': [{
                         u'label': u'Phone Number',
                         u'name': u'phone',
@@ -493,7 +615,7 @@ class BuilderTests(TestCase):
                     u'name': u'metadata',
                     u'sms_field': u'meta',
                     u'type': u'group'
-                },
+            },
                 {
                     u'children': [{
                         u'bind': {
@@ -506,7 +628,7 @@ class BuilderTests(TestCase):
                     u'control': {'bodyless': True},
                     u'name': 'meta',
                     u'type': u'group'
-                }],
+            }],
             u'default_language': u'default',
             u'id_string': u'sms_info_form',
             u'name': u'sms_info',
@@ -522,7 +644,9 @@ class BuilderTests(TestCase):
 
     def test_style_column(self):
         survey = utils.create_survey_from_fixture(
-            "style_settings", filetype=FIXTURE_FILETYPE)
+            "style_settings",
+            filetype=FIXTURE_FILETYPE,
+            default_name="style_settings")
         expected_dict = {
             u'children': [
                 {
@@ -565,7 +689,9 @@ class BuilderTests(TestCase):
 
     def test_style_not_added_to_body_if_not_present(self):
         survey = utils.create_survey_from_fixture(
-            "settings", filetype=FIXTURE_FILETYPE)
+            "settings",
+            filetype=FIXTURE_FILETYPE,
+            default_name="settings")
         xml = survey.to_xml()
         # find the body tag
         root_elm = ETree.fromstring(xml.encode('utf-8'))
@@ -577,7 +703,9 @@ class BuilderTests(TestCase):
 
     def test_style_added_to_body_if_present(self):
         survey = utils.create_survey_from_fixture(
-            "style_settings", filetype=FIXTURE_FILETYPE)
+            "style_settings",
+            filetype=FIXTURE_FILETYPE,
+            default_name="style_settings")
         xml = survey.to_xml()
         # find the body tag
         root_elm = ETree.fromstring(xml.encode('utf-8'))

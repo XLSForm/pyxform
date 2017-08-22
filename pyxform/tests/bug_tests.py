@@ -63,7 +63,9 @@ class RepeatDateTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings)
+            path_to_excel_file,
+            warnings=warnings,
+            default_name="repeat_date_test")
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
         # print warnings
@@ -89,7 +91,7 @@ class XmlEscaping(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings)
+            path_to_excel_file, warnings=warnings, default_name="xml_escaping")
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
         # print warnings
@@ -115,7 +117,9 @@ class DefaultTimeTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings)
+            path_to_excel_file,
+            warnings=warnings,
+            default_name="default_time_demo")
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
         # print warnings
@@ -139,7 +143,7 @@ class CascadeOldFormat(unittest.TestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings)
+            path_to_excel_file, warnings=warnings, default_name="xascades_old")
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
 

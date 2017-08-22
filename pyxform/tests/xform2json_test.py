@@ -31,8 +31,13 @@ class DumpAndLoadXForm2JsonTests(utils.XFormTestCase):
         self.this_directory = os.path.dirname(__file__)
         for filename in self.excel_files:
             path = utils.path_to_text_fixture(filename)
+            default_name = filename[:-4]
+            if filename == "xlsform_spec_test.xlsx":
+                default_name = "xlsform_spec_test"
             try:
-                self.surveys[filename] = create_survey_from_path(path)
+                self.surveys[filename] = create_survey_from_path(
+                    path,
+                    default_name=default_name)
             except Exception as e:
                 print("Error on : " + filename)
                 raise e
@@ -89,7 +94,9 @@ class TestXMLParse(TestCase):
             _try_parse("not valid xml :(")
 
     def test_try_parse_with_bad_file(self):
-        """Should raise XMLSyntaxError: file exists but content is not valid."""
+        """
+        Should raise XMLSyntaxError: file exists but content is not valid.
+        """
         xml_path = os.path.join(self.cwd, "test_try_parse.xml")
         self.tidy_file = xml_path
         with open(xml_path, "w") as xml_file:
