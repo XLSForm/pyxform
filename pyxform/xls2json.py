@@ -7,10 +7,10 @@ import re
 import sys
 import codecs
 import os
-from pyxform import constants, aliases
-from pyxform.errors import PyXFormError
-from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
-from pyxform.utils import is_valid_xml_tag, unicode, basestring
+import constants, aliases
+from errors import PyXFormError
+from xls2json_backends import xls_to_dict, csv_to_dict
+from utils import is_valid_xml_tag, unicode, basestring
 
 SMART_QUOTES = {
     '\u2018': "'",

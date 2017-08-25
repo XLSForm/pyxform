@@ -6,14 +6,14 @@ import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
 
-from pyxform import constants
-from pyxform.errors import PyXFormError
-from pyxform.instance import SurveyInstance
-from pyxform.odk_validate import check_xform
-from pyxform.question import Question
-from pyxform.section import Section
-from pyxform.survey_element import SurveyElement
-from pyxform.utils import PatchedText, basestring, node, unicode
+import constants
+from errors import PyXFormError
+from instance import SurveyInstance
+from odk_validate import check_xform
+from question import Question
+from section import Section
+from survey_element import SurveyElement
+from utils import PatchedText, basestring, node, unicode
 
 nsmap = {
     u"xmlns": u"http://www.w3.org/2002/xforms",
@@ -440,7 +440,7 @@ class Survey(Section):
         return unicode(self)
 
     def __unicode__(self):
-        return "<pyxform.survey.Survey instance at %s>" % hex(id(self))
+        return "<survey.Survey instance at %s>" % hex(id(self))
 
     def _setup_xpath_dictionary(self):
         self._xpath = {}

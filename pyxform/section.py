@@ -1,6 +1,6 @@
-from pyxform.question import SurveyElement
-from pyxform.utils import node
-from pyxform.errors import PyXFormError
+from question import SurveyElement
+from utils import node
+from errors import PyXFormError
 
 
 class Section(SurveyElement):

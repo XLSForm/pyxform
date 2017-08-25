@@ -1,9 +1,9 @@
 import os.path
 
-from pyxform.errors import PyXFormError
-from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
-from pyxform.survey_element import SurveyElement
-from pyxform.utils import basestring, node, unicode
+from errors import PyXFormError
+from question_type_dictionary import QUESTION_TYPE_DICT
+from survey_element import SurveyElement
+from utils import basestring, node, unicode
 
 
 class Question(SurveyElement):

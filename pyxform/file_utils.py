@@ -1,8 +1,8 @@
 import os
 import glob
-from pyxform import utils
+import utils
 
-from pyxform.xls2json import SurveyReader
+from xls2json import SurveyReader
 
 
 def _section_name(path_or_file_name):
