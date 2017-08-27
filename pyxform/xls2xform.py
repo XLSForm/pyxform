@@ -4,7 +4,7 @@ import argparse
 import json
 import os
 
-from . import builder, xls2json
+import .builder, .xls2json
 from utils import has_external_choices, sheet_to_csv
 """
 xls2xform converts properly formatted Excel documents into XForms for
