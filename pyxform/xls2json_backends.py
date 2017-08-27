@@ -5,11 +5,11 @@ import xlrd
 from xlrd import XLRDError
 import unicodecsv as csv
 from io import BytesIO
-from pyxform import constants
+import constants
 import re
 import datetime
-from pyxform.errors import PyXFormError
-from pyxform.utils import unicode, basestring, unichr
+from errors import PyXFormError
+from utils import unicode, basestring, unichr
 from functools import reduce
 from collections import OrderedDict
 

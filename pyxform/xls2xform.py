@@ -4,8 +4,8 @@ import argparse
 import json
 import os
 
-from pyxform import builder, xls2json
-from pyxform.utils import has_external_choices, sheet_to_csv
+import builder, xls2json
+from utils import has_external_choices, sheet_to_csv
 """
 xls2xform converts properly formatted Excel documents into XForms for
 use with ODK Collect.

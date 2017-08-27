@@ -1,4 +1,4 @@
-from pyxform.xform_instance_parser import parse_xform_instance
+from xform_instance_parser import parse_xform_instance
 
 
 class SurveyInstance(object):

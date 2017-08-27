@@ -1,8 +1,8 @@
 import json
-from pyxform.utils import is_valid_xml_tag, node, unicode
-from pyxform.xls2json import print_pyobj_to_json
-from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
-from pyxform.errors import PyXFormError
+from utils import is_valid_xml_tag, node, unicode
+from xls2json import print_pyobj_to_json
+from question_type_dictionary import QUESTION_TYPE_DICT
+from errors import PyXFormError
 
 
 def _overlay(over, under):

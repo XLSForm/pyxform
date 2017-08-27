@@ -5,7 +5,7 @@
 
 from xml.dom import minidom
 import re
-from pyxform.utils import unicode
+from utils import unicode
 
 XFORM_ID_STRING = u"_xform_id_string"
 
