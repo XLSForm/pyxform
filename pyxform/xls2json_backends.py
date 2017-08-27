@@ -5,7 +5,7 @@ import xlrd
 from xlrd import XLRDError
 import unicodecsv as csv
 from io import BytesIO
-from . import constants
+import constants
 import re
 import datetime
 from errors import PyXFormError
