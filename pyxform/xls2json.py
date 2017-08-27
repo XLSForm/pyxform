@@ -7,7 +7,7 @@ import re
 import sys
 import codecs
 import os
-import constants, aliases
+from . import constants, aliases
 from errors import PyXFormError
 from xls2json_backends import xls_to_dict, csv_to_dict
 from utils import is_valid_xml_tag, unicode, basestring

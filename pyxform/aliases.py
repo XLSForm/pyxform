@@ -1,4 +1,4 @@
-import constants
+from . import constants
 
 # Aliases:
 # Ideally aliases should resolve to elements in the json form schema

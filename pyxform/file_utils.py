@@ -1,6 +1,6 @@
 import os
 import glob
-import utils
+from . import utils
 
 from xls2json import SurveyReader
 

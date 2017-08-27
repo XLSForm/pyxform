@@ -1,7 +1,7 @@
 import copy
 import os
 
-import file_utils, utils
+from . import file_utils, utils
 from errors import PyXFormError
 from question import (InputQuestion, MultipleChoiceQuestion,
                               OsmUploadQuestion, Question, RangeQuestion,
