@@ -13,13 +13,3 @@ class WhitespaceTest(PyxformTestCase):
             xml__contains=[
                 '<label><output value=" /issue96/var "/> text </label>',
             ])
-
-    def test_empty_label_squashing(self):
-        self.assertPyxformXform(
-            name='empty_label',
-            debug=True,
-            ss_structure={'survey': [
-                    { 'type':'note', 'label':'', 'name':'label' } ] },
-            xml__contains=[
-                '<label></label>',
-            ])
