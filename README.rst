@@ -15,8 +15,7 @@ easy by converting XLS(X) spreadsheets into XForms. It is used as a library in a
 
 XLS(X) documents used as input must follow to the `XLSForm standard <http://xlsform.org/>`_ and the resulting output follows the `ODK XForms <https://github.com/opendatakit/xforms-spec>`_ standard.
 
-* formhub.org uses the repo here:
-https://github.com/modilabs/pyxform
+* formhub.org uses the repo here: https://github.com/modilabs/pyxform
 
 pyxform is a major rewrite of `xls2xform <http://github.com/mvpdev/xls2xform/>`_.
 
@@ -63,32 +62,32 @@ Installing pyxform from remote source
 =====================================
 `pip` can install from any GitHub repository::
 
-	pip install git+https://github.com/XLSForm/pyxform.git@master#egg=pyxform
+    pip install git+https://github.com/XLSForm/pyxform.git@master#egg=pyxform
 
 You can then run xls2xform from the commandline::
 
-	xls2xform path_to_XLSForm output_path
+    xls2xform path_to_XLSForm output_path
 
 Testing
 =======
 To make sure the install worked out, you can do the following::
 
-	pip install nose==1.0.0
+    pip install nose==1.0.0
 
-	cd your-virtual-env-dir/src/pyxform
+    cd your-virtual-env-dir/src/pyxform
 
-	nosetests
+    nosetests
 
 Documentation
 =============
 To check out the documentation for pyxform do the following::
 
-	pip install Sphinx==1.0.7
+    pip install Sphinx==1.0.7
 
-	cd your-virtual-env-dir/src/pyxform/docs
+    cd your-virtual-env-dir/src/pyxform/docs
 
-	make html
+    make html
 
 Change Log
-=========
+==========
 `Changelog <CHANGES.txt>`_
