@@ -418,6 +418,9 @@ class Survey(Section):
     def date_stamp(self):
         return self._created.strftime("%Y_%m_%d")
 
+    def _to_ugly_xml(self):
+        return '<?xml version="1.0"?>' + self.xml().toxml()
+
     def _to_pretty_xml(self):
         """
         I want the to_xml method to by default validate the xml we are
@@ -512,7 +515,7 @@ class Survey(Section):
             return result, not result == xml_text
         return text, False
 
-    def print_xform_to_file(self, path=None, validate=True, warnings=None):
+    def print_xform_to_file(self, path=None, validate=True, pretty_print=True, warnings=None):
         """
         Print the xForm to a file and optionally validate it as well by
         throwing exceptions and adding warnings to the warnings array.
@@ -523,7 +526,10 @@ class Survey(Section):
             path = self._print_name + ".xml"
         try:
             with codecs.open(path, mode="w", encoding="utf-8") as fp:
-                fp.write(self._to_pretty_xml())
+                if pretty_print:
+                    fp.write(self._to_pretty_xml())
+                else:
+                    fp.write(self._to_ugly_xml())
         except Exception as e:
             if os.path.exists(path):
                 os.unlink(path)
@@ -531,7 +537,7 @@ class Survey(Section):
         if validate:
             warnings.extend(check_xform(path))
 
-    def to_xml(self, validate=True, warnings=None):
+    def to_xml(self, validate=True, pretty_print=True, warnings=None):
         # On Windows, NamedTemporaryFile must be opened exclusively.
         # So it must be explicitly created, opened, closed, and removed.
         tmp = tempfile.NamedTemporaryFile(delete=False)
@@ -539,11 +545,15 @@ class Survey(Section):
         try:
             # this will throw an exception if the xml is not valid
             self.print_xform_to_file(tmp.name, validate=validate,
+                                     pretty_print=pretty_print,
                                      warnings=warnings)
         finally:
             if os.path.exists(tmp.name):
                 os.remove(tmp.name)
-        return self._to_pretty_xml()
+        if pretty_print:
+            return self._to_pretty_xml()
+        else:
+            return self._to_ugly_xml()
 
     def instantiate(self):
         """
