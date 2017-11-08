@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyxform',
-    version='0.9.24',
+    version='0.10.1',
     author='github.com/xlsform',
     author_email='info@xlsform.org',
     packages=find_packages(),
@@ -21,8 +21,8 @@ setup(
     description='A Python package to create XForms for ODK Collect.',
     long_description=open('README.rst', 'rt').read(),
     install_requires=[
-        'xlrd==1.1.0',
-        'unicodecsv==0.14.1',
+        'xlrd>=1.1.0',
+        'unicodecsv>=0.14.1',
         'formencode',
         'unittest2',
     ],
