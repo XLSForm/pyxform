@@ -14,7 +14,7 @@ class WhitespaceTest(PyxformTestCase):
                 '<label><output value=" /issue96/var "/> text </label>',
             ])
 
-    def empty_label_squashing(self):
+    def test_empty_label_squashing(self):
         self.assertPyxformXform(
             name='empty_label',
             debug=True,
