@@ -1,6 +1,6 @@
-============
-pyxform v0.9
-============
+===============
+pyxform v0.10.X
+===============
 
 .. image:: https://travis-ci.org/XLSForm/pyxform.svg?branch=master
     :target: https://travis-ci.org/XLSForm/pyxform
@@ -8,7 +8,7 @@ pyxform v0.9
 pyxform is a Python library that makes writing XForms for ODK Collect and enketo
 easy by converting XLS(X) spreadsheets into XForms. It is used as a library in a number of tools including `the ODK online converter <http://opendatakit.org/xiframe/>`_ and `Ona <https://ona.io>`_.
 
-XLS(X) documents used as input must follow to the `XLSForm standard <http://xlsform.org/>`_ and the resulting output follows the `ODK XForms <https://github.com/opendatakit/xforms-spec>`_ standard. 
+XLS(X) documents used as input must follow to the `XLSForm standard <http://xlsform.org/>`_ and the resulting output follows the `ODK XForms <https://github.com/opendatakit/xforms-spec>`_ standard.
 
 * formhub.org uses the repo here:
 https://github.com/modilabs/pyxform
@@ -18,7 +18,7 @@ pyxform is a major rewrite of `xls2xform <http://github.com/mvpdev/xls2xform/>`_
 Running the latest release of pyxform
 =====================================
 For those who want to convert forms at the command line, the latest official release of pyxform can be installed using `pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_::
-    
+
     pip install pyxform
 
 The ``xls2xform`` command can then be used::
@@ -48,7 +48,7 @@ Consider using a `virtualenv <http://python-guide-pt-br.readthedocs.io/en/latest
 To leave and return to the virtual environment::
 
     (local_pyxform)$ deactivate                    # leave the virtualenv
-    $ xls2xform --help 
+    $ xls2xform --help
     # -bash: xls2xform: command not found
     $ workon local_pyxform                         # reactivate the virtualenv
     (local_pyxform)$ which xls2xform               # & we can access the scripts once again
