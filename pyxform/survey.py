@@ -61,6 +61,8 @@ class Survey(Section):
     def validate(self):
         if self.id_string in [None, 'None']:
             raise PyXFormError('Survey cannot have an empty id_string')
+        # TODO: don't raise error if data-xml has no label
+        # TODO: check for duplicate names of data-xml items
         super(Survey, self).validate()
         self._validate_uniqueness_of_section_names()
 
@@ -138,6 +140,13 @@ class Survey(Section):
             yield node("instance", node("root", *instance_element_list),
                        id=list_name)
 
+    def _generate_remote_instances(self):
+        # TODO: loop through all data-xml items:
+        # TODO: prevent duplicates, see _generate_pulldata_instances, though
+        # it would be more robust to check existing instances in the model so far.
+        name = 'test1'
+        yield node("instance", id=name, src="jr://file/{}.xml".format(name))
+
     def _generate_pulldata_instances(self):
         pulldata = []
         for i in self.iter_descendants():
@@ -184,6 +193,7 @@ class Survey(Section):
             model_children.append(self.itext())
         model_children += [node("instance", self.xml_instance())]
         model_children += list(self._generate_static_instances())
+        model_children += list(self._generate_remote_instances())
         model_children += list(self._generate_pulldata_instances())
         model_children += list(self._generate_from_file_instances())
         model_children += self.xml_bindings()

@@ -856,5 +856,6 @@ QUESTION_TYPE_DICT = \
             "bind": {
                 "type": "binary"
             }
-        }
+        },
+        "data-xml": {}
     }

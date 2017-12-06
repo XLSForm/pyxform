@@ -92,6 +92,10 @@ class SurveyElementBuilder(object):
             d = self._sections[section_name]
             full_survey = self.create_survey_element_from_dict(d)
             return full_survey.children
+        elif d[u"type"] == u"data-xml":
+            # TODO: Build up an array of names (preventing duplicates)
+            # and make that accessible in survey.py
+            print 'found data-xml item with name: '+d[u"name"] 
         else:
             return self._create_question_from_dict(
                 d, copy_json_dict(QUESTION_TYPE_DICT), self._add_none_option)
