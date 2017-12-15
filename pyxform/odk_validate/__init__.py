@@ -60,7 +60,7 @@ def _java_installed():
     stderr = None
     java_regex = re.compile("java version")
     try:
-        stderr = run_popen_with_timeout(["java", "-version"], 100)[3]
+        stderr = run_popen_with_timeout(["java", "-version"], 100)[3].strip().decode('utf-8')
     except:
         pass
     
