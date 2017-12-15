@@ -9,11 +9,12 @@ from datetime import datetime
 from pyxform import constants
 from pyxform.errors import PyXFormError
 from pyxform.instance import SurveyInstance
-from pyxform.odk_validate import check_xform
 from pyxform.question import Question
 from pyxform.section import Section
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import PatchedText, basestring, node, unicode
+from pyxform.validators import odk_validate
+from pyxform.validators import enketo_validate
 
 nsmap = {
     u"xmlns": u"http://www.w3.org/2002/xforms",
@@ -515,7 +516,8 @@ class Survey(Section):
             return result, not result == xml_text
         return text, False
 
-    def print_xform_to_file(self, path=None, validate=True, pretty_print=True, warnings=None):
+    def print_xform_to_file(self, path=None, validate=True, enketo=False,
+                            pretty_print=True, warnings=None):
         """
         Print the xForm to a file and optionally validate it as well by
         throwing exceptions and adding warnings to the warnings array.
@@ -535,7 +537,9 @@ class Survey(Section):
                 os.unlink(path)
             raise e
         if validate:
-            warnings.extend(check_xform(path))
+            warnings.extend(odk_validate.check_xform(path))
+        if enketo:
+            warnings.extend(enketo_validate.check_xform(path))
 
     def to_xml(self, validate=True, pretty_print=True, warnings=None):
         # On Windows, NamedTemporaryFile must be opened exclusively.

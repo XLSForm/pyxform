@@ -8,8 +8,8 @@ import os
 import re
 import sys
 from subprocess import Popen, PIPE
-import threading
-import signal
+from pyxform.validators.util import run_popen_with_timeout, decode_stream
+
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "ODK_Validate.jar")
@@ -19,42 +19,14 @@ class ODKValidateError(Exception):
     pass
 
 
-# Adapted from:
-# http://betabug.ch/blogs/ch-athens/1093
-def run_popen_with_timeout(command, timeout):
-    """
-    Run a sub-program in subprocess.Popen, pass it the input_data,
-    kill it if the specified timeout has passed.
-    returns a tuple of resultcode, timeout, stdout, stderr
-    """
-    kill_check = threading.Event()
-
-    def _kill_process_after_a_timeout(pid):
-        os.kill(pid, signal.SIGTERM)
-        kill_check.set()  # tell the main routine that we had to kill
-        # use SIGKILL if hard to kill...
-        return
-
-    p = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    pid = p.pid
-    watchdog = threading.Timer(
-        timeout, _kill_process_after_a_timeout, args=(pid,))
-    watchdog.start()
-    (stdout, stderr) = p.communicate()
-    watchdog.cancel()  # if it's still waiting to run
-    timeout = kill_check.isSet()
-    kill_check.clear()
-    return p.returncode, timeout, stdout, stderr
-
-
 def _java_installed():
     # This alternative allows for java detection on Windows.
     try:
         p = Popen(["which", "java"], stdout=PIPE).stdout.readlines()
         found = len(p) != 0
     except WindowsError:
-        p = Popen('java -version', stderr=PIPE, stdout=PIPE).stderr.read()
-        found = p.startswith('java version'.encode())
+        p = Popen("java -version", stderr=PIPE, stdout=PIPE).stderr.read()
+        found = p.startswith("java version".encode())
     return found
 
 
@@ -122,18 +94,7 @@ def check_xform(path_to_xform):
     returncode, timeout, stdout, stderr = run_popen_with_timeout(
         ["java", "-jar", ODK_VALIDATE_JAR, path_to_xform], 100)
     warnings = []
-    # On Windows, stderr may be latin-1; in which case utf-8 decode will fail.
-    # If both utf-8 and latin-1 decoding fail then raise all as IOError.
-    # If the above validate jar call fails, add make sure that the java path
-    #  is set, e.g. PATH=C:\Program Files (x86)\Java\jre1.8.0_71\bin
-    try:
-        stderr = stderr.decode('utf-8')
-    except UnicodeDecodeError as ude:
-        try:
-            stderr = stderr.decode('latin-1')
-        except BaseException as be:
-            msg = "Failed to decode validate stderr as utf-8 or latin-1."
-            raise IOError(msg, ude, be)
+    stderr = decode_stream(stderr)
 
     if timeout:
         return ["XForm took to long to completely validate."]

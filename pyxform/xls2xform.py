@@ -12,7 +12,7 @@ use with ODK Collect.
 """
 
 
-def xls2xform_convert(xlsform_path, xform_path, validate=True, pretty_print=True):
+def xls2xform_convert(xlsform_path, xform_path, validate=True, enketo=False, pretty_print=True):
     warnings = []
 
     json_survey = xls2json.parse_file_to_json(xlsform_path, warnings=warnings)
@@ -22,7 +22,7 @@ def xls2xform_convert(xlsform_path, xform_path, validate=True, pretty_print=True
     # This may be desirable since ODK Validate requires launching a subprocess
     # that runs some java code.
     survey.print_xform_to_file(
-        xform_path, validate=validate,
+        xform_path, validate=validate, enketo=enketo,
         pretty_print=pretty_print, warnings=warnings)
     output_dir = os.path.split(xform_path)[0]
     if has_external_choices(json_survey):
@@ -56,6 +56,11 @@ def _create_parser():
         default=True,
         help="Skip default running of ODK Validate on the output XForm XML.")
     parser.add_argument(
+        "--enketo_validate",
+        action="store_true",
+        default=False,
+        help="Run the Enketo form validator as well.")
+    parser.add_argument(
         "--no_pretty_print",
         action="store_false",
         default=True,
@@ -74,7 +79,9 @@ def main_cli():
 
         try:
             response['warnings'] = xls2xform_convert(
-                args.path_to_XLSForm, args.output_path, args.skip_validate, args.no_pretty_print)
+                args.path_to_XLSForm, args.output_path,
+                args.skip_validate, args.enketo_validate,
+                args.no_pretty_print)
 
             response['code'] = 100
             response['message'] = "Ok!"
@@ -90,8 +97,10 @@ def main_cli():
 
         print(json.dumps(response))
     else:
-        warnings = xls2xform_convert(args.path_to_XLSForm, args.output_path,
-                                     args.skip_validate, args.no_pretty_print)
+        warnings = xls2xform_convert(
+            args.path_to_XLSForm, args.output_path,
+            args.skip_validate, args.enketo_validate,
+            args.no_pretty_print)
         if len(warnings) > 0:
             print("Warnings:")
         for w in warnings:

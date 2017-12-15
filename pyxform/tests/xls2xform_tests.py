@@ -53,13 +53,21 @@ class XLS2XFormTests(TestCase):
         args = _create_parser().parse_args(arg_list)
         self.assertEqual(False, args.json)
 
-    def test_create_parser_no_validate_default_true(self):
-        """Should have no_validate=True if not specified."""
+    def test_create_parser_skip_validate_default_true(self):
+        """Should have skip_validate=True if not specified."""
         arg_xlsform = 'xlsform.xlsx'
         arg_output = '.'
         arg_list = [arg_xlsform, arg_output]
         args = _create_parser().parse_args(arg_list)
         self.assertEqual(True, args.skip_validate)
+
+    def test_create_parser_no_enketo_default_false(self):
+        """Should have enketo_validate=False if not specified."""
+        arg_xlsform = 'xlsform.xlsx'
+        arg_output = '.'
+        arg_list = [arg_xlsform, arg_output]
+        args = _create_parser().parse_args(arg_list)
+        self.assertEqual(False, args.enketo_validate)
 
     def test_create_parser_no_pretty_print_default_true(self):
         """Should have no_pretty_print=True if not specified."""

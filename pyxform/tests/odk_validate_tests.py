@@ -1,7 +1,7 @@
-from pyxform.odk_validate import _cleanup_errors
-
 from unittest2 import TestCase
+
 from pyxform.tests.utils import prep_class_config
+from pyxform.validators.odk_validate import _cleanup_errors
 
 
 class ODKValidateTests(TestCase):
