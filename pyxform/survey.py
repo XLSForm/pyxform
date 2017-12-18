@@ -450,7 +450,7 @@ class Survey(Section):
         return '<?xml version="1.0"?>\n' + inline_output
 
     def __repr__(self):
-        return unicode(self)
+        return self.__unicode__()
 
     def __unicode__(self):
         return "<pyxform.survey.Survey instance at %s>" % hex(id(self))
