@@ -7,8 +7,11 @@ from collections import defaultdict
 from datetime import datetime
 
 from pyxform import constants
+from pyxform.external_instance import ExternalInstance
 from pyxform.errors import PyXFormError
+from pyxform.errors import ValidationError
 from pyxform.instance import SurveyInstance
+from pyxform.instance_info import InstanceInfo
 from pyxform.odk_validate import check_xform
 from pyxform.question import Question
 from pyxform.section import Section
@@ -61,8 +64,6 @@ class Survey(Section):
     def validate(self):
         if self.id_string in [None, 'None']:
             raise PyXFormError('Survey cannot have an empty id_string')
-        # TODO: don't raise error if data-xml has no label
-        # TODO: check for duplicate names of data-xml items
         super(Survey, self).validate()
         self._validate_uniqueness_of_section_names()
 
@@ -114,71 +115,155 @@ class Survey(Section):
                     **nsmap
                     )
 
-    def _generate_static_instances(self):
+    def _generate_static_instances(self, list_name, choice_list):
         """
         Generates <instance> elements for static data
         (e.g. choices for select type questions)
         """
-        for list_name, choice_list in self.choices.items():
-            instance_element_list = []
-            for idx, choice in zip(range(len(choice_list)), choice_list):
-                choice_element_list = []
-                # Add a unique id to the choice element incase there is itext
-                # it refrences
-                itext_id = '-'.join(['static_instance', list_name, str(idx)])
-                choice_element_list.append(node("itextId", itext_id))
+        instance_element_list = []
+        for idx, choice in enumerate(choice_list):
+            choice_element_list = []
+            # Add a unique id to the choice element in case there is itext
+            # it references
+            itext_id = '-'.join(['static_instance', list_name, str(idx)])
+            choice_element_list.append(node("itextId", itext_id))
 
-                for choicePropertyName, choicePropertyValue in choice.items():
-                    if isinstance(choicePropertyValue, basestring) \
-                            and choicePropertyName != 'label':
-                        choice_element_list.append(
-                            node(choicePropertyName,
-                                 unicode(choicePropertyValue))
+            for choicePropertyName, choicePropertyValue in choice.items():
+                if isinstance(choicePropertyValue, basestring) \
+                        and choicePropertyName != 'label':
+                    choice_element_list.append(
+                        node(choicePropertyName,
+                             unicode(choicePropertyValue))
+                    )
+            instance_element_list.append(node("item", *choice_element_list))
+        return InstanceInfo(
+            type=u"choice",
+            context=u"survey",
+            name=list_name,
+            unique_id=list_name,
+            instance=node(
+                "instance",
+                node("root", *instance_element_list),
+                id=list_name
+            )
+        )
+
+    def _generate_external_instances(self, element):
+        if isinstance(element, ExternalInstance):
+            return InstanceInfo(
+                type=u"external",
+                context="[type: {t}, name: {n}]".format(
+                    t=element[u"parent"][u"type"],
+                    n=element[u"parent"][u"name"]
+                ),
+                name=element[u"name"],
+                unique_id=(element[u"name"],),
+                instance=element.xml_instance()
+            )
+
+    def _validate_external_instances(self, instances):
+        """
+        Must have unique names.
+
+        - Duplications could come from across groups; this checks the form.
+        - Errors are pooled together into a (hopefully) helpful message.
+        """
+        seen = {}
+        for i in instances:
+            element = i.name
+            if seen.get(element) is None:
+                seen[element] = [i]
+            else:
+                seen[element].append(i)
+        errors = []
+        for element, copies in seen.items():
+            if 1 < len(copies):
+                contexts = ", ".join(x.context for x in copies)
+                errors.append(
+                    "Instance names must be unique within a form. "
+                    "The name '{i}' was found {c} time(s), "
+                    "under these contexts: {contexts}".format(
+                        i=element, c=len(copies), contexts=contexts))
+        if 0 < len(errors):
+            raise ValidationError("\n".join(errors))
+
+    def _generate_pulldata_instances(self, element):
+        if 'calculate' in element['bind']:
+            calculate = element['bind']['calculate']
+            if calculate.startswith('pulldata('):
+                pieces = calculate.split('"') \
+                    if '"' in calculate else calculate.split("'")
+                if len(pieces) > 1 and pieces[1]:
+                    file_id = pieces[1]
+                    uri = "jr://file-csv/{}.csv".format(file_id)
+                    return InstanceInfo(
+                        type=u"pulldata",
+                        context="[type: {t}, name: {n}]".format(
+                            t=element[u"parent"][u"type"],
+                            n=element[u"parent"][u"name"]
+                        ),
+                        name=file_id,
+                        unique_id=(file_id, uri),
+                        instance=node(
+                            "instance",
+                            id=file_id,
+                            src=uri
                         )
-                instance_element_list.append(node("item",
-                                                  *choice_element_list))
-            yield node("instance", node("root", *instance_element_list),
-                       id=list_name)
+                    )
 
-    def _generate_remote_instances(self):
-        # TODO: loop through all data-xml items:
-        # TODO: prevent duplicates, see _generate_pulldata_instances, though
-        # it would be more robust to check existing instances in the model so far.
-        name = 'test1'
-        yield node("instance", id=name, src="jr://file/{}.xml".format(name))
-
-    def _generate_pulldata_instances(self):
-        pulldata = []
-        for i in self.iter_descendants():
-            if 'calculate' in i['bind']:
-                calculate = i['bind']['calculate']
-                if calculate.startswith('pulldata('):
-                    pieces = calculate.split('"') \
-                        if '"' in calculate else calculate.split("'")
-                    if len(pieces) > 1 and pieces[1] not in pulldata:
-                        csv_id = pieces[1]
-                        pulldata.append(csv_id)
-
-                        yield node("instance", id=csv_id,
-                                   src="jr://file-csv/{}.csv".format(csv_id)
-                                   )
-
-    def _generate_from_file_instances(self):
-        for i in self.iter_descendants():
-            itemset = i.get('itemset')
-            if itemset and \
-                    (itemset.endswith('.csv') or itemset.endswith('.xml')):
-                file_id, ext = os.path.splitext(itemset)
-                uri = 'jr://%s/%s' % (
-                    'file' if ext == '.xml' else "file-%s" % ext[1:],
-                    itemset)
-                yield node(
+    def _generate_from_file_instances(self, element):
+        itemset = element.get('itemset')
+        if itemset and (itemset.endswith('.csv') or itemset.endswith('.xml')):
+            file_id, ext = os.path.splitext(itemset)
+            uri = 'jr://%s/%s' % (
+                'file' if ext == '.xml' else "file-%s" % ext[1:], itemset)
+            return InstanceInfo(
+                type=u"file",
+                context="[type: {t}, name: {n}]".format(
+                    t=element[u"parent"][u"type"],
+                    n=element[u"parent"][u"name"]
+                ),
+                name=file_id,
+                unique_id=(file_id, uri),
+                instance=node(
                     "instance",
                     node("root",
-                         node("item", node("name", "_"), node("label", "_"))),
+                         node("item",
+                              node("name", "_"),
+                              node("label", "_"))),
                     id=file_id,
                     src=uri
                 )
+            )
+
+    def _generate_instances(self):
+        """
+        Get instances from all the different ways that they may be generated.
+
+        An opportunity to validate instances before output to the XML model.
+        """
+        instances = []
+        for k, v in self.choices.items():
+            instances += [
+                self._generate_static_instances(list_name=k, choice_list=v)]
+        for i in self.iter_descendants():
+            ext = self._generate_external_instances(element=i)
+            pull = self._generate_pulldata_instances(element=i)
+            file = self._generate_from_file_instances(element=i)
+            instances += [x for x in [ext, pull, file] if x is not None]
+
+        # Check that external instances have unique names.
+        if 0 < len(instances):
+            ext_only = [x for x in instances if x.type == "external"]
+            self._validate_external_instances(instances=ext_only)
+
+        # Only output the exact same instance once.
+        # Identification varies by instance generation type: id +/- src.
+        seen = []
+        for i in instances:
+            if i.unique_id not in seen:
+                yield i.instance
+            seen.append(i.unique_id)
 
     def xml_model(self):
         """
@@ -192,10 +277,7 @@ class Survey(Section):
         if self._translations:
             model_children.append(self.itext())
         model_children += [node("instance", self.xml_instance())]
-        model_children += list(self._generate_static_instances())
-        model_children += list(self._generate_remote_instances())
-        model_children += list(self._generate_pulldata_instances())
-        model_children += list(self._generate_from_file_instances())
+        model_children += list(self._generate_instances())
         model_children += self.xml_bindings()
 
         if self.submission_url or self.public_key:

@@ -857,5 +857,7 @@ QUESTION_TYPE_DICT = \
                 "type": "binary"
             }
         },
-        "data-xml": {}
+        "xml-data": {
+            # Only effect is to add an external instance.
+        }
     }

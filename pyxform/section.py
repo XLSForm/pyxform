@@ -1,3 +1,4 @@
+from pyxform.external_instance import ExternalInstance
 from pyxform.question import SurveyElement
 from pyxform.utils import node
 from pyxform.errors import PyXFormError
@@ -38,6 +39,8 @@ class Section(SurveyElement):
             if child.get(u"flat"):
                 for grandchild in child.xml_instance_array():
                     result.appendChild(grandchild)
+            elif isinstance(child, ExternalInstance):
+                continue
             else:
                 result.appendChild(child.xml_instance())
         return result
