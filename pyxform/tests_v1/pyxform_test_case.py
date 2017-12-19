@@ -240,7 +240,9 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 "Expected valid survey but compilation failed. "
                 "Try correcting the error with 'debug=True', "
                 "setting 'errored=True', "
-                "and or optionally 'error__contains=[...]'")
+                "and or optionally 'error__contains=[...]'"
+                "\nError(s): " + "\n".join(errors)
+            )
         elif survey and expecting_invalid_survey:
             raise PyxformTestError("Expected survey to be invalid.")
 
