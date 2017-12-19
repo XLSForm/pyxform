@@ -358,7 +358,7 @@ class SurveyElement(dict):
         The control depends on what type of question we're asking, it
         doesn't make sense to implement here in the base class.
         """
-        raise Exception("Control not implemented")
+        raise NotImplementedError("Control not implemented")
 
 
 def hashable(v):
