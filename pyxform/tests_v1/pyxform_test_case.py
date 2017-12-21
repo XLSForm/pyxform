@@ -13,7 +13,7 @@ from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
 from pyxform.odk_validate import ODKValidateError, check_xform
 from pyxform.tests_v1.test_utils.md_table import md_table_to_ss_structure
-from pyxform.utils import NSMAP
+from pyxform.utils import NSMAP, unicode
 from pyxform.xls2json import workbook_to_json
 
 
@@ -28,17 +28,17 @@ class PyxformMarkdown(object):
         if kwargs is None:
             kwargs = {}
         if autoname:
-            kwargs = self._autonameInputs(kwargs)
+            kwargs = self._autoname_inputs(kwargs)
         _md = []
         for line in md_raw.split('\n'):
-            if re.match(r'^\s+\#', line):
+            if re.match(r'^\s+#', line):
                 # ignore lines which start with pound sign
                 continue
-            elif re.match(r'^(.*)(\#[^\|]+)$', line):
+            elif re.match(r'^(.*)(#[^|]+)$', line):
                 # keep everything before the # outside of the last occurrence
                 # of |
                 _md.append(
-                    re.match(r'^(.*)(\#[^\|]+)$', line).groups()[0].strip())
+                    re.match(r'^(.*)(#[^|]+)$', line).groups()[0].strip())
             else:
                 _md.append(line.strip())
         md = '\n'.join(_md)
@@ -65,7 +65,8 @@ class PyxformMarkdown(object):
 
         return self._ss_structure_to_pyxform_survey(sheets, kwargs)
 
-    def _ss_structure_to_pyxform_survey(self, ss_structure, kwargs):
+    @staticmethod
+    def _ss_structure_to_pyxform_survey(ss_structure, kwargs):
         # using existing methods from the builder
         imported_survey_json = workbook_to_json(ss_structure)
         # ideally, when all these tests are working, this would be
@@ -77,7 +78,24 @@ class PyxformMarkdown(object):
 
         return survey
 
-    def _autonameInputs(self, kwargs):
+    @staticmethod
+    def _run_odk_validate(xml):
+        # On Windows, NamedTemporaryFile must be opened exclusively.
+        # So it must be explicitly created, opened, closed, and removed
+        tmp = tempfile.NamedTemporaryFile(suffix='.xml', delete=False)
+        tmp.close()
+        try:
+            with codecs.open(tmp.name, mode="w", encoding="utf-8") as fp:
+                fp.write(xml)
+                fp.close()
+            check_xform(tmp.name)
+        finally:
+            # Clean up the temporary file
+            os.remove(tmp.name)
+            assert not os.path.isfile(tmp.name)
+
+    @staticmethod
+    def _autoname_inputs(kwargs):
         """
         title and name are necessary for surveys, but not always convenient to
         include in test cases, so this will pull a default value
@@ -95,6 +113,7 @@ class PyxformMarkdown(object):
 
 
 class PyxformTestCase(PyxformMarkdown, TestCase):
+
     def assertPyxformXform(self, **kwargs):
         """
         PyxformTestCase.assertPyxformXform() named arguments:
@@ -139,10 +158,10 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
 
         try:
             if 'md' in kwargs.keys():
-                kwargs = self._autonameInputs(kwargs)
+                kwargs = self._autoname_inputs(kwargs)
                 survey = self.md_to_pyxform_survey(kwargs.get('md'), kwargs)
             elif 'ss_structure' in kwargs.keys():
-                kwargs = self._autonameInputs(kwargs)
+                kwargs = self._autoname_inputs(kwargs)
                 survey = self._ss_structure_to_pyxform_survey(
                     kwargs.get('ss_structure'), kwargs)
             else:
@@ -172,30 +191,13 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             if debug:
                 print(xml)
             if run_odk_validate:
-                # On Windows, NamedTemporaryFile must be opened exclusively.
-                # So it must be explicitly created, opened, closed, and removed
-                tmp = tempfile.NamedTemporaryFile(suffix='.xml', delete=False)
-                tmp.close()
-                try:
-                    with codecs.open(
-                            tmp.name, mode="w", encoding="utf-8") as fp:
-                        if '_xml_append' in kwargs:
-                            xml += kwargs['_xml_append']
-                        fp.write(xml)
-                        fp.close()
-                    check_xform(tmp.name)
-                finally:
-                    # Clean up the temporary file
-                    os.remove(tmp.name)
-                    assert not os.path.isfile(tmp.name)
-
+                self._run_odk_validate(xml=xml)
                 if len(odk_validate_error__contains) > 0:
-                    raise PyxformTestError(
-                        "ODKValidateError was not raised"
-                        )
+                    raise PyxformTestError("ODKValidateError was not raised")
+
         except PyXFormError as e:
             survey = False
-            errors = [str(e)]
+            errors = [unicode(e)]
             if debug:
                 print("<xml unavailable />")
                 print("ERROR: '%s'" % errors[0])
@@ -203,9 +205,9 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             if len(odk_validate_error__contains) is 0:
                 raise PyxformTestError("ODK Validate error was thrown but " +
                                        "'odk_validate_error__contains'" +
-                                       " was empty:" + e.message)
+                                       " was empty:" + unicode(e))
             for v_err in odk_validate_error__contains:
-                self.assertContains(e.message, v_err,
+                self.assertContains(unicode(e), v_err,
                                     msg_prefix='odk_validate_error__contains')
         else:
             survey = True
@@ -216,8 +218,8 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
 
                 def check_content(content):
                     text_arr = kwargs[contains_str]
-                    for text in text_arr:
-                        self.assertContains(content, text, msg_prefix=keyword)
+                    for i in text_arr:
+                        self.assertContains(content, i, msg_prefix=keyword)
 
                 return contains_str, check_content
 
@@ -254,7 +256,8 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 self.assertContains(joined_error, text,
                                     msg_prefix="error__contains")
 
-    def _assert_contains(self, content, text, msg_prefix):
+    @staticmethod
+    def _assert_contains(content, text, msg_prefix):
         if msg_prefix:
             msg_prefix += ": "
 
