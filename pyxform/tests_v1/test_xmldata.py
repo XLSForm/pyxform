@@ -18,7 +18,8 @@ class ExternalInstanceTests(PyxformTestCase):
             """,
             model__contains=[
                 '<instance id="mydata" src="jr://file/mydata.xml"/>'
-            ]
+            ],
+            run_odk_validate=True
         )
 
     def test_external_two_in_section_duplicate_raises(self):
@@ -48,7 +49,8 @@ class ExternalInstanceTests(PyxformTestCase):
             model__contains=[
                 '<instance id="mydata" src="jr://file/mydata.xml"/>',
                 '<instance id="mydata2" src="jr://file/mydata2.xml"/>'
-            ]
+            ],
+            run_odk_validate=True
         )
 
     def test_external_multi_group_duplicate_raises(self):
@@ -100,11 +102,14 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | xml-data    | mydata  |                  |
             |        | begin group | g1      |                  |
             |        | xml-data    | mydata1 |                  |
+            |        | note        | note1   | It's note-able   |
             |        | end group   | g1      |                  |
             |        | begin group | g2      |                  |
+            |        | note        | note2   | It's note-able   |
             |        | xml-data    | mydata2 |                  |
             |        | end group   | g2      |                  |
             |        | begin group | g3      |                  |
+            |        | note        | note3   | It's note-able   |
             |        | xml-data    | mydata3 |                  |
             |        | end group   | g3      |                  |
             """,
@@ -113,7 +118,8 @@ class ExternalInstanceTests(PyxformTestCase):
                 '<instance id="mydata1" src="jr://file/mydata1.xml"/>',
                 '<instance id="mydata2" src="jr://file/mydata2.xml"/>',
                 '<instance id="mydata3" src="jr://file/mydata3.xml"/>'
-            ]
+            ],
+            run_odk_validate=True
         )
 
     def test_instance_names_other_sources_duplicate_raises(self):
@@ -149,6 +155,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | type                                 | name  | label | calculation  |
             |        | begin group                          | g1    |       |              |
             |        | xml-data                             | city1 |       |              |
+            |        | note                                 | note1 | Note  |              |
             |        | end group                            | g1    |       |              |
             |        | begin group                          | g2    |       |              |
             |        | select_one_from_file cities.csv      | city2 | City2 |              |
@@ -158,6 +165,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | end group                            | g3    |       |              |
             |        | begin group                          | g4    |       |              |
             |        | calculate                            | city4 | City4 | pulldata('fruits', 'name', 'name', 'mango') |
+            |        | note                                 | note4 | Note  |              |
             |        | end group                            | g4    |       |              |
             """,
             model__contains=[
@@ -173,19 +181,112 @@ class ExternalInstanceTests(PyxformTestCase):
       </instance>
 """,
                 '<instance id="fruits" src="jr://file-csv/fruits.csv"/>'
-            ]
+            ],
+            run_odk_validate=True
         )
 
-    @skip("Usage scenarios TBA but it might look something like this.")
-    def test_external_usage_scenario(self):
+    def test_one_instance_per_external_select(self):
+        """Using a select from file should output 1 instance: #88 bug test"""
+        md = """
+            | survey  |                                      |       |       |                                    |
+            |         | type                                 | name  | label | choice_filter                      |
+            |         | select_one_from_file states.csv      | state | State |                                    |
+            |         | select_one_from_file cities.csv      | city  | City  | state=/select_from_file_test/State |
+            |         | select_one regular                   | test  | Test  |                                    |
+            | choices |                                      |       |       |                                    |
+            |         | list_name                            | name  | label |                                    |
+            |         | states                               | name  | label |                                    |
+            |         | cities                               | name  | label |                                    |
+            |         | regular                              | 1     | Pass  |                                    |
+            |         | regular                              | 2     | Fail  |                                    |
+            """
         self.assertPyxformXform(
-            md="""
-            | survey |             |           |                  | 
-            |        | type        | name      | label            | bind::type  |  calculation  
-            |        | calculate   | external1 |                  | External    |  oc-item(event1(1), form2, item3(1))
-            |        | note        | ext_note  | The external value is ${external_1} |     |
-            """,
+            md=md,
             model__contains=[
-                # TODO: not sure what
-                ])
+"""
+      <instance id="states" src="jr://file-csv/states.csv">
+        <root>
+          <item>
+            <name>_</name>
+            <label>_</label>
+          </item>
+        </root>
+      </instance>
+""",
+"""
+      <instance id="cities" src="jr://file-csv/cities.csv">
+        <root>
+          <item>
+            <name>_</name>
+            <label>_</label>
+          </item>
+        </root>
+      </instance>
+""",
+"""
+      <instance id="regular">
+        <root>
+          <item>
+            <itextId>static_instance-regular-0</itextId>
+            <name>1</name>
+          </item>
+          <item>
+            <itextId>static_instance-regular-1</itextId>
+            <name>2</name>
+          </item>
+        </root>
+      </instance>
+"""
+            ],
+            run_odk_validate=True
+        )
+        survey = self.md_to_pyxform_survey(md_raw=md)
+        xml = survey._to_pretty_xml()
+        unwanted_extra_states = \
+"""
+      <instance id="regular">
+        <root>
+          <item>
+            <itextId>static_instance-states-0</itextId>
+            <name>1</name>
+          </item>
+        </root>
+      </instance>
+"""
+        self.assertNotIn(unwanted_extra_states, xml)
+        unwanted_extra_cities = \
+            """
+                  <instance id="regular">
+                    <root>
+                      <item>
+                        <itextId>static_instance-cities-0</itextId>
+                        <name>1</name>
+                      </item>
+                    </root>
+                  </instance>
+            """
+        self.assertNotIn(unwanted_extra_cities, xml)
 
+    def test_no_duplicate_with_pulldata(self):
+        """Using xml-data and pulldata should not output 2 instances."""
+        md = """
+            | survey |                                      |        |       |              |
+            |        | type                                 | name   | label | calculation  |
+            |        | begin group                          | g1     |       |              |
+            |        | xml-data                             | fruits |       |              |
+            |        | calculate                            | f_csv  | City  | pulldata('fruits', 'name', 'name', 'mango') |
+            |        | note                                 | note   | Fruity! ${f_csv} |   |
+            |        | end group                            | g1     |       |              |
+            """
+        self.assertPyxformXform(
+            md=md,
+            model__contains=[
+                '<instance id="fruits" src="jr://file/fruits.xml"/>',
+            ],
+            run_odk_validate=True
+        )
+        survey = self.md_to_pyxform_survey(md_raw=md)
+        xml = survey._to_pretty_xml()
+        unwanted_extra_fruits = \
+            '<instance id="fruits" src="jr://file-csv/fruits.csv"/>'
+        self.assertNotIn(unwanted_extra_fruits, xml)

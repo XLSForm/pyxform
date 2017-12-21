@@ -139,7 +139,6 @@ class Survey(Section):
             type=u"choice",
             context=u"survey",
             name=list_name,
-            unique_id=list_name,
             instance=node(
                 "instance",
                 node("root", *instance_element_list),
@@ -157,7 +156,6 @@ class Survey(Section):
                     n=element[u"parent"][u"name"]
                 ),
                 name=element[u"name"],
-                unique_id=(element[u"name"],),
                 instance=element.xml_instance()
             )
 
@@ -205,7 +203,6 @@ class Survey(Section):
                             n=element[u"parent"][u"name"]
                         ),
                         name=file_id,
-                        unique_id=(file_id, uri),
                         instance=node(
                             "instance",
                             id=file_id,
@@ -227,7 +224,6 @@ class Survey(Section):
                     n=element[u"parent"][u"name"]
                 ),
                 name=file_id,
-                unique_id=(file_id, uri),
                 instance=node(
                     "instance",
                     node("root",
@@ -244,16 +240,39 @@ class Survey(Section):
         Get instances from all the different ways that they may be generated.
 
         An opportunity to validate instances before output to the XML model.
+
+        Instance names used for the id attribute are generated as follows:
+
+        - xml-data: item name value (for type==xml-data)
+        - pulldata: first arg to calculation->pulldata()
+        - select from file: file name arg to type->itemset
+        - choices: list_name (for type==select_*)
+
+        Validation and business rules for output of instances:
+
+        - xml-data item name must be unique across the XForm and the form is
+          considered invalid if there is a duplicate name. This differs from
+          other item types which allow duplicates if not in the same group.
+        - for all instance sources, if the same instance name is encountered,
+          only the first instance definition will be output, even if the
+          instance definitions are different (i.e. external XML, external CSV,
+          or select_* placeholder instances). The "first instance" is
+          determined by the item position in the survey sheet, then by the
+          list_name in the choices sheet. This is done to allow users to re-use
+          external sources without duplicate instances being generated in the
+          XForm document. However, it does require careful in form design.
         """
         instances = []
+        for i in self.iter_descendants():
+            i_ext = self._generate_external_instances(element=i)
+            i_pull = self._generate_pulldata_instances(element=i)
+            i_file = self._generate_from_file_instances(element=i)
+            instances += [x for x in [i_ext, i_pull, i_file] if x is not None]
+
+        # Append last so the choice instance is excluded on a name clash.
         for k, v in self.choices.items():
             instances += [
                 self._generate_static_instances(list_name=k, choice_list=v)]
-        for i in self.iter_descendants():
-            ext = self._generate_external_instances(element=i)
-            pull = self._generate_pulldata_instances(element=i)
-            file = self._generate_from_file_instances(element=i)
-            instances += [x for x in [ext, pull, file] if x is not None]
 
         # Check that external instances have unique names.
         if 0 < len(instances):
@@ -261,12 +280,13 @@ class Survey(Section):
             self._validate_external_instances(instances=ext_only)
 
         # Only output the exact same instance once.
-        # Identification varies by instance generation type: id +/- src.
         seen = []
         for i in instances:
-            if i.unique_id not in seen:
+            if i.name not in seen:
                 yield i.instance
-            seen.append(i.unique_id)
+            else:
+                pass  # TODO: warn user in case it was unintentional duplicate
+            seen.append(i.name)
 
     def xml_model(self):
         """
