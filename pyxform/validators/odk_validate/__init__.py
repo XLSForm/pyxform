@@ -5,9 +5,9 @@ odk_validate.py
 A python wrapper around ODK Validate
 """
 import os
-import re
 import sys
 from pyxform.validators.util import run_popen_with_timeout, decode_stream
+from pyxform.validators.error_cleaner import ErrorCleaner
 
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -22,51 +22,6 @@ def _java_installed():
     stderr = run_popen_with_timeout(["java", "-version"], 100)[3]
     stderr = stderr.strip().decode('utf-8')
     return "java version" in stderr
-
-
-def _cleanup_errors(error_message):
-    def get_last_item(xpath_str):
-        l = xpath_str.split("/")
-        return l[len(l) - 1]
-
-    def replace_function(match):
-        strmatch = match.group()
-        # eliminate e.g /html/body/select1[@ref=/id_string/elId]/item/value
-        # instance('q4')/root/item[...]
-        if strmatch.startswith("/html/body") \
-                or strmatch.startswith("/root/item") \
-                or strmatch.startswith("/html/head/model/bind") \
-                or strmatch.endswith("/item/value"):
-            return strmatch
-        return "${%s}" % get_last_item(match.group())
-
-    pattern = "(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)"
-    # moving flags into compile for python 2.6 compat
-    error_message = re.compile(pattern, flags=re.I).sub(replace_function,
-                                                        error_message)
-    k = []
-    lastline = ''
-    for line in error_message.splitlines():
-        # has a java filename (with line number)
-        has_java_filename = line.find('.java:') is not -1
-        # starts with '    at java class path or method path'
-        is_a_java_method = line.find('\tat') is not -1
-        # is the same as the last line
-        is_duplicate = (line == lastline)
-        lastline = line
-        if not has_java_filename and not is_a_java_method and not is_duplicate:
-            # remove java.lang.RuntimeException
-            if line.startswith('java.lang.RuntimeException: '):
-                line = line.replace('java.lang.RuntimeException: ', '')
-            # remove org.javarosa.xpath.XPathUnhandledException
-            if line.startswith('org.javarosa.xpath.XPathUnhandledException: '):
-                line = line.replace(
-                    'org.javarosa.xpath.XPathUnhandledException: ', '')
-            # remove java.lang.NullPointerException
-            if line.startswith('java.lang.NullPointerException'):
-                continue
-            k.append(line)
-    return u'\n'.join(k)
 
 
 def check_xform(path_to_xform):
@@ -95,7 +50,7 @@ def check_xform(path_to_xform):
     else:
         if returncode > 0:  # Error invalid
             raise ODKValidateError(
-                'ODK Validate Errors:\n' + _cleanup_errors(stderr))
+                'ODK Validate Errors:\n' + ErrorCleaner.odk_validate(stderr))
         elif returncode == 0:
             if stderr:
                 warnings.append('ODK Validate Warnings:\n' + stderr)

@@ -1,6 +1,6 @@
 import os
-from subprocess import Popen, PIPE
 from pyxform.validators.util import run_popen_with_timeout, decode_stream
+from pyxform.validators.error_cleaner import ErrorCleaner
 
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -12,16 +12,9 @@ class EnketoValidateError(Exception):
 
 
 def _node_installed():
-    try:
-        p = Popen(["which", "node"], stdout=PIPE).stdout.readlines()
-        found = len(p) != 0
-    except WindowsError:
-        p = Popen("node --version", stdout=PIPE)
-        result = p.stdout.read()
-        if not p.stdout.closed:
-            p.stdout.close()
-        found = result.startswith("v".encode())
-    return found
+    stdout = run_popen_with_timeout(["node", "--help"], 100)[2]
+    stdout = stdout.strip().decode('utf-8')
+    return "Usage: node" in stdout
 
 
 def check_xform(path_to_xform):
@@ -49,7 +42,8 @@ def check_xform(path_to_xform):
     else:
         if returncode > 0:  # Error invalid
             raise EnketoValidateError(
-                'Enketo Validate Errors:\n' + stderr)
+                'Enketo Validate Errors:\n' +
+                ErrorCleaner.enketo_validate(stderr))
         elif returncode == 0:
             if stdout:
                 warnings.append('Enketo Validate Warnings:\n' + stdout)
