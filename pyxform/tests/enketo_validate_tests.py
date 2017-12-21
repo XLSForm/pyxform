@@ -4,7 +4,7 @@ from pyxform.tests.utils import prep_class_config
 from pyxform.validators.enketo_validate import check_xform
 
 
-class ODKValidateTests(TestCase):
+class EnketoValidateTests(TestCase):
     maxDiff = None
 
     @classmethod
@@ -13,4 +13,5 @@ class ODKValidateTests(TestCase):
 
     def test_todo(self):
         # TODO: checks around enketo-validate behaviour
-        self.assertListEqual(["Enketo Validate Warnings:\nHello world\n"], check_xform(""))
+        self.assertListEqual(
+            ["Enketo Validate Warnings:\nHello world\n"], check_xform(""))
