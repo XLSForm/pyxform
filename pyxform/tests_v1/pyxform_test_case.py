@@ -12,8 +12,8 @@ from unittest import TestCase
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
 from pyxform.odk_validate import ODKValidateError, check_xform
-from pyxform.survey import nsmap
 from pyxform.tests_v1.test_utils.md_table import md_table_to_ss_structure
+from pyxform.utils import NSMAP
 from pyxform.xls2json import workbook_to_json
 
 
@@ -152,7 +152,9 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             root = ETree.fromstring(xml.encode('utf-8'))
 
             # Ensure all namespaces are present, even if unused
-            root.attrib.update(**nsmap)
+            final_nsmap = NSMAP.copy()
+            final_nsmap.update(survey.get_nsmap())
+            root.attrib.update(final_nsmap)
 
             xml_nodes['xml'] = root
 

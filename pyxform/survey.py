@@ -16,20 +16,16 @@ from pyxform.odk_validate import check_xform
 from pyxform.question import Question
 from pyxform.section import Section
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import PatchedText, basestring, node, unicode
+from pyxform.utils import PatchedText, basestring, node, unicode, NSMAP
 
-nsmap = {
-    u"xmlns": u"http://www.w3.org/2002/xforms",
-    u"xmlns:h": u"http://www.w3.org/1999/xhtml",
-    u"xmlns:ev": u"http://www.w3.org/2001/xml-events",
-    u"xmlns:xsd": u"http://www.w3.org/2001/XMLSchema",
-    u"xmlns:jr": u"http://openrosa.org/javarosa",
-    u"xmlns:orx": u"http://openrosa.org/xforms"
-    }
 
-for prefix, uri in nsmap.items():
-    prefix = prefix.replace("xmlns", "").replace(":", "")
-    ETree.register_namespace(prefix, uri)
+def register_nsmap():
+    for prefix, uri in NSMAP.items():
+        prefix_no_xmlns = prefix.replace("xmlns", "").replace(":", "")
+        ETree.register_namespace(prefix_no_xmlns, uri)
+
+
+register_nsmap()
 
 
 class Survey(Section):
@@ -86,12 +82,14 @@ class Survey(Section):
                 if len(ns.split('=')) == 2 and ns.split('=')[0] != ''
             ]
             xmlns = u'xmlns:'
+            nsmap = NSMAP.copy()
             nsmap.update(dict([
                 (xmlns + k, v.replace('"', '').replace("'", ""))
                 for k, v in nslist if xmlns + k not in nsmap
             ]))
-
-        return nsmap
+            return nsmap
+        else:
+            return NSMAP
 
     def xml(self):
         """
@@ -115,7 +113,8 @@ class Survey(Section):
                     **nsmap
                     )
 
-    def _generate_static_instances(self, list_name, choice_list):
+    @staticmethod
+    def _generate_static_instances(list_name, choice_list):
         """
         Generates <instance> elements for static data
         (e.g. choices for select type questions)
@@ -148,7 +147,8 @@ class Survey(Section):
             )
         )
 
-    def _generate_external_instances(self, element):
+    @staticmethod
+    def _generate_external_instances(element):
         if isinstance(element, ExternalInstance):
             return InstanceInfo(
                 type=u"external",
@@ -161,7 +161,8 @@ class Survey(Section):
                 instance=element.xml_instance()
             )
 
-    def _validate_external_instances(self, instances):
+    @staticmethod
+    def _validate_external_instances(instances):
         """
         Must have unique names.
 
@@ -187,7 +188,8 @@ class Survey(Section):
         if 0 < len(errors):
             raise ValidationError("\n".join(errors))
 
-    def _generate_pulldata_instances(self, element):
+    @staticmethod
+    def _generate_pulldata_instances(element):
         if 'calculate' in element['bind']:
             calculate = element['bind']['calculate']
             if calculate.startswith('pulldata('):
@@ -211,7 +213,8 @@ class Survey(Section):
                         )
                     )
 
-    def _generate_from_file_instances(self, element):
+    @staticmethod
+    def _generate_from_file_instances(element):
         itemset = element.get('itemset')
         if itemset and (itemset.endswith('.csv') or itemset.endswith('.xml')):
             file_id, ext = os.path.splitext(itemset)
@@ -524,7 +527,7 @@ class Survey(Section):
         # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
         xml_with_linebreaks = self.xml().toprettyxml(indent='  ')
         text_re = re.compile('(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)', re.DOTALL)
-        output_re = re.compile('\n.*(<output.*>)\n(  )*')
+        output_re = re.compile('\n.*(<output.*>)\n(\s\s)*')
         pretty_xml = text_re.sub(lambda m: ''.join(m.group(1, 2, 3)), xml_with_linebreaks)
         inline_output = output_re.sub('\g<1>', pretty_xml)
         inline_output = re.compile('<label>\s*\n*\s*\n*\s*</label>')\
