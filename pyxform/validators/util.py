@@ -1,4 +1,5 @@
 import os
+import subprocess
 from subprocess import Popen, PIPE
 import threading
 import signal
@@ -20,7 +21,20 @@ def run_popen_with_timeout(command, timeout):
         # use SIGKILL if hard to kill...
         return
 
-    p = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    # Workarounds for pyinstaller
+    # https://github.com/pyinstaller/pyinstaller/wiki/Recipe-subprocess
+    startup_info = None
+    if os.name == 'nt':
+        # disable command window when run from pyinstaller
+        startup = subprocess.STARTUPINFO()
+        # Less fancy version of bitwise-or-assignment (x |= y) shown in ref url.
+        if startup.dwFlags == 1 or subprocess.STARTF_USESHOWWINDOW == 1:
+            startup.dwFlags = 1
+        else:
+            startup.dwFlags = 0
+
+    p = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+              startupinfo=startup_info)
     pid = p.pid
     watchdog = threading.Timer(
         timeout, _kill_process_after_a_timeout, args=(pid,))

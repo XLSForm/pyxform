@@ -7,35 +7,22 @@ A python wrapper around ODK Validate
 import os
 import re
 import sys
-import subprocess
-from subprocess import Popen, PIPE
 from pyxform.validators.util import run_popen_with_timeout, decode_stream
 
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "ODK_Validate.jar")
 
-# Workarounds for pyinstaller
-# https://github.com/pyinstaller/pyinstaller/wiki/Recipe-subprocess
-STARTUPINFO = None
-if os.name == 'nt':
-    # disable command window when run from pyinstaller
-    STARTUPINFO = subprocess.STARTUPINFO()
-    STARTUPINFO.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
 class ODKValidateError(Exception):
     pass
 
 
 def _java_installed():
-    stderr = None
-    java_regex = re.compile("java version")
-    try:
-        stderr = run_popen_with_timeout(["java", "-version"], 100)[3].strip().decode('utf-8')
-    except:
-        pass
+    stderr = run_popen_with_timeout(["java", "-version"], 100)[3]
+    stderr = stderr.strip().decode('utf-8')
+    return "java version" in stderr
 
-    return stderr and java_regex.match(stderr)
 
 def _cleanup_errors(error_message):
     def get_last_item(xpath_str):
