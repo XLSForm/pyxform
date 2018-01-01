@@ -261,6 +261,15 @@ class Survey(Section):
           list_name in the choices sheet. This is done to allow users to re-use
           external sources without duplicate instances being generated in the
           XForm document. However, it does require careful in form design.
+
+        There are two other things currently supported by pyxform that involve
+        external files and are not explicitly handled here, but may be relevant
+        to future efforts to harmonise / simplify external data workflows:
+
+        - `search` appearance/function: works a lot like pulldata but the csv
+          isn't made explicit in the form.
+        - `select_one_external`: implicitly relies on a `itemsets.csv` file and
+          uses XPath-like expressions for querying.
         """
         instances = []
         for i in self.iter_descendants():
