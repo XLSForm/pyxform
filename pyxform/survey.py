@@ -262,14 +262,14 @@ class Survey(Section):
 
         Instance names used for the id attribute are generated as follows:
 
-        - xml-data: item name value (for type==xml-data)
+        - xml-external: item name value (for type==xml-external)
         - pulldata: first arg to calculation->pulldata()
         - select from file: file name arg to type->itemset
         - choices: list_name (for type==select_*)
 
         Validation and business rules for output of instances:
 
-        - xml-data item name must be unique across the XForm and the form is
+        - xml-external item name must be unique across the XForm and the form is
           considered invalid if there is a duplicate name. This differs from
           other item types which allow duplicates if not in the same group.
         - for all instance sources, if the same instance name is encountered,

@@ -13,9 +13,9 @@ class ExternalInstanceTests(PyxformTestCase):
         """Simplest possible example to include an external instance."""
         self.assertPyxformXform(
             md="""
-            | survey |             |           |                  |
-            |        | type        | name      | label            |
-            |        | xml-data    | mydata    |                  |
+            | survey |              |        |       |
+            |        | type         | name   | label |
+            |        | xml-external | mydata |       |
             """,
             model__contains=[
                 '<instance id="mydata" src="jr://file/mydata.xml">'
@@ -28,10 +28,10 @@ class ExternalInstanceTests(PyxformTestCase):
         with self.assertRaises(PyxformTestError) as ctx:
             self.assertPyxformXform(
                 md="""
-                | survey |             |           |                  |
-                |        | type        | name      | label            |
-                |        | xml-data    | mydata    |                  |
-                |        | xml-data    | mydata    |                  |
+                | survey |              |        |       |
+                |        | type         | name   | label |
+                |        | xml-external | mydata |       |
+                |        | xml-external | mydata |       |
                 """,
                 model__contains=[])
         # This is caught first by existing validation rule.
@@ -42,10 +42,10 @@ class ExternalInstanceTests(PyxformTestCase):
         """Two unique external instances in the same section is OK."""
         self.assertPyxformXform(
             md="""
-            | survey |             |           |                  |
-            |        | type        | name      | label            |
-            |        | xml-data    | mydata    |                  |
-            |        | xml-data    | mydata2   |                  |
+            | survey |              |         |       |
+            |        | type         | name    | label |
+            |        | xml-external | mydata  |       |
+            |        | xml-external | mydata2 |       |
             """,
             model__contains=[
                 '<instance id="mydata" src="jr://file/mydata.xml">',
@@ -59,15 +59,15 @@ class ExternalInstanceTests(PyxformTestCase):
         with self.assertRaises(PyxformTestError) as ctx:
             self.assertPyxformXform(
                 md="""
-                | survey |             |         |                  |
-                |        | type        | name    | label            |
-                |        | xml-data    | mydata  |                  |
-                |        | begin group | g1      |                  |
-                |        | xml-data    | mydata  |                  |
-                |        | end group   | g1      |                  |
-                |        | begin group | g2      |                  |
-                |        | xml-data    | mydata  |                  |
-                |        | end group   | g2      |                  |
+                | survey |              |        |       |
+                |        | type         | name   | label |
+                |        | xml-external | mydata |       |
+                |        | begin group  | g1     |       |
+                |        | xml-external | mydata |       |
+                |        | end group    | g1     |       |
+                |        | begin group  | g2     |       |
+                |        | xml-external | mydata |       |
+                |        | end group    | g2     |       |
                 """,
                 model__contains=[])
         self.assertIn("Instance names must be unique", repr(ctx.exception))
@@ -78,21 +78,21 @@ class ExternalInstanceTests(PyxformTestCase):
         """Unique external instances anywhere is OK."""
         self.assertPyxformXform(
             md="""
-            | survey |             |         |                  |
-            |        | type        | name    | label            |
-            |        | xml-data    | mydata  |                  |
-            |        | begin group | g1      |                  |
-            |        | xml-data    | mydata1 |                  |
-            |        | note        | note1   | It's note-able   |
-            |        | end group   | g1      |                  |
-            |        | begin group | g2      |                  |
-            |        | note        | note2   | It's note-able   |
-            |        | xml-data    | mydata2 |                  |
-            |        | end group   | g2      |                  |
-            |        | begin group | g3      |                  |
-            |        | note        | note3   | It's note-able   |
-            |        | xml-data    | mydata3 |                  |
-            |        | end group   | g3      |                  |
+            | survey |              |         |                |
+            |        | type         | name    | label          |
+            |        | xml-external | mydata  |                |
+            |        | begin group  | g1      |                |
+            |        | xml-external | mydata1 |                |
+            |        | note         | note1   | It's note-able |
+            |        | end group    | g1      |                |
+            |        | begin group  | g2      |                |
+            |        | note         | note2   | It's note-able |
+            |        | xml-external | mydata2 |                |
+            |        | end group    | g2      |                |
+            |        | begin group  | g3      |                |
+            |        | note         | note3   | It's note-able |
+            |        | xml-external | mydata3 |                |
+            |        | end group    | g3      |                |
             """,
             model__contains=[
                 '<instance id="mydata" src="jr://file/mydata.xml">',
@@ -111,9 +111,9 @@ class ExternalInstanceTests(PyxformTestCase):
                 | survey |                                      |      |       |
                 |        | type                                 | name | label | calculation  |
                 |        | begin group                          | g1   |       |              |
-                |        | xml-data                             | city |       |              |
+                |        | xml-external                         | city |       |              |
                 |        | end group                            | g1   |       |              |
-                |        | xml-data                             | city |       |              |
+                |        | xml-external                         | city |       |              |
                 |        | begin group                          | g2   |       |              |
                 |        | select_one_from_file cities.csv      | city | City  |              |
                 |        | end group                            | g2   |       |              |
@@ -135,7 +135,7 @@ class ExternalInstanceTests(PyxformTestCase):
             | survey  |                                      |       |       |              |
             |         | type                                 | name  | label | calculation  | choice_filter |
             |         | begin group                          | g1    |       | | |
-            |         | xml-data                             | city1 |       | | |
+            |         | xml-external                         | city1 |       | | |
             |         | note                                 | note1 | Note  | | |
             |         | end group                            | g1    |       | | |
             |         | begin group                          | g2    |       | | |
@@ -209,12 +209,12 @@ class ExternalInstanceTests(PyxformTestCase):
         )
 
     def test_cannot__use_different_src_same_id__external_then_pulldata(self):
-        """Duplicate instance from pulldata after xml-data raises an error."""
+        """Duplicate instance from pulldata after xml-external raises an error."""
         md = """
             | survey |                                      |        |       |              |
             |        | type                                 | name   | label | calculation  |
             |        | begin group                          | g1     |       |              |
-            |        | xml-data                             | fruits |       |              |
+            |        | xml-external                         | fruits |       |              |
             |        | calculate                            | f_csv  | City  | pulldata('fruits', 'name', 'name', 'mango') |
             |        | note                                 | note   | Fruity! ${f_csv} |   |
             |        | end group                            | g1     |       |              |
@@ -231,13 +231,13 @@ class ExternalInstanceTests(PyxformTestCase):
         )
 
     def test_cannot__use_different_src_same_id__pulldata_then_external(self):
-        """Duplicate instance from xml-data after pulldata raises an error."""
+        """Duplicate instance from xml-external after pulldata raises an error."""
         md = """
             | survey |                                      |        |       |              |
             |        | type                                 | name   | label | calculation  |
             |        | begin group                          | g1     |       |              |
             |        | calculate                            | f_csv  | City  | pulldata('fruits', 'name', 'name', 'mango') |
-            |        | xml-data                             | fruits |       |              |
+            |        | xml-external                         | fruits |       |              |
             |        | note                                 | note   | Fruity! ${f_csv} |   |
             |        | end group                            | g1     |       |              |
             """
@@ -316,7 +316,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.xml      | pweek  | Location of worst pain this week.  |
             |        | select_one_from_file pain_locations.xml      | pmonth | Location of worst pain this month. |
             |        | select_one_from_file pain_locations.xml      | pyear  | Location of worst pain this year.  |
-            |        | xml-data                                     | pain_locations  | |
+            |        | xml-external                                 | pain_locations  | |
             """
         expected = \
 """
@@ -338,7 +338,7 @@ class ExternalInstanceTests(PyxformTestCase):
         md = """
             | survey |                                              |        |        |
             |        | type                                         | name   | label  | 
-            |        | xml-data                                     | pain_locations  | |
+            |        | xml-external                                 | pain_locations  | |
             |        | select_multiple_from_file pain_locations.xml | plocs  | Locations of pain this week.       |
             |        | select_one_from_file pain_locations.xml      | pweek  | Location of worst pain this week.  |
             |        | select_one_from_file pain_locations.xml      | pmonth | Location of worst pain this month. |

@@ -93,7 +93,7 @@ class SurveyElementBuilder(object):
             d = self._sections[section_name]
             full_survey = self.create_survey_element_from_dict(d)
             return full_survey.children
-        elif d[u"type"] == u"xml-data":
+        elif d[u"type"] == u"xml-external":
             return ExternalInstance(**d)
         else:
             return self._create_question_from_dict(
