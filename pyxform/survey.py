@@ -118,6 +118,11 @@ class Survey(Section):
         """
         Generates <instance> elements for static data
         (e.g. choices for select type questions)
+
+        Note that per commit message 0578242 and in xls2json.py R539, an
+        instance is only output for select items defined in the choices sheet
+        when the item has a choice_filter, and it is that way for backwards
+        compatibility.
         """
         instance_element_list = []
         for idx, choice in enumerate(choice_list):
@@ -139,6 +144,7 @@ class Survey(Section):
             type=u"choice",
             context=u"survey",
             name=list_name,
+            src=None,
             instance=node(
                 "instance",
                 node("root", *instance_element_list),
@@ -147,16 +153,29 @@ class Survey(Section):
         )
 
     @staticmethod
+    def _get_dummy_instance():
+        """Instance content required by ODK Validate for select inputs."""
+        return node("root", node("item", node("name", "_"), node("label", "_")))
+
+    @staticmethod
     def _generate_external_instances(element):
         if isinstance(element, ExternalInstance):
+            name = element[u"name"]
+            src = "jr://file/{}.xml".format(name)
             return InstanceInfo(
                 type=u"external",
                 context="[type: {t}, name: {n}]".format(
                     t=element[u"parent"][u"type"],
                     n=element[u"parent"][u"name"]
                 ),
-                name=element[u"name"],
-                instance=element.xml_instance()
+                name=name,
+                src=src,
+                instance=node(
+                    "instance",
+                    Survey._get_dummy_instance(),
+                    id=name,
+                    src=src
+                )
             )
 
     @staticmethod
@@ -203,8 +222,10 @@ class Survey(Section):
                             n=element[u"parent"][u"name"]
                         ),
                         name=file_id,
+                        src=uri,
                         instance=node(
                             "instance",
+                            Survey._get_dummy_instance(),
                             id=file_id,
                             src=uri
                         )
@@ -224,12 +245,10 @@ class Survey(Section):
                     n=element[u"parent"][u"name"]
                 ),
                 name=file_id,
+                src=uri,
                 instance=node(
                     "instance",
-                    node("root",
-                         node("item",
-                              node("name", "_"),
-                              node("label", "_"))),
+                    Survey._get_dummy_instance(),
                     id=file_id,
                     src=uri
                 )
@@ -254,13 +273,11 @@ class Survey(Section):
           considered invalid if there is a duplicate name. This differs from
           other item types which allow duplicates if not in the same group.
         - for all instance sources, if the same instance name is encountered,
-          only the first instance definition will be output, even if the
-          instance definitions are different (i.e. external XML, external CSV,
-          or select_* placeholder instances). The "first instance" is
-          determined by the item position in the survey sheet, then by the
-          list_name in the choices sheet. This is done to allow users to re-use
-          external sources without duplicate instances being generated in the
-          XForm document. However, it does require careful in form design.
+          the following rules are used to allow re-using instances but prevent
+          overwriting conflicting instances:
+          - same id, same src URI: skip adding the second (duplicate) instance
+          - same id, different src URI: raise an error
+          - otherwise: output the instance
 
         There are two other things currently supported by pyxform that involve
         external files and are not explicitly handled here, but may be relevant
@@ -288,14 +305,26 @@ class Survey(Section):
             ext_only = [x for x in instances if x.type == "external"]
             self._validate_external_instances(instances=ext_only)
 
-        # Only output the exact same instance once.
-        seen = []
+        seen = {}
         for i in instances:
-            if i.name not in seen:
-                yield i.instance
+            if i.name in seen.keys() and seen[i.name].src != i.src:
+                # Instance id exists with different src URI -> error.
+                msg = "The same instance id will be generated for different " \
+                      "external instance source URIs. Please check the form. " \
+                      "Instance name: '{i}', Existing type: '{e}', " \
+                      "Existing URI: '{iu}', Duplicate type: '{d}', " \
+                      "Duplicate URI: '{du}', Duplicate context: '{c}'.".format(
+                          i=i.name, iu=seen[i.name].src, e=seen[i.name].type,
+                          d=i.type, du=i.src, c=i.context
+                      )
+                raise PyXFormError(msg)
+            elif i.name in seen.keys() and seen[i.name].src == i.src:
+                # Instance id exists with same src URI -> ok, don't duplicate.
+                continue
             else:
-                pass  # TODO: warn user in case it was unintentional duplicate
-            seen.append(i.name)
+                # Instance doesn't exist yet -> add it.
+                yield i.instance
+            seen[i.name] = i
 
     def xml_model(self):
         """

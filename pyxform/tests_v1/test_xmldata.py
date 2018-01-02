@@ -1,3 +1,4 @@
+from pyxform.errors import PyXFormError
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 from pyxform.tests_v1.pyxform_test_case import PyxformTestError
 try:
@@ -8,7 +9,7 @@ except ImportError:
 
 class ExternalInstanceTests(PyxformTestCase):
 
-    def test_external_single_ok(self):
+    def test_can__output_single_external_xml_item(self):
         """Simplest possible example to include an external instance."""
         self.assertPyxformXform(
             md="""
@@ -17,12 +18,12 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | xml-data    | mydata    |                  |
             """,
             model__contains=[
-                '<instance id="mydata" src="jr://file/mydata.xml"/>'
+                '<instance id="mydata" src="jr://file/mydata.xml">'
             ],
             run_odk_validate=True
         )
 
-    def test_external_two_in_section_duplicate_raises(self):
+    def test_cannot__use_same_external_xml_id_in_same_section(self):
         """Duplicate external instances in the same section raises an error."""
         with self.assertRaises(PyxformTestError) as ctx:
             self.assertPyxformXform(
@@ -37,7 +38,7 @@ class ExternalInstanceTests(PyxformTestCase):
         self.assertIn("There are two survey elements named 'mydata'",
                       repr(ctx.exception))
 
-    def test_external_two_in_section_unique_ok(self):
+    def test_can__use_unique_external_xml_in_same_section(self):
         """Two unique external instances in the same section is OK."""
         self.assertPyxformXform(
             md="""
@@ -47,13 +48,13 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | xml-data    | mydata2   |                  |
             """,
             model__contains=[
-                '<instance id="mydata" src="jr://file/mydata.xml"/>',
-                '<instance id="mydata2" src="jr://file/mydata2.xml"/>'
+                '<instance id="mydata" src="jr://file/mydata.xml">',
+                '<instance id="mydata2" src="jr://file/mydata2.xml">'
             ],
             run_odk_validate=True
         )
 
-    def test_external_multi_group_duplicate_raises(self):
+    def test_cannot__use_same_external_xml_id_across_groups(self):
         """Duplicate external instances anywhere raises an error."""
         with self.assertRaises(PyxformTestError) as ctx:
             self.assertPyxformXform(
@@ -70,30 +71,10 @@ class ExternalInstanceTests(PyxformTestCase):
                 """,
                 model__contains=[])
         self.assertIn("Instance names must be unique", repr(ctx.exception))
+        self.assertIn(
+            "The name \'mydata\' was found 3 time(s)", repr(ctx.exception))
 
-    def test_external_multi_group_duplicate_raises_helpfully(self):
-        """Duplicate external instances anywhere raises a helpful error."""
-        with self.assertRaises(PyxformTestError) as ctx:
-            self.assertPyxformXform(
-                md="""
-                | survey |             |         |                  |
-                |        | type        | name    | label            |
-                |        | xml-data    | mydata  |                  |
-                |        | begin group | g1      |                  |
-                |        | xml-data    | mydata  |                  |
-                |        | end group   | g1      |                  |
-                |        | begin group | g2      |                  |
-                |        | xml-data    | mydata2 |                  |
-                |        | end group   | g2      |                  |
-                |        | begin group | g3      |                  |
-                |        | xml-data    | mydata3 |                  |
-                |        | end group   | g3      |                  |
-                """,
-                model__contains=[])
-        self.assertIn("The name 'mydata' was found 2 time(s)",
-                      repr(ctx.exception))
-
-    def test_external_multi_group_unique_ok(self):
+    def test_can__use_unique_external_xml_across_groups(self):
         """Unique external instances anywhere is OK."""
         self.assertPyxformXform(
             md="""
@@ -114,15 +95,15 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | end group   | g3      |                  |
             """,
             model__contains=[
-                '<instance id="mydata" src="jr://file/mydata.xml"/>',
-                '<instance id="mydata1" src="jr://file/mydata1.xml"/>',
-                '<instance id="mydata2" src="jr://file/mydata2.xml"/>',
-                '<instance id="mydata3" src="jr://file/mydata3.xml"/>'
+                '<instance id="mydata" src="jr://file/mydata.xml">',
+                '<instance id="mydata1" src="jr://file/mydata1.xml">',
+                '<instance id="mydata2" src="jr://file/mydata2.xml">',
+                '<instance id="mydata3" src="jr://file/mydata3.xml">'
             ],
             run_odk_validate=True
         )
 
-    def test_instance_names_other_sources_duplicate_raises(self):
+    def test_cannot__use_same_external_xml_id_with_mixed_types(self):
         """Duplicate instances with other sources present raises an error."""
         with self.assertRaises(PyxformTestError) as ctx:
             self.assertPyxformXform(
@@ -147,29 +128,34 @@ class ExternalInstanceTests(PyxformTestCase):
         self.assertIn("The name 'city' was found 2 time(s)",
                       repr(ctx.exception))
 
-    def test_instance_names_other_sources_unique_ok(self):
+    def test_can__use_all_types_together_with_unique_ids(self):
         """Unique instances with other sources present are OK."""
         self.assertPyxformXform(
             md="""
-            | survey |                                      |       |       |
-            |        | type                                 | name  | label | calculation  |
-            |        | begin group                          | g1    |       |              |
-            |        | xml-data                             | city1 |       |              |
-            |        | note                                 | note1 | Note  |              |
-            |        | end group                            | g1    |       |              |
-            |        | begin group                          | g2    |       |              |
-            |        | select_one_from_file cities.csv      | city2 | City2 |              |
-            |        | end group                            | g2    |       |              |
-            |        | begin group                          | g3    |       |              |
-            |        | select_multiple_from_file cities.csv | city3 | City3 |              |
-            |        | end group                            | g3    |       |              |
-            |        | begin group                          | g4    |       |              |
-            |        | calculate                            | city4 | City4 | pulldata('fruits', 'name', 'name', 'mango') |
-            |        | note                                 | note4 | Note  |              |
-            |        | end group                            | g4    |       |              |
+            | survey  |                                      |       |       |              |
+            |         | type                                 | name  | label | calculation  | choice_filter |
+            |         | begin group                          | g1    |       | | |
+            |         | xml-data                             | city1 |       | | |
+            |         | note                                 | note1 | Note  | | |
+            |         | end group                            | g1    |       | | |
+            |         | begin group                          | g2    |       | | |
+            |         | select_one_from_file cities.csv      | city2 | City2 | | |
+            |         | end group                            | g2    |       | | |
+            |         | begin group                          | g3    |       | | |
+            |         | select_multiple_from_file cities.csv | city3 | City3 | | |
+            |         | end group                            | g3    |       | | |
+            |         | begin group                          | g4    |       | | |
+            |         | calculate                            | city4 | City4 | pulldata('fruits', 'name', 'name', 'mango') | |
+            |         | note                                 | note4 | Note  | | |
+            |         | end group                            | g4    |       | | |
+            |         | select_one states                    | test  | Test  | | true() |
+            | choices |                                      |       |       | | |
+            |         | list_name                            | name  | label | | |
+            |         | states                               | 1     | Pass  | | |
+            |         | states                               | 2     | Fail  | | |
             """,
             model__contains=[
-                '<instance id="city1" src="jr://file/city1.xml"/>',
+                '<instance id="city1" src="jr://file/city1.xml">',
 """
       <instance id="cities" src="jr://file-csv/cities.csv">
         <root>
@@ -180,58 +166,16 @@ class ExternalInstanceTests(PyxformTestCase):
         </root>
       </instance>
 """,
-                '<instance id="fruits" src="jr://file-csv/fruits.csv"/>'
-            ],
-            run_odk_validate=True
-        )
-
-    def test_one_instance_per_external_select(self):
-        """Using a select from file should output 1 instance: #88 bug test"""
-        md = """
-            | survey  |                                      |       |       |                                    |
-            |         | type                                 | name  | label | choice_filter                      |
-            |         | select_one_from_file states.csv      | state | State |                                    |
-            |         | select_one_from_file cities.csv      | city  | City  | state=/select_from_file_test/State |
-            |         | select_one regular                   | test  | Test  |                                    |
-            | choices |                                      |       |       |                                    |
-            |         | list_name                            | name  | label |                                    |
-            |         | states                               | name  | label |                                    |
-            |         | cities                               | name  | label |                                    |
-            |         | regular                              | 1     | Pass  |                                    |
-            |         | regular                              | 2     | Fail  |                                    |
-            """
-        self.assertPyxformXform(
-            md=md,
-            model__contains=[
+                '<instance id="fruits" src="jr://file-csv/fruits.csv">',
 """
-      <instance id="states" src="jr://file-csv/states.csv">
+      <instance id="states">
         <root>
           <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>
-""",
-"""
-      <instance id="cities" src="jr://file-csv/cities.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>
-""",
-"""
-      <instance id="regular">
-        <root>
-          <item>
-            <itextId>static_instance-regular-0</itextId>
+            <itextId>static_instance-states-0</itextId>
             <name>1</name>
           </item>
           <item>
-            <itextId>static_instance-regular-1</itextId>
+            <itextId>static_instance-states-1</itextId>
             <name>2</name>
           </item>
         </root>
@@ -240,35 +184,32 @@ class ExternalInstanceTests(PyxformTestCase):
             ],
             run_odk_validate=True
         )
-        survey = self.md_to_pyxform_survey(md_raw=md)
-        xml = survey._to_pretty_xml()
-        unwanted_extra_states = \
-"""
-      <instance id="regular">
-        <root>
-          <item>
-            <itextId>static_instance-states-0</itextId>
-            <name>1</name>
-          </item>
-        </root>
-      </instance>
-"""
-        self.assertNotIn(unwanted_extra_states, xml)
-        unwanted_extra_cities = \
-            """
-                  <instance id="regular">
-                    <root>
-                      <item>
-                        <itextId>static_instance-cities-0</itextId>
-                        <name>1</name>
-                      </item>
-                    </root>
-                  </instance>
-            """
-        self.assertNotIn(unwanted_extra_cities, xml)
 
-    def test_no_duplicate_with_pulldata(self):
-        """Using xml-data and pulldata should not output 2 instances."""
+    def test_cannot__use_different_src_same_id__select_then_internal(self):
+        """Duplicate instance from internal choices raises an error: #88."""
+        md = """
+            | survey  |                                      |       |       |               |
+            |         | type                                 | name  | label | choice_filter |
+            |         | select_one_from_file states.csv      | state | State |               |
+            |         | select_one states                    | test  | Test  | state=/select_from_file_test/state |
+            | choices |                                      |       |       |               |
+            |         | list_name                            | name  | label |               |
+            |         | states                               | 1     | Pass  |               |
+            |         | states                               | 2     | Fail  |               |
+            """
+        with self.assertRaises(PyXFormError) as ctx:
+            survey = self.md_to_pyxform_survey(md_raw=md)
+            survey._to_pretty_xml()
+        self.assertIn(
+            "Instance name: 'states', "
+            "Existing type: 'file', Existing URI: 'jr://file-csv/states.csv', "
+            "Duplicate type: 'choice', Duplicate URI: 'None', "
+            "Duplicate context: 'survey'.",
+            repr(ctx.exception)
+        )
+
+    def test_cannot__use_different_src_same_id__external_then_pulldata(self):
+        """Duplicate instance from pulldata after xml-data raises an error."""
         md = """
             | survey |                                      |        |       |              |
             |        | type                                 | name   | label | calculation  |
@@ -278,15 +219,144 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | note                                 | note   | Fruity! ${f_csv} |   |
             |        | end group                            | g1     |       |              |
             """
-        self.assertPyxformXform(
-            md=md,
-            model__contains=[
-                '<instance id="fruits" src="jr://file/fruits.xml"/>',
-            ],
-            run_odk_validate=True
+        with self.assertRaises(PyXFormError) as ctx:
+            survey = self.md_to_pyxform_survey(md_raw=md)
+            survey._to_pretty_xml()
+        self.assertIn(
+            "Instance name: 'fruits', "
+            "Existing type: 'external', Existing URI: 'jr://file/fruits.xml', "
+            "Duplicate type: 'pulldata', Duplicate URI: 'jr://file-csv/fruits.csv', "
+            "Duplicate context: '[type: group, name: g1]'.",
+            repr(ctx.exception)
         )
+
+    def test_cannot__use_different_src_same_id__pulldata_then_external(self):
+        """Duplicate instance from xml-data after pulldata raises an error."""
+        md = """
+            | survey |                                      |        |       |              |
+            |        | type                                 | name   | label | calculation  |
+            |        | begin group                          | g1     |       |              |
+            |        | calculate                            | f_csv  | City  | pulldata('fruits', 'name', 'name', 'mango') |
+            |        | xml-data                             | fruits |       |              |
+            |        | note                                 | note   | Fruity! ${f_csv} |   |
+            |        | end group                            | g1     |       |              |
+            """
+        with self.assertRaises(PyXFormError) as ctx:
+            survey = self.md_to_pyxform_survey(md_raw=md)
+            survey._to_pretty_xml()
+        self.assertIn(
+            "Instance name: 'fruits', "
+            "Existing type: 'pulldata', Existing URI: 'jr://file-csv/fruits.csv', "
+            "Duplicate type: 'external', Duplicate URI: 'jr://file/fruits.xml', "
+            "Duplicate context: '[type: group, name: g1]'.",
+            repr(ctx.exception)
+        )
+
+    def test_can__reuse_csv__selects_then_pulldata(self):
+        """Re-using the same csv external data source id and URI is OK."""
+        md = """
+            | survey |                                              |        |                                    |             |
+            |        | type                                         | name   | label                              | calculation |
+            |        | select_multiple_from_file pain_locations.csv | plocs  | Locations of pain this week.       | |
+            |        | select_one_from_file pain_locations.csv      | pweek  | Location of worst pain this week.  | |
+            |        | select_one_from_file pain_locations.csv      | pmonth | Location of worst pain this month. | |
+            |        | select_one_from_file pain_locations.csv      | pyear  | Location of worst pain this year.  | |
+            |        | calculate                                    | f_csv  | pd | pulldata('pain_locations', 'name', 'name', 'arm') |
+            |        | note                                         | note   | Arm ${f_csv} | |
+            """
+        expected = \
+"""
+      <instance id="pain_locations" src="jr://file-csv/pain_locations.csv">
+        <root>
+          <item>
+            <name>_</name>
+            <label>_</label>
+          </item>
+        </root>
+      </instance>
+"""
+        self.assertPyxformXform(
+            md=md, model__contains=[expected], run_odk_validate=True)
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
-        unwanted_extra_fruits = \
-            '<instance id="fruits" src="jr://file-csv/fruits.csv"/>'
-        self.assertNotIn(unwanted_extra_fruits, xml)
+        self.assertEqual(1, xml.count(expected))
+
+    def test_can__reuse_csv__pulldata_then_selects(self):
+        """Re-using the same csv external data source id and URI is OK."""
+        md = """
+            | survey |                                              |        |       |             |
+            |        | type                                         | name   | label | calculation |
+            |        | calculate                                    | f_csv  | pd | pulldata('pain_locations', 'name', 'name', 'arm') |
+            |        | note                                         | note   | Arm ${f_csv} | |
+            |        | select_multiple_from_file pain_locations.csv | plocs  | Locations of pain this week.       | |
+            |        | select_one_from_file pain_locations.csv      | pweek  | Location of worst pain this week.  | |
+            |        | select_one_from_file pain_locations.csv      | pmonth | Location of worst pain this month. | |
+            |        | select_one_from_file pain_locations.csv      | pyear  | Location of worst pain this year.  | |
+            """
+        expected = \
+"""
+      <instance id="pain_locations" src="jr://file-csv/pain_locations.csv">
+        <root>
+          <item>
+            <name>_</name>
+            <label>_</label>
+          </item>
+        </root>
+      </instance>
+"""
+        self.assertPyxformXform(
+            md=md, model__contains=[expected], run_odk_validate=True)
+
+    def test_can__reuse_xml__selects_then_external(self):
+        """Re-using the same xml external data source id and URI is OK."""
+        md = """
+            | survey |                                              |        |        |
+            |        | type                                         | name   | label  | 
+            |        | select_multiple_from_file pain_locations.xml | plocs  | Locations of pain this week.       |
+            |        | select_one_from_file pain_locations.xml      | pweek  | Location of worst pain this week.  |
+            |        | select_one_from_file pain_locations.xml      | pmonth | Location of worst pain this month. |
+            |        | select_one_from_file pain_locations.xml      | pyear  | Location of worst pain this year.  |
+            |        | xml-data                                     | pain_locations  | |
+            """
+        expected = \
+"""
+      <instance id="pain_locations" src="jr://file/pain_locations.xml">
+        <root>
+          <item>
+            <name>_</name>
+            <label>_</label>
+          </item>
+        </root>
+      </instance>
+"""
+        survey = self.md_to_pyxform_survey(md_raw=md)
+        xml = survey._to_pretty_xml()
+        self.assertEqual(1, xml.count(expected))
+
+    def test_can__reuse_xml__external_then_selects(self):
+        """Re-using the same xml external data source id and URI is OK."""
+        md = """
+            | survey |                                              |        |        |
+            |        | type                                         | name   | label  | 
+            |        | xml-data                                     | pain_locations  | |
+            |        | select_multiple_from_file pain_locations.xml | plocs  | Locations of pain this week.       |
+            |        | select_one_from_file pain_locations.xml      | pweek  | Location of worst pain this week.  |
+            |        | select_one_from_file pain_locations.xml      | pmonth | Location of worst pain this month. |
+            |        | select_one_from_file pain_locations.xml      | pyear  | Location of worst pain this year.  |
+            """
+        expected = \
+"""
+      <instance id="pain_locations" src="jr://file/pain_locations.xml">
+        <root>
+          <item>
+            <name>_</name>
+            <label>_</label>
+          </item>
+        </root>
+      </instance>
+"""
+        self.assertPyxformXform(
+            md=md, model__contains=[expected], run_odk_validate=True)
+        survey = self.md_to_pyxform_survey(md_raw=md)
+        xml = survey._to_pretty_xml()
+        self.assertEqual(1, xml.count(expected))
