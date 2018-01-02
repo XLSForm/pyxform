@@ -514,8 +514,8 @@ class Survey(Section):
             return result, not result == xml_text
         return text, False
 
-    def print_xform_to_file(self, path=None, validate=True, enketo=False,
-                            pretty_print=True, warnings=None):
+    def print_xform_to_file(self, path=None, validate=True, pretty_print=True,
+                            warnings=None, enketo=False):
         """
         Print the xForm to a file and optionally validate it as well by
         throwing exceptions and adding warnings to the warnings array.
@@ -539,16 +539,17 @@ class Survey(Section):
         if enketo:
             warnings.extend(enketo_validate.check_xform(path))
 
-    def to_xml(self, validate=True, pretty_print=True, warnings=None):
+    def to_xml(self, validate=True, pretty_print=True, warnings=None,
+               enketo=False):
         # On Windows, NamedTemporaryFile must be opened exclusively.
         # So it must be explicitly created, opened, closed, and removed.
         tmp = tempfile.NamedTemporaryFile(delete=False)
         tmp.close()
         try:
             # this will throw an exception if the xml is not valid
-            self.print_xform_to_file(tmp.name, validate=validate,
-                                     pretty_print=pretty_print,
-                                     warnings=warnings)
+            self.print_xform_to_file(
+                path=tmp.name, validate=validate, pretty_print=pretty_print,
+                warnings=warnings, enketo=enketo)
         finally:
             if os.path.exists(tmp.name):
                 os.remove(tmp.name)

@@ -12,7 +12,8 @@ use with ODK Collect.
 """
 
 
-def xls2xform_convert(xlsform_path, xform_path, validate=True, enketo=False, pretty_print=True):
+def xls2xform_convert(xlsform_path, xform_path, validate=True,
+                      pretty_print=True, enketo=False):
     warnings = []
 
     json_survey = xls2json.parse_file_to_json(xlsform_path, warnings=warnings)
@@ -22,8 +23,8 @@ def xls2xform_convert(xlsform_path, xform_path, validate=True, enketo=False, pre
     # This may be desirable since ODK Validate requires launching a subprocess
     # that runs some java code.
     survey.print_xform_to_file(
-        xform_path, validate=validate, enketo=enketo,
-        pretty_print=pretty_print, warnings=warnings)
+        xform_path, validate=validate, pretty_print=pretty_print,
+        warnings=warnings, enketo=enketo)
     output_dir = os.path.split(xform_path)[0]
     if has_external_choices(json_survey):
         itemsets_csv = os.path.join(output_dir, "itemsets.csv")
@@ -79,9 +80,9 @@ def main_cli():
 
         try:
             response['warnings'] = xls2xform_convert(
-                args.path_to_XLSForm, args.output_path,
-                args.skip_validate, args.enketo_validate,
-                args.no_pretty_print)
+                xlsform_path=args.path_to_XLSForm, xform_path=args.output_path,
+                validate=args.skip_validate, pretty_print=args.no_pretty_print,
+                enketo=args.enketo_validate)
 
             response['code'] = 100
             response['message'] = "Ok!"
@@ -98,9 +99,9 @@ def main_cli():
         print(json.dumps(response))
     else:
         warnings = xls2xform_convert(
-            args.path_to_XLSForm, args.output_path,
-            args.skip_validate, args.enketo_validate,
-            args.no_pretty_print)
+            xlsform_path=args.path_to_XLSForm, xform_path=args.output_path,
+            validate=args.skip_validate, pretty_print=args.no_pretty_print,
+            enketo=args.enketo_validate)
         if len(warnings) > 0:
             print("Warnings:")
         for w in warnings:
