@@ -21,7 +21,7 @@ class ODKValidateError(Exception):
 def _java_installed():
     stderr = run_popen_with_timeout(["java", "-version"], 100)[3]
     stderr = stderr.strip().decode('utf-8')
-    return "java version" in stderr
+    return "java version" in stderr or "openjdk version" in stderr
 
 
 def check_xform(path_to_xform):
