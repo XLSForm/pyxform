@@ -4,7 +4,7 @@
 
 from unittest import TestCase
 import pyxform
-from pyxform.xls2xform import _create_parser
+from pyxform.xls2xform import _create_parser, _validator_args_logic
 
 
 class XLS2XFormTests(TestCase):
@@ -76,3 +76,71 @@ class XLS2XFormTests(TestCase):
             '.',
         ])
         self.assertEqual(True, args.no_pretty_print)
+
+    def test_validator_args_logic_skip_validate_alone(self):
+        """Should deactivate both validators."""
+        raw_args = _create_parser().parse_args([
+            'xlsform.xlsx',
+            '.',
+            '--skip_validate'
+        ])
+        args = _validator_args_logic(args=raw_args)
+        self.assertEqual(False, args.odk_validate)
+        self.assertEqual(False, args.enketo_validate)
+
+    def test_validator_args_logic_odk_default(self):
+        """Should activate ODK only."""
+        raw_args = _create_parser().parse_args([
+            'xlsform.xlsx',
+            '.',
+        ])
+        args = _validator_args_logic(args=raw_args)
+        self.assertEqual(True, args.odk_validate)
+        self.assertEqual(False, args.enketo_validate)
+
+    def test_validator_args_logic_enketo_only(self):
+        """Should activate Enketo only."""
+        raw_args = _create_parser().parse_args([
+            'xlsform.xlsx',
+            '.',
+            '--enketo_validate'
+        ])
+        args = _validator_args_logic(args=raw_args)
+        self.assertEqual(False, args.odk_validate)
+        self.assertEqual(True, args.enketo_validate)
+
+    def test_validator_args_logic_odk_only(self):
+        """Should activate ODK only."""
+        raw_args = _create_parser().parse_args([
+            'xlsform.xlsx',
+            '.',
+            '--odk_validate'
+        ])
+        args = _validator_args_logic(args=raw_args)
+        self.assertEqual(True, args.odk_validate)
+        self.assertEqual(False, args.enketo_validate)
+
+    def test_validator_args_logic_odk_and_enketo(self):
+        """Should activate ODK and Enketo."""
+        raw_args = _create_parser().parse_args([
+            'xlsform.xlsx',
+            '.',
+            '--odk_validate',
+            '--enketo_validate'
+        ])
+        args = _validator_args_logic(args=raw_args)
+        self.assertEqual(True, args.odk_validate)
+        self.assertEqual(True, args.enketo_validate)
+
+    def test_validator_args_logic_skip_validate_override(self):
+        """Should deactivate both validators"""
+        raw_args = _create_parser().parse_args([
+            'xlsform.xlsx',
+            '.',
+            '--skip_validate',
+            '--odk_validate',
+            '--enketo_validate',
+        ])
+        args = _validator_args_logic(args=raw_args)
+        self.assertEqual(False, args.odk_validate)
+        self.assertEqual(False, args.enketo_validate)

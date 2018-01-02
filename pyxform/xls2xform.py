@@ -55,12 +55,19 @@ def _create_parser():
         "--skip_validate",
         action="store_false",
         default=True,
-        help="Skip default running of ODK Validate on the output XForm XML.")
+        help="Do not run any external validators on the output XForm XML. "
+             "Without this flag, ODK Validate is run by default for backwards "
+             "compatibility. Internal pyxform checks cannot be skipped.")
+    parser.add_argument(
+        "--odk_validate",
+        action="store_true",
+        default=False,
+        help="Run the ODK Validate XForm external validator.")
     parser.add_argument(
         "--enketo_validate",
         action="store_true",
         default=False,
-        help="Run the Enketo form validator as well.")
+        help="Run the Enketo Validate XForm external validator.")
     parser.add_argument(
         "--no_pretty_print",
         action="store_false",
@@ -69,9 +76,35 @@ def _create_parser():
     return parser
 
 
+def _validator_args_logic(args):
+    """
+    Implements logic for how validator arguments work in combination.
+
+    As per: https://github.com/XLSForm/pyxform/pull/167#issuecomment-353382008
+
+    **backwards-compatible**
+    `xls2xform.py myform --skip_validate`: no validators
+    `xls2xform.py myform`: ODK only
+
+    **new**
+    `xls2xform.py myform --enketo_validate`: Enketo only
+    `xls2xform.py myform --odk_validate`: ODK only
+    `xls2xform.py myform --enketo_validate --odk_validate`: both
+    `xls2xform.py myform --enketo_validate --odk_validate --skip_validate`: no validators
+    """
+    if not args.skip_validate:
+        args.odk_validate = False
+        args.enketo_validate = False
+    elif args.skip_validate and not (args.odk_validate or args.enketo_validate):
+        args.odk_validate = True
+        args.enketo_validate = False
+    return args
+
+
 def main_cli():
     parser = _create_parser()
-    args = parser.parse_args()
+    raw_args = parser.parse_args()
+    args = _validator_args_logic(args=raw_args)
 
     if args.json:
         # Store everything in a list just in case the user wants to output
@@ -81,7 +114,7 @@ def main_cli():
         try:
             response['warnings'] = xls2xform_convert(
                 xlsform_path=args.path_to_XLSForm, xform_path=args.output_path,
-                validate=args.skip_validate, pretty_print=args.no_pretty_print,
+                validate=args.odk_validate, pretty_print=args.no_pretty_print,
                 enketo=args.enketo_validate)
 
             response['code'] = 100
@@ -100,7 +133,7 @@ def main_cli():
     else:
         warnings = xls2xform_convert(
             xlsform_path=args.path_to_XLSForm, xform_path=args.output_path,
-            validate=args.skip_validate, pretty_print=args.no_pretty_print,
+            validate=args.odk_validate, pretty_print=args.no_pretty_print,
             enketo=args.enketo_validate)
         if len(warnings) > 0:
             print("Warnings:")
