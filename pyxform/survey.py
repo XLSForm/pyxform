@@ -8,26 +8,25 @@ from datetime import datetime
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
+from pyxform.errors import ValidationError
+from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
+from pyxform.instance_info import InstanceInfo
 from pyxform.question import Question
 from pyxform.section import Section
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import PatchedText, basestring, node, unicode
+from pyxform.utils import PatchedText, basestring, node, unicode, NSMAP
 from pyxform.validators import odk_validate
 from pyxform.validators import enketo_validate
 
-nsmap = {
-    u"xmlns": u"http://www.w3.org/2002/xforms",
-    u"xmlns:h": u"http://www.w3.org/1999/xhtml",
-    u"xmlns:ev": u"http://www.w3.org/2001/xml-events",
-    u"xmlns:xsd": u"http://www.w3.org/2001/XMLSchema",
-    u"xmlns:jr": u"http://openrosa.org/javarosa",
-    u"xmlns:orx": u"http://openrosa.org/xforms"
-    }
 
-for prefix, uri in nsmap.items():
-    prefix = prefix.replace("xmlns", "").replace(":", "")
-    ETree.register_namespace(prefix, uri)
+def register_nsmap():
+    for prefix, uri in NSMAP.items():
+        prefix_no_xmlns = prefix.replace("xmlns", "").replace(":", "")
+        ETree.register_namespace(prefix_no_xmlns, uri)
+
+
+register_nsmap()
 
 
 class Survey(Section):
@@ -84,12 +83,14 @@ class Survey(Section):
                 if len(ns.split('=')) == 2 and ns.split('=')[0] != ''
             ]
             xmlns = u'xmlns:'
+            nsmap = NSMAP.copy()
             nsmap.update(dict([
                 (xmlns + k, v.replace('"', '').replace("'", ""))
                 for k, v in nslist if xmlns + k not in nsmap
             ]))
-
-        return nsmap
+            return nsmap
+        else:
+            return NSMAP
 
     def xml(self):
         """
@@ -113,64 +114,218 @@ class Survey(Section):
                     **nsmap
                     )
 
-    def _generate_static_instances(self):
+    @staticmethod
+    def _generate_static_instances(list_name, choice_list):
         """
         Generates <instance> elements for static data
         (e.g. choices for select type questions)
+
+        Note that per commit message 0578242 and in xls2json.py R539, an
+        instance is only output for select items defined in the choices sheet
+        when the item has a choice_filter, and it is that way for backwards
+        compatibility.
         """
-        for list_name, choice_list in self.choices.items():
-            instance_element_list = []
-            for idx, choice in zip(range(len(choice_list)), choice_list):
-                choice_element_list = []
-                # Add a unique id to the choice element incase there is itext
-                # it refrences
-                itext_id = '-'.join(['static_instance', list_name, str(idx)])
-                choice_element_list.append(node("itextId", itext_id))
+        instance_element_list = []
+        for idx, choice in enumerate(choice_list):
+            choice_element_list = []
+            # Add a unique id to the choice element in case there is itext
+            # it references
+            itext_id = '-'.join(['static_instance', list_name, str(idx)])
+            choice_element_list.append(node("itextId", itext_id))
 
-                for choicePropertyName, choicePropertyValue in choice.items():
-                    if isinstance(choicePropertyValue, basestring) \
-                            and choicePropertyName != 'label':
-                        choice_element_list.append(
-                            node(choicePropertyName,
-                                 unicode(choicePropertyValue))
-                        )
-                instance_element_list.append(node("item",
-                                                  *choice_element_list))
-            yield node("instance", node("root", *instance_element_list),
-                       id=list_name)
+            for choicePropertyName, choicePropertyValue in choice.items():
+                if isinstance(choicePropertyValue, basestring) \
+                        and choicePropertyName != 'label':
+                    choice_element_list.append(
+                        node(choicePropertyName,
+                             unicode(choicePropertyValue))
+                    )
+            instance_element_list.append(node("item", *choice_element_list))
+        return InstanceInfo(
+            type=u"choice",
+            context=u"survey",
+            name=list_name,
+            src=None,
+            instance=node(
+                "instance",
+                node("root", *instance_element_list),
+                id=list_name
+            )
+        )
 
-    def _generate_pulldata_instances(self):
-        pulldata = []
-        for i in self.iter_descendants():
-            if 'calculate' in i['bind']:
-                calculate = i['bind']['calculate']
-                if calculate.startswith('pulldata('):
-                    pieces = calculate.split('"') \
-                        if '"' in calculate else calculate.split("'")
-                    if len(pieces) > 1 and pieces[1] not in pulldata:
-                        csv_id = pieces[1]
-                        pulldata.append(csv_id)
+    @staticmethod
+    def _get_dummy_instance():
+        """Instance content required by ODK Validate for select inputs."""
+        return node("root", node("item", node("name", "_"), node("label", "_")))
 
-                        yield node("instance", id=csv_id,
-                                   src="jr://file-csv/{}.csv".format(csv_id)
-                                   )
-
-    def _generate_from_file_instances(self):
-        for i in self.iter_descendants():
-            itemset = i.get('itemset')
-            if itemset and \
-                    (itemset.endswith('.csv') or itemset.endswith('.xml')):
-                file_id, ext = os.path.splitext(itemset)
-                uri = 'jr://%s/%s' % (
-                    'file' if ext == '.xml' else "file-%s" % ext[1:],
-                    itemset)
-                yield node(
+    @staticmethod
+    def _generate_external_instances(element):
+        if isinstance(element, ExternalInstance):
+            name = element[u"name"]
+            src = "jr://file/{}.xml".format(name)
+            return InstanceInfo(
+                type=u"external",
+                context="[type: {t}, name: {n}]".format(
+                    t=element[u"parent"][u"type"],
+                    n=element[u"parent"][u"name"]
+                ),
+                name=name,
+                src=src,
+                instance=node(
                     "instance",
-                    node("root",
-                         node("item", node("name", "_"), node("label", "_"))),
+                    Survey._get_dummy_instance(),
+                    id=name,
+                    src=src
+                )
+            )
+
+    @staticmethod
+    def _validate_external_instances(instances):
+        """
+        Must have unique names.
+
+        - Duplications could come from across groups; this checks the form.
+        - Errors are pooled together into a (hopefully) helpful message.
+        """
+        seen = {}
+        for i in instances:
+            element = i.name
+            if seen.get(element) is None:
+                seen[element] = [i]
+            else:
+                seen[element].append(i)
+        errors = []
+        for element, copies in seen.items():
+            if 1 < len(copies):
+                contexts = ", ".join(x.context for x in copies)
+                errors.append(
+                    "Instance names must be unique within a form. "
+                    "The name '{i}' was found {c} time(s), "
+                    "under these contexts: {contexts}".format(
+                        i=element, c=len(copies), contexts=contexts))
+        if 0 < len(errors):
+            raise ValidationError("\n".join(errors))
+
+    @staticmethod
+    def _generate_pulldata_instances(element):
+        if 'calculate' in element['bind']:
+            calculate = element['bind']['calculate']
+            if calculate.startswith('pulldata('):
+                pieces = calculate.split('"') \
+                    if '"' in calculate else calculate.split("'")
+                if len(pieces) > 1 and pieces[1]:
+                    file_id = pieces[1]
+                    uri = "jr://file-csv/{}.csv".format(file_id)
+                    return InstanceInfo(
+                        type=u"pulldata",
+                        context="[type: {t}, name: {n}]".format(
+                            t=element[u"parent"][u"type"],
+                            n=element[u"parent"][u"name"]
+                        ),
+                        name=file_id,
+                        src=uri,
+                        instance=node(
+                            "instance",
+                            Survey._get_dummy_instance(),
+                            id=file_id,
+                            src=uri
+                        )
+                    )
+
+    @staticmethod
+    def _generate_from_file_instances(element):
+        itemset = element.get('itemset')
+        if itemset and (itemset.endswith('.csv') or itemset.endswith('.xml')):
+            file_id, ext = os.path.splitext(itemset)
+            uri = 'jr://%s/%s' % (
+                'file' if ext == '.xml' else "file-%s" % ext[1:], itemset)
+            return InstanceInfo(
+                type=u"file",
+                context="[type: {t}, name: {n}]".format(
+                    t=element[u"parent"][u"type"],
+                    n=element[u"parent"][u"name"]
+                ),
+                name=file_id,
+                src=uri,
+                instance=node(
+                    "instance",
+                    Survey._get_dummy_instance(),
                     id=file_id,
                     src=uri
                 )
+            )
+
+    def _generate_instances(self):
+        """
+        Get instances from all the different ways that they may be generated.
+
+        An opportunity to validate instances before output to the XML model.
+
+        Instance names used for the id attribute are generated as follows:
+
+        - xml-external: item name value (for type==xml-external)
+        - pulldata: first arg to calculation->pulldata()
+        - select from file: file name arg to type->itemset
+        - choices: list_name (for type==select_*)
+
+        Validation and business rules for output of instances:
+
+        - xml-external item name must be unique across the XForm and the form is
+          considered invalid if there is a duplicate name. This differs from
+          other item types which allow duplicates if not in the same group.
+        - for all instance sources, if the same instance name is encountered,
+          the following rules are used to allow re-using instances but prevent
+          overwriting conflicting instances:
+          - same id, same src URI: skip adding the second (duplicate) instance
+          - same id, different src URI: raise an error
+          - otherwise: output the instance
+
+        There are two other things currently supported by pyxform that involve
+        external files and are not explicitly handled here, but may be relevant
+        to future efforts to harmonise / simplify external data workflows:
+
+        - `search` appearance/function: works a lot like pulldata but the csv
+          isn't made explicit in the form.
+        - `select_one_external`: implicitly relies on a `itemsets.csv` file and
+          uses XPath-like expressions for querying.
+        """
+        instances = []
+        for i in self.iter_descendants():
+            i_ext = self._generate_external_instances(element=i)
+            i_pull = self._generate_pulldata_instances(element=i)
+            i_file = self._generate_from_file_instances(element=i)
+            instances += [x for x in [i_ext, i_pull, i_file] if x is not None]
+
+        # Append last so the choice instance is excluded on a name clash.
+        for k, v in self.choices.items():
+            instances += [
+                self._generate_static_instances(list_name=k, choice_list=v)]
+
+        # Check that external instances have unique names.
+        if 0 < len(instances):
+            ext_only = [x for x in instances if x.type == "external"]
+            self._validate_external_instances(instances=ext_only)
+
+        seen = {}
+        for i in instances:
+            if i.name in seen.keys() and seen[i.name].src != i.src:
+                # Instance id exists with different src URI -> error.
+                msg = "The same instance id will be generated for different " \
+                      "external instance source URIs. Please check the form. " \
+                      "Instance name: '{i}', Existing type: '{e}', " \
+                      "Existing URI: '{iu}', Duplicate type: '{d}', " \
+                      "Duplicate URI: '{du}', Duplicate context: '{c}'.".format(
+                          i=i.name, iu=seen[i.name].src, e=seen[i.name].type,
+                          d=i.type, du=i.src, c=i.context
+                      )
+                raise PyXFormError(msg)
+            elif i.name in seen.keys() and seen[i.name].src == i.src:
+                # Instance id exists with same src URI -> ok, don't duplicate.
+                continue
+            else:
+                # Instance doesn't exist yet -> add it.
+                yield i.instance
+            seen[i.name] = i
 
     def xml_model(self):
         """
@@ -184,9 +339,7 @@ class Survey(Section):
         if self._translations:
             model_children.append(self.itext())
         model_children += [node("instance", self.xml_instance())]
-        model_children += list(self._generate_static_instances())
-        model_children += list(self._generate_pulldata_instances())
-        model_children += list(self._generate_from_file_instances())
+        model_children += list(self._generate_instances())
         model_children += self.xml_bindings()
 
         if self.submission_url or self.public_key:
@@ -433,13 +586,13 @@ class Survey(Section):
         # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
         xml_with_linebreaks = self.xml().toprettyxml(indent='  ')
         text_re = re.compile('(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)', re.DOTALL)
-        output_re = re.compile('\n.*(<output.*>)\n(  )*')
+        output_re = re.compile('\n.*(<output.*>)\n(\s\s)*')
         pretty_xml = text_re.sub(lambda m: ''.join(m.group(1, 2, 3)), xml_with_linebreaks)
         inline_output = output_re.sub('\g<1>', pretty_xml)
         return '<?xml version="1.0"?>\n' + inline_output
 
     def __repr__(self):
-        return unicode(self)
+        return self.__unicode__()
 
     def __unicode__(self):
         return "<pyxform.survey.Survey instance at %s>" % hex(id(self))
