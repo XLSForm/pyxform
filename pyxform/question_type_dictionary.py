@@ -856,5 +856,8 @@ QUESTION_TYPE_DICT = \
             "bind": {
                 "type": "binary"
             }
+        },
+        "xml-external": {
+            # Only effect is to add an external instance.
         }
     }

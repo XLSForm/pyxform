@@ -6,8 +6,7 @@ import codecs
 import xml.etree.ElementTree as ETree
 from operator import itemgetter
 from pyxform import builder
-from pyxform.utils import basestring
-from pyxform.survey import nsmap
+from pyxform.utils import basestring, NSMAP
 
 
 # {{{ http://code.activestate.com/recipes/573463/ (r7)
@@ -181,7 +180,7 @@ class XFormToDict:
 
     def get_dict(self):
         json_str = json.dumps(self._dict)
-        for uri in nsmap.values():
+        for uri in NSMAP.values():
             json_str = json_str.replace('{%s}' % uri, '')
         return json.loads(json_str)
 

@@ -3,6 +3,7 @@ import os
 
 from pyxform import file_utils, utils
 from pyxform.errors import PyXFormError
+from pyxform.external_instance import ExternalInstance
 from pyxform.question import (InputQuestion, MultipleChoiceQuestion,
                               OsmUploadQuestion, Question, RangeQuestion,
                               TriggerQuestion, UploadQuestion)
@@ -92,6 +93,8 @@ class SurveyElementBuilder(object):
             d = self._sections[section_name]
             full_survey = self.create_survey_element_from_dict(d)
             return full_survey.children
+        elif d[u"type"] == u"xml-external":
+            return ExternalInstance(**d)
         else:
             return self._create_question_from_dict(
                 d, copy_json_dict(QUESTION_TYPE_DICT), self._add_none_option)

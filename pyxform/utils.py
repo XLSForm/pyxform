@@ -25,7 +25,15 @@ TAG_CHAR = r"[a-zA-Z:_0-9\-.]"
 XFORM_TAG_REGEXP = "%(start)s%(char)s*" % {
     "start": TAG_START_CHAR,
     "char": TAG_CHAR
-    }
+}
+NSMAP = {
+    u"xmlns": u"http://www.w3.org/2002/xforms",
+    u"xmlns:h": u"http://www.w3.org/1999/xhtml",
+    u"xmlns:ev": u"http://www.w3.org/2001/xml-events",
+    u"xmlns:xsd": u"http://www.w3.org/2001/XMLSchema",
+    u"xmlns:jr": u"http://openrosa.org/javarosa",
+    u"xmlns:orx": u"http://openrosa.org/xforms"
+}
 
 
 class DetachableElement(Element):
