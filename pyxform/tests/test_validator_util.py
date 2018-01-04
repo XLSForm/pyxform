@@ -28,3 +28,21 @@ class TestValidatorUtil(TestCase):
             self.cls_name, "test_do_not_over_trim_javarosa_errors_expected")
         self.assertEqual(
             ErrorCleaner.odk_validate(test_str), expected_str.strip())
+
+    def test_single_line_error_still_output(self):
+        """Should emit errors that are a single line of text."""
+        test_str = self.config.get(
+            self.cls_name, "test_single_line_error_still_output_test")
+        expected_str = self.config.get(
+            self.cls_name, "test_single_line_error_still_output_expected")
+        self.assertEqual(
+            ErrorCleaner.odk_validate(test_str), expected_str.strip())
+
+    def test_jarfile_error_returned_asis(self):
+        """Should return a jarfile error as-is, to avoid tokenising the path."""
+        test_str = self.config.get(
+            self.cls_name, "test_jarfile_error_returned_asis_test")
+        expected_str = self.config.get(
+            self.cls_name, "test_jarfile_error_returned_asis_expected")
+        self.assertEqual(
+            ErrorCleaner.odk_validate(test_str), expected_str.strip())

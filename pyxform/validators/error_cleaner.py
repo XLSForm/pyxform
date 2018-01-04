@@ -25,7 +25,8 @@ class ErrorCleaner(object):
             pattern, ErrorCleaner._replace_xpath_with_tokens,
             error_message, flags=re.I)
         lines = unicode(error_message).strip().splitlines()
-        no_dupes = [line for i, line in enumerate(lines) if line != lines[i-1]]
+        no_dupes = [line for i, line in enumerate(lines)
+                    if line != lines[i-1] or i == 0]
         return no_dupes
 
     @staticmethod
@@ -53,6 +54,8 @@ class ErrorCleaner(object):
 
     @staticmethod
     def odk_validate(error_message):
+        if "Error: Unable to access jarfile" in error_message:
+            return error_message  # Avoids tokenising the file path.
         common = ErrorCleaner._cleanup_errors(error_message)
         java_clean = [ErrorCleaner._remove_java_content(i) for i in common]
         final_message = ErrorCleaner._join_final(java_clean)
