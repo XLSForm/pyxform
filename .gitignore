@@ -7,6 +7,8 @@
 .DS_Store
 .noseids
 tests/how_old_are_you.json
+tests/test_output
+.idea
 
 # folders created by setuptools
 build

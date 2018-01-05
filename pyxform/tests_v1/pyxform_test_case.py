@@ -11,8 +11,8 @@ from unittest import TestCase
 
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
-from pyxform.odk_validate import ODKValidateError, check_xform
 from pyxform.tests_v1.test_utils.md_table import md_table_to_ss_structure
+from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.utils import NSMAP, unicode
 from pyxform.xls2json import workbook_to_json
 

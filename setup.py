@@ -7,7 +7,7 @@ setup(
     author_email='info@xlsform.org',
     packages=find_packages(),
     package_data={
-        'pyxform.odk_validate': [
+        'pyxform.validators.odk_validate': [
             'ODK_Validate.jar',
         ],
         'pyxform.tests': [
