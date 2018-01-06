@@ -190,6 +190,27 @@ def create_survey_element_from_xml(xml_file):
     return sb.survey()
 
 
+def _add_child(children, parent_ref, ref, question):
+    depth = len(parent_ref.split('/'))
+    for child in children:
+        if 'ref' not in child:
+            break
+        child_depth = len(child['ref'].split('/'))
+        if child_depth < depth and 'children' in child:
+            _add_child(child['children'], parent_ref, ref, question)
+            continue
+        if child_depth == depth and child['ref'] == parent_ref:
+            question['ref'] = ref
+            updated = False
+            for _c in child['children']:
+                if isinstance(_c, dict) \
+                        and 'ref' in _c and _c['ref'] == ref:
+                    _c.update(question)
+                    updated = True
+            if not updated:
+                child['children'].append(question)
+
+
 class XFormToDictBuilder:
     """Experimental XFORM xml to XFORM JSON"""
     QUESTION_TYPES = {
@@ -313,17 +334,7 @@ class XFormToDictBuilder:
                 question['ref'] = ref
                 self.children.append(question)
                 continue
-            for child in self.children:
-                if child['ref'] == parent_ref:
-                    question['ref'] = ref
-                    updated = False
-                    for c in child['children']:
-                        if isinstance(c, dict) \
-                                and 'ref' in c and c['ref'] == ref:
-                            c.update(question)
-                            updated = True
-                    if not updated:
-                        child['children'].append(question)
+            _add_child(self.children, parent_ref, ref, question)
             if 'ref' not in question:
                 new_ref = u'/'.join(ref.split('/')[2:])
                 root_ref = u'/'.join(ref.split('/')[:2])
