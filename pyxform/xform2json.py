@@ -302,7 +302,7 @@ class XFormToDictBuilder:
         for item in self._bind_list:
             ref = item['nodeset']
             name = self._get_name_from_ref(ref)
-            parent_ref = ref[:ref.find('/%s' % name)]
+            parent_ref = ref[:ref.rfind('/%s' % name)]
             question = self._get_question_params_from_bindings(ref)
             question['name'] = name
             question['__order'] = self._get_question_order(ref)
