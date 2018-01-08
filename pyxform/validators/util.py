@@ -3,6 +3,12 @@ import subprocess
 from subprocess import Popen, PIPE
 import threading
 import signal
+try:
+    from urllib.request import urlopen, Request
+    from urllib.error import URLError, HTTPError
+except ImportError:
+    from urllib2 import urlopen, Request, URLError, HTTPError
+from pyxform.errors import PyXFormError
 
 
 # Adapted from:
@@ -63,3 +69,25 @@ def decode_stream(stream):
         except BaseException as be:
             msg = "Failed to decode validate stderr as utf-8 or latin-1."
             raise IOError(msg, ude, be)
+
+
+def request_get(url):
+    """
+    Get the response content from URL.
+    """
+    try:
+        r = Request(url)
+        r.add_header("Accept", "application/json")
+        with urlopen(r) as u:
+            content = u.read()
+        if len(content) == 0:
+            raise PyXFormError("Empty response from URL: '{u}'.".format(u=url))
+        else:
+            return content
+    except HTTPError as e:
+        raise PyXFormError("Unable to fulfill request. Error code: '{c}'."
+                           "Reason: '{r}'. URL: '{u}'."
+                           "".format(r=e.reason, c=e.code, u=url))
+    except URLError as e:
+        raise PyXFormError("Unable to reach a server. Reason: {r}. "
+                           "URL: {u}".format(r=e.reason, u=url))
