@@ -8,7 +8,7 @@ from pyxform.errors import PyXFormError
 from pyxform.validators.util import request_get
 
 
-HERE = os.path.dirname(__file__)
+HERE = os.path.abspath(os.path.dirname(__file__))
 UTC_FMT = "%Y-%m-%dT%H:%M:%SZ"
 
 
@@ -34,9 +34,14 @@ class Updater(object):
         """
         Get the path to the XLSForm spec test XML file for checking updates.
         """
+        loop_count = 0
         folder = HERE
         while not os.path.exists(os.path.join(folder, ".gitignore")):
             folder = os.path.dirname(folder)
+            if 5 < loop_count:
+                raise PyXFormError("Couldn't find project root. Current: {f}"
+                                   "".format(f=folder))
+            loop_count += 1
         return os.path.join(folder, "pyxform", "tests", "test_expected_output",
                             "xlsform_spec_test.xml")
 
@@ -143,7 +148,7 @@ class Updater(object):
             file_message = "\n".join(file_names)
         installed = self._read_json(file_path=self.installed_path)
 
-        template = "\n\nCurrently installed:\n\n{installed}" \
+        template = "\nCurrently installed:\n\n{installed}" \
                    "Latest release:\n\n{latest}" \
                    "Files available for latest release:\n\n{file_message}\n"
         message = template.format(
@@ -215,7 +220,7 @@ class Updater(object):
         file_path = os.path.join(self.bin_path, file_name)
 
         if installed["tag_name"] == latest["tag_name"] and not force:
-            template = "\n\nUpdate failed!\n\n" \
+            template = "\nUpdate failed!\n\n" \
                        "The current version appears to be the latest.\n\n" \
                        "To update anyway, use the '--force' flag.\n\n" \
                        "Currently installed:\n\n{installed}"
