@@ -486,11 +486,13 @@ class XFormToDictBuilder:
                              'noAppErrorString', 'requiredMsg']:
                         if k == 'noAppErrorString':
                             k = 'jr:noAppErrorString'
+                            v = self._get_itext_msg(v, k)
                         if k == 'requiredMsg':
                             k = 'jr:requiredMsg'
+                            v = self._get_itext_msg(v, k)
                         if k == 'constraintMsg':
                             k = "jr:constraintMsg"
-                            v = self._get_constraint_msg(v)
+                            v = self._get_itext_msg(v, k)
                         if k == 'required':
                             if v == 'true()':
                                 v = 'yes'
@@ -565,6 +567,7 @@ class XFormToDictBuilder:
                     if isinstance(value, dict):
                         if 'output' in value:
                             text = self._get_output_text(value)
+                            label[lang] = text
                         if 'form' in value and '_text' in value:
                             key = u'media'
                             v = value['_text']
@@ -574,8 +577,11 @@ class XFormToDictBuilder:
                                 v = v.replace('jr://%s/' % value['form'], '')
                             if v == '-':  # skip blank
                                 continue
-                            text = {value['form']: v}
-                    if isinstance(value, list):
+                            text = {lang: v}
+                            if value['form'] not in label:
+                                label[value['form']] = {}
+                            label[value['form']].update(text)
+                    elif isinstance(value, list):
                         for item in value:
                             if 'form' in item and '_text' in item:
                                 k = u'media'
@@ -600,8 +606,8 @@ class XFormToDictBuilder:
                                 label['label'] = {}
                             label['label'][lang] = item
                         continue
-
-                    label[lang] = text
+                    else:
+                        label[lang] = text
                     break
         if key == u'media' and label.keys() == ['default']:
             label = label['default']
@@ -611,13 +617,13 @@ class XFormToDictBuilder:
         name = self._get_name_from_ref(ref)
         return u''.join([u'${', name.strip(), u'}'])
 
-    def _get_constraint_msg(self, constraint_msg):
-        if isinstance(constraint_msg, basestring):
-            if constraint_msg.find(':jr:constraintMsg') != -1:
-                ref = constraint_msg.replace(
+    def _get_itext_msg(self, itext_msg, lookup='jr:constraintMsg'):
+        if isinstance(itext_msg, basestring):
+            if itext_msg.find(':' + lookup) != -1:
+                ref = itext_msg.replace(
                     'jr:itext(\'', '').replace('\')', '')
-                k, constraint_msg = self._get_text_from_translation(ref)
-        return constraint_msg
+                k, itext_msg = self._get_text_from_translation(ref)
+        return itext_msg
 
     def _get_name_from_ref(self, ref):
         """given /xlsform_spec_test/launch,
