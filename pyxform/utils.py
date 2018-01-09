@@ -32,7 +32,8 @@ NSMAP = {
     u"xmlns:ev": u"http://www.w3.org/2001/xml-events",
     u"xmlns:xsd": u"http://www.w3.org/2001/XMLSchema",
     u"xmlns:jr": u"http://openrosa.org/javarosa",
-    u"xmlns:orx": u"http://openrosa.org/xforms"
+    u"xmlns:orx": u"http://openrosa.org/xforms",
+    u"xmlns:odk": u"http://www.opendatakit.org/xforms"
 }
 
 
