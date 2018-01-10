@@ -1,3 +1,6 @@
+import collections
+from contextlib import closing
+import logging
 import os
 import subprocess
 from subprocess import Popen, PIPE
@@ -9,6 +12,11 @@ try:
 except ImportError:
     from urllib2 import urlopen, Request, URLError, HTTPError
 from pyxform.errors import PyXFormError
+
+
+HERE = os.path.abspath(os.path.dirname(__file__))
+XFORM_SPEC_PATH = os.path.join(os.path.dirname(HERE), "tests",
+                               "test_expected_output", "xlsform_spec_test.xml")
 
 
 # Adapted from:
@@ -78,16 +86,59 @@ def request_get(url):
     try:
         r = Request(url)
         r.add_header("Accept", "application/json")
-        with urlopen(r) as u:
+        with closing(urlopen(r)) as u:
             content = u.read()
         if len(content) == 0:
             raise PyXFormError("Empty response from URL: '{u}'.".format(u=url))
         else:
             return content
     except HTTPError as e:
-        raise PyXFormError("Unable to fulfill request. Error code: '{c}'."
+        raise PyXFormError("Unable to fulfill request. Error code: '{c}'. "
                            "Reason: '{r}'. URL: '{u}'."
                            "".format(r=e.reason, c=e.code, u=url))
     except URLError as e:
         raise PyXFormError("Unable to reach a server. Reason: {r}. "
                            "URL: {u}".format(r=e.reason, u=url))
+
+
+class CapturingHandler(logging.Handler):
+    """
+    A logging handler capturing all (raw and formatted) logging output.
+    Largely the same as doing "from unittest.case import _CapturingHandler",
+    but copied here because it is a simple class, and the original has an
+    underscore prefix so it might change unexpectedly.
+
+    Usage:
+    Here's how to attach it to a logger, get the logs, and then detach it.
+
+    my_logger = logging.getLogger(name="logger_name")
+    capture_handler = _CapturingHandler(logger=my_logger)
+    log_messages = capture_handler.watcher.output
+    log_records = capture_handler.watcher.records
+    my_logger.removeHandler(hdlr=capture_handler)
+    """
+
+    def __init__(self, logger):
+        logging.Handler.__init__(self)
+        self.watcher = self._get_watcher()
+        logger.addHandler(self)
+        logger.propagate = False
+        logger.setLevel("INFO")
+        self.setFormatter(logging.Formatter("%(message)s"))
+
+    def flush(self):
+        pass
+
+    def emit(self, record):
+        self.watcher.records.append(record)
+        msg = self.format(record)
+        self.watcher.output[record.levelname].append(msg)
+
+    def _get_watcher(self):
+        _LoggingWatcher = collections.namedtuple(
+            "_LoggingWatcher", ["records", "output"])
+        levels = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
+        return _LoggingWatcher([], {x: [] for x in levels})
+
+    def reset(self):
+        self.watcher = self._get_watcher()

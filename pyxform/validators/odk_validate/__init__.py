@@ -6,16 +6,38 @@ A python wrapper around ODK Validate
 """
 import os
 import sys
-from pyxform.validators.util import run_popen_with_timeout, decode_stream
+from pyxform.validators.util import run_popen_with_timeout, decode_stream, \
+    XFORM_SPEC_PATH
 from pyxform.validators.error_cleaner import ErrorCleaner
 
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-ODK_VALIDATE_JAR = os.path.join(CURRENT_DIRECTORY, "ODK_Validate.jar")
+ODK_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", "ODK_Validate.jar")
 
 
 class ODKValidateError(Exception):
     pass
+
+
+def install_exists():
+    return os.path.exists(ODK_VALIDATE_PATH)
+
+
+def _call_validator(path_to_xform, bin_file_path=ODK_VALIDATE_PATH):
+    return run_popen_with_timeout(
+        ["java", "-jar", bin_file_path, path_to_xform], 100)
+
+
+def install_ok(bin_file_path=ODK_VALIDATE_PATH):
+    """
+    Check if ODK Validate functions as expected.
+    """
+    return_code, _, _, _ = _call_validator(
+        path_to_xform=XFORM_SPEC_PATH, bin_file_path=bin_file_path)
+    if return_code == 1:
+        return False
+    else:
+        return True
 
 
 def _java_installed():
@@ -40,8 +62,8 @@ def check_xform(path_to_xform):
     # appear and can be ignored.
     # stderr is treated as a warning if the form is valid or an error
     # if it is invalid.
-    returncode, timeout, stdout, stderr = run_popen_with_timeout(
-        ["java", "-jar", ODK_VALIDATE_JAR, path_to_xform], 100)
+    returncode, timeout, stdout, stderr = _call_validator(
+        path_to_xform=path_to_xform)
     warnings = []
     stderr = decode_stream(stderr)
 

@@ -1,20 +1,38 @@
 import os
-from pyxform.validators.util import run_popen_with_timeout, decode_stream
+from pyxform.validators.util import run_popen_with_timeout, decode_stream, \
+    XFORM_SPEC_PATH
 from pyxform.validators.error_cleaner import ErrorCleaner
 
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-ENKETO_VALIDATE_JS = os.path.join(CURRENT_DIRECTORY, "enketo_validate.js")
+ENKETO_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", "validate")
 
 
 class EnketoValidateError(Exception):
     pass
 
 
-def _node_installed():
-    stdout = run_popen_with_timeout(["node", "--help"], 100)[2]
-    stdout = stdout.strip().decode('utf-8')
-    return "Usage: node" in stdout
+def install_exists():
+    """
+    Check if Enketo-validate is installed.
+    """
+    return os.path.exists(ENKETO_VALIDATE_PATH)
+
+
+def _call_validator(path_to_xform, bin_file_path=ENKETO_VALIDATE_PATH):
+    return run_popen_with_timeout([bin_file_path, path_to_xform], 100)
+
+
+def install_ok(bin_file_path=ENKETO_VALIDATE_PATH):
+    """
+    Check if Enketo-validate functions as expected.
+    """
+    return_code, _, _, _ = _call_validator(
+        path_to_xform=XFORM_SPEC_PATH, bin_file_path=bin_file_path)
+    if return_code == 1:
+        return False
+    else:
+        return True
 
 
 def check_xform(path_to_xform):
@@ -25,14 +43,16 @@ def check_xform(path_to_xform):
     - return code 0: append warning with the stdout content (possibly none).
 
     :param path_to_xform: Path to the XForm to be validated.
+    :param bin_path: Path to the Enketo-validate binary.
     :return: warnings or List[str]
     """
-    if not _node_installed():
+    if not install_exists():
         raise EnvironmentError(
-            "pyxform enketo validate dependency: node not found")
+            "Enketo-validate dependency not found. "
+            "Please use the updater tool to install the latest version.")
 
-    returncode, timeout, stdout, stderr = run_popen_with_timeout(
-        ["node", ENKETO_VALIDATE_JS, path_to_xform], 100)
+    returncode, timeout, stdout, stderr = _call_validator(
+        path_to_xform=path_to_xform)
     warnings = []
     stderr = decode_stream(stderr)
     stdout = decode_stream(stdout)
