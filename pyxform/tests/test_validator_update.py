@@ -66,6 +66,16 @@ class TestTempUtils(TestCase):
 
 class TestUpdater(TestCase):
 
+    server = ThreadingServerInThread()
+
+    @classmethod
+    def setUpClass(cls):
+        cls.server.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.stop()
+
     def setUp(self):
         self.updater = self._get_test_updater()
         self.latest_enketo = os.path.join(
@@ -86,9 +96,7 @@ class TestUpdater(TestCase):
     def test_request_latest_json(self):
         """Should return version info dict containing asset list."""
         self.updater.api_url = "http://localhost:8000/latest_enketo.json"
-        with ThreadingServerInThread():
-            observed = self.updater._request_latest_json(
-                url=self.updater.api_url)
+        observed = self.updater._request_latest_json(url=self.updater.api_url)
         self.assertIn("assets", observed)
 
     def test_check_path__raises(self):
@@ -117,7 +125,7 @@ class TestUpdater(TestCase):
             self.assertEqual(0, os.path.getsize(temp_file))
             self.updater._write_json(
                 file_path=temp_file, content={"some": "data"})
-            self.assertEqual(22, os.path.getsize(temp_file))
+            self.assertTrue(20 <= os.path.getsize(temp_file))
 
     def test_read_last_check(self):
         """Should return a datetime from the last_check file."""
@@ -174,8 +182,7 @@ class TestUpdater(TestCase):
         self.updater.api_url = "http://localhost:8000/latest_enketo.json"
         old = self.utc_now - timedelta(minutes=45.0)
 
-        with ThreadingServerInThread(), get_temp_file() as temp_check, \
-                get_temp_file() as temp_json:
+        with get_temp_file() as temp_check, get_temp_file() as temp_json:
             self.updater._write_last_check(
                 file_path=temp_check, content=old)
             self.updater.last_check_path = temp_check
@@ -298,7 +305,7 @@ class TestUpdater(TestCase):
     def test_download_file(self):
         """Should download the file from the url to the the target path."""
         self.updater.api_url = "http://localhost:8000/.small_file"
-        with ThreadingServerInThread(), get_temp_file() as temp_file:
+        with get_temp_file() as temp_file:
             self.assertEqual(0, os.path.getsize(temp_file))
             self.updater._download_file(
                 url=self.updater.api_url, file_path=temp_file)
@@ -379,8 +386,7 @@ class TestUpdater(TestCase):
         self.updater.latest_path = self.install_fake
         new = self.utc_now - timedelta(minutes=15.0)
 
-        with get_temp_file() as temp_check, get_temp_dir() as temp_dir, \
-                ThreadingServerInThread():
+        with get_temp_file() as temp_check, get_temp_dir() as temp_dir:
             self.updater._write_last_check(
                 file_path=temp_check, content=new)
             self.updater.last_check_path = temp_check

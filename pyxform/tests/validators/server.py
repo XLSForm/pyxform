@@ -69,14 +69,31 @@ class ThreadingServerInThread(object):
     """
 
     def __init__(self):
+        self._server_address = ("127.0.0.1", 8000)
+        self._handler = SimpleHTTPRequestHandlerHere
         self.httpd = ThreadingTCPServer(
-            ("127.0.0.1", 8000), SimpleHTTPRequestHandlerHere)
+            self._server_address, self._handler, bind_and_activate=False)
+
+    def _bind_and_activate(self):
+        try:
+            self.httpd.server_bind()
+            self.httpd.server_activate()
+        except Exception as e:
+            self.httpd.server_close()
+            raise e
+
+    def start(self):
+        self._bind_and_activate()
+        thread = threading.Thread(target=self.httpd.serve_forever)
+        thread.start()
+
+    def stop(self):
+        self.httpd.shutdown()
+        self.httpd.server_close()
 
     def __enter__(self):
-        self.thread = threading.Thread(target=self.httpd.serve_forever)
-        self.thread.start()
+        self.start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.httpd.shutdown()
-        self.httpd.server_close()
+        self.stop()
