@@ -12,7 +12,8 @@ from unittest2 import TestCase
 from pyxform.errors import PyXFormError
 from pyxform.tests.validators.server import ThreadingServerInThread
 from pyxform.utils import unicode
-from pyxform.validators.updater import Updater, capture_handler
+from pyxform.validators.updater import _UpdateInfo, _UpdateHandler, \
+    capture_handler
 
 
 def get_test_path():
@@ -23,6 +24,25 @@ def get_test_path():
 
 
 TEST_PATH = get_test_path()
+
+
+def get_update_info(mod_root=None):
+    return _UpdateInfo(
+        api_url="", repo_url="", validate_subfolder="", mod_root=mod_root)
+
+
+class AlwaysOKUpdater(_UpdateHandler):
+
+    @staticmethod
+    def _install_ok(bin_file_path=None):
+        return True
+
+
+class AlwaysFailsUpdater(_UpdateHandler):
+
+    @staticmethod
+    def _install_ok(bin_file_path=None):
+        return False
 
 
 @contextmanager
@@ -64,7 +84,7 @@ class TestTempUtils(TestCase):
         self.assertFalse(os.path.exists(temp_dir))
 
 
-class TestUpdater(TestCase):
+class TestUpdateHandler(TestCase):
 
     server = ThreadingServerInThread()
 
@@ -77,26 +97,25 @@ class TestUpdater(TestCase):
         cls.server.stop()
 
     def setUp(self):
-        self.updater = self._get_test_updater()
-        self.latest_enketo = os.path.join(
-            TEST_PATH, "data", "latest_enketo.json")
-        self.latest_odk = os.path.join(TEST_PATH, "data", "latest_odk.json")
+        self.update_info = get_update_info()
+        self.updater = _UpdateHandler()
+        data_dir = os.path.join(TEST_PATH, "data")
+        self.latest_enketo = os.path.join(data_dir, "latest_enketo.json")
+        self.latest_odk = os.path.join(data_dir, "latest_odk.json")
         self.last_check = os.path.join(TEST_PATH, ".last_check")
         self.last_check_none = os.path.join(TEST_PATH, ".last_check_none")
         self.phantom_file = os.path.join(TEST_PATH, ".not_there")
         self.utc_now = datetime.utcnow()
         capture_handler.reset()
-        self.zip_file = os.path.join(TEST_PATH, "data", "linux.zip")
-        self.install_fake = os.path.join(TEST_PATH, "data", "install_fake.json")
-
-    @staticmethod
-    def _get_test_updater():
-        return Updater(api_url="", repo_url="", validate_subfolder="")
+        self.zip_file = os.path.join(data_dir, "linux-ideal.zip")
+        self.zip_file_ideal = os.path.join(data_dir, "linux-ideal.zip")
+        self.install_fake = os.path.join(data_dir, "install_fake.json")
+        self.install_fake_old = os.path.join(data_dir, "install_fake_old.json")
 
     def test_request_latest_json(self):
         """Should return version info dict containing asset list."""
-        self.updater.api_url = "http://localhost:8000/latest_enketo.json"
-        observed = self.updater._request_latest_json(url=self.updater.api_url)
+        self.update_info.api_url = "http://localhost:8000/latest_enketo.json"
+        observed = self.updater._request_latest_json(url=self.update_info.api_url)
         self.assertIn("assets", observed)
 
     def test_check_path__raises(self):
@@ -143,28 +162,32 @@ class TestUpdater(TestCase):
 
     def test_check_necessary__true_if_last_check_not_found(self):
         """Should return true if the last check file wasn't found."""
-        self.updater.last_check_path = self.phantom_file
-        self.assertTrue(self.updater._check_necessary(utc_now=self.utc_now))
+        self.update_info.last_check_path = self.phantom_file
+        self.assertTrue(self.updater._check_necessary(
+            update_info=self.update_info, utc_now=self.utc_now))
 
     def test_check_necessary__true_if_latest_json_not_found(self):
         """Should return true if the latest.json file wasn't found."""
-        self.updater.last_check_path = self.last_check
-        self.updater.latest_path = self.phantom_file
-        self.assertTrue(self.updater._check_necessary(utc_now=self.utc_now))
+        self.update_info.last_check_path = self.last_check
+        self.update_info.latest_path = self.phantom_file
+        self.assertTrue(self.updater._check_necessary(
+            update_info=self.update_info, utc_now=self.utc_now))
 
     def test_check_necessary__true_if_last_check_empty(self):
         """Should return true if the last check file was empty."""
-        updater = self._get_test_updater()
-        updater.last_check_path = os.path.join(TEST_PATH, ".last_check_none")
-        updater.latest_path = self.latest_enketo
-        self.assertTrue(updater._check_necessary(utc_now=self.utc_now))
+        self.update_info.last_check_path = os.path.join(
+            TEST_PATH, ".last_check_none")
+        self.update_info.latest_path = self.latest_enketo
+        self.assertTrue(self.updater._check_necessary(
+            update_info=self.update_info, utc_now=self.utc_now))
 
     def test_check_necessary__true_if_last_check_too_old(self):
         """Should return true if the last check was too long ago."""
-        self.updater.last_check_path = self.last_check
-        self.updater.latest_path = self.latest_enketo
+        self.update_info.last_check_path = self.last_check
+        self.update_info.latest_path = self.latest_enketo
         old = self.utc_now - timedelta(minutes=45.0)
-        self.assertTrue(self.updater._check_necessary(utc_now=old))
+        self.assertTrue(self.updater._check_necessary(
+            update_info=self.update_info, utc_now=old))
 
     def test_check_necessary__false_last_check_very_recent(self):
         """Should return false if the last check was very recent."""
@@ -172,87 +195,88 @@ class TestUpdater(TestCase):
 
         with get_temp_file() as temp_file:
             self.updater._write_last_check(file_path=temp_file, content=new)
-            self.updater.last_check_path = temp_file
-            self.updater.latest_path = self.latest_enketo
+            self.update_info.last_check_path = temp_file
+            self.update_info.latest_path = self.latest_enketo
             self.assertFalse(
-                self.updater._check_necessary(utc_now=self.utc_now))
+                self.updater._check_necessary(
+                    update_info=self.update_info, utc_now=self.utc_now))
 
     def test_get_latest__if_check_necessary_true(self):
         """Should get latest from remote, rather than file."""
-        self.updater.api_url = "http://localhost:8000/latest_enketo.json"
+        self.update_info.api_url = "http://localhost:8000/latest_enketo.json"
         old = self.utc_now - timedelta(minutes=45.0)
 
         with get_temp_file() as temp_check, get_temp_file() as temp_json:
             self.updater._write_last_check(
                 file_path=temp_check, content=old)
-            self.updater.last_check_path = temp_check
-            self.updater.latest_path = temp_json
-            latest = self.updater._get_latest()
+            self.update_info.last_check_path = temp_check
+            self.update_info.latest_path = temp_json
+            latest = self.updater._get_latest(update_info=self.update_info)
         self.assertEqual("1.0.3", latest["name"])
 
     def test_get_latest__if_check_necessary_false(self):
         """Should get latest from file, rather than remote."""
-        self.updater.latest_path = self.latest_odk
+        self.update_info.latest_path = self.latest_odk
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_file() as temp_check:
             self.updater._write_last_check(file_path=temp_check, content=new)
-            self.updater.last_check_path = temp_check
-            latest = self.updater._get_latest()
+            self.update_info.last_check_path = temp_check
+            latest = self.updater._get_latest(update_info=self.update_info)
         self.assertEqual("ODK Validate v1.8.0", latest["name"])
 
     def test_list__not_installed_no_files(self):
         """Should log an info message - no installed version, no files."""
-        self.updater.installed_path = self.phantom_file
-        self.updater.latest_path = self.latest_odk
+        self.update_info.installed_path = self.phantom_file
+        self.update_info.latest_path = self.latest_odk
 
         with get_temp_file() as temp_check:
             self.updater._write_last_check(
                 file_path=temp_check, content=self.utc_now)
-            self.updater.last_check_path = temp_check
-            self.updater.list()
+            self.update_info.last_check_path = temp_check
+            self.updater.list(update_info=self.update_info)
         info = capture_handler.watcher.output["INFO"][0]
         self.assertIn("Installed release:\n\n- None!", info)
         self.assertIn("Files available:\n\n- None!", info)
 
     def test_list__not_installed_with_files(self):
         """Should log an info message - no installed version, with files."""
-        self.updater.installed_path = self.phantom_file
-        self.updater.latest_path = self.latest_enketo
+        self.update_info.installed_path = self.phantom_file
+        self.update_info.latest_path = self.latest_enketo
 
         with get_temp_file() as temp_check:
             self.updater._write_last_check(
                 file_path=temp_check, content=self.utc_now)
-            self.updater.last_check_path = temp_check
-            self.updater.list()
+            self.update_info.last_check_path = temp_check
+            self.updater.list(update_info=self.update_info)
         info = capture_handler.watcher.output["INFO"][0]
         self.assertIn("Installed release:\n\n- None!", info)
         self.assertIn("- windows.zip", info)
 
     def test_list__installed_no_files(self):
         """Should log an info message - installed version, no files."""
-        self.updater.installed_path = self.latest_enketo
-        self.updater.latest_path = self.latest_odk
+        self.update_info.installed_path = self.latest_enketo
+        self.update_info.latest_path = self.latest_odk
 
         with get_temp_file() as temp_check:
             self.updater._write_last_check(
                 file_path=temp_check, content=self.utc_now)
-            self.updater.last_check_path = temp_check
-            self.updater.list()
+            self.update_info.last_check_path = temp_check
+            self.updater.list(update_info=self.update_info)
         info = capture_handler.watcher.output["INFO"][0]
         self.assertIn("Installed release:\n\n- Tag name = 1.0.3", info)
         self.assertIn("Files available:\n\n- None!", info)
 
     def test_list__installed_with_files(self):
         """Should log an info message - installed version, with files."""
-        self.updater.installed_path = self.latest_enketo
-        self.updater.latest_path = self.latest_enketo
+        self.update_info.installed_path = self.latest_enketo
+        self.update_info.latest_path = self.latest_enketo
 
         with get_temp_file() as temp_check:
             self.updater._write_last_check(
                 file_path=temp_check, content=self.utc_now)
-            self.updater.last_check_path = temp_check
-            self.updater.list()
+            self.update_info.last_check_path = temp_check
+            self.updater.list(update_info=self.update_info)
         info = capture_handler.watcher.output["INFO"][0]
         self.assertIn("Installed release:\n\n- Tag name = 1.0.3", info)
         self.assertIn("- windows.zip", info)
@@ -264,7 +288,9 @@ class TestUpdater(TestCase):
 
         with self.assertRaises(PyXFormError) as ctx:
             self.updater._find_download_url(
-                json_data=json_data, file_name=file_name)
+                update_info=self.update_info,
+                json_data=json_data,
+                file_name=file_name)
         self.assertIn("No files attached", unicode(ctx.exception))
 
     def test_find_download_url__not_found(self):
@@ -276,7 +302,9 @@ class TestUpdater(TestCase):
 
         with self.assertRaises(PyXFormError) as ctx:
             self.updater._find_download_url(
-                json_data=json_data, file_name=file_name)
+                update_info=self.update_info,
+                json_data=json_data,
+                file_name=file_name)
         self.assertIn("No files with the name", unicode(ctx.exception))
 
     def test_find_download_url__duplicates(self):
@@ -288,7 +316,9 @@ class TestUpdater(TestCase):
 
         with self.assertRaises(PyXFormError) as ctx:
             self.updater._find_download_url(
-                json_data=json_data, file_name=file_name)
+                update_info=self.update_info,
+                json_data=json_data,
+                file_name=file_name)
         self.assertIn("2 files with the name", unicode(ctx.exception))
 
     def test_find_download_url__ok(self):
@@ -299,40 +329,55 @@ class TestUpdater(TestCase):
                    "download/1.0.3/windows.zip"
 
         observed = self.updater._find_download_url(
-            json_data=json_data, file_name=file_name)
+            update_info=self.update_info,
+            json_data=json_data,
+            file_name=file_name)
         self.assertEqual(expected, observed)
 
     def test_download_file(self):
         """Should download the file from the url to the the target path."""
-        self.updater.api_url = "http://localhost:8000/.small_file"
+        self.update_info.api_url = "http://localhost:8000/.small_file"
         with get_temp_file() as temp_file:
             self.assertEqual(0, os.path.getsize(temp_file))
             self.updater._download_file(
-                url=self.updater.api_url, file_path=temp_file)
+                url=self.update_info.api_url, file_path=temp_file)
             self.assertEqual(13, os.path.getsize(temp_file))
 
     def test_get_bin_paths__ok(self):
         """Should return the path mappings."""
         file_path = os.path.join(TEST_PATH, "linux.zip")
-        observed = self.updater._get_bin_paths(file_path=file_path)
+        observed = self.updater._get_bin_paths(
+            update_info=self.update_info, file_path=file_path)
         self.assertEqual(3, len(observed))
 
     def test_get_bin_paths__unsupported_raises(self):
         """Should raise an error if a mapping for the file name isn't found."""
         file_path = self.last_check = os.path.join(TEST_PATH, "bacon.zip")
         with self.assertRaises(PyXFormError) as ctx:
-            self.updater._get_bin_paths(file_path=file_path)
+            self.updater._get_bin_paths(
+                update_info=self.update_info, file_path=file_path)
         self.assertIn("Did not find", unicode(ctx.exception))
 
-    def test_unzip_find_zip_jobs__ok(self):
+    def test_unzip_find_zip_jobs__ok_real_current(self):
         """Should return a list of zip jobs same length as search."""
-        bin_paths = [("*/validate", "validate")]
-
         with get_temp_dir() as temp_dir, \
                 ZipFile(self.zip_file, mode="r") as zip_file:
+            bin_paths = self.updater._get_bin_paths(
+                update_info=self.update_info, file_path=self.zip_file)
             jobs = self.updater._unzip_find_jobs(
                 open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir)
-        self.assertEqual(1, len(jobs))
+        self.assertEqual(3, len(jobs))
+        self.assertTrue(jobs[0][1].startswith(temp_dir))
+
+    def test_unzip_find_zip_jobs__ok_real_ideal(self):
+        """Should return a list of zip jobs same length as search."""
+        with get_temp_dir() as temp_dir, \
+                ZipFile(self.zip_file_ideal, mode="r") as zip_file:
+            bin_paths = self.updater._get_bin_paths(
+                update_info=self.update_info, file_path=self.zip_file_ideal)
+            jobs = self.updater._unzip_find_jobs(
+                open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir)
+        self.assertEqual(3, len(jobs))
         self.assertTrue(jobs[0][1].startswith(temp_dir))
 
     def test_unzip_find_zip_jobs__not_found_raises(self):
@@ -376,22 +421,27 @@ class TestUpdater(TestCase):
     def test_unzip(self):
         """Should unzip the file to the locations in the bin_path map."""
         with get_temp_dir() as temp_dir:
-            self.updater._unzip(file_path=self.zip_file, out_path=temp_dir)
+            self.updater._unzip(
+                update_info=self.update_info,
+                file_path=self.zip_file,
+                out_path=temp_dir)
             dir_list = [os.path.join(r, f)
                         for r, _, fs in os.walk(temp_dir) for f in fs]
             self.assertEqual(3, len(dir_list))
 
     def test_install(self):
         """Should install the latest release and return it's info dict."""
-        self.updater.latest_path = self.install_fake
+        self.update_info.latest_path = self.install_fake
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_file() as temp_check, get_temp_dir() as temp_dir:
             self.updater._write_last_check(
                 file_path=temp_check, content=new)
-            self.updater.last_check_path = temp_check
-            self.updater.bin_new_path = temp_dir
-            installed = self.updater._install(file_name="linux.zip")
+            self.update_info.last_check_path = temp_check
+            self.update_info.bin_new_path = temp_dir
+            installed = self.updater._install(
+                update_info=self.update_info,
+                file_name="linux.zip")
             dir_list = [os.path.join(r, f)
                         for r, _, fs in os.walk(temp_dir) for f in fs]
             self.assertEqual(5, len(dir_list))
@@ -402,12 +452,157 @@ class TestUpdater(TestCase):
     def test_replace_old_bin_path(self):
         """Should delete the old bin path and move new into it's place."""
         with get_temp_dir() as installed, get_temp_dir() as staging:
-            self.updater.bin_path = installed
-            self.updater.bin_new_path = staging
+            self.update_info.bin_path = installed
+            self.update_info.bin_new_path = staging
             lcp = os.path.join(staging, ".last_check")
             self.updater._write_last_check(file_path=lcp, content=self.utc_now)
-            self.updater._replace_old_bin_path()
+            self.updater._replace_old_bin_path(update_info=self.update_info)
 
             self.assertFalse(os.path.exists(staging))
             self.assertEqual(1, len(os.listdir(installed)))
             self.assertTrue(os.path.exists(installed))
+
+    def test_update__not_installed__ok(self):
+        """Should install and show a message with relevant info."""
+        updater = AlwaysOKUpdater()
+        new = self.utc_now - timedelta(minutes=15.0)
+
+        with get_temp_dir() as mod_root:
+            update_info = get_update_info(mod_root=mod_root)
+            update_info.latest_path = self.install_fake
+            updater._write_last_check(
+                file_path=update_info.last_check_path, content=new)
+
+            expected_path = os.path.join(update_info.bin_path, "validate")
+            self.assertFalse(os.path.exists(expected_path))
+            updater.update(update_info=update_info, file_name="linux.zip")
+            self.assertTrue(os.path.exists(expected_path))
+
+        info = capture_handler.watcher.output["INFO"][0]
+        self.assertIn("Update success!", info)
+
+    def test_update__not_installed__fail__install_check(self):
+        """Should stop install and raise an error with relevant info."""
+        updater = AlwaysFailsUpdater()
+        new = self.utc_now - timedelta(minutes=15.0)
+
+        with get_temp_dir() as mod_root, self.assertRaises(PyXFormError) as ctx:
+            update_info = get_update_info(mod_root=mod_root)
+            update_info.latest_path = self.install_fake
+            updater._write_last_check(
+                file_path=update_info.last_check_path, content=new)
+
+            self.assertFalse(os.path.exists(update_info.bin_path))
+            updater.update(update_info=update_info, file_name="linux.zip")
+            self.assertFalse(os.path.exists(update_info.bin_path))
+            self.assertTrue(os.path.exists(update_info.bin_new_path))
+
+        error = unicode(ctx.exception)
+        self.assertIn("Update failed!", error)
+        self.assertIn("latest release does not appear to work", error)
+
+    def test_update__installed__ok(self):
+        """Should update and show a message with relevant info."""
+        updater = AlwaysOKUpdater()
+        new = self.utc_now - timedelta(minutes=15.0)
+
+        with get_temp_dir() as mod_root:
+            update_info = get_update_info(mod_root=mod_root)
+            update_info.latest_path = self.install_fake_old
+            updater._write_last_check(
+                file_path=update_info.last_check_path, content=new)
+
+            updater.update(update_info=update_info, file_name="linux.zip")
+            update_info.latest_path = self.install_fake
+            updater.update(update_info=update_info, file_name="linux.zip")
+
+        info = capture_handler.watcher.output["INFO"][0]
+        self.assertIn("Update success!", info)
+        self.assertIn("Install check of the latest release succeeded", info)
+
+    def test_update__installed__fail__already_latest(self):
+        """Should stop install and raise an error with relevant info."""
+        updater = AlwaysOKUpdater()
+        new = self.utc_now - timedelta(minutes=15.0)
+
+        with get_temp_dir() as mod_root, self.assertRaises(PyXFormError) as ctx:
+            update_info = get_update_info(mod_root=mod_root)
+            update_info.latest_path = self.install_fake
+            updater._write_last_check(
+                file_path=update_info.last_check_path, content=new)
+
+            updater.update(update_info=update_info, file_name="linux.zip")
+            update_info.latest_path = self.install_fake
+            updater.update(update_info=update_info, file_name="linux.zip")
+
+        error = unicode(ctx.exception)
+        self.assertIn("Update failed!", error)
+        self.assertIn("installed release appears to be the latest", error)
+
+    def test_update__installed__fail__install_check(self):
+        """Should stop install and raise an error with relevant info."""
+        updater = AlwaysFailsUpdater()
+        new = self.utc_now - timedelta(minutes=15.0)
+
+        with get_temp_dir() as mod_root, self.assertRaises(PyXFormError) as ctx:
+            update_info = get_update_info(mod_root=mod_root)
+            update_info.latest_path = self.install_fake
+            updater._write_last_check(
+                file_path=update_info.last_check_path, content=new)
+
+            updater.update(update_info=update_info, file_name="linux.zip")
+            update_info.latest_path = self.install_fake
+            updater.update(update_info=update_info, file_name="linux.zip")
+
+            self.assertFalse(os.path.exists(update_info.bin_path))
+            self.assertTrue(os.path.exists(update_info.bin_new_path))
+
+        error = unicode(ctx.exception)
+        self.assertIn("Update failed!", error)
+        self.assertIn("latest release does not appear to work", error)
+
+    def test_check__fail__not_installed(self):
+        """Should raise an error if there's no installation detected."""
+        self.update_info.installed_path = os.path.join(TEST_PATH, ".nothing")
+        with self.assertRaises(PyXFormError) as ctx:
+            self.updater.check(self.update_info)
+
+        error = unicode(ctx.exception)
+        self.assertIn("Check failed!", error)
+        self.assertIn("No installed release found", error)
+
+    def test_check__ok(self):
+        """Should show a message with relevant info."""
+        updater = AlwaysOKUpdater()
+        new = self.utc_now - timedelta(minutes=15.0)
+
+        with get_temp_dir() as mod_root:
+            update_info = get_update_info(mod_root=mod_root)
+            update_info.latest_path = self.install_fake_old
+            updater._write_last_check(
+                file_path=update_info.last_check_path, content=new)
+
+            updater.update(update_info=update_info, file_name="linux.zip")
+            updater.check(update_info=update_info)
+
+        info = capture_handler.watcher.output["INFO"][1]
+        self.assertIn("Check success!", info)
+        self.assertIn("installed release appears to work", info)
+
+    def test_check__fail__install_check(self):
+        """Should raise an error if the installation check fails."""
+        updater = AlwaysOKUpdater()
+        new = self.utc_now - timedelta(minutes=15.0)
+
+        with get_temp_dir() as mod_root, self.assertRaises(PyXFormError) as ctx:
+            update_info = get_update_info(mod_root=mod_root)
+            update_info.latest_path = self.install_fake_old
+            updater._write_last_check(
+                file_path=update_info.last_check_path, content=new)
+
+            updater.update(update_info=update_info, file_name="linux.zip")
+            AlwaysFailsUpdater().check(update_info=update_info)
+
+        error = unicode(ctx.exception)
+        self.assertIn("Check failed!", error)
+        self.assertIn("installed release does not appear to work", error)

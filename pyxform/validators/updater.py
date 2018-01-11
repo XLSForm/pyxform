@@ -18,27 +18,26 @@ log = logging.getLogger(__name__)
 capture_handler = CapturingHandler(logger=log)
 
 
-class Updater(object):
+class _UpdateInfo(object):
     """
-    Handles tasks related to updating external XForm validators.
-
-    Where possible, minimise calls to the GitHub API because doing so without an
-    API token is rate-limited to 60 calls per hour, tracked by IP address. The
-    calls are unauthenticated to avoid having to handle / manage GitHub creds.
-    Tests should not touch GitHub either.
+    Data class for Updater info.
     """
-
-    def __init__(self, api_url, repo_url, validate_subfolder):
+    def __init__(self, api_url, repo_url, validate_subfolder, mod_root=None):
         """
         :param api_url: The GitHub API URL for the latest release details.
         :param repo_url: The main GitHub repository page.
         :param validate_subfolder: The folder under "validators" to work in.
+        :param mod_root: Optionally specify the root module path.
         """
+        self._api_url = None
         self.api_url = api_url
         self.repo_url = repo_url
         self.validate_subfolder = validate_subfolder
 
-        self.mod_path = os.path.join(HERE, self.validate_subfolder)
+        if mod_root is None:
+            self.mod_path = os.path.join(HERE, self.validate_subfolder)
+        else:
+            self.mod_path = os.path.join(mod_root, validate_subfolder)
         self.latest_path = os.path.join(self.mod_path, "latest.json")
         self.last_check_path = os.path.join(self.mod_path, ".last_check")
 
@@ -47,6 +46,17 @@ class Updater(object):
         self.bin_new_path = os.path.join(self.mod_path, "bin_new")
 
         self.manual_msg = "Download manually from: {r}.".format(r=self.repo_url)
+
+
+class _UpdateHandler(object):
+    """
+    Handles tasks related to updating external XForm validators.
+
+    Where possible, minimise calls to the GitHub API because doing so without an
+    API token is rate-limited to 60 calls per hour, tracked by IP address. The
+    calls are unauthenticated to avoid having to handle / manage GitHub creds.
+    Tests should not touch GitHub either.
+    """
 
     @staticmethod
     def _request_latest_json(url):
@@ -64,11 +74,12 @@ class Updater(object):
         else:
             return True
 
-    def _read_json(self, file_path):
+    @staticmethod
+    def _read_json(file_path):
         """
         Read the JSON file to a string.
         """
-        self._check_path(file_path=file_path)
+        _UpdateHandler._check_path(file_path=file_path)
         with open(file_path, mode="r") as in_file:
             return json.load(in_file)
 
@@ -80,11 +91,12 @@ class Updater(object):
         with open(file_path, mode="w") as out_file:
             json.dump(content, out_file, indent=2, sort_keys=True)
 
-    def _read_last_check(self, file_path):
+    @staticmethod
+    def _read_last_check(file_path):
         """
         Read the .last_check file.
         """
-        self._check_path(file_path=file_path)
+        _UpdateHandler._check_path(file_path=file_path)
         with open(file_path, mode="r") as in_file:
             first_line = in_file.readline()
         try:
@@ -102,16 +114,18 @@ class Updater(object):
         with open(file_path, mode="w") as out_file:
             out_file.write(content.strftime(UTC_FMT))
 
-    def _check_necessary(self, utc_now):
+    @staticmethod
+    def _check_necessary(update_info, utc_now):
         """
         Determine whether a check for the latest version is necessary.
         """
-        if not os.path.exists(self.last_check_path):
+        if not os.path.exists(update_info.last_check_path):
             return True
-        elif not os.path.exists(self.latest_path):
+        elif not os.path.exists(update_info.latest_path):
             return True
         else:
-            last_check = self._read_last_check(file_path=self.last_check_path)
+            last_check = _UpdateHandler._read_last_check(
+                file_path=update_info.last_check_path)
             if last_check is None:
                 return True
             age = utc_now - last_check
@@ -121,18 +135,23 @@ class Updater(object):
             else:
                 return False
 
-    def _get_latest(self):
+    @staticmethod
+    def _get_latest(update_info):
         """
         Get the latest release info, either from GitHub or a recent file copy.
         """
         utc_now = datetime.utcnow()
-        if self._check_necessary(utc_now=utc_now):
-            latest = self._request_latest_json(url=self.api_url)
-            self._write_json(file_path=self.latest_path, content=latest)
-            self._write_last_check(
-                file_path=self.last_check_path, content=utc_now)
+        if _UpdateHandler._check_necessary(
+                update_info=update_info, utc_now=utc_now):
+            latest = _UpdateHandler._request_latest_json(
+                url=update_info.api_url)
+            _UpdateHandler._write_json(
+                file_path=update_info.latest_path, content=latest)
+            _UpdateHandler._write_last_check(
+                file_path=update_info.last_check_path, content=utc_now)
         else:
-            latest = self._read_json(file_path=self.latest_path)
+            latest = _UpdateHandler._read_json(
+                file_path=update_info.latest_path)
         return latest
 
     @staticmethod
@@ -143,20 +162,26 @@ class Updater(object):
             tag_name=json_data["tag_name"],
             tag_url=json_data["html_url"])
 
-    def list(self):
+    @staticmethod
+    def list(update_info):
         """
         List the current and latest release info, and latest available files.
+
+        :type update_info: _UpdateInfo
         """
-        if not os.path.exists(self.installed_path):
+        if not os.path.exists(update_info.installed_path):
             installed_info = "- None!\n\n"
         else:
-            installed = self._read_json(file_path=self.installed_path)
-            installed_info = self._get_release_message(json_data=installed)
+            installed = _UpdateHandler._read_json(
+                file_path=update_info.installed_path)
+            installed_info = _UpdateHandler._get_release_message(
+                json_data=installed)
 
-        latest = self._get_latest()
+        latest = _UpdateHandler._get_latest(update_info=update_info)
         latest_files = latest["assets"]
         if len(latest_files) == 0:
-            file_message = "- None!\n\n{m}".format(m=self.manual_msg)
+            file_message = "- None!\n\n{m}".format(
+                m=update_info.manual_msg)
         else:
             file_names = ["- {n}".format(n=x["name"]) for x in latest_files]
             file_message = "\n".join(file_names)
@@ -166,12 +191,13 @@ class Updater(object):
                    "Files available:\n\n{file_message}\n"
         message = template.format(
             installed=installed_info,
-            latest=self._get_release_message(json_data=latest),
+            latest=_UpdateHandler._get_release_message(json_data=latest),
             file_message=file_message
         )
         log.info(message)
 
-    def _find_download_url(self, json_data, file_name):
+    @staticmethod
+    def _find_download_url(update_info, json_data, file_name):
         """
         Find the download URL for the file in the GitHub API JSON response doc.
         """
@@ -181,7 +207,7 @@ class Updater(object):
         if len(files) == 0:
             raise PyXFormError(
                 "No files attached to release '{r}'.\n\n{h}"
-                "".format(r=rel_name, h=self.manual_msg))
+                "".format(r=rel_name, h=update_info.manual_msg))
 
         file_urls = [x["browser_download_url"] for x in files
                      if x["name"] == file_name]
@@ -190,12 +216,14 @@ class Updater(object):
         if 0 == urls_len:
             raise PyXFormError(
                 "No files with the name '{n}' attached to release '{r}'."
-                "\n\n{h}".format(n=file_name, r=rel_name, h=self.manual_msg))
+                "\n\n{h}".format(n=file_name, r=rel_name,
+                                 h=update_info.manual_msg))
         elif 1 < urls_len:
             raise PyXFormError(
                 "{c} files with the name '{n}' attached to release '{r}'."
                 "\n\n{h}".format(
-                    c=urls_len, n=file_name, r=rel_name, h=self.manual_msg))
+                    c=urls_len, n=file_name, r=rel_name,
+                    h=update_info.manual_msg))
         else:
             return file_urls[0]
 
@@ -208,27 +236,28 @@ class Updater(object):
             file_data = request_get(url=url)
             out_file.write(file_data)
 
-    def _get_bin_paths(self, file_path):
+    @staticmethod
+    def _get_bin_paths(update_info, file_path):
         """
         Get the mapping of zip file paths to extract paths for the file_name.
         """
         _, file_name = os.path.split(file_path)
         file_base = os.path.basename(file_name)
         if "windows" in file_base:
-            main_bin = ("*/validate.exe", "validate.exe")
+            main_bin = ("*validate.exe", "validate.exe")
         elif "linux" in file_base:
-            main_bin = ("*/validate", "validate")
+            main_bin = ("*validate", "validate")
         elif "macos" in file_base:
-            main_bin = ("*/validate", "validate")
+            main_bin = ("*validate", "validate")
         else:
-            raise PyXFormError("Did not find a supported main binary "
-                               "for file: {p}.\n\n{h}"
-                               "".format(p=file_path, h=self.manual_msg))
+            raise PyXFormError(
+                "Did not find a supported main binary for file: {p}.\n\n{h}"
+                "".format(p=file_path, h=update_info.manual_msg))
         return [
             main_bin,
-            ("*/node_modules/libxmljs-mt/build/Release/xmljs.node",
+            ("*node_modules/libxmljs-mt/build*/xmljs.node",
              "node_modules/libxmljs-mt/build/xmljs.node"),
-            ("*/node_modules/libxslt/build/Release/node-libxslt.node",
+            ("*node_modules/libxslt/build*/node-libxslt.node",
              "node_modules/libxslt/build/node-libxslt.node")
         ]
 
@@ -267,69 +296,90 @@ class Updater(object):
             with open(file_out_path, "wb") as file_out_file:
                 file_out_file.write(zip_item_data)
 
-    def _unzip(self, file_path, out_path):
+    @staticmethod
+    def _unzip(update_info, file_path, out_path):
         """
         Unzip the contents of a zip file to an existing output path.
         """
-        self._check_path(file_path=file_path)
-        self._check_path(file_path=out_path)
-        bin_paths = self._get_bin_paths(file_path=file_path)
+        _UpdateHandler._check_path(file_path=file_path)
+        _UpdateHandler._check_path(file_path=out_path)
+        bin_paths = _UpdateHandler._get_bin_paths(
+            update_info=update_info, file_path=file_path)
 
         with ZipFile(file_path, mode="r") as zip_file:
-            jobs = self._unzip_find_jobs(
+            jobs = _UpdateHandler._unzip_find_jobs(
                 open_zip_file=zip_file, bin_paths=bin_paths, out_path=out_path)
             for zip_item, file_out_path in jobs:
-                self._unzip_extract_file(
+                _UpdateHandler._unzip_extract_file(
                     open_zip_file=zip_file, zip_item=zip_item,
                     file_out_path=file_out_path)
 
-    def _install(self, file_name):
+    @staticmethod
+    def _install(update_info, file_name):
         """
         Install the latest release.
         """
         try:
-            latest = self._get_latest()
-            file_path = os.path.join(self.bin_new_path, file_name)
+            latest = _UpdateHandler._get_latest(update_info=update_info)
+            file_path = os.path.join(update_info.bin_new_path, file_name)
 
-            if os.path.exists(self.bin_new_path):
-                shutil.rmtree(self.bin_new_path)
-            os.makedirs(self.bin_new_path)
+            if os.path.exists(update_info.bin_new_path):
+                shutil.rmtree(update_info.bin_new_path)
+            os.makedirs(update_info.bin_new_path)
 
-            installed = os.path.join(self.bin_new_path, "installed.json")
-            self._write_json(file_path=installed, content=latest)
-            url = self._find_download_url(
-                json_data=latest, file_name=file_name)
-            self._download_file(url=url, file_path=file_path)
+            installed = os.path.join(
+                update_info.bin_new_path, "installed.json")
+            _UpdateHandler._write_json(file_path=installed, content=latest)
+            url = _UpdateHandler._find_download_url(
+                update_info=update_info,
+                json_data=latest,
+                file_name=file_name)
+            _UpdateHandler._download_file(url=url, file_path=file_path)
 
             if is_zipfile(file_path):
-                self._unzip(file_path=file_path, out_path=self.bin_new_path)
+                _UpdateHandler._unzip(
+                    update_info=update_info,
+                    file_path=file_path,
+                    out_path=update_info.bin_new_path)
         except PyXFormError as e:
             raise PyXFormError("\n\nUpdate failed!\n\n" + unicode(e))
         else:
             return latest
 
-    def _install_ok(self, bin_file_path=None):
+    @staticmethod
+    def _install_ok(bin_file_path=None):
         raise NotImplementedError()
 
-    def _replace_old_bin_path(self):
-        if os.path.exists(self.bin_path):
-            shutil.rmtree(self.bin_path)
-        shutil.move(self.bin_new_path, self.bin_path)
+    @staticmethod
+    def _replace_old_bin_path(update_info):
+        if os.path.exists(update_info.bin_path):
+            shutil.rmtree(update_info.bin_path)
+        shutil.move(update_info.bin_new_path, update_info.bin_path)
 
-    def update(self, file_name, force):
-        file_path = os.path.join(self.bin_new_path, file_name)
+    @classmethod
+    def update(cls, update_info, file_name, force=False):
+        """
+        Update to the latest version, using the specified file_name.
 
-        if not os.path.exists(self.installed_path):
-            installed = self._install(file_name=file_name)
+        :type update_info: _UpdateInfo
+        :type file_name: str
+        :type force: bool
+        """
+        if not os.path.exists(update_info.installed_path):
+            installed = _UpdateHandler._install(
+                update_info=update_info, file_name=file_name)
             latest = installed
         else:
-            installed = self._read_json(file_path=self.installed_path)
-            latest = self._get_latest()
+            installed = _UpdateHandler._read_json(
+                file_path=update_info.installed_path)
+            latest = _UpdateHandler._get_latest(update_info=update_info)
             if installed["tag_name"] == latest["tag_name"] and not force:
-                installed_info = self._get_release_message(json_data=installed)
-                latest_info = self._get_release_message(json_data=latest)
+                installed_info = _UpdateHandler._get_release_message(
+                    json_data=installed)
+                latest_info = _UpdateHandler._get_release_message(
+                    json_data=latest)
                 template = "\nUpdate failed!\n\n" \
-                           "The current version appears to be the latest.\n\n" \
+                           "The installed release appears to be the latest. " \
                            "To update anyway, use the '--force' flag.\n\n" \
                            "Installed release:\n\n{installed}" \
                            "Latest release:\n\n{latest}"
@@ -337,12 +387,15 @@ class Updater(object):
                     installed=installed_info, latest=latest_info)
                 raise PyXFormError(message)
             else:
-                self._install(file_name=file_name)
+                _UpdateHandler._install(
+                    update_info=update_info, file_name=file_name)
 
-        installed_info = self._get_release_message(json_data=installed)
-        latest_info = self._get_release_message(json_data=latest)
-        if self._install_ok(bin_file_path=file_path):
-            self._replace_old_bin_path()
+        installed_info = _UpdateHandler._get_release_message(
+            json_data=installed)
+        latest_info = _UpdateHandler._get_release_message(json_data=latest)
+        new_bin_file_path = os.path.join(update_info.bin_new_path, file_name)
+        if cls._install_ok(bin_file_path=new_bin_file_path):
+            _UpdateHandler._replace_old_bin_path(update_info=update_info)
             template = "\nUpdate success!\n\n" \
                        "Install check of the latest release succeeded.\n\n" \
                        "Latest release:\n\n{latest}"
@@ -350,30 +403,38 @@ class Updater(object):
             log.info(message)
         else:
             template = "\nUpdate failed!\n\n" \
-                       "The latest release does not appear to work.\n\n" \
-                       "The installed release has been kept in place.\n\n" \
+                       "The latest release does not appear to work. " \
+                       "It is saved here in case it's needed:\n{bin_new}\n\n" \
+                       "The installed release has not been changed.\n\n" \
                        "Installed release:\n\n{installed}" \
                        "Latest release:\n\n{latest}"
             message = template.format(
-                installed=installed_info, latest=latest_info)
+                bin_new=new_bin_file_path,
+                installed=installed_info,
+                latest=latest_info)
             raise PyXFormError(message)
-        
-    def check(self):
+
+    @classmethod
+    def check(cls, update_info):
         """
         Check if the installed release of the validator works.
+
+        :type update_info: _UpdateInfo
         """
-        if not os.path.exists(self.installed_path):
+        if not os.path.exists(update_info.installed_path):
             message = "\nCheck failed!\n\n" \
                       "No installed release found."
             raise PyXFormError(message)
 
-        installed = self._read_json(file_path=self.installed_path)
-        if self._install_ok():
+        installed = _UpdateHandler._read_json(
+            file_path=update_info.installed_path)
+        if cls._install_ok():
             template = "\nCheck success!\n\n" \
                        "The installed release appears to work.\n\n" \
                        "Installed release:\n\n{installed}"
             message = template.format(
-                installed=self._get_release_message(json_data=installed),
+                installed=_UpdateHandler._get_release_message(
+                    json_data=installed),
             )
             log.info(message)
         else:
@@ -381,22 +442,38 @@ class Updater(object):
                        "The installed release does not appear to work.\n\n" \
                        "Installed release:\n\n{installed}"
             message = template.format(
-                installed=self._get_release_message(json_data=installed),
+                installed=_UpdateHandler._get_release_message(
+                    json_data=installed),
             )
             raise PyXFormError(message)
 
 
-class EnketoValidateUpdater(Updater):
+class _UpdateService(object):
+
+    update_info = None
+
+    def list(self):
+        return _UpdateHandler.list(update_info=self.update_info)
+
+    def update(self, file_name, force):
+        return _UpdateHandler.update(
+            update_info=self.update_info, file_name=file_name, force=force)
+
+    def check(self):
+        return _UpdateHandler.check(update_info=self.update_info)
+
+
+class EnketoValidateUpdater(_UpdateService):
 
     def __init__(self):
-        super(EnketoValidateUpdater, self).__init__(
+        self.update_info = _UpdateInfo(
             api_url="https://api.github.com/repos/enketo/enketo-validate/"
                     "releases/latest",
             repo_url="https://github.com/enketo/enketo-validate",
-            validate_subfolder="enketo_validate"
-        )
+            validate_subfolder="enketo_validate")
 
-    def _install_ok(self, bin_file_path=None):
+    @staticmethod
+    def _install_ok(bin_file_path=None):
         if bin_file_path is None:
             return enketo_validate.install_ok()
         else:
@@ -404,17 +481,17 @@ class EnketoValidateUpdater(Updater):
             return enketo_validate.install_ok(bin_file_path=extracted)
 
 
-class ODKValidateUpdater(Updater):
+class ODKValidateUpdater(_UpdateService):
 
     def __init__(self):
-        super(ODKValidateUpdater, self).__init__(
+        self.update_info = _UpdateInfo(
             api_url="https://api.github.com/repos/opendatakit/validate/"
                     "releases/latest",
             repo_url="https://github.com/opendatakit/validate",
-            validate_subfolder="odk_validate"
-        )
+            validate_subfolder="odk_validate")
 
-    def _install_ok(self, bin_file_path=None):
+    @staticmethod
+    def _install_ok(bin_file_path=None):
         if bin_file_path is None:
             return odk_validate.install_ok()
         else:
