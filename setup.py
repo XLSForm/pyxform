@@ -29,6 +29,7 @@ setup(
     entry_points={
         'console_scripts': [
             'xls2xform=pyxform.xls2xform:main_cli',
+            'pyxform_validator_update=pyxform.validators.updater:main_cli'
         ],
     },
 )
