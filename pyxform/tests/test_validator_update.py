@@ -13,7 +13,7 @@ from pyxform.errors import PyXFormError
 from pyxform.tests.validators.server import ThreadingServerInThread
 from pyxform.utils import unicode
 from pyxform.validators.updater import _UpdateInfo, _UpdateHandler, \
-    capture_handler
+    capture_handler, EnketoValidateUpdater
 
 
 def get_test_path():
@@ -26,23 +26,29 @@ def get_test_path():
 TEST_PATH = get_test_path()
 
 
-def get_update_info(mod_root=None):
+def install_check_ok(bin_file_path=None):
+    return True
+
+
+def install_check_fail(bin_file_path=None):
+    return False
+
+
+def get_update_info(check_ok, mod_root=None):
+    """
+    Get an UpdateInfo for testing use.
+
+    :type check_ok: bool
+    :type mod_root: str
+    :return: _UpdateInfo
+    """
+    if check_ok:
+        install_check = install_check_ok
+    else:
+        install_check = install_check_fail
     return _UpdateInfo(
-        api_url="", repo_url="", validate_subfolder="", mod_root=mod_root)
-
-
-class AlwaysOKUpdater(_UpdateHandler):
-
-    @staticmethod
-    def _install_ok(bin_file_path=None):
-        return True
-
-
-class AlwaysFailsUpdater(_UpdateHandler):
-
-    @staticmethod
-    def _install_ok(bin_file_path=None):
-        return False
+        api_url="", repo_url="", validate_subfolder="",
+        install_check=install_check, mod_root=mod_root)
 
 
 @contextmanager
@@ -97,7 +103,7 @@ class TestUpdateHandler(TestCase):
         cls.server.stop()
 
     def setUp(self):
-        self.update_info = get_update_info()
+        self.update_info = get_update_info(check_ok=True)
         self.updater = _UpdateHandler()
         data_dir = os.path.join(TEST_PATH, "data")
         self.latest_enketo = os.path.join(data_dir, "latest_enketo.json")
@@ -464,18 +470,17 @@ class TestUpdateHandler(TestCase):
 
     def test_update__not_installed__ok(self):
         """Should install and show a message with relevant info."""
-        updater = AlwaysOKUpdater()
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_dir() as mod_root:
-            update_info = get_update_info(mod_root=mod_root)
+            update_info = get_update_info(check_ok=True, mod_root=mod_root)
             update_info.latest_path = self.install_fake
-            updater._write_last_check(
+            self.updater._write_last_check(
                 file_path=update_info.last_check_path, content=new)
 
             expected_path = os.path.join(update_info.bin_path, "validate")
             self.assertFalse(os.path.exists(expected_path))
-            updater.update(update_info=update_info, file_name="linux.zip")
+            self.updater.update(update_info=update_info, file_name="linux.zip")
             self.assertTrue(os.path.exists(expected_path))
 
         info = capture_handler.watcher.output["INFO"][0]
@@ -483,17 +488,16 @@ class TestUpdateHandler(TestCase):
 
     def test_update__not_installed__fail__install_check(self):
         """Should stop install and raise an error with relevant info."""
-        updater = AlwaysFailsUpdater()
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_dir() as mod_root, self.assertRaises(PyXFormError) as ctx:
-            update_info = get_update_info(mod_root=mod_root)
+            update_info = get_update_info(check_ok=False, mod_root=mod_root)
             update_info.latest_path = self.install_fake
-            updater._write_last_check(
+            self.updater._write_last_check(
                 file_path=update_info.last_check_path, content=new)
 
             self.assertFalse(os.path.exists(update_info.bin_path))
-            updater.update(update_info=update_info, file_name="linux.zip")
+            self.updater.update(update_info=update_info, file_name="linux.zip")
             self.assertFalse(os.path.exists(update_info.bin_path))
             self.assertTrue(os.path.exists(update_info.bin_new_path))
 
@@ -503,18 +507,17 @@ class TestUpdateHandler(TestCase):
 
     def test_update__installed__ok(self):
         """Should update and show a message with relevant info."""
-        updater = AlwaysOKUpdater()
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_dir() as mod_root:
-            update_info = get_update_info(mod_root=mod_root)
+            update_info = get_update_info(check_ok=True, mod_root=mod_root)
             update_info.latest_path = self.install_fake_old
-            updater._write_last_check(
+            self.updater._write_last_check(
                 file_path=update_info.last_check_path, content=new)
 
-            updater.update(update_info=update_info, file_name="linux.zip")
+            self.updater.update(update_info=update_info, file_name="linux.zip")
             update_info.latest_path = self.install_fake
-            updater.update(update_info=update_info, file_name="linux.zip")
+            self.updater.update(update_info=update_info, file_name="linux.zip")
 
         info = capture_handler.watcher.output["INFO"][0]
         self.assertIn("Update success!", info)
@@ -522,18 +525,17 @@ class TestUpdateHandler(TestCase):
 
     def test_update__installed__fail__already_latest(self):
         """Should stop install and raise an error with relevant info."""
-        updater = AlwaysOKUpdater()
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_dir() as mod_root, self.assertRaises(PyXFormError) as ctx:
-            update_info = get_update_info(mod_root=mod_root)
+            update_info = get_update_info(check_ok=True, mod_root=mod_root)
             update_info.latest_path = self.install_fake
-            updater._write_last_check(
+            self.updater._write_last_check(
                 file_path=update_info.last_check_path, content=new)
 
-            updater.update(update_info=update_info, file_name="linux.zip")
+            self.updater.update(update_info=update_info, file_name="linux.zip")
             update_info.latest_path = self.install_fake
-            updater.update(update_info=update_info, file_name="linux.zip")
+            self.updater.update(update_info=update_info, file_name="linux.zip")
 
         error = unicode(ctx.exception)
         self.assertIn("Update failed!", error)
@@ -541,18 +543,17 @@ class TestUpdateHandler(TestCase):
 
     def test_update__installed__fail__install_check(self):
         """Should stop install and raise an error with relevant info."""
-        updater = AlwaysFailsUpdater()
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_dir() as mod_root, self.assertRaises(PyXFormError) as ctx:
-            update_info = get_update_info(mod_root=mod_root)
+            update_info = get_update_info(check_ok=False, mod_root=mod_root)
             update_info.latest_path = self.install_fake
-            updater._write_last_check(
+            self.updater._write_last_check(
                 file_path=update_info.last_check_path, content=new)
 
-            updater.update(update_info=update_info, file_name="linux.zip")
+            self.updater.update(update_info=update_info, file_name="linux.zip")
             update_info.latest_path = self.install_fake
-            updater.update(update_info=update_info, file_name="linux.zip")
+            self.updater.update(update_info=update_info, file_name="linux.zip")
 
             self.assertFalse(os.path.exists(update_info.bin_path))
             self.assertTrue(os.path.exists(update_info.bin_new_path))
@@ -573,17 +574,16 @@ class TestUpdateHandler(TestCase):
 
     def test_check__ok(self):
         """Should show a message with relevant info."""
-        updater = AlwaysOKUpdater()
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_dir() as mod_root:
-            update_info = get_update_info(mod_root=mod_root)
+            update_info = get_update_info(check_ok=True, mod_root=mod_root)
             update_info.latest_path = self.install_fake_old
-            updater._write_last_check(
+            self.updater._write_last_check(
                 file_path=update_info.last_check_path, content=new)
 
-            updater.update(update_info=update_info, file_name="linux.zip")
-            updater.check(update_info=update_info)
+            self.updater.update(update_info=update_info, file_name="linux.zip")
+            self.updater.check(update_info=update_info)
 
         info = capture_handler.watcher.output["INFO"][1]
         self.assertIn("Check success!", info)
@@ -591,18 +591,33 @@ class TestUpdateHandler(TestCase):
 
     def test_check__fail__install_check(self):
         """Should raise an error if the installation check fails."""
-        updater = AlwaysOKUpdater()
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_dir() as mod_root, self.assertRaises(PyXFormError) as ctx:
-            update_info = get_update_info(mod_root=mod_root)
+            update_info = get_update_info(check_ok=True, mod_root=mod_root)
             update_info.latest_path = self.install_fake_old
-            updater._write_last_check(
+            self.updater._write_last_check(
                 file_path=update_info.last_check_path, content=new)
 
-            updater.update(update_info=update_info, file_name="linux.zip")
-            AlwaysFailsUpdater().check(update_info=update_info)
+            self.updater.update(update_info=update_info, file_name="linux.zip")
+            update_info.install_check = install_check_fail
+            self.updater.check(update_info=update_info)
 
         error = unicode(ctx.exception)
         self.assertIn("Check failed!", error)
         self.assertIn("installed release does not appear to work", error)
+
+    def test_enketo_validate_updater__install_check_routing_ok(self):
+        """Should call the install check on the UpdateInfo instance."""
+        ev = EnketoValidateUpdater()
+        ev.update_info.install_check = install_check_ok
+        ev.update_info.installed_path = self.install_fake
+        self.assertTrue(ev.check())
+
+    def test_enketo_validate_updater__install_check_routing_fail(self):
+        """Should raise if the install check function is bogus."""
+        ev = EnketoValidateUpdater()
+        ev.update_info.install_check = None
+        ev.update_info.installed_path = self.install_fake
+        with self.assertRaises(TypeError):
+            ev.check()

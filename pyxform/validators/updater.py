@@ -22,17 +22,21 @@ class _UpdateInfo(object):
     """
     Data class for Updater info.
     """
-    def __init__(self, api_url, repo_url, validate_subfolder, mod_root=None):
+    def __init__(self, api_url, repo_url, validate_subfolder,
+                 install_check, mod_root=None):
         """
         :param api_url: The GitHub API URL for the latest release details.
         :param repo_url: The main GitHub repository page.
         :param validate_subfolder: The folder under "validators" to work in.
+        :param install_check: A function to check if an install works. Must
+            return True or False.
         :param mod_root: Optionally specify the root module path.
         """
         self._api_url = None
         self.api_url = api_url
         self.repo_url = repo_url
         self.validate_subfolder = validate_subfolder
+        self.install_check = install_check
 
         if mod_root is None:
             self.mod_path = os.path.join(HERE, self.validate_subfolder)
@@ -347,17 +351,13 @@ class _UpdateHandler(object):
             return latest
 
     @staticmethod
-    def _install_ok(bin_file_path=None):
-        raise NotImplementedError()
-
-    @staticmethod
     def _replace_old_bin_path(update_info):
         if os.path.exists(update_info.bin_path):
             shutil.rmtree(update_info.bin_path)
         shutil.move(update_info.bin_new_path, update_info.bin_path)
 
-    @classmethod
-    def update(cls, update_info, file_name, force=False):
+    @staticmethod
+    def update(update_info, file_name, force=False):
         """
         Update to the latest version, using the specified file_name.
 
@@ -394,13 +394,14 @@ class _UpdateHandler(object):
             json_data=installed)
         latest_info = _UpdateHandler._get_release_message(json_data=latest)
         new_bin_file_path = os.path.join(update_info.bin_new_path, file_name)
-        if cls._install_ok(bin_file_path=new_bin_file_path):
+        if update_info.install_check(bin_file_path=new_bin_file_path):
             _UpdateHandler._replace_old_bin_path(update_info=update_info)
             template = "\nUpdate success!\n\n" \
                        "Install check of the latest release succeeded.\n\n" \
                        "Latest release:\n\n{latest}"
             message = template.format(latest=latest_info)
             log.info(message)
+            return True
         else:
             template = "\nUpdate failed!\n\n" \
                        "The latest release does not appear to work. " \
@@ -414,8 +415,8 @@ class _UpdateHandler(object):
                 latest=latest_info)
             raise PyXFormError(message)
 
-    @classmethod
-    def check(cls, update_info):
+    @staticmethod
+    def check(update_info):
         """
         Check if the installed release of the validator works.
 
@@ -428,7 +429,7 @@ class _UpdateHandler(object):
 
         installed = _UpdateHandler._read_json(
             file_path=update_info.installed_path)
-        if cls._install_ok():
+        if update_info.install_check():
             template = "\nCheck success!\n\n" \
                        "The installed release appears to work.\n\n" \
                        "Installed release:\n\n{installed}"
@@ -437,6 +438,7 @@ class _UpdateHandler(object):
                     json_data=installed),
             )
             log.info(message)
+            return True
         else:
             template = "\nCheck failed!\n\n" \
                        "The installed release does not appear to work.\n\n" \
@@ -462,6 +464,10 @@ class _UpdateService(object):
     def check(self):
         return _UpdateHandler.check(update_info=self.update_info)
 
+    @staticmethod
+    def _install_check(bin_file_path=None):
+        raise NotImplementedError()
+
 
 class EnketoValidateUpdater(_UpdateService):
 
@@ -470,10 +476,12 @@ class EnketoValidateUpdater(_UpdateService):
             api_url="https://api.github.com/repos/enketo/enketo-validate/"
                     "releases/latest",
             repo_url="https://github.com/enketo/enketo-validate",
-            validate_subfolder="enketo_validate")
+            validate_subfolder="enketo_validate",
+            install_check=self._install_check
+        )
 
     @staticmethod
-    def _install_ok(bin_file_path=None):
+    def _install_check(bin_file_path=None):
         if bin_file_path is None:
             return enketo_validate.install_ok()
         else:
@@ -488,10 +496,12 @@ class ODKValidateUpdater(_UpdateService):
             api_url="https://api.github.com/repos/opendatakit/validate/"
                     "releases/latest",
             repo_url="https://github.com/opendatakit/validate",
-            validate_subfolder="odk_validate")
+            validate_subfolder="odk_validate",
+            install_check=self._install_check
+        )
 
     @staticmethod
-    def _install_ok(bin_file_path=None):
+    def _install_check(bin_file_path=None):
         if bin_file_path is None:
             return odk_validate.install_ok()
         else:
@@ -574,19 +584,19 @@ def _create_parser():
 
 
 def main_cli():
-    parser = _create_parser()
-    args = parser.parse_args()
-    kwargs = args.__dict__.copy()
-    del kwargs["command"]
-    args.command(**kwargs)
-
-
-if __name__ == '__main__':
     try:
-        main_cli()
+        parser = _create_parser()
+        args = parser.parse_args()
+        kwargs = args.__dict__.copy()
+        del kwargs["command"]
+        args.command(**kwargs)
     except PyXFormError as main_error:
         print(unicode(main_error))
         sys.exit(1)
     if 0 < len(capture_handler.watcher.records):
         for line in capture_handler.watcher.output["INFO"]:
             print(line)
+
+
+if __name__ == '__main__':
+    main_cli()
