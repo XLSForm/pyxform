@@ -68,8 +68,8 @@ class ThreadingServerInThread(object):
     until the context manager exits, which means until request completion.
     """
 
-    def __init__(self):
-        self._server_address = ("127.0.0.1", 8000)
+    def __init__(self, port=8000):
+        self._server_address = ("127.0.0.1", port)
         self._handler = SimpleHTTPRequestHandlerHere
         self.httpd = ThreadingTCPServer(
             self._server_address, self._handler, bind_and_activate=False)
