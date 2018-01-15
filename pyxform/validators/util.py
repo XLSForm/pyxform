@@ -49,9 +49,8 @@ def run_popen_with_timeout(command, timeout):
 
     p = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE,
               startupinfo=startup_info)
-    pid = p.pid
     watchdog = threading.Timer(
-        timeout, _kill_process_after_a_timeout, args=(pid,))
+        timeout, _kill_process_after_a_timeout, args=(p.pid,))
     watchdog.start()
     (stdout, stderr) = p.communicate()
     watchdog.cancel()  # if it's still waiting to run
@@ -104,16 +103,18 @@ def request_get(url):
 class CapturingHandler(logging.Handler):
     """
     A logging handler capturing all (raw and formatted) logging output.
-    Largely the same as doing "from unittest.case import _CapturingHandler",
-    but copied here because it is a simple class, and the original has an
-    underscore prefix so it might change unexpectedly.
+
+    Similar concept to "from unittest.case import _CapturingHandler". However
+    the watcher.output is a dict keyed by the log level name, instead of a list
+    of messages. The watcher.records list has the full LogRecord instances
+    which carry extra data about the log source and context.
 
     Usage:
-    Here's how to attach it to a logger, get the logs, and then detach it.
+    Here's how to attach it to a logger, get some logs, and then detach it.
 
     my_logger = logging.getLogger(name="logger_name")
-    capture_handler = _CapturingHandler(logger=my_logger)
-    log_messages = capture_handler.watcher.output
+    capture_handler = CapturingHandler(logger=my_logger)
+    info_log_messages = capture_handler.watcher.output["INFO"]
     log_records = capture_handler.watcher.records
     my_logger.removeHandler(hdlr=capture_handler)
     """
@@ -134,7 +135,8 @@ class CapturingHandler(logging.Handler):
         msg = self.format(record)
         self.watcher.output[record.levelname].append(msg)
 
-    def _get_watcher(self):
+    @staticmethod
+    def _get_watcher():
         _LoggingWatcher = collections.namedtuple(
             "_LoggingWatcher", ["records", "output"])
         levels = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]

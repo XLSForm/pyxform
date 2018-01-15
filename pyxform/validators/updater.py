@@ -269,18 +269,28 @@ class _UpdateHandler(object):
     def _unzip_find_jobs(open_zip_file, bin_paths, out_path):
         """
         For each bin file, get the zip file item file name and the output path.
+
+        Ignore files that may appear in the __MACOSX info dir, and if two files
+        have the same destination path and the same CRC then they're probably
+        duplicate files so only one of them is copied out.
         """
         zip_info = open_zip_file.infolist()
-        zip_jobs = []
+        zip_jobs = {}
         for zip_item in zip_info:
+            if zip_item.filename.startswith("__MACOSX"):
+                continue
             for file_target in bin_paths:
                 if fnmatch.fnmatch(zip_item.filename, file_target[0]):
                     file_out_path = os.path.join(out_path, file_target[1])
-                    zip_jobs.append((zip_item, file_out_path))
-        if len(bin_paths) != len(zip_jobs):
+                    maybe_existing_match = zip_jobs.get(file_out_path, None)
+                    if maybe_existing_match is not None:
+                        if maybe_existing_match.CRC == zip_item.CRC:
+                            continue
+                    zip_jobs[file_out_path] = zip_item
+        if len(bin_paths) != len(zip_jobs.keys()):
             raise PyXFormError(
                 "Expected {e} zip job files, found: {c}"
-                "".format(e=len(bin_paths), c=len(zip_jobs)))
+                "".format(e=len(bin_paths), c=len(zip_jobs.keys())))
         return zip_jobs
 
     @staticmethod
@@ -313,7 +323,7 @@ class _UpdateHandler(object):
         with ZipFile(file_path, mode="r") as zip_file:
             jobs = _UpdateHandler._unzip_find_jobs(
                 open_zip_file=zip_file, bin_paths=bin_paths, out_path=out_path)
-            for zip_item, file_out_path in jobs:
+            for file_out_path, zip_item in jobs.items():
                 _UpdateHandler._unzip_extract_file(
                     open_zip_file=zip_file, zip_item=zip_item,
                     file_out_path=file_out_path)

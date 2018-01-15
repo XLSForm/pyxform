@@ -115,6 +115,7 @@ class TestUpdateHandler(TestCase):
         capture_handler.reset()
         self.zip_file = os.path.join(data_dir, "linux-ideal.zip")
         self.zip_file_ideal = os.path.join(data_dir, "linux-ideal.zip")
+        self.zip_file_dupes = os.path.join(data_dir, "linux-dupes.zip")
         self.install_fake = os.path.join(data_dir, "install_fake.json")
         self.install_fake_old = os.path.join(data_dir, "install_fake_old.json")
 
@@ -372,8 +373,8 @@ class TestUpdateHandler(TestCase):
                 update_info=self.update_info, file_path=self.zip_file)
             jobs = self.updater._unzip_find_jobs(
                 open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir)
-        self.assertEqual(3, len(jobs))
-        self.assertTrue(jobs[0][1].startswith(temp_dir))
+        self.assertEqual(3, len(jobs.keys()))
+        self.assertTrue(list(jobs.keys())[0].startswith(temp_dir))
 
     def test_unzip_find_zip_jobs__ok_real_ideal(self):
         """Should return a list of zip jobs same length as search."""
@@ -383,8 +384,19 @@ class TestUpdateHandler(TestCase):
                 update_info=self.update_info, file_path=self.zip_file_ideal)
             jobs = self.updater._unzip_find_jobs(
                 open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir)
-        self.assertEqual(3, len(jobs))
-        self.assertTrue(jobs[0][1].startswith(temp_dir))
+        self.assertEqual(3, len(jobs.keys()))
+        self.assertTrue(list(jobs.keys())[0].startswith(temp_dir))
+
+    def test_unzip_find_zip_jobs__ok_real_dupes(self):
+        """Should return a list of zip jobs same length as search."""
+        with get_temp_dir() as temp_dir, \
+                ZipFile(self.zip_file_dupes, mode="r") as zip_file:
+            bin_paths = self.updater._get_bin_paths(
+                update_info=self.update_info, file_path=self.zip_file_dupes)
+            jobs = self.updater._unzip_find_jobs(
+                open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir)
+        self.assertEqual(3, len(jobs.keys()))
+        self.assertTrue(list(jobs.keys())[0].startswith(temp_dir))
 
     def test_unzip_find_zip_jobs__not_found_raises(self):
         """Should raise an error if zip jobs isn't same length as search."""
