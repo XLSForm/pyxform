@@ -1,16 +1,11 @@
 import os
-import platform
 from pyxform.validators.util import run_popen_with_timeout, decode_stream, \
-    XFORM_SPEC_PATH
+    XFORM_SPEC_PATH, check_readable
 from pyxform.validators.error_cleaner import ErrorCleaner
 
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-if platform.system() == "Windows":
-    bin_name = "validate.exe"
-else:
-    bin_name = "validate"
-ENKETO_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", bin_name)
+ENKETO_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", "validate")
 
 
 class EnketoValidateError(Exception):
@@ -32,6 +27,7 @@ def install_ok(bin_file_path=ENKETO_VALIDATE_PATH):
     """
     Check if Enketo-validate functions as expected.
     """
+    check_readable(file_path=XFORM_SPEC_PATH)
     return_code, _, _, _ = _call_validator(
         path_to_xform=XFORM_SPEC_PATH, bin_file_path=bin_file_path)
     if return_code == 1:

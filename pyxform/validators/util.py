@@ -1,8 +1,10 @@
 import collections
 from contextlib import closing
+import io
 import logging
 import os
 import subprocess
+import time
 from subprocess import Popen, PIPE
 import threading
 import signal
@@ -144,3 +146,32 @@ class CapturingHandler(logging.Handler):
 
     def reset(self):
         self.watcher = self._get_watcher()
+
+
+def check_readable(file_path, retry_limit=10, wait_seconds=0.5):
+    """
+    Check if a file is readable: True if so, IOError if not. Retry as per args.
+
+    If a file that needs to be read may be locked by some other process (such
+    as for reading or writing), this can help avoid an error by waiting for the
+    lock to clear.
+
+    :param file_path: Path to file to check.
+    :param retry_limit: Number of attempts to read the file.
+    :param wait_seconds: Amount of sleep time between read attempts.
+    :return: True or raise IOError.
+    """
+    def catch_try():
+        try:
+            with io.open(file_path, mode="r"):
+                return True
+        except IOError:
+            return False
+    tries = 0
+    while not catch_try():
+        if tries < retry_limit:
+            tries += 1
+            time.sleep(wait_seconds)
+        else:
+            raise IOError("Could not read file: {f}".format(f=file_path))
+    return True

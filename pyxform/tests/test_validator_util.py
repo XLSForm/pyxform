@@ -1,7 +1,8 @@
+import os
 from unittest2 import TestCase
-
 from pyxform.tests.utils import prep_class_config
 from pyxform.validators.error_cleaner import ErrorCleaner
+from pyxform.validators.util import XFORM_SPEC_PATH, check_readable
 
 
 class TestValidatorUtil(TestCase):
@@ -46,3 +47,16 @@ class TestValidatorUtil(TestCase):
             self.cls_name, "test_jarfile_error_returned_asis_expected")
         self.assertEqual(
             ErrorCleaner.odk_validate(test_str), expected_str.strip())
+
+
+class TestCheckReadable(TestCase):
+
+    def test_check_readable__real_file_ok(self):
+        """Should return True if the file is readable."""
+        self.assertTrue(check_readable(file_path=XFORM_SPEC_PATH))
+
+    def test_check_readable__fake_file_raises(self):
+        """Should raise an error if the file isn't readable."""
+        fake_file = os.path.join(os.path.dirname(XFORM_SPEC_PATH), ".fake")
+        with self.assertRaises(IOError):
+            check_readable(file_path=fake_file, retry_limit=2, wait_seconds=0.1)

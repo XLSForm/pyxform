@@ -1,6 +1,7 @@
 import argparse
 from datetime import datetime
 import fnmatch
+import io
 import json
 import logging
 import os
@@ -23,13 +24,14 @@ class _UpdateInfo(object):
     Data class for Updater info.
     """
     def __init__(self, api_url, repo_url, validate_subfolder,
-                 install_check, mod_root=None):
+                 install_check, validator_basename, mod_root=None):
         """
         :param api_url: The GitHub API URL for the latest release details.
         :param repo_url: The main GitHub repository page.
         :param validate_subfolder: The folder under "validators" to work in.
         :param install_check: A function to check if an install works. Must
             return True or False.
+        :param validator_basename: Validator bin file name.
         :param mod_root: Optionally specify the root module path.
         """
         self._api_url = None
@@ -37,6 +39,7 @@ class _UpdateInfo(object):
         self.repo_url = repo_url
         self.validate_subfolder = validate_subfolder
         self.install_check = install_check
+        self.validator_basename = validator_basename
 
         if mod_root is None:
             self.mod_path = os.path.join(HERE, self.validate_subfolder)
@@ -84,7 +87,7 @@ class _UpdateHandler(object):
         Read the JSON file to a string.
         """
         _UpdateHandler._check_path(file_path=file_path)
-        with open(file_path, mode="r") as in_file:
+        with io.open(file_path, mode="r") as in_file:
             return json.load(in_file)
 
     @staticmethod
@@ -92,8 +95,9 @@ class _UpdateHandler(object):
         """
         Save the JSON data to a file.
         """
-        with open(file_path, mode="w") as out_file:
-            json.dump(content, out_file, indent=2, sort_keys=True)
+        with io.open(file_path, mode="w", newline="\n") as out_file:
+            data = json.dumps(content, indent=2, sort_keys=True)
+            out_file.write(unicode(data))
 
     @staticmethod
     def _read_last_check(file_path):
@@ -101,7 +105,7 @@ class _UpdateHandler(object):
         Read the .last_check file.
         """
         _UpdateHandler._check_path(file_path=file_path)
-        with open(file_path, mode="r") as in_file:
+        with io.open(file_path, mode="r") as in_file:
             first_line = in_file.readline()
         try:
             last_check = datetime.strptime(first_line, UTC_FMT)
@@ -115,8 +119,8 @@ class _UpdateHandler(object):
         """
         Write the .last_check file.
         """
-        with open(file_path, mode="w") as out_file:
-            out_file.write(content.strftime(UTC_FMT))
+        with io.open(file_path, mode="w", newline="\n") as out_file:
+            out_file.write(unicode(content.strftime(UTC_FMT)))
 
     @staticmethod
     def _check_necessary(update_info, utc_now):
@@ -236,7 +240,7 @@ class _UpdateHandler(object):
         """
         Save response content from the URL to a binary file at the file path.
         """
-        with open(file_path, mode='wb') as out_file:
+        with io.open(file_path, mode='wb') as out_file:
             file_data = request_get(url=url)
             out_file.write(file_data)
 
@@ -244,21 +248,24 @@ class _UpdateHandler(object):
     def _get_bin_paths(update_info, file_path):
         """
         Get the mapping of zip file paths to extract paths for the file_name.
+
+        The zip file paths are actually glob/fnmatch patterns to find these
+        files among the files in the zip archive.
         """
         _, file_name = os.path.split(file_path)
         file_base = os.path.basename(file_name)
         if "windows" in file_base:
-            main_bin = ("*validate.exe", "validate.exe")
+            main_bin = "*validate.exe"
         elif "linux" in file_base:
-            main_bin = ("*validate", "validate")
+            main_bin = "*validate"
         elif "macos" in file_base:
-            main_bin = ("*validate", "validate")
+            main_bin = "*validate"
         else:
             raise PyXFormError(
                 "Did not find a supported main binary for file: {p}.\n\n{h}"
                 "".format(p=file_path, h=update_info.manual_msg))
         return [
-            main_bin,
+            (main_bin, update_info.validator_basename),
             ("*node_modules/libxmljs-mt/build*/xmljs.node",
              "node_modules/libxmljs-mt/build/xmljs.node"),
             ("*node_modules/libxslt/build*/node-libxslt.node",
@@ -307,7 +314,7 @@ class _UpdateHandler(object):
             os.makedirs(out_parent)
         with open_zip_file.open(zip_item, mode="r") as zip_item_file:
             zip_item_data = zip_item_file.read()
-            with open(file_out_path, "wb") as file_out_file:
+            with io.open(file_out_path, "wb") as file_out_file:
                 file_out_file.write(zip_item_data)
 
     @staticmethod
@@ -350,11 +357,17 @@ class _UpdateHandler(object):
                 file_name=file_name)
             _UpdateHandler._download_file(url=url, file_path=file_path)
 
-            if is_zipfile(file_path):
+            if is_zipfile(file_path) \
+                    and os.path.splitext(file_path)[1] == ".zip":
                 _UpdateHandler._unzip(
                     update_info=update_info,
                     file_path=file_path,
                     out_path=update_info.bin_new_path)
+            else:
+                new_bin_file_path = os.path.join(
+                    update_info.bin_new_path, update_info.validator_basename)
+                os.rename(file_path, new_bin_file_path)
+
         except PyXFormError as e:
             raise PyXFormError("\n\nUpdate failed!\n\n" + unicode(e))
         else:
@@ -403,7 +416,8 @@ class _UpdateHandler(object):
         installed_info = _UpdateHandler._get_release_message(
             json_data=installed)
         latest_info = _UpdateHandler._get_release_message(json_data=latest)
-        new_bin_file_path = os.path.join(update_info.bin_new_path, file_name)
+        new_bin_file_path = os.path.join(
+            update_info.bin_new_path, update_info.validator_basename)
         if update_info.install_check(bin_file_path=new_bin_file_path):
             _UpdateHandler._replace_old_bin_path(update_info=update_info)
             template = "\nUpdate success!\n\n" \
@@ -487,7 +501,9 @@ class EnketoValidateUpdater(_UpdateService):
                     "releases/latest",
             repo_url="https://github.com/enketo/enketo-validate",
             validate_subfolder="enketo_validate",
-            install_check=self._install_check
+            install_check=self._install_check,
+            validator_basename=os.path.basename(
+                enketo_validate.ENKETO_VALIDATE_PATH)
         )
 
     @staticmethod
@@ -507,7 +523,8 @@ class ODKValidateUpdater(_UpdateService):
                     "releases/latest",
             repo_url="https://github.com/opendatakit/validate",
             validate_subfolder="odk_validate",
-            install_check=self._install_check
+            install_check=self._install_check,
+            validator_basename=os.path.basename(odk_validate.ODK_VALIDATE_PATH)
         )
 
     @staticmethod

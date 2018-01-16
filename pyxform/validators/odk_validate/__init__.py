@@ -7,7 +7,7 @@ A python wrapper around ODK Validate
 import os
 import sys
 from pyxform.validators.util import run_popen_with_timeout, decode_stream, \
-    XFORM_SPEC_PATH
+    XFORM_SPEC_PATH, check_readable
 from pyxform.validators.error_cleaner import ErrorCleaner
 
 
@@ -32,6 +32,7 @@ def install_ok(bin_file_path=ODK_VALIDATE_PATH):
     """
     Check if ODK Validate functions as expected.
     """
+    check_readable(file_path=XFORM_SPEC_PATH)
     return_code, _, _, _ = _call_validator(
         path_to_xform=XFORM_SPEC_PATH, bin_file_path=bin_file_path)
     if return_code == 1:

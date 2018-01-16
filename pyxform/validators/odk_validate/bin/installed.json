@@ -1,5 +1,38 @@
 {
-  "assets": [],
+  "assets": [
+    {
+      "browser_download_url": "https://github.com/opendatakit/validate/releases/download/v1.8.0/ODK-Validate-v1.8.0.jar",
+      "content_type": "application/java-archive",
+      "created_at": "2018-01-15T23:18:16Z",
+      "download_count": 6,
+      "id": 5883130,
+      "label": null,
+      "name": "ODK-Validate-v1.8.0.jar",
+      "size": 1256973,
+      "state": "uploaded",
+      "updated_at": "2018-01-15T23:18:18Z",
+      "uploader": {
+        "avatar_url": "https://avatars3.githubusercontent.com/u/967540?v=4",
+        "events_url": "https://api.github.com/users/lognaturel/events{/privacy}",
+        "followers_url": "https://api.github.com/users/lognaturel/followers",
+        "following_url": "https://api.github.com/users/lognaturel/following{/other_user}",
+        "gists_url": "https://api.github.com/users/lognaturel/gists{/gist_id}",
+        "gravatar_id": "",
+        "html_url": "https://github.com/lognaturel",
+        "id": 967540,
+        "login": "lognaturel",
+        "organizations_url": "https://api.github.com/users/lognaturel/orgs",
+        "received_events_url": "https://api.github.com/users/lognaturel/received_events",
+        "repos_url": "https://api.github.com/users/lognaturel/repos",
+        "site_admin": false,
+        "starred_url": "https://api.github.com/users/lognaturel/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/lognaturel/subscriptions",
+        "type": "User",
+        "url": "https://api.github.com/users/lognaturel"
+      },
+      "url": "https://api.github.com/repos/opendatakit/validate/releases/assets/5883130"
+    }
+  ],
   "assets_url": "https://api.github.com/repos/opendatakit/validate/releases/8424483/assets",
   "author": {
     "avatar_url": "https://avatars3.githubusercontent.com/u/32369?v=4",

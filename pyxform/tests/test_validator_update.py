@@ -48,7 +48,8 @@ def get_update_info(check_ok, mod_root=None):
         install_check = install_check_fail
     return _UpdateInfo(
         api_url="", repo_url="", validate_subfolder="",
-        install_check=install_check, mod_root=mod_root)
+        install_check=install_check, validator_basename="validate",
+        mod_root=mod_root)
 
 
 @contextmanager
