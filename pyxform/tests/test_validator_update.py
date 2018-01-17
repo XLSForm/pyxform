@@ -1,14 +1,16 @@
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 import os
+import platform
 import shutil
+from stat import S_IXUSR, S_IXGRP
 import tempfile
 from zipfile import ZipFile
 try:
     from zipfile import BadZipFile
 except ImportError:
     from zipfile import BadZipfile as BadZipFile
-from unittest2 import TestCase
+from unittest2 import TestCase, skipIf
 from pyxform.errors import PyXFormError
 from pyxform.tests.validators.server import ThreadingServerInThread
 from pyxform.utils import unicode
@@ -448,7 +450,7 @@ class TestUpdateHandler(TestCase):
                         for r, _, fs in os.walk(temp_dir) for f in fs]
             self.assertEqual(3, len(dir_list))
 
-    def test_install(self):
+    def test_install__ok(self):
         """Should install the latest release and return it's info dict."""
         self.update_info.latest_path = self.install_fake
         new = self.utc_now - timedelta(minutes=15.0)
@@ -467,6 +469,26 @@ class TestUpdateHandler(TestCase):
 
         latest = self.updater._read_json(file_path=self.install_fake)
         self.assertDictEqual(latest, installed)
+
+    @skipIf(platform.system() == "Windows", "Exec bits can't be set on Windows")
+    def test_install__add_executable_mode(self):
+        """Should add executable mode to the new bin file's modes."""
+        self.update_info.latest_path = self.install_fake
+        new = self.utc_now - timedelta(minutes=15.0)
+
+        with get_temp_file() as temp_check, get_temp_dir() as temp_dir:
+            self.updater._write_last_check(
+                file_path=temp_check, content=new)
+            self.update_info.last_check_path = temp_check
+            self.update_info.bin_new_path = temp_dir
+            self.updater._install(
+                update_info=self.update_info,
+                file_name="linux.zip")
+            bin_new = os.path.join(
+                temp_dir, self.update_info.validator_basename)
+            bin_new_stat_mode = os.stat(bin_new).st_mode
+            self.assertEqual(bin_new_stat_mode & S_IXUSR, S_IXUSR)
+            self.assertEqual(bin_new_stat_mode & S_IXGRP, S_IXGRP)
 
     def test_replace_old_bin_path(self):
         """Should delete the old bin path and move new into it's place."""

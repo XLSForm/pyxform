@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import shutil
+from stat import S_IXUSR, S_IXGRP
 import sys
 from zipfile import ZipFile, is_zipfile
 from pyxform.errors import PyXFormError
@@ -343,6 +344,8 @@ class _UpdateHandler(object):
         try:
             latest = _UpdateHandler._get_latest(update_info=update_info)
             file_path = os.path.join(update_info.bin_new_path, file_name)
+            new_bin_file_path = os.path.join(
+                update_info.bin_new_path, update_info.validator_basename)
 
             if os.path.exists(update_info.bin_new_path):
                 shutil.rmtree(update_info.bin_new_path)
@@ -364,9 +367,11 @@ class _UpdateHandler(object):
                     file_path=file_path,
                     out_path=update_info.bin_new_path)
             else:
-                new_bin_file_path = os.path.join(
-                    update_info.bin_new_path, update_info.validator_basename)
                 os.rename(file_path, new_bin_file_path)
+
+            # For macos / linux: chmod ug+x the new bin file. No-op on Windows.
+            current_mode = os.stat(new_bin_file_path).st_mode
+            os.chmod(new_bin_file_path, current_mode | S_IXUSR | S_IXGRP)
 
         except PyXFormError as e:
             raise PyXFormError("\n\nUpdate failed!\n\n" + unicode(e))
