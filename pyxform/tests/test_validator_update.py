@@ -12,20 +12,14 @@ except ImportError:
     from zipfile import BadZipfile as BadZipFile
 from unittest2 import TestCase, skipIf
 from pyxform.errors import PyXFormError
+from pyxform.tests import validators
 from pyxform.tests.validators.server import ThreadingServerInThread
 from pyxform.utils import unicode
 from pyxform.validators.updater import _UpdateInfo, _UpdateHandler, \
     capture_handler, EnketoValidateUpdater
 
 
-def get_test_path():
-    project_root = os.path.dirname(__file__)
-    while not os.path.exists(os.path.join(project_root, "setup.py")):
-        project_root = os.path.dirname(project_root)
-    return os.path.join(project_root, "pyxform", "tests", "validators")
-
-
-TEST_PATH = get_test_path()
+TEST_PATH = validators.HERE
 
 
 def install_check_ok(bin_file_path=None):

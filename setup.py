@@ -8,13 +8,17 @@ setup(
     packages=find_packages(),
     package_data={
         'pyxform.validators.odk_validate': [
-            'ODK_Validate.jar',
+            'bin/*.*',
         ],
         'pyxform.tests': [
             'example_xls/*.*',
+            'fixtures/strings.ini',
             'bug_example_xls/*.*',
             'test_output/*.*',
             'test_expected_output/*.*',
+            'validators/.*',
+            'validators/data/*.*',
+            'validators/data/.*',
         ]
     },
     url='http://pypi.python.org/pypi/pyxform/',
