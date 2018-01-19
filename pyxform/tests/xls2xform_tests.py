@@ -45,6 +45,14 @@ class XLS2XFormTests(TestCase):
         self.assertEqual(False, args.skip_validate)
         self.assertEqual(False, args.no_pretty_print)
 
+    def test_create_parser_file_name_with_space(self):
+        """Should interpret the path correctly."""
+        arg_xlsform = 'some/path/my xlsform.xlsx'
+        arg_output = '.'
+        arg_list = [arg_xlsform, arg_output]
+        args = _create_parser().parse_args(arg_list)
+        self.assertEqual(arg_xlsform, args.path_to_XLSForm)
+
     def test_create_parser_json_default_false(self):
         """Should have json=False if not specified."""
         arg_xlsform = 'xlsform.xlsx'
