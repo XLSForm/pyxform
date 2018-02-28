@@ -48,6 +48,8 @@ class Survey(Section):
             u"default_language": unicode,
             u"_translations": dict,
             u"submission_url": unicode,
+            u"auto_send": unicode,
+            u"auto_delete": unicode,
             u"public_key": unicode,
             u"instance_xmlns": unicode,
             u"version": unicode,
@@ -342,12 +344,16 @@ class Survey(Section):
         model_children += list(self._generate_instances())
         model_children += self.xml_bindings()
 
-        if self.submission_url or self.public_key:
+        if self.submission_url or self.public_key or self.auto_send or self.auto_delete:
             submission_attrs = dict()
             if self.submission_url:
                 submission_attrs["action"] = self.submission_url
             if self.public_key:
                 submission_attrs["base64RsaPublicKey"] = self.public_key
+            if self.auto_send:
+                submission_attrs["orx:auto-send"] = self.auto_send
+            if self.auto_delete:
+                submission_attrs["orx:auto-delete"] = self.auto_delete
             submission_node = node("submission", method="form-data-post",
                                    **submission_attrs)
             model_children.insert(0, submission_node)

@@ -263,6 +263,10 @@ class XFormToDictBuilder:
                 self.new_doc['submission_url'] = submission['action']
             if 'base64RsaPublicKey' in submission:
                 self.new_doc['public_key'] = submission['base64RsaPublicKey']
+            if 'auto-send' in submission:
+                self.new_doc['auto_send'] = submission['auto-send']
+            if 'auto-delete' in submission:
+                self.new_doc['auto_delete'] = submission['auto-delete']
 
     def _cleanup_children(self):
         def remove_refs(children):

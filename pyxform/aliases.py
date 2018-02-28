@@ -44,7 +44,9 @@ settings_header = {
     u"sms_datetime_format": constants.SMS_DATETIME_FORMAT,
     u"set form id": constants.ID_STRING,
     u"public_key": constants.PUBLIC_KEY,
-    u"submission_url": constants.SUBMISSION_URL
+    u"submission_url": constants.SUBMISSION_URL,
+    u"auto_send": constants.AUTO_SEND,
+    u"auto_delete": constants.AUTO_DELETE
 }
 # TODO: Check on bind prefix approach in json.
 # Conversion dictionary from user friendly column names to meaningful values

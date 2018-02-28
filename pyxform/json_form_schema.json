@@ -35,6 +35,14 @@
 			"type" : "string",
 			"description" : "url form should be submitted to."
 		},
+		"auto_send" :
+			"type" : "string",
+			"description" : "If true, the form will auto send, if false, it won't."
+		},
+		"auto_delete" :
+			"type" : "string",
+			"description" : "If true, the form will auto delete, if false, it won't."
+		},
 		"children" :
 		{
 			"type" : "array",
