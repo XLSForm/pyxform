@@ -1,0 +1,21 @@
+from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
+
+
+class SettingsAutoSendDelete(PyxformTestCase):
+    def test_settings_auto_send_true(self):
+
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |              |           |           |                                                                                                                                                                                       |
+            |          | type         | name      | label     |
+            |          | text         | name      | Name      |
+            | settings |              |           |           |
+            |          | auto_send    |           |           |
+            |          | true         |           |           |
+            """,
+            debug=True,
+            xml__contains=[
+                '<submission method="form-data-post" orx:auto-send="true"/>'
+            ],
+        )
