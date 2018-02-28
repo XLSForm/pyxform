@@ -7,7 +7,7 @@ class SettingsAutoSendDelete(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |              |           |           |                                                                                                                                                                                       |
+            | survey   |              |           |           |
             |          | type         | name      | label     |
             |          | text         | name      | Name      |
             | settings |              |           |           |
@@ -17,5 +17,23 @@ class SettingsAutoSendDelete(PyxformTestCase):
             debug=True,
             xml__contains=[
                 '<submission method="form-data-post" orx:auto-send="true"/>'
+            ],
+        )
+
+    def test_settings_auto_delete_true(self):
+
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |              |           |           |
+            |          | type         | name      | label     |
+            |          | text         | name      | Name      |
+            | settings |              |           |           |
+            |          | auto_delete  |           |           |
+            |          | true         |           |           |
+            """,
+            debug=True,
+            xml__contains=[
+                '<submission method="form-data-post" orx:auto-delete="true"/>'
             ],
         )
