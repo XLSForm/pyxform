@@ -14,9 +14,9 @@ except NameError:
     unichr = chr
 else:
     if sys.version_info >(3,5,0):
-    unicode = str
-    basestring = str
-    unichr = chr
+        unicode = str
+        basestring = str
+        unichr = chr
     else:
         unicode = unicode
         basestring = basestring
