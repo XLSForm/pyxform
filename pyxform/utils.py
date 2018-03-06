@@ -15,7 +15,7 @@ except NameError:
 else:
     unicode = unicode
     basestring = basestring
-    unichr = unichr
+    unichr = chr
 
 SEP = "_"
 
