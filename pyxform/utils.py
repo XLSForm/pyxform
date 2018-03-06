@@ -5,6 +5,11 @@ import json
 import copy
 import unicodecsv as csv
 import xlrd
+import sys
+if sys.version_info >(3,5,0):
+    unicode = str
+    basestring = str
+    unichr = chr
 
 try:
     unicode("str")
@@ -13,9 +18,14 @@ except NameError:
     basestring = str
     unichr = chr
 else:
-    unicode = unicode
-    basestring = basestring
-    unichr = unichr
+    if sys.version_info >(3,5,0):
+    unicode = str
+    basestring = str
+    unichr = chr
+    else:
+        unicode = unicode
+        basestring = basestring
+        unichr = unichr
 
 SEP = "_"
 
