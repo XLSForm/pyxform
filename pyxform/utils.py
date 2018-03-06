@@ -6,11 +6,6 @@ import copy
 import unicodecsv as csv
 import xlrd
 import sys
-if sys.version_info >(3,5,0):
-    unicode = str
-    basestring = str
-    unichr = chr
-
 try:
     unicode("str")
 except NameError:
