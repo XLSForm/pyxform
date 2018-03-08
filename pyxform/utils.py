@@ -5,7 +5,6 @@ import json
 import copy
 import unicodecsv as csv
 import xlrd
-
 try:
     unicode("str")
 except NameError:
@@ -13,9 +12,14 @@ except NameError:
     basestring = str
     unichr = chr
 else:
-    unicode = unicode
-    basestring = basestring
-    unichr = unichr
+     try:
+        unicode = unicode
+        basestring = basestring
+        unichr = unichr
+     except NameError:# special cases where unicode is defined in python3 
+        unicode = str
+        basestring = str
+        unichr = chr
 
 SEP = "_"
 
