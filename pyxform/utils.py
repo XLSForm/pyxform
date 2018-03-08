@@ -5,7 +5,6 @@ import json
 import copy
 import unicodecsv as csv
 import xlrd
-import sys
 try:
     unicode("str")
 except NameError:
