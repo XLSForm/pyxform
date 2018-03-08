@@ -13,14 +13,14 @@ except NameError:
     basestring = str
     unichr = chr
 else:
-    if sys.version_info >(3,5,0):
-        unicode = str
-        basestring = str
-        unichr = chr
-    else:
+     try:
         unicode = unicode
         basestring = basestring
         unichr = unichr
+     except NameError:# special cases where unicode is defined in python3 
+        unicode = str
+        basestring = str
+        unichr = chr
 
 SEP = "_"
 
