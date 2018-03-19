@@ -2,6 +2,10 @@ from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class InvalidSurveyColumnsTests(PyxformTestCase):
+    """
+    Invalid survey column tests
+    """
+
     def test_missing_name(self):
         """
         every question needs a name (or alias of name)
@@ -30,7 +34,7 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
                                       'name': 'q1'}]},
             errored=True,
             error__contains=['no label or hint'],
-        )
+        )    
 
     def test_column_case(self):
         """
@@ -46,6 +50,38 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             |        | text    | gender  | the gender    |
             """,
             errored=False,
+            debug=True
+        )
+
+    def test_duplicate_columns(self):
+        """
+        Ensure that duplicate column names are not allowed
+        """
+        self.assertPyxformXform(
+            name="duplicatecolumns",
+            md="""
+            | Survey |         |         |               |
+            |        | Type    | Name    | Label         |
+            |        | integer | age     | the age       |
+            |        | integer | age     | the age       |
+            """,
+            errored=True,
+            debug=True
+        )
+
+    def test_duplicate_columns_diff_cases(self):
+        """
+        Ensure that duplicate column names with different cases are not allowed
+        """
+        self.assertPyxformXform(
+            name="duplicatecolumnsdiffcases",
+            md="""
+            | Survey |         |         |               |
+            |        | Type    | Name    | Label         |
+            |        | integer | age     | the age       |
+            |        | integer | Age     | the age       |
+            """,
+            errored=True,
             debug=True
         )
 
@@ -137,6 +173,8 @@ class AliasesTests(PyxformTestCase):
                     '<value>no</value>',
                     '</select1>',
                     ])
+
+
 ''' # uncomment when re-implemented
     # TODO: test that this fails for the correct reason
     def test_conflicting_aliased_values_raises_error(self):
