@@ -16,7 +16,7 @@ class Section(SurveyElement):
     def _validate_uniqueness_of_element_names(self):
         element_slugs = []
         for element in self.children:
-            if element.name.lower() in (s.lower() for s in element_slugs):
+            if any(element.name.lower() == s.lower() for s in element_slugs):
                 raise PyXFormError(
                     "There are more than one survey elements named '%s' "
                     "(case-insensitive) in the section named '%s'." %
