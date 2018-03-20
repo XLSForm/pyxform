@@ -34,7 +34,7 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
                                       'name': 'q1'}]},
             errored=True,
             error__contains=['no label or hint'],
-        )    
+        )
 
     def test_column_case(self):
         """
@@ -88,7 +88,7 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
 
 class InvalidChoiceSheetColumnsTests(PyxformTestCase):
     """
-    Invalid choice cheet column tests
+    Invalid choice sheet column tests
     """
 
     def _simple_choice_ss(self, choice_sheet=None):
@@ -164,7 +164,7 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
 
 class AliasesTests(PyxformTestCase):
     """
-    Aliases Tests 
+    Aliases Tests
     """
 
     def test_value_and_name(self):
