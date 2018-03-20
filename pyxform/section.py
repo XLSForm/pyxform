@@ -1,7 +1,7 @@
+from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.question import SurveyElement
 from pyxform.utils import node
-from pyxform.errors import PyXFormError
 
 
 class Section(SurveyElement):
@@ -20,7 +20,7 @@ class Section(SurveyElement):
                 raise PyXFormError(
                     "There are more than one survey elements named '%s' "
                     "(case-insensitive) in the section named '%s'." %
-                    (element.name, self.name)
+                    (element.name.lower(), self.name)
                 )
             element_slugs.append(element.name)
 

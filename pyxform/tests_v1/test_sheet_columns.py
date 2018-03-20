@@ -53,38 +53,6 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             debug=True
         )
 
-    def test_duplicate_columns(self):
-        """
-        Ensure that duplicate column names are not allowed
-        """
-        self.assertPyxformXform(
-            name="duplicatecolumns",
-            md="""
-            | Survey |         |         |               |
-            |        | Type    | Name    | Label         |
-            |        | integer | age     | the age       |
-            |        | integer | age     | the age       |
-            """,
-            errored=True,
-            debug=True
-        )
-
-    def test_duplicate_columns_diff_cases(self):
-        """
-        Ensure that duplicate column names with different cases are not allowed
-        """
-        self.assertPyxformXform(
-            name="duplicatecolumnsdiffcases",
-            md="""
-            | Survey |         |         |               |
-            |        | Type    | Name    | Label         |
-            |        | integer | age     | the age       |
-            |        | integer | Age     | the age       |
-            """,
-            errored=True,
-            debug=True
-        )
-
 
 class InvalidChoiceSheetColumnsTests(PyxformTestCase):
     """
