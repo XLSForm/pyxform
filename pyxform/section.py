@@ -1,7 +1,7 @@
+from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.question import SurveyElement
 from pyxform.utils import node
-from pyxform.errors import PyXFormError
 
 
 class Section(SurveyElement):
@@ -16,11 +16,12 @@ class Section(SurveyElement):
     def _validate_uniqueness_of_element_names(self):
         element_slugs = []
         for element in self.children:
-            if element.name in element_slugs:
+            if any(element.name.lower() == s.lower() for s in element_slugs):
                 raise PyXFormError(
-                    "There are two survey elements named '%s' in the section"
-                    " named '%s'." % (element.name, self.name)
-                    )
+                    "There are more than one survey elements named '%s' "
+                    "(case-insensitive) in the section named '%s'." %
+                    (element.name.lower(), self.name)
+                )
             element_slugs.append(element.name)
 
     def xml_instance(self, **kwargs):
@@ -97,7 +98,7 @@ class RepeatingSection(Section):
             return node(
                 u"group", self.xml_label(), repeat_node,
                 ref=self.get_xpath()
-                )
+            )
         return node(u"group", repeat_node, ref=self.get_xpath(),
                     **self.control)
 

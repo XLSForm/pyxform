@@ -2,6 +2,10 @@ from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class InvalidSurveyColumnsTests(PyxformTestCase):
+    """
+    Invalid survey column tests
+    """
+
     def test_missing_name(self):
         """
         every question needs a name (or alias of name)
@@ -51,7 +55,15 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
 
 
 class InvalidChoiceSheetColumnsTests(PyxformTestCase):
+    """
+    Invalid choice sheet column tests
+    """
+
     def _simple_choice_ss(self, choice_sheet=None):
+        """
+        Return simple choices sheet
+        """
+
         if choice_sheet is None:
             choice_sheet = []
         return {'survey': [{'type': 'select_one l1',
@@ -60,6 +72,10 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
                 'choices': choice_sheet}
 
     def test_valid_choices_sheet_passes(self):
+        """
+        Test invalid choices sheet passes
+        """
+
         self.assertPyxformXform(
             name='valid_choices',
             ss_structure=self._simple_choice_ss([
@@ -73,6 +89,10 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
             )
 
     def test_invalid_choices_sheet_fails(self):
+        """
+        Test invalid choices sheet fails
+        """
+
         self.assertPyxformXform(
             name='missing_name',
             ss_structure=self._simple_choice_ss([
@@ -86,6 +106,10 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
             )
 
     def test_missing_list_name(self):
+        """
+        Test missing sheet name
+        """
+
         self.assertPyxformXform(
             name='missing_list_name',
             ss_structure=self._simple_choice_ss([
@@ -107,6 +131,10 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
 
 
 class AliasesTests(PyxformTestCase):
+    """
+    Aliases Tests
+    """
+
     def test_value_and_name(self):
         '''
         confirm that both 'name' and 'value' columns of choice list work
@@ -137,6 +165,8 @@ class AliasesTests(PyxformTestCase):
                     '<value>no</value>',
                     '</select1>',
                     ])
+
+
 ''' # uncomment when re-implemented
     # TODO: test that this fails for the correct reason
     def test_conflicting_aliased_values_raises_error(self):
