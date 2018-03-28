@@ -5,6 +5,8 @@ import json
 import copy
 import unicodecsv as csv
 import xlrd
+import os
+
 try:
     unicode("str")
 except NameError:
@@ -180,3 +182,21 @@ def has_external_choices(json_struct):
             if has_external_choices(v):
                 return True
     return False
+
+def get_languages_with_bad_tags(languages):
+    """
+    Returns languages with invalid or missing IANA subtags.
+    """
+    iana_subtags = []
+    with open(os.path.join(os.path.dirname(__file__), 'iana_subtags.txt')) as f:
+        iana_subtags = f.read().splitlines()
+
+    lang_code_regex = re.compile("\((.*)\)$")
+
+    languages_with_bad_tags = []
+    for lang in languages:
+        lang_code = re.search(lang_code_regex, lang)
+
+        if lang != 'default' and (not(lang_code) or not(lang_code.group(1) in iana_subtags)):
+            languages_with_bad_tags.append(lang)
+    return languages_with_bad_tags
