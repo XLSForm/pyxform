@@ -15,7 +15,7 @@ from pyxform.instance_info import InstanceInfo
 from pyxform.question import Question
 from pyxform.section import Section
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import PatchedText, basestring, node, unicode, NSMAP
+from pyxform.utils import PatchedText, basestring, node, unicode, NSMAP, get_languages_with_bad_tags
 from pyxform.validators import odk_validate
 from pyxform.validators import enketo_validate
 
@@ -697,6 +697,13 @@ class Survey(Section):
             warnings.extend(odk_validate.check_xform(path))
         if enketo:
             warnings.extend(enketo_validate.check_xform(path))
+
+        # Warn if one or more translation is missing a valid IANA subtag
+        if len(self._translations.keys()) > 0:
+            bad_languages = get_languages_with_bad_tags(self._translations.keys())
+            if len(bad_languages) > 0:
+                warnings.append("\tThe following language declarations do not contain valid machine-readable codes: " +
+                    ", ".join(bad_languages) + ". Learn more: http://xlsform.org/#language")
 
     def to_xml(self, validate=True, pretty_print=True, warnings=None,
                enketo=False):
