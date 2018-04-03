@@ -23,7 +23,7 @@ class Question(SurveyElement):
         attributes = {}
         attributes.update(self.get(u'instance', {}))
         for key, value in attributes.items():
-            attributes[key] = survey.insert_xpaths(value)
+            attributes[key] = survey.insert_xpaths(value, self)
 
         if self.get(u"default"):
             return node(
@@ -46,7 +46,7 @@ class InputQuestion(Question):
         survey = self.get_root()
         # Resolve field references in attributes
         for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value)
+            control_dict[key] = survey.insert_xpaths(value, self)
         control_dict['ref'] = self.get_xpath()
 
         result = node(**control_dict)
@@ -58,7 +58,7 @@ class InputQuestion(Question):
         if self['query']:
             choice_filter = self.get('choice_filter')
             query = "instance('" + self['query'] + "')/root/item"
-            choice_filter = survey.insert_xpaths(choice_filter)
+            choice_filter = survey.insert_xpaths(choice_filter, self)
             if choice_filter:
                 query += '[' + choice_filter + ']'
             result.setAttribute('query', query)
@@ -72,7 +72,7 @@ class TriggerQuestion(Question):
         survey = self.get_root()
         # Resolve field references in attributes
         for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value)
+            control_dict[key] = survey.insert_xpaths(value, self)
         control_dict['ref'] = self.get_xpath()
         return node(
             u"trigger",
@@ -145,7 +145,7 @@ class MultipleChoiceQuestion(Question):
         control_dict = self.control.copy()
         # Resolve field references in attributes
         for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value)
+            control_dict[key] = survey.insert_xpaths(value, self)
         control_dict['ref'] = self.get_xpath()
 
         result = node(**control_dict)
@@ -163,8 +163,7 @@ class MultipleChoiceQuestion(Question):
                 itemset = self['itemset']
                 itemset_label_ref = "jr:itext(itextId)"
             nodeset = "instance('" + itemset + "')/root/item"
-
-            choice_filter = survey.insert_xpaths(choice_filter)
+            choice_filter = survey.insert_xpaths(choice_filter, self)
             if choice_filter:
                 nodeset += '[' + choice_filter + ']'
 
@@ -271,7 +270,7 @@ class RangeQuestion(Question):
         survey = self.get_root()
         # Resolve field references in attributes
         for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value)
+            control_dict[key] = survey.insert_xpaths(value, self)
         control_dict['ref'] = self.get_xpath()
         params = self.get('parameters', {})
         control_dict.update(params)

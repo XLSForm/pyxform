@@ -302,7 +302,8 @@ class SurveyElement(dict):
             return node(u"label", ref=ref)
         else:
             survey = self.get_root()
-            label, output_inserted = survey.insert_output_values(self.label)
+            label, output_inserted = survey.insert_output_values(self.label,
+                                                                 self)
             return node(u"label", label, toParseString=output_inserted)
 
     def xml_hint(self):
@@ -311,7 +312,7 @@ class SurveyElement(dict):
             return node(u"hint", ref="jr:itext('%s')" % path)
         else:
             hint, output_inserted = self.get_root().insert_output_values(
-                self.hint)
+                self.hint, self)
             return node(u"hint", hint, toParseString=output_inserted)
 
     def xml_label_and_hint(self):
@@ -356,7 +357,7 @@ class SurveyElement(dict):
                 if k == u'jr:noAppErrorString' and type(v) is dict:
                     v = "jr:itext('%s')" % self._translation_path(
                         u'jr:noAppErrorString')
-                bind_dict[k] = survey.insert_xpaths(v)
+                bind_dict[k] = survey.insert_xpaths(v, context=self)
             return node(u"bind", nodeset=self.get_xpath(), **bind_dict)
         return None
 

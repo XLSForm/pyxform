@@ -29,7 +29,64 @@ def register_nsmap():
 register_nsmap()
 
 
+def is_parent_a_repeat(survey, xpath):
+    """
+    Returns the XPATH of the first repeat of the given xpath in the survey,
+    otherwise False will be returned.
+    """
+    parent_xpath = '/'.join(xpath.split('/')[:-1])
+    if not parent_xpath:
+        return False
+
+    repeats = [
+        item for item in survey.iter_descendants()
+        if item.get_xpath() == parent_xpath and item.type == 'repeat']
+
+    return parent_xpath \
+        if any(repeats) else is_parent_a_repeat(survey, parent_xpath)
+
+
+def share_same_repeat_parent(survey, xpath, context_xpath):
+    """
+    Returns a tuple of the number of steps from the context xpath to the shared
+    repeat parent and the xpath to the target xpath from the shared repeat
+    parent.
+
+    For example,
+        xpath = /data/repeat_a/group_a/name
+        context_xpath = /data/repeat_a/group_b/age
+
+        returns (2, '/group_a/name')'
+    """
+    context_parent = is_parent_a_repeat(survey, context_xpath)
+    xpath_parent = is_parent_a_repeat(survey, xpath)
+    if context_parent and xpath_parent and xpath_parent in context_parent:
+        steps = 1
+        remainder_xpath = xpath[len(xpath_parent):]
+        context_parts = context_xpath[len(xpath_parent) + 1:].split('/')
+        xpath_parts = xpath[len(xpath_parent) + 1:].split('/')
+        for index, item in enumerate(context_parts[:-1]):
+            try:
+                if xpath[len(context_parent) + 1:].split('/')[index] != item:
+                    steps = len(context_parts[index:])
+                    remainder_xpath = "/" + "/".join(xpath_parts[index:])
+                    break
+                else:
+                    remainder_xpath = "/" + "/".join(
+                        remainder_xpath.split('/')[index + 2:])
+            except IndexError:
+                steps = len(context_parts[index - 1:])
+                remainder_xpath = "/".join(xpath_parts[index - 1:])
+                break
+        return (steps, remainder_xpath)
+
+    return (None, None)
+
+
 class Survey(Section):
+    """
+    Survey class - represents the full XForm XML.
+    """
 
     FIELDS = Section.FIELDS.copy()
     FIELDS.update(
@@ -635,7 +692,7 @@ class Survey(Section):
                 else:
                     self._xpath[element.name] = element.get_xpath()
 
-    def _var_repl_function(self, matchobj):
+    def _var_repl_function(self, matchobj, context):
         """
         Given a dictionary of xpaths, return a function we can use to
         replace ${varname} with the xpath to varname.
@@ -650,32 +707,46 @@ class Survey(Section):
             raise PyXFormError(intro + " There are multiple survey elements"
                                " with this name.")
 
+        # if context xpath and target xpath fall under the same repeat use
+        # relative xpath referencing.
+        steps, ref_path = share_same_repeat_parent(self, self._xpath[name],
+                                                   context.get_xpath())
+        if steps:
+            ref_path = ref_path if ref_path.endswith(name) else "/%s" % name
+            return " current()/" + "/".join([".."] * steps) + ref_path + " "
+
         return " " + self._xpath[name] + " "
 
-    def insert_xpaths(self, text):
+    def insert_xpaths(self, text, context):
         """
         Replace all instances of ${var} with the xpath to var.
         """
         bracketed_tag = r"\$\{(.*?)\}"
+        def _var_repl_function(matchobj):
+            return self._var_repl_function(matchobj, context)
 
-        return re.sub(bracketed_tag, self._var_repl_function, unicode(text))
+        return re.sub(bracketed_tag, _var_repl_function, unicode(text))
 
-    def _var_repl_output_function(self, matchobj):
+    def _var_repl_output_function(self, matchobj, context):
         """
         A regex substitution function that will replace
         ${varname} with an output element that has the xpath to varname.
         """
+        def _var_repl_function(matchobj):
+            return self._var_repl_function(matchobj, context)
 #        if matchobj.group(1) not in self._xpath:
 #            raise PyXFormError("There is no survey element with this name.",
 #                            matchobj.group(1))
-        return '<output value="' + self._var_repl_function(matchobj) + '" />'
+        return '<output value="' + _var_repl_function(matchobj) + '" />'
 
-    def insert_output_values(self, text):
+    def insert_output_values(self, text, context):
         """
         Replace all the ${variables} in text with xpaths.
         Returns that and a boolean indicating if there were any ${variables}
         present.
         """
+        def _var_repl_output_function(matchobj):
+            return self._var_repl_output_function(matchobj, context)
         # There was a bug where escaping is completely turned off in labels
         # where variable replacement is used.
         # For exampke, `${name} < 3` causes an error but `< 3` does not.
@@ -691,7 +762,7 @@ class Survey(Section):
         # the net effect &lt gets translated again to &amp;lt;
         if unicode(xml_text).find('{') != -1:
             result = re.sub(
-                bracketed_tag, self._var_repl_output_function,
+                bracketed_tag, _var_repl_output_function,
                 unicode(xml_text))
             return result, not result == xml_text
         return text, False
