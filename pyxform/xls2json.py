@@ -605,11 +605,13 @@ def workbook_to_json(
                                    " Question or group with no name.")
         question_name = unicode(row[constants.NAME])
         if not is_valid_xml_tag(question_name):
+            if isinstance(question_name, bytes):
+                question_name = question_name.encode('utf-8')
             error_message = row_format_string % row_number
             error_message += " Invalid question name [" + \
-                             question_name.encode('utf-8') + "] "
+                             question_name + "] "
             error_message += "Names must begin with a letter, colon,"\
-                             + " or underscore. "
+                             + " or underscore."
             error_message += "Subsequent characters can include numbers," \
                              + " dashes, and periods."
             raise PyXFormError(error_message)
