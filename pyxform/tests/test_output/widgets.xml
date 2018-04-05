@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
     <h:title>widgets</h:title>
     <model>
@@ -230,7 +230,7 @@
       <hint>need to push button</hint>
     </trigger>
     <input ref="/widgets/my_output">
-      <label>review widget. is your email still <output value=" /widgets/my_trigger "/>?</label>
+      <label> review widget. is your email still <output value=" /widgets/my_trigger "/>? </label>
       <hint>long hint: there is an upcoming section.</hint>
     </input>
     <input ref="/widgets/my_geopoint">
@@ -386,7 +386,7 @@
         <label>(An easier to specify list group)</label>
       </input>
       <select1 appearance="label" ref="/widgets/table_list_test2/reserved_name_for_field_list_labels_30">
-        <label></label>
+        <label> </label>
         <item>
           <label>Yes</label>
           <value>yes</value>
@@ -460,7 +460,7 @@
         <label>(An easier to specify multi list group)</label>
       </input>
       <select appearance="label" ref="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39">
-        <label></label>
+        <label> </label>
         <item>
           <label ref="jr:itext('/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/happy:label')"/>
           <value>happy</value>
