@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+"""Pyxform - Python library that converts XLSForms to XForms.
+"""
 from setuptools import setup, find_packages
 
 setup(
     name='pyxform',
-    version='0.10.0',
+    version='0.11.0',
     author='github.com/xlsform',
     author_email='info@xlsform.org',
     packages=find_packages(),

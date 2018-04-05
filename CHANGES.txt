@@ -1,4 +1,57 @@
 Pyxform Changelog
+v0.11.0, 2018 08 05
+    -- Code cleanup, remove no-op XML formatting code
+       Issue #148, https://github.com/XLSForm/pyxform/pull/148
+       [alxndrsn]
+
+    -- Workarounds for PyInstaller on Windows
+       Issue #166, https://github.com/XLSForm/pyxform/pull/166
+       [yanokwa]
+
+    -- Add type=xml-external
+       Issue #107, https://github.com/XLSForm/pyxform/issues/107
+       [lindsay-stevens]
+
+    -- Add Enketo Validate, you can now validate XForms with Enketo's
+       form engine - https://github.com/enketo/enketo-validate.
+       Issue #163, https://github.com/XLSForm/pyxform/issues/163
+       [lindsay-stevens]
+
+    -- Added odk XML namespace xmlns:odk
+       Issue #172, https://github.com/XLSForm/pyxform/pull/172
+       [Archaejohn]
+
+    -- Error message formatting update
+       Issue #173, https://github.com/XLSForm/pyxform/pull/173
+       [yanokwa]
+
+    -- Add support for auto_send and auto_delete settings
+       Issue #126, https://github.com/XLSForm/pyxform/issues/126
+       [lognaturel]
+
+    -- Fixed Python3 unchr is not defined in pyxform/utils.py error
+       Issue #161, https://github.com/XLSForm/pyxform/issues/161
+       [shivareddyiirs]
+
+    -- Handle ODK Validate error strings with unicode
+       Issue #72, https://github.com/XLSForm/pyxform/issues/72
+       [lognaturel]
+
+    -- Error on question names with same name different cases
+       Issue #174, https://github.com/XLSForm/pyxform/issues/174
+       [moshthepitt]
+
+    -- Warn on languanges that don't have a valid IANA subtag
+       Issue #143, https://github.com/XLSForm/pyxform/issues/143
+       [lognaturel]
+
+    -- Python 3 encoding check
+       Issue #186, https://github.com/XLSForm/pyxform/pull/186
+       [pld]
+
+    -- Upgrade to ODK Validate v1.9.0
+       Issue #188, https://github.com/XLSForm/pyxform/pull/188
+       [lognaturel]
 
 v0.10.0, 2017 11 08
     -- Add support for numeric range questions (Issue #79)
