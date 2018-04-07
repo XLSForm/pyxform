@@ -22,6 +22,9 @@ setup(
             'validators/.*',
             'validators/data/*.*',
             'validators/data/.*',
+        ],
+        'pyxform': [
+            'iana_subtags.txt',
         ]
     },
     url='http://pypi.python.org/pypi/pyxform/',
