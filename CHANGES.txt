@@ -1,4 +1,13 @@
 Pyxform Changelog
+
+v0.11.2, (Unreleased)
+    -- no changes yet
+
+v0.11.2, 2018 08 09
+    -- Add iana_subtags.txt to package,
+       Issue #191, https://github.com/XLSForm/pyxform/issues/191
+       [yanokwa]
+
 v0.11.0, 2018 08 05
     -- Code cleanup, remove no-op XML formatting code
        Issue #148, https://github.com/XLSForm/pyxform/pull/148
