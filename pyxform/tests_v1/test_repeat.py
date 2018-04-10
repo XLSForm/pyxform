@@ -14,7 +14,6 @@ class TestRepeat(PyxformTestCase):
         Test relative reference in repeats.
         """
         self.assertPyxformXform(
-            debug=True,
             name="test_repeat",
             title="Relative Paths in repeats",
             md="""
@@ -98,4 +97,34 @@ class TestRepeat(PyxformTestCase):
                 """<output value=" current()/../sectionb/H "/> </label></input>"""
             ],
             run_odk_validate=True
+        )
+
+    def test_calculate_relative_path(self):
+        """Test relative paths in calculate column."""
+        self.assertPyxformXform(
+            name="data",
+            title="Choice filter uses relative path",
+            md="""
+                | survey  |                      |       |        |                |
+                |         | type                 | name  | label  | calculate      |
+                |         | begin repeat         | rep   |        |                |
+                |         | select_one crop_list | crop  | Select |                |
+                |         | text                 | a     | Verify | name = ${crop} |
+                |         | begin group          | group |        |                |
+                |         | text                 | b     | Verify | name = ${crop} |
+                |         | end group            |       |        |                |
+                |         | end repeat           |       |        |                |
+                |         |                      |       |        |                |
+                | choices |                      |       |        |                |
+                |         | list name            | name  | label  |                |
+                |         | crop_list            | maize | Maize  |                |
+                |         | crop_list            | beans | Beans  |                |
+                |         | crop_list            | kale  | Kale   |                |
+            """,
+            model__contains=[
+                """<bind calculate="name =  current()/../crop " """
+                """nodeset="/data/rep/a" type="string"/>""",
+                """<bind calculate="name =  current()/../../crop " """
+                """nodeset="/data/rep/group/b" type="string"/>""",
+            ]
         )
