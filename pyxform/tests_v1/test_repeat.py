@@ -96,14 +96,13 @@ class TestRepeat(PyxformTestCase):
                 """<label> Noted <output value=" current()/../FF "/> w """
                 """<output value=" current()/../sectionb/H "/> </label></input>"""
             ],
-            run_odk_validate=True
         )
 
     def test_calculate_relative_path(self):
         """Test relative paths in calculate column."""
         self.assertPyxformXform(
             name="data",
-            title="Choice filter uses relative path",
+            title="Paths in a calculate within a repeat are relative.",
             md="""
                 | survey  |                      |       |        |                |
                 |         | type                 | name  | label  | calculate      |
@@ -126,5 +125,33 @@ class TestRepeat(PyxformTestCase):
                 """nodeset="/data/rep/a" type="string"/>""",
                 """<bind calculate="name =  current()/../../crop " """
                 """nodeset="/data/rep/group/b" type="string"/>""",
-            ]
+            ],
+        )
+
+    def test_choice_filter_relative_path(self):  # pylint: disable=invalid-name
+        """Test relative paths in choice_filter column."""
+        self.assertPyxformXform(
+            name="data",
+            title="Choice filter uses relative path",
+            md="""
+                | survey  |                      |       |        |                |
+                |         | type                 | name  | label  | choice_filter  |
+                |         | begin repeat         | rep   |        |                |
+                |         | select_one crop_list | crop  | Select |                |
+                |         | select_one crop_list | a     | Verify | name = ${crop} |
+                |         | begin group          | group |        |                |
+                |         | select_one crop_list | b     | Verify | name = ${crop} |
+                |         | end group            |       |        |                |
+                |         | end repeat           |       |        |                |
+                |         |                      |       |        |                |
+                | choices |                      |       |        |                |
+                |         | list name            | name  | label  |                |
+                |         | crop_list            | maize | Maize  |                |
+                |         | crop_list            | beans | Beans  |                |
+                |         | crop_list            | kale  | Kale   |                |
+            """,
+            xml__contains=[
+                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../crop ]">""",  # noqa pylint: disable=line-too-long
+                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../../crop ]">""",  # noqa pylint: disable=line-too-long
+            ],
         )
