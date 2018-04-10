@@ -706,14 +706,14 @@ class Survey(Section):
         if self._xpath[name] is None:
             raise PyXFormError(intro + " There are multiple survey elements"
                                " with this name.")
-
-        # if context xpath and target xpath fall under the same repeat use
-        # relative xpath referencing.
-        steps, ref_path = share_same_repeat_parent(self, self._xpath[name],
-                                                   context.get_xpath())
-        if steps:
-            ref_path = ref_path if ref_path.endswith(name) else "/%s" % name
-            return " current()/" + "/".join([".."] * steps) + ref_path + " "
+        if context:
+            # if context xpath and target xpath fall under the same repeat use
+            # relative xpath referencing.
+            steps, ref_path = share_same_repeat_parent(self, self._xpath[name],
+                                                       context.get_xpath())
+            if steps:
+                ref_path = ref_path if ref_path.endswith(name) else "/%s" % name
+                return " current()/" + "/".join([".."] * steps) + ref_path + " "
 
         return " " + self._xpath[name] + " "
 
@@ -739,7 +739,7 @@ class Survey(Section):
 #                            matchobj.group(1))
         return '<output value="' + _var_repl_function(matchobj) + '" />'
 
-    def insert_output_values(self, text, context):
+    def insert_output_values(self, text, context=None):
         """
         Replace all the ${variables} in text with xpaths.
         Returns that and a boolean indicating if there were any ${variables}
