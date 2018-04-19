@@ -42,12 +42,12 @@ def run_popen_with_timeout(command, timeout):
     startup_info = None
     if os.name == 'nt':
         # disable command window when run from pyinstaller
-        startup = subprocess.STARTUPINFO()
+        startup_info = subprocess.STARTUPINFO()
         # Less fancy version of bitwise-or-assignment (x |= y) shown in ref url.
-        if startup.dwFlags == 1 or subprocess.STARTF_USESHOWWINDOW == 1:
-            startup.dwFlags = 1
+        if startup_info.dwFlags == 1 or subprocess.STARTF_USESHOWWINDOW == 1:
+            startup_info.dwFlags = 1
         else:
-            startup.dwFlags = 0
+            startup_info.dwFlags = 0
 
     p = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE,
               startupinfo=startup_info)
