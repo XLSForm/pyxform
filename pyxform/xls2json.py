@@ -263,15 +263,6 @@ def process_range_question_type(row):
 
     Raises PyXFormError when invalid range parameters are used.
     """
-    def _parameters(parameters):
-        parts = parameters.split(';')
-        if len(parts) == 1:
-            parts = parameters.split(',')
-        if len(parts) == 1:
-            parts = parameters.split()
-
-        return parts
-
     new_dict = row.copy()
     parameters = _parameters(new_dict.get('parameters', ''))
     parameters_map = {'start': 'start', 'end': 'end', 'step': 'step'}
@@ -824,11 +815,44 @@ def workbook_to_json(
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
 
+                # Look at parameters column for randomization parameters
+                parameters = _parameters(row.get('parameters', ''))
+                allowed_params = ['randomize', 'seed']
+
+                params = {}
+                for param in parameters:
+                    if '=' not in param:
+                        raise PyXFormError("Expecting parameters to be in the form of"
+                            "'randomize=true seed=324.2'.")
+                    k, v = param.split('=')[:2]
+                    key = k.lower().strip()
+                    if key in allowed_params:
+                        params[key] = v.lower().strip()
+                    else:
+                        raise PyXFormError("Selects accept parameters "
+                            "'randomize' and 'seed': '%s' is an invalid parameter." % key)
+
+                    if "randomize" in params.keys():
+                        if params["randomize"] != "true" and params["randomize"] != "false":
+                            raise PyXFormError("randomize must be set to true or false: "
+                                "'%s' is an invalid value" % params["randomize"])
+
+                    if "seed" in params.keys():
+                        try:
+                            float(params["seed"])
+                        except ValueError:
+                            raise PyXFormError("seed value must be a number.")
+                new_json_dict['parameters'] = params
+
                 if row.get('choice_filter'):
                     if select_type == 'select one external':
                         new_json_dict['query'] = list_name
                     else:
                         new_json_dict['itemset'] = list_name
+                        json_dict['choices'] = choices
+                elif "randomize" in params.keys() and params["randomize"] == "true":
+                        new_json_dict['itemset'] = list_name
+                        new_json_dict['randomize'] = True
                         json_dict['choices'] = choices
                 elif file_extension in ['.csv', '.xml']:
                     new_json_dict['itemset'] = list_name
@@ -946,7 +970,7 @@ def workbook_to_json(
         noop, survey_children_array = stack[0]
         survey_children_array.append(meta_element)
 
-    # print_pyobj_to_json(json_dict)
+    #print_pyobj_to_json(json_dict)
     return json_dict
 
 
@@ -1011,6 +1035,15 @@ def organize_by_values(dict_list, key):
                 raise Exception("Duplicate key: " + val)
             result[val] = dicty_copy
     return result
+
+def _parameters(parameters):
+    parts = parameters.split(';')
+    if len(parts) == 1:
+        parts = parameters.split(',')
+    if len(parts) == 1:
+        parts = parameters.split()
+
+    return parts
 
 
 class SpreadsheetReader(object):

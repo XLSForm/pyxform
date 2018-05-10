@@ -162,9 +162,22 @@ class MultipleChoiceQuestion(Question):
                 itemset = self['itemset']
                 itemset_label_ref = "jr:itext(itextId)"
             nodeset = "instance('" + itemset + "')/root/item"
+
             choice_filter = survey.insert_xpaths(choice_filter)
             if choice_filter:
                 nodeset += '[' + choice_filter + ']'
+
+            if self['parameters']:
+                params = self['parameters']
+
+                if 'randomize' in params and params['randomize'] == 'true':
+                    nodeset = 'randomize(' + nodeset
+
+                    if 'seed' in params:
+                        nodeset = nodeset + ', ' + params['seed']
+
+                    nodeset += ')'
+
             itemset_children = [node('value', ref='name'),
                                 node('label', ref=itemset_label_ref)]
             result.appendChild(node('itemset', *itemset_children,
