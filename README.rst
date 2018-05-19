@@ -29,6 +29,8 @@ The ``xls2xform`` command can then be used::
 
     xls2xform path_to_XLSForm output_path
 
+The platform is tested and running in Python 2.7 and Python 3
+
 Running pyxform from local source
 =================================
 
