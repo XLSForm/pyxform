@@ -38,7 +38,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
         )
 
     def test_randomized_seeded_filtered_select_one(self):
-         self.assertPyxformXform(
+        self.assertPyxformXform(
             name="data",
             md="""
             | survey |                    |         |       |                         |               |
