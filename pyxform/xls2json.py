@@ -837,11 +837,15 @@ def workbook_to_json(
                             raise PyXFormError("randomize must be set to true or false: "
                                 "'%s' is an invalid value" % params["randomize"])
 
-                    if "seed" in params.keys():
-                        try:
-                            float(params["seed"])
-                        except ValueError:
-                            raise PyXFormError("seed value must be a number.")
+                        if "seed" in params.keys():
+                            try:
+                                float(params["seed"])
+                            except ValueError:
+                                raise PyXFormError("seed value must be a number.")
+                    elif "seed" in params.keys():
+                        raise PyXFormError("Parameters must include randomize=true to use a seed.")
+
+
                 new_json_dict['parameters'] = params
 
                 if row.get('choice_filter'):

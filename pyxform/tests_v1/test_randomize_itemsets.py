@@ -148,9 +148,28 @@ class RandomizeItemsetsTest(PyxformTestCase):
             name="data",
             errored="true",
             md="""
+            | survey |                    |         |       |                             |
+            |        | type               | name    | label | parameters                  |
+            |        | select_one choices | select  | Select| randomize=true, seed=ukanga |
+            | choices|                    |         |       |                             |
+            |        | list_name          | name    | label |                             |
+            |        | choices            | a       | opt_a |                             |
+            |        | choices            | b       | opt_b |                             |             
+
+            """,
+            error__contains=[
+                "seed value must be a number."
+                ]
+        )
+
+    def test_randomized_select_one_seed_without_randomize(self):
+        self.assertPyxformXform(
+            name="data",
+            errored="true",
+            md="""
             | survey |                    |         |       |                  |
             |        | type               | name    | label | parameters       |
-            |        | select_one choices | select  | Select| seed=ukanga      |
+            |        | select_one choices | select  | Select| seed=42          |
             | choices|                    |         |       |                  |
             |        | list_name          | name    | label |                  |
             |        | choices            | a       | opt_a |                  |
@@ -158,7 +177,8 @@ class RandomizeItemsetsTest(PyxformTestCase):
 
             """,
             error__contains=[
-                "seed value must be a number."
+                "Parameters must include randomize=true to use a seed."
                 ]
         )
+
 
