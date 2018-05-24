@@ -28,6 +28,7 @@ AUTO_DELETE = u"auto_delete"
 DEFAULT_LANGUAGE = u"default_language"
 LABEL = u"label"
 HINT = u"hint"
+GUIDANCE_HINT = u"guidance_hint"
 STYLE = u"style"
 ATTRIBUTE = u"attribute"
 

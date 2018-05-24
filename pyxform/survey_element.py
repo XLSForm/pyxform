@@ -28,6 +28,7 @@ class SurveyElement(dict):
         u"sms_option": unicode,
         u"label": unicode,
         u"hint": unicode,
+        u"guidance_hint": unicode,
         u"default": unicode,
         u"type": unicode,
         u"appearance": unicode,
@@ -243,7 +244,7 @@ class SurveyElement(dict):
                         'text': text
                     }
 
-        for display_element in [u'label', u'hint']:
+        for display_element in [u'label', u'hint', u'guidance_hint']:
             label_or_hint = self[display_element]
 
             if display_element is u'label' \
@@ -296,18 +297,31 @@ class SurveyElement(dict):
                 self.hint)
             return node(u"hint", hint, toParseString=output_inserted)
 
-    def xml_label_and_hint(self):
+    def xml_guidance_hint(self):
+        if isinstance(self.guidance_hint, dict):
+            path = self._translation_path("guidance_hint")
+            return node(u"guidance_hint", ref="jr:itext('%s')" % path, form="guidance")
+        else:
+            guidance_hint, output_inserted = self.get_root().insert_output_values(
+                self.guidance_hint)
+            return node(u"hint", guidance_hint, toParseString=output_inserted, form="guidance")
+
+
+    def xml_label_and_hints(self):
         """
-        Return a list containing one node for the label and if there
-        is a hint one node for the hint.
+        Return a list containing one node for the label, if there
+        is a hint one node for the hint and if there is a guidance hint,
+        one node for the guidance hint (used for training or for printing).
         """
         result = []
         if self.label or self.media:
             result.append(self.xml_label())
         if self.hint:
             result.append(self.xml_hint())
+        if self.guidance_hint:
+            result.append(self.xml_guidance_hint())
 
-        if len(result) == 0:
+        if len(result) == 0 or (len(result) == 1 and self.guidance_hint):
             msg = "The survey element named '%s' " \
                   "has no label or hint." % self.name
             raise PyXFormError(msg)

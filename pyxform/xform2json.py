@@ -385,6 +385,9 @@ class XFormToDictBuilder:
                     question[_k] = _v
             else:
                 question[k] = v
+        if 'guidance_hint' in obj:
+            k, v = self._get_label(obj['guidance_hint'], 'guidance_hint')
+            question[k] = v
         if 'autoplay' in obj or 'appearance' in obj \
                 or 'count' in obj or 'rows' in obj:
             question['control'] = {}

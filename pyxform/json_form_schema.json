@@ -127,6 +127,16 @@
 							"description" : "A key value pair where the key is a language, and the value is the content in that language."
 						}
 					},
+					"guidance_hint" :
+					{
+						"type" : ["string", "object"],
+						"description" : "Either a guidance hint string used for training or a mapping of languages to localized versions of the hint",
+						"additionalProperties":
+						{
+							"type" : "string",
+							"description" : "A key value pair where the key is a language, and the value is the content in that language."
+						}						
+					},
 					"media" :
 					{
 						"type" : "object",
