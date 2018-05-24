@@ -41,7 +41,7 @@ class InputQuestion(Question):
     """
     def xml_control(self):
         control_dict = self.control
-        label_and_hint = self.xml_label_and_hint()
+        label_and_hint = self.xml_label_and_hints()
         survey = self.get_root()
         # Resolve field references in attributes
         for key, value in control_dict.items():
@@ -50,7 +50,7 @@ class InputQuestion(Question):
 
         result = node(**control_dict)
         if label_and_hint:
-            for element in self.xml_label_and_hint():
+            for element in self.xml_label_and_hints():
                 result.appendChild(element)
 
         # Input types are used for selects with external choices sheets.
@@ -75,7 +75,7 @@ class TriggerQuestion(Question):
         control_dict['ref'] = self.get_xpath()
         return node(
             u"trigger",
-            *self.xml_label_and_hint(),
+            *self.xml_label_and_hints(),
             **control_dict
             )
 
@@ -90,7 +90,7 @@ class UploadQuestion(Question):
         control_dict['mediatype'] = self._get_media_type()
         return node(
             u"upload",
-            *self.xml_label_and_hint(),
+            *self.xml_label_and_hints(),
             **control_dict
             )
 
@@ -148,7 +148,7 @@ class MultipleChoiceQuestion(Question):
         control_dict['ref'] = self.get_xpath()
 
         result = node(**control_dict)
-        for element in self.xml_label_and_hint():
+        for element in self.xml_label_and_hints():
             result.appendChild(element)
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
@@ -246,7 +246,7 @@ class OsmUploadQuestion(UploadQuestion):
         control_dict['mediatype'] = self._get_media_type()
         result = node(
             u"upload",
-            *self.xml_label_and_hint(),
+            *self.xml_label_and_hints(),
             **control_dict
             )
 
@@ -263,7 +263,7 @@ class RangeQuestion(Question):
     """
     def xml_control(self):
         control_dict = self.control
-        label_and_hint = self.xml_label_and_hint()
+        label_and_hint = self.xml_label_and_hints()
         survey = self.get_root()
         # Resolve field references in attributes
         for key, value in control_dict.items():
@@ -273,7 +273,7 @@ class RangeQuestion(Question):
         control_dict.update(params)
         result = node(**control_dict)
         if label_and_hint:
-            for element in self.xml_label_and_hint():
+            for element in self.xml_label_and_hints():
                 result.appendChild(element)
 
         return result
