@@ -892,6 +892,21 @@ def workbook_to_json(
             parent_children_array.append(new_dict)
             continue
 
+        if question_type == 'photo':
+            new_dict = row.copy()
+            parameters = get_parameters(row.get('parameters', ''), ['max-pixels'])
+
+            if 'max-pixels' in parameters.keys():
+                try:
+                    int(parameters['max-pixels'])
+                except:
+                    raise PyXFormError("Parameter max-pixels must have an integer value.")
+
+                new_dict['bind'] = new_dict.get('bind', {})
+                new_dict['bind'].update({'orx:max-pixels': parameters['max-pixels']})
+            parent_children_array.append(new_dict)
+            continue
+
         # TODO: Consider adding some question_type validation here.
 
         # Put the row in the json dict as is:
