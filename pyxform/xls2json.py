@@ -264,32 +264,18 @@ def process_range_question_type(row):
     Raises PyXFormError when invalid range parameters are used.
     """
     new_dict = row.copy()
-    parameters = _parameters(new_dict.get('parameters', ''))
+    parameters = get_parameters(new_dict.get('parameters', ''), ['start', 'end', 'step'])
     parameters_map = {'start': 'start', 'end': 'end', 'step': 'step'}
     defaults = {'start': '1', 'end': '10', 'step': '1'}
-    params = {}
-
-    for param in parameters:
-        if '=' not in param:
-            raise PyXFormError("Expecting parameters to be in the form of "
-                               "'start=X end=X step=X'.")
-        k, v = param.split('=')[:2]
-        key = parameters_map.get(k.lower().strip())
-        if key:
-            params[key] = v.strip()
-        else:
-            raise PyXFormError(
-                "Range has the parameters 'start', 'end' and"
-                " 'step': '%s' is an invalid parameter." % k)
 
     # set defaults
     for key in parameters_map.values():
-        if key not in params:
-            params[key] = defaults[key]
+        if key not in parameters:
+            parameters[key] = defaults[key]
 
     try:
         has_float = any(
-            [float(x) and '.' in str(x) for x in params.values()])
+            [float(x) and '.' in str(x) for x in parameters.values()])
     except ValueError:
         raise PyXFormError("Range parameters 'start', "
                            "'end' or 'step' must all be numbers.")
@@ -299,7 +285,7 @@ def process_range_question_type(row):
             new_dict['bind'] = new_dict.get('bind', {})
             new_dict['bind'].update({'type': 'decimal'})
 
-    new_dict['parameters'] = params
+    new_dict['parameters'] = parameters
 
     return new_dict
 
@@ -816,37 +802,23 @@ def workbook_to_json(
                 new_json_dict[constants.TYPE] = select_type
 
                 # Look at parameters column for randomization parameters
-                parameters = _parameters(row.get('parameters', ''))
-                allowed_params = ['randomize', 'seed']
+                parameters = get_parameters(row.get('parameters', ''), ['randomize', 'seed'])
 
-                params = {}
-                for param in parameters:
-                    if '=' not in param:
-                        raise PyXFormError("Expecting parameters to be in the form of"
-                            "'randomize=true seed=324.2'.")
-                    k, v = param.split('=')[:2]
-                    key = k.lower().strip()
-                    if key in allowed_params:
-                        params[key] = v.lower().strip()
-                    else:
-                        raise PyXFormError("Selects accept parameters "
-                            "'randomize' and 'seed': '%s' is an invalid parameter." % key)
+                if "randomize" in parameters.keys():
+                    if parameters["randomize"] != "true" and parameters["randomize"] != "false":
+                        raise PyXFormError("randomize must be set to true or false: "
+                            "'%s' is an invalid value" % parameters["randomize"])
 
-                    if "randomize" in params.keys():
-                        if params["randomize"] != "true" and params["randomize"] != "false":
-                            raise PyXFormError("randomize must be set to true or false: "
-                                "'%s' is an invalid value" % params["randomize"])
-
-                        if "seed" in params.keys():
-                            try:
-                                float(params["seed"])
-                            except ValueError:
-                                raise PyXFormError("seed value must be a number.")
-                    elif "seed" in params.keys():
-                        raise PyXFormError("Parameters must include randomize=true to use a seed.")
+                    if "seed" in parameters.keys():
+                        try:
+                            float(parameters["seed"])
+                        except ValueError:
+                            raise PyXFormError("seed value must be a number.")
+                elif "seed" in parameters.keys():
+                    raise PyXFormError("Parameters must include randomize=true to use a seed.")
 
 
-                new_json_dict['parameters'] = params
+                new_json_dict['parameters'] = parameters
 
                 if row.get('choice_filter'):
                     if select_type == 'select one external':
@@ -854,9 +826,8 @@ def workbook_to_json(
                     else:
                         new_json_dict['itemset'] = list_name
                         json_dict['choices'] = choices
-                elif "randomize" in params.keys() and params["randomize"] == "true":
+                elif "randomize" in parameters.keys() and parameters["randomize"] == "true":
                         new_json_dict['itemset'] = list_name
-                        new_json_dict['randomize'] = True
                         json_dict['choices'] = choices
                 elif file_extension in ['.csv', '.xml']:
                     new_json_dict['itemset'] = list_name
@@ -918,6 +889,21 @@ def workbook_to_json(
         # range question_type
         if question_type == 'range':
             new_dict = process_range_question_type(row)
+            parent_children_array.append(new_dict)
+            continue
+
+        if question_type == 'photo':
+            new_dict = row.copy()
+            parameters = get_parameters(row.get('parameters', ''), ['max-pixels'])
+
+            if 'max-pixels' in parameters.keys():
+                try:
+                    int(parameters['max-pixels'])
+                except:
+                    raise PyXFormError("Parameter max-pixels must have an integer value.")
+
+                new_dict['bind'] = new_dict.get('bind', {})
+                new_dict['bind'].update({'orx:max-pixels': parameters['max-pixels']})
             parent_children_array.append(new_dict)
             continue
 
@@ -1040,14 +1026,27 @@ def organize_by_values(dict_list, key):
             result[val] = dicty_copy
     return result
 
-def _parameters(parameters):
-    parts = parameters.split(';')
+def get_parameters(raw_parameters, allowed_parameters):
+    parts = raw_parameters.split(';')
     if len(parts) == 1:
-        parts = parameters.split(',')
+        parts = raw_parameters.split(',')
     if len(parts) == 1:
-        parts = parameters.split()
+        parts = raw_parameters.split()
 
-    return parts
+    params = {}
+    for param in parts:
+        if '=' not in param:
+            raise PyXFormError("Expecting parameters to be in the form of "
+                            "'parameter1=value parameter2=value'.")
+        k, v = param.split('=')[:2]
+        key = k.lower().strip()
+        if key in allowed_parameters:
+            params[key] = v.lower().strip()
+        else:
+            raise PyXFormError("Accepted parameters are "
+                "'%s': '%s' is an invalid parameter." % (", ".join(allowed_parameters),  key))
+
+    return params
 
 
 class SpreadsheetReader(object):
