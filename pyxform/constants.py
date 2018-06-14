@@ -45,6 +45,7 @@ CHILDREN = u"children"
 
 SELECT_ONE = u"select one"
 SELECT_ALL_THAT_APPLY = u"select all that apply"
+RANK = u"rank"
 CHOICES = u"choices"
 
 # XLS Specific constants

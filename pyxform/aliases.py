@@ -28,6 +28,7 @@ select = {
     u"select_multiple_from_file": constants.SELECT_ALL_THAT_APPLY,
     u"select one from file": constants.SELECT_ONE,
     u"select multiple from file": constants.SELECT_ALL_THAT_APPLY,
+    u"rank": constants.RANK,
 }
 cascading = {
     u'cascading select': constants.CASCADING_SELECT,

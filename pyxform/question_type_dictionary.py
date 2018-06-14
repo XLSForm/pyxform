@@ -438,6 +438,14 @@ QUESTION_TYPE_DICT = \
                 "type": "select1"
             }
         },
+        "rank": {
+            "control": {
+                "tag": "rank"
+            },
+            "bind": {
+                "type": "rank"
+            }
+        },
         "image": {
             "control": {
                 "tag": "upload",
