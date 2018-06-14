@@ -86,3 +86,18 @@ class GuidanceHintTest(PyxformTestCase):
             error__contains=[
                 'The survey element named \'name\' has no label or hint.'],
         )
+
+    def test_multi_language_hint(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |                      |                    |
+            |        | type   |   name   | hint                 | hint::French (fr)  |
+            |        | string |   name   | default language hint| French hint        |
+            """,
+            xml__contains=[
+                "<hint ref=\"jr:itext('/data/name:hint')\"/>",
+                "<value>French hint</value>",
+                "<value>default language hint</value>"
+                ],
+        )

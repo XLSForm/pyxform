@@ -304,7 +304,7 @@ class SurveyElement(dict):
             return node(u"label", label, toParseString=output_inserted)
 
     def xml_hint(self):
-        if isinstance(type(self.hint), dict) or self.guidance_hint:
+        if isinstance(self.hint, dict) or self.guidance_hint:
             path = self._translation_path("hint")
             return node(u"hint", ref="jr:itext('%s')" % path)
         else:
