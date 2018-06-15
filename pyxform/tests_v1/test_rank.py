@@ -15,7 +15,8 @@ class RangeWidgetTest(PyxformTestCase):
             |        | mylist       | b        | B     |
             """,
             xml__contains=[
-                '<rank ref="/data/order">',
+                '<bind nodeset="/data/order" type="odk:rank"/>',
+                '<odk:rank ref="/data/order">',
                 '<label>Rank</label>',
                 '<label>A</label>',
                 '<value>a</value>',
@@ -28,7 +29,6 @@ class RangeWidgetTest(PyxformTestCase):
     def test_rank_filter(self):
         self.assertPyxformXform(
             name="data",
-            debug=True,
             md="""
             | survey |              |          |       |               |
             |        | type         | name     | label | choice_filter |
@@ -39,6 +39,7 @@ class RangeWidgetTest(PyxformTestCase):
             |        | mylist       | b        | B     | blue  |
            """,
             xml__contains=[
+                '<bind nodeset="/data/order" type="odk:rank"/>',
                 """<instance id="mylist">
         <root>
           <item>
@@ -53,13 +54,13 @@ class RangeWidgetTest(PyxformTestCase):
           </item>
         </root>
       </instance>""",
-                """<rank ref="/data/order">
+                """<odk:rank ref="/data/order">
       <label>Rank</label>
       <itemset nodeset="instance('mylist')/root/item[color='blue']">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
-    </rank>"""
+    </odk:rank>"""
             ]
         )
 
@@ -67,7 +68,6 @@ class RangeWidgetTest(PyxformTestCase):
     def test_rank_translations(self):
         self.assertPyxformXform(
             name="data",
-            debug=True,
             md="""
             | survey |              |          |       |                    |
             |        | type         | name     | label | label::French (fr) |
@@ -89,7 +89,7 @@ class RangeWidgetTest(PyxformTestCase):
             <value>É</value>
           </text>
         </translation>""",
-        """<rank ref="/data/order">
+        """<odk:rank ref="/data/order">
       <label ref="jr:itext('/data/order:label')"/>
       <item>
         <label ref="jr:itext('/data/order/a:label')"/>
@@ -99,6 +99,6 @@ class RangeWidgetTest(PyxformTestCase):
         <label ref="jr:itext('/data/order/b:label')"/>
         <value>b</value>
       </item>
-    </rank>"""
+    </odk:rank>"""
             ]
         )

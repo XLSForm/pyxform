@@ -440,10 +440,10 @@ QUESTION_TYPE_DICT = \
         },
         "rank": {
             "control": {
-                "tag": "rank"
+                "tag": "odk:rank"
             },
             "bind": {
-                "type": "rank"
+                "type": "odk:rank"
             }
         },
         "image": {

@@ -45,7 +45,7 @@ class SurveyElementBuilder(object):
         u"trigger": TriggerQuestion,
         u"select": MultipleChoiceQuestion,
         u"select1": MultipleChoiceQuestion,
-        u"rank": MultipleChoiceQuestion,
+        u"odk:rank": MultipleChoiceQuestion,
         u"upload": UploadQuestion,
         u"osm": OsmUploadQuestion,
         u'range': RangeQuestion,
