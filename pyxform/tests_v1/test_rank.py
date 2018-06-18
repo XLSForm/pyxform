@@ -43,20 +43,11 @@ class RangeWidgetTest(PyxformTestCase):
             xml__contains=[
                 'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/order" type="odk:rank"/>',
-                """<instance id="mylist">
-        <root>
-          <item>
-            <itextId>static_instance-mylist-0</itextId>
-            <color>red</color>
-            <name>a</name>
-          </item>
-          <item>
-            <itextId>static_instance-mylist-1</itextId>
-            <color>blue</color>
-            <name>b</name>
-          </item>
-        </root>
-      </instance>""",
+                '<instance id="mylist">',
+                '<color>red</color>',
+                '<name>a</name>',
+                '<color>blue</color>',
+                '<name>b</name>',
                 """<odk:rank ref="/data/order">
       <label>Rank</label>
       <itemset nodeset="instance('mylist')/root/item[color='blue']">
@@ -82,18 +73,18 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 'xmlns:odk="http://www.opendatakit.org/xforms"',
-                """<translation lang="French (fr)">
-          <text id="/data/order:label">
+                '<translation lang="French (fr)">',
+                """<text id="/data/order:label">
             <value>Ranger</value>
-          </text>
-          <text id="/data/order/a:label">
+          </text>""",
+                """<text id="/data/order/a:label">
             <value>AA</value>
-          </text>
-          <text id="/data/order/b:label">
+          </text>""",
+                """<text id="/data/order/b:label">
             <value>BB</value>
-          </text>
-        </translation>""",
-        """<odk:rank ref="/data/order">
+          </text>""",
+                '</translation>',
+                """<odk:rank ref="/data/order">
       <label ref="jr:itext('/data/order:label')"/>
       <item>
         <label ref="jr:itext('/data/order/a:label')"/>
