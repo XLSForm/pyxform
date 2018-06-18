@@ -15,13 +15,15 @@ class RangeWidgetTest(PyxformTestCase):
             |        | mylist       | b        | B     |
             """,
             xml__contains=[
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/order" type="odk:rank"/>',
                 '<odk:rank ref="/data/order">',
                 '<label>Rank</label>',
                 '<label>A</label>',
                 '<value>a</value>',
                 '<label>B</label>',
-                '<value>b</value>'
+                '<value>b</value>',
+                '</odk:rank>'
             ]
         )
 
@@ -39,6 +41,7 @@ class RangeWidgetTest(PyxformTestCase):
             |        | mylist       | b        | B     | blue  |
            """,
             xml__contains=[
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/order" type="odk:rank"/>',
                 """<instance id="mylist">
         <root>
@@ -74,19 +77,20 @@ class RangeWidgetTest(PyxformTestCase):
             |        | rank mylist  | order    | Rank  | Ranger             |
             | choices|              |          |       |
             |        | list_name    | name     | label | label::French (fr) |
-            |        | mylist       | a        | A     |  À                 |
-            |        | mylist       | b        | B     |  É                 |
+            |        | mylist       | a        | A     |  AA                |
+            |        | mylist       | b        | B     |  BB                |
             """,
             xml__contains=[
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 """<translation lang="French (fr)">
           <text id="/data/order:label">
             <value>Ranger</value>
           </text>
           <text id="/data/order/a:label">
-            <value>À</value>
+            <value>AA</value>
           </text>
           <text id="/data/order/b:label">
-            <value>É</value>
+            <value>BB</value>
           </text>
         </translation>""",
         """<odk:rank ref="/data/order">
