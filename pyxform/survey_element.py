@@ -28,6 +28,7 @@ class SurveyElement(dict):
         u"sms_option": unicode,
         u"label": unicode,
         u"hint": unicode,
+        u"guidance_hint": unicode,
         u"default": unicode,
         u"type": unicode,
         u"appearance": unicode,
@@ -243,13 +244,28 @@ class SurveyElement(dict):
                         'text': text
                     }
 
-        for display_element in [u'label', u'hint']:
+        for display_element in [u'label', u'hint', u'guidance_hint']:
             label_or_hint = self[display_element]
 
             if display_element is u'label' \
                     and self.needs_itext_ref() \
                     and type(label_or_hint) is not dict \
                     and label_or_hint:
+                label_or_hint = {default_language: label_or_hint}
+
+            # always use itext for guidance hints because that's
+            # how they're defined - https://opendatakit.github.io/xforms-spec/#languages
+            if display_element is u'guidance_hint' \
+                    and not(isinstance(label_or_hint, dict)) \
+                    and len(label_or_hint) > 0:
+                label_or_hint = {default_language: label_or_hint}
+
+            # always use itext for hint if there's a guidance hint
+            if display_element is u'hint' \
+                    and not(isinstance(label_or_hint, dict)) \
+                    and len(label_or_hint) > 0 \
+                    and "guidance_hint" in self.keys() \
+                    and len(self["guidance_hint"]) > 0:
                 label_or_hint = {default_language: label_or_hint}
 
             if type(label_or_hint) is dict:
@@ -288,7 +304,7 @@ class SurveyElement(dict):
             return node(u"label", label, toParseString=output_inserted)
 
     def xml_hint(self):
-        if type(self.hint) == dict:
+        if isinstance(self.hint, dict) or self.guidance_hint:
             path = self._translation_path("hint")
             return node(u"hint", ref="jr:itext('%s')" % path)
         else:
@@ -304,10 +320,10 @@ class SurveyElement(dict):
         result = []
         if self.label or self.media:
             result.append(self.xml_label())
-        if self.hint:
+        if self.hint or self.guidance_hint:
             result.append(self.xml_hint())
 
-        if len(result) == 0:
+        if len(result) == 0 or self.guidance_hint and len(result) == 1:
             msg = "The survey element named '%s' " \
                   "has no label or hint." % self.name
             raise PyXFormError(msg)
