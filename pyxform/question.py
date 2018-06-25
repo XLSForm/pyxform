@@ -139,7 +139,7 @@ class MultipleChoiceQuestion(Question):
             choice.validate()
 
     def xml_control(self):
-        assert self.bind[u"type"] in [u"select", u"select1"]
+        assert self.bind[u"type"] in [u"select", u"select1", u"odk:rank"]
         survey = self.get_root()
         control_dict = self.control.copy()
         # Resolve field references in attributes
