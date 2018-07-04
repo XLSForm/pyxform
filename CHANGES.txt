@@ -1,7 +1,25 @@
 Pyxform Changelog
 
-v0.11.3, (Unreleased)
-    -- no changes yet
+v0.11.3, 2018 07 04
+    -- Set mediatype for file to application/*
+       Issue #194, https://github.com/XLSForm/pyxform/issues/194
+       [lognaturel]
+
+    -- Add support for randomizing select
+       Issue #183, https://github.com/XLSForm/pyxform/issues/183
+       [lognaturel]
+
+    -- Add max-pixels parameter for images
+       Issue #137, https://github.com/XLSForm/pyxform/issues/137
+       [lognaturel]
+
+    -- Add support for guidance hints
+       Issue #142, https://github.com/XLSForm/pyxform/issues/142
+       [lognaturel]
+
+    -- Add python versions support policy to readme
+       Issue #201, https://github.com/XLSForm/pyxform/pull/201
+       [KeynesYouDigIt]
 
 v0.11.2, 2018 04 20
     -- Fix startupinfo flags not set properly due to misnamed variable
