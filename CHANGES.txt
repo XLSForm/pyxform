@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+v0.11.4, 2018 07 10
+    -- Upgrade to ODK Validate v1.10.1
+       Issue #212, https://github.com/XLSForm/pyxform/issues/212
+       [yanokwa]
+
 v0.11.3, 2018 07 04
     -- Set mediatype for file to application/*
        Issue #194, https://github.com/XLSForm/pyxform/issues/194

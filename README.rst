@@ -1,5 +1,5 @@
 ===============
-pyxform v0.11.3
+pyxform v0.11.4
 ===============
 
 |travis|  |appveyor|
