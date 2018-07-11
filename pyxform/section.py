@@ -44,6 +44,11 @@ class Section(SurveyElement):
                 continue
             else:
                 result.appendChild(child.xml_instance())
+
+                # If this is a repeat, also insert a template to handle defaults
+                if isinstance(child, RepeatingSection):
+                    result.appendChild(child.template_instance())
+
         return result
 
     def xml_instance_array(self):
@@ -102,12 +107,9 @@ class RepeatingSection(Section):
         return node(u"group", repeat_node, ref=self.get_xpath(),
                     **self.control)
 
-    # I'm anal about matching function signatures when overriding a function,
-    # but there's no reason for kwargs to be an argument
-    def xml_instance(self, **kwargs):
-        kwargs = {"jr:template": ""}  # It might make more sense to add this
-        #                               as a child on initialization
 
+    def template_instance(self):
+        kwargs = {"jr:template": ""}
         return super(RepeatingSection, self).xml_instance(**kwargs)
 
 
