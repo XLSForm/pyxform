@@ -44,6 +44,10 @@ class Survey(Section):
             u"sms_date_format": unicode,
             u"sms_datetime_format": unicode,
             u"sms_response": unicode,
+
+            constants.COMPACT_PREFIX: unicode,
+            constants.COMPACT_DELIMITER: unicode,
+
             u"file_name": unicode,
             u"default_language": unicode,
             u"_translations": dict,
@@ -375,6 +379,12 @@ class Survey(Section):
 
         if self.version:
             result.setAttribute(u"version", self.version)
+
+        if self.prefix:
+            result.setAttribute(u"odk:prefix", self.prefix)
+
+        if self.delimiter:
+            result.setAttribute(u"odk:delimiter", self.delimiter)
 
         return result
 

@@ -20,6 +20,12 @@ SMS_ALLOW_MEDIA = u"sms_allow_media"
 SMS_DATE_FORMAT = u"sms_date_format"
 SMS_DATETIME_FORMAT = u"sms_datetime_format"
 SMS_RESPONSE = u"sms_response"
+
+# compact representation (https://opendatakit.github.io/xforms-spec/#compact-record-representation-(for-sms))
+COMPACT_PREFIX = u"prefix"
+COMPACT_DELIMITER = u"delimiter"
+COMPACT_TAG = u"compact_tag"
+
 VERSION = u"version"
 PUBLIC_KEY = u"public_key"
 SUBMISSION_URL = u"submission_url"
