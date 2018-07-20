@@ -1,4 +1,5 @@
 import json
+from pyxform import constants
 from pyxform.utils import is_valid_xml_tag, node, unicode
 from pyxform.xls2json import print_pyobj_to_json
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
@@ -24,6 +25,7 @@ class SurveyElement(dict):
     # describes this survey element
     FIELDS = {
         u"name": unicode,
+        constants.COMPACT_TAG: unicode, # used for compact (sms) representation
         u"sms_field": unicode,
         u"sms_option": unicode,
         u"label": unicode,

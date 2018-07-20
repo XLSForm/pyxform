@@ -43,6 +43,10 @@ settings_header = {
     u"sms_allow_media": constants.SMS_ALLOW_MEDIA,
     u"sms_date_format": constants.SMS_DATE_FORMAT,
     u"sms_datetime_format": constants.SMS_DATETIME_FORMAT,
+
+    u"prefix": constants.COMPACT_PREFIX,
+    u"delimiter": constants.COMPACT_DELIMITER,
+
     u"set form id": constants.ID_STRING,
     u"public_key": constants.PUBLIC_KEY,
     u"submission_url": constants.SUBMISSION_URL,
@@ -61,6 +65,7 @@ survey_header = {
     u"SMS Date Format": constants.SMS_DATE_FORMAT,
     u"SMS DateTime Format": constants.SMS_DATETIME_FORMAT,
     u"SMS Response": constants.SMS_RESPONSE,
+    u"compact_tag": u"instance::odk:tag", # used for compact representation
     u"Type": u"type",
     u"List_name": u"list_name",
     # u"repeat_count": u"jr:count",  duplicate key

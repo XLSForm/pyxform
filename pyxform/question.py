@@ -24,6 +24,7 @@ class Question(SurveyElement):
         attributes.update(self.get(u'instance', {}))
         for key, value in attributes.items():
             attributes[key] = survey.insert_xpaths(value)
+
         if self.get(u"default"):
             return node(
                 self.name, unicode(self.get(u"default")), **attributes
