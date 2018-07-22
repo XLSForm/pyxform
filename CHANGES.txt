@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+v0.11.5, 2018 07 22
+   -- Add support for SMS prefix, delimiter and tag,
+      Issue #207, https://github.com/XLSForm/pyxform/issues/207
+      [lognaturel]
+
 v0.11.4, 2018 07 10
     -- Upgrade to ODK Validate v1.10.1
        Issue #212, https://github.com/XLSForm/pyxform/issues/212
