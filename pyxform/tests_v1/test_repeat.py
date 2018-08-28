@@ -63,7 +63,7 @@ class TestRepeat(PyxformTestCase):
                 |        | note         | note9    |            | ${FF} ${H} ${N} ${N} |
                 |        | end repeat   |          |            |                      |
                 |        |              |          |            |                      |
-                """,
+                """,  # noqa pylint: disable=line-too-long
             instance__contains=[
                 '<section jr:template="">',
                 '<A/>',
@@ -74,27 +74,27 @@ class TestRepeat(PyxformTestCase):
                 """<bind nodeset="/test_repeat/section/A" """
                 """type="string"/>""",
                 """<bind nodeset="/test_repeat/section/B" """
-                """relevant=" current()/../A ='oat'" """
+                """relevant=" ../A ='oat'" """
                 """type="string"/>""",
                 """<bind nodeset="/test_repeat/section2/sectiona/E" """
-                """relevant=" current()/../D ='oat'" type="string"/>""",
+                """relevant=" ../D ='oat'" type="string"/>""",
                 """<bind nodeset="/test_repeat/section3/sectionc/K" """
-                """relevant=" current()/../../F ='oat'" type="string"/>""",
+                """relevant=" ../../F ='oat'" type="string"/>""",
                 """<bind nodeset="/test_repeat/section3/sectionc/L" """
-                """relevant=" current()/../../sectionb/G ='oat'" """
+                """relevant=" ../../sectionb/G ='oat'" """
                 """type="string"/>""",
                 """<bind nodeset="/test_repeat/section3/sectiond/N" """
-                """relevant=" current()/../../sectionb/G ='oat'" """
+                """relevant=" ../../sectionb/G ='oat'" """
                 """type="string"/>"""
                 ],
             xml__contains=[
                 '<group ref="/test_repeat/section">',
                 '<label>Section</label>',
                 '</group>',
-                """<label> B w <output value=" current()/../A "/> </label>""",
+                """<label> B w <output value=" ../A "/> </label>""",
                 """<label> E w <output value=" /test_repeat/Z "/> </label>""",
-                """<label> Noted <output value=" current()/../FF "/> w """
-                """<output value=" current()/../sectionb/H "/> </label></input>"""
+                """<label> Noted <output value=" ../FF "/> w """
+                """<output value=" ../sectionb/H "/> </label></input>"""
             ],
         )
 
@@ -119,11 +119,11 @@ class TestRepeat(PyxformTestCase):
                 |         | crop_list            | maize | Maize  |                |
                 |         | crop_list            | beans | Beans  |                |
                 |         | crop_list            | kale  | Kale   |                |
-            """,
+            """,  # noqa pylint: disable=line-too-long
             model__contains=[
-                """<bind calculate="name =  current()/../crop " """
+                """<bind calculate="name =  ../crop " """
                 """nodeset="/data/rep/a" type="string"/>""",
-                """<bind calculate="name =  current()/../../crop " """
+                """<bind calculate="name =  ../../crop " """
                 """nodeset="/data/rep/group/b" type="string"/>""",
             ],
         )
@@ -149,9 +149,9 @@ class TestRepeat(PyxformTestCase):
                 |         | crop_list            | maize | Maize  |                |
                 |         | crop_list            | beans | Beans  |                |
                 |         | crop_list            | kale  | Kale   |                |
-            """,
+            """,  # noqa pylint: disable=line-too-long
             xml__contains=[
-                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../crop ]">""",  # noqa pylint: disable=line-too-long
-                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../../crop ]">""",  # noqa pylint: disable=line-too-long
+                """<itemset nodeset="instance('crop_list')/root/item[name =  ../crop ]">""",  # noqa pylint: disable=line-too-long
+                """<itemset nodeset="instance('crop_list')/root/item[name =  ../../crop ]">""",  # noqa pylint: disable=line-too-long
             ],
         )

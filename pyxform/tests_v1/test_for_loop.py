@@ -19,7 +19,7 @@ class TestLoop(PyxformTestCase):
                 ],
             model__contains=[
                 """<bind nodeset="/test_loop/for-block/input" """
-                """relevant="( current()/../done ='no')" """
+                """relevant="( ../done ='no')" """
                 """type="string"/>"""
                 ],
             xml__contains=[

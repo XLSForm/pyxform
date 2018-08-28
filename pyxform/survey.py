@@ -723,7 +723,7 @@ class Survey(Section):
                                                        context.get_xpath())
             if steps:
                 ref_path = ref_path if ref_path.endswith(name) else "/%s" % name
-                return " current()/" + "/".join([".."] * steps) + ref_path + " "
+                return " " + "/".join([".."] * steps) + ref_path + " "
 
         return " " + self._xpath[name] + " "
 
