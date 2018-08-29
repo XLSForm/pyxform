@@ -726,7 +726,7 @@ class Survey(Section):
             bad_languages = get_languages_with_bad_tags(self._translations.keys())
             if len(bad_languages) > 0:
                 warnings.append("\tThe following language declarations do not contain valid machine-readable codes: " +
-                    ", ".join(bad_languages) + ". Learn more: http://xlsform.org/#language")
+                    ", ".join(bad_languages) + ". Learn more: http://xlsform.org#multiple-language-support")
 
     def to_xml(self, validate=True, pretty_print=True, warnings=None,
                enketo=False):
