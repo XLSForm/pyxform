@@ -18,7 +18,7 @@ class Question(SurveyElement):
                 "Unknown question type '%s'." % self.type
                 )
 
-    def xml_instance(self):
+    def xml_instance(self, **kwargs):
         survey = self.get_root()
         attributes = {}
         attributes.update(self.get(u'instance', {}))
