@@ -158,6 +158,131 @@ class BasicXls2JsonApiTests(TestCase):
                 actual_json = json.load(actual_file)
                 self.assertEqual(expected_json, actual_json)
 
+    def test_choice_filter_choice_fields(self):
+        """
+        Test that the choice filter fields appear on children field of json
+        """
+        choice_filter_survey = SurveyReader(
+            utils.path_to_text_fixture("choice_filter_test.xlsx"))
+
+        expected_dict = [
+            {
+                u'choices': [
+                    {
+                        u'name': u'texas',
+                        u'label': u'Texas'
+                    },
+                    {
+                        u'name': u'washington',
+                        u'label': u'Washington'
+                    }
+                ],
+                u'type': u'select one',
+                u'name': u'state',
+                u'parameters': {},
+                u'label': u'state'
+            },
+            {
+                u'name': u'county',
+                u'parameters': {},
+                u'choice_filter': u'${state}=cf',
+                u'label': u'county',
+                u'itemset': u'counties',
+                u'choices': [
+                    {
+                        u'label': u'King',
+                        u'cf': u'washington',
+                        u'name': u'king'
+                    },
+                    {
+                        u'label': u'Pierce',
+                        u'cf': u'washington',
+                        u'name': u'pierce'
+                    },
+                    {
+                        u'label': u'King',
+                        u'cf': u'texas',
+                        u'name': u'king'
+                    },
+                    {
+                        u'label': u'Cameron',
+                        u'cf': u'texas',
+                        u'name': u'cameron'
+                    }
+                ],
+                u'type': u'select one'
+            },
+            {
+                u'name': u'city',
+                u'parameters': {},
+                u'choice_filter': u'${county}=cf',
+                u'label': u'city',
+                u'itemset': u'cities',
+                u'choices': [
+                    {
+                        u'label': u'Dumont',
+                        u'cf': u'king',
+                        u'name': u'dumont'
+                    },
+                    {
+                        u'label': u'Finney',
+                        u'cf': u'king',
+                        u'name': u'finney'
+                    },
+                    {
+                        u'label': u'brownsville',
+                        u'cf': u'cameron',
+                        u'name': u'brownsville'
+                    },
+                    {
+                        u'label': u'harlingen',
+                        u'cf': u'cameron',
+                        u'name': u'harlingen'
+                    },
+                    {
+                        u'label': u'Seattle',
+                        u'cf': u'king',
+                        u'name': u'seattle'
+                    },
+                    {
+                        u'label': u'Redmond',
+                        u'cf': u'king',
+                        u'name': u'redmond'
+                    },
+                    {
+                        u'label': u'Tacoma',
+                        u'cf': u'pierce',
+                        u'name': u'tacoma'
+                    },
+                    {
+                        u'label': u'Puyallup',
+                        u'cf': u'pierce',
+                        u'name': u'puyallup'
+                    }
+                ],
+                u'type': u'select one'
+            },
+            {
+                u'control': {
+                    u'bodyless': True
+                },
+                u'type': u'group',
+                u'name': u'meta',
+                u'children': [
+                    {
+                        u'bind': {
+                            u'readonly': u'true()',
+                            u'calculate': u"concat('uuid:', uuid())"
+                        },
+                        u'type': u'calculate',
+                        u'name': u'instanceID'
+                    }
+                ]
+            }
+        ]
+        self.assertEqual(
+            choice_filter_survey.to_json_dict()[u"children"], expected_dict)
+
 
 class CsvReaderEquivalencyTest(TestCase):
     def test_equivalency(self):
