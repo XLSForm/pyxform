@@ -77,9 +77,10 @@ def replace_smart_quotes_in_dict(_d):
     for key, value in _d.items():
         _changed = False
         for smart_quote, dumb_quote in SMART_QUOTES.items():
-            if smart_quote in value:
-                value = value.replace(smart_quote, dumb_quote)
-                _changed = True
+            if isinstance(value, basestring):
+                if smart_quote in value:
+                    value = value.replace(smart_quote, dumb_quote)
+                    _changed = True
         if _changed:
             _d[key] = value
 

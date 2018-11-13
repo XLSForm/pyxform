@@ -33,6 +33,10 @@ class UnicodeStrings(PyxformTestCase):
                      'label': u'''
                      “double-quoted”
                      '''.strip()},
+                     {'type': 'integer',
+                      'name': 'my_default_is_123',
+                      'label': 'my default is 123',
+                      'default': 123},
                 ],
                 'choices': [
                     {'list_name': 'xyz',
@@ -51,6 +55,7 @@ class UnicodeStrings(PyxformTestCase):
                 "'single-quoted",
                 '"double-quoted"',
                 "selected( /quoth/smart_single_quoted , 'xxx')",
+                '<my_default_is_123>123</my_default_is_123>',
                 "<label>'Xxx'</label>",
                 '<label>"Yyy"</label>',
                 '''
