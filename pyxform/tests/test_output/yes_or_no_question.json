@@ -22,8 +22,7 @@
                 }
             ], 
             "type": "select one", 
-            "name": "good_day", 
-            "parameters": {}, 
+            "name": "good_day",
             "label": {
                 "english": "have you had a good day today?"
             }
