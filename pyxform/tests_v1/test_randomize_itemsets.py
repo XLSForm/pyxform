@@ -37,6 +37,25 @@ class RandomizeItemsetsTest(PyxformTestCase):
                 ]
         )
 
+    def test_randomized_seeded_select_one_nameset_seed(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |                    |         |       |                              |                                |
+            |        | type               | name    | label | parameters                   | calculation                    |
+            |        | calculate          | seed    |       |                              | once(decimal-date-time(now())) |
+            |        | select_one choices | select  | Select| randomize=true,seed=${seed}  |                                |
+            | choices|                    |         |       |                              |                                |
+            |        | list_name          | name    | label |                              |                                |
+            |        | choices            | a       | opt_a |                              |                                |
+            |        | choices            | b       | opt_b |                              |                                |
+
+            """,
+            xml__contains=[
+                "<itemset nodeset=\"randomize(instance(\'choices\')/root/item, /data/seed)\">"
+            ]
+        )
+
     def test_randomized_seeded_filtered_select_one(self):
         self.assertPyxformXform(
             name="data",
@@ -158,7 +177,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
 
             """,
             error__contains=[
-                "seed value must be a number."
+                "seed value must be a number or a reference to another field."
                 ]
         )
 
