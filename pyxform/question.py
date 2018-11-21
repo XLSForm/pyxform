@@ -175,7 +175,10 @@ class MultipleChoiceQuestion(Question):
                     nodeset = 'randomize(' + nodeset
 
                     if 'seed' in params:
-                        nodeset = nodeset + ', ' + params['seed']
+                        if params['seed'].startswith('${'):
+                            nodeset = nodeset + ', ' + survey.insert_xpaths(params['seed']).strip()
+                        else:
+                            nodeset = nodeset + ', ' + params['seed']
 
                     nodeset += ')'
 

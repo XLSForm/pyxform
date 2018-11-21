@@ -816,10 +816,11 @@ def workbook_to_json(
                             parameters["randomize"])
 
                     if "seed" in parameters.keys():
-                        try:
-                            float(parameters["seed"])
-                        except ValueError:
-                            raise PyXFormError("seed value must be a number.")
+                        if not parameters["seed"].startswith("${"):
+                            try:
+                                float(parameters["seed"])
+                            except ValueError:
+                                raise PyXFormError("seed value must be a number or a reference to another field.")
                 elif "seed" in parameters.keys():
                     raise PyXFormError(
                         "Parameters must include randomize=true to use a seed."
