@@ -653,8 +653,7 @@ def workbook_to_json(
                 # Code to deal with table_list appearance flags
                 # (for groups of selects)
                 ctrl_ap = new_json_dict.get(u"control", {}).get(u"appearance")
-                if ctrl_ap.split()[0] == constants.TABLE_LIST:
-                    ### this is the problem, if another mod is on table-list than !==
+                if ctrl_ap and ctrl_ap.split()[0] == constants.TABLE_LIST:
                     table_list = True
                     new_json_dict[u"control"][u"appearance"] = u"field-list"
                     # Generate a note label element so hints and labels
