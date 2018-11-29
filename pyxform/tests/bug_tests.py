@@ -219,5 +219,16 @@ class TestBlankSecondRow(unittest.TestCase):
         self.assertTrue(len(survey_dict) > 0)
 
 
-if __name__ == '__main__':
+class TestXLDateAmbigous(unittest.TestCase):
+    """Test non standard sheet with exception is processed successfully."""
+    def test_xl_date_ambigous(self):
+        """Test non standard sheet with exception is processed successfully."""
+        filename = "xl_date_ambiguous.xlsx"
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
+        xls_reader = SurveyReader(path_to_excel_file)
+        survey_dict = xls_reader.to_json_dict()
+        self.assertTrue(len(survey_dict) > 0)
+
+
+if __name__ == "__main__":
     unittest.main()
