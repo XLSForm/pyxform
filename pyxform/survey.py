@@ -702,7 +702,7 @@ class Survey(Section):
                 else:
                     self._xpath[element.name] = element.get_xpath()
 
-    def _var_repl_function(self, matchobj, context):
+    def _var_repl_function(self, matchobj, context, use_current=False):
         """
         Given a dictionary of xpaths, return a function we can use to
         replace ${varname} with the xpath to varname.
@@ -723,17 +723,18 @@ class Survey(Section):
                                                        context.get_xpath())
             if steps:
                 ref_path = ref_path if ref_path.endswith(name) else "/%s" % name
-                return " " + "/".join([".."] * steps) + ref_path + " "
+                prefix = " current()/" if use_current else " "
+                return prefix + "/".join([".."] * steps) + ref_path + " "
 
         return " " + self._xpath[name] + " "
 
-    def insert_xpaths(self, text, context):
+    def insert_xpaths(self, text, context, use_current=False):
         """
         Replace all instances of ${var} with the xpath to var.
         """
         bracketed_tag = r"\$\{(.*?)\}"
         def _var_repl_function(matchobj):
-            return self._var_repl_function(matchobj, context)
+            return self._var_repl_function(matchobj, context, use_current)
 
         return re.sub(bracketed_tag, _var_repl_function, unicode(text))
 

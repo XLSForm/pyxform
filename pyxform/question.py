@@ -54,7 +54,7 @@ class InputQuestion(Question):
         if self["query"]:
             choice_filter = self.get("choice_filter")
             query = "instance('" + self["query"] + "')/root/item"
-            choice_filter = survey.insert_xpaths(choice_filter, self)
+            choice_filter = survey.insert_xpaths(choice_filter, self, True)
             if choice_filter:
                 query += "[" + choice_filter + "]"
             result.setAttribute("query", query)
@@ -149,7 +149,7 @@ class MultipleChoiceQuestion(Question):
                 itemset = self["itemset"]
                 itemset_label_ref = "jr:itext(itextId)"
             nodeset = "instance('" + itemset + "')/root/item"
-            choice_filter = survey.insert_xpaths(choice_filter, self)
+            choice_filter = survey.insert_xpaths(choice_filter, self, True)
             if choice_filter:
                 nodeset += "[" + choice_filter + "]"
 

@@ -151,7 +151,7 @@ class TestRepeat(PyxformTestCase):
                 |         | crop_list            | kale  | Kale   |                |
             """,  # noqa pylint: disable=line-too-long
             xml__contains=[
-                """<itemset nodeset="instance('crop_list')/root/item[name =  ../crop ]">""",  # noqa pylint: disable=line-too-long
-                """<itemset nodeset="instance('crop_list')/root/item[name =  ../../crop ]">""",  # noqa pylint: disable=line-too-long
+                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../crop ]">""",  # noqa pylint: disable=line-too-long
+                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../../crop ]">""",  # noqa pylint: disable=line-too-long
             ],
         )
