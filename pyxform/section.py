@@ -34,7 +34,7 @@ class Section(SurveyElement):
         survey = self.get_root()
         # Resolve field references in attributes
         for key, value in attributes.items():
-            attributes[key] = survey.insert_xpaths(value)
+            attributes[key] = survey.insert_xpaths(value, self)
         result = node(self.name, **attributes)
         for child in self.children:
             if child.get(u"flat"):
@@ -87,7 +87,7 @@ class RepeatingSection(Section):
         survey = self.get_root()
         # Resolve field references in attributes
         for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value)
+            control_dict[key] = survey.insert_xpaths(value, self)
         repeat_node = node(u"repeat", nodeset=self.get_xpath(), **control_dict)
 
         for n in Section.xml_control(self):
@@ -138,7 +138,7 @@ class GroupedSection(Section):
 
         # Resolve field references in attributes
         for key, value in attributes.items():
-            attributes[key] = survey.insert_xpaths(value)
+            attributes[key] = survey.insert_xpaths(value, self)
 
         if not self.get('flat'):
             attributes['ref'] = self.get_xpath()
@@ -153,7 +153,8 @@ class GroupedSection(Section):
 
         if u"intent" in control_dict:
             survey = self.get_root()
-            attributes['intent'] = survey.insert_xpaths(control_dict['intent'])
+            attributes['intent'] = survey.insert_xpaths(control_dict['intent'],
+                                                       self)
 
         return node(u"group", *children, **attributes)
 
