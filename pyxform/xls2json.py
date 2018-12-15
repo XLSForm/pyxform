@@ -77,9 +77,10 @@ def replace_smart_quotes_in_dict(_d):
     for key, value in _d.items():
         _changed = False
         for smart_quote, dumb_quote in SMART_QUOTES.items():
-            if smart_quote in value:
-                value = value.replace(smart_quote, dumb_quote)
-                _changed = True
+            if isinstance(value, basestring):
+                if smart_quote in value:
+                    value = value.replace(smart_quote, dumb_quote)
+                    _changed = True
         if _changed:
             _d[key] = value
 
@@ -264,7 +265,8 @@ def process_range_question_type(row):
     Raises PyXFormError when invalid range parameters are used.
     """
     new_dict = row.copy()
-    parameters = get_parameters(new_dict.get('parameters', ''), ['start', 'end', 'step'])
+    parameters = get_parameters(
+        new_dict.get('parameters', ''), ['start', 'end', 'step'])
     parameters_map = {'start': 'start', 'end': 'end', 'step': 'step'}
     defaults = {'start': '1', 'end': '10', 'step': '1'}
 
@@ -802,21 +804,27 @@ def workbook_to_json(
                 new_json_dict[constants.TYPE] = select_type
 
                 # Look at parameters column for randomization parameters
-                parameters = get_parameters(row.get('parameters', ''), ['randomize', 'seed'])
+                parameters = get_parameters(
+                    row.get('parameters', ''), ['randomize', 'seed'])
 
                 if "randomize" in parameters.keys():
-                    if parameters["randomize"] != "true" and parameters["randomize"] != "false":
-                        raise PyXFormError("randomize must be set to true or false: "
-                            "'%s' is an invalid value" % parameters["randomize"])
+                    if parameters["randomize"] != "true" and \
+                            parameters["randomize"] != "false":
+                        raise PyXFormError(
+                            "randomize must be set to true or false: "
+                            "'%s' is an invalid value" %
+                            parameters["randomize"])
 
                     if "seed" in parameters.keys():
-                        try:
-                            float(parameters["seed"])
-                        except ValueError:
-                            raise PyXFormError("seed value must be a number.")
+                        if not parameters["seed"].startswith("${"):
+                            try:
+                                float(parameters["seed"])
+                            except ValueError:
+                                raise PyXFormError("seed value must be a number or a reference to another field.")
                 elif "seed" in parameters.keys():
-                    raise PyXFormError("Parameters must include randomize=true to use a seed.")
-
+                    raise PyXFormError(
+                        "Parameters must include randomize=true to use a seed."
+                    )
 
                 new_json_dict['parameters'] = parameters
 
@@ -826,7 +834,11 @@ def workbook_to_json(
                     else:
                         new_json_dict['itemset'] = list_name
                         json_dict['choices'] = choices
-                elif "randomize" in parameters.keys() and parameters["randomize"] == "true":
+                        if choices.get(list_name):
+                            new_json_dict[constants.CHOICES] = \
+                                choices[list_name]
+                elif "randomize" in parameters.keys() and \
+                        parameters["randomize"] == "true":
                         new_json_dict['itemset'] = list_name
                         json_dict['choices'] = choices
                 elif file_extension in ['.csv', '.xml']:
@@ -894,16 +906,19 @@ def workbook_to_json(
 
         if question_type == 'photo':
             new_dict = row.copy()
-            parameters = get_parameters(row.get('parameters', ''), ['max-pixels'])
+            parameters = get_parameters(
+                row.get('parameters', ''), ['max-pixels'])
 
             if 'max-pixels' in parameters.keys():
                 try:
                     int(parameters['max-pixels'])
                 except:
-                    raise PyXFormError("Parameter max-pixels must have an integer value.")
+                    raise PyXFormError(
+                        "Parameter max-pixels must have an integer value.")
 
                 new_dict['bind'] = new_dict.get('bind', {})
-                new_dict['bind'].update({'orx:max-pixels': parameters['max-pixels']})
+                new_dict['bind'].update(
+                    {'orx:max-pixels': parameters['max-pixels']})
             parent_children_array.append(new_dict)
             continue
 
@@ -960,7 +975,7 @@ def workbook_to_json(
         noop, survey_children_array = stack[0]
         survey_children_array.append(meta_element)
 
-    #print_pyobj_to_json(json_dict)
+    # print_pyobj_to_json(json_dict)
     return json_dict
 
 
@@ -1026,6 +1041,7 @@ def organize_by_values(dict_list, key):
             result[val] = dicty_copy
     return result
 
+
 def get_parameters(raw_parameters, allowed_parameters):
     parts = raw_parameters.split(';')
     if len(parts) == 1:
@@ -1037,14 +1053,15 @@ def get_parameters(raw_parameters, allowed_parameters):
     for param in parts:
         if '=' not in param:
             raise PyXFormError("Expecting parameters to be in the form of "
-                            "'parameter1=value parameter2=value'.")
+                               "'parameter1=value parameter2=value'.")
         k, v = param.split('=')[:2]
         key = k.lower().strip()
         if key in allowed_parameters:
             params[key] = v.lower().strip()
         else:
             raise PyXFormError("Accepted parameters are "
-                "'%s': '%s' is an invalid parameter." % (", ".join(allowed_parameters),  key))
+                               "'%s': '%s' is an invalid parameter."
+                               % (", ".join(allowed_parameters),  key))
 
     return params
 

@@ -69,4 +69,14 @@ CASCADING_CHOICES = u"cascades"
 OSM = u"osm"
 OSM_TYPE = u"binary"
 
-NAMESPACES = u'namespaces'
+NAMESPACES = u"namespaces"
+
+SUPPORTED_SHEET_NAMES = [
+    SURVEY,
+    CASCADING_CHOICES,
+    CHOICES,
+    COLUMNS,
+    CHOICES_AND_COLUMNS,
+    SETTINGS,
+    OSM,
+]

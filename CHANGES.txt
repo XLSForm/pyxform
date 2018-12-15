@@ -1,5 +1,38 @@
 Pyxform Changelog
 
+v0.12.0, 2018
+  -- Upgrade to ODK Validate v1.10.3
+     Issue #225, https://github.com/XLSForm/pyxform/issue/225
+     [ukanga]
+
+  -- Process only standard XLSForm sheets
+     Issue #229, https://github.com/XLSForm/pyxform/issue/229
+     [ukanga]
+
+  -- Add relative referencing
+     Issue #4, https://github.com/XLSForm/pyxform/issue/4
+     [ukanga]
+
+  -- Fix randomize with dynamic seed value throws error
+     Issue #238, https://github.com/XLSForm/pyxform/issue/238
+     [ggalmazor]
+
+  -- Update choice filter JSON representation
+     Issue #234, https://github.com/XLSForm/pyxform/issue/234
+     [lincmba]
+
+  -- Make sure that the json scheme is a valid json
+     Issue #223, https://github.com/XLSForm/pyxform/issue/223
+     [HaidarZ]
+
+  -- Skip over non-strings when replacing smart quotes
+     Issue #236, https://github.com/XLSForm/pyxform/issue/236
+     [jnm]
+
+  -- Updated outdated language reference xlsform.org url
+     Issue #221, https://github.com/XLSForm/pyxform/issue/221
+     [tinok]
+
 v0.11.5, 2018 07 22
    -- Add support for SMS prefix, delimiter and tag,
       Issue #207, https://github.com/XLSForm/pyxform/issues/207

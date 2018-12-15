@@ -210,11 +210,16 @@ def xls_to_dict(path_or_file):
 
     result = OrderedDict()
     for sheet in workbook.sheets():
+        # Do not process sheets that have nothing to do with XLSForm.
+        if sheet.name not in constants.SUPPORTED_SHEET_NAMES:
+            continue
         if sheet.name == constants.CASCADING_CHOICES:
             result[sheet.name] = _xls_to_dict_cascade_sheet(sheet)
         else:
-            result[sheet.name], result[u"%s_header" % sheet.name] = \
-                xls_to_dict_normal_sheet(sheet)
+            result[sheet.name], result[
+                u"%s_header" % sheet.name
+            ] = xls_to_dict_normal_sheet(sheet)
+
     return result
 
 
