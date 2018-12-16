@@ -655,27 +655,37 @@ def workbook_to_json(
                 # Code to deal with table_list appearance flags
                 # (for groups of selects)
                 ctrl_ap = new_json_dict.get(u"control", {}).get(u"appearance")
-                if ctrl_ap and constants.TABLE_LIST in ctrl_ap.split():
-                    table_list = True
-                    new_json_dict[u"control"][u"appearance"] = u"field-list"
-                    # Generate a note label element so hints and labels
-                    # work as expected in table-lists.
-                    # see https://github.com/modilabs/pyxform/issues/62
-                    if 'label' in new_json_dict or 'hint' in new_json_dict:
-                        generated_label_element = {
-                            "type": "note",
-                            "name":
-                                "generated_table_list_label_" + str(row_number)
-                        }
-                        if 'label' in new_json_dict:
-                            generated_label_element[constants.LABEL] = \
-                                new_json_dict[constants.LABEL]
-                            del new_json_dict[constants.LABEL]
-                        if 'hint' in new_json_dict:
-                            generated_label_element['hint'] = \
-                                new_json_dict['hint']
-                            del new_json_dict['hint']
-                        child_list.append(generated_label_element)
+
+                if ctrl_ap:
+                    appearance_mods_as_list = ctrl_ap.split()
+                    if constants.TABLE_LIST in appearance_mods_as_list:
+                        # Table List modifier should add field list to the new dict,
+                        # as well as appending other appearance modifiers.
+                        table_list = True
+                        appearance_string = u"field-list"
+                        for w in appearance_mods_as_list:
+                            if w != constants.TABLE_LIST:
+                                appearance_string += u' ' + unicode(w)
+                        new_json_dict[u"control"][u"appearance"] = appearance_string
+
+                        # Generate a note label element so hints and labels
+                        # work as expected in table-lists.
+                        # see https://github.com/modilabs/pyxform/issues/62
+                        if 'label' in new_json_dict or 'hint' in new_json_dict:
+                            generated_label_element = {
+                                "type": "note",
+                                "name":
+                                    "generated_table_list_label_" + str(row_number)
+                            }
+                            if 'label' in new_json_dict:
+                                generated_label_element[constants.LABEL] = \
+                                    new_json_dict[constants.LABEL]
+                                del new_json_dict[constants.LABEL]
+                            if 'hint' in new_json_dict:
+                                generated_label_element['hint'] = \
+                                    new_json_dict['hint']
+                                del new_json_dict['hint']
+                            child_list.append(generated_label_element)
                 if 'intent' in new_json_dict:
                     new_json_dict['control'] = \
                         new_json_dict.get(u"control", {})
