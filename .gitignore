@@ -9,6 +9,7 @@
 tests/how_old_are_you.json
 tests/test_output
 .idea
+.vscode
 
 # folders created by setuptools
 build
