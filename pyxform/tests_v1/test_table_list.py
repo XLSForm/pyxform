@@ -2,15 +2,21 @@ from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 MD = '''
-| survey |                    |            |       |                   |     
-|        | type               | name       | label |appearance         |
-|        | begin_group        | tablelist1 | Table |table-list minimal |
-|        | select_one yes_no  | options1a  | Q1    |                   |                             
-|        | select_one yes_no  | options1b  | Q2    |                   |
+| survey  |                    |            |       |                   |     
+|         | type               | name       | label |appearance         |
+|         | begin_group        | tablelist1 | Table |table-list minimal |
+|         | select_one yes_no  | options1a  | Q1    |                   |                             
+|         | select_one yes_no  | options1b  | Q2    |                   |
+|         | end_group          |            |       |                   |
+| choices |                    |            |       |                   |
+|         | list_name          | name       | label |                   |
+|         | yes_no             | yes        | Yes   |                   |
+|         | yes_no             | no         | No    |                   |
+            """  # noqa
 '''  # nopep8
 
 XML_CONTAINS = '''
-<bind calculate="enclosed-area( /area/geoshape1 )" nodeset="/area/result" type="string"/>
+<group appearance="field-list minimal" 
 '''.strip()  # nopep8
 
 
