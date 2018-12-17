@@ -25,10 +25,6 @@ XML_CONTAINS = '''
           <label>Yes</label>
           <value>yes</value>
         </item>
-        <item>
-          <label>No</label>
-          <value>no</value>
-        </item>
       </select1>
       <select1 appearance="list-nolabel" ref="/table-list-appearance-mod/tablelist1/options1a">
         <label>Q1</label>
