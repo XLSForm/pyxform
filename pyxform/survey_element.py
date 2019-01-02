@@ -1,4 +1,5 @@
 import json
+
 from pyxform import constants
 from pyxform.utils import is_valid_xml_tag, node, unicode
 from pyxform.xls2json import print_pyobj_to_json
@@ -69,6 +70,7 @@ class SurveyElement(dict):
             return _overlay(over, under)
         raise AttributeError(key)
 
+    @property
     def __name__(self):
         return "SurveyElement"
 
