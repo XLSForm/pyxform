@@ -70,6 +70,9 @@ class SurveyElement(dict):
             return _overlay(over, under)
         raise AttributeError(key)
 
+    def __hash__(self):
+        return hash(id(self))
+
     @property
     def __name__(self):
         return "SurveyElement"
