@@ -9,6 +9,10 @@ import tempfile
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
 
 from pyxform import constants
 from pyxform.errors import PyXFormError, ValidationError
@@ -33,6 +37,7 @@ def register_nsmap():
 register_nsmap()
 
 
+@lru_cache(maxsize=None)
 def is_parent_a_repeat(survey, xpath):
     """
     Returns the XPATH of the first repeat of the given xpath in the survey,
@@ -50,6 +55,7 @@ def is_parent_a_repeat(survey, xpath):
         if any(repeats) else is_parent_a_repeat(survey, parent_xpath)
 
 
+@lru_cache(maxsize=None)
 def share_same_repeat_parent(survey, xpath, context_xpath):
     """
     Returns a tuple of the number of steps from the context xpath to the shared
