@@ -1,6 +1,15 @@
 Pyxform Changelog
 
-v0.12.0, 2018
+Unreleased, 2019 01 [xx]
+  -- Performance Regression fix on using relative paths.
+     Issue #247, https://github.com/XLSForm/pyxform/issues/247
+     [ukanga]
+
+  -- Additional appearance values are supported with table-list.
+     Issue #61, https://github.com/XLSForm/pyxform/issues/61
+     [KeynesYouDigIt]
+
+v0.12.0, 2018 12 09
   -- Upgrade to ODK Validate v1.10.3
      Issue #225, https://github.com/XLSForm/pyxform/issue/225
      [ukanga]
