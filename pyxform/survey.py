@@ -9,10 +9,6 @@ import tempfile
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
-try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
 
 from pyxform import constants
 from pyxform.errors import PyXFormError, ValidationError
@@ -25,6 +21,11 @@ from pyxform.survey_element import SurveyElement
 from pyxform.utils import (NSMAP, PatchedText, basestring,
                            get_languages_with_bad_tags, node, unicode)
 from pyxform.validators import enketo_validate, odk_validate
+
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
 
 
 def register_nsmap():
@@ -47,12 +48,10 @@ def is_parent_a_repeat(survey, xpath):
     if not parent_xpath:
         return False
 
-    repeats = [
-        item for item in survey.iter_descendants()
-        if item.get_xpath() == parent_xpath and item.type == 'repeat']
+    if survey.any_repeat(parent_xpath):
+        return parent_xpath
 
-    return parent_xpath \
-        if any(repeats) else is_parent_a_repeat(survey, parent_xpath)
+    return is_parent_a_repeat(survey, parent_xpath)
 
 
 @lru_cache(maxsize=None)

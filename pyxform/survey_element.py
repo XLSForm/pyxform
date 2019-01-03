@@ -6,6 +6,11 @@ from pyxform.xls2json import print_pyobj_to_json
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.errors import PyXFormError
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
+
 
 def _overlay(over, under):
     if type(under) == dict:
@@ -149,6 +154,16 @@ class SurveyElement(dict):
         for e in self.children:
             for f in e.iter_descendants():
                 yield f
+
+    @lru_cache(maxsize=None)
+    def any_repeat(self, parent_xpath):
+        """Return True if there ia any repeat in `parent_xpath`."""
+        for item in self.iter_descendants():
+            if item.get_xpath() == parent_xpath and \
+                    item.type == constants.REPEAT:
+                return True
+
+        return False
 
     def get_lineage(self):
         """
