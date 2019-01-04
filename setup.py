@@ -11,9 +11,9 @@ REQUIRES = [
     'formencode',
     'unittest2',
 ]
+
 if sys.version_info < (3, 2):
     REQUIRES.append('functools32==3.2.3.post2')
-
 
 setup(
     name='pyxform',
