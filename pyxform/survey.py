@@ -721,12 +721,13 @@ class Survey(Section):
         if self._xpath[name] is None:
             raise PyXFormError(intro + " There are multiple survey elements"
                                " with this name.")
-        if context:
+        if context and not (context['type'] == 'calculate' and
+                            'indexed-repeat' in context['bind']['calculate']):
             xpath, context_xpath = self._xpath[name], context.get_xpath()
             # share same root i.e repeat_a from /data/repeat_a/...
             if xpath.split('/')[2] == context_xpath.split('/')[2]:
-                # if context xpath and target xpath fall under the same repeat use
-                # relative xpath referencing.
+                # if context xpath and target xpath fall under the same
+                # repeat use relative xpath referencing.
                 steps, ref_path = share_same_repeat_parent(self, xpath,
                                                            context_xpath)
                 if steps:
