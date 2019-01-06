@@ -1,6 +1,6 @@
 Pyxform Changelog
 
-Unreleased, 2019 01 [xx]
+v0.12.1, 2019 01 06
   -- Performance Regression fix on using relative paths.
      Issue #247, https://github.com/XLSForm/pyxform/issues/247
      [ukanga]
