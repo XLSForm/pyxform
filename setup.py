@@ -1,7 +1,19 @@
 # -*- coding: utf-8 -*-
 """Pyxform - Python library that converts XLSForms to XForms.
 """
-from setuptools import setup, find_packages
+import sys
+
+from setuptools import find_packages, setup
+
+REQUIRES = [
+    'xlrd>=1.1.0',
+    'unicodecsv>=0.14.1',
+    'formencode',
+    'unittest2',
+]
+
+if sys.version_info < (3, 2):
+    REQUIRES.append('functools32==3.2.3.post2')
 
 setup(
     name='pyxform',
@@ -30,12 +42,7 @@ setup(
     url='http://pypi.python.org/pypi/pyxform/',
     description='A Python package to create XForms for ODK Collect.',
     long_description=open('README.rst', 'rt').read(),
-    install_requires=[
-        'xlrd>=1.1.0',
-        'unicodecsv>=0.14.1',
-        'formencode',
-        'unittest2',
-    ],
+    install_requires=REQUIRES,
     entry_points={
         'console_scripts': [
             'xls2xform=pyxform.xls2xform:main_cli',

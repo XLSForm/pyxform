@@ -22,6 +22,11 @@ from pyxform.utils import (NSMAP, PatchedText, basestring,
                            get_languages_with_bad_tags, node, unicode)
 from pyxform.validators import enketo_validate, odk_validate
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
+
 
 def register_nsmap():
     """Function to register NSMAP namespaces with ETree"""
@@ -33,6 +38,7 @@ def register_nsmap():
 register_nsmap()
 
 
+@lru_cache(maxsize=None)
 def is_parent_a_repeat(survey, xpath):
     """
     Returns the XPATH of the first repeat of the given xpath in the survey,
@@ -42,14 +48,13 @@ def is_parent_a_repeat(survey, xpath):
     if not parent_xpath:
         return False
 
-    repeats = [
-        item for item in survey.iter_descendants()
-        if item.get_xpath() == parent_xpath and item.type == 'repeat']
+    if survey.any_repeat(parent_xpath):
+        return parent_xpath
 
-    return parent_xpath \
-        if any(repeats) else is_parent_a_repeat(survey, parent_xpath)
+    return is_parent_a_repeat(survey, parent_xpath)
 
 
+@lru_cache(maxsize=None)
 def share_same_repeat_parent(survey, xpath, context_xpath):
     """
     Returns a tuple of the number of steps from the context xpath to the shared
@@ -220,7 +225,8 @@ class Survey(Section):
     @staticmethod
     def _get_dummy_instance():
         """Instance content required by ODK Validate for select inputs."""
-        return node("root", node("item", node("name", "_"), node("label", "_")))
+        return node("root",
+                    node("item", node("name", "_"), node("label", "_")))
 
     @staticmethod
     def _generate_external_instances(element):
@@ -340,8 +346,8 @@ class Survey(Section):
 
         Validation and business rules for output of instances:
 
-        - xml-external item name must be unique across the XForm and the form is
-          considered invalid if there is a duplicate name. This differs from
+        - xml-external item name must be unique across the XForm and the form
+          is considered invalid if there is a duplicate name. This differs from
           other item types which allow duplicates if not in the same group.
         - for all instance sources, if the same instance name is encountered,
           the following rules are used to allow re-using instances but prevent
@@ -382,13 +388,14 @@ class Survey(Section):
             if i.name in seen.keys() and seen[i.name].src != i.src:
                 # Instance id exists with different src URI -> error.
                 msg = "The same instance id will be generated for different " \
-                      "external instance source URIs. Please check the form. " \
-                      "Instance name: '{i}', Existing type: '{e}', " \
+                      "external instance source URIs. Please check the form." \
+                      " Instance name: '{i}', Existing type: '{e}', " \
                       "Existing URI: '{iu}', Duplicate type: '{d}', " \
-                      "Duplicate URI: '{du}', Duplicate context: '{c}'.".format(
-                          i=i.name, iu=seen[i.name].src, e=seen[i.name].type,
-                          d=i.type, du=i.src, c=i.context
-                      )
+                      "Duplicate URI: '{du}', Duplicate context: '{c}'."\
+                        .format(
+                            i=i.name, iu=seen[i.name].src, e=seen[i.name].type,
+                            d=i.type, du=i.src, c=i.context
+                        )
                 raise PyXFormError(msg)
             elif i.name in seen.keys() and seen[i.name].src == i.src:
                 # Instance id exists with same src URI -> ok, don't duplicate.
@@ -413,7 +420,8 @@ class Survey(Section):
         model_children += list(self._generate_instances())
         model_children += self.xml_bindings()
 
-        if self.submission_url or self.public_key or self.auto_send or self.auto_delete:
+        if (self.submission_url or self.public_key or self.auto_send or
+                self.auto_delete):
             submission_attrs = dict()
             if self.submission_url:
                 submission_attrs["action"] = self.submission_url
@@ -485,16 +493,20 @@ class Survey(Section):
                             self._translations,
                             [media_type_or_language, itext_id, 'long'], value)
 
-        self._translations = defaultdict(dict) # pylint: disable=attribute-defined-outside-init
+        self._translations = defaultdict(dict)  # pylint: disable=W0201
         for element in self.iter_descendants():
             for d in element.get_translations(self.default_language):
                 if 'guidance_hint' in d['path']:
                     hint_path = d['path'].replace('guidance_hint', 'hint')
-                    self._translations[d['lang']][hint_path] = self._translations[d['lang']].get(hint_path, {})
-                    self._translations[d['lang']][hint_path].update({"guidance": d['text']})
+                    self._translations[d['lang']][hint_path] = \
+                        self._translations[d['lang']].get(hint_path, {})
+                    self._translations[d['lang']][hint_path].update(
+                        {"guidance": d['text']})
                 else:
-                    self._translations[d['lang']][d['path']] = self._translations[d['lang']].get(d['path'], {})
-                    self._translations[d['lang']][d['path']].update({"long": d['text']})
+                    self._translations[d['lang']][d['path']] = \
+                        self._translations[d['lang']].get(d['path'], {})
+                    self._translations[d['lang']][d['path']].update(
+                        {"long": d['text']})
 
         # This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
@@ -503,7 +515,8 @@ class Survey(Section):
                     itext_id = '-'.join(['static_instance', list_name,
                                          str(idx)])
                     if isinstance(choice_value, dict):
-                        _setup_choice_translations(name, choice_value, itext_id)
+                        _setup_choice_translations(name, choice_value,
+                                                   itext_id)
                     elif name == 'label':
                         self._add_to_nested_dict(
                             self._translations,
@@ -538,7 +551,7 @@ class Survey(Section):
         It matches the xform nesting order.
         """
         if not self._translations:
-            self._translations = defaultdict(dict)  # pylint: disable=attribute-defined-outside-init
+            self._translations = defaultdict(dict)  # pylint: disable=W0201
 
         for survey_element in self.iter_descendants():
 
@@ -625,12 +638,13 @@ class Survey(Section):
                         if media_type == "guidance":
                             itext_nodes.append(
                                 node("value", value,
-                                    form='guidance',
-                                    toParseString=output_inserted)
+                                     form='guidance',
+                                     toParseString=output_inserted)
                             )
                         else:
-                             itext_nodes.append(
-                                node("value", value, toParseString=output_inserted)
+                            itext_nodes.append(
+                                node("value", value,
+                                     toParseString=output_inserted)
                             )
                         continue
 
@@ -716,15 +730,21 @@ class Survey(Section):
         if self._xpath[name] is None:
             raise PyXFormError(intro + " There are multiple survey elements"
                                " with this name.")
-        if context:
-            # if context xpath and target xpath fall under the same repeat use
-            # relative xpath referencing.
-            steps, ref_path = share_same_repeat_parent(self, self._xpath[name],
-                                                       context.get_xpath())
-            if steps:
-                ref_path = ref_path if ref_path.endswith(name) else "/%s" % name
-                prefix = " current()/" if use_current else " "
-                return prefix + "/".join([".."] * steps) + ref_path + " "
+        if context and not (context['type'] == 'calculate' and
+                            'indexed-repeat' in context['bind']['calculate']):
+            xpath, context_xpath = self._xpath[name], context.get_xpath()
+            # share same root i.e repeat_a from /data/repeat_a/...
+            if xpath.split('/')[2] == context_xpath.split('/')[2]:
+                # if context xpath and target xpath fall under the same
+                # repeat use relative xpath referencing.
+                steps, ref_path = share_same_repeat_parent(self, xpath,
+                                                           context_xpath)
+                if steps:
+                    ref_path = ref_path \
+                        if ref_path.endswith(name) else "/%s" % name
+                    prefix = " current()/" if use_current else " "
+
+                    return prefix + "/".join([".."] * steps) + ref_path + " "
 
         return " " + self._xpath[name] + " "
 
@@ -732,9 +752,10 @@ class Survey(Section):
         """
         Replace all instances of ${var} with the xpath to var.
         """
-        bracketed_tag = r"\$\{(.*?)\}"
         def _var_repl_function(matchobj):
             return self._var_repl_function(matchobj, context, use_current)
+
+        bracketed_tag = r"\$\{(.*?)\}"
 
         return re.sub(bracketed_tag, _var_repl_function, unicode(text))
 

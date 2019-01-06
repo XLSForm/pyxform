@@ -105,7 +105,7 @@ class TestRepeat(PyxformTestCase):
             title="Paths in a calculate within a repeat are relative.",
             md="""
                 | survey  |                      |       |        |                |
-                |         | type                 | name  | label  | calculate      |
+                |         | type                 | name  | label  | calculation    |
                 |         | begin repeat         | rep   |        |                |
                 |         | select_one crop_list | crop  | Select |                |
                 |         | text                 | a     | Verify | name = ${crop} |
@@ -153,5 +153,36 @@ class TestRepeat(PyxformTestCase):
             xml__contains=[
                 """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../crop ]">""",  # noqa pylint: disable=line-too-long
                 """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../../crop ]">""",  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_indexed_repeat_relative_path(self):
+        """Test relative path not used with indexed-repeat()."""
+        self.assertPyxformXform(
+            name="data",
+            title="Paths in a calculate within a repeat are relative.",
+            md="""
+                | survey  |                      |       |        |                                  |
+                |         | type                 | name  | label  | calculation                      |
+                |         | begin repeat         | rep   |        |                                  |
+                |         | begin repeat         | rep2  |        |                                  |
+                |         | select_one crop_list | crop  | Select |                                  |
+                |         | text                 | a     | Verify |                                  |
+                |         | begin group          | group |        |                                  |
+                |         | text                 | b     | Verify |                                  |
+                |         | end group            |       |        |                                  |
+                |         | end repeat           |       |        |                                  |
+                |         | calculate            | c1    |        | indexed-repeat(${a}, ${rep2}, 1) |
+                |         | end repeat           |       |        |                                  |
+                |         |                      |       |        |                                  |
+                |         |                      |       |        |                                  |
+                | choices |                      |       |        |                                  |
+                |         | list name            | name  | label  |                                  |
+                |         | crop_list            | maize | Maize  |                                  |
+                |         | crop_list            | beans | Beans  |                                  |
+                |         | crop_list            | kale  | Kale   |                                  |
+            """,  # noqa pylint: disable=line-too-long
+            model__contains=[
+                """<bind calculate="indexed-repeat( /data/rep/rep2/a ,  /data/rep/rep2 , 1)" nodeset="/data/rep/c1" type="string"/>""",  # noqa pylint: disable=line-too-long
             ],
         )
