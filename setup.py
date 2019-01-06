@@ -17,7 +17,7 @@ if sys.version_info < (3, 2):
 
 setup(
     name='pyxform',
-    version='0.12.0',
+    version='0.12.1',
     author='github.com/xlsform',
     author_email='info@xlsform.org',
     packages=find_packages(),
