@@ -7,4 +7,4 @@ traceback2==1.4.0         # via unittest2
 unicodecsv==0.14.1
 unittest2==1.1.0
 xlrd==1.1.0
-functools32==3.2.3.post2;python_version<"3.2"
+functools32==3.2.3.post2 ; python_version < "3.2"
