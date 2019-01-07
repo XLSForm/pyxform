@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Pyxform - Python library that converts XLSForms to XForms.
 """
-import sys
-
 from setuptools import find_packages, setup
 
 REQUIRES = [
@@ -10,14 +8,12 @@ REQUIRES = [
     'unicodecsv>=0.14.1',
     'formencode',
     'unittest2',
+    'functools32==3.2.3.post2 ; python_version < "3.2"',
 ]
-
-if sys.version_info < (3, 2):
-    REQUIRES.append('functools32==3.2.3.post2')
 
 setup(
     name='pyxform',
-    version='0.12.1',
+    version='0.12.2',
     author='github.com/xlsform',
     author_email='info@xlsform.org',
     packages=find_packages(),
