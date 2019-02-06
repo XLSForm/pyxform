@@ -6,7 +6,7 @@ import codecs
 import os
 import pyxform
 from pyxform.utils import has_external_choices
-from pyxform.xls2json import SurveyReader
+from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
 from pyxform.tests.utils import XFormTestCase
 from pyxform.errors import PyXFormError
 
@@ -228,6 +228,15 @@ class TestXLDateAmbigous(unittest.TestCase):
         xls_reader = SurveyReader(path_to_excel_file)
         survey_dict = xls_reader.to_json_dict()
         self.assertTrue(len(survey_dict) > 0)
+
+
+class TestSpreadSheetFilesWithMacrosAreAllowed(unittest.TestCase):
+    """Test that spreadsheets with .xlsm extension are allowed"""
+    def test_xlsm_files_are_allowed(self):
+        filename = "excel_with_macros.xlsm"
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
+        result = parse_file_to_workbook_dict(path_to_excel_file)
+        self.assertIsInstance(result, dict)
 
 
 if __name__ == "__main__":

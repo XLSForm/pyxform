@@ -80,3 +80,4 @@ SUPPORTED_SHEET_NAMES = [
     SETTINGS,
     OSM,
 ]
+SUPPORTED_FILE_EXTENSIONS = ['.xls', '.xlsx', '.xlsm']
