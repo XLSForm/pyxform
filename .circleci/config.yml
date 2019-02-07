@@ -7,12 +7,17 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements.pip" }}
+          key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "Pipfile" }}
       - run:
-          # Install dependencies with --user to enable easier caching
           name: Install dependencies
           command: |
-            pip install -r requirements.pip --user
+            # install everything to run outside of pipenv
+            pipenv lock --clear
+            pipenv run conditional_install
+      - run:
+          name: Add Codecov
+          command: | 
+            pipenv install codecov
             pip install codecov --user
             /home/circleci/.local/bin/codecov
       - run:
@@ -32,12 +37,12 @@ jobs:
       - run:
           name: Run tests
           command: |
-            /home/circleci/.local/bin/nosetests --with-coverage
-            /home/circleci/.local/bin/nosetests --tests pyxform/tests_v1/ --with-coverage
+            pipenv run nosetests --with-coverage
+            pipenv run nosetests --tests pyxform/tests_v1/ --with-coverage
       - run:
           name: upload coverage report
           command: |
-            /home/circleci/.local/bin/coverage xml
+            pipenv run coverage xml
             /home/circleci/.local/bin/codecov --required -X search gcov pycov -f coverage.xml
       - run:
           name: Building artifacts
@@ -48,7 +53,7 @@ jobs:
           path: dist/
           destination: ./
       - save_cache:
-          key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements.pip" }}
+          key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "Pipfile" }}
           paths:
             - /home/circleci/.local/lib
             - /home/circleci/.local/bin

@@ -23,6 +23,7 @@ install:
   - python --version
   - python -c "import struct; print(struct.calcsize('P') * 8)"
 
+
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
   - ps: python -Wignore -m pip install -U pip setuptools
@@ -30,17 +31,20 @@ install:
   # We need wheel installed to build wheels
   - ps: python -Wignore -m pip install wheel
 
-  - ps: python -Wignore -m pip install -q -r requirements.pip
+  - ps: python -Wignore -m pip install pipenv
+  - ps: rm Pipfile.lock
+  - ps: $PIPENV_QUIET="true"
+  - pipenv run conditional_install
 
 build: off
 
 test_script:
-  - python setup.py nosetests
-  - python setup.py nosetests --tests pyxform/tests_v1/
+  - pipenv run python setup.py nosetests
+  - pipenv run python setup.py nosetests --tests pyxform/tests_v1/
 
 after_test:
-  - python setup.py sdist
-  - python setup.py bdist_wheel
+  - pipenv run python setup.py sdist
+  - pipenv run python setup.py bdist_wheel
   - ps: ls dist
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
