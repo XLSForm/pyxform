@@ -41,7 +41,7 @@ def install_ok(bin_file_path=ODK_VALIDATE_PATH):
         return True
 
 
-def _java_installed():
+def _check_java_version():
     stderr = run_popen_with_timeout(["java", "-version"], 100)[3]
     stderr = stderr.strip().decode('utf-8')
     if not "java version" in stderr and not "openjdk version" in stderr:
@@ -60,11 +60,8 @@ def check_xform(path_to_xform):
     Returns an array of warnings if the form is valid.
     Throws an exception if it is not
     """
-    # provide useful error message if java is not installed
-    _java_installed()
-
-    # else:
-    #     print('java')
+    # check for available java version
+    _check_java_version()
 
     # resultcode indicates validity of the form
     # timeout indicates whether validation ran out of time to complete
