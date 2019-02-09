@@ -49,10 +49,10 @@ def _java_installed():
             "pyxform odk validate dependency: java not found")
     # extract version number from version string
     java_version = stderr.split('\n')[0].split(' ')[-1][1:-1]
-    java_version_numbers = [int(x) for x in java_version.split('.')]
-    if not java_version_numbers[0] > 0 or not java_version_numbers[1] > 7:
+    java_version_numbers = java_version.split('.')
+    if not int(java_version_numbers[0]) > 0 or not int(java_version_numbers[1]) > 7:
         raise EnvironmentError(
-            'pyxform odk validate dependency: java 8 or newer version not found')    
+            'pyxform odk validate dependency: java 8 or newer version not found')
 
 
 def check_xform(path_to_xform):
@@ -62,7 +62,7 @@ def check_xform(path_to_xform):
     """
     # provide useful error message if java is not installed
     _java_installed()
-        
+
     # else:
     #     print('java')
 
