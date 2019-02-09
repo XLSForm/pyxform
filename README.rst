@@ -35,6 +35,7 @@ Running pyxform from local source
 =================================
 
 Note that you must uninstall any globally installed ``pyxform`` instance in order to use local modules.
+Please install java 8 or newer version.
 
 From the command line::
 
