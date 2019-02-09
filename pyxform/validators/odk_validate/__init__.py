@@ -44,7 +44,15 @@ def install_ok(bin_file_path=ODK_VALIDATE_PATH):
 def _java_installed():
     stderr = run_popen_with_timeout(["java", "-version"], 100)[3]
     stderr = stderr.strip().decode('utf-8')
-    return "java version" in stderr or "openjdk version" in stderr
+    if not "java version" in stderr and not "openjdk version" in stderr:
+        raise EnvironmentError(
+            "pyxform odk validate dependency: java not found")
+    # extract version number from version string
+    java_version = stderr.split('\n')[0].split(' ')[-1][1:-1]
+    java_version_numbers = [int(x) for x in java_version.split('.')]
+    if not java_version_numbers[0] > 0 or not java_version_numbers[1] > 7:
+        raise EnvironmentError(
+            'pyxform odk validate dependency: java 8 or newer version not found')    
 
 
 def check_xform(path_to_xform):
@@ -53,9 +61,10 @@ def check_xform(path_to_xform):
     Throws an exception if it is not
     """
     # provide useful error message if java is not installed
-    if not _java_installed():
-        raise EnvironmentError(
-            "pyxform odk validate dependency: java not found")
+    _java_installed()
+        
+    # else:
+    #     print('java')
 
     # resultcode indicates validity of the form
     # timeout indicates whether validation ran out of time to complete
