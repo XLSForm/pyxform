@@ -29,9 +29,9 @@ install:
   - ps: python -m pip install -U pip setuptools
 
   # We need wheel installed to build wheels
-  - ps: pip install wheel
+  - ps: pip install -q -q wheel
 
-  - ps: pip install -q -r requirements.pip
+  - ps: pip install -q -q -r requirements.pip
 
 build: off
 
