@@ -996,6 +996,7 @@ def parse_file_to_workbook_dict(path, file_object=None):
     workbook_dicts are organized as follows:
     {sheetname : [{column_header : column_value_in_array_indexed_row}]}
     """
+
     (filepath, filename) = os.path.split(path)
     if not filename:
         raise PyXFormError("No filename.")
@@ -1003,7 +1004,7 @@ def parse_file_to_workbook_dict(path, file_object=None):
     if not extension:
         raise PyXFormError("No extension.")
 
-    if extension == ".xls" or extension == ".xlsx":
+    if extension in constants.SUPPORTED_FILE_EXTENSIONS:
         return xls_to_dict(file_object if file_object is not None else path)
     elif extension == ".csv":
         return csv_to_dict(file_object if file_object is not None else path)
