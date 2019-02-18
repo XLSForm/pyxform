@@ -81,3 +81,7 @@ SUPPORTED_SHEET_NAMES = [
     OSM,
 ]
 SUPPORTED_FILE_EXTENSIONS = ['.xls', '.xlsx', '.xlsm']
+
+LOCATION_PRIORITY = u"location-priority"
+LOCATION_MIN_INTERVAL = u"location-min-interval"
+LOCATION_MAX_AGE = u"location-max-age"

@@ -536,9 +536,66 @@ def workbook_to_json(
                 raise PyXFormError(row_format_string % row_number +
                     " Audits must always be named 'audit.'" +
                     " The name column should be left blank.")
-
             row['name'] = 'audit'
-            survey_meta.append(row)
+
+            new_dict = row.copy()
+            parameters = get_parameters(
+                new_dict.get('parameters', ''),
+                [constants.LOCATION_PRIORITY, constants.LOCATION_MIN_INTERVAL,
+                 constants.LOCATION_MAX_AGE])
+
+            if parameters:
+                if len(parameters.keys()) != 3:
+                    raise PyXFormError("To include location information in" +
+                        " the audit, '" + constants.LOCATION_PRIORITY +
+                        "', '" + constants.LOCATION_MIN_INTERVAL + "', and '" +
+                        constants.LOCATION_MAX_AGE + "' are required" +
+                        " parameters.")
+                else:
+                    if parameters[constants.LOCATION_PRIORITY] not in \
+                        ['no-power', 'low-power', 'balanced', 'high-accuracy']:
+                        raise PyXFormError(
+                                "Parameter " + constants.LOCATION_PRIORITY +
+                                " must be set to no-power, low-power, balanced,"
+                                " or high-accuracy: '%s' is an invalid value" %
+                                parameters[constants.LOCATION_PRIORITY])
+
+                    try:
+                        int(parameters[constants.LOCATION_MIN_INTERVAL])
+                    except:
+                        raise PyXFormError(
+                            "Parameter " + constants.LOCATION_MIN_INTERVAL +
+                            " must have an integer value.")
+                    if int(parameters[constants.LOCATION_MIN_INTERVAL]) < 0:
+                        raise PyXFormError(
+                            "Parameter " + constants.LOCATION_MIN_INTERVAL +
+                            " must be greater than or equal to zero.")
+
+                    try:
+                        int(parameters[constants.LOCATION_MAX_AGE])
+                    except:
+                        raise PyXFormError(
+                            "Parameter " + constants.LOCATION_MAX_AGE +
+                            " must have an integer value.")
+                    if int(parameters[constants.LOCATION_MAX_AGE]) < 0:
+                        raise PyXFormError(
+                                "Parameter " + constants.LOCATION_MAX_AGE +
+                                " must be greater  than or equal to zero.")
+
+                    if parameters[constants.LOCATION_MAX_AGE] < \
+                        parameters[constants.LOCATION_MIN_INTERVAL]:
+                        raise PyXFormError(
+                            "Parameter " + constants.LOCATION_MAX_AGE +
+                            " must be greater than or equal to " +
+                            constants.LOCATION_MIN_INTERVAL + ".")
+
+                    new_dict['bind'] = new_dict.get('bind', {})
+                    new_dict['bind'].update(
+                        {'odk:' + constants.LOCATION_MAX_AGE: parameters[constants.LOCATION_MAX_AGE],
+                         'odk:' + constants.LOCATION_MIN_INTERVAL: parameters[constants.LOCATION_MIN_INTERVAL],
+                         'odk:' + constants.LOCATION_PRIORITY: parameters[constants.LOCATION_PRIORITY]})
+
+            survey_meta.append(new_dict)
             continue
 
         if question_type == 'calculate':
