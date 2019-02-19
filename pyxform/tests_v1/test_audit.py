@@ -96,13 +96,13 @@ class AuditTest(PyxformTestCase):
         self.assertPyxformXform(
             name="meta_audit",
             md="""
-            | survey |        |          |                                                                         |
-            |        | type   |   name   | parameters                                                              |
-            |        | audit  |   audit  | location-priority=balanced, location-min-interval=1, location-max-age=2 |
+            | survey |        |          |                                                                            |
+            |        | type   |   name   | parameters                                                                 |
+            |        | audit  |   audit  | location-priority=balanced, location-min-interval=60, location-max-age=300 |
             """,
             xml__contains=[
                 '<meta>',
                 '<audit/>',
                 '</meta>',
-                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:location-max-age="2" odk:location-min-interval="1" odk:location-priority="balanced"/>'],
+                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:location-max-age="300" odk:location-min-interval="60" odk:location-priority="balanced"/>'],
         )
