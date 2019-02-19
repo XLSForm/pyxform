@@ -13,7 +13,7 @@ REQUIRES = [
 
 setup(
     name='pyxform',
-    version='0.12.2',
+    version='0.13.0',
     author='github.com/xlsform',
     author_email='info@xlsform.org',
     packages=find_packages(),
