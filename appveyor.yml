@@ -11,11 +11,12 @@ environment:
     - PYTHON: "C:\\Python34"
     - PYTHON: "C:\\Python35"
     - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python37"
     - PYTHON: "C:\\Python27-x64"
     - PYTHON: "C:\\Python34-x64"
-      DISTUTILS_USE_SDK: "1"
     - PYTHON: "C:\\Python35-x64"
     - PYTHON: "C:\\Python36-x64"
+    - PYTHON: "C:\\Python37-x64"
 
 install:
   - ps: $env:Path = "$env:PYTHON;$env:PYTHON\Scripts;$env:Path"
@@ -26,10 +27,10 @@ install:
 
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
-  - ps: python  -Wignore -m pip install -U pip setuptools
+  - ps: python -Wignore -m pip install -U pip setuptools
 
   # We need wheel installed to build wheels
-  - ps: python -Wignore -m  pip  install wheel
+  - ps: python -Wignore -m pip install wheel
 
   - ps: python -Wignore -m pip install -q -r requirements.pip
 

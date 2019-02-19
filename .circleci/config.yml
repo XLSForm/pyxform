@@ -1,0 +1,54 @@
+version: 2
+jobs:
+  py-3.7: &build-template
+    docker:
+      - image: circleci/python:3.7
+    working_directory: ~/work
+    steps:
+      - checkout
+      - restore_cache:
+          key: requirements-{{ checksum "requirements.pip" }}
+      - run:
+          # Install dependencies with --user to enable easier caching
+          name: Install dependencies
+          command: pip install -r requirements.pip --user
+      - run:
+          # Validate calls GUI code which fails if assistive_technologies are on
+          name: Install dependencies for ODK Validate
+          command: |
+            sudo apt-get install -y openjdk-8-jre-headless
+            sudo sed -i -e '/^assistive_technologies=/s/^/#/' /etc/java-*-openjdk/accessibility.properties
+      - run:
+          name: Run tests
+          command: |
+            /home/circleci/.local/bin/nosetests
+            /home/circleci/.local/bin/nosetests --tests pyxform/tests_v1/
+      - save_cache:
+          key: requirements-{{ checksum "requirements.pip" }}
+          paths:
+            - /home/circleci/.local/lib
+  py-3.6:
+    <<: *build-template
+    docker:
+      - image: circleci/python:3.6
+  py-3.5:
+    <<: *build-template
+    docker:
+      - image: circleci/python:3.5
+  py-3.4:
+    <<: *build-template
+    docker:
+      - image: circleci/python:3.4
+  py-2.7:
+    <<: *build-template
+    docker:
+      - image: circleci/python:2.7
+workflows:
+  version: 2
+  build:
+    jobs:
+      - py-3.7
+      - py-3.6
+      - py-3.5
+      - py-3.4
+      - py-2.7

@@ -2,10 +2,10 @@
 pyxform v0.12
 =============
 
-|travis|  |appveyor|
+|circleci|  |appveyor|
 
-.. |travis| image:: https://travis-ci.org/XLSForm/pyxform.svg?branch=master
-    :target: https://travis-ci.org/XLSForm/pyxform
+.. |circleci| image:: https://circleci.com/gh/XLSForm/pyxform.svg?style=shield&circle-token=:circle-token
+    :target: https://circleci.com/gh/XLSForm/pyxform
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/XLSForm/pyxform?branch=master&svg=true
     :target: https://ci.appveyor.com/project/ukanga/pyxform
