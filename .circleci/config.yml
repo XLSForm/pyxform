@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: requirements-{{ checksum "requirements.pip" }}
+          key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements.pip" }}
       - run:
           # Install dependencies with --user to enable easier caching
           name: Install dependencies
@@ -24,9 +24,10 @@ jobs:
             /home/circleci/.local/bin/nosetests
             /home/circleci/.local/bin/nosetests --tests pyxform/tests_v1/
       - save_cache:
-          key: requirements-{{ checksum "requirements.pip" }}
+          key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements.pip" }}
           paths:
             - /home/circleci/.local/lib
+            - /home/circleci/.local/bin
   py-3.6:
     <<: *build-template
     docker:
