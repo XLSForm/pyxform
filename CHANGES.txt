@@ -1,5 +1,22 @@
 Pyxform Changelog
 
+v0.13.0, 2019 02 19
+  -- Add Validate v1.11.0 with JavaRosa v2.13.0
+     Issue #264, https://github.com/XLSForm/pyxform/issues/264
+     [yanokwa]
+
+  -- Add audit location support
+     Issue #253, https://github.com/XLSForm/pyxform/issues/253
+     [yanokwa]
+
+  -- Enable CircleCI support, remove Travis
+     Issue #262, https://github.com/XLSForm/pyxform/issues/262
+     [yanokwa]
+
+  -- Support Excel workbook with macro XLSForm files i.e .xlsm
+     Issue #252, https://github.com/XLSForm/pyxform/issues/252
+     [bmarika]
+
 v0.12.2, 2019 01 06
   -- Correct environment marker in requirements.pip
      [ukanga]
