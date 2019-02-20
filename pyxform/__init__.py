@@ -3,7 +3,7 @@ pyxform is a Python library designed to make authoring XForms for ODK
 Collect easy.
 """
 
-__version__ = '0.13.0'
+__version__ = '0.13.1'
 
 from pyxform.builder import (SurveyElementBuilder, create_survey,  # noqa
                              create_survey_element_from_dict,

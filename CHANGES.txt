@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+v0.13.1, 2019 02 19
+  -- Ensure parameters are typed properly
+     Issue #267, https://github.com/XLSForm/pyxform/pull/267
+     [yanokwa]
+
 v0.13.0, 2019 02 19
   -- Add Validate v1.11.0 with JavaRosa v2.13.0
      Issue #264, https://github.com/XLSForm/pyxform/issues/264
