@@ -582,8 +582,8 @@ def workbook_to_json(
                                 "Parameter " + constants.LOCATION_MAX_AGE +
                                 " must be greater  than or equal to zero.")
 
-                    if parameters[constants.LOCATION_MAX_AGE] < \
-                        parameters[constants.LOCATION_MIN_INTERVAL]:
+                    if int(parameters[constants.LOCATION_MAX_AGE]) < \
+                        int(parameters[constants.LOCATION_MIN_INTERVAL]):
                         raise PyXFormError(
                             "Parameter " + constants.LOCATION_MAX_AGE +
                             " must be greater than or equal to " +
