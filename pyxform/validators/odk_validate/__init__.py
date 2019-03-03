@@ -48,6 +48,7 @@ def _check_java_version():
         raise EnvironmentError(
             "pyxform odk validate dependency: java not found")
     # extract version number from version string
+    # last string from first line of the output
     java_version = stderr.split('\n')[0].split(' ')[-1][1:-1]
     java_version_numbers = java_version.split('.')
     if not int(java_version_numbers[0]) > 0 or not int(java_version_numbers[1]) > 7:
