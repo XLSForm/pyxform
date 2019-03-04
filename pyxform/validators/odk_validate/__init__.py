@@ -1,10 +1,11 @@
-from __future__ import print_function
 
 """
 odk_validate.py
 A python wrapper around ODK Validate
 """
+from __future__ import print_function
 import os
+import re
 import sys
 from pyxform.validators.util import run_popen_with_timeout, decode_stream, \
     XFORM_SPEC_PATH, check_readable
@@ -48,8 +49,9 @@ def _check_java_version():
         raise EnvironmentError(
             "pyxform odk validate dependency: java not found")
     # extract version number from version string
-    # last string from first line of the output
-    java_version = stderr.split('\n')[0].split(' ')[-1][1:-1]
+    java_version_str = stderr.split('\n')[0]
+    # version number is usually inside double-quotes. Using regex to find that in the string
+    java_version = re.findall(r'\"(.+?)\"', java_version_str)[0]
     java_version_numbers = java_version.split('.')
     if not int(java_version_numbers[0]) > 0 or not int(java_version_numbers[1]) > 7:
         raise EnvironmentError(
