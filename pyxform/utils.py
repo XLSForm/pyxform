@@ -18,7 +18,7 @@ else:
         unicode = unicode
         basestring = basestring
         unichr = unichr
-     except NameError:# special cases where unicode is defined in python3 
+     except NameError:# special cases where unicode is defined in python3
         unicode = str
         basestring = str
         unichr = chr
@@ -200,3 +200,23 @@ def get_languages_with_bad_tags(languages):
         if lang != 'default' and (not(lang_code) or not(lang_code.group(1) in iana_subtags)):
             languages_with_bad_tags.append(lang)
     return languages_with_bad_tags
+
+
+def balanced_brackets(
+        string, opening_bracket='{', closing_bracket='}'):
+    """
+    Ensure  brackets are properly matched.
+
+    When one is working with skip logic, the excel file needs to to be
+    validated to ensure that the curly braces are balances.
+    Otherwise, one could run into ODKValidateErrors after the file is
+    accepted by PyxForm.
+    """
+    opening_brackets = []
+    closing_brackets = []
+    for char in string:
+        if char == opening_bracket:
+            opening_brackets.append(char)
+        if char == closing_bracket:
+            closing_brackets.append(char)
+    return len(opening_brackets) == len(closing_brackets)

@@ -1,6 +1,7 @@
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
+import json
 import xlrd
 from xlrd import XLRDError
 import unicodecsv as csv
@@ -9,7 +10,7 @@ from pyxform import constants
 import re
 import datetime
 from pyxform.errors import PyXFormError
-from pyxform.utils import unicode, basestring, unichr
+from pyxform.utils import unicode, basestring, unichr, balanced_brackets
 from functools import reduce
 from collections import OrderedDict
 
@@ -220,6 +221,10 @@ def xls_to_dict(path_or_file):
                 u"%s_header" % sheet.name
             ] = xls_to_dict_normal_sheet(sheet)
 
+    if not balanced_brackets(json.dumps(result), '{', '}'):
+         raise PyXFormError(
+            "Please ensure that all the { } are matched properly"
+        )
     return result
 
 

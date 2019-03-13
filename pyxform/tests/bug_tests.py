@@ -239,5 +239,14 @@ class TestSpreadSheetFilesWithMacrosAreAllowed(unittest.TestCase):
         self.assertIsInstance(result, dict)
 
 
+class TestMismatchedBrackets(unittest.TestCase):
+    """Test that a spreadsheet with mismatched brackets is validated"""
+    def test_curly_brackets_validation_in_excels(self):
+        filename = "brackets_mismatch.xls"
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
+        with self.assertRaises(PyXFormError):
+            parse_file_to_workbook_dict(path_to_excel_file)
+
+
 if __name__ == "__main__":
     unittest.main()
