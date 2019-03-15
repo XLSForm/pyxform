@@ -222,7 +222,7 @@ def xls_to_dict(path_or_file):
             ] = xls_to_dict_normal_sheet(sheet)
 
     if not balanced_brackets(json.dumps(result), '{', '}'):
-         raise PyXFormError(
+        raise PyXFormError(
             "Please ensure that all the { } are matched properly"
         )
     return result
