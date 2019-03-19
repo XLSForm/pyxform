@@ -15,7 +15,6 @@ jobs:
             pip install -r requirements.pip --user
             pip install codecov --user
             /home/circleci/.local/bin/codecov
-      #                  /home/circleci/.local/bin/codecov --token=4b56d83c-f70a-4bd0-9b70-d856ea8453e0
       - run:
           # Validate calls GUI code which fails if assistive_technologies are on
           name: Install dependencies for ODK Validate
@@ -32,8 +31,6 @@ jobs:
           command: |
             /home/circleci/.local/bin/coverage xml
             /home/circleci/.local/bin/codecov --required -X search gcov pycov -f coverage.xml
-      #            PATH=$HOME/.local/bin:$PATH
-      #            pip install --user codecov
       - save_cache:
           key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements.pip" }}
           paths:
