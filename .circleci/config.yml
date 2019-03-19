@@ -15,7 +15,7 @@ jobs:
             pip install -r requirements.pip --user
             pip install codecov --user
             /home/circleci/.local/bin/codecov
-            /home/circleci/.local/bin/codecov --token=4b56d83c-f70a-4bd0-9b70-d856ea8453e0
+#            /home/circleci/.local/bin/codecov --token=4b56d83c-f70a-4bd0-9b70-d856ea8453e0
       - run:
           # Validate calls GUI code which fails if assistive_technologies are on
           name: Install dependencies for ODK Validate
