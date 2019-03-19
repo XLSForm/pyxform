@@ -1,6 +1,7 @@
 [run]
 branch = True
 source = pyxform
+data_file = .coverage
 
 [report]
 exclude_lines =
