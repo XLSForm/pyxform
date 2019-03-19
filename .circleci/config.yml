@@ -13,7 +13,8 @@ jobs:
           name: Install dependencies
           command: |
             pip install -r requirements.pip --user
-            pip install codecov && codecov
+            pip install codecov
+            codecov
             codecov --token=4b56d83c-f70a-4bd0-9b70-d856ea8453e0
       - run:
           # Validate calls GUI code which fails if assistive_technologies are on
