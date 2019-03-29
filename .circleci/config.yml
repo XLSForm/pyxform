@@ -26,7 +26,7 @@ jobs:
             sudo sed -i -e '/^assistive_technologies=/s/^/#/' /etc/java-*-openjdk/accessibility.properties
       - run:
             name: Code analysis
-            command: pycodestyle --show-source --show-pep8 --statistics --format=pylint
+            command: pycodestyle --config=.config/pycodestyle
       - run:
           name: Run tests
           command: |

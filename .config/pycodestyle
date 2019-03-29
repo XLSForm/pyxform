@@ -1,0 +1,10 @@
+[pycodestyle]
+
+show-pep8 = True
+show-source = True
+
+format = pylint
+
+statistics = True
+
+max-line-length = 160
