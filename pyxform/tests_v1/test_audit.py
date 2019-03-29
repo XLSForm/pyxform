@@ -105,5 +105,6 @@ class AuditTest(PyxformTestCase):
                 '<meta>',
                 '<audit/>',
                 '</meta>',
-                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:location-max-age="300" odk:location-min-interval="60" odk:location-priority="balanced"/>'],
+                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:location-max-age="300" '
+                'odk:location-min-interval="60" odk:location-priority="balanced"/>'],
         )

@@ -392,10 +392,7 @@ class Survey(Section):
                       " Instance name: '{i}', Existing type: '{e}', " \
                       "Existing URI: '{iu}', Duplicate type: '{d}', " \
                       "Duplicate URI: '{du}', Duplicate context: '{c}'." \
-                    .format(
-                    i=i.name, iu=seen[i.name].src, e=seen[i.name].type,
-                    d=i.type, du=i.src, c=i.context
-                )
+                    .format(i=i.name, iu=seen[i.name].src, e=seen[i.name].type, d=i.type, du=i.src, c=i.context)
                 raise PyXFormError(msg)
             elif i.name in seen.keys() and seen[i.name].src == i.src:
                 # Instance id exists with same src URI -> ok, don't duplicate.

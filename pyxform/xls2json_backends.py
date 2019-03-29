@@ -79,8 +79,7 @@ def xls_to_dict(path_or_file):
 
     def xls_to_dict_normal_sheet(sheet):
         def iswhitespace(string):
-            return (
-                    isinstance(string, basestring) and len(string.strip()) == 0)
+            return (isinstance(string, basestring) and len(string.strip()) == 0)
 
         # Check for duplicate column headers
         column_header_list = list()

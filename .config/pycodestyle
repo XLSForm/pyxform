@@ -8,3 +8,4 @@ format = pylint
 statistics = True
 
 max-line-length = 160
+ignore = E123, E722, E741, W291, W504, W605

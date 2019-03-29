@@ -228,8 +228,7 @@ class SurveyElement(dict):
         print_pyobj_to_json(self.to_json_dict(), path)
 
     def __eq__(self, y):
-        return hasattr(y, 'to_json_dict') and callable(y.to_json_dict) and \
-               self.to_json_dict() == y.to_json_dict()
+        return hasattr(y, 'to_json_dict') and callable(y.to_json_dict) and self.to_json_dict() == y.to_json_dict()
 
     def _translation_path(self, display_element):
         return self.get_xpath() + ":" + display_element
@@ -310,8 +309,7 @@ class SurveyElement(dict):
         }
 
     def needs_itext_ref(self):
-        return type(self.label) is dict or (
-                type(self.media) is dict and len(self.media) > 0)
+        return type(self.label) is dict or (type(self.media) is dict and len(self.media) > 0)
 
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):

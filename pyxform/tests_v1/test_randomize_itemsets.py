@@ -118,7 +118,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
             | survey |                                              |                |                |                |
             |        | type                                         | name           | label          | parameters     |
             |        | select_one_from_file cities.xml              | city           | City           | randomize=true |
-            
+
             """,
             xml__contains=[
                 "<itemset nodeset=\"randomize(instance(\'cities\')/root/item)\">"

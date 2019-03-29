@@ -43,7 +43,8 @@ class MainTest(TestCase):
                 expected = ETree.fromstring(expected_file.read())
                 result = ETree.fromstring(survey.to_xml())
 
-                def write_line(x): sys.stdout.write(x + "\n")
+                def write_line(x):
+                    sys.stdout.write(x + "\n")
 
                 reporter = write_line
                 self.assertTrue(xml_compare(
