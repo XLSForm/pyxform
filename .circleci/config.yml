@@ -13,7 +13,6 @@ jobs:
           name: Install dependencies
           command: |
             pip install -r requirements.pip --user
-            pip install codecov --user
             /home/circleci/.local/bin/codecov
       - run:
           # Validate calls GUI code which fails if assistive_technologies are on

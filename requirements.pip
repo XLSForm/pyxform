@@ -15,3 +15,4 @@ unicodecsv==0.14.1
 unittest2==1.1.0
 xlrd==1.2.0
 pycodestyle==2.5.0
+codecov==2.0.15
