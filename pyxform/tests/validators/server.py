@@ -1,6 +1,7 @@
 import os
 import posixpath
 import threading
+
 try:
     from http.server import SimpleHTTPRequestHandler
     from socketserver import ThreadingTCPServer
@@ -10,7 +11,6 @@ except ImportError:
     from SocketServer import ThreadingTCPServer
     from urllib2 import unquote
 
-
 HERE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
@@ -18,7 +18,7 @@ class SimpleHTTPRequestHandlerHere(SimpleHTTPRequestHandler, object):
 
     def send_head(self):
         if self.client_address[0] != "127.0.0.1":
-            self.send_error(401, "Unauthorized", 
+            self.send_error(401, "Unauthorized",
                             "No permission -- see authorization schemes")
             return None
         else:

@@ -1,7 +1,7 @@
-import os
 import glob
-from pyxform import utils
+import os
 
+from pyxform import utils
 from pyxform.xls2json import SurveyReader
 
 
@@ -33,6 +33,6 @@ def collect_compatible_files_in_directory(directory):
     in the given directory
     """
     available_files = glob.glob(os.path.join(directory, "*.xls")) + \
-        glob.glob(os.path.join(directory, "*.json"))
+                      glob.glob(os.path.join(directory, "*.json"))
 
     return dict([load_file_to_dict(f) for f in available_files])

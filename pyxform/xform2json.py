@@ -1,10 +1,12 @@
 from __future__ import print_function
-import re
-import json
-import copy
+
 import codecs
+import copy
+import json
+import re
 import xml.etree.ElementTree as ETree
 from operator import itemgetter
+
 from pyxform import builder
 from pyxform.utils import basestring, NSMAP
 
@@ -405,7 +407,7 @@ class XFormToDictBuilder:
             children = []
             for i in obj['item']:
                 if isinstance(i, dict) and \
-                                'label' in i.keys() and 'value' in i.keys():
+                        'label' in i.keys() and 'value' in i.keys():
                     k, v = self._get_label(i['label'])
                     children.append(
                         {'name': i['value'], k: v})

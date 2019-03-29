@@ -1,6 +1,7 @@
-from unittest import TestCase
-from pyxform.builder import create_survey_from_path
 import os
+from unittest import TestCase
+
+from pyxform.builder import create_survey_from_path
 from pyxform.tests import utils
 
 
@@ -20,7 +21,7 @@ class DumpAndLoadTests(TestCase):
             # "include_json.xls",
             "simple_loop.xls",
             "yes_or_no_question.xls",
-            ]
+        ]
         self.surveys = {}
         self.this_directory = os.path.dirname(__file__)
         for filename in self.excel_files:

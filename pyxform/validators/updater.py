@@ -1,19 +1,19 @@
 import argparse
-from datetime import datetime
 import fnmatch
 import io
 import json
 import logging
 import os
 import shutil
-from stat import S_IXUSR, S_IXGRP
 import sys
+from datetime import datetime
+from stat import S_IXUSR, S_IXGRP
 from zipfile import ZipFile, is_zipfile
+
 from pyxform.errors import PyXFormError
 from pyxform.utils import unicode
-from pyxform.validators.util import request_get, HERE, CapturingHandler
 from pyxform.validators import enketo_validate, odk_validate
-
+from pyxform.validators.util import request_get, HERE, CapturingHandler
 
 UTC_FMT = "%Y-%m-%dT%H:%M:%SZ"
 log = logging.getLogger(__name__)
@@ -24,6 +24,7 @@ class _UpdateInfo(object):
     """
     Data class for Updater info.
     """
+
     def __init__(self, api_url, repo_url, validate_subfolder,
                  install_check, validator_basename, mod_root=None):
         """
@@ -480,7 +481,6 @@ class _UpdateHandler(object):
 
 
 class _UpdateService(object):
-
     update_info = None
 
     def list(self):
@@ -541,7 +541,6 @@ class ODKValidateUpdater(_UpdateService):
 
 
 def _build_validator_menu(main_subparser, validator_name, updater_instance):
-
     main = main_subparser.add_parser(
         validator_name.lower(),
         description="{v} Sub-menu".format(v=validator_name),

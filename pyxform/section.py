@@ -154,7 +154,7 @@ class GroupedSection(Section):
         if u"intent" in control_dict:
             survey = self.get_root()
             attributes['intent'] = survey.insert_xpaths(control_dict['intent'],
-                                                       self)
+                                                        self)
 
         return node(u"group", *children, **attributes)
 

@@ -162,11 +162,11 @@ class MultipleChoiceQuestion(Question):
                     if "seed" in params:
                         if params["seed"].startswith("${"):
                             nodeset = (
-                                nodeset
-                                + ", "
-                                + survey.insert_xpaths(
-                                    params["seed"], self
-                                ).strip()
+                                    nodeset
+                                    + ", "
+                                    + survey.insert_xpaths(
+                                params["seed"], self
+                            ).strip()
                             )
                         else:
                             nodeset = nodeset + ", " + params["seed"]

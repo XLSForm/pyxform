@@ -3,8 +3,9 @@
 # todo: this has been copied from xform_manager, we need to figure out
 # where this code is actually going to live.
 
-from xml.dom import minidom
 import re
+from xml.dom import minidom
+
 from pyxform.utils import unicode
 
 XFORM_ID_STRING = u"_xform_id_string"

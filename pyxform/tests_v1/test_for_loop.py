@@ -16,12 +16,12 @@ class TestLoop(PyxformTestCase):
             instance__contains=[
                 '<for-block jr:template="">',
                 '</for-block>',
-                ],
+            ],
             model__contains=[
                 """<bind nodeset="/test_loop/for-block/input" """
                 """relevant="( ../done ='no')" """
                 """type="string"/>"""
-                ],
+            ],
             xml__contains=[
                 '<group ref="/test_loop/for-block">',
                 '<label>Oh HAI</label>',

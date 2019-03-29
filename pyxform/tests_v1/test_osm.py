@@ -11,6 +11,7 @@ expected_xml_output = """
       </tag>
     </upload>"""
 
+
 class OSMWidgetsTest(PyxformTestCase):
     def test_osm_type(self):
         self.assertPyxformXform(

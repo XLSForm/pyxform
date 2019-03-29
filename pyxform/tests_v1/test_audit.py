@@ -53,7 +53,8 @@ class AuditTest(PyxformTestCase):
             |        | audit  |   audit  | location-max-age=3, location-min-interval=1 |
             """,
             errored=True,
-            error__contains=['\'location-priority\', \'location-min-interval\', and \'location-max-age\' are required parameters'],
+            error__contains=[
+                '\'location-priority\', \'location-min-interval\', and \'location-max-age\' are required parameters'],
         )
 
     def test_audit_location_priority_values(self):

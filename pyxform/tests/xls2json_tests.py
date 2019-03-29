@@ -1,13 +1,15 @@
 """
 Testing simple cases for Xls2Json
 """
+import codecs
+import json
+import os
+
 from unittest2 import TestCase
+
+from pyxform.tests import utils
 from pyxform.xls2json import SurveyReader
 from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
-from pyxform.tests import utils
-import os
-import json
-import codecs
 
 
 # Nothing calls this AFAICT

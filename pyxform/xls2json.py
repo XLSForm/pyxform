@@ -2,15 +2,17 @@
 A Python script to convert excel files into JSON.
 """
 from __future__ import print_function, unicode_literals
+
+import codecs
 import json
+import os
 import re
 import sys
-import codecs
-import os
+
 from pyxform import constants, aliases
 from pyxform.errors import PyXFormError
-from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 from pyxform.utils import is_valid_xml_tag, unicode, basestring
+from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 
 SMART_QUOTES = {
     '\u2018': "'",
@@ -317,7 +319,7 @@ def workbook_to_json(
     if warnings is None:
         warnings = []
     is_valid = False
-    workbook_dict = {x.lower(): y for x,y in workbook_dict.items()}
+    workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
     for row in workbook_dict.get(constants.SURVEY, []):
         is_valid = 'type' in [z.lower() for z in row]
         if is_valid:
@@ -460,8 +462,8 @@ def workbook_to_json(
     survey_sheet = dealias_types(survey_sheet)
 
     osm_sheet = dealias_and_group_headers(workbook_dict.get(constants.OSM, []),
-                                              aliases.list_header,
-                                              True)
+                                          aliases.list_header,
+                                          True)
     osm_tags = group_dictionaries_by_key(osm_sheet, constants.LIST_NAME)
     # #################################
 
@@ -534,8 +536,8 @@ def workbook_to_json(
             # Force audit name to always be "audit" to follow XForms spec
             if 'name' in row and row['name'] not in [None, '', 'audit']:
                 raise PyXFormError(row_format_string % row_number +
-                    " Audits must always be named 'audit.'" +
-                    " The name column should be left blank.")
+                                   " Audits must always be named 'audit.'" +
+                                   " The name column should be left blank.")
             row['name'] = 'audit'
 
             new_dict = row.copy()
@@ -547,18 +549,18 @@ def workbook_to_json(
             if parameters:
                 if len(parameters.keys()) != 3:
                     raise PyXFormError("To include location information in" +
-                        " the audit, '" + constants.LOCATION_PRIORITY +
-                        "', '" + constants.LOCATION_MIN_INTERVAL + "', and '" +
-                        constants.LOCATION_MAX_AGE + "' are required" +
-                        " parameters.")
+                                       " the audit, '" + constants.LOCATION_PRIORITY +
+                                       "', '" + constants.LOCATION_MIN_INTERVAL + "', and '" +
+                                       constants.LOCATION_MAX_AGE + "' are required" +
+                                       " parameters.")
                 else:
                     if parameters[constants.LOCATION_PRIORITY] not in \
-                        ['no-power', 'low-power', 'balanced', 'high-accuracy']:
+                            ['no-power', 'low-power', 'balanced', 'high-accuracy']:
                         raise PyXFormError(
-                                "Parameter " + constants.LOCATION_PRIORITY +
-                                " must be set to no-power, low-power, balanced,"
-                                " or high-accuracy: '%s' is an invalid value" %
-                                parameters[constants.LOCATION_PRIORITY])
+                            "Parameter " + constants.LOCATION_PRIORITY +
+                            " must be set to no-power, low-power, balanced,"
+                            " or high-accuracy: '%s' is an invalid value" %
+                            parameters[constants.LOCATION_PRIORITY])
 
                     try:
                         int(parameters[constants.LOCATION_MIN_INTERVAL])
@@ -579,11 +581,11 @@ def workbook_to_json(
                             " must have an integer value.")
                     if int(parameters[constants.LOCATION_MAX_AGE]) < 0:
                         raise PyXFormError(
-                                "Parameter " + constants.LOCATION_MAX_AGE +
-                                " must be greater  than or equal to zero.")
+                            "Parameter " + constants.LOCATION_MAX_AGE +
+                            " must be greater  than or equal to zero.")
 
                     if int(parameters[constants.LOCATION_MAX_AGE]) < \
-                        int(parameters[constants.LOCATION_MIN_INTERVAL]):
+                            int(parameters[constants.LOCATION_MIN_INTERVAL]):
                         raise PyXFormError(
                             "Parameter " + constants.LOCATION_MAX_AGE +
                             " must be greater than or equal to " +
@@ -646,15 +648,15 @@ def workbook_to_json(
             error_message = row_format_string % row_number
             error_message += " Invalid question name [" + \
                              question_name + "] "
-            error_message += "Names must begin with a letter, colon,"\
+            error_message += "Names must begin with a letter, colon," \
                              + " or underscore."
             error_message += "Subsequent characters can include numbers," \
                              + " dashes, and periods."
             raise PyXFormError(error_message)
 
         if constants.LABEL not in row and \
-           row.get(constants.MEDIA) is None and \
-           question_type not in aliases.label_optional_types:
+                row.get(constants.MEDIA) is None and \
+                question_type not in aliases.label_optional_types:
             # TODO: Should there be a default label?
             #      Not sure if we should throw warnings for groups...
             #      Warnings can be ignored so I'm not too concerned
@@ -767,7 +769,7 @@ def workbook_to_json(
                 # cascading_json = get_cascading_json(
                 # cascading_choices, cascading_prefix, cascading_level)
                 if len(cascading_choices) <= 0 or \
-                   'questions' not in cascading_choices[0]:
+                        'questions' not in cascading_choices[0]:
                     raise PyXFormError(
                         "Found a cascading_select " + cascading_level +
                         ", but could not find " + cascading_level +
@@ -906,8 +908,8 @@ def workbook_to_json(
                                 choices[list_name]
                 elif "randomize" in parameters.keys() and \
                         parameters["randomize"] == "true":
-                        new_json_dict['itemset'] = list_name
-                        json_dict['choices'] = choices
+                    new_json_dict['itemset'] = list_name
+                    json_dict['choices'] = choices
                 elif file_extension in ['.csv', '.xml']:
                     new_json_dict['itemset'] = list_name
                 else:
@@ -1129,7 +1131,7 @@ def get_parameters(raw_parameters, allowed_parameters):
         else:
             raise PyXFormError("Accepted parameters are "
                                "'%s': '%s' is an invalid parameter."
-                               % (", ".join(allowed_parameters),  key))
+                               % (", ".join(allowed_parameters), key))
 
     return params
 

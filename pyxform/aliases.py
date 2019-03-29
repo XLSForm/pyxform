@@ -65,7 +65,7 @@ survey_header = {
     u"SMS Date Format": constants.SMS_DATE_FORMAT,
     u"SMS DateTime Format": constants.SMS_DATETIME_FORMAT,
     u"SMS Response": constants.SMS_RESPONSE,
-    u"compact_tag": u"instance::odk:tag", # used for compact representation
+    u"compact_tag": u"instance::odk:tag",  # used for compact representation
     u"Type": u"type",
     u"List_name": u"list_name",
     # u"repeat_count": u"jr:count",  duplicate key

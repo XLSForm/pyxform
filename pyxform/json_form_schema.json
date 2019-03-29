@@ -50,7 +50,7 @@
 			"type" : "array",
 			"description" : "The children. The array order should be perserved. Note that the unique items contraint might not be as strong as we want, items can have the same name if other properties differ.",
 			"uniqueItems" : true,
-			"items" :  
+			"items" :
 			{
 				"type" : "object",
 				"description" : "A child element. May correspond to a question or a group. This spec is self-refrencing so we can handle nested groups.",
@@ -170,7 +170,7 @@
 							{
 								"type" : "string",
 								"description" : "The appearance of the element in ODK. Values are specific to certain types.",
-								"enum" : 
+								"enum" :
 								[
 									"field-list",
 									"minimal",
@@ -193,7 +193,7 @@
 					{
 						"type" : "array",
 						"description" : "Applicable only to select type questions.",
-						"items" : 
+						"items" :
 						{
 							"type" : "object",
 							"description" : "A choice.",
@@ -218,7 +218,7 @@
 					{
 						"type" : "array",
 						"description" : "Applicable only to loop type questions.",
-						"items" : 
+						"items" :
 						{
 							"type" : "object",
 							"description" : "A item.",

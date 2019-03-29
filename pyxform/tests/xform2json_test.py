@@ -1,14 +1,16 @@
 from __future__ import print_function
-from pyxform.builder import create_survey_from_path
-from pyxform.xform2json import create_survey_element_from_xml, _try_parse
+
 import os
-from pyxform.tests import utils
-from unittest2 import TestCase
 from xml.etree.ElementTree import ParseError
+
+from unittest2 import TestCase
+
+from pyxform.builder import create_survey_from_path
+from pyxform.tests import utils
+from pyxform.xform2json import create_survey_element_from_xml, _try_parse
 
 
 class DumpAndLoadXForm2JsonTests(utils.XFormTestCase):
-
     maxDiff = None
 
     def setUp(self):

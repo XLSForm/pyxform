@@ -1,10 +1,10 @@
 import json
 
 from pyxform import constants
+from pyxform.errors import PyXFormError
+from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.utils import is_valid_xml_tag, node, unicode
 from pyxform.xls2json import print_pyobj_to_json
-from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
-from pyxform.errors import PyXFormError
 
 try:
     from functools import lru_cache
@@ -31,7 +31,7 @@ class SurveyElement(dict):
     # describes this survey element
     FIELDS = {
         u"name": unicode,
-        constants.COMPACT_TAG: unicode, # used for compact (sms) representation
+        constants.COMPACT_TAG: unicode,  # used for compact (sms) representation
         u"sms_field": unicode,
         u"sms_option": unicode,
         u"label": unicode,
@@ -278,13 +278,13 @@ class SurveyElement(dict):
             # always use itext for guidance hints because that's
             # how they're defined - https://opendatakit.github.io/xforms-spec/#languages
             if display_element is u'guidance_hint' \
-                    and not(isinstance(label_or_hint, dict)) \
+                    and not (isinstance(label_or_hint, dict)) \
                     and len(label_or_hint) > 0:
                 label_or_hint = {default_language: label_or_hint}
 
             # always use itext for hint if there's a guidance hint
             if display_element is u'hint' \
-                    and not(isinstance(label_or_hint, dict)) \
+                    and not (isinstance(label_or_hint, dict)) \
                     and len(label_or_hint) > 0 \
                     and "guidance_hint" in self.keys() \
                     and len(self["guidance_hint"]) > 0:
@@ -311,7 +311,7 @@ class SurveyElement(dict):
 
     def needs_itext_ref(self):
         return type(self.label) is dict or (
-            type(self.media) is dict and len(self.media) > 0)
+                type(self.media) is dict and len(self.media) > 0)
 
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):

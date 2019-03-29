@@ -1,14 +1,16 @@
 """
 Some tests for the new (v0.9) spec is properly implemented.
 """
-import unittest2 as unittest
 import codecs
 import os
+
+import unittest2 as unittest
+
 import pyxform
+from pyxform.errors import PyXFormError
+from pyxform.tests.utils import XFormTestCase
 from pyxform.utils import has_external_choices
 from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
-from pyxform.tests.utils import XFormTestCase
-from pyxform.errors import PyXFormError
 
 DIR = os.path.dirname(__file__)
 
@@ -221,6 +223,7 @@ class TestBlankSecondRow(unittest.TestCase):
 
 class TestXLDateAmbigous(unittest.TestCase):
     """Test non standard sheet with exception is processed successfully."""
+
     def test_xl_date_ambigous(self):
         """Test non standard sheet with exception is processed successfully."""
         filename = "xl_date_ambiguous.xlsx"
@@ -232,6 +235,7 @@ class TestXLDateAmbigous(unittest.TestCase):
 
 class TestSpreadSheetFilesWithMacrosAreAllowed(unittest.TestCase):
     """Test that spreadsheets with .xlsm extension are allowed"""
+
     def test_xlsm_files_are_allowed(self):
         filename = "excel_with_macros.xlsm"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)

@@ -1,5 +1,3 @@
-
-
 class InstanceInfo(object):
     """Standardise Instance details relevant during XML generation."""
 

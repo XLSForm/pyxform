@@ -27,7 +27,6 @@ class RangeWidgetTest(PyxformTestCase):
             ]
         )
 
-
     def test_rank_filter(self):
         self.assertPyxformXform(
             name="data",
@@ -57,7 +56,6 @@ class RangeWidgetTest(PyxformTestCase):
     </odk:rank>"""
             ]
         )
-
 
     def test_rank_translations(self):
         self.assertPyxformXform(

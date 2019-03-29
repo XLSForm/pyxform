@@ -12,13 +12,13 @@ class TestWarnings(PyxformTestCase):
                 """,
             instance__contains=[
                 '<some_text/>',
-                ],
+            ],
             model__contains=[
                 '<bind nodeset="/test_l1/some_text" type="string"/>',
-                ],
+            ],
             xml__contains=[
                 '<input ref="/test_l1/some_text">',
-                  '<hint>a hint</hint>',  # nopep8
+                '<hint>a hint</hint>',  # nopep8
                 '</input>',
             ],
         )
@@ -34,10 +34,10 @@ class TestWarnings(PyxformTestCase):
             model__contains=[
                 '<bind nodeset="/img_test/display_img_test" readonly="true()" type="string"/>',  # nopep8
 
-                ],
+            ],
             instance__contains=[
                 '<display_img_test/>',
-                ],
+            ],
             xml__contains=[
                 '<translation default="true()" lang="default">',
                 # and further down...

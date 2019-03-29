@@ -1,5 +1,6 @@
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
+
 class RandomizeItemsetsTest(PyxformTestCase):
     def test_randomized_select_one(self):
         self.assertPyxformXform(
@@ -16,7 +17,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
             """,
             xml__contains=[
                 "<itemset nodeset=\"randomize(instance(\'choices\')/root/item)\">"
-                ]
+            ]
         )
 
     def test_randomized_seeded_select_one(self):
@@ -34,7 +35,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
             """,
             xml__contains=[
                 "<itemset nodeset=\"randomize(instance(\'choices\')/root/item, 42)\">"
-                ]
+            ]
         )
 
     def test_randomized_seeded_select_one_nameset_seed(self):
@@ -71,7 +72,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
             """,
             xml__contains=[
                 "<itemset nodeset=\"randomize(instance(\'choices\')/root/item[name='a'], 42)\">"
-                ]
+            ]
         )
 
     def test_randomized_select_multiple(self):
@@ -89,7 +90,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
             """,
             xml__contains=[
                 "<itemset nodeset=\"randomize(instance(\'choices\')/root/item)\">"
-                ]
+            ]
         )
 
     def test_randomized_seeded_select_multiple(self):
@@ -107,7 +108,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
             """,
             xml__contains=[
                 "<itemset nodeset=\"randomize(instance(\'choices\')/root/item, 42)\">"
-                ]
+            ]
         )
 
     def test_randomized_external_xml_instance(self):
@@ -121,7 +122,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
             """,
             xml__contains=[
                 "<itemset nodeset=\"randomize(instance(\'cities\')/root/item)\">"
-                ]
+            ]
         )
 
     def test_randomized_select_one_bad_param(self):
@@ -140,7 +141,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
             """,
             error__contains=[
                 "Accepted parameters are 'randomize, seed': 'step' is an invalid parameter."
-                ]
+            ]
         )
 
     def test_randomized_select_one_bad_randomize(self):
@@ -159,7 +160,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
             """,
             error__contains=[
                 "randomize must be set to true or false: 'ukanga' is an invalid value"
-                ]
+            ]
         )
 
     def test_randomized_select_one_bad_seed(self):
@@ -178,7 +179,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
             """,
             error__contains=[
                 "seed value must be a number or a reference to another field."
-                ]
+            ]
         )
 
     def test_randomized_select_one_seed_without_randomize(self):
@@ -197,7 +198,5 @@ class RandomizeItemsetsTest(PyxformTestCase):
             """,
             error__contains=[
                 "Parameters must include randomize=true to use a seed."
-                ]
+            ]
         )
-
-

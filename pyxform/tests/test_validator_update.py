@@ -1,11 +1,12 @@
-from contextlib import contextmanager
-from datetime import datetime, timedelta
 import os
 import platform
 import shutil
-from stat import S_IXUSR, S_IXGRP
 import tempfile
+from contextlib import contextmanager
+from datetime import datetime, timedelta
+from stat import S_IXUSR, S_IXGRP
 from zipfile import ZipFile
+
 try:
     from zipfile import BadZipFile
 except ImportError:
@@ -17,7 +18,6 @@ from pyxform.tests.validators.server import ThreadingServerInThread
 from pyxform.utils import unicode
 from pyxform.validators.updater import _UpdateInfo, _UpdateHandler, \
     capture_handler, EnketoValidateUpdater
-
 
 TEST_PATH = validators.HERE
 
@@ -88,7 +88,6 @@ class TestTempUtils(TestCase):
 
 
 class TestUpdateHandler(TestCase):
-
     server = ThreadingServerInThread()
 
     @classmethod
@@ -421,7 +420,7 @@ class TestUpdateHandler(TestCase):
     def test_unzip_extract_file__bad_crc_raises(self):
         """Should raise an error if the zip file CRC doesn't match."""
         with get_temp_dir() as temp_dir, \
-                ZipFile(self.zip_file, mode="r") as zip_file,\
+                ZipFile(self.zip_file, mode="r") as zip_file, \
                 self.assertRaises(BadZipFile) as ctx:
             zip_item = [x for x in zip_file.infolist()
                         if x.filename.endswith("validate")][0]

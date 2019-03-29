@@ -391,11 +391,11 @@ class Survey(Section):
                       "external instance source URIs. Please check the form." \
                       " Instance name: '{i}', Existing type: '{e}', " \
                       "Existing URI: '{iu}', Duplicate type: '{d}', " \
-                      "Duplicate URI: '{du}', Duplicate context: '{c}'."\
-                        .format(
-                            i=i.name, iu=seen[i.name].src, e=seen[i.name].type,
-                            d=i.type, du=i.src, c=i.context
-                        )
+                      "Duplicate URI: '{du}', Duplicate context: '{c}'." \
+                    .format(
+                    i=i.name, iu=seen[i.name].src, e=seen[i.name].type,
+                    d=i.type, du=i.src, c=i.context
+                )
                 raise PyXFormError(msg)
             elif i.name in seen.keys() and seen[i.name].src == i.src:
                 # Instance id exists with same src URI -> ok, don't duplicate.
@@ -474,6 +474,7 @@ class Survey(Section):
         set up the self._translations dict which will be referenced in the
         setup media and itext functions
         """
+
         def _setup_choice_translations(name, choice_value, itext_id):
             for media_type_or_language, value in choice_value.items():  # noqa
                 if isinstance(value, dict):
@@ -722,14 +723,14 @@ class Survey(Section):
         replace ${varname} with the xpath to varname.
         """
         name = matchobj.group(1)
-        intro = "There has been a problem trying to replace ${%s} with the "\
-            "XPath to the survey element named '%s'." % (name, name)
+        intro = "There has been a problem trying to replace ${%s} with the " \
+                "XPath to the survey element named '%s'." % (name, name)
         if name not in self._xpath:
             raise PyXFormError(
                 intro + " There is no survey element with this name.")
         if self._xpath[name] is None:
             raise PyXFormError(intro + " There are multiple survey elements"
-                               " with this name.")
+                                       " with this name.")
         if context and not (context['type'] == 'calculate' and
                             'indexed-repeat' in context['bind']['calculate']):
             xpath, context_xpath = self._xpath[name], context.get_xpath()
@@ -752,6 +753,7 @@ class Survey(Section):
         """
         Replace all instances of ${var} with the xpath to var.
         """
+
         def _var_repl_function(matchobj):
             return self._var_repl_function(matchobj, context, use_current)
 
@@ -773,8 +775,10 @@ class Survey(Section):
         Returns that and a boolean indicating if there were any ${variables}
         present.
         """
+
         def _var_repl_output_function(matchobj):
             return self._var_repl_output_function(matchobj, context)
+
         # There was a bug where escaping is completely turned off in labels
         # where variable replacement is used.
         # For exampke, `${name} < 3` causes an error but `< 3` does not.

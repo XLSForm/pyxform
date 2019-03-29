@@ -80,13 +80,13 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
             name='valid_choices',
             ss_structure=self._simple_choice_ss([
                 {'list_name': 'l1',
-                    'name': 'c1',
-                    'label': 'choice 1'},
+                 'name': 'c1',
+                 'label': 'choice 1'},
                 {'list_name': 'l1',
-                    'name': 'c2',
-                    'label': 'choice 2'}]),
+                 'name': 'c2',
+                 'label': 'choice 2'}]),
             errored=False,
-            )
+        )
 
     def test_invalid_choices_sheet_fails(self):
         """
@@ -97,13 +97,13 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
             name='missing_name',
             ss_structure=self._simple_choice_ss([
                 {'list_name': 'l1',
-                    'label': 'choice 1'},
+                 'label': 'choice 1'},
                 {'list_name': 'l1',
-                    'label': 'choice 2'},
-                ]),
+                 'label': 'choice 2'},
+            ]),
             errored=True,
             error__contains=['option with no name'],
-            )
+        )
 
     def test_missing_list_name(self):
         """
@@ -114,12 +114,12 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
             name='missing_list_name',
             ss_structure=self._simple_choice_ss([
                 {'bad_column': 'l1',
-                    'name': 'l1c1',
-                    'label': 'choice 1'},
+                 'name': 'l1c1',
+                 'label': 'choice 1'},
                 {'bad_column': 'l1',
-                    'name': 'l1c1',
-                    'label': 'choice 2'},
-                ]),
+                 'name': 'l1c1',
+                 'label': 'choice 2'},
+            ]),
             debug=True,
             errored=True,
             # some basic keywords that should be in the error:
@@ -151,20 +151,20 @@ class AliasesTests(PyxformTestCase):
                 |         | yn            | yes            | Yes        |
                 |         | yn            | no             | No         |
                 """ % ({
-                        u'name_alias': name_alias
-                    }),
+                    u'name_alias': name_alias
+                }),
                 instance__contains=[
                     '<q1/>',
-                    ],
+                ],
                 model__contains=[
                     '<bind nodeset="/aliases/q1" type="select1"/>',
-                    ],
+                ],
                 xml__contains=[
                     '<select1 ref="/aliases/q1">',
                     '<value>yes</value>',
                     '<value>no</value>',
                     '</select1>',
-                    ])
+                ])
 
 
 ''' # uncomment when re-implemented

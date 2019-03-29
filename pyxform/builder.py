@@ -22,7 +22,7 @@ def copy_json_dict(json_dict):
     items = None
 
     if type(json_dict) is list:
-        json_dict_copy = [None]*len(json_dict)
+        json_dict_copy = [None] * len(json_dict)
         items = enumerate(json_dict)
     elif type(json_dict) is dict:
         json_dict_copy = {}
@@ -49,13 +49,13 @@ class SurveyElementBuilder(object):
         u"upload": UploadQuestion,
         u"osm": OsmUploadQuestion,
         u'range': RangeQuestion,
-        }
+    }
 
     SECTION_CLASSES = {
         u"group": GroupedSection,
         u"repeat": RepeatingSection,
         u"survey": Survey,
-        }
+    }
 
     def __init__(self, **kwargs):
         # I don't know why we would need an explicit none option for
@@ -63,7 +63,7 @@ class SurveyElementBuilder(object):
         self._add_none_option = False
         self.set_sections(
             kwargs.get(u"sections", {})
-            )
+        )
 
     def set_sections(self, sections):
         """
@@ -109,7 +109,7 @@ class SurveyElementBuilder(object):
         # TODO: Keep add none option?
         if add_none_option \
                 and question_type_str.startswith(u"select all that apply"):
-            SurveyElementBuilder\
+            SurveyElementBuilder \
                 ._add_none_option_to_select_all_that_apply(d_copy)
 
         # Handle or_other on select type questions
@@ -118,7 +118,7 @@ class SurveyElementBuilder(object):
             question_type_str = \
                 question_type_str[:len(question_type_str) - len(or_other_str)]
             d_copy["type"] = question_type_str
-            SurveyElementBuilder\
+            SurveyElementBuilder \
                 ._add_other_option_to_multiple_choice_question(d_copy)
             return [
                 SurveyElementBuilder._create_question_from_dict(
@@ -132,7 +132,6 @@ class SurveyElementBuilder(object):
         # todo: clean up this spaghetti code
         d_copy[u"question_type_dictionary"] = question_type_dictionary
         if question_class:
-
             return question_class(**d_copy)
 
         return []
@@ -146,7 +145,7 @@ class SurveyElementBuilder(object):
         other_choice = {
             u"name": u"other",
             u"label": u"Other",
-            }
+        }
         if other_choice not in choice_list:
             choice_list.append(other_choice)
 
@@ -158,7 +157,7 @@ class SurveyElementBuilder(object):
         none_choice = {
             u"name": u"none",
             u"label": u"None",
-            }
+        }
         if none_choice not in choice_list:
             choice_list.append(none_choice)
             none_constraint = u"(.='none' or not(selected(., 'none')))"
@@ -192,7 +191,7 @@ class SurveyElementBuilder(object):
             u"name": u"%s_other" % d[u"name"],
             u"label": u"Specify other.",
             u"bind": {u"relevant": u"selected(../%s, 'other')" % d[u"name"]},
-            }
+        }
         return InputQuestion(**kwargs)
 
     def _create_section_from_dict(self, d):
@@ -254,7 +253,7 @@ class SurveyElementBuilder(object):
                 [(lang, {u"name": column_headers[u"name"],
                          u"label": column_headers[u"label"][lang]})
                  for lang in column_headers[u"label"].keys()]
-                )
+            )
 
         result = question_template.copy()
         for key in result.keys():
@@ -306,7 +305,7 @@ def create_survey(
         id_string=None,
         title=None,
         default_language=None,
-        ):
+):
     """
     name_of_main_section -- a string key used to find the main section in the
                             sections dict if it is not supplied in the
@@ -363,6 +362,6 @@ def create_survey_from_path(path, include_directory=False):
     pkg = {
         u'name_of_main_section': main_section_name,
         u'sections': sections
-        }
+    }
 
     return create_survey(**pkg)

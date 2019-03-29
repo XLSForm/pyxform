@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
@@ -33,10 +34,10 @@ class UnicodeStrings(PyxformTestCase):
                      'label': u'''
                      “double-quoted”
                      '''.strip()},
-                     {'type': 'integer',
-                      'name': 'my_default_is_123',
-                      'label': 'my default is 123',
-                      'default': 123},
+                    {'type': 'integer',
+                     'name': 'my_default_is_123',
+                     'label': 'my default is 123',
+                     'default': 123},
                 ],
                 'choices': [
                     {'list_name': 'xyz',

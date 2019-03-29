@@ -1,13 +1,14 @@
 from pyxform.xls2json import QuestionTypesReader, print_pyobj_to_json
 
+
 def generate_new_dict():
     """
     This is just here incase there is ever any need to generate the question
     type dictionary from all.xls again.
     It shouldn't be called as part of any application.
     """
-    path_to_question_types = "/home/nathan/aptana-workspace/pyxform"\
-        "/pyxform/question_types/all.xls"
+    path_to_question_types = "/home/nathan/aptana-workspace/pyxform" \
+                             "/pyxform/question_types/all.xls"
     json_dict = QuestionTypesReader(path_to_question_types).to_json_dict()
     print_pyobj_to_json(json_dict, 'new_quesiton_type_dict.json')
 

@@ -1,9 +1,11 @@
 """
 Some tests for the new (v0.9) spec is properly implemented.  
 """
-import unittest2 as unittest
 import codecs
 import os
+
+import unittest2 as unittest
+
 import pyxform
 from pyxform.tests.utils import XFormTestCase
 

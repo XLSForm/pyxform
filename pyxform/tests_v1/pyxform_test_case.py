@@ -12,8 +12,8 @@ from unittest import TestCase
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
 from pyxform.tests_v1.test_utils.md_table import md_table_to_ss_structure
-from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.utils import NSMAP, unicode
+from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.xls2json import workbook_to_json
 
 
@@ -236,7 +236,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 if bad_kwarg in kwargs:
                     good_kwarg = '%s__contains' % code
                     raise SyntaxError(("'%s' is not a valid parameter. "
-                                      "Use double underscores: '%s'") %
+                                       "Use double underscores: '%s'") %
                                       (bad_kwarg, good_kwarg))
 
         if survey is False and expecting_invalid_survey is False:
@@ -283,7 +283,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             self.assertEqual(
                 real_count, count,
                 msg_prefix + "Found %d instances of %s in content"
-                " (expected %d)" % (real_count, text_repr, count))
+                             " (expected %d)" % (real_count, text_repr, count))
         else:
             self.assertTrue(
                 real_count != 0,

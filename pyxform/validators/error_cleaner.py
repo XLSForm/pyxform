@@ -1,5 +1,6 @@
-from pyxform.utils import unicode
 import re
+
+from pyxform.utils import unicode
 
 
 class ErrorCleaner(object):
@@ -26,7 +27,7 @@ class ErrorCleaner(object):
             error_message, flags=re.I)
         lines = unicode(error_message).strip().splitlines()
         no_dupes = [line for i, line in enumerate(lines)
-                    if line != lines[i-1] or i == 0]
+                    if line != lines[i - 1] or i == 0]
         return no_dupes
 
     @staticmethod

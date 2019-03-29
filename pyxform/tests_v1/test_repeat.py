@@ -9,6 +9,7 @@ class TestRepeat(PyxformTestCase):
     """
     TestRepeat class.
     """
+
     def test_repeat_relative_reference(self):
         """
         Test relative reference in repeats.
@@ -69,7 +70,7 @@ class TestRepeat(PyxformTestCase):
                 '<A/>',
                 '<B/>',
                 '</section>',
-                ],
+            ],
             model__contains=[
                 """<bind nodeset="/test_repeat/section/A" """
                 """type="string"/>""",
@@ -86,7 +87,7 @@ class TestRepeat(PyxformTestCase):
                 """<bind nodeset="/test_repeat/section3/sectiond/N" """
                 """relevant=" ../../sectionb/G ='oat'" """
                 """type="string"/>"""
-                ],
+            ],
             xml__contains=[
                 '<group ref="/test_repeat/section">',
                 '<label>Section</label>',
@@ -151,8 +152,10 @@ class TestRepeat(PyxformTestCase):
                 |         | crop_list            | kale  | Kale   |                |
             """,  # noqa pylint: disable=line-too-long
             xml__contains=[
-                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../crop ]">""",  # noqa pylint: disable=line-too-long
-                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../../crop ]">""",  # noqa pylint: disable=line-too-long
+                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../crop ]">""",
+                # noqa pylint: disable=line-too-long
+                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../../crop ]">""",
+                # noqa pylint: disable=line-too-long
             ],
         )
 
@@ -183,6 +186,7 @@ class TestRepeat(PyxformTestCase):
                 |         | crop_list            | kale  | Kale   |                                  |
             """,  # noqa pylint: disable=line-too-long
             model__contains=[
-                """<bind calculate="indexed-repeat( /data/rep/rep2/a ,  /data/rep/rep2 , 1)" nodeset="/data/rep/c1" type="string"/>""",  # noqa pylint: disable=line-too-long
+                """<bind calculate="indexed-repeat( /data/rep/rep2/a ,  /data/rep/rep2 , 1)" nodeset="/data/rep/c1" type="string"/>""",
+                # noqa pylint: disable=line-too-long
             ],
         )

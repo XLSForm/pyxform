@@ -1,8 +1,8 @@
 import os
+
+from pyxform.validators.error_cleaner import ErrorCleaner
 from pyxform.validators.util import run_popen_with_timeout, decode_stream, \
     XFORM_SPEC_PATH, check_readable
-from pyxform.validators.error_cleaner import ErrorCleaner
-
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 ENKETO_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", "validate")

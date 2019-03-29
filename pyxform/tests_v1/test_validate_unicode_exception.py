@@ -3,11 +3,13 @@
 
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
+
 class ValidateUnicodeException(PyxformTestCase):
     """
     Validation errors may include non-ASCII characters. In particular, ODK Validate
     uses ͎ (small arrow) to indicate where a problem starts.
     """
+
     def test_validate_unicode_exception(self):
         self.assertPyxformXform(
             md="""

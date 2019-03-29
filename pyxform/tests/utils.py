@@ -1,11 +1,15 @@
 import os
+import xml.etree.ElementTree as ETree
+
+from formencode.doctest_xml_compare import xml_compare
+from unittest2 import TestCase
+
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
-from unittest2 import TestCase
-import xml.etree.ElementTree as ETree
-from formencode.doctest_xml_compare import xml_compare
+
 try:
     import ConfigParser
+
     configparser = ConfigParser
 except ImportError:
     import configparser
@@ -66,10 +70,14 @@ class XFormTestCase(TestCase):
 
     def sort_elems(self, elems, attr=None):
         if attr:
-            def elem_get_attr(elem): return elem.get(attr, '')
+            def elem_get_attr(elem):
+                return elem.get(attr, '')
+
             key = elem_get_attr
         else:
-            def elem_get_tag(elem): return elem.tag
+            def elem_get_tag(elem):
+                return elem.tag
+
             key = elem_get_tag
         elems[:] = sorted(elems, key=key)
 

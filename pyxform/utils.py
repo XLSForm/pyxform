@@ -1,11 +1,12 @@
-from xml.dom.minidom import Text, Element, parseString
-import re
 import codecs
-import json
 import copy
+import json
+import os
+import re
+from xml.dom.minidom import Text, Element, parseString
+
 import unicodecsv as csv
 import xlrd
-import os
 
 try:
     unicode("str")
@@ -14,11 +15,11 @@ except NameError:
     basestring = str
     unichr = chr
 else:
-     try:
+    try:
         unicode = unicode
         basestring = basestring
         unichr = unichr
-     except NameError:# special cases where unicode is defined in python3 
+    except NameError:  # special cases where unicode is defined in python3
         unicode = str
         basestring = str
         unichr = chr
@@ -53,6 +54,7 @@ class DetachableElement(Element):
     class.  The long term fix will probably be to rewrite node() to use
     document.createElement rather than Element.
     """
+
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
         self.ownerDocument = None
@@ -100,8 +102,8 @@ def node(*args, **kwargs):
             if v is True and len(unicode_args) == 1:
                 parsed_string = True
                 # Add this header string so parseString can be used?
-                s = u'<?xml version="1.0" ?><'+tag+'>' + unicode_args[0]\
-                    + u'</'+tag+'>'
+                s = u'<?xml version="1.0" ?><' + tag + '>' + unicode_args[0] \
+                    + u'</' + tag + '>'
                 parsed_node = parseString(s.encode("utf-8")).documentElement
                 # Move node's children to the result Element
                 # discarding node's root
@@ -183,6 +185,7 @@ def has_external_choices(json_struct):
                 return True
     return False
 
+
 def get_languages_with_bad_tags(languages):
     """
     Returns languages with invalid or missing IANA subtags.
@@ -197,6 +200,6 @@ def get_languages_with_bad_tags(languages):
     for lang in languages:
         lang_code = re.search(lang_code_regex, lang)
 
-        if lang != 'default' and (not(lang_code) or not(lang_code.group(1) in iana_subtags)):
+        if lang != 'default' and (not (lang_code) or not (lang_code.group(1) in iana_subtags)):
             languages_with_bad_tags.append(lang)
     return languages_with_bad_tags

@@ -6,6 +6,7 @@ class MissingHeaders(PyxformTestCase):
     when survey and choices columns are missing headers, it is helpful to see
     an error message that prompts the user to include necessary headers.
     """
+
     def test_missing_survey_headers(self):
         self.assertPyxformXform(
             md="""

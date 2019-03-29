@@ -1,8 +1,10 @@
-from pyxform import create_survey_from_xls
 import re
-from pyxform.tests import utils
-from unittest2 import TestCase
 from xml.dom.minidom import getDOMImplementation
+
+from unittest2 import TestCase
+
+from pyxform import create_survey_from_xls
+from pyxform.tests import utils
 from pyxform.utils import node
 
 

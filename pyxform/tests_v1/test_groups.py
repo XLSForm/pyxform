@@ -18,12 +18,12 @@ class GroupsTests(PyxformTestCase):
             model__contains=[
                 '<pregrp/>',
                 '<xgrp>',
-                    '<xgrp_q1/>',  # nopep8
-                    '<xgrp_q1/>',  # nopep8
-                    '<xgrp_q2/>',  # nopep8
+                '<xgrp_q1/>',  # nopep8
+                '<xgrp_q1/>',  # nopep8
+                '<xgrp_q2/>',  # nopep8
                 '</xgrp>',
                 '<postgrp/>',
-                ])
+            ])
 
     def test_group_intent(self):
         self.assertPyxformXform(
@@ -39,5 +39,6 @@ class GroupsTests(PyxformTestCase):
             |        | note        | postgrp | Post group note  |                                                             |
             """,  # nopep8
             xml__contains=[
-                '<group intent="ex:org.redcross.openmapkit.action.QUERY(osm_file= /intent_test/pregrp )" ref="/intent_test/xgrp">',  # nopep8
-                ])
+                '<group intent="ex:org.redcross.openmapkit.action.QUERY(osm_file= /intent_test/pregrp )" ref="/intent_test/xgrp">',
+                # nopep8
+            ])

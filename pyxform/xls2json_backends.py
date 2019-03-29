@@ -1,17 +1,19 @@
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
+import datetime
+import re
+from collections import OrderedDict
+from functools import reduce
+from io import BytesIO
+
+import unicodecsv as csv
 import xlrd
 from xlrd import XLRDError
-import unicodecsv as csv
-from io import BytesIO
+
 from pyxform import constants
-import re
-import datetime
 from pyxform.errors import PyXFormError
 from pyxform.utils import unicode, basestring, unichr
-from functools import reduce
-from collections import OrderedDict
 
 
 def _list_to_dict_list(list_items):
@@ -78,7 +80,7 @@ def xls_to_dict(path_or_file):
     def xls_to_dict_normal_sheet(sheet):
         def iswhitespace(string):
             return (
-                isinstance(string, basestring) and len(string.strip()) == 0)
+                    isinstance(string, basestring) and len(string.strip()) == 0)
 
         # Check for duplicate column headers
         column_header_list = list()
@@ -218,7 +220,7 @@ def xls_to_dict(path_or_file):
         else:
             result[sheet.name], result[
                 u"%s_header" % sheet.name
-            ] = xls_to_dict_normal_sheet(sheet)
+                ] = xls_to_dict_normal_sheet(sheet)
 
     return result
 

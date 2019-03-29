@@ -2,9 +2,10 @@
 Testing simple cases for Xls2Json
 """
 from unittest import TestCase
-from pyxform.xls2json import SurveyReader
+
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.tests import utils
+from pyxform.xls2json import SurveyReader
 
 
 class GroupTests(TestCase):
@@ -24,7 +25,7 @@ class GroupTests(TestCase):
                     u'name': u'family_name',
                     u'type': u'text',
                     u'label': {u'English': u"What's your family name?"}
-                    },
+                },
                 {
                     u'name': u'father',
                     u'type': u'group',
@@ -36,14 +37,14 @@ class GroupTests(TestCase):
                             u'label': {
                                 u'English':
                                     u"What's your father's phone number?"}
-                            },
+                        },
                         {
                             u'name': u'age',
                             u'type': u'integer',
                             u'label': {u'English': u'How old is your father?'}
-                            }
-                        ],
-                    },
+                        }
+                    ],
+                },
                 {
                     u'children': [
                         {
@@ -61,8 +62,8 @@ class GroupTests(TestCase):
                     u'name': 'meta',
                     u'type': u'group'
                 }
-                ],
-            }
+            ],
+        }
         self.maxDiff = None
         self.assertEqual(x_results, expected_dict)
 

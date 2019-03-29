@@ -1,20 +1,20 @@
 import collections
-from contextlib import closing
 import io
 import logging
 import os
-import subprocess
-import time
-from subprocess import Popen, PIPE
-import threading
 import signal
+import subprocess
+import threading
+import time
+from contextlib import closing
+from subprocess import Popen, PIPE
+
 try:
     from urllib.request import urlopen, Request
     from urllib.error import URLError, HTTPError
 except ImportError:
     from urllib2 import urlopen, Request, URLError, HTTPError
 from pyxform.errors import PyXFormError
-
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 XFORM_SPEC_PATH = os.path.join(os.path.dirname(HERE), "tests",
@@ -161,12 +161,14 @@ def check_readable(file_path, retry_limit=10, wait_seconds=0.5):
     :param wait_seconds: Amount of sleep time between read attempts.
     :return: True or raise IOError.
     """
+
     def catch_try():
         try:
             with io.open(file_path, mode="r"):
                 return True
         except IOError:
             return False
+
     tries = 0
     while not catch_try():
         if tries < retry_limit:

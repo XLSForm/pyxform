@@ -3,6 +3,7 @@
 # breaks that function.
 
 from unittest import TestCase
+
 import pyxform
 from pyxform.xls2xform import _create_parser, _validator_args_logic
 
@@ -17,14 +18,14 @@ class XLS2XFormTests(TestCase):
                     {
                         u'name': u'location',
                         u'type': u'gps'
-                        }
-                    ],
+                    }
+                ],
                 u'name': u'gps',
                 u'type': u'survey'
-                }
-            },
+            }
+        },
         'title': u'test'
-        }
+    }
     survey = pyxform.create_survey(**survey_package)
 
     def test_create_parser_without_args(self):
@@ -37,7 +38,7 @@ class XLS2XFormTests(TestCase):
         arg_xlsform = 'xlsform.xlsx'
         arg_output = '.'
         arg_list = ['--json', '--skip_validate', '--no_pretty_print',
-            arg_xlsform, arg_output]
+                    arg_xlsform, arg_output]
         args = _create_parser().parse_args(arg_list)
         self.assertEqual(arg_xlsform, args.path_to_XLSForm)
         self.assertEqual(arg_output, args.output_path)

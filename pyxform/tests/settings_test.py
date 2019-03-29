@@ -1,11 +1,11 @@
 from unittest import TestCase
+
 from pyxform.builder import create_survey_from_path
-from pyxform.xls2json import SurveyReader
 from pyxform.tests import utils
+from pyxform.xls2json import SurveyReader
 
 
 class SettingsTests(TestCase):
-
     maxDiff = None
 
     def setUp(self):

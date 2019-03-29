@@ -63,5 +63,5 @@ class GeoWidgetsTest(PyxformTestCase):
                 '<bind nodeset="/geos/repeat/shape" type="geoshape"/>',
                 '<bind nodeset="/geos/repeat/shape_note" readonly="true()" '
                 'type="string"/>',
-                ],
-            )
+            ],
+        )

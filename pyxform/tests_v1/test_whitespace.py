@@ -1,5 +1,6 @@
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
+
 class WhitespaceTest(PyxformTestCase):
     def test_over_trim(self):
         self.assertPyxformXform(

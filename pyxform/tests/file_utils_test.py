@@ -1,7 +1,9 @@
 from __future__ import print_function
+
 from unittest import TestCase
-from pyxform.xls2json_backends import convert_file_to_csv_string
+
 from pyxform.tests import utils
+from pyxform.xls2json_backends import convert_file_to_csv_string
 
 
 class BackendUtilsTests(TestCase):
@@ -15,4 +17,3 @@ class BackendUtilsTests(TestCase):
         print("xls:")
         print(converted_xls)
         self.assertEqual(converted_csv, converted_xls)
-

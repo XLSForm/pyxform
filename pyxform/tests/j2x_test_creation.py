@@ -2,6 +2,7 @@
 Testing creation of Surveys using verbose methods
 """
 from unittest import TestCase
+
 from pyxform import *
 from pyxform.tests import utils
 

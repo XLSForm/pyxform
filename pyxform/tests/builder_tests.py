@@ -1,12 +1,13 @@
+import os
 import re
 import xml.etree.ElementTree as ETree
 from unittest import TestCase
-from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
-from pyxform.xls2json import print_pyobj_to_json
+
 from pyxform import Survey, InputQuestion
+from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.errors import PyXFormError
 from pyxform.tests import utils
-import os
+from pyxform.xls2json import print_pyobj_to_json
 
 FIXTURE_FILETYPE = "xls"
 
@@ -14,15 +15,15 @@ FIXTURE_FILETYPE = "xls"
 class BuilderTests(TestCase):
     maxDiff = None
 
-#   Moving to spec tests
-#    def test_new_widgets(self):
-#        survey = utils.build_survey('widgets.xls')
-#        path = utils.path_to_text_fixture('widgets.xml')
-#        survey.to_xml
-#        with open(path) as f:
-#            expected = ETree.fromstring(survey.to_xml())
-#            result = ETree.fromstring(f.read())
-#            self.assertTrue(xml_compare(expected, result))
+    #   Moving to spec tests
+    #    def test_new_widgets(self):
+    #        survey = utils.build_survey('widgets.xls')
+    #        path = utils.path_to_text_fixture('widgets.xml')
+    #        survey.to_xml
+    #        with open(path) as f:
+    #            expected = ETree.fromstring(survey.to_xml())
+    #            result = ETree.fromstring(f.read())
+    #            self.assertTrue(xml_compare(expected, result))
 
     def test_unknown_question_type(self):
         survey = utils.build_survey('unknown_question_type.xls')
@@ -106,7 +107,7 @@ class BuilderTests(TestCase):
                             u'name': u'count',
                             u'label': {
                                 u'English':
-                                u'How many are there in this group?'
+                                    u'How many are there in this group?'
                             },
                             u'type': u'integer'
                         }
@@ -121,7 +122,7 @@ class BuilderTests(TestCase):
                             u'name': u'count',
                             u'label': {
                                 u'English':
-                                u'How many are there in this group?'
+                                    u'How many are there in this group?'
                             },
                             u'type': u'integer'
                         }
@@ -205,9 +206,9 @@ class BuilderTests(TestCase):
             u'default_language': u'default',
             u'id_string': u'choice_name_same_as_select_name',
             u'type': u'survey',
-            u'children':  [
+            u'children': [
                 {
-                    u'children':  [
+                    u'children': [
                         {
                             u'name': u'zone',
                             u'label': u'Zone'
@@ -253,7 +254,7 @@ class BuilderTests(TestCase):
                     u'name': u'available_toilet_types',
                     u'label': {
                         u'english':
-                        u'What type of toilets are on the premises?'
+                            u'What type of toilets are on the premises?'
                     },
                     u'type': u'select all that apply',
                     u'children': [
@@ -265,7 +266,7 @@ class BuilderTests(TestCase):
                             u'name': u'open_pit_latrine',
                             u'label': {
                                 u'english':
-                                u'Pit latrine without slab/open pit'
+                                    u'Pit latrine without slab/open pit'
                             }
                         },
                         {
@@ -289,7 +290,7 @@ class BuilderTests(TestCase):
                     u'name': u'available_toilet_types_other',
                     u'bind': {
                         u'relevant':
-                        u"selected(../available_toilet_types, 'other')"
+                            u"selected(../available_toilet_types, 'other')"
                     },
                     u'label': u'Specify other.',
                     u'type': u'text'
@@ -307,8 +308,8 @@ class BuilderTests(TestCase):
                                     u'name': u'number',
                                     u'label': {
                                         u'english':
-                                        u'How many Pit latrine with slab are'
-                                        u' on the premises?'
+                                            u'How many Pit latrine with slab are'
+                                            u' on the premises?'
                                     },
                                     u'type': u'integer'
                                 }]},
@@ -316,7 +317,7 @@ class BuilderTests(TestCase):
                             u'name': u'open_pit_latrine',
                             u'label': {
                                 u'english':
-                                u'Pit latrine without slab/open pit'
+                                    u'Pit latrine without slab/open pit'
                             },
                             u'type': u'group',
                             u'children': [
@@ -324,8 +325,8 @@ class BuilderTests(TestCase):
                                     u'name': u'number',
                                     u'label': {
                                         u'english':
-                                        u'How many Pit latrine without '
-                                        u'slab/open pit are on the premises?'
+                                            u'How many Pit latrine without '
+                                            u'slab/open pit are on the premises?'
                                     },
                                     u'type': u'integer'
                                 }
@@ -340,8 +341,8 @@ class BuilderTests(TestCase):
                                     u'name': u'number',
                                     u'label': {
                                         u'english':
-                                        u'How many Bucket system are on the'
-                                        u' premises?'},
+                                            u'How many Bucket system are on the'
+                                            u' premises?'},
                                     u'type': u'integer'
                                 }
                             ]
@@ -421,7 +422,7 @@ class BuilderTests(TestCase):
                         },
                         {
                             u'label':
-                            u'Record your GPS coordinates.',
+                                u'Record your GPS coordinates.',
                             u'name': u'gps',
                             u'type': u'geopoint'
                         }
@@ -444,7 +445,7 @@ class BuilderTests(TestCase):
                                 },
                                 {
                                     u'label':
-                                    u'Internet Explorer',
+                                        u'Internet Explorer',
                                     u'name': u'ie',
                                     u'sms_option': u'ie'
                                 },
@@ -455,7 +456,7 @@ class BuilderTests(TestCase):
                                 }
                             ],
                             u'label':
-                            u'What web browsers do you use?',
+                                u'What web browsers do you use?',
                             u'name': u'web_browsers',
                             u'sms_field': u'q5',
                             u'type': u'select all that apply'

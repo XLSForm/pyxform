@@ -1,5 +1,7 @@
 import os
+
 from unittest2 import TestCase
+
 from pyxform.tests.utils import prep_class_config
 from pyxform.validators.error_cleaner import ErrorCleaner
 from pyxform.validators.util import XFORM_SPEC_PATH, check_readable
