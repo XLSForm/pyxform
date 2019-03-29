@@ -11,7 +11,10 @@ jobs:
       - run:
           # Install dependencies with --user to enable easier caching
           name: Install dependencies
-          command: pip install -r requirements.pip --user
+          command: |
+            pip install -r requirements.pip --user
+            pip install codecov --user
+            /home/circleci/.local/bin/codecov
       - run:
           # Validate calls GUI code which fails if assistive_technologies are on
           name: Install dependencies for ODK Validate
@@ -21,8 +24,13 @@ jobs:
       - run:
           name: Run tests
           command: |
-            /home/circleci/.local/bin/nosetests
-            /home/circleci/.local/bin/nosetests --tests pyxform/tests_v1/
+            /home/circleci/.local/bin/nosetests --with-coverage
+            /home/circleci/.local/bin/nosetests --tests pyxform/tests_v1/ --with-coverage
+      - run:
+          name: upload coverage report
+          command: |
+            /home/circleci/.local/bin/coverage xml
+            /home/circleci/.local/bin/codecov --required -X search gcov pycov -f coverage.xml
       - save_cache:
           key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements.pip" }}
           paths:
