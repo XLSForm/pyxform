@@ -3,7 +3,7 @@ Testing creation of Surveys using verbose methods
 """
 from unittest import TestCase
 
-from pyxform import *
+from pyxform import Survey, MultipleChoiceQuestion, InputQuestion, create_survey_from_xls
 from pyxform.tests import utils
 
 

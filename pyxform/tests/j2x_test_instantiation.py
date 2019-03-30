@@ -3,7 +3,7 @@ Testing the instance object for pyxform.
 """
 from unittest import TestCase
 
-from pyxform import *
+from pyxform import Survey, SurveyInstance
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.tests.utils import prep_class_config
 

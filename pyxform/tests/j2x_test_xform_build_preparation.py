@@ -3,7 +3,7 @@ Testing preparation of values for XForm exporting
 """
 from unittest import TestCase
 
-from pyxform import *
+from pyxform import MultipleChoiceQuestion, Survey
 
 
 class Json2XformExportingPrepTests(TestCase):

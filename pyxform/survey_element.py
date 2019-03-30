@@ -268,7 +268,7 @@ class SurveyElement(dict):
         for display_element in [u'label', u'hint', u'guidance_hint']:
             label_or_hint = self[display_element]
 
-            if display_element is u'label' \
+            if display_element == u'label' \
                     and self.needs_itext_ref() \
                     and type(label_or_hint) is not dict \
                     and label_or_hint:
@@ -276,13 +276,13 @@ class SurveyElement(dict):
 
             # always use itext for guidance hints because that's
             # how they're defined - https://opendatakit.github.io/xforms-spec/#languages
-            if display_element is u'guidance_hint' \
+            if display_element == u'guidance_hint' \
                     and not (isinstance(label_or_hint, dict)) \
                     and len(label_or_hint) > 0:
                 label_or_hint = {default_language: label_or_hint}
 
             # always use itext for hint if there's a guidance hint
-            if display_element is u'hint' \
+            if display_element == u'hint' \
                     and not (isinstance(label_or_hint, dict)) \
                     and len(label_or_hint) > 0 \
                     and "guidance_hint" in self.keys() \

@@ -202,7 +202,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 print("<xml unavailable />")
                 print("ERROR: '%s'" % errors[0])
         except ODKValidateError as e:
-            if len(odk_validate_error__contains) is 0:
+            if len(odk_validate_error__contains) == 0:
                 raise PyxformTestError("ODK Validate error was thrown but " +
                                        "'odk_validate_error__contains'" +
                                        " was empty:" + unicode(e))
