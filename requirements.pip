@@ -15,5 +15,5 @@ unicodecsv==0.14.1
 unittest2==1.1.0
 xlrd==1.2.0
 pycodestyle==2.5.0
-pyflakes==2.1.1
+flake8==3.7.7
 codecov==2.0.15
