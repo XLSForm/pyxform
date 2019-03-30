@@ -27,8 +27,8 @@ jobs:
       - run:
           name: Code analysis
           command:  |
-            pycodestyle --config=.config/pycodestyle
-            flake8 ./ --config=.config/flake8
+            pycodestyle
+            flake8
       - run:
           name: Run tests
           command: |
