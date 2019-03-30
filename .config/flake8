@@ -1,0 +1,9 @@
+[flake8]
+
+show-source = True
+
+format = pylint
+
+statistics = True
+
+ignore = E123, E501, E722, E741, W291, W504, W605
