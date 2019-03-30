@@ -1,2 +1,5 @@
 -e .
 nose
+pycodestyle==2.5.0
+flake8==3.7.7
+codecov==2.0.15
