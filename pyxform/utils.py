@@ -33,7 +33,7 @@ XFORM_TAG_REGEXP = "%(start)s%(char)s*" % {
     "char": TAG_CHAR
 }
 
-INVALID_XFORM_TAG_REGEXP = r"[^a-zA-Z:_][^a-zA-Z:_0-9\\-.]*"
+INVALID_XFORM_TAG_REGEXP = r"[^a-zA-Z:_][^a-zA-Z:_0-9\-.]*"
 
 NSMAP = {
     u"xmlns": u"http://www.w3.org/2002/xforms",

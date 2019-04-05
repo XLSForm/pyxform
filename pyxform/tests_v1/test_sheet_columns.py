@@ -129,6 +129,24 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
                 'list name',
             ])
 
+    def test_clear_filename_error_message(self):
+        """
+        Test clear filename
+        """
+
+        self.assertPyxformXform(
+            name='bad@filename',
+            ss_structure=self._simple_choice_ss([
+                {'list_name': 'l1',
+                    'name': 'c1',
+                    'label': 'choice 1'},
+                {'list_name': 'l1',
+                    'name': 'c2',
+                    'label': 'choice 2'}]),
+            errored=True,
+            error__contains=["Invalid name. Remove '@' from 'bad@filename'"]
+            )
+
 
 class AliasesTests(PyxformTestCase):
     """
