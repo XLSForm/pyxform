@@ -191,7 +191,7 @@ class Survey(Section):
 
         return node(
             "h:html",
-            node("h:head", node("h:title", self.title), self.xml_model()),
+            node("h:head", node("h:title", self.title), self.xml_model(warnings)),
             node("h:body", *self.xml_control(), **body_kwargs),
             **nsmap
         )
@@ -562,6 +562,7 @@ class Survey(Section):
         When translations are not provided "-" will be used.
         This disables any of the default_language fallback functionality.
         """
+
         if warnings is None:
             warnings = []
 
@@ -571,19 +572,54 @@ class Survey(Section):
                 paths[path] = paths.get(path, set()).union(content.keys())
 
         for lang, translation in self._translations.items():
+            this_path_has_warning = False
             for path, content_types in paths.items():
                 if path not in self._translations[lang]:
                     self._translations[lang][path] = {}
+                    # missing question/question thingy thats like a hint
+                    question_and_column = path.split(":")
+                    missing_warning = self._generate_missing_translation_warning(
+                        lang, question_and_column[0], question_and_column[1]
+                    )
+                    warnings.append(missing_warning)
+                    # no need to warn about content types missing translations since the
+                    # whole path has a warning now.
+                    this_path_has_warning = True
+
                 for content_type in content_types:
                     if content_type not in self._translations[lang][path]:
-                        if lang == 'default':
-                            warnings.append('\tDefault language not set,' +
-                                            ' with no default translations for ' + content_type
-                                            + ' Please consider setting a `default_language` in your'
-                                            + ' settings tab to insure questions and options appear'
-                                            + ' as expected.'
-                                            )
-                        self._translations[lang][path][content_type] = "-"
+                        self._translations[lang][path][content_type] = u"-"
+                        # missing question thingy thats like media
+                        if not this_path_has_warning:
+                            # the path has a translation but the content type is missing one.
+                            missing_warning = self._generate_missing_translation_warning(
+                                lang, path.split(":")[0], content_type
+                            )
+                            warnings.append(missing_warning)
+
+    def _generate_missing_translation_warning(self, lang, question_name, column_name):
+        found_on_msg = (
+            "\n--\n Question missing translation: "
+            + question_name
+            + "\n Column missing: "
+            + column_name
+        )
+
+        if lang == "default":
+            return (
+                "\tDefault language not set," + " with missing default translations."
+                " Please consider setting a `default_language` in your"
+                + " settings tab to insure questions and options appear"
+                + " as expected."
+                + found_on_msg
+            )
+
+        return (
+            "\tMissing field translations found for "
+            + lang
+            + " field may not appear as expected."
+            + found_on_msg
+        )
 
     def _setup_media(self):
         """
@@ -734,7 +770,7 @@ class Survey(Section):
         # space to text
         # TODO: check out pyxml
         # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
-        xml_with_linebreaks = self.xml().toprettyxml(indent="  ")
+        xml_with_linebreaks = self.xml(warnings).toprettyxml(indent="  ")
         text_re = re.compile(r"(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)", re.DOTALL)
         output_re = re.compile(r"\n.*(<output.*>)\n(\s\s)*")
         pretty_xml = text_re.sub(
@@ -847,8 +883,6 @@ class Survey(Section):
         Print the xForm to a file and optionally validate it as well by
         throwing exceptions and adding warnings to the warnings array.
         """
-        print('print xform to file')
-        print('i has warnigns!')
         if warnings is None:
             warnings = []
         if not path:
