@@ -141,7 +141,7 @@ class SurveyElement(dict):
     ]
 
     # Supported media types for attaching to questions
-    SUPPORTED_MEDIA = ["image", "audio", "video"]
+    SUPPORTED_MEDIA = ["image", "audio", "video", "big-image"]
 
     def validate(self):
         if not is_valid_xml_tag(self.name):

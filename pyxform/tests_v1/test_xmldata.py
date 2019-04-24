@@ -367,6 +367,39 @@ class ExternalInstanceTests(PyxformTestCase):
         xml = survey._to_pretty_xml()
         self.assertEqual(1, xml.count(expected))
 
+    def test_big_image_column(self):
+        """test Support for big-image itext value tag type """
+        md = """
+            | survey  |                |                 |                |       |                  |
+            |         | type           | name            | label          | image | media::big-image |
+            |         | select_one a_b | big-image-test  | big-image-test | y.jpg | y.jpg            |
+            | choices |                |           |        |           |                  |
+            |         | list_name      | name      | label  | image     | media::big-image |
+            |         | a_b            | a         |        | a.jpg     | c.jpg            |
+            |         | a_b            | b         |        | b.jpg     | d.jpg            |
+            """  # noqa
+        self.assertPyxformXform(
+            name="data",
+            md=md,
+            errored=False,
+            itext__contains=[
+                '<translation default="true()" lang="default">',
+                '<text id="/data/big-image-test/b:label">',
+                '<value form="image">jr://images/b.jpg</value>',
+                '<value form="big-image">jr://big-image/d.jpg</value>',
+                '</text>',
+                '<text id="/data/big-image-test/a:label">',
+                '<value form="image">jr://images/a.jpg</value>',
+                '<value form="big-image">jr://big-image/c.jpg</value>',
+                '</text>',
+                '<text id="/data/big-image-test:label">',
+                '<value form="image">jr://images/y.jpg</value>',
+                '<value form="big-image">jr://big-image/y.jpg</value>',
+                '<value>big-image-test</value>',
+                '</text>',
+                '</translation>',
+            ])
+
     def test_external_instance_pulldata_constraint(self):
         """
         Checks if instance node for pulldata function is added

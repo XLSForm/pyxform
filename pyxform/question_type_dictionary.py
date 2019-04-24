@@ -371,4 +371,13 @@ QUESTION_TYPE_DICT = {
     "xml-external": {
         # Only effect is to add an external instance.
     },
+    "big-image": {
+        "control": {
+            "tag": "upload",
+            "mediatype": "big-image/*"
+        },
+        "bind": {
+            "type": "binary"
+        }
+    }
 }
