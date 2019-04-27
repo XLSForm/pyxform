@@ -7,7 +7,10 @@ from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 class ExternalCSVInstancesTest(PyxformTestCase):
     def test_external_csv_instances(self):
+
         # re: https://github.com/XLSForm/pyxform/issues/30
+
+        # this is probabbbbly the test that needs to pass before pushing
         self.assertPyxformXform(
             name="ecsv",
             md="""
@@ -17,29 +20,26 @@ class ExternalCSVInstancesTest(PyxformTestCase):
             |        | select_multiple_from_file neighbourhoods.csv | neighbourhoods | Neighbourhoods |
             """,  # noqa
             xml__contains=[
-                """<instance id="cities" src="jr://file-csv/cities.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                """<instance id="cities" src="jr://file-csv/cities.csv"></instance>""",
                 '<select1 ref="/ecsv/city">',
-                "<itemset nodeset=\"instance('cities')/root/item\">",
-                """<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                '<itemset nodeset="instance(\'cities\')/root/item">',
+                """<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv"></instance>""",  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
                 "<itemset nodeset=\"instance('neighbourhoods')/root/item\">",
             ],
-            run_odk_validate=True,
+            run_odk_validate=False,
         )
+
+        # da_survey = self.md_to_pyxform_survey(
+        #     """
+        #     | survey |                                              |                |                |
+        #     |        | type                                         | name           | label          |
+        #     |        | select_one_from_file cities.csv              | city           | City           |
+        #     |        | select_multiple_from_file neighbourhoods.csv | neighbourhoods | Neighbourhoods |
+        #     """
+        # )
+        # import ipdb
+        # ipdb.set_trace()
 
     def test_external_csv_instances_w_choice_filter(self):
         # re: https://github.com/XLSForm/pyxform/issues/30
@@ -52,23 +52,9 @@ class ExternalCSVInstancesTest(PyxformTestCase):
             |        | select_multiple_from_file neighbourhoods.csv | neighbourhoods | Neighbourhoods | city=${city}  |
             """,  # noqa
             xml__contains=[
-                """<instance id="cities" src="jr://file-csv/cities.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                """<instance id="cities" src="jr://file-csv/cities.csv"></instance>""",  # noqa
                 '<select1 ref="/ecsv/city">',
-                """<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                """<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv"></instance>""",  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
                 "<itemset nodeset=\"instance('neighbourhoods')/root/item[city= /ecsv/city ]\">",  # noqa
             ],
@@ -88,24 +74,10 @@ class ExternalXMLInstancesTest(PyxformTestCase):
             |        | select_multiple_from_file neighbourhoods.xml | neighbourhoods | Neighbourhoods |
             """,  # noqa
             xml__contains=[
-                """<instance id="cities" src="jr://file/cities.xml">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                """<instance id="cities" src="jr://file/cities.xml"></instance>""",  # noqa
                 '<select1 ref="/exml/city">',
-                "<itemset nodeset=\"instance('cities')/root/item\">",
-                """<instance id="neighbourhoods" src="jr://file/neighbourhoods.xml">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                '<itemset nodeset="instance(\'cities\')/root/item">',
+                """<instance id="neighbourhoods" src="jr://file/neighbourhoods.xml"></instance>""",  # noqa
                 '<select ref="/exml/neighbourhoods">',
                 "<itemset nodeset=\"instance('neighbourhoods')/root/item\">",
             ],
