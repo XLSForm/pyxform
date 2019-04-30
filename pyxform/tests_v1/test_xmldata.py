@@ -425,5 +425,3 @@ class ExternalInstanceTests(PyxformTestCase):
         self.assertPyxformXform(
                 md=md, model__contins=[expected], run_odk_validate=True)
         survey = self.md_to_pyxform_survey(md_raw=md)
-
-        
