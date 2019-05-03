@@ -10,6 +10,8 @@ try:
 except ImportError:
     import configparser
 
+DIR = os.path.dirname(__file__)
+
 
 def path_to_text_fixture(filename):
     directory = os.path.dirname(__file__)
@@ -44,6 +46,13 @@ class XFormTestCase(TestCase):
     solution might be to rewrite the code that generates an XForm to use
     OrderedDicts where appropriate.
     """
+
+    def get_file_path(self, filename):
+        self.path_to_excel_file = os.path.join(DIR, "example_xls", filename)
+
+        # Get the xform output path:
+        self.root_filename, self.ext = os.path.splitext(filename)
+        self.output_path = os.path.join(DIR, "test_output", self.root_filename + ".xml")
 
     def assertXFormEqual(self, xform1, xform2):
         xform1 = ETree.fromstring(xform1.encode('utf-8'))
