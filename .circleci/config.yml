@@ -31,6 +31,14 @@ jobs:
           command: |
             /home/circleci/.local/bin/coverage xml
             /home/circleci/.local/bin/codecov --required -X search gcov pycov -f coverage.xml
+      - run:
+          name: Building artifacts
+          command: |
+            python setup.py sdist
+            python setup.py bdist_wheel
+      - store_artifacts:
+          path: dist/
+          destination: ./
       - save_cache:
           key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements.pip" }}
           paths:

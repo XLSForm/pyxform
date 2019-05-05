@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 """
 odk_validate.py
 A python wrapper around ODK Validate
@@ -17,10 +17,12 @@ ODK_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", "ODK_Validate.jar")
 
 
 class ODKValidateError(Exception):
+    """ODK Validation exception error."""
     pass
 
 
 def install_exists():
+    """Returns True if ODK_VALIDATE_PATH exists."""
     return os.path.exists(ODK_VALIDATE_PATH)
 
 
@@ -38,33 +40,43 @@ def install_ok(bin_file_path=ODK_VALIDATE_PATH):
         path_to_xform=XFORM_SPEC_PATH, bin_file_path=bin_file_path)
     if return_code == 1:
         return False
-    else:
-        return True
+
+    return True
 
 
-def _check_java_version():
-    stderr = run_popen_with_timeout(["java", "-version"], 100)[3]
+def check_java_version():
+    """Check java version is greater than or equal to java 8.
+
+    Raises EnvironmentError exception if java version is less than java 8.
+    """
+    try:
+        stderr = run_popen_with_timeout(["java", "-version"], 100)[3]
+    except OSError as os_error:
+        stderr = str(os_error)
     stderr = stderr.strip().decode('utf-8')
     if "java version" not in stderr and "openjdk version" not in stderr:
         raise EnvironmentError(
             "pyxform odk validate dependency: java not found")
     # extract version number from version string
     java_version_str = stderr.split('\n')[0]
-    # version number is usually inside double-quotes. Using regex to find that in the string
+    # version number is usually inside double-quotes.
+    # Using regex to find that in the string
     java_version = re.findall(r'\"(.+?)\"', java_version_str)[0]
     major, minor, _ = java_version.split('.')
-    if not ((int(major) == 1 or not int(minor) >= 8) or int(major) >= 8):
+    if not ((int(major) == 1 and int(minor) >= 8) or int(major) >= 8):
         raise EnvironmentError(
-            'pyxform odk validate dependency: java 8 or newer version not found')
+            "pyxform odk validate dependency: "
+            "java 8 or newer version not found")
 
 
 def check_xform(path_to_xform):
-    """
+    """Run ODK Validate against the XForm in `path_to_xform`.
+
     Returns an array of warnings if the form is valid.
     Throws an exception if it is not
     """
     # check for available java version
-    _check_java_version()
+    check_java_version()
 
     # resultcode indicates validity of the form
     # timeout indicates whether validation ran out of time to complete
@@ -72,7 +84,7 @@ def check_xform(path_to_xform):
     # appear and can be ignored.
     # stderr is treated as a warning if the form is valid or an error
     # if it is invalid.
-    returncode, timeout, stdout, stderr = _call_validator(
+    returncode, timeout, _stdout, stderr = _call_validator(
         path_to_xform=path_to_xform)
     warnings = []
     stderr = decode_stream(stderr)
@@ -82,13 +94,15 @@ def check_xform(path_to_xform):
     else:
         if returncode > 0:  # Error invalid
             raise ODKValidateError(
-                b'ODK Validate Errors:\n' + ErrorCleaner.odk_validate(stderr).encode('utf-8'))
+                b'ODK Validate Errors:\n' +
+                ErrorCleaner.odk_validate(stderr).encode('utf-8'))
         elif returncode == 0:
             if stderr:
                 warnings.append('ODK Validate Warnings:\n' + stderr)
-            return warnings
         elif returncode < 0:
             return ["Bad return code from ODK Validate."]
+
+    return warnings
 
 
 if __name__ == '__main__':
