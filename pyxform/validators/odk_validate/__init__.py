@@ -45,15 +45,15 @@ def install_ok(bin_file_path=ODK_VALIDATE_PATH):
 def _check_java_version():
     stderr = run_popen_with_timeout(["java", "-version"], 100)[3]
     stderr = stderr.strip().decode('utf-8')
-    if not "java version" in stderr and not "openjdk version" in stderr:
+    if "java version" not in stderr and "openjdk version" not in stderr:
         raise EnvironmentError(
             "pyxform odk validate dependency: java not found")
     # extract version number from version string
     java_version_str = stderr.split('\n')[0]
     # version number is usually inside double-quotes. Using regex to find that in the string
     java_version = re.findall(r'\"(.+?)\"', java_version_str)[0]
-    java_version_numbers = java_version.split('.')
-    if not int(java_version_numbers[0]) > 0 or not int(java_version_numbers[1]) > 7:
+    major, minor, _ = java_version.split('.')
+    if not ((int(major) == 1 or not int(minor) >= 8) or int(major) >= 8):
         raise EnvironmentError(
             'pyxform odk validate dependency: java 8 or newer version not found')
 
