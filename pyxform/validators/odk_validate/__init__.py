@@ -50,10 +50,12 @@ def check_java_version():
     Raises EnvironmentError exception if java version is less than java 8.
     """
     try:
-        stderr = run_popen_with_timeout(["java", "-version"], 100)[3]
+        stderr = str(run_popen_with_timeout(["java", "-version"], 100)[3])
     except OSError as os_error:
         stderr = str(os_error)
-    stderr = stderr.strip().decode('utf-8')
+    # convert string to unicode for python2
+    if sys.version_info.major < 3:
+        stderr = stderr.strip().decode('utf-8')
     if "java version" not in stderr and "openjdk version" not in stderr:
         raise EnvironmentError(
             "pyxform odk validate dependency: java not found")

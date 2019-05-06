@@ -41,7 +41,7 @@ class TestValidators(TestCase):
             with self.assertRaises(EnvironmentError) as error:
                 check_java_version()
             self.assertEqual(
-                error.exception.message,
+                str(error.exception),
                 "pyxform odk validate dependency: java not found")
 
         with patch(mock_func) as mock_popen:
@@ -49,7 +49,7 @@ class TestValidators(TestCase):
             with self.assertRaises(EnvironmentError) as error:
                 check_java_version()
             self.assertEqual(
-                error.exception.message, "pyxform odk validate dependency: "
+                str(error.exception), "pyxform odk validate dependency: "
                 "java 8 or newer version not found")
 
         with patch(mock_func) as mock_popen:
