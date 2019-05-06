@@ -233,7 +233,7 @@ class TestXLDateAmbigous(unittest.TestCase):
 
 class TestXLDateAmbigousWithException(unittest.TestCase):
     """Test non standard sheet date values to raise an exception.
-        This exception is raised if the date values exceed the 
+        This exception is raised if the date values exceed the
         datemode value accepted by that workbook."""
     def test_xl_date_ambigous_with_exception(self):
         """Test non standard sheet with exception is processed successfully."""
@@ -244,7 +244,7 @@ class TestXLDateAmbigousWithException(unittest.TestCase):
         msg = 'The xls file provided has an invalid date on the'\
             ' survey sheet, under the default column on row number 5'
 
-        self.assertEqual(msg, e.exception.message.encode('utf-8'))
+        self.assertEqual(msg, str(e.exception))
 
 
 class TestSpreadSheetFilesWithMacrosAreAllowed(unittest.TestCase):
