@@ -13,6 +13,7 @@ from xlrd import XLRDError
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
+from xlrd.xldate import XLDateAmbiguous
 from pyxform.utils import unicode, basestring, unichr
 
 
