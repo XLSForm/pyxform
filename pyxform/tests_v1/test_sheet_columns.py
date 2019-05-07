@@ -130,10 +130,11 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
             ])
 
     def test_clear_filename_error_message(self):
-        """
-        Test clear filename
-        """
-
+        """Test clear filename error message"""
+        error_message = "The name 'bad@filename' is an invalid XML tag, it " \
+                        "contains an invalid character '@'. Names must begin" \
+                        " with a letter, colon, or underscore, subsequent " \
+                        "characters can include numbers, dashes, and periods"
         self.assertPyxformXform(
             name='bad@filename',
             ss_structure=self._simple_choice_ss([
@@ -144,7 +145,7 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
                     'name': 'c2',
                     'label': 'choice 2'}]),
             errored=True,
-            error__contains=["Invalid name. Remove '@' from 'bad@filename'"]
+            error__contains=[error_message]
             )
 
 

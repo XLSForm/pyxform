@@ -1,5 +1,6 @@
-import json
 import re
+
+import json
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
@@ -139,8 +140,11 @@ class SurveyElement(dict):
     def validate(self):
         if not is_valid_xml_tag(self.name):
             invalid_char = re.search(INVALID_XFORM_TAG_REGEXP, self.name)
-            msg = "Invalid name. Remove '{}' from '{}'".format(
-                invalid_char.group(0), self.name)
+            msg = "The name '{}' is an invalid XML tag, it contains an " \
+                  "invalid character '{}'. Names must begin with a letter, " \
+                  "colon, or underscore, subsequent characters can include " \
+                  "numbers, dashes, and periods".format(
+                self.name, invalid_char.group(0))
             raise PyXFormError(msg)
 
     # TODO: Make sure renaming this doesn't cause any problems
