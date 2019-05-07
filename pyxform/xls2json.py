@@ -156,19 +156,14 @@ def dealias_types(dict_array):
 
 def clean_text_values(dict_array):
     """
-    Go though the dict array and strips all text values and keys.
-    Replaces multiple spaces with single spaces.
+    Go though the dict array and strips all text values.
+    Also replaces multiple spaces with single spaces.
     """
     for row in dict_array:
         replace_smart_quotes_in_dict(row)
         for key, value in row.items():
-            updated_key = " "
-            if isinstance(key, basestring):
-                updated_key = re.sub(r"( )+", " ", key.strip())
-                row[updated_key] = row.pop(key)
             if isinstance(value, basestring):
-                row[updated_key] = re.sub(r"( )+", " ", value.strip())
-
+                row[key] = re.sub(r"( )+", " ", value.strip())
     return dict_array
 
 
