@@ -26,8 +26,8 @@
           <text id="/attribute_columns_test/everything/text_image_audio_video_test:label">
             <value>text_image_audio_video_test</value>
             <value form="image">jr://images/img_test_2.jpg</value>
-            <value form="audio">jr://audio/-</value>
             <value form="video">jr://video/-</value>
+            <value form="audio">jr://audio/-</value>
           </text>
           <text id="/attribute_columns_test/everything/autocomplete_test:label">
             <value>autocomplete_test</value>
@@ -256,9 +256,9 @@
             <value>No</value>
           </text>
           <text id="/attribute_columns_test/everything/text_image_audio_video_test:label">
+            <value form="video">jr://video/test.mov</value>
             <value form="image">jr://images/img_test.jpg</value>
             <value form="audio">jr://audio/audio_test.wav</value>
-            <value form="video">jr://video/test.mov</value>
             <value>-</value>
           </text>
           <text id="/attribute_columns_test/everything/display_image_test:label">
@@ -425,8 +425,8 @@
           <text id="/attribute_columns_test/everything/text_image_audio_video_test:label">
             <value>您好</value>
             <value form="audio">jr://audio/chinese_audio.wav</value>
-            <value form="image">jr://images/-</value>
             <value form="video">jr://video/-</value>
+            <value form="image">jr://images/-</value>
           </text>
           <text id="/attribute_columns_test/everything/text_image_audio_video_test:hint">
             <value>ni hao</value>
