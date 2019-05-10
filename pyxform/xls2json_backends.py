@@ -44,37 +44,6 @@ def xls_to_dict(path_or_file):
     except XLRDError as e:
         raise PyXFormError("Error reading .xls file: %s" % e.message)
 
-    def xls_value_to_unicode(value, value_type):
-        """
-        Take a xls formatted value and try to make a unicode string
-        representation.
-        """
-        if value_type == xlrd.XL_CELL_BOOLEAN:
-            return u"TRUE" if value else u"FALSE"
-        elif value_type == xlrd.XL_CELL_NUMBER:
-            # Try to display as an int if possible.
-            int_value = int(value)
-            if int_value == value:
-                return unicode(int_value)
-            else:
-                return unicode(value)
-        elif value_type is xlrd.XL_CELL_DATE:
-            # Warn that it is better to single quote as a string.
-            # error_location = cellFormatString % (ss_row_idx, ss_col_idx)
-            # raise Exception(
-            #   "Cannot handle excel formatted date at " + error_location)
-            datetime_or_time_only = xlrd.xldate_as_tuple(
-                value, workbook.datemode)
-            if datetime_or_time_only[:3] == (0, 0, 0):
-                # must be time only
-                return unicode(datetime.time(*datetime_or_time_only[3:]))
-            return unicode(datetime.datetime(*datetime_or_time_only))
-        else:
-            # ensure unicode and replace nbsp spaces with normal ones
-            # to avoid this issue:
-            # https://github.com/modilabs/pyxform/issues/83
-            return unicode(value).replace(unichr(160), ' ')
-
     def xls_to_dict_normal_sheet(sheet):
         def iswhitespace(string):
             return (
@@ -108,7 +77,8 @@ def xls_to_dict(path_or_file):
                 value_type = sheet.cell_type(row, column)
                 if value is not None:
                     if not iswhitespace(value):
-                        row_dict[key] = xls_value_to_unicode(value, value_type)
+                        row_dict[key] = xls_value_to_unicode(
+                            value, value_type, workbook.datemode)
                 # Taking this condition out so I can get accurate row numbers.
                 # TODO: Do the same for csvs
                 # if row_dict != {}:
@@ -119,7 +89,7 @@ def xls_to_dict(path_or_file):
         value = sheet.cell_value(row, column)
         value_type = sheet.cell_type(row, column)
         if value is not None and value != "":
-            return xls_value_to_unicode(value, value_type)
+            return xls_value_to_unicode(value, value_type, workbook.datemode)
         else:
             raise PyXFormError("Empty Value")
 
@@ -221,6 +191,38 @@ def xls_to_dict(path_or_file):
             ] = xls_to_dict_normal_sheet(sheet)
 
     return result
+
+
+def xls_value_to_unicode(value, value_type, datemode):
+    """
+    Take a xls formatted value and try to make a unicode string
+    representation.
+    """
+    if value_type == xlrd.XL_CELL_BOOLEAN:
+        return u"TRUE" if value else u"FALSE"
+    elif value_type == xlrd.XL_CELL_NUMBER:
+        # Try to display as an int if possible.
+        int_value = int(value)
+        if int_value == value:
+            return unicode(int_value)
+        else:
+            return unicode(value)
+    elif value_type is xlrd.XL_CELL_DATE:
+        # Warn that it is better to single quote as a string.
+        # error_location = cellFormatString % (ss_row_idx, ss_col_idx)
+        # raise Exception(
+        #   "Cannot handle excel formatted date at " + error_location)
+        datetime_or_time_only = xlrd.xldate_as_tuple(
+            value, datemode)
+        if datetime_or_time_only[:3] == (0, 0, 0):
+            # must be time only
+            return unicode(datetime.time(*datetime_or_time_only[3:]))
+        return unicode(datetime.datetime(*datetime_or_time_only))
+    else:
+        # ensure unicode and replace nbsp spaces with normal ones
+        # to avoid this issue:
+        # https://github.com/modilabs/pyxform/issues/83
+        return unicode(value).replace(unichr(160), ' ')
 
 
 def get_cascading_json(sheet_list, prefix, level):
