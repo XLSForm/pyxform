@@ -363,3 +363,28 @@ class ExternalInstanceTests(PyxformTestCase):
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
         self.assertEqual(1, xml.count(expected))
+
+    def test_external_csv_type_support(self):
+        """Test support for csv-external type"""
+        md = """
+            | survey |                                              |                |                                    |
+            |        | type                                         | name           | label                              |
+            |        | csv-external                                 | pain_locations |                                    |
+            |        | select_multiple_from_file pain_locations.csv | plocs          | Locations of pain this week.       |
+            |        | select_one_from_file pain_locations.csv      | pweek          | Location of worst pain this week.  |
+            |        | select_one_from_file pain_locations.csv      | pmonth         | Location of worst pain this month. |
+            |        | select_one_from_file pain_locations.csv      | pyear          | Location of worst pain this year.  |
+            """ # noqa
+        expected = \
+"""
+      <instance id="pain_locations" src="jr://file-csv/pain_locations.csv">
+        <root>
+          <item>
+            <name>_</name>
+            <label>_</label>
+          </item>
+        </root>
+      </instance>
+"""  # noqa
+        self.assertPyxformXform(
+            md=md, model__contains=[expected])
