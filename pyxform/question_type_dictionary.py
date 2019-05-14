@@ -853,5 +853,8 @@ QUESTION_TYPE_DICT = \
         },
         "xml-external": {
             # Only effect is to add an external instance.
+        },
+        "csv-external": {
+
         }
     }
