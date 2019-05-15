@@ -294,7 +294,8 @@ class BasicXls2JsonApiTests(TestCase):
         self.assertGreater(len(warnings), 0)
         warning = "Google Sheets submissions don't allow underscores in the " \
                   "column name. If you intend to use Google Sheets " \
-                  "submissions, replace hidden_test with hidden-test"
+                  "submissions, replace underscores with hyphens in the " \
+                  "following names: hidden_test"
         self.assertIn(warning, warnings)
 
 
