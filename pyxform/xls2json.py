@@ -2,15 +2,18 @@
 A Python script to convert excel files into JSON.
 """
 from __future__ import print_function, unicode_literals
-import json
-import re
-import sys
+
 import codecs
 import os
+import re
+import sys
+
+import json
+
 from pyxform import constants, aliases
 from pyxform.errors import PyXFormError
-from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 from pyxform.utils import is_valid_xml_tag, unicode, basestring
+from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 
 SMART_QUOTES = {
     '\u2018': "'",
@@ -516,6 +519,13 @@ def workbook_to_json(
 
         # Get question type
         question_type = row.get(constants.TYPE)
+        question_name = row.get(constants.NAME, ' ')
+        if '_' in question_name:
+            warnings.append(
+                "Google Sheets submissions don't allow underscores in the "
+                "column name. If you intend to use Google Sheets submissions, "
+                "replace {} with {}".format(
+                    question_name, question_name.replace('_', '-')))
         if not question_type:
             # if name and label are also missing,
             # then its a comment row, and we skip it with warning
