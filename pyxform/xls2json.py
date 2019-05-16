@@ -319,7 +319,7 @@ def workbook_to_json(
     if warnings is None:
         warnings = []
     is_valid = False
-    workbook_dict = {x.lower(): y for x,y in workbook_dict.items()}
+    workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
     for row in workbook_dict.get(constants.SURVEY, []):
         is_valid = 'type' in [z.lower() for z in row]
         if is_valid:
@@ -345,9 +345,24 @@ def workbook_to_json(
     # Break the spreadsheet dict into easier to access objects
     # (settings, choices, survey_sheet):
     # ########## Settings sheet ##########
+    settings_sheet_headers = workbook_dict.get(constants.SETTINGS, [])
+    try:
+        if sum(
+            [element in [constants.ID_STRING, 'form_id']
+                for element in settings_sheet_headers[0].keys()]) == 2:
+            settings_sheet_headers[0].pop(constants.ID_STRING, None)
+            warnings.append("The form_id and id_sting column headers are both"
+                            " specified in the settings sheet provided."
+                            " This may cause errors during conversion."
+                            " In future, its best to avoid specifying both"
+                            " column headers in the settings sheet.")
+    except IndexError: #In case there is no settings sheet
+        settings_sheet_headers = []
+
     settings_sheet = dealias_and_group_headers(
-        workbook_dict.get(constants.SETTINGS, []),
-        aliases.settings_header, use_double_colons)
+        settings_sheet_headers,
+        aliases.settings_header,
+        use_double_colons)
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
     replace_smart_quotes_in_dict(settings)
 
