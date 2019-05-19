@@ -1,14 +1,16 @@
 """
 Some tests for the new (v0.9) spec is properly implemented.
 """
-import unittest2 as unittest
 import codecs
 import os
+
+import unittest2 as unittest
+
 import pyxform
+from pyxform.errors import PyXFormError
+from pyxform.tests.utils import XFormTestCase
 from pyxform.utils import has_external_choices
 from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
-from pyxform.tests.utils import XFormTestCase
-from pyxform.errors import PyXFormError
 
 DIR = os.path.dirname(__file__)
 
@@ -193,7 +195,7 @@ class BadChoicesSheetHeaders(unittest.TestCase):
         warnings = []
         pyxform.xls2json.parse_file_to_json(path_to_excel_file,
                                             warnings=warnings)
-        self.assertEquals(len(warnings), 2,
+        self.assertEquals(len(warnings), 3,
                           "Found " + str(len(warnings)) + " warnings")
 
 

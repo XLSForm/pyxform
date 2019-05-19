@@ -1,13 +1,15 @@
 """
 Testing simple cases for Xls2Json
 """
-from unittest2 import TestCase
-from pyxform.xls2json import SurveyReader
-from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
-from pyxform.tests import utils
-import os
-import json
 import codecs
+import os
+
+import json
+from unittest2 import TestCase
+
+from pyxform.tests import utils
+from pyxform.xls2json import SurveyReader, parse_file_to_json
+from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 
 
 # Nothing calls this AFAICT
@@ -282,6 +284,19 @@ class BasicXls2JsonApiTests(TestCase):
         ]
         self.assertEqual(
             choice_filter_survey.to_json_dict()[u"children"], expected_dict)
+
+    def test_underscore_warnings(self):
+        """Raise warnings incase there are underscores in column names"""
+        warnings = []
+        parse_file_to_json(
+            utils.path_to_text_fixture("hidden.xls"),
+            warnings=warnings)
+        self.assertGreater(len(warnings), 0)
+        warning = "Google Sheets submissions don't allow underscores in the " \
+                  "column name. If you intend to use Google Sheets " \
+                  "submissions, replace underscores with hyphens in the " \
+                  "following names: hidden_test"
+        self.assertIn(warning, warnings)
 
 
 class CsvReaderEquivalencyTest(TestCase):
