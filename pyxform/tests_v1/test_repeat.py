@@ -186,3 +186,64 @@ class TestRepeat(PyxformTestCase):
                 """<bind calculate="indexed-repeat( /data/rep/rep2/a ,  /data/rep/rep2 , 1)" nodeset="/data/rep/c1" type="string"/>""",  # noqa pylint: disable=line-too-long
             ],
         )
+
+    def test_hints_are_present_within_repeats(self):
+        """Hints are present within repeats"""
+        md = """
+            | survey |                   |                |                   |                      |
+            |        | type              | name           | label             | hint                 |
+            |        | begin repeat      | pets           | Pets              | Pet details          |
+            |        | text              | pets_name      | Pet's name        | Pet's name hint      |
+            |        | select_one pet    | pet_type       | Type of pet       | Type of pet hint     |
+            |        | image             | pet_picture    | Picture of pet    | Take a nice photo    |
+            |        | end repeat        |                |                   |                      |
+            | choices|                   |                |                   |                      |
+            |        | list name         | name           | label             |                      |
+            |        | pet               | dog            | Dog               |                      |
+            |        | pet               | cat            | Cat               |                      |
+            |        | pet               | bird           | Bird              |                      |
+            |        | pet               | fish           | Fish              |                      |
+            """
+
+        expected = \
+"""
+
+      <group ref="/Families/pets">
+      <label>Pets</label>
+      <hint>Pet details</hint>
+      <repeat nodeset="/Families/pets">
+        <input ref="/Families/pets/pets_name">
+          <label>Pet's Name</label>
+          <hint>Pets name hint</hint>
+        </input>
+        <select1 ref="/Families/pets/pet_type">
+          <label>Type of pet</label>
+          <hint>Type of pet hint</hint>
+          <item>
+            <label>Dog</label>
+            <value>dog</value>
+          </item>
+          <item>
+            <label>Cat</label>
+            <value>cat</value>
+          </item>
+          <item>
+            <label>Bird</label>
+            <value>bird</value>
+          </item>
+          <item>
+            <label>Fish</label>
+            <value>fish</value>
+          </item>
+        </select1>
+        <upload mediatype="image/*" ref="/Families/pets/pet_picture">
+          <label>Picture of pet</label>
+          <hint>Take a nice photo</hint>
+        </upload>
+      </repeat>
+    </group>
+    """  # noqa
+
+        self.assertPyxformXform(
+                md=md, model__contins=[expected], run_odk_validate=True)
+        survey = self.md_to_pyxform_survey(md_raw=md)
