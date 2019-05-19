@@ -2,15 +2,18 @@
 A Python script to convert excel files into JSON.
 """
 from __future__ import print_function, unicode_literals
-import json
-import re
-import sys
+
 import codecs
 import os
+import re
+import sys
+
+import json
+
 from pyxform import constants, aliases
 from pyxform.errors import PyXFormError
-from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 from pyxform.utils import is_valid_xml_tag, unicode, basestring
+from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
 
 SMART_QUOTES = {
     '\u2018': "'",
@@ -155,7 +158,6 @@ def clean_text_values(dict_array):
     """
     Go though the dict array and strips all text values.
     Also replaces multiple spaces with single spaces.
-    Note that the keys don't get cleaned, which could be an issue.
     """
     for row in dict_array:
         replace_smart_quotes_in_dict(row)
