@@ -14,3 +14,4 @@ traceback2==1.4.0         # via unittest2
 unicodecsv==0.14.1
 unittest2==1.1.0
 xlrd==1.2.0
+mock==3.0.4
