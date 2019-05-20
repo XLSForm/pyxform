@@ -13,8 +13,13 @@ use with ODK Collect.
 """
 
 def get_xml_path(path):
-    """takes in xslxform path and returns the output-path for the same file"""
-    return splitext(path)[0] + '.xml'
+    """
+    Returns the xform file path
+
+    Generates an output path for the xform file from the given
+    xlsx input file path.
+    """
+    return splitext(path)[0] + ".xml"
 
 def xls2xform_convert(xlsform_path, xform_path, validate=True,
                       pretty_print=True, enketo=False):
