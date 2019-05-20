@@ -14,11 +14,11 @@ except NameError:
     basestring = str
     unichr = chr
 else:
-     try:
+    try:
         unicode = unicode
         basestring = basestring
         unichr = unichr
-     except NameError:# special cases where unicode is defined in python3 
+    except NameError:  # special cases where unicode is defined in python3
         unicode = str
         basestring = str
         unichr = chr
@@ -153,6 +153,7 @@ def flatten(li):
 
 
 def sheet_to_csv(workbook_path, csv_path, sheet_name):
+    from pyxform.xls2json_backends import xls_value_to_unicode
     wb = xlrd.open_workbook(workbook_path)
     try:
         sheet = wb.sheet_by_name(sheet_name)
@@ -163,9 +164,20 @@ def sheet_to_csv(workbook_path, csv_path, sheet_name):
     with open(csv_path, 'wb') as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         mask = [v and len(v.strip()) > 0 for v in sheet.row_values(0)]
-        for r in range(sheet.nrows):
-            writer.writerow(
-                [v for v, m in zip(sheet.row_values(r), mask) if m])
+        for row_idx in range(sheet.nrows):
+            csv_data = []
+            if mask:
+                try:
+                    for v, mask in zip(sheet.row(row_idx), mask):
+                        value = v.value
+                        value_type = v.ctype
+                        data = xls_value_to_unicode(
+                            value, value_type, wb.datemode)
+                        csv_data.append(data)
+                except TypeError:
+                    continue
+            writer.writerow(csv_data)
+
     return True
 
 
