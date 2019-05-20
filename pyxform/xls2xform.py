@@ -12,6 +12,7 @@ xls2xform converts properly formatted Excel documents into XForms for
 use with ODK Collect.
 """
 
+
 def get_xml_path(path):
     """
     Returns the xform file path
@@ -20,6 +21,7 @@ def get_xml_path(path):
     xlsx input file path.
     """
     return splitext(path)[0] + ".xml"
+
 
 def xls2xform_convert(xlsform_path, xform_path, validate=True,
                       pretty_print=True, enketo=False):

@@ -37,8 +37,10 @@ class XLS2XFormTests(TestCase):
             _create_parser().parse_args([])
 
     def test_create_parser_with_optional_output_path(self):
-        """should run fine for a single argument i.e. that is the
-        path to the xlsx file path, while the output path is left out"""
+        """
+        Should run fine for a single argument i.e. that is the
+        path to the xlsx file path, while the output path is left out
+        """
         try:
             _create_parser().parse_args(['/some/path/tofile.xlsx'])
         except SystemExit:
@@ -49,7 +51,7 @@ class XLS2XFormTests(TestCase):
         arg_xlsform = 'xlsform.xlsx'
         arg_output = '.'
         arg_list = ['--json', '--skip_validate', '--no_pretty_print',
-            arg_xlsform, arg_output]
+                    arg_xlsform, arg_output]
         args = _create_parser().parse_args(arg_list)
         self.assertEqual(arg_xlsform, args.path_to_XLSForm)
         self.assertEqual(arg_output, args.output_path)
@@ -166,13 +168,13 @@ class XLS2XFormTests(TestCase):
         self.assertEqual(False, args.enketo_validate)
 
     @mock.patch('argparse.ArgumentParser.parse_args',
-      return_value=argparse.Namespace(path_to_XLSForm='xlsform.xlsx', output_path=None,
-      json=False, skip_validate=False, odk_validate=False,
-      enketo_validate=False, no_pretty_print=False))
+                return_value=argparse.Namespace(path_to_XLSForm='xlsform.xlsx', output_path=None,
+                                                json=False, skip_validate=False, odk_validate=False,
+                                                enketo_validate=False, no_pretty_print=False))
     @mock.patch('pyxform.xls2xform.xls2xform_convert')
-    def test_xls2form_convert_is_given_the_right_output_path(
-        self, converter_mock, parser_args_mock):
-        """should derive output path from the required xlsxform input path"""
+    def test_xls2form_convert_is_given_the_right_output_path(self,
+                                                             converter_mock, parser_mock_args):
+        """Should derive output path from the required xlsxform input path"""
         converter_mock.return_value = '{}'
         main_cli()
         converter_mock.assert_called_once_with(
@@ -180,14 +182,13 @@ class XLS2XFormTests(TestCase):
             validate=False, pretty_print=False,
             enketo=False)
 
-
     @mock.patch('argparse.ArgumentParser.parse_args',
-      return_value=argparse.Namespace(path_to_XLSForm='xlsform.xlsx', output_path=None,
-      json=True, skip_validate=False, odk_validate=False,
-      enketo_validate=False, no_pretty_print=False))
+                return_value=argparse.Namespace(path_to_XLSForm='xlsform.xlsx', output_path=None,
+                                                json=True, skip_validate=False, odk_validate=False,
+                                                enketo_validate=False, no_pretty_print=False))
     @mock.patch('pyxform.xls2xform.xls2xform_convert')
-    def test_xls2form_convert_is_given_the_right_output_path_json_flag_set(
-        self, converter_mock, parser_args_mock):
+    def test_xls2form_convert_is_given_the_right_output_path_json_flag_set(self,
+                                                                           converter_mock, parser_mock_args):
         """
         Should call xlsform_convert with the correct input for output
         path where only the xlsform input path and json flag were provided, since
@@ -205,7 +206,7 @@ class XLS2XFormTests(TestCase):
         xlsx_path = '/home/user/Desktop/xlsform.xlsx'
         expected = '/home/user/Desktop/xlsform.xml'
         assert expected == get_xml_path(xlsx_path)
-        #check that it also handles spaced routes
+        # check that it also handles spaced routes
         xlsx_path = '/home/user/Desktop/my xlsform.xlsx'
         expected = '/home/user/Desktop/my xlsform.xml'
         assert expected == get_xml_path(xlsx_path)
