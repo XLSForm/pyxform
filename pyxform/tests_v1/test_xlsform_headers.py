@@ -30,3 +30,23 @@ class XlsFormHeadersTest(PyxformTestCase):
             """,
             errored=False,
             debug=True)
+
+    def test_form_id_variant(self):
+        md = """
+| survey       |                    |                |                |
+|              | type               | name           | label          |
+|              | text               | member_name    | name           |
+| settings     |                    |              |                        |             |
+|              | id_string                         | version                | form_id     |
+|              | get_option_from_two_repeat_answer | vWvvk3GYzjXcJQyvTWELej | AUTO-v2-jef |
+""" 
+        kwargs = {
+            u'name': u'None',
+            u'title': u'AUTO-v2-jef',
+            u'id_string': u'AUTO-v2-jef',
+        }
+
+        survey = self.md_to_pyxform_survey(md, kwargs=kwargs, autoname=False)
+
+        self.assertEqual(survey.id_string, "AUTO-v2-jef")
+        self.assertEqual(survey.version, "vWvvk3GYzjXcJQyvTWELej")
