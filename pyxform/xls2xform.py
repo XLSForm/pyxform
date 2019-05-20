@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 
+from os.path import splitext
 from pyxform import builder, xls2json
 from pyxform.utils import has_external_choices, sheet_to_csv
 """
@@ -11,6 +12,14 @@ xls2xform converts properly formatted Excel documents into XForms for
 use with ODK Collect.
 """
 
+def get_xml_path(path):
+    """
+    Returns the xform file path
+
+    Generates an output path for the xform file from the given
+    xlsx input file path.
+    """
+    return splitext(path)[0] + ".xml"
 
 def xls2xform_convert(xlsform_path, xform_path, validate=True,
                       pretty_print=True, enketo=False):
@@ -46,7 +55,7 @@ def _create_parser():
     parser.add_argument(
         "path_to_XLSForm",
         help="Path to the Excel XSLX file with the XLSForm definition.")
-    parser.add_argument("output_path", help="Path to save the output to.")
+    parser.add_argument("output_path", help="Path to save the output to.", nargs='?')
     parser.add_argument(
         "--json",
         action="store_true",
@@ -105,6 +114,10 @@ def main_cli():
     parser = _create_parser()
     raw_args = parser.parse_args()
     args = _validator_args_logic(args=raw_args)
+
+    # auto generate an output path if one was not given
+    if args.output_path is None:
+        args.output_path = get_xml_path(args.path_to_XLSForm)
 
     if args.json:
         # Store everything in a list just in case the user wants to output
