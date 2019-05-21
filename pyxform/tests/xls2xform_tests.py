@@ -36,7 +36,7 @@ class XLS2XFormTests(TestCase):
         with self.assertRaises(SystemExit):
             _create_parser().parse_args([])
 
-    def test_create_parser_with_optional_output_path(self):
+    def test_create_parser_optional_output_path(self):
         """
         Should run fine for a single argument i.e. that is the
         path to the xlsx file path, while the output path is left out
@@ -172,9 +172,12 @@ class XLS2XFormTests(TestCase):
                                                 json=False, skip_validate=False, odk_validate=False,
                                                 enketo_validate=False, no_pretty_print=False))
     @mock.patch('pyxform.xls2xform.xls2xform_convert')
-    def test_xls2form_convert_is_given_the_right_output_path(self,
-                                                             converter_mock, parser_mock_args):
-        """Should derive output path from the required xlsxform input path"""
+    def test_xls2form_convert_parameters(
+            self, converter_mock, parser_mock_args):
+        """
+        Checks that xls2xform_convert is given the right arguments, when the
+        output-path is not given
+        """
         converter_mock.return_value = '{}'
         main_cli()
         converter_mock.assert_called_once_with(
@@ -187,8 +190,8 @@ class XLS2XFormTests(TestCase):
                                                 json=True, skip_validate=False, odk_validate=False,
                                                 enketo_validate=False, no_pretty_print=False))
     @mock.patch('pyxform.xls2xform.xls2xform_convert')
-    def test_xls2form_convert_is_given_the_right_output_path_json_flag_set(self,
-                                                                           converter_mock, parser_mock_args):
+    def test_xls2xform_convert_params_with_flags(
+            self, converter_mock, parser_mock_args):
         """
         Should call xlsform_convert with the correct input for output
         path where only the xlsform input path and json flag were provided, since
