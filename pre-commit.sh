@@ -8,8 +8,8 @@ if [ -n "$FILES" ]; then
 fi
 
 if [ -n "$FILES" ]; then
-    if black --target-version=py36 $FILES; then
-	touch .commit
+    if black --target-version=py27 $FILES; then
+        touch .commit
     fi
 fi
 

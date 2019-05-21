@@ -1,10 +1,9 @@
-from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
-
-
-'''
+# -*- coding: utf-8 -*-
+"""
 Ensuring that the pyxform_test_case.PyxformTestCase class does some
 internal conversions correctly.
-'''
+"""
+from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
@@ -16,7 +15,7 @@ class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
         if "errored" parameter is not set to False, it should
         raise an exception
         """
-        _invalid_ss_structure = {'survey': [{'type': 'note', 'name': 'n1'}]}
+        _invalid_ss_structure = {"survey": [{"type": "note", "name": "n1"}]}
 
         def _no_valid_flag():
             """
@@ -34,9 +33,7 @@ class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
         self.assertPyxformXform(
             ss_structure=_invalid_ss_structure,
             errored=True,
-            error__contains=[
-                "The survey element named 'n1' has no label or hint.",
-            ],
+            error__contains=["The survey element named 'n1' has no label or hint."],
         )
 
     def test_vanilla_survey(self):
@@ -50,7 +47,7 @@ class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
         """
         self.assertPyxformXform(
             ss_structure={
-                'survey': [{'type': 'note', 'name': 'n1', 'label': 'Note 1'}]
+                "survey": [{"type": "note", "name": "n1", "label": "Note 1"}]
             },
             errored=False,
         )
@@ -62,11 +59,15 @@ class XlsFormPyxformSurveyTest(PyxformTestCase):
         When the form id is not set, it should never use python's
         None. Fixing because this messes up other tests.
         """
-        s1 = self.md_to_pyxform_survey("""
+        s1 = self.md_to_pyxform_survey(
+            """
             | survey |      |      |       |
             |        | type | name | label |
             |        | note | q    | Q     |
-            """, {}, autoname=True)
+            """,
+            {},
+            autoname=True,
+        )
 
-        if s1.id_string in ['None', None]:
+        if s1.id_string in ["None", None]:
             self.assertRaises(Exception, lambda: s1.validate())

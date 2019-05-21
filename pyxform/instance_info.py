@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+InstanceInfo class module.
+"""
 
 
 class InstanceInfo(object):
