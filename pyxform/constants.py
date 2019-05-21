@@ -90,3 +90,4 @@ SUPPORTED_FILE_EXTENSIONS = [".xls", ".xlsx", ".xlsm"]
 LOCATION_PRIORITY = "location-priority"
 LOCATION_MIN_INTERVAL = "location-min-interval"
 LOCATION_MAX_AGE = "location-max-age"
+TRACK_CHANGES = "track-changes"
