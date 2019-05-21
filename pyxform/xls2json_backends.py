@@ -13,6 +13,7 @@ from xlrd import XLRDError
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
+from xlrd.xldate import XLDateAmbiguous
 from pyxform.utils import unicode, basestring, unichr
 
 
@@ -81,8 +82,15 @@ def xls_to_dict(path_or_file):
                 value_type = sheet.cell_type(row, column)
                 if value is not None:
                     if not iswhitespace(value):
-                        row_dict[key] = xls_value_to_unicode(
-                            value, value_type, workbook.datemode)
+                        try:
+                            row_dict[key] = xls_value_to_unicode(
+                                value, value_type, workbook.datemode)
+                        except XLDateAmbiguous:
+                            raise PyXFormError(
+                                'The xls file provided has an'
+                                ' invalid date on the %s sheet,'
+                                ' under the %s column on row number %s' % (
+                                    sheet.name, column_header, row))
                 # Taking this condition out so I can get accurate row numbers.
                 # TODO: Do the same for csvs
                 # if row_dict != {}:
@@ -93,7 +101,13 @@ def xls_to_dict(path_or_file):
         value = sheet.cell_value(row, column)
         value_type = sheet.cell_type(row, column)
         if value is not None and value != "":
-            return xls_value_to_unicode(value, value_type, workbook.datemode)
+            try:
+                return xls_value_to_unicode(value, value_type, workbook.datemode)
+            except XLDateAmbiguous:
+                raise PyXFormError(
+                    'The xls file provided has an invalid date on the'
+                    ' %s sheet, on the %s column on row number %s' % (
+                        sheet.name, column, row))
         else:
             raise PyXFormError("Empty Value")
 
