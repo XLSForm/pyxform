@@ -30,7 +30,7 @@ For those who want to convert forms at the command line, the latest official rel
 
 The ``xls2xform`` command can then be used::
 
-    xls2xform path_to_XLSForm output_path
+    xls2xform path_to_XLSForm [output_path]
 
 ``pyxform`` can be run with either Python 2 or Python 3. Continuous integration runs tests on both Python generations to ensure continued compatibility.
 
@@ -43,7 +43,7 @@ Please install java 8 or newer version.
 From the command line::
 
     python setup.py develop
-    python pyxform/xls2xform.py path_to_XLSForm output_path
+    python pyxform/xls2xform.py path_to_XLSForm [output_path]
 
 Consider using a `virtualenv <http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/>`_ and `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_ to make dependency management easier and keep your global site-packages directory clean::
 
@@ -72,7 +72,7 @@ Installing pyxform from remote source
 
 You can then run xls2xform from the commandline::
 
-    xls2xform path_to_XLSForm output_path
+    xls2xform path_to_XLSForm [output_path]
 
 Testing
 =======
