@@ -54,6 +54,22 @@ class AuditTest(PyxformTestCase):
             ],
         )
 
+    def test_audit_blank_parameters(self):
+        self.assertPyxformXform(
+            name="meta_audit",
+            md="""
+            | survey |        |          |       |            |
+            |        | type   |   name   | label | parameters |
+            |        | audit  |          |       |            |
+            """,
+            xml__contains=[
+                "<meta>",
+                "<audit/>",
+                "</meta>",
+                '<bind nodeset="/meta_audit/meta/audit" type="binary"/>',
+            ],
+        )
+
     def test_audit_location_required_parameters(self):
         self.assertPyxformXform(
             name="meta_audit",
@@ -123,5 +139,65 @@ class AuditTest(PyxformTestCase):
                 "<audit/>",
                 "</meta>",
                 '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:location-max-age="300" odk:location-min-interval="60" odk:location-priority="balanced"/>',
+            ],
+        )
+
+    def test_audit_track_changes_true(self):
+        self.assertPyxformXform(
+            name="meta_audit",
+            md="""
+            | survey |        |          |                    |
+            |        | type   |   name   | parameters         |
+            |        | audit  |   audit  | track-changes=true |
+            """,
+            xml__contains=[
+                "<meta>",
+                "<audit/>",
+                "</meta>",
+                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:track-changes="true"/>',
+            ],
+        )
+
+    def test_audit_track_changes_false(self):
+        self.assertPyxformXform(
+            name="meta_audit",
+            md="""
+            | survey |        |          |                     |
+            |        | type   |   name   | parameters          |
+            |        | audit  |   audit  | track-changes=false |
+            """,
+            xml__contains=[
+                "<meta>",
+                "<audit/>",
+                "</meta>",
+                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:track-changes="false"/>',
+            ],
+        )
+
+    def test_audit_track_changes_foo(self):
+        self.assertPyxformXform(
+            name="meta_audit",
+            md="""
+            | survey |        |          |                   |
+            |        | type   |   name   | parameters        |
+            |        | audit  |   audit  | track-changes=foo |
+            """,
+            errored=True,
+            error__contains=["track-changes must be set to true or false"],
+        )
+
+    def test_audit_location_track_changes(self):
+        self.assertPyxformXform(
+            name="meta_audit",
+            md="""
+            | survey |        |          |                                                                                                |
+            |        | type   |   name   | parameters                                                                                     |
+            |        | audit  |   audit  | location-priority=balanced, track-changes=true, location-min-interval=60, location-max-age=300 |
+            """,
+            xml__contains=[
+                "<meta>",
+                "<audit/>",
+                "</meta>",
+                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:location-max-age="300" odk:location-min-interval="60" odk:location-priority="balanced" odk:track-changes="true"/>',
             ],
         )
