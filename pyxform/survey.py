@@ -302,7 +302,7 @@ class Survey(Section):
             return functions_present
 
         formulas = get_pulldata_functions(element)
-        if len(formulas):
+        if len(formulas) > 0:
             formula_instances = []
             for formula in formulas:
                 pieces = formula.split('"') \

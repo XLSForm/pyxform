@@ -367,7 +367,7 @@ class ExternalInstanceTests(PyxformTestCase):
         xml = survey._to_pretty_xml()
         self.assertEqual(1, xml.count(expected))
 
-    def test_external_instance_pulldata_constraints(self):
+    def test_external_instance_pulldata_constraint(self):
         """
         Checks if instance node for pulldata function is added
         when pulldata occurs in column with constraint title
@@ -433,7 +433,6 @@ class ExternalInstanceTests(PyxformTestCase):
                                     node
                                 ],
                                 debug=True)
-
 
     def test_external_instance_pulldata(self):
         """
