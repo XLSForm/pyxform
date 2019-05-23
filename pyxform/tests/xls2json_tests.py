@@ -1,15 +1,16 @@
+# -*- coding: utf-8 -*-
 """
 Testing simple cases for Xls2Json
 """
 import codecs
+import json
 import os
 
-import json
 from unittest2 import TestCase
 
 from pyxform.tests import utils
 from pyxform.xls2json import SurveyReader, parse_file_to_json
-from pyxform.xls2json_backends import xls_to_dict, csv_to_dict
+from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
 
 
 # Nothing calls this AFAICT
@@ -30,17 +31,16 @@ class BasicXls2JsonApiTests(TestCase):
         # Get the xform output path:
         root_filename, ext = os.path.splitext(filename)
         output_path = os.path.join(DIR, "test_output", root_filename + ".json")
-        expected_output_path = os.path.join(DIR, "test_expected_output",
-                                            root_filename + ".json")
+        expected_output_path = os.path.join(
+            DIR, "test_expected_output", root_filename + ".json"
+        )
         x = SurveyReader(path_to_excel_file)
         x_results = x.to_json_dict()
         with codecs.open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
         # Compare with the expected output:
-        with codecs.open(expected_output_path, 'rb',
-                         encoding="utf-8") as expected_file:
-            with codecs.open(output_path, 'rb',
-                             encoding="utf-8") as actual_file:
+        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
+            with codecs.open(output_path, "rb", encoding="utf-8") as actual_file:
                 expected_json = json.load(expected_file)
                 actual_json = json.load(actual_file)
                 self.assertEqual(expected_json, actual_json)
@@ -50,94 +50,81 @@ class BasicXls2JsonApiTests(TestCase):
         x_results = x.to_json_dict()
 
         expected_dict = [
+            {"type": "hidden", "name": "hidden_test"},
             {
-                u'type': u'hidden',
-                u'name': u'hidden_test'
-            },
-            {
-                'children': [
+                "children": [
                     {
-                        'bind': {
-                            'calculate': "concat('uuid:', uuid())",
-                            'readonly': 'true()'
+                        "bind": {
+                            "calculate": "concat('uuid:', uuid())",
+                            "readonly": "true()",
                         },
-                        'name': 'instanceID',
-                        'type': 'calculate'
+                        "name": "instanceID",
+                        "type": "calculate",
                     }
                 ],
-                'control': {
-                    'bodyless': True
-                },
-                'name': 'meta',
-                'type': 'group'
-            }
+                "control": {"bodyless": True},
+                "name": "meta",
+                "type": "group",
+            },
         ]
-        self.assertEqual(x_results[u"children"], expected_dict)
+        self.assertEqual(x_results["children"], expected_dict)
 
     def test_gps(self):
         x = SurveyReader(utils.path_to_text_fixture("gps.xls"))
 
         expected_dict = [
+            {"type": "gps", "name": "location", "label": "GPS"},
             {
-                u'type': u'gps', u'name': u'location', u'label': u'GPS'},
-            {
-                'children': [
+                "children": [
                     {
-                        'bind': {
-                            'calculate': "concat('uuid:', uuid())",
-                            'readonly': 'true()'
+                        "bind": {
+                            "calculate": "concat('uuid:', uuid())",
+                            "readonly": "true()",
                         },
-                        'name': 'instanceID',
-                        'type': 'calculate'
+                        "name": "instanceID",
+                        "type": "calculate",
                     }
                 ],
-                'control': {
-                    'bodyless': True
-                },
-                'name': 'meta',
-                'type': 'group'
-            }]
+                "control": {"bodyless": True},
+                "name": "meta",
+                "type": "group",
+            },
+        ]
 
-        self.assertEqual(x.to_json_dict()[u"children"], expected_dict)
+        self.assertEqual(x.to_json_dict()["children"], expected_dict)
 
     def test_text_and_integer(self):
         x = SurveyReader(utils.path_to_text_fixture("text_and_integer.xls"))
 
         expected_dict = [
             {
-                u'label': {
-                    u'english': u'What is your name?'
-                },
-                u'type': u'text',
-                u'name': u'your_name'
+                "label": {"english": "What is your name?"},
+                "type": "text",
+                "name": "your_name",
             },
             {
-                u'label': {
-                    u'english': u'How many years old are you?'
-                },
-                u'type': u'integer',
-                u'name': u'your_age'
+                "label": {"english": "How many years old are you?"},
+                "type": "integer",
+                "name": "your_age",
             },
             {
-                u'children': [
+                "children": [
                     {
-                        u'bind': {
-                            'calculate': "concat('uuid:', uuid())",
-                            'readonly': 'true()'
+                        "bind": {
+                            "calculate": "concat('uuid:', uuid())",
+                            "readonly": "true()",
                         },
-                        u'name': 'instanceID',
-                        u'type': 'calculate'
+                        "name": "instanceID",
+                        "type": "calculate",
                     }
                 ],
-                u'control': {
-                    'bodyless': True
-                },
-                u'name': 'meta',
-                u'type': u'group'
-            }
+                "control": {"bodyless": True},
+                "name": "meta",
+                "type": "group",
+            },
         ]
 
-        self.assertEqual(x.to_json_dict()[u"children"], expected_dict)
+        self.assertEqual(x.to_json_dict()["children"], expected_dict)
 
     def test_table(self):
         filename = "simple_loop.xls"
@@ -145,17 +132,16 @@ class BasicXls2JsonApiTests(TestCase):
         # Get the xform output path:
         root_filename, ext = os.path.splitext(filename)
         output_path = os.path.join(DIR, "test_output", root_filename + ".json")
-        expected_output_path = os.path.join(DIR, "test_expected_output",
-                                            root_filename + ".json")
+        expected_output_path = os.path.join(
+            DIR, "test_expected_output", root_filename + ".json"
+        )
         x = SurveyReader(path_to_excel_file)
         x_results = x.to_json_dict()
         with codecs.open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
         # Compare with the expected output:
-        with codecs.open(expected_output_path, 'rb',
-                         encoding="utf-8") as expected_file:
-            with codecs.open(output_path, 'rb',
-                             encoding="utf-8") as actual_file:
+        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
+            with codecs.open(output_path, "rb", encoding="utf-8") as actual_file:
                 expected_json = json.load(expected_file)
                 actual_json = json.load(actual_file)
                 self.assertEqual(expected_json, actual_json)
@@ -165,145 +151,95 @@ class BasicXls2JsonApiTests(TestCase):
         Test that the choice filter fields appear on children field of json
         """
         choice_filter_survey = SurveyReader(
-            utils.path_to_text_fixture("choice_filter_test.xlsx"))
+            utils.path_to_text_fixture("choice_filter_test.xlsx")
+        )
 
         expected_dict = [
             {
-                u'choices': [
-                    {
-                        u'name': u'texas',
-                        u'label': u'Texas'
-                    },
-                    {
-                        u'name': u'washington',
-                        u'label': u'Washington'
-                    }
+                "choices": [
+                    {"name": "texas", "label": "Texas"},
+                    {"name": "washington", "label": "Washington"},
                 ],
-                u'type': u'select one',
-                u'name': u'state',
-                u'parameters': {},
-                u'label': u'state'
+                "type": "select one",
+                "name": "state",
+                "parameters": {},
+                "label": "state",
             },
             {
-                u'name': u'county',
-                u'parameters': {},
-                u'choice_filter': u'${state}=cf',
-                u'label': u'county',
-                u'itemset': u'counties',
-                u'choices': [
-                    {
-                        u'label': u'King',
-                        u'cf': u'washington',
-                        u'name': u'king'
-                    },
-                    {
-                        u'label': u'Pierce',
-                        u'cf': u'washington',
-                        u'name': u'pierce'
-                    },
-                    {
-                        u'label': u'King',
-                        u'cf': u'texas',
-                        u'name': u'king'
-                    },
-                    {
-                        u'label': u'Cameron',
-                        u'cf': u'texas',
-                        u'name': u'cameron'
-                    }
+                "name": "county",
+                "parameters": {},
+                "choice_filter": "${state}=cf",
+                "label": "county",
+                "itemset": "counties",
+                "choices": [
+                    {"label": "King", "cf": "washington", "name": "king"},
+                    {"label": "Pierce", "cf": "washington", "name": "pierce"},
+                    {"label": "King", "cf": "texas", "name": "king"},
+                    {"label": "Cameron", "cf": "texas", "name": "cameron"},
                 ],
-                u'type': u'select one'
+                "type": "select one",
             },
             {
-                u'name': u'city',
-                u'parameters': {},
-                u'choice_filter': u'${county}=cf',
-                u'label': u'city',
-                u'itemset': u'cities',
-                u'choices': [
-                    {
-                        u'label': u'Dumont',
-                        u'cf': u'king',
-                        u'name': u'dumont'
-                    },
-                    {
-                        u'label': u'Finney',
-                        u'cf': u'king',
-                        u'name': u'finney'
-                    },
-                    {
-                        u'label': u'brownsville',
-                        u'cf': u'cameron',
-                        u'name': u'brownsville'
-                    },
-                    {
-                        u'label': u'harlingen',
-                        u'cf': u'cameron',
-                        u'name': u'harlingen'
-                    },
-                    {
-                        u'label': u'Seattle',
-                        u'cf': u'king',
-                        u'name': u'seattle'
-                    },
-                    {
-                        u'label': u'Redmond',
-                        u'cf': u'king',
-                        u'name': u'redmond'
-                    },
-                    {
-                        u'label': u'Tacoma',
-                        u'cf': u'pierce',
-                        u'name': u'tacoma'
-                    },
-                    {
-                        u'label': u'Puyallup',
-                        u'cf': u'pierce',
-                        u'name': u'puyallup'
-                    }
+                "name": "city",
+                "parameters": {},
+                "choice_filter": "${county}=cf",
+                "label": "city",
+                "itemset": "cities",
+                "choices": [
+                    {"label": "Dumont", "cf": "king", "name": "dumont"},
+                    {"label": "Finney", "cf": "king", "name": "finney"},
+                    {"label": "brownsville", "cf": "cameron", "name": "brownsville"},
+                    {"label": "harlingen", "cf": "cameron", "name": "harlingen"},
+                    {"label": "Seattle", "cf": "king", "name": "seattle"},
+                    {"label": "Redmond", "cf": "king", "name": "redmond"},
+                    {"label": "Tacoma", "cf": "pierce", "name": "tacoma"},
+                    {"label": "Puyallup", "cf": "pierce", "name": "puyallup"},
                 ],
-                u'type': u'select one'
+                "type": "select one",
             },
             {
-                u'control': {
-                    u'bodyless': True
-                },
-                u'type': u'group',
-                u'name': u'meta',
-                u'children': [
+                "control": {"bodyless": True},
+                "type": "group",
+                "name": "meta",
+                "children": [
                     {
-                        u'bind': {
-                            u'readonly': u'true()',
-                            u'calculate': u"concat('uuid:', uuid())"
+                        "bind": {
+                            "readonly": "true()",
+                            "calculate": "concat('uuid:', uuid())",
                         },
-                        u'type': u'calculate',
-                        u'name': u'instanceID'
+                        "type": "calculate",
+                        "name": "instanceID",
                     }
-                ]
-            }
+                ],
+            },
         ]
-        self.assertEqual(
-            choice_filter_survey.to_json_dict()[u"children"], expected_dict)
+        self.assertEqual(choice_filter_survey.to_json_dict()["children"], expected_dict)
 
     def test_underscore_warnings(self):
         """Raise warnings incase there are underscores in column names"""
         warnings = []
-        parse_file_to_json(
-            utils.path_to_text_fixture("hidden.xls"),
-            warnings=warnings)
+        parse_file_to_json(utils.path_to_text_fixture("hidden.xls"), warnings=warnings)
         self.assertGreater(len(warnings), 0)
-        warning = "Google Sheets submissions don't allow underscores in the " \
-                  "column name. If you intend to use Google Sheets " \
-                  "submissions, replace underscores with hyphens in the " \
-                  "following names: hidden_test"
+        warning = (
+            "Google Sheets submissions don't allow underscores in the "
+            "column name. If you intend to use Google Sheets "
+            "submissions, replace underscores with hyphens in the "
+            "following names: hidden_test"
+        )
         self.assertIn(warning, warnings)
 
 
 class CsvReaderEquivalencyTest(TestCase):
     def test_equivalency(self):
-        equivalent_fixtures = ['group', 'loop',  # 'gps',
-                               'specify_other', 'include', 'text_and_integer',
-                               'include_json', 'yes_or_no_question']
+        equivalent_fixtures = [
+            "group",
+            "loop",  # 'gps',
+            "specify_other",
+            "include",
+            "text_and_integer",
+            "include_json",
+            "yes_or_no_question",
+        ]
         for fixture in equivalent_fixtures:
             xls_path = utils.path_to_text_fixture("%s.xls" % fixture)
             csv_path = utils.path_to_text_fixture("%s.csv" % fixture)

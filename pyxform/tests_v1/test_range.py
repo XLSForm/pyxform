@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+Test range widget.
+"""
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
@@ -13,7 +17,8 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="10" ref="/data/level" start="1" step="1">'],
+                '<range end="10" ref="/data/level" start="1" step="1">',
+            ],
         )
 
         # mixed case parameters
@@ -26,7 +31,8 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="14" ref="/data/level" start="3" step="2">'],
+                '<range end="14" ref="/data/level" start="3" step="2">',
+            ],
         )
 
     def test_range_type_defaults(self):
@@ -39,7 +45,8 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="10" ref="/data/level" start="1" step="1">'],
+                '<range end="10" ref="/data/level" start="1" step="1">',
+            ],
         )
 
         self.assertPyxformXform(
@@ -51,7 +58,8 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="20" ref="/data/level" start="1" step="1">'],
+                '<range end="20" ref="/data/level" start="1" step="1">',
+            ],
         )
 
         self.assertPyxformXform(
@@ -63,7 +71,8 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="10" ref="/data/level" start="1" step="1">'],
+                '<range end="10" ref="/data/level" start="1" step="1">',
+            ],
         )
 
     def test_range_type_float(self):
@@ -76,7 +85,8 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="decimal"/>',
-                '<range end="5.0" ref="/data/level" start="0.5" step="0.5">'],
+                '<range end="5.0" ref="/data/level" start="0.5" step="0.5">',
+            ],
         )
 
     def test_range_type_invvalid_parameters(self):
@@ -121,7 +131,8 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="10" ref="/data/level" start="1" step="1">'],
+                '<range end="10" ref="/data/level" start="1" step="1">',
+            ],
         )
 
     def test_range_comma_separator(self):
@@ -134,7 +145,8 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="10" ref="/data/level" start="1" step="1">'],
+                '<range end="10" ref="/data/level" start="1" step="1">',
+            ],
         )
 
         self.assertPyxformXform(
@@ -146,7 +158,8 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="10" ref="/data/level" start="1" step="1">'],
+                '<range end="10" ref="/data/level" start="1" step="1">',
+            ],
         )
 
         self.assertPyxformXform(
@@ -158,5 +171,6 @@ class RangeWidgetTest(PyxformTestCase):
             """,  # noqa
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="10" ref="/data/level" start="1" step="2">'],
+                '<range end="10" ref="/data/level" start="1" step="2">',
+            ],
         )

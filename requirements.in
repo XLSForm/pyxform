@@ -1,3 +1,10 @@
 -e .
-mock
+# Testing and Development
 nose
+mock
+pip-tools
+pylint
+flake8
+isort
+yapf
+black

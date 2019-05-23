@@ -1,15 +1,19 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""
+Test translations syntax.
+"""
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class DoubleColonTranslations(PyxformTestCase):
     def test_langs(self):
-        model_contains = """<bind nodeset="/translations/n1""" + \
-                         """" readonly="true()" type="string"/>"""
+        model_contains = (
+            """<bind nodeset="/translations/n1"""
+            + """" readonly="true()" type="string"/>"""
+        )
         self.assertPyxformXform(
-            name='translations',
-            id_string='transl',
+            name="translations",
+            id_string="transl",
             md="""
             | survey |      |      |                |               |
             |        | type | name | label::english | label::french |
@@ -19,17 +23,15 @@ class DoubleColonTranslations(PyxformTestCase):
             itext__contains=[
                 '<translation lang="french">',
                 '<text id="/translations/n1:label">',
-                '<value>bonjour</value>',
-                '</text>',
-                '</translation>',
+                "<value>bonjour</value>",
+                "</text>",
+                "</translation>",
                 '<translation lang="english">',
                 '<text id="/translations/n1:label">',
-                '<value>hello</value>',
-                '</text>',
-                '</translation>',
+                "<value>hello</value>",
+                "</text>",
+                "</translation>",
             ],
-            xml__contains=[
-                """<label ref="jr:itext('/translations/n1:label')"/>""",
-            ],
+            xml__contains=["""<label ref="jr:itext('/translations/n1:label')"/>"""],
             model__contains=[model_contains],
         )

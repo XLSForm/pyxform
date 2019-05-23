@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Test validators."""
+"""
+Test validators.
+"""
 
 import sys
 from unittest import TestCase
@@ -34,28 +36,28 @@ class TestValidators(TestCase):
 
     def test_check_java_version(self):
         """Test check_java_version()"""
-        mock_func = 'pyxform.validators.odk_validate.run_popen_with_timeout'
+        mock_func = "pyxform.validators.odk_validate.run_popen_with_timeout"
         with patch(mock_func) as mock_popen:
-            mock_popen.side_effect = OSError(
-                "[Errno 2] No such file or directory")
+            mock_popen.side_effect = OSError("[Errno 2] No such file or directory")
+            with self.assertRaises(EnvironmentError) as error:
+                check_java_version()
+            self.assertEqual(
+                str(error.exception), "pyxform odk validate dependency: java not found"
+            )
+
+        with patch(mock_func) as mock_popen:
+            mock_popen.return_value = (0, False, "", JAVA_7)
             with self.assertRaises(EnvironmentError) as error:
                 check_java_version()
             self.assertEqual(
                 str(error.exception),
-                "pyxform odk validate dependency: java not found")
+                "pyxform odk validate dependency: " "java 8 or newer version not found",
+            )
 
         with patch(mock_func) as mock_popen:
-            mock_popen.return_value = (0, False, '', JAVA_7)
-            with self.assertRaises(EnvironmentError) as error:
-                check_java_version()
-            self.assertEqual(
-                str(error.exception), "pyxform odk validate dependency: "
-                "java 8 or newer version not found")
-
-        with patch(mock_func) as mock_popen:
-            mock_popen.return_value = (0, False, '', JAVA_8)
+            mock_popen.return_value = (0, False, "", JAVA_8)
             check_java_version()
 
         with patch(mock_func) as mock_popen:
-            mock_popen.return_value = (0, False, '', OPENJDK_11)
+            mock_popen.return_value = (0, False, "", OPENJDK_11)
             check_java_version()

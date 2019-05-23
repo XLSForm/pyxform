@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-test_repeat.py
+Test reapeat structure.
 """
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
@@ -9,6 +9,7 @@ class TestRepeat(PyxformTestCase):
     """
     TestRepeat class.
     """
+
     def test_repeat_relative_reference(self):
         """
         Test relative reference in repeats.
@@ -66,13 +67,12 @@ class TestRepeat(PyxformTestCase):
                 """,  # noqa pylint: disable=line-too-long
             instance__contains=[
                 '<section jr:template="">',
-                '<A/>',
-                '<B/>',
-                '</section>',
-                ],
+                "<A/>",
+                "<B/>",
+                "</section>",
+            ],
             model__contains=[
-                """<bind nodeset="/test_repeat/section/A" """
-                """type="string"/>""",
+                """<bind nodeset="/test_repeat/section/A" """ """type="string"/>""",
                 """<bind nodeset="/test_repeat/section/B" """
                 """relevant=" ../A ='oat'" """
                 """type="string"/>""",
@@ -85,16 +85,16 @@ class TestRepeat(PyxformTestCase):
                 """type="string"/>""",
                 """<bind nodeset="/test_repeat/section3/sectiond/N" """
                 """relevant=" ../../sectionb/G ='oat'" """
-                """type="string"/>"""
-                ],
+                """type="string"/>""",
+            ],
             xml__contains=[
                 '<group ref="/test_repeat/section">',
-                '<label>Section</label>',
-                '</group>',
+                "<label>Section</label>",
+                "</group>",
                 """<label> B w <output value=" ../A "/> </label>""",
                 """<label> E w <output value=" /test_repeat/Z "/> </label>""",
                 """<label> Noted <output value=" ../FF "/> w """
-                """<output value=" ../sectionb/H "/> </label></input>"""
+                """<output value=" ../sectionb/H "/> </label></input>""",
             ],
         )
 
@@ -183,7 +183,7 @@ class TestRepeat(PyxformTestCase):
                 |         | crop_list            | kale  | Kale   |                                  |
             """,  # noqa pylint: disable=line-too-long
             model__contains=[
-                """<bind calculate="indexed-repeat( /data/rep/rep2/a ,  /data/rep/rep2 , 1)" nodeset="/data/rep/c1" type="string"/>""",  # noqa pylint: disable=line-too-long
+                """<bind calculate="indexed-repeat( /data/rep/rep2/a ,  /data/rep/rep2 , 1)" nodeset="/data/rep/c1" type="string"/>"""  # noqa pylint: disable=line-too-long
             ],
         )
 
@@ -205,8 +205,7 @@ class TestRepeat(PyxformTestCase):
             |        | pet               | fish           | Fish              |                      |
             """
 
-        expected = \
-"""
+        expected = """
 
       <group ref="/Families/pets">
       <label>Pets</label>
@@ -244,6 +243,5 @@ class TestRepeat(PyxformTestCase):
     </group>
     """  # noqa
 
-        self.assertPyxformXform(
-                md=md, model__contins=[expected], run_odk_validate=True)
-        survey = self.md_to_pyxform_survey(md_raw=md)
+        self.assertPyxformXform(md=md, model__contins=[expected], run_odk_validate=True)
+        self.md_to_pyxform_survey(md_raw=md)

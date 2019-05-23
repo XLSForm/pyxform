@@ -24,3 +24,4 @@ env
 
 # ignore pypi manifest
 MANIFEST
+pyxform/tests/test_output/

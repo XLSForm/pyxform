@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+Test external instance syntax
+"""
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
@@ -22,7 +26,7 @@ class ExternalCSVInstancesTest(PyxformTestCase):
         </root>
       </instance>""",  # noqa
                 '<select1 ref="/ecsv/city">',
-                '<itemset nodeset="instance(\'cities\')/root/item">',
+                "<itemset nodeset=\"instance('cities')/root/item\">",
                 """<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv">
         <root>
           <item>
@@ -32,7 +36,7 @@ class ExternalCSVInstancesTest(PyxformTestCase):
         </root>
       </instance>""",  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
-                '<itemset nodeset="instance(\'neighbourhoods\')/root/item">',
+                "<itemset nodeset=\"instance('neighbourhoods')/root/item\">",
             ],
             run_odk_validate=True,
         )
@@ -66,7 +70,7 @@ class ExternalCSVInstancesTest(PyxformTestCase):
         </root>
       </instance>""",  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
-                '<itemset nodeset="instance(\'neighbourhoods\')/root/item[city= /ecsv/city ]">',  # noqa
+                "<itemset nodeset=\"instance('neighbourhoods')/root/item[city= /ecsv/city ]\">",  # noqa
             ],
             run_odk_validate=True,
         )
@@ -93,7 +97,7 @@ class ExternalXMLInstancesTest(PyxformTestCase):
         </root>
       </instance>""",  # noqa
                 '<select1 ref="/exml/city">',
-                '<itemset nodeset="instance(\'cities\')/root/item">',
+                "<itemset nodeset=\"instance('cities')/root/item\">",
                 """<instance id="neighbourhoods" src="jr://file/neighbourhoods.xml">
         <root>
           <item>
@@ -103,7 +107,7 @@ class ExternalXMLInstancesTest(PyxformTestCase):
         </root>
       </instance>""",  # noqa
                 '<select ref="/exml/neighbourhoods">',
-                '<itemset nodeset="instance(\'neighbourhoods\')/root/item">',
+                "<itemset nodeset=\"instance('neighbourhoods')/root/item\">",
             ],
             run_odk_validate=True,
         )

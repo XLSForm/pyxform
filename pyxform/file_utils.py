@@ -1,7 +1,11 @@
-import os
+# -*- coding: utf-8 -*-
+"""
+The pyxform file utility functions.
+"""
 import glob
-from pyxform import utils
+import os
 
+from pyxform import utils
 from pyxform.xls2json import SurveyReader
 
 
@@ -32,7 +36,8 @@ def collect_compatible_files_in_directory(directory):
     create a giant dict out of all the spreadsheets and json forms
     in the given directory
     """
-    available_files = glob.glob(os.path.join(directory, "*.xls")) + \
-        glob.glob(os.path.join(directory, "*.json"))
+    available_files = glob.glob(os.path.join(directory, "*.xls")) + glob.glob(
+        os.path.join(directory, "*.json")
+    )
 
     return dict([load_file_to_dict(f) for f in available_files])

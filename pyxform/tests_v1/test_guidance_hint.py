@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""GUidnace hint test module."""
+"""
+Guidance hint test module.
+"""
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
@@ -79,9 +81,7 @@ class GuidanceHintTest(PyxformTestCase):
             |        | type   |   name   | guidance_hint                |
             |        | string |   name   | as shown on birth certificate|
             """,
-            error__contains=[
-                "The survey element named 'name' has no label or hint."
-            ],
+            error__contains=["The survey element named 'name' has no label or hint."],
         )
 
     def test_multi_language_guidance_only(self):  # pylint:disable=C0103
@@ -94,9 +94,7 @@ class GuidanceHintTest(PyxformTestCase):
             |        | type   |   name   | guidance_hint                | guidance_hint::French (fr)          |
             |        | string |   name   | as shown on birth certificate| comme sur le certificat de naissance|
             """,  # noqa
-            error__contains=[
-                "The survey element named 'name' has no label or hint."
-            ],
+            error__contains=["The survey element named 'name' has no label or hint."],
         )
 
     def test_multi_language_hint(self):

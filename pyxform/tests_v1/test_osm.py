@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+Test OSM widgets.
+"""
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 expected_xml_output = """
@@ -11,7 +15,12 @@ expected_xml_output = """
       </tag>
     </upload>"""
 
+
 class OSMWidgetsTest(PyxformTestCase):
+    """
+    Test OSM widgets.
+    """
+
     def test_osm_type(self):
         self.assertPyxformXform(
             name="osm",

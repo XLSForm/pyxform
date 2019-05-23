@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+Test duplicate survey question field name.
+"""
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
@@ -19,8 +23,7 @@ class FieldsTests(PyxformTestCase):
             |        | integer | age     | the age       |
             """,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'age'"],
+            error__contains=["There are more than one survey elements named 'age'"],
         )
 
     def test_duplicate_fields_diff_cases(self):
@@ -36,6 +39,5 @@ class FieldsTests(PyxformTestCase):
             |        | integer | Age     | the age       |
             """,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'age'"],
+            error__contains=["There are more than one survey elements named 'age'"],
         )

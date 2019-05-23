@@ -1,7 +1,13 @@
+# -*- coding: utf-8 -*-
+"""
+Test geo widgets.
+"""
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class GeoWidgetsTest(PyxformTestCase):
+    """Test geo widgets class."""
+
     def test_gps_type(self):
         self.assertPyxformXform(
             name="geo",
@@ -10,7 +16,7 @@ class GeoWidgetsTest(PyxformTestCase):
             |        | type |   name   | label |
             |        | gps  | location | GPS   |
             """,
-            xml__contains=['geopoint'],
+            xml__contains=["geopoint"],
         )
 
     def test_gps_alias(self):
@@ -21,7 +27,7 @@ class GeoWidgetsTest(PyxformTestCase):
             |        | type     | name     | label |
             |        | geopoint | location | GPS   |
             """,
-            xml__contains=['geopoint'],
+            xml__contains=["geopoint"],
         )
 
     def test_geo_widgets_types(self):
@@ -43,25 +49,20 @@ class GeoWidgetsTest(PyxformTestCase):
             |        | end_repeat   |            |                   |
             """,
             xml__contains=[
-                '<point/>',
-                '<point_note/>',
-
-                '<trace/>',
-                '<trace_note/>',
-
-                '<shape/>',
-                '<shape_note/>',
-
+                "<point/>",
+                "<point_note/>",
+                "<trace/>",
+                "<trace_note/>",
+                "<shape/>",
+                "<shape_note/>",
                 '<bind nodeset="/geos/repeat/point" type="geopoint"/>',
                 '<bind nodeset="/geos/repeat/point_note" readonly="true()" '
                 'type="string"/>',
-
                 '<bind nodeset="/geos/repeat/trace" type="geotrace"/>',
                 '<bind nodeset="/geos/repeat/trace_note" readonly="true()" '
                 'type="string"/>',
-
                 '<bind nodeset="/geos/repeat/shape" type="geoshape"/>',
                 '<bind nodeset="/geos/repeat/shape_note" readonly="true()" '
                 'type="string"/>',
-                ],
-            )
+            ],
+        )

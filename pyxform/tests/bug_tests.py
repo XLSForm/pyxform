@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Some tests for the new (v0.9) spec is properly implemented.
 """
@@ -11,8 +12,6 @@ from pyxform.errors import PyXFormError
 from pyxform.tests.utils import XFormTestCase
 from pyxform.utils import has_external_choices
 from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
-from pyxform.tests.utils import XFormTestCase
-from pyxform.errors import PyXFormError
 from pyxform.xls2json_backends import xls_to_dict
 
 DIR = os.path.dirname(__file__)
@@ -31,7 +30,8 @@ class GroupNames(unittest.TestCase):
         warnings = []
         with self.assertRaises(Exception):
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, warnings=warnings)
+                path_to_excel_file, warnings=warnings
+            )
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(output_path, warnings=warnings)
 
@@ -49,7 +49,8 @@ class DuplicateColumns(unittest.TestCase):
         warnings = []
         with self.assertRaises(Exception):
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, warnings=warnings)
+                path_to_excel_file, warnings=warnings
+            )
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(output_path, warnings=warnings)
 
@@ -61,20 +62,20 @@ class RepeatDateTest(XFormTestCase):
         filename = "repeat_date_test.xls"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml")
+            DIR, "test_expected_output", self.root_filename + ".xml"
+        )
 
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings)
+            self.path_to_excel_file, warnings=warnings
+        )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with codecs.open(
-                expected_output_path, 'rb', encoding="utf-8") as expected_file:
-            with codecs.open(
-                    self.output_path, 'rb', encoding="utf-8") as actual_file:
+        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
+            with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
@@ -85,20 +86,20 @@ class XmlEscaping(XFormTestCase):
         filename = "xml_escaping.xls"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml")
+            DIR, "test_expected_output", self.root_filename + ".xml"
+        )
 
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings)
+            self.path_to_excel_file, warnings=warnings
+        )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with codecs.open(
-                expected_output_path, 'rb', encoding="utf-8") as expected_file:
-            with codecs.open(
-                    self.output_path, 'rb', encoding="utf-8") as actual_file:
+        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
+            with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
@@ -112,19 +113,19 @@ class DefaultTimeTest(XFormTestCase):
         root_filename, ext = os.path.splitext(filename)
         output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", root_filename + ".xml")
+            DIR, "test_expected_output", root_filename + ".xml"
+        )
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings)
+            path_to_excel_file, warnings=warnings
+        )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with codecs.open(
-                expected_output_path, 'rb', encoding="utf-8") as expected_file:
-            with codecs.open(
-                    output_path, 'rb', encoding="utf-8") as actual_file:
+        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
+            with codecs.open(output_path, "rb", encoding="utf-8") as actual_file:
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
@@ -140,7 +141,8 @@ class CascadeOldFormat(unittest.TestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings)
+            path_to_excel_file, warnings=warnings
+        )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
 
@@ -157,7 +159,8 @@ class ValidateWrapper(unittest.TestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings)
+            path_to_excel_file, warnings=warnings
+        )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
 
@@ -175,7 +178,8 @@ class CascadeOldFormatIndexError(unittest.TestCase):
         warnings = []
         with self.assertRaises(PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, warnings=warnings)
+                path_to_excel_file, warnings=warnings
+            )
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(output_path, warnings=warnings)
 
@@ -184,11 +188,10 @@ class EmptyStringOnRelevantColumnTest(unittest.TestCase):
     def runTest(self):
         filename = "ict_survey_fails.xls"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
-        workbook_dict = pyxform.xls2json.parse_file_to_workbook_dict(
-            path_to_excel_file)
+        workbook_dict = pyxform.xls2json.parse_file_to_workbook_dict(path_to_excel_file)
         with self.assertRaises(KeyError):
             # bind:relevant should not be part of workbook_dict
-            workbook_dict['survey'][0][u'bind: relevant'].strip()
+            workbook_dict["survey"][0]["bind: relevant"].strip()
 
 
 class BadChoicesSheetHeaders(unittest.TestCase):
@@ -196,10 +199,8 @@ class BadChoicesSheetHeaders(unittest.TestCase):
         filename = "spaces_in_choices_header.xls"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
         warnings = []
-        pyxform.xls2json.parse_file_to_json(path_to_excel_file,
-                                            warnings=warnings)
-        self.assertEquals(len(warnings), 3,
-                          "Found " + str(len(warnings)) + " warnings")
+        pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
+        self.assertEquals(len(warnings), 3, "Found " + str(len(warnings)) + " warnings")
 
 
 class TestChoiceNameAsType(unittest.TestCase):
@@ -222,6 +223,7 @@ class TestBlankSecondRow(unittest.TestCase):
 
 class TestXLDateAmbigous(unittest.TestCase):
     """Test non standard sheet with exception is processed successfully."""
+
     def test_xl_date_ambigous(self):
         """Test non standard sheet with exception is processed successfully."""
         filename = "xl_date_ambiguous.xlsx"
@@ -235,20 +237,24 @@ class TestXLDateAmbigousWithException(unittest.TestCase):
     """Test non standard sheet date values to raise an exception.
         This exception is raised if the date values exceed the
         datemode value accepted by that workbook."""
+
     def test_xl_date_ambigous_with_exception(self):
         """Test non standard sheet with exception is processed successfully."""
         filename = "xl_date_ambiguous_v1.xlsx"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
         with self.assertRaises(PyXFormError) as e:
             xls_to_dict(path_to_excel_file)
-        msg = 'The xls file provided has an invalid date on the'\
-            ' survey sheet, under the default column on row number 5'
+        msg = (
+            "The xls file provided has an invalid date on the"
+            " survey sheet, under the default column on row number 5"
+        )
 
         self.assertEqual(msg, str(e.exception))
 
 
 class TestSpreadSheetFilesWithMacrosAreAllowed(unittest.TestCase):
     """Test that spreadsheets with .xlsm extension are allowed"""
+
     def test_xlsm_files_are_allowed(self):
         filename = "excel_with_macros.xlsm"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)

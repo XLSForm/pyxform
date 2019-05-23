@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
 """
 Some tests for the new (v0.9) spec is properly implemented.
 """
-import unittest2 as unittest
 import codecs
 import os
+
+import unittest2 as unittest
+
 import pyxform
 from pyxform.errors import PyXFormError
 from pyxform.tests.utils import XFormTestCase
@@ -17,21 +20,21 @@ class MainTest(XFormTestCase):
     def runTest(self):
         filename = "xlsform_spec_test.xlsx"
         self.get_file_path(filename)
-        expected_output_path = os.path.join(DIR, "test_expected_output",
-                                            self.root_filename + ".xml")
+        expected_output_path = os.path.join(
+            DIR, "test_expected_output", self.root_filename + ".xml"
+        )
 
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings)
+            self.path_to_excel_file, warnings=warnings
+        )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with codecs.open(expected_output_path, 'rb', encoding="utf-8") \
-                as expected_file:
-            with codecs.open(self.output_path, 'rb', encoding="utf-8") \
-                    as actual_file:
+        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
+            with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
@@ -42,20 +45,20 @@ class FlatXlsformTest(XFormTestCase):
         filename = "flat_xlsform_test.xlsx"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml")
+            DIR, "test_expected_output", self.root_filename + ".xml"
+        )
 
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings)
+            self.path_to_excel_file, warnings=warnings
+        )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with codecs.open(expected_output_path, 'rb', encoding="utf-8") \
-                as expected_file:
-            with codecs.open(self.output_path, 'rb', encoding="utf-8") \
-                    as actual_file:
+        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
+            with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
@@ -66,20 +69,20 @@ class TestNewWidgets(XFormTestCase):
         filename = "widgets.xls"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml")
+            DIR, "test_expected_output", self.root_filename + ".xml"
+        )
 
         # Do the conversion:
         warnings = []
-        json_survey = pyxform.xls2json.parse_file_to_json(self.path_to_excel_file,
-                                                          warnings=warnings)
+        json_survey = pyxform.xls2json.parse_file_to_json(
+            self.path_to_excel_file, warnings=warnings
+        )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with codecs.open(expected_output_path, 'rb', encoding="utf-8") \
-                as expected_file:
-            with codecs.open(self.output_path, 'rb', encoding="utf-8") \
-                    as actual_file:
+        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
+            with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
@@ -93,10 +96,10 @@ class WarningsTest(unittest.TestCase):
         filename = "warnings.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
         warnings = []
-        pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings)
+        pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
         self.assertEquals(
-            len(warnings), 22, "Found " + str(len(warnings)) + " warnings")
+            len(warnings), 22, "Found " + str(len(warnings)) + " warnings"
+        )
 
 
 class CalculateWithoutCalculationTest(unittest.TestCase):
@@ -107,8 +110,9 @@ class CalculateWithoutCalculationTest(unittest.TestCase):
     def runTest(self):
         filename = "calculate_without_calculation.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
-        self.assertRaises(PyXFormError, pyxform.xls2json.parse_file_to_json,
-                          path_to_excel_file)
+        self.assertRaises(
+            PyXFormError, pyxform.xls2json.parse_file_to_json, path_to_excel_file
+        )
 
 
 class PullDataTest(XFormTestCase):
@@ -117,21 +121,21 @@ class PullDataTest(XFormTestCase):
     def runTest(self):
         filename = "pull_data.xlsx"
         self.get_file_path(filename)
-        expected_output_path = os.path.join(DIR, "test_expected_output",
-                                            self.root_filename + ".xml")
+        expected_output_path = os.path.join(
+            DIR, "test_expected_output", self.root_filename + ".xml"
+        )
 
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings)
+            self.path_to_excel_file, warnings=warnings
+        )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
 
         # Compare with the expected output:
-        with codecs.open(expected_output_path, 'rb', encoding="utf-8") \
-                as expected_file:
-            with codecs.open(self.output_path, 'rb', encoding="utf-8") \
-                    as actual_file:
+        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
+            with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
         # cleanup
@@ -144,26 +148,26 @@ class SeachAndSelectTest(XFormTestCase):
     def runTest(self):
         filename = "search_and_select.xlsx"
         self.get_file_path(filename)
-        expected_output_path = os.path.join(DIR, "test_expected_output",
-                                            self.root_filename + ".xml")
+        expected_output_path = os.path.join(
+            DIR, "test_expected_output", self.root_filename + ".xml"
+        )
 
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings)
+            self.path_to_excel_file, warnings=warnings
+        )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
 
         # Compare with the expected output:
-        with codecs.open(expected_output_path, 'rb', encoding="utf-8") \
-                as expected_file:
-            with codecs.open(self.output_path, 'rb', encoding="utf-8") \
-                    as actual_file:
+        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
+            with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
         # cleanup
         os.remove(self.output_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
