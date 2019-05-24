@@ -16,12 +16,6 @@ jobs:
             pip install codecov --user
             /home/circleci/.local/bin/codecov
       - run:
-          # Validate calls GUI code which fails if assistive_technologies are on
-          name: Install dependencies for ODK Validate
-          command: |
-            sudo apt-get install -t jessie-backports openjdk-8-jre-headless -y
-            sudo sed -i -e '/^assistive_technologies=/s/^/#/' /etc/java-*-openjdk/accessibility.properties
-      - run:
           name: Test code is well formatted
           command: |
             if ! type /home/circleci/.local/bin/black > /dev/null; then
@@ -29,6 +23,13 @@ jobs:
             else
                 /home/circleci/.local/bin/black --target-version=py27 pyxform --check --quiet || (echo 'The source code could use a bit more black.' && exit 1)
             fi
+      - run:
+          # Validate calls GUI code which fails if assistive_technologies are on
+          name: Install dependencies for ODK Validate
+          command: |
+            sudo apt-get install openjdk-8-jre-headless -y
+            sudo sed -i -e '/^assistive_technologies=/s/^/#/' /etc/java-*-openjdk/accessibility.properties
+
       - run:
           name: Run tests
           command: |
