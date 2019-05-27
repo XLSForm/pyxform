@@ -596,23 +596,38 @@ def workbook_to_json(
                     constants.LOCATION_PRIORITY,
                     constants.LOCATION_MIN_INTERVAL,
                     constants.LOCATION_MAX_AGE,
+                    constants.TRACK_CHANGES,
                 ],
             )
 
-            if parameters:
-                if len(parameters.keys()) != 3:
+            if constants.TRACK_CHANGES in parameters.keys():
+                if (
+                    parameters[constants.TRACK_CHANGES] != "true"
+                    and parameters[constants.TRACK_CHANGES] != "false"
+                ):
                     raise PyXFormError(
-                        "To include location information in"
-                        + " the audit, '"
-                        + constants.LOCATION_PRIORITY
-                        + "', '"
-                        + constants.LOCATION_MIN_INTERVAL
-                        + "', and '"
-                        + constants.LOCATION_MAX_AGE
-                        + "' are required"
-                        + " parameters."
+                        constants.TRACK_CHANGES + " must be set to true or false: "
+                        "'%s' is an invalid value" % parameters[constants.TRACK_CHANGES]
                     )
                 else:
+                    new_dict["bind"] = new_dict.get("bind", {})
+                    new_dict["bind"].update(
+                        {
+                            "odk:"
+                            + constants.TRACK_CHANGES: parameters[
+                                constants.TRACK_CHANGES
+                            ]
+                        }
+                    )
+
+            location_parameters = (
+                constants.LOCATION_PRIORITY,
+                constants.LOCATION_MIN_INTERVAL,
+                constants.LOCATION_MAX_AGE,
+            )
+            if any(k in parameters.keys() for k in location_parameters):
+                if all(k in parameters.keys() for k in location_parameters):
+
                     if parameters[constants.LOCATION_PRIORITY] not in [
                         "no-power",
                         "low-power",
@@ -684,6 +699,18 @@ def workbook_to_json(
                                 constants.LOCATION_PRIORITY
                             ],
                         }
+                    )
+                else:
+                    raise PyXFormError(
+                        "To include location information in"
+                        + " the audit, '"
+                        + constants.LOCATION_PRIORITY
+                        + "', '"
+                        + constants.LOCATION_MIN_INTERVAL
+                        + "', and '"
+                        + constants.LOCATION_MAX_AGE
+                        + "' are required"
+                        + " parameters."
                     )
 
             survey_meta.append(new_dict)
