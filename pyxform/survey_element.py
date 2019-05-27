@@ -132,6 +132,14 @@ class SurveyElement(dict):
         "FALSE": "false()",
     }
 
+    CONVERTIBLE_BIND_ATTRIBUTES = [
+        "readonly",
+        "required",
+        "relevant",
+        "constraint",
+        "calculate",
+    ]
+
     # Supported media types for attaching to questions
     SUPPORTED_MEDIA = ["image", "audio", "video"]
 
@@ -377,7 +385,11 @@ class SurveyElement(dict):
             for k, v in bind_dict.items():
                 # I think all the binding conversions should be happening on
                 # the xls2json side.
-                if hashable(v) and v in self.binding_conversions:
+                if (
+                    hashable(v)
+                    and v in self.binding_conversions
+                    and k in self.CONVERTIBLE_BIND_ATTRIBUTES
+                ):
                     v = self.binding_conversions[v]
                 if k == "jr:constraintMsg" and type(v) is dict:
                     v = "jr:itext('%s')" % self._translation_path("jr:constraintMsg")
