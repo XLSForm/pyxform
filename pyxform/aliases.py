@@ -55,6 +55,7 @@ settings_header = {
     "submission_url": constants.SUBMISSION_URL,
     "auto_send": constants.AUTO_SEND,
     "auto_delete": constants.AUTO_DELETE,
+    "allow_choice_duplicates": constants.ALLOW_CHOICE_DUPLICATES,
 }
 # TODO: Check on bind prefix approach in json.
 # Conversion dictionary from user friendly column names to meaningful values

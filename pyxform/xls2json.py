@@ -9,6 +9,7 @@ import json
 import os
 import re
 import sys
+from collections import Counter
 
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
@@ -477,6 +478,26 @@ def workbook_to_json(
                         + " in a column with no header."
                     )
                     del option[headername]
+        list_name_choices = [option.get('name') for option in options]
+        if len(list_name_choices) != len(set(list_name_choices)):
+            for k,v in Counter(list_name_choices).items():
+                try:
+                    if v > 1 and settings[u'allow_choice_duplicates'].capitalize() != 'True':
+                        raise PyXFormError("On the choices sheet"
+                                            " there is a list name"
+                                            " '%s' that occurs more than once."
+                                            " You must have set `allow_choice_duplicates`"
+                                            " setting in your settings sheet"
+                                            " for this to be a valid measure"% (k))
+                except KeyError:
+                    raise PyXFormError("There does not seem to be"
+                                            " a `allow_choice_duplicates`"
+                                            " column header defined in your settings sheet."
+                                            " You must have set `allow_choice_duplicates`"
+                                            " setting in your settings sheet"
+                                            " to have duplicate choice list names"
+                                            " in your choices sheet")
+
     # ########## Survey sheet ###########
     if constants.SURVEY not in workbook_dict:
         raise PyXFormError(

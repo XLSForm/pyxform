@@ -41,3 +41,56 @@ class FieldsTests(PyxformTestCase):
             errored=True,
             error__contains=["There are more than one survey elements named 'age'"],
         )
+    
+    def test_duplicate_choice_list_without_settings(self):
+        self.assertPyxformXform(
+            md="""
+            | survey  |                 |          |       |
+            |         | type            | name     | label |
+            |         | select_one list | S1       | s1    |
+            | choices |                 |          |       |
+            |         | list name       | name     | label  |
+            |         | list            | option a | a      |
+            |         | list            | option b | b      |
+            |         | list            | option b | c      |
+            """,
+            errored=True,
+            error__contains=["There does not seem to be a"
+                                " `allow_choice_duplicates` column header defined"
+                                " in your settings sheet"]
+        )
+    
+    def test_duplicate_choice_list(self):
+        md="""
+            | survey  |                 |          |       |
+            |         | type            | name     | label |
+            |         | select_one list | S1       | s1    |
+            | choices |                 |          |       |
+            |         | list name       | name     | label  |
+            |         | list            | option a | a      |
+            |         | list            | option b | b      |
+            |         | list            | option b | c      |
+            | settings |                |          |        |
+            |          | id_string    | allow_choice_duplicates   |
+            |          | Duplicates   | True                      |  
+            """
+        
+        expected = """
+            <select1 ref="/pyxform_autotestname/S1">
+      <label>s1</label>
+      <item>
+        <label>a</label>
+        <value>option a</value>
+      </item>
+      <item>
+        <label>b</label>
+        <value>option b</value>
+      </item>
+      <item>
+        <label>c</label>
+        <value>option b</value>
+      </item>
+    </select1>
+"""
+        self.assertPyxformXform(
+            md=md, model__contins=[expected], run_odk_validate=True)
