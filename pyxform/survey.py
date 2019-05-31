@@ -286,7 +286,6 @@ class Survey(Section):
 
     @staticmethod
     def _generate_pulldata_instances(element):
-
         def get_pulldata_functions(element):
             """
             Returns a list of different pulldata(... function strings if
@@ -297,16 +296,15 @@ class Survey(Section):
             """
             functions_present = []
             for formula_name in constants.EXTERNAL_INSTANCES:
-                if unicode(element['bind'].get(formula_name)).startswith('pulldata('):
-                    functions_present.append(element['bind'][formula_name])
+                if unicode(element["bind"].get(formula_name)).startswith("pulldata("):
+                    functions_present.append(element["bind"][formula_name])
             return functions_present
 
         formulas = get_pulldata_functions(element)
         if len(formulas) > 0:
             formula_instances = []
             for formula in formulas:
-                pieces = formula.split('"') \
-                    if '"' in formula else formula.split("'")
+                pieces = formula.split('"') if '"' in formula else formula.split("'")
                 if len(pieces) > 1 and pieces[1]:
                     file_id = pieces[1]
                     uri = "jr://file-csv/{}.csv".format(file_id)
@@ -315,7 +313,7 @@ class Survey(Section):
                             type=u"pulldata",
                             context="[type: {t}, name: {n}]".format(
                                 t=element[u"parent"][u"type"],
-                                n=element[u"parent"][u"name"]
+                                n=element[u"parent"][u"name"],
                             ),
                             name=file_id,
                             src=uri,
@@ -323,8 +321,8 @@ class Survey(Section):
                                 "instance",
                                 Survey._get_dummy_instance(),
                                 id=file_id,
-                                src=uri
-                            )
+                                src=uri,
+                            ),
                         )
                     )
             return formula_instances

@@ -93,10 +93,4 @@ LOCATION_MAX_AGE = "location-max-age"
 TRACK_CHANGES = "track-changes"
 
 # supported bind keywords for which external instances will be created for pulldata function
-EXTERNAL_INSTANCES = [
-    "calculate",
-    "constraint",
-    "readonly",
-    "required",
-    "relevant",
-]
+EXTERNAL_INSTANCES = ["calculate", "constraint", "readonly", "required", "relevant"]

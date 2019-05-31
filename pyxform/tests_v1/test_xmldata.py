@@ -378,10 +378,7 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
         node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
-        self.assertPyxformXform(md=md,
-                                xml__contains=[
-                                    node
-                                ])
+        self.assertPyxformXform(md=md, xml__contains=[node])
 
     def test_external_instance_pulldata_readonly(self):
         """
@@ -395,10 +392,7 @@ class ExternalInstanceTests(PyxformTestCase):
         """
         node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
 
-        self.assertPyxformXform(md=md,
-                                xml__contains=[
-                                    node
-                                ])
+        self.assertPyxformXform(md=md, xml__contains=[node])
 
     def test_external_instance_pulldata_required(self):
         """
@@ -411,11 +405,7 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
         node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
-        self.assertPyxformXform(md=md,
-                                xml__contains=[
-                                    node
-                                ],
-                                debug=True)
+        self.assertPyxformXform(md=md, xml__contains=[node], debug=True)
 
     def test_external_instance_pulldata_relevant(self):
         """
@@ -428,11 +418,7 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
         node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
-        self.assertPyxformXform(md=md,
-                                xml__contains=[
-                                    node
-                                ],
-                                debug=True)
+        self.assertPyxformXform(md=md, xml__contains=[node], debug=True)
 
     def test_external_instance_pulldata(self):
         """
