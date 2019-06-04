@@ -41,7 +41,7 @@ class FieldsTests(PyxformTestCase):
             errored=True,
             error__contains=["There are more than one survey elements named 'age'"],
         )
-    
+
     def test_duplicate_choice_list_without_settings(self):
         self.assertPyxformXform(
             md="""
@@ -55,13 +55,15 @@ class FieldsTests(PyxformTestCase):
             |         | list            | option b | c      |
             """,
             errored=True,
-            error__contains=["There does not seem to be a"
-                                " `allow_choice_duplicates` column header defined"
-                                " in your settings sheet"]
+            error__contains=[
+                "There does not seem to be a"
+                " `allow_choice_duplicates` column header defined"
+                " in your settings sheet"
+            ],  # noqa
         )
-    
-    def test_duplicate_choice_list(self):
-        md="""
+
+    def test_duplicate_choice_list_with_setting(self):
+        md = """
             | survey  |                 |          |       |
             |         | type            | name     | label |
             |         | select_one list | S1       | s1    |
@@ -72,9 +74,9 @@ class FieldsTests(PyxformTestCase):
             |         | list            | option b | c      |
             | settings |                |          |        |
             |          | id_string    | allow_choice_duplicates   |
-            |          | Duplicates   | True                      |  
+            |          | Duplicates   | Yes                       |
             """
-        
+
         expected = """
             <select1 ref="/pyxform_autotestname/S1">
       <label>s1</label>
@@ -92,5 +94,33 @@ class FieldsTests(PyxformTestCase):
       </item>
     </select1>
 """
-        self.assertPyxformXform(
-            md=md, model__contins=[expected], run_odk_validate=True)
+        self.assertPyxformXform(md=md, model__contins=[expected], run_odk_validate=True)
+
+    def test_choice_list_without_duplicates_is_successful(self):
+        md = """
+            | survey  |                 |          |       |
+            |         | type            | name     | label |
+            |         | select_one list | S1       | s1    |
+            | choices |                 |          |       |
+            |         | list name       | name     | label  |
+            |         | list            | option a | a      |
+            |         | list            | option b | b      |
+            | settings |                |          |        |
+            |          | id_string    | allow_choice_duplicates   |
+            |          | Duplicates   | Yes                       |
+            """
+
+        expected = """
+            <select1 ref="/pyxform_autotestname/S1">
+      <label>s1</label>
+      <item>
+        <label>a</label>
+        <value>option a</value>
+      </item>
+      <item>
+        <label>b</label>
+        <value>option b</value>
+      </item>
+    </select1>
+"""
+        self.assertPyxformXform(md=md, model__contins=[expected], run_odk_validate=True)
