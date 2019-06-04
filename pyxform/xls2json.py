@@ -480,29 +480,37 @@ def workbook_to_json(
                     del option[headername]
         list_name_choices = [option.get("name") for option in options]
         if len(list_name_choices) != len(set(list_name_choices)):
+            duplicate_setting = settings.get("allow_choice_duplicates")
+            if not duplicate_setting:
+                raise PyXFormError(
+                    "There does not seem to be"
+                    " a `allow_choice_duplicates`"
+                    " column header defined in your settings sheet."
+                    " You must have set `allow_choice_duplicates`"
+                    " setting in your settings sheet"
+                    " to have duplicate choice list names"
+                    " in your choices sheet"
+                )  # noqa
             for k, v in Counter(list_name_choices).items():
-                try:
-                    if (
-                        v > 1
-                        and settings["allow_choice_duplicates"].capitalize() != "Yes"
-                    ):
-                        raise PyXFormError(
-                            "On the choices sheet there is a list name"
-                            " '%s' that occurs more than once."
-                            " You must have set `allow_choice_duplicates`"
-                            " setting in your settings sheet"
-                            " for this to be a valid measure" % (k)
-                        )  # noqa
-                except KeyError:
-                    raise PyXFormError(
-                        "There does not seem to be"
-                        " a `allow_choice_duplicates`"
-                        " column header defined in your settings sheet."
-                        " You must have set `allow_choice_duplicates`"
-                        " setting in your settings sheet"
-                        " to have duplicate choice list names"
-                        " in your choices sheet"
-                    )  # noqa
+                if v > 1:
+                    if duplicate_setting and duplicate_setting.capitalize() != "Yes":
+                        result = [
+                            item
+                            for item, count in Counter(list_name_choices).items()
+                            if count > 1
+                        ]
+                        choice_duplicates = " ".join(result)
+
+                        if choice_duplicates:
+                            raise PyXFormError(
+                                "On the choices sheet the choice list name"
+                                " '{}' occurs more than once."
+                                " You must have set `allow_choice_duplicates`"
+                                " setting in your settings sheet"
+                                " for this to be a valid measure".format(
+                                    choice_duplicates
+                                )
+                            )  # noqa
 
     # ########## Survey sheet ###########
     if constants.SURVEY not in workbook_dict:
