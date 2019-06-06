@@ -147,10 +147,7 @@ class BuilderTests(TestCase):
                 {
                     "children": [
                         {
-                            "bind": {
-                                "jr:preload": "uid",
-                                "readonly": "true()",
-                            },
+                            "bind": {"jr:preload": "uid", "readonly": "true()"},
                             "name": "instanceID",
                             "type": "calculate",
                         }
@@ -189,10 +186,7 @@ class BuilderTests(TestCase):
                 {
                     "children": [
                         {
-                            "bind": {
-                                "jr:preload": "uid",
-                                "readonly": "true()",
-                            },
+                            "bind": {"jr:preload": "uid", "readonly": "true()"},
                             "name": "instanceID",
                             "type": "calculate",
                         }
@@ -304,10 +298,7 @@ class BuilderTests(TestCase):
                 {
                     "children": [
                         {
-                            "bind": {
-                                "jr:preload": "uid",
-                                "readonly": "true()",
-                            },
+                            "bind": {"jr:preload": "uid", "readonly": "true()"},
                             "name": "instanceID",
                             "type": "calculate",
                         }
@@ -432,10 +423,7 @@ class BuilderTests(TestCase):
                 {
                     "children": [
                         {
-                            "bind": {
-                                "jr:preload": "uid",
-                                "readonly": "true()",
-                            },
+                            "bind": {"jr:preload": "uid", "readonly": "true()"},
                             "name": "instanceID",
                             "type": "calculate",
                         }
@@ -477,10 +465,7 @@ class BuilderTests(TestCase):
                 {
                     "children": [
                         {
-                            "bind": {
-                                "jr:preload": "uid",
-                                "readonly": "true()",
-                            },
+                            "bind": {"jr:preload": "uid", "readonly": "true()"},
                             "name": "instanceID",
                             "type": "calculate",
                         }
