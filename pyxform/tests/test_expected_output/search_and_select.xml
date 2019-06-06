@@ -14,7 +14,7 @@
       </instance>
       <bind nodeset="/search_and_select/fruit" type="select1"/>
       <bind nodeset="/search_and_select/note_fruit" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/search_and_select/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/search_and_select/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

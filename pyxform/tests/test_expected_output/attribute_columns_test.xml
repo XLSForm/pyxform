@@ -727,7 +727,7 @@
       <bind nodeset="/attribute_columns_test/everything/_1" type="string"/>
       <bind nodeset="/attribute_columns_test/everything/FALSE" type="string"/>
       <bind jr:noAppErrorString="Sorry, app does not exist." nodeset="/attribute_columns_test/launch" type="int"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/attribute_columns_test/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/attribute_columns_test/meta/instanceID" readonly="true()" type="string"/>
       <bind calculate=" /attribute_columns_test/everything/my_name " nodeset="/attribute_columns_test/meta/instanceName" type="string"/>
     </model>
   </h:head>

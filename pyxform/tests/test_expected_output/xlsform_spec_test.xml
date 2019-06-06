@@ -726,7 +726,7 @@
       <bind nodeset="/xlsform_spec_test/everything/_1" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/FALSE" type="string"/>
       <bind jr:noAppErrorString="Sorry, app does not exist." nodeset="/xlsform_spec_test/launch" type="int"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/xlsform_spec_test/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/xlsform_spec_test/meta/instanceID" readonly="true()" type="string"/>
       <bind calculate=" /xlsform_spec_test/everything/my_name " nodeset="/xlsform_spec_test/meta/instanceName" type="string"/>
     </model>
   </h:head>

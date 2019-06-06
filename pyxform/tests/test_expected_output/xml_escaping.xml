@@ -16,7 +16,7 @@
       <bind calculate="2" nodeset="/xml_escaping/a" type="string"/>
       <bind calculate="1" nodeset="/xml_escaping/b" type="string"/>
       <bind nodeset="/xml_escaping/table_list_3" type="select1"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/xml_escaping/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/xml_escaping/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

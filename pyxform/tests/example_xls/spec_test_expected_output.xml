@@ -669,7 +669,7 @@
       <bind nodeset="/xlsform_spec_test/everything/phonenumber_test_output" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/_1" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/FALSE" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/xlsform_spec_test/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/xlsform_spec_test/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

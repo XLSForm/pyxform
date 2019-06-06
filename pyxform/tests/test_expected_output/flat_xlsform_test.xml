@@ -704,7 +704,7 @@
       <bind nodeset="/flat_xlsform_test/_1" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind nodeset="/flat_xlsform_test/FALSE" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind jr:noAppErrorString="Sorry, app does not exist." nodeset="/flat_xlsform_test/launch" type="int"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/flat_xlsform_test/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/flat_xlsform_test/meta/instanceID" readonly="true()" type="string"/>
       <bind calculate=" /flat_xlsform_test/my_name " nodeset="/flat_xlsform_test/meta/instanceName" type="string"/>
     </model>
   </h:head>

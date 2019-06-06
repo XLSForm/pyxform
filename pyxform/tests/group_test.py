@@ -47,7 +47,7 @@ class GroupTests(TestCase):
                     "children": [
                         {
                             "bind": {
-                                "calculate": "concat('uuid:', uuid())",
+                                "jr:preload": "uid",
                                 "readonly": "true()",
                             },
                             "name": "instanceID",

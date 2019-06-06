@@ -55,7 +55,7 @@ class BasicXls2JsonApiTests(TestCase):
                 "children": [
                     {
                         "bind": {
-                            "calculate": "concat('uuid:', uuid())",
+                            "jr:preload": "uid",
                             "readonly": "true()",
                         },
                         "name": "instanceID",
@@ -78,7 +78,7 @@ class BasicXls2JsonApiTests(TestCase):
                 "children": [
                     {
                         "bind": {
-                            "calculate": "concat('uuid:', uuid())",
+                            "jr:preload": "uid",
                             "readonly": "true()",
                         },
                         "name": "instanceID",
@@ -111,7 +111,7 @@ class BasicXls2JsonApiTests(TestCase):
                 "children": [
                     {
                         "bind": {
-                            "calculate": "concat('uuid:', uuid())",
+                            "jr:preload": "uid",
                             "readonly": "true()",
                         },
                         "name": "instanceID",
@@ -205,7 +205,7 @@ class BasicXls2JsonApiTests(TestCase):
                     {
                         "bind": {
                             "readonly": "true()",
-                            "calculate": "concat('uuid:', uuid())",
+                            "jr:preload": "uid",
                         },
                         "type": "calculate",
                         "name": "instanceID",

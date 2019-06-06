@@ -1172,7 +1172,7 @@ def workbook_to_json(
                 "name": "instanceID",
                 "bind": {
                     "readonly": "true()",
-                    "calculate": settings.get("instance_id", "concat('uuid:', uuid())"),
+                    "jr:preload": settings.get("instance_id", "uid"),
                 },
                 "type": "calculate",
             }

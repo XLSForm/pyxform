@@ -150,7 +150,7 @@
       <bind nodeset="/old_cascades/state_states" type="select1"/>
       <bind nodeset="/old_cascades/state_counties" type="select1"/>
       <bind nodeset="/old_cascades/state" type="select1"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/old_cascades/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/old_cascades/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
