@@ -202,6 +202,22 @@ class BadChoicesSheetHeaders(unittest.TestCase):
         pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
         self.assertEquals(len(warnings), 3, "Found " + str(len(warnings)) + " warnings")
 
+    def test_values_with_spaces_are_cleaned(self):
+        """
+        Test that values with leading and trailing whitespaces are processed.
+    
+        This test checks that the submission_url provided is cleaned
+        of leading and trailing whitespaces.
+        """
+        filename = "spaces_in_choices_header.xls"
+        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
+        survey_reader = SurveyReader(path_to_excel_file)
+        result = survey_reader.to_json_dict()
+
+        self.assertEqual(
+            result["submission_url"], "https://odk.ona.io/random_person/submission"
+        )
+
 
 class TestChoiceNameAsType(unittest.TestCase):
     def test_choice_name_as_type(self):
