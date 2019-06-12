@@ -97,9 +97,9 @@ def _create_parser():
         help="Run the Enketo Validate XForm external validator.",
     )
     parser.add_argument(
-        "--no_pretty_print",
-        action="store_false",
-        default=True,
+        "--pretty_print",
+        action="store_true",
+        default=False,
         help="Print XML forms with collapsed whitespace instead of pretty-printed.",
     )
     return parser
@@ -149,7 +149,7 @@ def main_cli():
                 xlsform_path=args.path_to_XLSForm,
                 xform_path=args.output_path,
                 validate=args.odk_validate,
-                pretty_print=args.no_pretty_print,
+                pretty_print=args.pretty_print,
                 enketo=args.enketo_validate,
             )
 
@@ -171,7 +171,7 @@ def main_cli():
             xlsform_path=args.path_to_XLSForm,
             xform_path=args.output_path,
             validate=args.odk_validate,
-            pretty_print=args.no_pretty_print,
+            pretty_print=args.pretty_print,
             enketo=args.enketo_validate,
         )
         if len(warnings) > 0:
