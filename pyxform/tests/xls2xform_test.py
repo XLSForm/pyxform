@@ -60,7 +60,7 @@ class XLS2XFormTests(TestCase):
         arg_list = [
             "--json",
             "--skip_validate",
-            "--no_pretty_print",
+            "--pretty_print",
             arg_xlsform,
             arg_output,
         ]
@@ -69,7 +69,7 @@ class XLS2XFormTests(TestCase):
         self.assertEqual(arg_output, args.output_path)
         self.assertEqual(True, args.json)
         self.assertEqual(False, args.skip_validate)
-        self.assertEqual(False, args.no_pretty_print)
+        self.assertEqual(True, args.pretty_print)
 
     def test_create_parser_file_name_with_space(self):
         """Should interpret the path correctly."""
@@ -103,10 +103,10 @@ class XLS2XFormTests(TestCase):
         args = _create_parser().parse_args(arg_list)
         self.assertEqual(False, args.enketo_validate)
 
-    def test_create_parser_no_pretty_print_default_true(self):
-        """Should have no_pretty_print=True if not specified."""
+    def test_create_parser_pretty_print_default_False(self):
+        """Should have pretty_print=False if not specified."""
         args = _create_parser().parse_args(["xlsform.xlsx", "."])
-        self.assertEqual(True, args.no_pretty_print)
+        self.assertFalse(args.pretty_print)
 
     def test_validator_args_logic_skip_validate_alone(self):
         """Should deactivate both validators."""
@@ -171,7 +171,7 @@ class XLS2XFormTests(TestCase):
             skip_validate=False,
             odk_validate=False,
             enketo_validate=False,
-            no_pretty_print=False,
+            pretty_print=False,
         ),
     )
     @mock.patch("pyxform.xls2xform.xls2xform_convert")
@@ -199,7 +199,7 @@ class XLS2XFormTests(TestCase):
             skip_validate=False,
             odk_validate=False,
             enketo_validate=False,
-            no_pretty_print=False,
+            pretty_print=False,
         ),
     )
     @mock.patch("pyxform.xls2xform.xls2xform_convert")
