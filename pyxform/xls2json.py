@@ -541,8 +541,12 @@ def workbook_to_json(
 
     for row in survey_sheet:
         row_number += 1
-        prev_control_type, = stack[-1]['control_type']
-        parent_children_array = stack[-1]['parent_children']
+        if stack[-1] is not None:
+            prev_control_type = stack[-1]['control_type']
+            parent_children_array = stack[-1]['parent_children']
+        else:
+            prev_control_type = None
+            parent_children_array =[]
         # Disabled should probably be first
         # so the attributes below can be disabled.
         if "disabled" in row:
@@ -738,7 +742,7 @@ def workbook_to_json(
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
                 control_type = aliases.control[parse_dict["type"]]
-                control_name = aliases.control[parse_dict["name"]]
+                control_name = question_name
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
                         row_format_string % row_number
@@ -797,6 +801,9 @@ def workbook_to_json(
         begin_control_parse = begin_control_regex.search(question_type)
         if begin_control_parse:
             parse_dict = begin_control_parse.groupdict()
+            #print("*************************88")
+            #print(parse_dict)
+            #print("*************************88")
             if parse_dict.get("begin") and "type" in parse_dict:
                 # Create a new json dict with children, and the proper type,
                 # and add it to parent_children_array in place of a question.
@@ -804,7 +811,7 @@ def workbook_to_json(
                 # (so following questions are nested under it)
                 # until an end command is encountered.
                 control_type = aliases.control[parse_dict["type"]]
-                control_name = aliases.control[parse_dict["name"]]
+                control_name = question_name
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type
                 child_list = list()
@@ -1160,8 +1167,7 @@ def workbook_to_json(
             "{}".format(", ".join(names_with_underscores))
         )
     if len(stack) != 1:
-        raise PyXFormError(
-            "Unmatched begin statement: " + str(stack[-1]['control_type']) + "(" + str(stack[-1]['control_name'])) + ")"
+        raise PyXFormError("Unmatched begin statement: " + str(stack[-1]['control_type'] + " (" + stack[-1]['control_name'] + ")"))
 
     if settings.get("flat", False):
         # print "Generating flattened instance..."
