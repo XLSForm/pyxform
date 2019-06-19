@@ -451,15 +451,14 @@ class Survey(Section):
             submission_attrs = dict()
             if self.submission_url:
                 submission_attrs["action"] = self.submission_url
+                submission_attrs["method"] = "post"
             if self.public_key:
                 submission_attrs["base64RsaPublicKey"] = self.public_key
             if self.auto_send:
                 submission_attrs["orx:auto-send"] = self.auto_send
             if self.auto_delete:
                 submission_attrs["orx:auto-delete"] = self.auto_delete
-            submission_node = node(
-                "submission", method="form-data-post", **submission_attrs
-            )
+            submission_node = node("submission", **submission_attrs)
             model_children.insert(0, submission_node)
 
         return node("model", *model_children)
