@@ -366,3 +366,92 @@ class ExternalInstanceTests(PyxformTestCase):
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
         self.assertEqual(1, xml.count(expected))
+
+    def test_external_instance_pulldata_constraint(self):
+        """
+        Checks if instance node for pulldata function is added
+        when pulldata occurs in column with constraint title
+        """
+        md = """
+        | survey |        |         |                |                                                         |
+        |        | type   | name    | label          | constraint                                              |
+        |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
+        """
+        node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
+        self.assertPyxformXform(md=md, xml__contains=[node])
+
+    def test_external_instance_pulldata_readonly(self):
+        """
+        Checks if instance node for pulldata function is added
+        when pulldata occurs in column with readonly title
+        """
+        md = """
+        | survey |        |         |                |                                                         |
+        |        | type   | name    | label          | readonly                                                |
+        |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
+        """
+        node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
+
+        self.assertPyxformXform(md=md, xml__contains=[node])
+
+    def test_external_instance_pulldata_required(self):
+        """
+        Checks if instance node for pulldata function is added
+        when pulldata occurs in column with required title
+        """
+        md = """
+        | survey |        |         |                |                                                         |
+        |        | type   | name    | label          | required                                                |
+        |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
+        """
+        node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
+        self.assertPyxformXform(md=md, xml__contains=[node], debug=True)
+
+    def test_external_instance_pulldata_relevant(self):
+        """
+        Checks if instance node for pulldata function is added
+        when pulldata occurs in column with relevant title
+        """
+        md = """
+        | survey |        |         |                |                                                         |
+        |        | type   | name    | label          | relevant                                                |
+        |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
+        """
+        node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
+        self.assertPyxformXform(md=md, xml__contains=[node], debug=True)
+
+    def test_external_instance_pulldata(self):
+        """
+        Checks that only one instance node for pulldata is created
+        if pulldata function is present in at least one columns with
+        the titles: constraint, relevant, required, readonly
+        """
+        md = """
+        | survey |        |         |                |                                                         |                                                         |                                                         |
+        |        | type   | name    | label          | relevant                                                | required                                                | constraint                                              |
+        |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
+        """
+        node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
+        survey = self.md_to_pyxform_survey(md_raw=md)
+        xml = survey._to_pretty_xml()
+        self.assertEqual(1, xml.count(node))
+
+    def test_external_instances_multiple_diff_pulldatas(self):
+        """
+        Checks that all instances for pulldata that needs creation
+        are created
+        The situation is if pulldata is present in 2 or more
+        columns but pulling data from different csv files
+        """
+        md = """
+        | survey |        |         |                |                                                        |                                                             |
+        |        | type   | name    | label          | relevant                                               | required                                                    |
+        |        | text   | Part_ID | Participant ID | pulldata('fruits', 'name', 'name_key', 'mango')        | pulldata('OtherID', 'ParticipantID', ParticipantIDValue',.) |
+        """
+        node1 = '<instance id="fruits" src="jr://file-csv/fruits.csv">'
+        node2 = '<instance id="OtherID" src="jr://file-csv/OtherID.csv">'
+
+        survey = self.md_to_pyxform_survey(md_raw=md)
+        xml = survey._to_pretty_xml()
+        self.assertEqual(1, xml.count(node1))
+        self.assertEqual(1, xml.count(node2))
