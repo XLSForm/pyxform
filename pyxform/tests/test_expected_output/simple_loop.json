@@ -46,7 +46,7 @@
                 {
                     "bind": {
                         "readonly": "true()", 
-                        "calculate": "concat('uuid:', uuid())"
+                        "jr:preload": "uid"
                     }, 
                     "type": "calculate", 
                     "name": "instanceID"

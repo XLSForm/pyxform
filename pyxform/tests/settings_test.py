@@ -44,10 +44,7 @@ class SettingsTests(TestCase):
                 {
                     "children": [
                         {
-                            "bind": {
-                                "calculate": "concat('uuid:', uuid())",
-                                "readonly": "true()",
-                            },
+                            "bind": {"jr:preload": "uid", "readonly": "true()"},
                             "name": "instanceID",
                             "type": "calculate",
                         }

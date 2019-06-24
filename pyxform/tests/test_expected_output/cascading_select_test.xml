@@ -150,7 +150,7 @@
       <bind nodeset="/cascading_select_test/mylga_zone" type="select1"/>
       <bind nodeset="/cascading_select_test/mylga_state" type="select1"/>
       <bind nodeset="/cascading_select_test/mylga" type="select1"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/cascading_select_test/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/cascading_select_test/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
