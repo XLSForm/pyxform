@@ -60,10 +60,6 @@ jobs:
     <<: *build-template
     docker:
       - image: circleci/python:3.5
-  py-3.4:
-    <<: *build-template
-    docker:
-      - image: circleci/python:3.4
   py-2.7:
     <<: *build-template
     docker:
@@ -75,5 +71,4 @@ workflows:
       - py-3.7
       - py-3.6
       - py-3.5
-      - py-3.4
       - py-2.7
