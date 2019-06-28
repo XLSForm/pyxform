@@ -12,6 +12,9 @@ import sys
 import subprocess
 from collections import Counter
 
+
+from hashlib import md5 # why md5
+
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
 from pyxform.utils import basestring, is_valid_xml_tag, unicode, default_is_dynamic
@@ -299,6 +302,35 @@ def process_range_question_type(row):
     return new_dict
 
 
+def relevance_checker(expression, index, expression_hash_map):
+    """
+    Checks If a logical expression is complex or repeated
+
+    expression (str) - text representing relevance text to tested
+    index (int) - attempt at giving the location of the error location
+    expression_hash_map (dict) - store hashes for error messages as keys and index
+        as values
+    """
+    warnings_list = []
+    actual_row = index + 1 # this is assuming that order of rows is maintained to this point
+    this_expression_hash = md5(expression.encode()).hexdigest()
+    if this_expression_hash in expression_hash_map.keys():
+        # get list of locations where expression has been seen before
+        row_indices = expression_hash_map[this_expression_hash]
+        row_indices.append(actual_row)
+        warning_message = """%s: Duplicate relevancies detected.
+        In future, its best to store repeated logic in calculate 
+        and referring to that calculate.""" % (", ".join(map(str, row_indices[1:])))
+        warnings_list.append(warning_message)
+    else:
+        expression_hash_map[this_expression_hash] = [actual_row]
+
+    return warnings_list
+
+
+
+
+
 def workbook_to_json(
     workbook_dict,
     form_name=None,
@@ -329,10 +361,14 @@ def workbook_to_json(
         warnings = []
     is_valid = False
     workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
-    for row in workbook_dict.get(constants.SURVEY, []):
+    expression_hash_map = {}
+    for index, row in enumerate(workbook_dict.get(constants.SURVEY, [])):
         is_valid = "type" in [z.lower() for z in row]
         if is_valid:
             break
+        if "relevant" in [z.lower() for z in row]:
+            warning_list = relevance_checker(row['relevant'], index, expression_hash_map)
+            warnings.extend(warning_list)
     if not is_valid:
         raise PyXFormError(
             "The survey sheet is either empty or missing important " "column headers."
