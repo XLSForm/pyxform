@@ -13,7 +13,7 @@ import subprocess
 from collections import Counter
 
 
-from hashlib import md5 # why md5
+from hashlib import md5  # why md5
 
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
@@ -313,7 +313,9 @@ def expression_is_repeated(expression, index, expression_hash_map):
     return (list) the warning message in a list or an empty list if no warning
     """
     warnings_list = []
-    actual_row = index + 1  # this is assuming that order of rows is maintained to this point
+    actual_row = (
+        index + 1
+    )  # this is assuming that order of rows is maintained to this point
     this_expression_hash = md5(expression.encode()).hexdigest()
     if this_expression_hash in expression_hash_map.keys():
         # get list of locations where expression has been seen before
@@ -321,7 +323,9 @@ def expression_is_repeated(expression, index, expression_hash_map):
         row_indices.append(actual_row)
         warning_message = """%s: Duplicate relevancies detected.
         In future, its best to store repeated logic in calculate 
-        and referring to that calculate.""" % (", ".join(map(str, row_indices[1:])))
+        and referring to that calculate.""" % (
+            ", ".join(map(str, row_indices[1:]))
+        )
         warnings_list.append(warning_message)
     else:
         expression_hash_map[this_expression_hash] = [actual_row]
@@ -339,7 +343,7 @@ def expression_is_complex(expression, index):
     """
     warning_list = []
     # will match a function syntax i.e. function name and the parenthesis
-    function_regex = r'(?:(\s?[a-z_0-9]+\s?\()|(\)))'
+    function_regex = r"(?:(\s?[a-z_0-9]+\s?\()|(\)))"
 
 
 def workbook_to_json(
@@ -378,7 +382,9 @@ def workbook_to_json(
         if is_valid:
             break
         if "relevant" in [z.lower() for z in row]:
-            warning_list = expression_is_repeated(row['relevant'], index, expression_hash_map)
+            warning_list = expression_is_repeated(
+                row["relevant"], index, expression_hash_map
+            )
             warnings.extend(warning_list)
     if not is_valid:
         raise PyXFormError(
