@@ -37,6 +37,7 @@ LABEL = "label"
 HINT = "hint"
 STYLE = "style"
 ATTRIBUTE = "attribute"
+ALLOW_CHOICE_DUPLICATES = "allow_choice_duplicates"
 
 BIND = (
     "bind"
