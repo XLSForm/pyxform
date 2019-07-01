@@ -329,6 +329,18 @@ def expression_is_repeated(expression, index, expression_hash_map):
     return warnings_list
 
 
+def expression_is_complex(expression, index):
+    """
+    A heuristic that attempts to check if an expression can be considered complex
+
+    expression (str) - text representing expression to be tested
+    index (int) - attempt at giving the location of the error location
+    return (str) - a warning message where one is necessary
+    """
+    warning_list = []
+    # will match a function syntax i.e. function name and the parenthesis
+    function_regex = r'(?:(\s?[a-z_0-9]+\s?\()|(\)))'
+
 
 def workbook_to_json(
     workbook_dict,
