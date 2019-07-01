@@ -302,17 +302,18 @@ def process_range_question_type(row):
     return new_dict
 
 
-def relevance_checker(expression, index, expression_hash_map):
+def expression_is_repeated(expression, index, expression_hash_map):
     """
     Checks If a logical expression is complex or repeated
 
-    expression (str) - text representing relevance text to tested
+    expression (str) - text representing expression to be tested
     index (int) - attempt at giving the location of the error location
     expression_hash_map (dict) - store hashes for error messages as keys and index
         as values
+    return (list) the warning message in a list or an empty list if no warning
     """
     warnings_list = []
-    actual_row = index + 1 # this is assuming that order of rows is maintained to this point
+    actual_row = index + 1  # this is assuming that order of rows is maintained to this point
     this_expression_hash = md5(expression.encode()).hexdigest()
     if this_expression_hash in expression_hash_map.keys():
         # get list of locations where expression has been seen before
@@ -326,8 +327,6 @@ def relevance_checker(expression, index, expression_hash_map):
         expression_hash_map[this_expression_hash] = [actual_row]
 
     return warnings_list
-
-
 
 
 
@@ -367,7 +366,7 @@ def workbook_to_json(
         if is_valid:
             break
         if "relevant" in [z.lower() for z in row]:
-            warning_list = relevance_checker(row['relevant'], index, expression_hash_map)
+            warning_list = expression_is_repeated(row['relevant'], index, expression_hash_map)
             warnings.extend(warning_list)
     if not is_valid:
         raise PyXFormError(
