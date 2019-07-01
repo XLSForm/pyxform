@@ -178,15 +178,17 @@ def sheet_to_csv(workbook_path, csv_path, sheet_name):
         mask = [v and len(v.strip()) > 0 for v in sheet.row_values(0)]
         for row_idx in range(sheet.nrows):
             csv_data = []
-            if mask:
-                try:
-                    for v, mask in zip(sheet.row(row_idx), mask):
+            try:
+                for v, m in zip(sheet.row(row_idx), mask):
+                    if m:
                         value = v.value
                         value_type = v.ctype
                         data = xls_value_to_unicode(value, value_type, wb.datemode)
+                        # clean the values of leading and trailing whitespaces
+                        data = data.strip()
                         csv_data.append(data)
-                except TypeError:
-                    continue
+            except TypeError:
+                continue
             writer.writerow(csv_data)
 
     return True
