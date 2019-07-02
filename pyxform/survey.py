@@ -870,11 +870,11 @@ class Survey(Section):
                     + "Learn more: http://xlsform.org#multiple-language-support"
                 )
 
-    def to_xml(self, validate=True, pretty_print=False, warnings=None, enketo=False):
+    def to_xml(self, validate=True, pretty_print=True, warnings=None, enketo=False):
         """
         Generates the XForm XML.
         validate is True by default - pass the XForm XML through ODK Validator.
-        pretty_print is False by default - formats the XML for readability.
+        pretty_print is True by default - formats the XML for readability.
         warnings - if a list is passed it stores all warnings generated
         enketo - pass the XForm XML though Enketo Validator.
 
