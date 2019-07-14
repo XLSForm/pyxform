@@ -19,7 +19,7 @@ jobs:
           # Validate calls GUI code which fails if assistive_technologies are on
           name: Install dependencies for ODK Validate
           command: |
-            sudo apt-get install -y openjdk-8-jre-headless
+            sudo apt-get install -y openjdk-11-jre-headless
             sudo sed -i -e '/^assistive_technologies=/s/^/#/' /etc/java-*-openjdk/accessibility.properties
       - run:
           name: Test code is well formatted
