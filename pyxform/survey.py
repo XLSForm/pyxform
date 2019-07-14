@@ -562,7 +562,6 @@ class Survey(Section):
         When translations are not provided "-" will be used.
         This disables any of the default_language fallback functionality.
         """
-
         if warnings is None:
             warnings = []
 
