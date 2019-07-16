@@ -1,8 +1,8 @@
 ===============
-pyxform v0.13.x
+pyxform v0.14.1
 ===============
 
-|circleci|  |appveyor| |codecov|
+|circleci|  |appveyor| |codecov| |black|
 
 .. |circleci| image:: https://circleci.com/gh/XLSForm/pyxform.svg?style=shield&circle-token=:circle-token
     :target: https://circleci.com/gh/XLSForm/pyxform
@@ -13,7 +13,7 @@ pyxform v0.13.x
 .. |codecov| image:: https://codecov.io/github/XLSForm/pyxform/branch/master/graph/badge.svg
 	:target: https://codecov.io/github/XLSForm/pyxform
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/python/black
 
 pyxform is a Python library that makes writing XForms for ODK Collect and enketo

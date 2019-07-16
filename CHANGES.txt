@@ -1,5 +1,103 @@
 Pyxform Changelog
 
+v0.14.1, 2019 07 14
+  -- Fix bug - generation of blank itemset.csv iintroduced in v0.14.0.
+     Issue #326,  https://github.com/XLSForm/pyxform/issues/326
+     [WinnyTroy]
+
+  -- Remove deprecated method="form-data-post"
+     Issue #215,  https://github.com/XLSForm/pyxform/issues/215
+     [WinnyTroy]
+
+  -- Error on duplicate choice list values
+     Issue #23,  https://github.com/XLSForm/pyxform/issues/23
+     [WinnyTroy]
+
+  -- Turn pretty print XML is off by default.
+     Issue #162,  https://github.com/XLSForm/pyxform/issues/162
+     [p-netm]
+
+  -- Switch to openjdk-11-jre-headless for java in CircleCI
+     Issue #332,  https://github.com/XLSForm/pyxform/issues/332
+     [ukanga]
+
+v0.14.0, 2019 06 24
+  -- Add codecov integration for tests
+     Issue #259, https://github.com/XLSForm/pyxform/issues/259
+     [shobhitagarwal1612]
+
+  -- Build artifacts on CircleCI
+     Issue #284, https://github.com/XLSForm/pyxform/pull/284
+     [shobhitagarwal1612]
+
+  -- ELiminate repetition in tests
+     Issue #231, https://github.com/XLSForm/pyxform/issues/231
+     [WinnyTroy]
+
+  -- Add check for java8 or later
+     Issue #257, https://github.com/XLSForm/pyxform/issues/257
+     [code-player]
+
+  -- Clear invalid filename error message
+     Issue #22, https://github.com/XLSForm/pyxform/issues/22
+     [lincmba]
+
+  -- Add tests to confirm hints are displayed in repeats and groups
+     Issues #73 and #74, https://github.com/XLSForm/pyxform/issues/73, https://github.com/XLSForm/pyxform/issues/74
+     [WinnyTroy]
+
+  -- Strip spaces from headers
+     Issue #13, https://github.com/XLSForm/pyxform/issues/13
+     [lincmba]
+
+  -- Add warnings to or_other users about Google Sheets compatibility
+     Issue #270, https://github.com/XLSForm/pyxform/issues/270
+     [lincmba]
+
+  -- External choices with integers in names/values are converted to decimals
+     Issue #123, https://github.com/XLSForm/pyxform/issues/123
+     [WinnyTroy]
+
+  -- Clearer warning when both form_id and id_string are present in settings sheet
+     Issue #224, https://github.com/XLSForm/pyxform/issues/224
+     [WinnyTroy]
+
+  -- Set default output_path
+     Issue #227, https://github.com/XLSForm/pyxform/issues/227
+     [p-netm]
+
+  -- XLDateAmbiguous: Error message could be better<Paste>
+     Issue #228, https://github.com/XLSForm/pyxform/issues/228
+     [WinnyTroy]
+
+  -- Use black for code formatting
+     Issue #306, https://github.com/XLSForm/pyxform/pull/306
+     [ukanga]
+
+  -- XLSForm "yes" --> XForm "true()", even for custom bind::'s
+     Issue #226, https://github.com/XLSForm/pyxform/issues/226
+     [yanokwa]
+
+  -- Add support for track-changes
+     Issue #305, https://github.com/XLSForm/pyxform/pull/305
+     [yanokwa]
+
+  -- Change /meta/instanceID binding to use preload "uid"
+     Issue #94, https://github.com/XLSForm/pyxform/issues/94
+     [yanokwa]
+
+  -- Add Validate v1.12.0 with JavaRosa v2.14.0
+     Issue #320, https://github.com/XLSForm/pyxform/pull/320
+     [yanokwa]
+
+  -- Add external instance if pulldata() is used in constraint, required, readonly, relevant expressions
+     Issue #308, https://github.com/XLSForm/pyxform/pull/308
+     [p-netm]
+
+  -- Remove Python 3.4 CI because its EOL
+     Issue #312, https://github.com/XLSForm/pyxform/pull/312
+     [yanokwa]
+
 v0.13.1, 2019 02 19
   -- Ensure parameters are typed properly
      Issue #267, https://github.com/XLSForm/pyxform/pull/267

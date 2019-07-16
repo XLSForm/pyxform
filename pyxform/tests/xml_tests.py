@@ -51,7 +51,7 @@ class XMLTests(utils.XFormTestCase):
         </yes_or_no_question>
       </instance>
       <bind nodeset="/yes_or_no_question/good_day" type="select1"/>
-      <bind calculate="concat('uuid:', uuid())"
+      <bind jr:preload="uid"
         nodeset="/yes_or_no_question/meta/instanceID"
         readonly="true()" type="string"/>
     </model>

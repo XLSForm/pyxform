@@ -286,30 +286,46 @@ class Survey(Section):
 
     @staticmethod
     def _generate_pulldata_instances(element):
-        if "calculate" in element["bind"]:
-            calculate = element["bind"]["calculate"]
-            if calculate.startswith("pulldata("):
-                pieces = (
-                    calculate.split('"') if '"' in calculate else calculate.split("'")
-                )
+        def get_pulldata_functions(element):
+            """
+            Returns a list of different pulldata(... function strings if
+            pulldata function is defined at least once for any of:
+            calculate, constraint, readonly, required, relevant
+
+            :param: element (pyxform.survey.Survey):
+            """
+            functions_present = []
+            for formula_name in constants.EXTERNAL_INSTANCES:
+                if unicode(element["bind"].get(formula_name)).startswith("pulldata("):
+                    functions_present.append(element["bind"][formula_name])
+            return functions_present
+
+        formulas = get_pulldata_functions(element)
+        if len(formulas) > 0:
+            formula_instances = []
+            for formula in formulas:
+                pieces = formula.split('"') if '"' in formula else formula.split("'")
                 if len(pieces) > 1 and pieces[1]:
                     file_id = pieces[1]
                     uri = "jr://file-csv/{}.csv".format(file_id)
-                    return InstanceInfo(
-                        type="pulldata",
-                        context="[type: {t}, name: {n}]".format(
-                            t=element["parent"]["type"], n=element["parent"]["name"]
-                        ),
-                        name=file_id,
-                        src=uri,
-                        instance=node(
-                            "instance",
-                            Survey._get_dummy_instance(),
-                            id=file_id,
+                    formula_instances.append(
+                        InstanceInfo(
+                            type=u"pulldata",
+                            context="[type: {t}, name: {n}]".format(
+                                t=element[u"parent"][u"type"],
+                                n=element[u"parent"][u"name"],
+                            ),
+                            name=file_id,
                             src=uri,
-                        ),
+                            instance=node(
+                                "instance",
+                                Survey._get_dummy_instance(),
+                                id=file_id,
+                                src=uri,
+                            ),
+                        )
                     )
-
+            return formula_instances
         return None
 
     @staticmethod
@@ -374,7 +390,9 @@ class Survey(Section):
             i_ext = self._generate_external_instances(element=i)
             i_pull = self._generate_pulldata_instances(element=i)
             i_file = self._generate_from_file_instances(element=i)
-            instances += [x for x in [i_ext, i_pull, i_file] if x is not None]
+            for x in [i_ext, i_pull, i_file]:
+                if x is not None:
+                    instances += x if isinstance(x, list) else [x]
 
         # Append last so the choice instance is excluded on a name clash.
         for name, value in self.choices.items():
@@ -433,15 +451,14 @@ class Survey(Section):
             submission_attrs = dict()
             if self.submission_url:
                 submission_attrs["action"] = self.submission_url
+                submission_attrs["method"] = "post"
             if self.public_key:
                 submission_attrs["base64RsaPublicKey"] = self.public_key
             if self.auto_send:
                 submission_attrs["orx:auto-send"] = self.auto_send
             if self.auto_delete:
                 submission_attrs["orx:auto-delete"] = self.auto_delete
-            submission_node = node(
-                "submission", method="form-data-post", **submission_attrs
-            )
+            submission_node = node("submission", **submission_attrs)
             model_children.insert(0, submission_node)
 
         return node("model", *model_children)

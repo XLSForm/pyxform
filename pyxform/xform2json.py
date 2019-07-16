@@ -511,6 +511,10 @@ class XFormToDictBuilder:
                             rs["bind"] = {}
                         rs["bind"][k] = v
                         continue
+                    if k == "preload" and v == "uid":
+                        if "bind" not in rs:
+                            rs["bind"] = {}
+                        rs["bind"]["jr:preload"] = v
                     rs[k] = v
                 if "preloadParams" in rs and "preload" in rs:
                     rs["type"] = rs["preloadParams"]

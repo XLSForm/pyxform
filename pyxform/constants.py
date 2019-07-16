@@ -37,6 +37,7 @@ LABEL = "label"
 HINT = "hint"
 STYLE = "style"
 ATTRIBUTE = "attribute"
+ALLOW_CHOICE_DUPLICATES = "allow_choice_duplicates"
 
 BIND = (
     "bind"
@@ -91,3 +92,6 @@ LOCATION_PRIORITY = "location-priority"
 LOCATION_MIN_INTERVAL = "location-min-interval"
 LOCATION_MAX_AGE = "location-max-age"
 TRACK_CHANGES = "track-changes"
+
+# supported bind keywords for which external instances will be created for pulldata function
+EXTERNAL_INSTANCES = ["calculate", "constraint", "readonly", "required", "relevant"]

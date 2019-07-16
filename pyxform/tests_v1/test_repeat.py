@@ -203,7 +203,7 @@ class TestRepeat(PyxformTestCase):
             |        | pet               | cat            | Cat               |                      |
             |        | pet               | bird           | Bird              |                      |
             |        | pet               | fish           | Fish              |                      |
-            """
+            """  # noqa
 
         expected = """
 
@@ -244,4 +244,27 @@ class TestRepeat(PyxformTestCase):
     """  # noqa
 
         self.assertPyxformXform(md=md, model__contins=[expected], run_odk_validate=True)
-        self.md_to_pyxform_survey(md_raw=md)
+
+    def test_hints_are_present_within_groups(self):
+        """Tests that hints are present within groups."""
+        md = """
+            | survey |                   |                        |                                                         |                              |
+            |        | type              | name                   | label                                                   | hint                         |
+            |        | begin group       | child_group            | Please enter birth information for each child born.     | Pet details                  |
+            |        | text              | child_name             | Name of child?                                          | Should be a text             |
+            |        | decimal           | birthweight            | Child birthweight (in kgs)?                             | Should be a decimal          |
+            |        | end group         |                        |                                                         |                              |
+            """  # noqa
+        expected = """<group ref="/pyxform_autotestname/child_group">
+      <label>Please enter birth information for each child born.</label>
+      <input ref="/pyxform_autotestname/child_group/child_name">
+        <label>Name of child?</label>
+        <hint>Should be a text</hint>
+      </input>
+      <input ref="/pyxform_autotestname/child_group/birthweight">
+        <label>Child birthweight (in kgs)?</label>
+        <hint>Should be a decimal</hint>
+      </input>
+    </group>"""  # noqa
+
+        self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
