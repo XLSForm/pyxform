@@ -406,6 +406,19 @@ def workbook_to_json(
     # Here the default settings are overridden by those in the settings sheet
     json_dict.update(settings)
 
+    # ########## External Choices sheet ##########
+
+    external_choices_sheet = workbook_dict.get(constants.EXTERNAL_CHOICES, [])
+    for choice_item in external_choices_sheet:
+        replace_smart_quotes_in_dict(choice_item)
+
+    external_choices_sheet = dealias_and_group_headers(
+        external_choices_sheet, aliases.list_header, use_double_colons, default_language
+    )
+    external_choices = group_dictionaries_by_key(
+        external_choices_sheet, constants.LIST_NAME
+    )
+
     # ########## Choices sheet ##########
     # Columns and "choices and columns" sheets are deprecated,
     # but we combine them with the choices sheet for backwards-compatibility.
@@ -992,16 +1005,24 @@ def workbook_to_json(
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
                 select_type = aliases.select[parse_dict["select_command"]]
+                list_name = parse_dict["list_name"]
+                list_file_name, file_extension = os.path.splitext(list_name)
                 if select_type == "select one external" and "choice_filter" not in row:
                     warnings.append(
                         row_format_string % row_number
                         + " select one external is only meant for"
                         " filtered selects."
                     )
+                if (
+                    select_type == "select one external"
+                    and list_name not in external_choices
+                ):
+                    raise PyXFormError(
+                        row_format_string % row_number
+                        + "List name not in external choices sheet: "
+                        + list_name
+                    )
                     select_type = aliases.select["select_one"]
-                list_name = parse_dict["list_name"]
-                list_file_name, file_extension = os.path.splitext(list_name)
-
                 if (
                     list_name not in choices
                     and select_type != "select one external"
