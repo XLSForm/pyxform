@@ -64,7 +64,7 @@ survey_header = {
     "Name": "name",
     "SMS Field": constants.SMS_FIELD,
     "SMS Option": constants.SMS_OPTION,
-    "SMS Sepatator": constants.SMS_SEPARATOR,
+    "SMS Separator": constants.SMS_SEPARATOR,
     "SMS Allow Media": constants.SMS_ALLOW_MEDIA,
     "SMS Date Format": constants.SMS_DATE_FORMAT,
     "SMS DateTime Format": constants.SMS_DATETIME_FORMAT,
