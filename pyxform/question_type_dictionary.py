@@ -371,4 +371,9 @@ QUESTION_TYPE_DICT = {
     "xml-external": {
         # Only effect is to add an external instance.
     },
+    "start-geopoint": {
+        "control": {"tag": "action"},
+        "bind": {"type": "geopoint"},
+        "action": {"name": "odk:setgeopoint", "event": "odk-instance-first-load"},
+    },
 }

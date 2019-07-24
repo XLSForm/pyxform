@@ -446,6 +446,7 @@ class Survey(Section):
         model_children += [node("instance", self.xml_instance())]
         model_children += list(self._generate_instances())
         model_children += self.xml_bindings()
+        model_children += self.xml_actions()
 
         if self.submission_url or self.public_key or self.auto_send or self.auto_delete:
             submission_attrs = dict()

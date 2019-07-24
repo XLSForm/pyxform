@@ -51,14 +51,15 @@ class SurveyElementBuilder(object):
     # we use this CLASSES dict to create questions from dictionaries
     QUESTION_CLASSES = {
         "": Question,
+        "action": Question,
         "input": InputQuestion,
-        "trigger": TriggerQuestion,
-        "select": MultipleChoiceQuestion,
-        "select1": MultipleChoiceQuestion,
         "odk:rank": MultipleChoiceQuestion,
-        "upload": UploadQuestion,
         "osm": OsmUploadQuestion,
         "range": RangeQuestion,
+        "select": MultipleChoiceQuestion,
+        "select1": MultipleChoiceQuestion,
+        "trigger": TriggerQuestion,
+        "upload": UploadQuestion,
     }
 
     SECTION_CLASSES = {

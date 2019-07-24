@@ -60,6 +60,7 @@ class SurveyElement(dict):
         "query": unicode,
         "autoplay": unicode,
         "flat": lambda: False,
+        "action": unicode,
     }
 
     def _default(self):
@@ -418,6 +419,30 @@ class SurveyElement(dict):
         doesn't make sense to implement here in the base class.
         """
         raise NotImplementedError("Control not implemented")
+
+    def xml_action(self):
+        """
+        Return the action for this survey element.
+        """
+        if self.action:
+            action_dict = self.action.copy()
+            if action_dict:
+                name = action_dict["name"]
+                del action_dict["name"]
+                return node(name, ref=self.get_xpath(), **action_dict)
+
+        return None
+
+    def xml_actions(self):
+        """
+        Return a list of actions for this node and all its descendants.
+        """
+        result = []
+        for e in self.iter_descendants():
+            xml_action = e.xml_action()
+            if xml_action is not None:
+                result.append(xml_action)
+        return result
 
 
 def hashable(v):
