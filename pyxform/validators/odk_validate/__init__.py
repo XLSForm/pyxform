@@ -34,7 +34,7 @@ def install_exists():
 
 
 def _call_validator(path_to_xform, bin_file_path=ODK_VALIDATE_PATH):
-    return run_popen_with_timeout(["java", "-jar", bin_file_path, path_to_xform], 100)
+    return run_popen_with_timeout(["java", "-Djava.awt.headless=true", "-jar", bin_file_path, path_to_xform], 100)
 
 
 def install_ok(bin_file_path=ODK_VALIDATE_PATH):
@@ -57,7 +57,7 @@ def check_java_version():
     Raises EnvironmentError exception if java version is less than java 8.
     """
     try:
-        stderr = str(run_popen_with_timeout(["java", "-version"], 100)[3])
+        stderr = str(run_popen_with_timeout(["java", "-Djava.awt.headless=true", "-version"], 100)[3])
     except OSError as os_error:
         stderr = str(os_error)
     # convert string to unicode for python2
