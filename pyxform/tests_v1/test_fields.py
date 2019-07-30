@@ -50,9 +50,9 @@ class FieldsTests(PyxformTestCase):
             |         | select_one list | S1       | s1    |
             | choices |                 |          |       |
             |         | list name       | name     | label  |
-            |         | list            | option a | a      |
-            |         | list            | option b | b      |
-            |         | list            | option b | c      |
+            |         | list            | option-a | a      |
+            |         | list            | option-b | b      |
+            |         | list            | option-b | c      |
             """,
             errored=True,
             error__contains=[
@@ -70,9 +70,9 @@ class FieldsTests(PyxformTestCase):
             |         | select_one list | S1       | s1    |
             | choices |                 |          |       |
             |         | list name       | name     | label  |
-            |         | list            | option a | a      |
-            |         | list            | option b | b      |
-            |         | list            | option b | c      |
+            |         | list            | option-a | a      |
+            |         | list            | option-b | b      |
+            |         | list            | option-b | c      |
             | settings |                |          |        |
             |          | id_string    | allow_choice_duplicates   |
             |          | Duplicates   | True                       |
@@ -80,7 +80,7 @@ class FieldsTests(PyxformTestCase):
             errored=True,
             error__contains=[
                 "On the choices sheet the choice list name"
-                " 'option b' occurs more than once."
+                " 'option-b' occurs more than once."
             ],  # noqa
         )
 
@@ -91,9 +91,9 @@ class FieldsTests(PyxformTestCase):
             |         | select_one list | S1       | s1    |
             | choices |                 |          |       |
             |         | list name       | name     | label  |
-            |         | list            | option a | a      |
-            |         | list            | option b | b      |
-            |         | list            | option b | c      |
+            |         | list            | option-a | a      |
+            |         | list            | option-b | b      |
+            |         | list            | option-b | c      |
             | settings |                |          |        |
             |          | id_string    | allow_choice_duplicates   |
             |          | Duplicates   | Yes                       |
@@ -104,15 +104,15 @@ class FieldsTests(PyxformTestCase):
       <label>s1</label>
       <item>
         <label>a</label>
-        <value>option a</value>
+        <value>option-a</value>
       </item>
       <item>
         <label>b</label>
-        <value>option b</value>
+        <value>option-b</value>
       </item>
       <item>
         <label>c</label>
-        <value>option b</value>
+        <value>option-b</value>
       </item>
     </select1>
 """
@@ -125,8 +125,8 @@ class FieldsTests(PyxformTestCase):
             |         | select_one list | S1       | s1    |
             | choices |                 |          |       |
             |         | list name       | name     | label  |
-            |         | list            | option a | a      |
-            |         | list            | option b | b      |
+            |         | list            | option-a | a      |
+            |         | list            | option-b | b      |
             | settings |                |          |        |
             |          | id_string    | allow_choice_duplicates   |
             |          | Duplicates   | Yes                       |
@@ -137,11 +137,11 @@ class FieldsTests(PyxformTestCase):
       <label>s1</label>
       <item>
         <label>a</label>
-        <value>option a</value>
+        <value>option-a</value>
       </item>
       <item>
         <label>b</label>
-        <value>option b</value>
+        <value>option-b</value>
       </item>
     </select1>
 """

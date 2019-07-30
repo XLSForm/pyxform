@@ -1024,13 +1024,13 @@ def workbook_to_json(
                 # they have no spaces (will cause errors in exports).
                 if (
                     select_type == constants.SELECT_ALL_THAT_APPLY
-                    and file_extension not in [".csv", ".xml"]
-                ):
+                    or select_type == constants.SELECT_ONE
+                ) and file_extension not in [".csv", ".xml"]:
                     for choice in choices[list_name]:
                         if " " in choice[constants.NAME]:
                             raise PyXFormError(
                                 "Choice names with spaces cannot be added "
-                                "to multiple choice selects. See ["
+                                "to choice selects. See ["
                                 + choice[constants.NAME]
                                 + "] in ["
                                 + list_name
