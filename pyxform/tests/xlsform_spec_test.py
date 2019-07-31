@@ -136,6 +136,9 @@ class PullDataTest(XFormTestCase):
         # Compare with the expected output:
         with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
             with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
+                # use self.output_path to view files
+                import ipdb
+                ipdb.set_trace()
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
         # cleanup
