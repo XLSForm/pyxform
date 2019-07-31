@@ -540,7 +540,13 @@ def workbook_to_json(
     row_number = 1  # We start at 1 because the column header row is not
     #                 included in the survey sheet (presumably).
     # A stack is used to keep track of begin/end expressions
-    stack = [(None, json_dict.get(constants.CHILDREN))]
+    stack = [
+        {
+            "control_type": None,
+            "control_name": None,
+            "parent_children": json_dict.get(constants.CHILDREN),
+        }
+    ]
     # If a group has a table-list appearance flag
     # this will be set to the name of the list
     table_list = None
@@ -576,7 +582,12 @@ def workbook_to_json(
 
     for row in survey_sheet:
         row_number += 1
-        prev_control_type, parent_children_array = stack[-1]
+        if stack[-1] is not None:
+            prev_control_type = stack[-1]["control_type"]
+            parent_children_array = stack[-1]["parent_children"]
+        else:
+            prev_control_type = None
+            parent_children_array = []
         # Disabled should probably be first
         # so the attributes below can be disabled.
         if "disabled" in row:
@@ -772,6 +783,7 @@ def workbook_to_json(
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
                 control_type = aliases.control[parse_dict["type"]]
+                control_name = question_name
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
                         row_format_string % row_number
@@ -779,6 +791,8 @@ def workbook_to_json(
                         + str(prev_control_type)
                         + ", Control type: "
                         + str(control_type)
+                        + ", Control name: "
+                        + str(control_name)
                     )
                 stack.pop()
                 table_list = None
@@ -835,6 +849,7 @@ def workbook_to_json(
                 # (so following questions are nested under it)
                 # until an end command is encountered.
                 control_type = aliases.control[parse_dict["type"]]
+                control_name = question_name
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type
                 child_list = list()
@@ -914,7 +929,13 @@ def workbook_to_json(
                     new_json_dict["control"]["intent"] = new_json_dict["intent"]
 
                 parent_children_array.append(new_json_dict)
-                stack.append((control_type, child_list))
+                stack.append(
+                    {
+                        "control_type": control_type,
+                        "control_name": control_name,
+                        "parent_children": child_list,
+                    }
+                )
                 continue
 
         # try to parse as a cascading select
@@ -1189,11 +1210,14 @@ def workbook_to_json(
             "{}".format(", ".join(names_with_underscores))
         )
     if len(stack) != 1:
-        raise PyXFormError("Unmatched begin statement: " + str(stack[-1][0]))
+        raise PyXFormError(
+            "Unmatched begin statement: "
+            + str(stack[-1]["control_type"] + " (" + stack[-1]["control_name"] + ")")
+        )
 
     if settings.get("flat", False):
         # print "Generating flattened instance..."
-        add_flat_annotations(stack[0][1])
+        add_flat_annotations(stack[0]["parent_children"])
 
     meta_children = [] + survey_meta
 
@@ -1230,7 +1254,7 @@ def workbook_to_json(
             "control": {"bodyless": True},
             "children": meta_children,
         }
-        noop, survey_children_array = stack[0]
+        survey_children_array = stack[0]["parent_children"]
         survey_children_array.append(meta_element)
 
     # print_pyobj_to_json(json_dict)
