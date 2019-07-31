@@ -1005,14 +1005,14 @@ def workbook_to_json(
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
                 select_type = aliases.select[parse_dict["select_command"]]
-                list_name = parse_dict["list_name"]
-                list_file_name, file_extension = os.path.splitext(list_name)
                 if select_type == "select one external" and "choice_filter" not in row:
                     warnings.append(
                         row_format_string % row_number
                         + " select one external is only meant for"
                         " filtered selects."
                     )
+                list_name = parse_dict["list_name"]
+                list_file_name, file_extension = os.path.splitext(list_name)
                 if (
                     select_type == "select one external"
                     and list_name not in external_choices
