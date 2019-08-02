@@ -22,7 +22,7 @@ class ExternalCSVInstancesTest(PyxformTestCase):
             xml__contains=[
                 '<instance id="cities" src="jr://file-csv/cities.csv"/>',
                 '<select1 ref="/ecsv/city">',
-                '<itemset nodeset="instance(\'cities\')/root/item">',
+                "<itemset nodeset=\"instance('cities')/root/item\">",
                 '<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv"/>',  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
                 "<itemset nodeset=\"instance('neighbourhoods')/root/item\">",
@@ -65,7 +65,7 @@ class ExternalXMLInstancesTest(PyxformTestCase):
             xml__contains=[
                 '<instance id="cities" src="jr://file/cities.xml"/>',  # noqa
                 '<select1 ref="/exml/city">',
-                '<itemset nodeset="instance(\'cities\')/root/item">',
+                "<itemset nodeset=\"instance('cities')/root/item\">",
                 '<instance id="neighbourhoods" src="jr://file/neighbourhoods.xml"/>',  # noqa
                 '<select ref="/exml/neighbourhoods">',
                 "<itemset nodeset=\"instance('neighbourhoods')/root/item\">",

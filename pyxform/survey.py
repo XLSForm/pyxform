@@ -243,11 +243,7 @@ class Survey(Section):
                 ),
                 name=name,
                 src=src,
-                instance=node(
-                    "instance",
-                    id=name,
-                    src=src
-                )
+                instance=node("instance", id=name, src=src),
             )
 
         return None
@@ -308,16 +304,11 @@ class Survey(Section):
                     return InstanceInfo(
                         type=u"pulldata",
                         context="[type: {t}, name: {n}]".format(
-                            t=element[u"parent"][u"type"],
-                            n=element[u"parent"][u"name"]
+                            t=element[u"parent"][u"type"], n=element[u"parent"][u"name"]
                         ),
                         name=file_id,
                         src=uri,
-                        instance=node(
-                            "instance",
-                            id=file_id,
-                            src=uri
-                        )
+                        instance=node("instance", id=file_id, src=uri),
                     )
             return formula_instances
         return None
@@ -338,11 +329,7 @@ class Survey(Section):
                 ),
                 name=file_id,
                 src=uri,
-                instance=node(
-                    "instance",
-                    id=file_id,
-                    src=uri
-                )
+                instance=node("instance", id=file_id, src=uri),
             )
 
         return None
@@ -405,15 +392,20 @@ class Survey(Section):
         for i in instances:
             if i.name in seen.keys() and seen[i.name].src != i.src:
                 # Instance id exists with different src URI -> error.
-                msg = "The same instance id will be generated for different " \
-                      "external instance source URIs. Please check the form." \
-                      " Instance name: '{i}', Existing type: '{e}', " \
-                      "Existing URI: '{iu}', Duplicate type: '{d}', " \
-                      "Duplicate URI: '{du}', Duplicate context: '{c}'."\
-                    .format(
-                        i=i.name, iu=seen[i.name].src, e=seen[i.name].type,
-                        d=i.type, du=i.src, c=i.context
+                msg = (
+                    "The same instance id will be generated for different "
+                    "external instance source URIs. Please check the form."
+                    " Instance name: '{i}', Existing type: '{e}', "
+                    "Existing URI: '{iu}', Duplicate type: '{d}', "
+                    "Duplicate URI: '{du}', Duplicate context: '{c}'.".format(
+                        i=i.name,
+                        iu=seen[i.name].src,
+                        e=seen[i.name].type,
+                        d=i.type,
+                        du=i.src,
+                        c=i.context,
                     )
+                )
                 raise PyXFormError(msg)
             elif i.name in seen.keys() and seen[i.name].src == i.src:
                 # Instance id exists with same src URI -> ok, don't duplicate.
