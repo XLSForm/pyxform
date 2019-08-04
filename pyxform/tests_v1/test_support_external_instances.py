@@ -165,3 +165,52 @@ class ExternalCSVInstancesBugsTest(PyxformTestCase):
       </itemset>"""
             ],
         )
+
+    def test_external_choices_sheet_values_required(self):
+        md = """
+            | survey           |                               |          |           |                                     |
+            |                  | type                          | name     | label     | choice_filter                       |
+            |                  | text                          | S1       | s1        |                                     |
+            |                  | select_one_external counties  | county   | county    | S1=${S1}                            |
+            |                  | select_one_external cities    | city     | city      | S1=${S1} and county=${county}       |
+            | choices          |                               |          |           |
+            |                  | list name                     | name     | label     |
+            |                  | list                          | option a | a         |
+            | external_choices |              |                |
+            |                  | list_name    | name           |
+            |                  | counties     | Kajiado        |
+            |                  | counties     | Nakuru         |
+            |                  | cities       | Kisumu         |
+            |                  | cities       | Mombasa        |
+            """
+        expected = [
+            """<itemset nodeset="instance('cities')/root/item">
+            <value ref="name"/>
+            <label ref="label"/>
+            </itemset>"""
+        ]  # noqa
+        self.assertPyxformXform(
+            md=md, debug=True, model__contins=[expected], run_odk_validate=True
+        )
+
+    def test_list_name_not_in_external_choices_sheet_raises_error(self):
+        self.assertPyxformXform(
+            md="""
+                | survey           |                              |                |           |                                     |
+                |                  | type                         | name           | label     | choice_filter                       |
+                |                  | select_one list              | S1             | s1        |                                     |
+                |                  | select_one_external counties | county         | County    | S1=${S1}                            |
+                |                  | select_one_external cities   | city           | City      | S1=${S1} and county=${county}       |
+                | choices          |                              |                |           |
+                |                  | list name                    | name           | label     |
+                |                  | list                         | option a       | a         |
+                |                  | list                         | option b       | b         |
+                |                  | list                         | option c       | c         |
+                | external_choices |                              |                |
+                |                  | list_name                    | name           |
+                |                  | counties                     | Kajiado        |
+                |                  | counties                     | Nakuru         |
+                """,  # noqa
+            errored=True,
+            error__contains=["List name not in external choices sheet: cities"],
+        )

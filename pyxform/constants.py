@@ -68,6 +68,7 @@ TABLE_LIST = (
 # The following are the possible sheet names:
 SURVEY = "survey"
 SETTINGS = "settings"
+EXTERNAL_CHOICES = "external_choices"
 # These sheet names are for list sheets
 CHOICES_AND_COLUMNS = "choices and columns"
 CASCADING_CHOICES = "cascades"
@@ -84,6 +85,7 @@ SUPPORTED_SHEET_NAMES = [
     COLUMNS,
     CHOICES_AND_COLUMNS,
     SETTINGS,
+    EXTERNAL_CHOICES,
     OSM,
 ]
 SUPPORTED_FILE_EXTENSIONS = [".xls", ".xlsx", ".xlsm"]
