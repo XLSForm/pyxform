@@ -53,7 +53,7 @@ Consider using a development setup as instructed below
 
 Development Setup
 =================================
-[Pipenv](https://docs.pipenv.org/en/latest/)  is used to allow tight control of dependencies. It is `PyPA's reccomendation for this https://packaging.python.org/guides/tool-recommendations/`
+[Pipenv <(https://docs.pipenv.org/en/latest/)  is used to allow tight control of dependencies. It is `PyPA's reccomendation for this https://packaging.python.org/guides/tool-recommendations/`
 However, since some dependencies are specific to the various versions of python we support, included is a
 bash script that will install dependencies pased on the version of python detected.
 
@@ -63,15 +63,15 @@ Running this script is as simple as
 pipenv run conditional_install
 ```
 
-`pyenv <https://github.com/pyenv/pyenv>` is a good way to switch through python versions for further testing.
+`pyenv <https://github.com/pyenv/pyenv>`_ is a good way to switch through python versions for further testing.
 
-The next step is to install `odk_validate <https://github.com/opendatakit/validate>`. This can be run via 
+The next step is to install `odk_validate <https://github.com/opendatakit/validate>`_. This can be run via 
 `pipenv run pyxform_validator_update odk update ODK-Validate-v1.13.1.jar'`
 (if this fails with a json decode error, delete pyxform/validators/bin/installed.json)
 
 You will need to update your validator when odk_validate is updated. The need to do this will come up when tests
 that held previously valid forms are getting validation errors.
-Also, you can `Check here for new releases <https://github.com/opendatakit/validate/releases>`
+Also, you can `Check here for new releases <https://github.com/opendatakit/validate/releases>`_.
 
 
 Installing pyxform from remote source
