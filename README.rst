@@ -67,8 +67,10 @@ pipenv run conditional_install
 
 `pyenv <https://github.com/pyenv/pyenv>`_ is a good way to switch through python versions for further testing.
 
-The next step is to install `odk_validate <https://github.com/opendatakit/validate>`_. This can be run via 
-`pipenv run pyxform_validator_update odk update ODK-Validate-v1.13.1.jar'`
+The next step is to install `odk validate <https://github.com/opendatakit/validate>`_. This can be run via 
+
+``pipenv run pyxform_validator_update odk update ODK-Validate-v1.13.1.jar'``
+
 (if this fails with a json decode error, delete pyxform/validators/bin/installed.json)
 
 You will need to update your validator when odk_validate is updated. The need to do this will come up when tests
