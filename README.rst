@@ -61,9 +61,9 @@ bash script that will install dependencies based on the version of python detect
 
 Running this script is as simple as
     
-```bash
+``
 pipenv run conditional_install
-```
+``
 
 `pyenv <https://github.com/pyenv/pyenv>`_ is a good way to switch through python versions for further testing.
 
