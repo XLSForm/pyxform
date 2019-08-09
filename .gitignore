@@ -29,3 +29,4 @@ pyxform/tests/test_output/
 # ignore pyxform_validator_update files
 pyxform/validators/odk_validate/.last_check
 pyxform/validators/odk_validate/latest.json
+pyxform/validators/odk_validate/bin/installed.json
