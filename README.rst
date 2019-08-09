@@ -53,9 +53,11 @@ Consider using a development setup as instructed below
 
 Development Setup
 =================================
-`Pipenv <https://docs.pipenv.org/en/latest/>`_  is used to allow tight control of dependencies. It is `PyPA's reccomendation for this https://packaging.python.org/guides/tool-recommendations/`
+`Pipenv <https://docs.pipenv.org/en/latest/>`_  is used to allow tight control of dependencies.
+`PyPA's reccomendation <https://packaging.python.org/guides/tool-recommendations/>`_
+
 However, since some dependencies are specific to the various versions of python we support, included is a
-bash script that will install dependencies pased on the version of python detected.
+bash script that will install dependencies based on the version of python detected.
 
 Running this script is as simple as
     
