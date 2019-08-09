@@ -48,24 +48,31 @@ From the command line::
     python setup.py develop
     python pyxform/xls2xform.py path_to_XLSForm [output_path]
 
-Consider using a `virtualenv <http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/>`_ and `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_ to make dependency management easier and keep your global site-packages directory clean::
+Consider using a development setup as instructed below
 
-    pip install virtualenv
-    pip install virtualenvwrapper
-    mkvirtualenv local_pyxform                     # or whatever you want to name it
-    (local_pyxform)$ python setup.py develop       # install the local files
-    (local_pyxform)$ python pyxform/xls2xform.py --help
-    (local_pyxform)$ xls2xform --help              # same effect as previous line
-    (local_pyxform)$ which xls2xform.              # ~/.virtualenvs/local_pyxform/bin/xls2xform
 
-To leave and return to the virtual environment::
+Development Setup
+=================================
+[Pipenv](https://docs.pipenv.org/en/latest/)  is used to allow tight control of dependencies. It is `PyPA's reccomendation for this https://packaging.python.org/guides/tool-recommendations/`
+However, since some dependencies are specific to the various versions of python we support, included is a
+bash script that will install dependencies pased on the version of python detected.
 
-    (local_pyxform)$ deactivate                    # leave the virtualenv
-    $ xls2xform --help
-    # -bash: xls2xform: command not found
-    $ workon local_pyxform                         # reactivate the virtualenv
-    (local_pyxform)$ which xls2xform               # & we can access the scripts once again
-    ~/.virtualenvs/local_pyxform/bin/xls2xform
+Running this script is as simple as
+    
+```bash
+pipenv run conditional_install
+```
+
+`pyenv https://github.com/pyenv/pyenv` is a good way to switch through python versions for further testing.
+
+The next step is to install `odk_validate https://github.com/opendatakit/validate`. This can be run via 
+`pipenv run pyxform_validator_update odk update ODK-Validate-v1.13.1.jar'`
+(if this fails with a json decode error, delete pyxform/validators/bin/installed.json)
+
+You will need to update your validator when odk_validate is updated. The need to do this will come up when tests
+that held previously valid forms are getting validation errors.
+Also, you can `Check here for new releases https://github.com/opendatakit/validate/releases`
+
 
 Installing pyxform from remote source
 =====================================
