@@ -100,3 +100,32 @@ To check out the documentation for pyxform do the following::
 Change Log
 ==========
 `Changelog <CHANGES.txt>`_
+
+Releasing pyxform
+=================
+
+1. Checkout a release branch from latest upstream master.
+2. Update ``CHANGES.txt`` with issues closed from the previous tagged release, e.g. https://github.com/XLSForm/pyxform/compare/v0.14.1...master.
+3. Update ``README.rst``, ``setup.py``, ``pyxform/__init__.py`` with the new release version number.
+4. Commit, push the branch, and initiate a pull request. Wait for tests to pass.
+5. Prepare a draft release, copy the changes noted in ``CHANGES.txt`` to the draft release. Set version number and the title for the release should include the date >
+6. When all tests are passing on the pull request, squash merge the pull request.
+7. Checkout the master branch and pull in latest upstream master::
+
+    $ git checkout master
+    $ git pull upstream master
+    $ git push
+
+8. Cleanup build and dist folders::
+
+    $ rm -rf build dist pyxform.egg-info
+
+9. Prepare ``sdist`` and ``bdist_wheel`` distributions::
+
+    $ python setup.py sdist bdist_wheel
+
+10. Publish release to PyPI with ``twine``::
+
+    $ twine upload dist/pyxform-0.15.0-py2.py3-none-any.whl dist/pyxform-0.15.0.tar.gz
+
+
