@@ -1,5 +1,5 @@
 ===============
-pyxform v0.14.1
+pyxform v0.15.0
 ===============
 
 |circleci|  |appveyor| |codecov| |black|

@@ -1,5 +1,34 @@
 Pyxform Changelog
 
+v0.15.0, 2019 08 11
+  -- Report the name of a not closed control
+     Issue #318,  https://github.com/XLSForm/pyxform/issues/318
+     [qlands]
+
+  -- Warn about setting a default language
+     Issue #157,  https://github.com/XLSForm/pyxform/issues/157
+     [KeynesYouDigIt]
+
+  -- Spelling fix
+     Issue #340,  https://github.com/XLSForm/pyxform/issues/340
+     [yanokwa]
+
+  -- Running from terminal in Mac rearranges desktops. Run java headless.
+     Issue #208,  https://github.com/XLSForm/pyxform/issues/208
+     [yanokwa]
+
+  -- Add Validate v1.13.1 with JavaRosa v2.15.0
+     Issue #342,  https://github.com/XLSForm/pyxform/issues/342
+     [yanokwa]
+
+  -- Add geopoint-start to generate setgeopoint action triggered by the odk-instance-first-load event
+     Issue #336,  https://github.com/XLSForm/pyxform/issues/336
+     [yanokwa]
+
+  -- Throw error if external_choices list is not found
+     Issue #220,  https://github.com/XLSForm/pyxform/issues/220
+     [WinnyTroy]
+
 v0.14.1, 2019 07 14
   -- Fix bug - generation of blank itemset.csv iintroduced in v0.14.0.
      Issue #326,  https://github.com/XLSForm/pyxform/issues/326
