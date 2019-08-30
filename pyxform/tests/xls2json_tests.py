@@ -153,6 +153,7 @@ class BasicXls2JsonApiTests(TestCase):
                 ],
                 "type": "select one",
                 "name": "state",
+                "query": "states",
                 "parameters": {},
                 "label": "state",
             },
@@ -162,6 +163,7 @@ class BasicXls2JsonApiTests(TestCase):
                 "choice_filter": "${state}=cf",
                 "label": "county",
                 "itemset": "counties",
+                "query": "counties",
                 "choices": [
                     {"label": "King", "cf": "washington", "name": "king"},
                     {"label": "Pierce", "cf": "washington", "name": "pierce"},
@@ -176,6 +178,7 @@ class BasicXls2JsonApiTests(TestCase):
                 "choice_filter": "${county}=cf",
                 "label": "city",
                 "itemset": "cities",
+                "query": "cities",
                 "choices": [
                     {"label": "Dumont", "cf": "king", "name": "dumont"},
                     {"label": "Finney", "cf": "king", "name": "finney"},

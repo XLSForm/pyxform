@@ -128,6 +128,7 @@ class BuilderTests(TestCase):
             "children": [
                 {
                     "name": "sex",
+                    "query": "sexes",
                     "label": {"English": "What sex are you?"},
                     "type": "select one",
                     "children": [
@@ -181,6 +182,7 @@ class BuilderTests(TestCase):
                     "children": [{"name": "zone", "label": "Zone"}],
                     "type": "select one",
                     "name": "zone",
+                    'query': 'zone',
                     "label": "Zone",
                 },
                 {
@@ -212,6 +214,7 @@ class BuilderTests(TestCase):
             "children": [
                 {
                     "name": "available_toilet_types",
+                    'query': 'toilet_type',
                     "label": {"english": "What type of toilets are on the premises?"},
                     "type": "select all that apply",
                     "children": [
@@ -331,6 +334,7 @@ class BuilderTests(TestCase):
                             ],
                             "label": "Do you have any children?",
                             "name": "has_children",
+                            'query': 'yes_no',
                             "sms_field": "q2",
                             "type": "select one",
                         },
@@ -395,6 +399,7 @@ class BuilderTests(TestCase):
                             ],
                             "label": "What web browsers do you use?",
                             "name": "web_browsers",
+                            "query": "browsers",
                             "sms_field": "q5",
                             "type": "select all that apply",
                         }
