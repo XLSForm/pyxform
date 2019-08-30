@@ -182,7 +182,7 @@ class BuilderTests(TestCase):
                     "children": [{"name": "zone", "label": "Zone"}],
                     "type": "select one",
                     "name": "zone",
-                    'query': 'zone',
+                    "query": "zone",
                     "label": "Zone",
                 },
                 {
@@ -214,7 +214,7 @@ class BuilderTests(TestCase):
             "children": [
                 {
                     "name": "available_toilet_types",
-                    'query': 'toilet_type',
+                    "query": "toilet_type",
                     "label": {"english": "What type of toilets are on the premises?"},
                     "type": "select all that apply",
                     "children": [
@@ -334,7 +334,7 @@ class BuilderTests(TestCase):
                             ],
                             "label": "Do you have any children?",
                             "name": "has_children",
-                            'query': 'yes_no',
+                            "query": "yes_no",
                             "sms_field": "q2",
                             "type": "select one",
                         },
