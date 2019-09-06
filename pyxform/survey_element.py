@@ -58,6 +58,7 @@ class SurveyElement(dict):
         "itemset": unicode,
         "choice_filter": unicode,
         "query": unicode,
+        "list_name": unicode,
         "autoplay": unicode,
         "flat": lambda: False,
         "action": unicode,
