@@ -590,8 +590,6 @@ def workbook_to_json(
 
     # Rows from the survey sheet that should be nested in meta
     survey_meta = []
-    # Google Sheets submissions don't allow underscores in the column name
-    names_with_underscores = []
 
     for row in survey_sheet:
         row_number += 1
@@ -621,8 +619,6 @@ def workbook_to_json(
         question_type = row.get(constants.TYPE)
         question_name = row.get(constants.NAME)
 
-        if question_name and "_" in question_name:
-            names_with_underscores.append(question_name)
         if not question_type:
             # if name and label are also missing,
             # then its a comment row, and we skip it with warning
@@ -1223,13 +1219,6 @@ def workbook_to_json(
         # Put the row in the json dict as is:
         parent_children_array.append(row)
 
-    if names_with_underscores:
-        warnings.append(
-            "Google Sheets submissions don't allow underscores in the "
-            "column name. If you intend to use Google Sheets submissions, "
-            "replace underscores with hyphens in the following names: "
-            "{}".format(", ".join(names_with_underscores))
-        )
     if len(stack) != 1:
         raise PyXFormError(
             "Unmatched begin statement: "
