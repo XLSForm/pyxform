@@ -22,7 +22,8 @@
                 }
             ], 
             "type": "select one", 
-            "name": "good_day", 
+            "name": "good_day",
+            "list_name": "yes_or_no",
             "parameters": {},
             "label": {
                 "english": "have you had a good day today?"

@@ -61,6 +61,7 @@ class SurveyElement(dict):
         "autoplay": unicode,
         "flat": lambda: False,
         "action": unicode,
+        "list_name": unicode,
     }
 
     def _default(self):

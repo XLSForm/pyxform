@@ -130,6 +130,7 @@ class BuilderTests(TestCase):
                     "name": "sex",
                     "label": {"English": "What sex are you?"},
                     "type": "select one",
+                    "list_name": "sexes",
                     "children": [
                         # TODO Change to choices (there is stuff in the
                         # json2xform half that will need to change)
@@ -182,6 +183,7 @@ class BuilderTests(TestCase):
                     "type": "select one",
                     "name": "zone",
                     "label": "Zone",
+                    "list_name": "zone",
                 },
                 {
                     "children": [
@@ -212,6 +214,7 @@ class BuilderTests(TestCase):
             "children": [
                 {
                     "name": "available_toilet_types",
+                    "list_name": "toilet_type",
                     "label": {"english": "What type of toilets are on the premises?"},
                     "type": "select all that apply",
                     "children": [
@@ -330,6 +333,7 @@ class BuilderTests(TestCase):
                                 {"label": "yes", "name": "1", "sms_option": "y"},
                             ],
                             "label": "Do you have any children?",
+                            "list_name": "yes_no",
                             "name": "has_children",
                             "sms_field": "q2",
                             "type": "select one",
@@ -394,6 +398,7 @@ class BuilderTests(TestCase):
                                 },
                             ],
                             "label": "What web browsers do you use?",
+                            "list_name": "browsers",
                             "name": "web_browsers",
                             "sms_field": "q5",
                             "type": "select all that apply",
