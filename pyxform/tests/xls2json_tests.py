@@ -206,19 +206,6 @@ class BasicXls2JsonApiTests(TestCase):
         ]
         self.assertEqual(choice_filter_survey.to_json_dict()["children"], expected_dict)
 
-    def test_underscore_warnings(self):
-        """Raise warnings incase there are underscores in column names"""
-        warnings = []
-        parse_file_to_json(utils.path_to_text_fixture("hidden.xls"), warnings=warnings)
-        self.assertGreater(len(warnings), 0)
-        warning = (
-            "Google Sheets submissions don't allow underscores in the "
-            "column name. If you intend to use Google Sheets "
-            "submissions, replace underscores with hyphens in the "
-            "following names: hidden_test"
-        )
-        self.assertIn(warning, warnings)
-
 
 class CsvReaderEquivalencyTest(TestCase):
     def test_equivalency(self):
