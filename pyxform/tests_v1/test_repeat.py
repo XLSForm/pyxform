@@ -187,8 +187,8 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_hints_are_present_within_repeats(self):
-        """Hints are present within repeats"""
+    def test_hints_are_not_present_within_repeats(self):
+        """Hints are not present within repeats"""
         md = """
             | survey |                   |                |                   |                      |
             |        | type              | name           | label             | hint                 |
@@ -208,7 +208,6 @@ class TestRepeat(PyxformTestCase):
         expected = """
     <group ref="/pyxform_autotestname/pets">
       <label>Pets</label>
-      <hint>Pet details</hint>
       <repeat nodeset="/pyxform_autotestname/pets">
         <input ref="/pyxform_autotestname/pets/pets_name">
           <label>Pet's name</label>
