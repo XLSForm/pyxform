@@ -31,7 +31,7 @@ class PyxformTestError(Exception):
 class PyxformMarkdown(object):
     """Transform markdown formatted xlsform to a pyxform survey object"""
 
-    def md_to_pyxform_survey(self, md_raw, kwargs=None, autoname=True):
+    def md_to_pyxform_survey(self, md_raw, kwargs=None, autoname=True, return_warnings=None):
         if kwargs is None:
             kwargs = {}
         if autoname:
@@ -69,12 +69,19 @@ class PyxformMarkdown(object):
         for sheet, contents in md_table_to_ss_structure(md):
             sheets[sheet] = list_to_dicts(contents)
 
+        if return_warnings:
+            return self._ss_structure_to_pyxform_survey(sheets, kwargs, return_warnings=True)
+
         return self._ss_structure_to_pyxform_survey(sheets, kwargs)
 
     @staticmethod
-    def _ss_structure_to_pyxform_survey(ss_structure, kwargs):
+    def _ss_structure_to_pyxform_survey(ss_structure, kwargs, return_warnings=None):
         # using existing methods from the builder
-        imported_survey_json = workbook_to_json(ss_structure)
+        if return_warnings:
+            imported_survey_json, warnings = workbook_to_json(ss_structure, return_warnings=True)
+        else:
+            imported_survey_json = workbook_to_json(ss_structure)
+
         # ideally, when all these tests are working, this would be
         # refactored as well
         survey = create_survey_element_from_dict(imported_survey_json)
@@ -82,6 +89,8 @@ class PyxformMarkdown(object):
         survey.title = kwargs.get("title")
         survey.id_string = kwargs.get("id_string")
 
+        if return_warnings:
+            return survey, warnings
         return survey
 
     @staticmethod

@@ -299,7 +299,7 @@ def process_range_question_type(row):
 
 
 def workbook_to_json(
-    workbook_dict, form_name=None, default_language="default", warnings=None
+    workbook_dict, form_name=None, default_language="default", warnings=None, return_warnings=None
 ):
     """
     workbook_dict -- nested dictionaries representing a spreadsheet.
@@ -1047,7 +1047,23 @@ def workbook_to_json(
                         if " " in choice[constants.NAME]:
                             raise PyXFormError(
                                 "Choice names with spaces cannot be added "
-                                "to multiple choice selects. See ["
+                                "to select multiples. See ["
+                                + choice[constants.NAME]
+                                + "] in ["
+                                + list_name
+                                + "]"
+                            )
+
+                # Warn if select_one choice names have spaces
+                if select_type == constants.SELECT_ONE and file_extension not in [
+                    ".csv",
+                    ".xml",
+                ]:
+                    for choice in choices[list_name]:
+                        if " " in choice[constants.NAME]:
+                            warnings.append(
+                                "Choice names with spaces will soon be disallowed "
+                                "in select ones. See ["
                                 + choice[constants.NAME]
                                 + "] in ["
                                 + list_name
@@ -1268,6 +1284,8 @@ def workbook_to_json(
         survey_children_array.append(meta_element)
 
     # print_pyobj_to_json(json_dict)
+    if return_warnings:
+        return json_dict, warnings
     return json_dict
 
 
