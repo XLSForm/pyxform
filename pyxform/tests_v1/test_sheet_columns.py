@@ -52,7 +52,7 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             |        | text    | gender  | the gender    |
             """,
             errored=False,
-            debug=True,
+            debug=False,
         )
 
 
@@ -125,7 +125,7 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
                     {"bad_column": "l1", "name": "l1c1", "label": "choice 2"},
                 ]
             ),
-            debug=True,
+            debug=False,
             errored=True,
             # some basic keywords that should be in the error:
             error__contains=["choices", "name", "list name"],
