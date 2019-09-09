@@ -30,9 +30,9 @@
                 "starred_url": "https://api.github.com/users/yanokwa/starred{/owner}{/repo}",
                 "subscriptions_url": "https://api.github.com/users/yanokwa/subscriptions",
                 "type": "User",
-                "url": "https://api.github.com/users/yanokwa",
+                "url": "https://api.github.com/users/yanokwa"
             },
-            "url": "https://api.github.com/repos/opendatakit/validate/releases/assets/14010895",
+            "url": "https://api.github.com/repos/opendatakit/validate/releases/assets/14010895"
         }
     ],
     "assets_url": "https://api.github.com/repos/opendatakit/validate/releases/18967404/assets",
@@ -54,7 +54,7 @@
         "starred_url": "https://api.github.com/users/yanokwa/starred{/owner}{/repo}",
         "subscriptions_url": "https://api.github.com/users/yanokwa/subscriptions",
         "type": "User",
-        "url": "https://api.github.com/users/yanokwa",
+        "url": "https://api.github.com/users/yanokwa"
     },
     "body": "[All changes](https://github.com/opendatakit/validate/compare/v1.13.0...v1.13.1)\r\n\r\n**Fixed**\r\n- Provide stub for CSV external secondary instance (#74)\r\n  - Yaw Anokwa @yanokwa (Nafundi)\r\n- getResource cannot be used when accessing files inside jar (#75)\r\n  - Yaw Anokwa @yanokwa (Nafundi)",
     "created_at": "2019-07-30T20:01:23Z",
@@ -70,5 +70,5 @@
     "target_commitish": "master",
     "upload_url": "https://uploads.github.com/repos/opendatakit/validate/releases/18967404/assets{?name,label}",
     "url": "https://api.github.com/repos/opendatakit/validate/releases/18967404",
-    "zipball_url": "https://api.github.com/repos/opendatakit/validate/zipball/v1.13.1",
+    "zipball_url": "https://api.github.com/repos/opendatakit/validate/zipball/v1.13.1"
 }
