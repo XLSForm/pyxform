@@ -38,7 +38,7 @@ jobs:
           name: upload coverage report
           command: |
             /home/circleci/.local/bin/coverage xml
-            /home/circleci/.local/bin/codecov --required -X search gcov pycov -f coverage.xml
+            (/home/circleci/.local/bin/codecov --required -X search gcov pycov -f coverage.xml) || echo 'Codecov failed to upload'
       - run:
           name: Building artifacts
           command: |
