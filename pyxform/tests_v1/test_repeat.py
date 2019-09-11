@@ -243,7 +243,7 @@ class TestRepeat(PyxformTestCase):
     </group>
     """  # noqa
 
-        self.assertPyxformXform(md=md, model__contins=[expected], run_odk_validate=True)
+        self.assertPyxformXform(md=md, model__contains=[expected], run_odk_validate=True)
 
     def test_hints_are_present_within_groups(self):
         """Tests that hints are present within groups."""
