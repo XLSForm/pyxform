@@ -23,5 +23,5 @@ class AreaTest(PyxformTestCase):
 
     def test_area(self):
         self.assertPyxformXform(
-            name="area", md=MD, xml__contains=[XML_CONTAINS], debug=True
+            name="area", md=MD, xml__contains=[XML_CONTAINS], debug=False
         )

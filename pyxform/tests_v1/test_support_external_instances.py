@@ -190,7 +190,7 @@ class ExternalCSVInstancesBugsTest(PyxformTestCase):
             </itemset>"""
         ]  # noqa
         self.assertPyxformXform(
-            md=md, debug=True, model__contins=[expected], run_odk_validate=True
+            md=md, debug=False, model__contins=[expected], run_odk_validate=True
         )
 
     def test_list_name_not_in_external_choices_sheet_raises_error(self):

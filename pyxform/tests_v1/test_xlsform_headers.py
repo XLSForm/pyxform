@@ -37,7 +37,7 @@ class XlsFormHeadersTest(PyxformTestCase):
             |        | calculate | doubled | Doubled | ${amount} * 2 |
             """,
             errored=False,
-            debug=True,
+            debug=False,
         )
 
     def test_form_id_variant(self):
