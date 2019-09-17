@@ -178,7 +178,7 @@ class Survey(Section):
 
         return NSMAP
 
-    def xml(self, warnings=None):
+    def xml(self):
         """
         calls necessary preparation methods, then returns the xml.
         """
@@ -191,7 +191,7 @@ class Survey(Section):
 
         return node(
             "h:html",
-            node("h:head", node("h:title", self.title), self.xml_model(warnings)),
+            node("h:head", node("h:title", self.title), self.xml_model()),
             node("h:body", *self.xml_control(), **body_kwargs),
             **nsmap
         )
@@ -432,13 +432,13 @@ class Survey(Section):
                 yield i.instance
             seen[i.name] = i
 
-    def xml_model(self, warnings=None):
+    def xml_model(self):
         """
         Generate the xform <model> element
         """
         self._setup_translations()
         self._setup_media()
-        self._add_empty_translations(warnings)
+        self._add_empty_translations()
 
         model_children = []
         if self._translations:
@@ -556,70 +556,25 @@ class Survey(Section):
                             choice_value,
                         )
 
-    def _add_empty_translations(self, warnings=None):
+    def _add_empty_translations(self):
         """
         Adds translations so that every itext element has the same elements \
         accross every language.
         When translations are not provided "-" will be used.
         This disables any of the default_language fallback functionality.
         """
-        if warnings is None:
-            warnings = []
-
         paths = {}
         for lang, translation in self._translations.items():
             for path, content in translation.items():
                 paths[path] = paths.get(path, set()).union(content.keys())
 
         for lang, translation in self._translations.items():
-            this_path_has_warning = False
             for path, content_types in paths.items():
                 if path not in self._translations[lang]:
                     self._translations[lang][path] = {}
-                    # missing question/question thingy thats like a hint
-                    question_and_column = path.split(":")
-                    missing_warning = self._generate_missing_translation_warning(
-                        lang, question_and_column[0], question_and_column[1]
-                    )
-                    warnings.append(missing_warning)
-                    # no need to warn about content types missing translations since the
-                    # whole path has a warning now.
-                    this_path_has_warning = True
-
                 for content_type in content_types:
                     if content_type not in self._translations[lang][path]:
-                        self._translations[lang][path][content_type] = u"-"
-                        # missing question thingy thats like media
-                        if not this_path_has_warning:
-                            # the path has a translation but the content type is missing one.
-                            missing_warning = self._generate_missing_translation_warning(
-                                lang, path.split(":")[0], content_type
-                            )
-                            warnings.append(missing_warning)
-
-    def _generate_missing_translation_warning(self, lang, question_name, column_name):
-        found_on_msg = (
-            "\n--\n Question missing translation: "
-            + question_name
-            + "\n Column missing: "
-            + column_name
-        )
-
-        if lang == "default":
-            return (
-                "\tDefault language not set," + " with missing default translations."
-                " Please consider setting a `default_language` in your"
-                + " settings tab to insure questions and options appear"
-                + " as expected."
-                + found_on_msg
-            )
-
-        return (
-            "\tMissing field translations found for "
-            + lang
-            + " field may not appear as expected."
-            + found_on_msg
-        )
+                        self._translations[lang][path][content_type] = "-"
 
     def _setup_media(self):
         """
@@ -758,10 +713,10 @@ class Survey(Section):
         """Returns a date string with the format of %Y_%m_%d."""
         return self._created.strftime("%Y_%m_%d")
 
-    def _to_ugly_xml(self, warnings=None):
-        return '<?xml version="1.0"?>' + self.xml(warnings).toxml()
+    def _to_ugly_xml(self):
+        return '<?xml version="1.0"?>' + self.xml().toxml()
 
-    def _to_pretty_xml(self, warnings=None):
+    def _to_pretty_xml(self):
         """
         I want the to_xml method to by default validate the xml we are
         producing.
@@ -770,7 +725,7 @@ class Survey(Section):
         # space to text
         # TODO: check out pyxml
         # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
-        xml_with_linebreaks = self.xml(warnings).toprettyxml(indent="  ")
+        xml_with_linebreaks = self.xml().toprettyxml(indent="  ")
         text_re = re.compile(r"(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)", re.DOTALL)
         output_re = re.compile(r"\n.*(<output.*>)\n(\s\s)*")
         pretty_xml = text_re.sub(
@@ -890,9 +845,9 @@ class Survey(Section):
         try:
             with codecs.open(path, mode="w", encoding="utf-8") as file_obj:
                 if pretty_print:
-                    file_obj.write(self._to_pretty_xml(warnings))
+                    file_obj.write(self._to_pretty_xml())
                 else:
-                    file_obj.write(self._to_ugly_xml(warnings))
+                    file_obj.write(self._to_ugly_xml())
         except Exception as error:
             if os.path.exists(path):
                 os.unlink(path)
@@ -942,9 +897,9 @@ class Survey(Section):
             if os.path.exists(tmp.name):
                 os.remove(tmp.name)
         if pretty_print:
-            return self._to_pretty_xml(warnings)
+            return self._to_pretty_xml()
 
-        return self._to_ugly_xml(warnings)
+        return self._to_ugly_xml()
 
     def instantiate(self):
         """
