@@ -183,14 +183,12 @@ class ExternalCSVInstancesBugsTest(PyxformTestCase):
             |                  | cities       | Kisumu         |
             |                  | cities       | Mombasa        |
             """
-        expected = [
-            """<itemset nodeset="instance('cities')/root/item">
-            <value ref="name"/>
-            <label ref="label"/>
-            </itemset>"""
-        ]  # noqa
+        expected = """
+    <input query="instance('cities')/root/item[S1= /pyxform_autotestname/S1  and county= /pyxform_autotestname/county ]" ref="/pyxform_autotestname/city">
+"""
+
         self.assertPyxformXform(
-            md=md, debug=False, model__contins=[expected], run_odk_validate=True
+            md=md, debug=False, xml__contains=[expected], run_odk_validate=True
         )
 
     def test_list_name_not_in_external_choices_sheet_raises_error(self):

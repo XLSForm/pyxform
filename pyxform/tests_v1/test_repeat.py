@@ -187,8 +187,8 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_hints_are_present_within_repeats(self):
-        """Hints are present within repeats"""
+    def test_hints_are_not_present_within_repeats(self):
+        """Hints are not present within repeats"""
         md = """
             | survey |                   |                |                   |                      |
             |        | type              | name           | label             | hint                 |
@@ -206,16 +206,14 @@ class TestRepeat(PyxformTestCase):
             """  # noqa
 
         expected = """
-
-      <group ref="/Families/pets">
+    <group ref="/pyxform_autotestname/pets">
       <label>Pets</label>
-      <hint>Pet details</hint>
-      <repeat nodeset="/Families/pets">
-        <input ref="/Families/pets/pets_name">
-          <label>Pet's Name</label>
-          <hint>Pets name hint</hint>
+      <repeat nodeset="/pyxform_autotestname/pets">
+        <input ref="/pyxform_autotestname/pets/pets_name">
+          <label>Pet's name</label>
+          <hint>Pet's name hint</hint>
         </input>
-        <select1 ref="/Families/pets/pet_type">
+        <select1 ref="/pyxform_autotestname/pets/pet_type">
           <label>Type of pet</label>
           <hint>Type of pet hint</hint>
           <item>
@@ -235,15 +233,15 @@ class TestRepeat(PyxformTestCase):
             <value>fish</value>
           </item>
         </select1>
-        <upload mediatype="image/*" ref="/Families/pets/pet_picture">
+        <upload mediatype="image/*" ref="/pyxform_autotestname/pets/pet_picture">
           <label>Picture of pet</label>
           <hint>Take a nice photo</hint>
         </upload>
       </repeat>
     </group>
-    """  # noqa
+"""
 
-        self.assertPyxformXform(md=md, model__contins=[expected], run_odk_validate=True)
+        self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
 
     def test_hints_are_present_within_groups(self):
         """Tests that hints are present within groups."""

@@ -100,7 +100,7 @@ class FieldsTests(PyxformTestCase):
             """
 
         expected = """
-            <select1 ref="/pyxform_autotestname/S1">
+    <select1 ref="/pyxform_autotestname/S1">
       <label>s1</label>
       <item>
         <label>a</label>
@@ -116,7 +116,7 @@ class FieldsTests(PyxformTestCase):
       </item>
     </select1>
 """
-        self.assertPyxformXform(md=md, model__contins=[expected], run_odk_validate=True)
+        self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
 
     def test_choice_list_without_duplicates_is_successful(self):
         md = """
@@ -133,7 +133,7 @@ class FieldsTests(PyxformTestCase):
             """
 
         expected = """
-            <select1 ref="/pyxform_autotestname/S1">
+    <select1 ref="/pyxform_autotestname/S1">
       <label>s1</label>
       <item>
         <label>a</label>
@@ -145,4 +145,4 @@ class FieldsTests(PyxformTestCase):
       </item>
     </select1>
 """
-        self.assertPyxformXform(md=md, model__contins=[expected], run_odk_validate=True)
+        self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
