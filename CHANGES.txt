@@ -29,7 +29,7 @@ v0.15.1, 2019 09 19
      Issue #358, https://github.com/XLSForm/pyxform/issues/358
      [yanokwa]
 
-  -- 2 translated media labels outputs a 3rd (default) languaget
+  -- 2 translated media labels outputs a 3rd (default) language
      Issue #32, https://github.com/XLSForm/pyxform/issues/32
      [ukanga]
 
