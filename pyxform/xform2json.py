@@ -567,7 +567,7 @@ class XFormToDictBuilder:
             lang = translation["lang"]
             label_list = translation["text"]
             for l in label_list:
-                if l["value"] == "-":  # skip blank label
+                if "value" not in l or l["value"] == "-":  # skip blank label
                     continue
                 if l["id"] == ref:
                     text = value = l["value"]

@@ -686,24 +686,26 @@ class Survey(Section):
                         )
                     elif media_type == "image":
                         value, output_inserted = self.insert_output_values(media_value)
-                        itext_nodes.append(
-                            node(
-                                "value",
-                                "jr://images/" + value,
-                                form=media_type,
-                                toParseString=output_inserted,
+                        if value != "-":
+                            itext_nodes.append(
+                                node(
+                                    "value",
+                                    "jr://images/" + value,
+                                    form=media_type,
+                                    toParseString=output_inserted,
+                                )
                             )
-                        )
                     else:
                         value, output_inserted = self.insert_output_values(media_value)
-                        itext_nodes.append(
-                            node(
-                                "value",
-                                "jr://" + media_type + "/" + value,
-                                form=media_type,
-                                toParseString=output_inserted,
+                        if value != "-":
+                            itext_nodes.append(
+                                node(
+                                    "value",
+                                    "jr://" + media_type + "/" + value,
+                                    form=media_type,
+                                    toParseString=output_inserted,
+                                )
                             )
-                        )
 
                 result[-1].appendChild(node("text", *itext_nodes, id=label_name))
 

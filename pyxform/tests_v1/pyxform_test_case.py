@@ -137,11 +137,13 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
 
         one or many of these string "matchers":
           * xml__contains: an array of strings which exist in the
-                resulting xml
+                resulting xml. [xml|model|instance|itext]_excludes are also supported.
           * error__contains: a list of strings which should exist in
                 the error
           * odk_validate_error__contains: list of strings; run_odk_validate
                 must be set
+          * xml__excludes: an array of strings which should not exist in the resulting
+               xml. [xml|model|instance|itext]_excludes are also supported.
 
         optional other parameters passed to pyxform:
           * errored: (bool) if the xlsform is not supposed to compile,
@@ -226,32 +228,12 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
 
         if survey:
 
-            def _check_contains(keyword):
-                contains_str = "%s__contains" % keyword
+            def _check(keyword, verb):
+                verb_str = "%s__%s" % (keyword, verb)
 
-                def check_content(content):
-                    text_arr = kwargs[contains_str]
-                    for i in text_arr:
-                        self.assertContains(content, i, msg_prefix=keyword)
-
-                return contains_str, check_content
-
-            if "body_contains" in kwargs or "body__contains" in kwargs:
-                raise SyntaxError(
-                    "Invalid parameter: 'body__contains'." "Use 'xml__contains' instead"
-                )
-
-            for code in ["xml", "instance", "model", "itext"]:
-                (code__str, checker) = _check_contains(code)
-                if kwargs.get(code__str):
-                    checker(
-                        ETree.tostring(xml_nodes[code], encoding="utf-8").decode(
-                            "utf-8"
-                        )
-                    )
-                bad_kwarg = "%s_contains" % code
+                bad_kwarg = "%s_%s" % (code, verb)
                 if bad_kwarg in kwargs:
-                    good_kwarg = "%s__contains" % code
+                    good_kwarg = "%s__%s" % (code, verb)
                     raise SyntaxError(
                         (
                             "'%s' is not a valid parameter. "
@@ -259,6 +241,31 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                         )
                         % (bad_kwarg, good_kwarg)
                     )
+
+                def check_content(content):
+                    text_arr = kwargs[verb_str]
+                    for i in text_arr:
+                        if verb == "contains":
+                            self.assertContains(content, i, msg_prefix=keyword)
+                        else:
+                            self.assertNotContains(content, i, msg_prefix=keyword)
+
+                return verb_str, check_content
+
+            if "body_contains" in kwargs or "body__contains" in kwargs:
+                raise SyntaxError(
+                    "Invalid parameter: 'body__contains'." "Use 'xml__contains' instead"
+                )
+
+            for code in ["xml", "instance", "model", "itext"]:
+                for verb in ["contains", "excludes"]:
+                    (code__str, checker) = _check(code, verb)
+                    if kwargs.get(code__str):
+                        checker(
+                            ETree.tostring(xml_nodes[code], encoding="utf-8").decode(
+                                "utf-8"
+                            )
+                        )
 
         if survey is False and expecting_invalid_survey is False:
             raise PyxformTestError(
