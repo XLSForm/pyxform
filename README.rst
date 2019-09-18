@@ -1,5 +1,5 @@
 ===============
-pyxform v0.15.0
+pyxform v0.15.1
 ===============
 
 |circleci|  |appveyor| |codecov| |black|
@@ -11,7 +11,7 @@ pyxform v0.15.0
     :target: https://ci.appveyor.com/project/ukanga/pyxform
 
 .. |codecov| image:: https://codecov.io/github/XLSForm/pyxform/branch/master/graph/badge.svg
-	:target: https://codecov.io/github/XLSForm/pyxform
+    :target: https://codecov.io/github/XLSForm/pyxform
 
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/python/black
