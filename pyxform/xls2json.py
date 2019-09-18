@@ -1123,6 +1123,7 @@ def workbook_to_json(
                         new_json_dict["itemset"] = list_name
                         json_dict["choices"] = choices
                         if choices.get(list_name):
+                            new_json_dict["list_name"] = list_name
                             new_json_dict[constants.CHOICES] = choices[list_name]
                 elif (
                     "randomize" in parameters.keys()
@@ -1133,6 +1134,7 @@ def workbook_to_json(
                 elif file_extension in [".csv", ".xml"]:
                     new_json_dict["itemset"] = list_name
                 else:
+                    new_json_dict["list_name"] = list_name
                     new_json_dict[constants.CHOICES] = choices[list_name]
 
                 # Code to deal with table_list appearance flags
