@@ -1,5 +1,42 @@
 Pyxform Changelog
 
+v0.15.1, 2019 09 19
+  -- Conversion fails if label has language and choice_filter is used
+     Issue #355, https://github.com/XLSForm/pyxform/issues/355
+     [lognaturel]
+
+  -- Revert Google Sheets warning on underscores - underscores are supported,
+     Issue #356, https://github.com/XLSForm/pyxform/issues/356
+     [yanokwa]
+
+  -- Run ODK Validate on SetGeopointTest.test_setgeopoint
+     Issue #351, https://github.com/XLSForm/pyxform/issues/351
+     [yanokwa]
+
+  -- Upgrade to ODK Validate v1.13.2
+     Issue #360, https://github.com/XLSForm/pyxform/issues/360
+     [yanokwa]
+
+  -- Remove debug in tests.
+     Issue #361, https://github.com/XLSForm/pyxform/issues/361
+     [yanokwa]
+
+  -- Run codecov in subshell to prevent blocking build
+     Issue #363, https://github.com/XLSForm/pyxform/issues/363
+     [yanokwa]
+
+  -- Fix spelling and update failing tests
+     Issue #358, https://github.com/XLSForm/pyxform/issues/358
+     [yanokwa]
+
+  -- 2 translated media labels outputs a 3rd (default) languaget
+     Issue #32, https://github.com/XLSForm/pyxform/issues/32
+     [ukanga]
+
+  -- Documentation on pyxform release process
+     Issue #350, https://github.com/XLSForm/pyxform/issues/350
+     [ukanga]
+
 v0.15.0, 2019 08 11
   -- Report the name of a not closed control
      Issue #318,  https://github.com/XLSForm/pyxform/issues/318
