@@ -1315,7 +1315,7 @@ def parse_file_to_json(
     
     file_name = unicode(get_filename(path))
     if is_valid_xml_tag(file_name):
-      default_name = file_name
+        default_name = file_name
 
     return workbook_to_json(workbook_dict, default_name, default_language, warnings)
 
