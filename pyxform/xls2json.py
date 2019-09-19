@@ -1304,7 +1304,7 @@ def get_filename(path):
 
 
 def parse_file_to_json(
-    path, default_name=None, default_language="default", warnings=None, file_object=None
+    path, default_name='data', default_language="default", warnings=None, file_object=None
 ):
     """
     A wrapper for workbook_to_json
@@ -1312,8 +1312,11 @@ def parse_file_to_json(
     if warnings is None:
         warnings = []
     workbook_dict = parse_file_to_workbook_dict(path, file_object)
-    if default_name is None:
-        default_name = unicode(get_filename(path))
+    
+    file_name = unicode(get_filename(path))
+    if is_valid_xml_tag(file_name):
+      default_name = file_name
+
     return workbook_to_json(workbook_dict, default_name, default_language, warnings)
 
 
