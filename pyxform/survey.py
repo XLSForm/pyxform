@@ -243,7 +243,10 @@ class Survey(Section):
                 ),
                 name=name,
                 src=src,
-                instance=node("instance", id=name, src=src),
+                instance=node("instance",
+                              id=name,
+                              src=src
+                              ),
             )
 
         return None
@@ -293,6 +296,20 @@ class Survey(Section):
                     functions_present.append(element["bind"][formula_name])
             return functions_present
 
+        def get_instance_info(element, file_id):
+            uri = "jr://file-csv/{}.csv".format(file_id)
+
+            return InstanceInfo(
+                type=u"pulldata",
+                context="[type: {t}, name: {n}]".format(
+                    t=element[u"parent"][u"type"],
+                    n=element[u"parent"][u"name"]
+                ),
+                name=file_id,
+                src=uri,
+                instance=node("instance", id=file_id, src=uri),
+            )
+
         formulas = get_pulldata_functions(element)
         if len(formulas) > 0:
             formula_instances = []
@@ -300,16 +317,7 @@ class Survey(Section):
                 pieces = formula.split('"') if '"' in formula else formula.split("'")
                 if len(pieces) > 1 and pieces[1]:
                     file_id = pieces[1]
-                    uri = "jr://file-csv/{}.csv".format(file_id)
-                    return InstanceInfo(
-                        type=u"pulldata",
-                        context="[type: {t}, name: {n}]".format(
-                            t=element[u"parent"][u"type"], n=element[u"parent"][u"name"]
-                        ),
-                        name=file_id,
-                        src=uri,
-                        instance=node("instance", id=file_id, src=uri),
-                    )
+                    formula_instances.append(get_instance_info(element, file_id))
             return formula_instances
         return None
 

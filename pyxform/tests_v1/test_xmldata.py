@@ -416,5 +416,6 @@ class ExternalInstanceTests(PyxformTestCase):
 
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
-        self.assertEqual(0, xml.count(node1))
+
+        self.assertEqual(1, xml.count(node1))
         self.assertEqual(1, xml.count(node2))
