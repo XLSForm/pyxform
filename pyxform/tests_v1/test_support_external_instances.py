@@ -7,10 +7,7 @@ from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 class ExternalCSVInstancesTest(PyxformTestCase):
     def test_external_csv_instances(self):
-
         # re: https://github.com/XLSForm/pyxform/issues/30
-
-        # this is probabbbbly the test that needs to pass before pushing
         self.assertPyxformXform(
             name="ecsv",
             md="""
@@ -27,7 +24,7 @@ class ExternalCSVInstancesTest(PyxformTestCase):
                 '<select ref="/ecsv/neighbourhoods">',
                 "<itemset nodeset=\"instance('neighbourhoods')/root/item\">",
             ],
-            run_odk_validate=False,
+            run_odk_validate=True,
         )
 
     def test_external_csv_instances_w_choice_filter(self):
