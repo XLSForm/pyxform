@@ -243,10 +243,7 @@ class Survey(Section):
                 ),
                 name=name,
                 src=src,
-                instance=node("instance",
-                              id=name,
-                              src=src
-                              ),
+                instance=node("instance", id=name, src=src),
             )
 
         return None
@@ -302,8 +299,7 @@ class Survey(Section):
             return InstanceInfo(
                 type=u"pulldata",
                 context="[type: {t}, name: {n}]".format(
-                    t=element[u"parent"][u"type"],
-                    n=element[u"parent"][u"name"]
+                    t=element[u"parent"][u"type"], n=element[u"parent"][u"name"]
                 ),
                 name=file_id,
                 src=uri,
