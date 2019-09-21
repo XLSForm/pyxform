@@ -19,7 +19,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | type         | name   | label |
             |        | xml-external | mydata |       |
             """,
-            model__contains=['<instance id="mydata" src="jr://file/mydata.xml">'],
+            model__contains=['<instance id="mydata" src="jr://file/mydata.xml"/>'],
             run_odk_validate=True,
         )
 
@@ -51,8 +51,8 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | xml-external | mydata2 |       |
             """,
             model__contains=[
-                '<instance id="mydata" src="jr://file/mydata.xml">',
-                '<instance id="mydata2" src="jr://file/mydata2.xml">',
+                '<instance id="mydata" src="jr://file/mydata.xml"/>',
+                '<instance id="mydata2" src="jr://file/mydata2.xml"/>',
             ],
             run_odk_validate=True,
         )
@@ -98,10 +98,10 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | end group    | g3      |                |
             """,
             model__contains=[
-                '<instance id="mydata" src="jr://file/mydata.xml">',
-                '<instance id="mydata1" src="jr://file/mydata1.xml">',
-                '<instance id="mydata2" src="jr://file/mydata2.xml">',
-                '<instance id="mydata3" src="jr://file/mydata3.xml">',
+                '<instance id="mydata" src="jr://file/mydata.xml"/>',
+                '<instance id="mydata1" src="jr://file/mydata1.xml"/>',
+                '<instance id="mydata2" src="jr://file/mydata2.xml"/>',
+                '<instance id="mydata3" src="jr://file/mydata3.xml"/>',
             ],
             run_odk_validate=True,
         )
@@ -158,18 +158,9 @@ class ExternalInstanceTests(PyxformTestCase):
             |         | states                               | 2     | Fail  |                                             |               |
             """,  # noqa
             model__contains=[
-                '<instance id="city1" src="jr://file/city1.xml">',
-                """
-      <instance id="cities" src="jr://file-csv/cities.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>
-""",
-                '<instance id="fruits" src="jr://file-csv/fruits.csv">',
+                '<instance id="city1" src="jr://file/city1.xml"/>',
+                '<instance id="cities" src="jr://file-csv/cities.csv"/>',
+                '<instance id="fruits" src="jr://file-csv/fruits.csv"/>',
                 """
       <instance id="states">
         <root>
@@ -272,14 +263,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | note                                         | note   | Arm ${f_csv}                       |                                                   |
             """  # noqa
         expected = """
-      <instance id="pain_locations" src="jr://file-csv/pain_locations.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>
+      <instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>
 """  # noqa
         self.assertPyxformXform(
             md=md, model__contains=[expected], run_odk_validate=True
@@ -300,16 +284,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.csv      | pmonth | Location of worst pain this month. |                                                   |
             |        | select_one_from_file pain_locations.csv      | pyear  | Location of worst pain this year.  |                                                   |
             """  # noqa
-        expected = """
-      <instance id="pain_locations" src="jr://file-csv/pain_locations.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>
-"""  # noqa
+        expected = """<instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>"""  # noqa
         self.assertPyxformXform(
             md=md, model__contains=[expected], run_odk_validate=True
         )
@@ -326,14 +301,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | xml-external                                 | pain_locations |                                    |
             """  # noqa
         expected = """
-      <instance id="pain_locations" src="jr://file/pain_locations.xml">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>
+      <instance id="pain_locations" src="jr://file/pain_locations.xml"/>
 """  # noqa
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
@@ -350,16 +318,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.xml      | pmonth         | Location of worst pain this month. |
             |        | select_one_from_file pain_locations.xml      | pyear          | Location of worst pain this year.  |
             """  # noqa
-        expected = """
-      <instance id="pain_locations" src="jr://file/pain_locations.xml">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>
-"""  # noqa
+        expected = """<instance id="pain_locations" src="jr://file/pain_locations.xml"/>"""  # noqa
         self.assertPyxformXform(
             md=md, model__contains=[expected], run_odk_validate=True
         )
@@ -377,7 +336,7 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | type   | name    | label          | constraint                                              |
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
-        node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
+        node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
         self.assertPyxformXform(md=md, xml__contains=[node])
 
     def test_external_instance_pulldata_readonly(self):
@@ -390,7 +349,7 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | type   | name    | label          | readonly                                                |
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
-        node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
+        node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
 
         self.assertPyxformXform(md=md, xml__contains=[node])
 
@@ -431,7 +390,7 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | type   | name    | label          | relevant                                                | required                                                | constraint                                              |
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
-        node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
+        node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
         self.assertEqual(1, xml.count(node))
@@ -448,10 +407,10 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | type   | name    | label          | relevant                                               | required                                                    |
         |        | text   | Part_ID | Participant ID | pulldata('fruits', 'name', 'name_key', 'mango')        | pulldata('OtherID', 'ParticipantID', ParticipantIDValue',.) |
         """
-        node1 = '<instance id="fruits" src="jr://file-csv/fruits.csv">'
-        node2 = '<instance id="OtherID" src="jr://file-csv/OtherID.csv">'
+        node1 = '<instance id="fruits" src="jr://file-csv/fruits.csv"/>'
+        node2 = '<instance id="OtherID" src="jr://file-csv/OtherID.csv"/>'
 
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
-        self.assertEqual(1, xml.count(node1))
+        self.assertEqual(0, xml.count(node1))
         self.assertEqual(1, xml.count(node2))
