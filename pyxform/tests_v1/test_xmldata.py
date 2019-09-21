@@ -284,9 +284,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.csv      | pmonth | Location of worst pain this month. |                                                   |
             |        | select_one_from_file pain_locations.csv      | pyear  | Location of worst pain this year.  |                                                   |
             """  # noqa
-        expected = (
-            """<instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>"""
-        )  # noqa
+        expected = """<instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>"""  # noqa
         self.assertPyxformXform(
             md=md, model__contains=[expected], run_odk_validate=True
         )
@@ -320,9 +318,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.xml      | pmonth         | Location of worst pain this month. |
             |        | select_one_from_file pain_locations.xml      | pyear          | Location of worst pain this year.  |
             """  # noqa
-        expected = (
-            """<instance id="pain_locations" src="jr://file/pain_locations.xml"/>"""
-        )  # noqa
+        expected = """<instance id="pain_locations" src="jr://file/pain_locations.xml"/>"""  # noqa
         self.assertPyxformXform(
             md=md, model__contains=[expected], run_odk_validate=True
         )
@@ -367,7 +363,7 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | type   | name    | label          | required                                                |
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
-        node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
+        node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
         self.assertPyxformXform(md=md, xml__contains=[node], debug=False)
 
     def test_external_instance_pulldata_relevant(self):
@@ -380,7 +376,7 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | type   | name    | label          | relevant                                                |
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
-        node = """<instance id="ID" src="jr://file-csv/ID.csv">"""
+        node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
         self.assertPyxformXform(md=md, xml__contains=[node], debug=False)
 
     def test_external_instance_pulldata(self):
@@ -416,6 +412,5 @@ class ExternalInstanceTests(PyxformTestCase):
 
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
-
         self.assertEqual(1, xml.count(node1))
         self.assertEqual(1, xml.count(node2))
