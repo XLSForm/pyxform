@@ -78,7 +78,8 @@ class PyxformMarkdown(object):
         # ideally, when all these tests are working, this would be
         # refactored as well
         survey = create_survey_element_from_dict(imported_survey_json)
-        survey.name = kwargs.get("name")
+        if not kwargs.get("skip_name"):
+            survey.name = kwargs.get("name")
         survey.title = kwargs.get("title")
         survey.id_string = kwargs.get("id_string")
 
