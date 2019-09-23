@@ -1394,7 +1394,7 @@ class SurveyReader(SpreadsheetReader):
     based object is created then a to_json_dict function is called on it.
     """
 
-    def __init__(self, path_or_file):
+    def __init__(self, path_or_file, default_name=None):
         if isinstance(path_or_file, basestring):
             self._file_object = None
             path = path_or_file
@@ -1404,7 +1404,7 @@ class SurveyReader(SpreadsheetReader):
 
         self._warnings = []
         self._dict = parse_file_to_json(
-            path, warnings=self._warnings, file_object=self._file_object
+            path, default_name=default_name, warnings=self._warnings, file_object=self._file_object
         )
         self._path = path
 
@@ -1471,7 +1471,11 @@ if __name__ == "__main__":
         path = sys.argv[1]
 
     warnings = []
-    json_dict = parse_file_to_json(path, warnings=warnings)
+
+    directory, filename = os.path.split(path)
+    root_filename, extension = os.path.splitext(filename)
+
+    json_dict = parse_file_to_json(path, default_name=root_filename, warnings=warnings)
     print_pyobj_to_json(json_dict)
 
     if len(warnings) > 0:

@@ -34,7 +34,7 @@ class BasicXls2JsonApiTests(TestCase):
         expected_output_path = os.path.join(
             DIR, "test_expected_output", root_filename + ".json"
         )
-        x = SurveyReader(path_to_excel_file)
+        x = SurveyReader(path_to_excel_file, default_name="yes_or_no_question")
         x_results = x.to_json_dict()
         with codecs.open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
@@ -46,7 +46,7 @@ class BasicXls2JsonApiTests(TestCase):
                 self.assertEqual(expected_json, actual_json)
 
     def test_hidden(self):
-        x = SurveyReader(utils.path_to_text_fixture("hidden.xls"))
+        x = SurveyReader(utils.path_to_text_fixture("hidden.xls"), default_name="hidden")
         x_results = x.to_json_dict()
 
         expected_dict = [
@@ -67,7 +67,7 @@ class BasicXls2JsonApiTests(TestCase):
         self.assertEqual(x_results["children"], expected_dict)
 
     def test_gps(self):
-        x = SurveyReader(utils.path_to_text_fixture("gps.xls"))
+        x = SurveyReader(utils.path_to_text_fixture("gps.xls"), default_name="gps")
 
         expected_dict = [
             {"type": "gps", "name": "location", "label": "GPS"},
@@ -88,7 +88,7 @@ class BasicXls2JsonApiTests(TestCase):
         self.assertEqual(x.to_json_dict()["children"], expected_dict)
 
     def test_text_and_integer(self):
-        x = SurveyReader(utils.path_to_text_fixture("text_and_integer.xls"))
+        x = SurveyReader(utils.path_to_text_fixture("text_and_integer.xls"), default_name="text_and_integer")
 
         expected_dict = [
             {
@@ -126,7 +126,7 @@ class BasicXls2JsonApiTests(TestCase):
         expected_output_path = os.path.join(
             DIR, "test_expected_output", root_filename + ".json"
         )
-        x = SurveyReader(path_to_excel_file)
+        x = SurveyReader(path_to_excel_file, default_name="simple_loop")
         x_results = x.to_json_dict()
         with codecs.open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
@@ -142,7 +142,8 @@ class BasicXls2JsonApiTests(TestCase):
         Test that the choice filter fields appear on children field of json
         """
         choice_filter_survey = SurveyReader(
-            utils.path_to_text_fixture("choice_filter_test.xlsx")
+            utils.path_to_text_fixture("choice_filter_test.xlsx"),
+            default_name="choice_filter_test"
         )
 
         expected_dict = [
