@@ -87,7 +87,7 @@ class RepeatDateTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings
+            self.path_to_excel_file, default_name='data', warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
@@ -111,7 +111,7 @@ class XmlEscaping(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings
+            self.path_to_excel_file, default_name='data', warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
@@ -137,7 +137,7 @@ class DefaultTimeTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings
+            path_to_excel_file, default_name='data', warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)

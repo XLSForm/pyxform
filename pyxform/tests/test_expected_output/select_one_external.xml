@@ -4,23 +4,23 @@
     <h:title>cascading select test</h:title>
     <model>
       <instance>
-        <select_one_external id="cascading_select_test">
+        <data id="cascading_select_test">
           <state/>
           <county/>
           <city/>
           <meta>
             <instanceID/>
           </meta>
-        </select_one_external>
+        </data>
       </instance>
-      <bind nodeset="/select_one_external/state" type="select1"/>
-      <bind nodeset="/select_one_external/county" type="string"/>
-      <bind nodeset="/select_one_external/city" type="string"/>
-      <bind jr:preload="uid" nodeset="/select_one_external/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/state" type="select1"/>
+      <bind nodeset="/data/county" type="string"/>
+      <bind nodeset="/data/city" type="string"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
-    <select1 ref="/select_one_external/state">
+    <select1 ref="/data/state">
       <label>state</label>
       <item>
         <label>Texas</label>
@@ -31,10 +31,10 @@
         <value>washington</value>
       </item>
     </select1>
-    <input query="instance('counties')/root/item[state= /select_one_external/state ]" ref="/select_one_external/county">
+    <input query="instance('counties')/root/item[state= /data/state ]" ref="/data/county">
       <label>county</label>
     </input>
-    <input query="instance('cities')/root/item[state= /select_one_external/state  and county= /select_one_external/county ]" ref="/select_one_external/city">
+    <input query="instance('cities')/root/item[state= /data/state  and county= /data/county ]" ref="/data/city">
       <label>city</label>
     </input>
   </h:body>

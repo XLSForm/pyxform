@@ -50,14 +50,14 @@
         </translation>
       </itext>
       <instance>
-        <new_cascading_select id="cascading_select_test">
+        <data id="cascading_select_test">
           <state/>
           <county/>
           <city/>
           <meta>
             <instanceID/>
           </meta>
-        </new_cascading_select>
+        </data>
       </instance>
       <instance id="states">
         <root>
@@ -147,14 +147,14 @@
           </item>
         </root>
       </instance>
-      <bind nodeset="/new_cascading_select/state" type="select1"/>
-      <bind nodeset="/new_cascading_select/county" type="select1"/>
-      <bind nodeset="/new_cascading_select/city" type="select1"/>
-      <bind jr:preload="uid" nodeset="/new_cascading_select/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/state" type="select1"/>
+      <bind nodeset="/data/county" type="select1"/>
+      <bind nodeset="/data/city" type="select1"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
-    <select1 ref="/new_cascading_select/state">
+    <select1 ref="/data/state">
       <label>state</label>
       <item>
         <label>Texas</label>
@@ -165,16 +165,16 @@
         <value>washington</value>
       </item>
     </select1>
-    <select1 ref="/new_cascading_select/county">
+    <select1 ref="/data/county">
       <label>county</label>
-      <itemset nodeset="instance('counties')/root/item[state= /new_cascading_select/state ]">
+      <itemset nodeset="instance('counties')/root/item[state= /data/state ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
-    <select1 ref="/new_cascading_select/city">
+    <select1 ref="/data/city">
       <label>city</label>
-      <itemset nodeset="instance('cities')/root/item[state= /new_cascading_select/state  and county= /new_cascading_select/county ]">
+      <itemset nodeset="instance('cities')/root/item[state= /data/state  and county= /data/county ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>

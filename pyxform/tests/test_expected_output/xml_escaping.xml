@@ -1,28 +1,28 @@
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
-    <h:title>xml_escaping</h:title>
+    <h:title>data</h:title>
     <model>
       <instance>
-        <xml_escaping id="xml_escaping">
+        <data id="data">
           <a/>
           <b/>
           <table_list_3/>
           <meta>
             <instanceID/>
           </meta>
-        </xml_escaping>
+        </data>
       </instance>
-      <bind calculate="2" nodeset="/xml_escaping/a" type="string"/>
-      <bind calculate="1" nodeset="/xml_escaping/b" type="string"/>
-      <bind nodeset="/xml_escaping/table_list_3" type="select1"/>
-      <bind jr:preload="uid" nodeset="/xml_escaping/meta/instanceID" readonly="true()" type="string"/>
+      <bind calculate="2" nodeset="/data/a" type="string"/>
+      <bind calculate="1" nodeset="/data/b" type="string"/>
+      <bind nodeset="/data/table_list_3" type="select1"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
-    <select1 ref="/xml_escaping/table_list_3">
+    <select1 ref="/data/table_list_3">
       <label>
-        <output value=" /xml_escaping/a "/>&lt; <output value=" /xml_escaping/b "/></label><item>
+        <output value=" /data/a "/>&lt; <output value=" /data/b "/></label><item>
         <label>Yes</label>
         <value>yes</value>
       </item>

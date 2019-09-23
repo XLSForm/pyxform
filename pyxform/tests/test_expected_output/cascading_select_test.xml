@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
-    <h:title>cascading_select_test</h:title>
+    <h:title>data</h:title>
     <model>
       <itext>
         <translation default="true()" lang="default">
@@ -50,14 +50,14 @@
         </translation>
       </itext>
       <instance>
-        <cascading_select_test id="cascading_select_test">
+        <data id="data">
           <mylga_zone/>
           <mylga_state/>
           <mylga/>
           <meta>
             <instanceID/>
           </meta>
-        </cascading_select_test>
+        </data>
       </instance>
       <instance id="state">
         <root>
@@ -147,30 +147,30 @@
           </item>
         </root>
       </instance>
-      <bind nodeset="/cascading_select_test/mylga_zone" type="select1"/>
-      <bind nodeset="/cascading_select_test/mylga_state" type="select1"/>
-      <bind nodeset="/cascading_select_test/mylga" type="select1"/>
-      <bind jr:preload="uid" nodeset="/cascading_select_test/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/mylga_zone" type="select1"/>
+      <bind nodeset="/data/mylga_state" type="select1"/>
+      <bind nodeset="/data/mylga" type="select1"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
-    <select1 ref="/cascading_select_test/mylga_zone">
+    <select1 ref="/data/mylga_zone">
       <label>Choose your zone:</label>
       <itemset nodeset="instance('zone')/root/item">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
-    <select1 ref="/cascading_select_test/mylga_state">
+    <select1 ref="/data/mylga_state">
       <label>Choose your state:</label>
-      <itemset nodeset="instance('state')/root/item[zone= /cascading_select_test/mylga_zone ]">
+      <itemset nodeset="instance('state')/root/item[zone= /data/mylga_zone ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
-    <select1 ref="/cascading_select_test/mylga">
+    <select1 ref="/data/mylga">
       <label>Choose your lga:</label>
-      <itemset nodeset="instance('lga')/root/item[zone= /cascading_select_test/mylga_zone  and state= /cascading_select_test/mylga_state ]">
+      <itemset nodeset="instance('lga')/root/item[zone= /data/mylga_zone  and state= /data/mylga_state ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>

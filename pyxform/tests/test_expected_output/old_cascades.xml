@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
-    <h:title>old_cascades</h:title>
+    <h:title>data</h:title>
     <model>
       <itext>
         <translation default="true()" lang="default">
@@ -50,14 +50,14 @@
         </translation>
       </itext>
       <instance>
-        <old_cascades id="old_cascades">
+        <data id="data">
           <state_states/>
           <state_counties/>
           <state/>
           <meta>
             <instanceID/>
           </meta>
-        </old_cascades>
+        </data>
       </instance>
       <instance id="states">
         <root>
@@ -147,30 +147,30 @@
           </item>
         </root>
       </instance>
-      <bind nodeset="/old_cascades/state_states" type="select1"/>
-      <bind nodeset="/old_cascades/state_counties" type="select1"/>
-      <bind nodeset="/old_cascades/state" type="select1"/>
-      <bind jr:preload="uid" nodeset="/old_cascades/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/state_states" type="select1"/>
+      <bind nodeset="/data/state_counties" type="select1"/>
+      <bind nodeset="/data/state" type="select1"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
-    <select1 ref="/old_cascades/state_states">
+    <select1 ref="/data/state_states">
       <label>State:</label>
       <itemset nodeset="instance('states')/root/item">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
-    <select1 ref="/old_cascades/state_counties">
+    <select1 ref="/data/state_counties">
       <label>County:</label>
-      <itemset nodeset="instance('counties')/root/item[states= /old_cascades/state_states ]">
+      <itemset nodeset="instance('counties')/root/item[states= /data/state_states ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>
     </select1>
-    <select1 ref="/old_cascades/state">
+    <select1 ref="/data/state">
       <label>City:</label>
-      <itemset nodeset="instance('cities')/root/item[states= /old_cascades/state_states  and counties= /old_cascades/state_counties ]">
+      <itemset nodeset="instance('cities')/root/item[states= /data/state_states  and counties= /data/state_counties ]">
         <value ref="name"/>
         <label ref="jr:itext(itextId)"/>
       </itemset>

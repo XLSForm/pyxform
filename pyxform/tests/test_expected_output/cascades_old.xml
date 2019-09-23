@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
-    <h:title>cascades_old</h:title>
+    <h:title>data</h:title>
     <model>
       <itext>
         <translation default="true()" lang="default">
@@ -899,7 +899,7 @@
         </translation>
       </itext>
       <instance>
-        <cascades_old id="cascades_old">
+        <data id="data">
           <start/>
           <end/>
           <today/>
@@ -987,7 +987,7 @@
           <meta>
             <instanceID/>
           </meta>
-        </cascades_old>
+        </data>
       </instance>
       <instance id="site">
         <root>
@@ -2738,75 +2738,75 @@
           </item>
         </root>
       </instance>
-      <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/cascades_old/start" type="dateTime"/>
-      <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/cascades_old/end" type="dateTime"/>
-      <bind jr:preload="date" jr:preloadParams="today" nodeset="/cascades_old/today" type="date"/>
-      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/cascades_old/deviceid" type="string"/>
-      <bind jr:preload="property" jr:preloadParams="subscriberid" nodeset="/cascades_old/subscriberid" type="string"/>
-      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/cascades_old/simserial" type="string"/>
-      <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/cascades_old/phonenumber" type="string"/>
-      <bind nodeset="/cascades_old/sectionA/q1_surveyor1" type="select1"/>
-      <bind nodeset="/cascades_old/sectionA/q2_surveyor2" relevant=" /cascades_old/sectionA/q1_surveyor1  = 'othername'" required="true()" type="string"/>
-      <bind nodeset="/cascades_old/sectionA/q3_datetime" required="true()" type="dateTime"/>
-      <bind nodeset="/cascades_old/sectionA/q4_gps_location" required="false()" type="geopoint"/>
-      <bind nodeset="/cascades_old/sectionB/q5_construction_site_phase" type="select1"/>
-      <bind nodeset="/cascades_old/sectionB/q5_construction_site_district" type="select1"/>
-      <bind nodeset="/cascades_old/sectionB/q5_construction_site" type="select1"/>
-      <bind nodeset="/cascades_old/sectionB/q6_construction_site_summary1" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionB/q7_construction_site_summary2" relevant=" /cascades_old/sectionB/q6_construction_site_summary1 ='no'" required="true()" type="string"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC1/q10_wm_trained_aftercare" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC1/q11_households_water_access" required="true()" type="int"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC1/q12_system_functional" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC1/q13_male_hh_latrines" required="true()" type="int"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC1/q14_female_hh_latrines" required="true()" type="int"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC1/q15_child_hh_latrines" required="true()" type="int"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q16_vwhc_meeting" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q17_vwhc_collect_tariffs" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q18_vwhc_reports" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q19_conflicts_community" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q20_yes_conflict_description" relevant=" /cascades_old/sectionC/sectionC2/q19_conflicts_community ='yes'" required="true()" type="string"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q21_yes_problem_resolved" relevant=" /cascades_old/sectionC/sectionC2/q19_conflicts_community ='yes'" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q22_gender_chair" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q23_gender_treasurer" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q24_gender_secretary" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/note_hygiene" readonly="true()" required="false()" type="string"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q25_faeces_mouth" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q26_prevent_faeces_mouth" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q27_handwashing" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q28_handwashing_facilities" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q29_water_storage" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q30_diseases" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q31_child_faeces_disposal" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q32_latrine_hygiene" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/sectionC4_note" readonly="true()" required="false()" type="string"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q33_hh_latrine_usage" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q34_latrine_screen_vent" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q35_latrine_seat_cover" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q36_latrine_door" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q37_latrine_flies" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q38_latrine_odour" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q39_latrine_cleaned" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q40_latrine_handwash" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q41_latrine_soap" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/sectionC5_note" readonly="true()" required="false()" type="string"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q42_wm_layout_system" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q43_wm_components_system" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q44_wm_pipes_fittings" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q45_wm_hygiene" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q46_wm_report_breakdowns" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q47_wm_number_breakdowns" required="true()" type="int"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q48_wm_preventive_maintenance" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q49_wm_pump_operation" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q50_wm_minor_repairs" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q51_wm_repair_supplies" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC6/q52_add_comments" required="false()" type="string"/>
-      <bind jr:preload="uid" nodeset="/cascades_old/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/data/start" type="dateTime"/>
+      <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/data/end" type="dateTime"/>
+      <bind jr:preload="date" jr:preloadParams="today" nodeset="/data/today" type="date"/>
+      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/data/deviceid" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="subscriberid" nodeset="/data/subscriberid" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/data/simserial" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/data/phonenumber" type="string"/>
+      <bind nodeset="/data/sectionA/q1_surveyor1" type="select1"/>
+      <bind nodeset="/data/sectionA/q2_surveyor2" relevant=" /data/sectionA/q1_surveyor1  = 'othername'" required="true()" type="string"/>
+      <bind nodeset="/data/sectionA/q3_datetime" required="true()" type="dateTime"/>
+      <bind nodeset="/data/sectionA/q4_gps_location" required="false()" type="geopoint"/>
+      <bind nodeset="/data/sectionB/q5_construction_site_phase" type="select1"/>
+      <bind nodeset="/data/sectionB/q5_construction_site_district" type="select1"/>
+      <bind nodeset="/data/sectionB/q5_construction_site" type="select1"/>
+      <bind nodeset="/data/sectionB/q6_construction_site_summary1" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionB/q7_construction_site_summary2" relevant=" /data/sectionB/q6_construction_site_summary1 ='no'" required="true()" type="string"/>
+      <bind nodeset="/data/sectionC/sectionC1/q10_wm_trained_aftercare" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC1/q11_households_water_access" required="true()" type="int"/>
+      <bind nodeset="/data/sectionC/sectionC1/q12_system_functional" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC1/q13_male_hh_latrines" required="true()" type="int"/>
+      <bind nodeset="/data/sectionC/sectionC1/q14_female_hh_latrines" required="true()" type="int"/>
+      <bind nodeset="/data/sectionC/sectionC1/q15_child_hh_latrines" required="true()" type="int"/>
+      <bind nodeset="/data/sectionC/sectionC2/q16_vwhc_meeting" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC2/q17_vwhc_collect_tariffs" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC2/q18_vwhc_reports" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC2/q19_conflicts_community" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC2/q20_yes_conflict_description" relevant=" /data/sectionC/sectionC2/q19_conflicts_community ='yes'" required="true()" type="string"/>
+      <bind nodeset="/data/sectionC/sectionC2/q21_yes_problem_resolved" relevant=" /data/sectionC/sectionC2/q19_conflicts_community ='yes'" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC2/q22_gender_chair" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC2/q23_gender_treasurer" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC2/q24_gender_secretary" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC3/note_hygiene" readonly="true()" required="false()" type="string"/>
+      <bind nodeset="/data/sectionC/sectionC3/villager/q25_faeces_mouth" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC3/villager/q26_prevent_faeces_mouth" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC3/villager/q27_handwashing" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC3/villager/q28_handwashing_facilities" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC3/villager/q29_water_storage" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC3/villager/q30_diseases" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC3/villager/q31_child_faeces_disposal" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC3/villager/q32_latrine_hygiene" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC4/sectionC4_note" readonly="true()" required="false()" type="string"/>
+      <bind nodeset="/data/sectionC/sectionC4/household/q33_hh_latrine_usage" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC4/household/q34_latrine_screen_vent" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC4/household/q35_latrine_seat_cover" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC4/household/q36_latrine_door" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC4/household/q37_latrine_flies" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC4/household/q38_latrine_odour" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC4/household/q39_latrine_cleaned" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC4/household/q40_latrine_handwash" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC4/household/q41_latrine_soap" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC5/sectionC5_note" readonly="true()" required="false()" type="string"/>
+      <bind nodeset="/data/sectionC/sectionC5/q42_wm_layout_system" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC5/q43_wm_components_system" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC5/q44_wm_pipes_fittings" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC5/q45_wm_hygiene" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC5/q46_wm_report_breakdowns" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC5/q47_wm_number_breakdowns" required="true()" type="int"/>
+      <bind nodeset="/data/sectionC/sectionC5/q48_wm_preventive_maintenance" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC5/q49_wm_pump_operation" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC5/q50_wm_minor_repairs" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC5/q51_wm_repair_supplies" required="true()" type="select1"/>
+      <bind nodeset="/data/sectionC/sectionC6/q52_add_comments" required="false()" type="string"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
-    <group ref="/cascades_old/sectionA">
+    <group ref="/data/sectionA">
       <label>Section A - Survey Information</label>
-      <select1 ref="/cascades_old/sectionA/q1_surveyor1">
+      <select1 ref="/data/sectionA/q1_surveyor1">
         <label>Q01. Name of the surveyor</label>
         <item>
           <label>Name 1</label>
@@ -2825,42 +2825,42 @@
           <value>othername</value>
         </item>
       </select1>
-      <input ref="/cascades_old/sectionA/q2_surveyor2">
+      <input ref="/data/sectionA/q2_surveyor2">
         <label>Q02. If other, enter your name here:</label>
       </input>
-      <input ref="/cascades_old/sectionA/q3_datetime">
+      <input ref="/data/sectionA/q3_datetime">
         <label>Q03. Enter the current date and time:</label>
       </input>
-      <input ref="/cascades_old/sectionA/q4_gps_location">
+      <input ref="/data/sectionA/q4_gps_location">
         <label>Q04. Record GPS location:</label>
         <hint>Make sure the precision is less than 25 meters</hint>
       </input>
     </group>
-    <group ref="/cascades_old/sectionB">
+    <group ref="/data/sectionB">
       <label>Section B - Site Information</label>
-      <select1 ref="/cascades_old/sectionB/q5_construction_site_phase">
+      <select1 ref="/data/sectionB/q5_construction_site_phase">
         <label>Q05. Phase</label>
         <itemset nodeset="instance('phase')/root/item">
           <value ref="name"/>
           <label ref="jr:itext(itextId)"/>
         </itemset>
       </select1>
-      <select1 ref="/cascades_old/sectionB/q5_construction_site_district">
+      <select1 ref="/data/sectionB/q5_construction_site_district">
         <label>Q06. District</label>
-        <itemset nodeset="instance('district')/root/item[phase= /cascades_old/sectionB/q5_construction_site_phase ]">
+        <itemset nodeset="instance('district')/root/item[phase= /data/sectionB/q5_construction_site_phase ]">
           <value ref="name"/>
           <label ref="jr:itext(itextId)"/>
         </itemset>
       </select1>
-      <select1 ref="/cascades_old/sectionB/q5_construction_site">
+      <select1 ref="/data/sectionB/q5_construction_site">
         <label>Q07. Site</label>
-        <itemset nodeset="instance('site')/root/item[phase= /cascades_old/sectionB/q5_construction_site_phase  and district= /cascades_old/sectionB/q5_construction_site_district ]">
+        <itemset nodeset="instance('site')/root/item[phase= /data/sectionB/q5_construction_site_phase  and district= /data/sectionB/q5_construction_site_district ]">
           <value ref="name"/>
           <label ref="jr:itext(itextId)"/>
         </itemset>
       </select1>
-      <select1 ref="/cascades_old/sectionB/q6_construction_site_summary1">
-        <label>You selected the <output value=" /cascades_old/sectionB/q5_construction_site "/> site, in <output value=" /cascades_old/sectionB/q5_construction_site_district "/> district, phase <output value=" /cascades_old/sectionB/q5_construction_site_phase "/> - is that correct?</label>
+      <select1 ref="/data/sectionB/q6_construction_site_summary1">
+        <label>You selected the <output value=" /data/sectionB/q5_construction_site "/> site, in <output value=" /data/sectionB/q5_construction_site_district "/> district, phase <output value=" /data/sectionB/q5_construction_site_phase "/> - is that correct?</label>
         <item>
           <label>Yes</label>
           <value>yes</value>
@@ -2870,16 +2870,16 @@
           <value>no</value>
         </item>
       </select1>
-      <input ref="/cascades_old/sectionB/q7_construction_site_summary2">
+      <input ref="/data/sectionB/q7_construction_site_summary2">
         <label>If no, please enter the correct phase, district and site name below:</label>
         <hint>Please use the following format (phase, district, site name)</hint>
       </input>
     </group>
-    <group ref="/cascades_old/sectionC">
+    <group ref="/data/sectionC">
       <label>Section C - End of construction survey of site</label>
-      <group ref="/cascades_old/sectionC/sectionC1">
+      <group ref="/data/sectionC/sectionC1">
         <label>End-construction AMP reporting</label>
-        <select1 ref="/cascades_old/sectionC/sectionC1/q10_wm_trained_aftercare">
+        <select1 ref="/data/sectionC/sectionC1/q10_wm_trained_aftercare">
           <label>Q10. Have the water minders been trained in aftercare?</label>
           <item>
             <label>Yes</label>
@@ -2890,10 +2890,10 @@
             <value>no</value>
           </item>
         </select1>
-        <input ref="/cascades_old/sectionC/sectionC1/q11_households_water_access">
+        <input ref="/data/sectionC/sectionC1/q11_households_water_access">
           <label>Q11. How many households have access to water supply?</label>
         </input>
-        <select1 ref="/cascades_old/sectionC/sectionC1/q12_system_functional">
+        <select1 ref="/data/sectionC/sectionC1/q12_system_functional">
           <label>Q12. Is the water supply currently functional?</label>
           <item>
             <label>Yes</label>
@@ -2904,19 +2904,19 @@
             <value>no</value>
           </item>
         </select1>
-        <input ref="/cascades_old/sectionC/sectionC1/q13_male_hh_latrines">
+        <input ref="/data/sectionC/sectionC1/q13_male_hh_latrines">
           <label>Q13. How many male-headed households now have improved access to latrines?</label>
         </input>
-        <input ref="/cascades_old/sectionC/sectionC1/q14_female_hh_latrines">
+        <input ref="/data/sectionC/sectionC1/q14_female_hh_latrines">
           <label>Q14. How many female-headed households now have improved access to latrines?</label>
         </input>
-        <input ref="/cascades_old/sectionC/sectionC1/q15_child_hh_latrines">
+        <input ref="/data/sectionC/sectionC1/q15_child_hh_latrines">
           <label>Q15. How many child-headed households now have improved access to latrines?</label>
         </input>
       </group>
-      <group ref="/cascades_old/sectionC/sectionC2">
+      <group ref="/data/sectionC/sectionC2">
         <label>Village Water Health Committee</label>
-        <select1 ref="/cascades_old/sectionC/sectionC2/q16_vwhc_meeting">
+        <select1 ref="/data/sectionC/sectionC2/q16_vwhc_meeting">
           <label>Q16. Has the VWHC met in the past month?</label>
           <item>
             <label>Yes</label>
@@ -2927,7 +2927,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC2/q17_vwhc_collect_tariffs">
+        <select1 ref="/data/sectionC/sectionC2/q17_vwhc_collect_tariffs">
           <label>Q17. Does the VWHC collect tariffs for water supply for Operation and Maintenance and repairs?</label>
           <item>
             <label>Yes</label>
@@ -2938,7 +2938,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC2/q18_vwhc_reports">
+        <select1 ref="/data/sectionC/sectionC2/q18_vwhc_reports">
           <label>Q18. Are the VWHC reports/books being kept up-to-date?</label>
           <hint>Please ask to see them, review them</hint>
           <item>
@@ -2950,7 +2950,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC2/q19_conflicts_community">
+        <select1 ref="/data/sectionC/sectionC2/q19_conflicts_community">
           <label>Q19. Have there been any conflicts related to water or sanitation in the community?</label>
           <item>
             <label>Yes</label>
@@ -2961,10 +2961,10 @@
             <value>no</value>
           </item>
         </select1>
-        <input ref="/cascades_old/sectionC/sectionC2/q20_yes_conflict_description">
+        <input ref="/data/sectionC/sectionC2/q20_yes_conflict_description">
           <label>Q20. If yes, describe the problem:</label>
         </input>
-        <select1 ref="/cascades_old/sectionC/sectionC2/q21_yes_problem_resolved">
+        <select1 ref="/data/sectionC/sectionC2/q21_yes_problem_resolved">
           <label>Q21. If yes, did the VWHC help resolve the problems?</label>
           <item>
             <label>Yes</label>
@@ -2975,7 +2975,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC2/q22_gender_chair">
+        <select1 ref="/data/sectionC/sectionC2/q22_gender_chair">
           <label>Q22. Which gender occupied the chair position?</label>
           <item>
             <label>Male</label>
@@ -2986,7 +2986,7 @@
             <value>female</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC2/q23_gender_treasurer">
+        <select1 ref="/data/sectionC/sectionC2/q23_gender_treasurer">
           <label>Q23. Which gender occupied the treasurer position?</label>
           <item>
             <label>Male</label>
@@ -2997,7 +2997,7 @@
             <value>female</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC2/q24_gender_secretary">
+        <select1 ref="/data/sectionC/sectionC2/q24_gender_secretary">
           <label>Q24. Which gender occupied the secretary position?</label>
           <item>
             <label>Male</label>
@@ -3009,15 +3009,15 @@
           </item>
         </select1>
       </group>
-      <group ref="/cascades_old/sectionC/sectionC3">
+      <group ref="/data/sectionC/sectionC3">
         <label>Hygiene</label>
-        <input ref="/cascades_old/sectionC/sectionC3/note_hygiene">
+        <input ref="/data/sectionC/sectionC3/note_hygiene">
           <label>In this section, please select three community members at random and ask them the following questions. When you are done entering the responses for one community member, you will be asked if you want to add results for an extra one. Say yes until you have all three sets of answers.</label>
         </input>
-        <group ref="/cascades_old/sectionC/sectionC3/villager">
+        <group ref="/data/sectionC/sectionC3/villager">
           <label>Community member / Villager</label>
-          <repeat nodeset="/cascades_old/sectionC/sectionC3/villager">
-            <select1 ref="/cascades_old/sectionC/sectionC3/villager/q25_faeces_mouth">
+          <repeat nodeset="/data/sectionC/sectionC3/villager">
+            <select1 ref="/data/sectionC/sectionC3/villager/q25_faeces_mouth">
               <label>Q25. What ways can faeces get into the mouth?</label>
               <hint>If village can give 2 good responses enter YES. Possible answers include: fingers, flies, fluids, fields, food.</hint>
               <item>
@@ -3029,7 +3029,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC3/villager/q26_prevent_faeces_mouth">
+            <select1 ref="/data/sectionC/sectionC3/villager/q26_prevent_faeces_mouth">
               <label>Q26. How can we prevent faeces from reaching the mouth?</label>
               <hint>If village can give 2 correct responses, say YES. Possible answers include: hand-washing, cover food/water, use VIP latrines, boil water.</hint>
               <item>
@@ -3041,7 +3041,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC3/villager/q27_handwashing">
+            <select1 ref="/data/sectionC/sectionC3/villager/q27_handwashing">
               <label>Q27. When is hand-washing critical?</label>
               <hint>If village can give 2 correct responses, say YES. Possible answers include: after using the latrine, after changing/cleaning a child, before preparing/eating food</hint>
               <item>
@@ -3053,7 +3053,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC3/villager/q28_handwashing_facilities">
+            <select1 ref="/data/sectionC/sectionC3/villager/q28_handwashing_facilities">
               <label>Q28. Are the hand washing facilities close to the latrines and with soap?</label>
               <hint>Important: ask to see it</hint>
               <item>
@@ -3065,7 +3065,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC3/villager/q29_water_storage">
+            <select1 ref="/data/sectionC/sectionC3/villager/q29_water_storage">
               <label>Q29. Is the water properly stored and protected at the household level?</label>
               <hint>Important: ask to see it</hint>
               <item>
@@ -3077,7 +3077,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC3/villager/q30_diseases">
+            <select1 ref="/data/sectionC/sectionC3/villager/q30_diseases">
               <label>Q30. What sicknesses can you get from unclean water?</label>
               <hint>If village can give 1 correct responses, say YES. Possible answers include: typhoid, diarrhea, stomach problems</hint>
               <item>
@@ -3089,7 +3089,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC3/villager/q31_child_faeces_disposal">
+            <select1 ref="/data/sectionC/sectionC3/villager/q31_child_faeces_disposal">
               <label>Q31. Where do you dispose of your child's faeces?</label>
               <hint>Correct answer: in the latrine</hint>
               <item>
@@ -3101,7 +3101,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC3/villager/q32_latrine_hygiene">
+            <select1 ref="/data/sectionC/sectionC3/villager/q32_latrine_hygiene">
               <label>Q32. How do you keep your latrine hygienic?</label>
               <hint>Correct answer: the latrine should be cleaned regularly.</hint>
               <item>
@@ -3116,15 +3116,15 @@
           </repeat>
         </group>
       </group>
-      <group ref="/cascades_old/sectionC/sectionC4">
+      <group ref="/data/sectionC/sectionC4">
         <label>Latrines</label>
-        <input ref="/cascades_old/sectionC/sectionC4/sectionC4_note">
+        <input ref="/data/sectionC/sectionC4/sectionC4_note">
           <label>In this section, please select three households with a latrine at random and ask them the following questions. When you are done entered the responses for one household, you will be asked if you want to add results for an extra one. Say yes until you have all three sets of responses</label>
         </input>
-        <group ref="/cascades_old/sectionC/sectionC4/household">
+        <group ref="/data/sectionC/sectionC4/household">
           <label>Household / Latrine Owner</label>
-          <repeat nodeset="/cascades_old/sectionC/sectionC4/household">
-            <select1 ref="/cascades_old/sectionC/sectionC4/household/q33_hh_latrine_usage">
+          <repeat nodeset="/data/sectionC/sectionC4/household">
+            <select1 ref="/data/sectionC/sectionC4/household/q33_hh_latrine_usage">
               <label>Q33. Do all the people in this household regularly use the latrine?</label>
               <item>
                 <label>Yes</label>
@@ -3135,7 +3135,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC4/household/q34_latrine_screen_vent">
+            <select1 ref="/data/sectionC/sectionC4/household/q34_latrine_screen_vent">
               <label>Q34. Is there a fly screen on the vent pipe?</label>
               <hint>Important: ask to see it</hint>
               <item>
@@ -3147,7 +3147,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC4/household/q35_latrine_seat_cover">
+            <select1 ref="/data/sectionC/sectionC4/household/q35_latrine_seat_cover">
               <label>Q35. Is the seat cover present in the VIP?</label>
               <hint>Important: ask to see it</hint>
               <item>
@@ -3159,7 +3159,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC4/household/q36_latrine_door">
+            <select1 ref="/data/sectionC/sectionC4/household/q36_latrine_door">
               <label>Q36. Is the VIP door intact?</label>
               <hint>Important: ask to see it</hint>
               <item>
@@ -3171,7 +3171,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC4/household/q37_latrine_flies">
+            <select1 ref="/data/sectionC/sectionC4/household/q37_latrine_flies">
               <label>Q37. Are there any flies in the VIP?</label>
               <hint>Important: ask to see it</hint>
               <item>
@@ -3183,7 +3183,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC4/household/q38_latrine_odour">
+            <select1 ref="/data/sectionC/sectionC4/household/q38_latrine_odour">
               <label>Q38. Is there odour in the VIP?</label>
               <hint>Important: ask to see it</hint>
               <item>
@@ -3195,7 +3195,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC4/household/q39_latrine_cleaned">
+            <select1 ref="/data/sectionC/sectionC4/household/q39_latrine_cleaned">
               <label>Q39. Has the latrine been cleaned recently? (is there no visible faecal matter and/or waste)</label>
               <hint>Important: ask to see it</hint>
               <item>
@@ -3207,7 +3207,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC4/household/q40_latrine_handwash">
+            <select1 ref="/data/sectionC/sectionC4/household/q40_latrine_handwash">
               <label>Q40. Is there a hand washing facility close to the latrine?</label>
               <hint>Important: ask to see it</hint>
               <item>
@@ -3219,7 +3219,7 @@
                 <value>no</value>
               </item>
             </select1>
-            <select1 ref="/cascades_old/sectionC/sectionC4/household/q41_latrine_soap">
+            <select1 ref="/data/sectionC/sectionC4/household/q41_latrine_soap">
               <label>Q41. Is there a soap at the hand washing facility?</label>
               <hint>Important: ask to see it</hint>
               <item>
@@ -3234,12 +3234,12 @@
           </repeat>
         </group>
       </group>
-      <group ref="/cascades_old/sectionC/sectionC5">
+      <group ref="/data/sectionC/sectionC5">
         <label>Water minders</label>
-        <input ref="/cascades_old/sectionC/sectionC5/sectionC5_note">
+        <input ref="/data/sectionC/sectionC5/sectionC5_note">
           <label>In this section, talk to at least one water minder that has been trained for this system and answer the following questions.</label>
         </input>
-        <select1 ref="/cascades_old/sectionC/sectionC5/q42_wm_layout_system">
+        <select1 ref="/data/sectionC/sectionC5/q42_wm_layout_system">
           <label>Q42. Is the Water Minder (WM) familiar with the layout of the system?</label>
           <item>
             <label>Yes</label>
@@ -3250,7 +3250,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC5/q43_wm_components_system">
+        <select1 ref="/data/sectionC/sectionC5/q43_wm_components_system">
           <label>Q43. Does the WM understand what are the functions of the system components?</label>
           <hint>Important: ask him to draw the system layout</hint>
           <item>
@@ -3262,7 +3262,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC5/q44_wm_pipes_fittings">
+        <select1 ref="/data/sectionC/sectionC5/q44_wm_pipes_fittings">
           <label>Q44. Does the WM know all the pipes and fittings used, their sizes and how to arrange and connect fittings correctly?</label>
           <hint>Important: ask him to show you an example with spares he has</hint>
           <item>
@@ -3274,7 +3274,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC5/q45_wm_hygiene">
+        <select1 ref="/data/sectionC/sectionC5/q45_wm_hygiene">
           <label>Q45. Does the WM know how to keep the tap stands and system equipment clean and hygienic?</label>
           <item>
             <label>Yes</label>
@@ -3285,7 +3285,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC5/q46_wm_report_breakdowns">
+        <select1 ref="/data/sectionC/sectionC5/q46_wm_report_breakdowns">
           <label>Q46. Does the WM know how and to whom to report breakdowns?</label>
           <item>
             <label>Yes</label>
@@ -3296,10 +3296,10 @@
             <value>no</value>
           </item>
         </select1>
-        <input ref="/cascades_old/sectionC/sectionC5/q47_wm_number_breakdowns">
+        <input ref="/data/sectionC/sectionC5/q47_wm_number_breakdowns">
           <label>Q47. How many breakdowns have been reported so far?</label>
         </input>
-        <select1 ref="/cascades_old/sectionC/sectionC5/q48_wm_preventive_maintenance">
+        <select1 ref="/data/sectionC/sectionC5/q48_wm_preventive_maintenance">
           <label>Q48. Does the WM know how to carryout preventative maintenance?</label>
           <item>
             <label>Yes</label>
@@ -3310,7 +3310,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC5/q49_wm_pump_operation">
+        <select1 ref="/data/sectionC/sectionC5/q49_wm_pump_operation">
           <label>Q49. Does the WM know how the pumping equipment works (if the system uses a pump) and how to operate it?</label>
           <item>
             <label>Yes</label>
@@ -3321,7 +3321,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC5/q50_wm_minor_repairs">
+        <select1 ref="/data/sectionC/sectionC5/q50_wm_minor_repairs">
           <label>Q50. Does the WM know how to carryout minor repairs?</label>
           <item>
             <label>Yes</label>
@@ -3332,7 +3332,7 @@
             <value>no</value>
           </item>
         </select1>
-        <select1 ref="/cascades_old/sectionC/sectionC5/q51_wm_repair_supplies">
+        <select1 ref="/data/sectionC/sectionC5/q51_wm_repair_supplies">
           <label>Q51. Does the WM have basic repair and equipment supplies?</label>
           <item>
             <label>Yes</label>
@@ -3344,9 +3344,9 @@
           </item>
         </select1>
       </group>
-      <group ref="/cascades_old/sectionC/sectionC6">
+      <group ref="/data/sectionC/sectionC6">
         <label>Additional comments</label>
-        <input ref="/cascades_old/sectionC/sectionC6/q52_add_comments">
+        <input ref="/data/sectionC/sectionC6/q52_add_comments">
           <label>Q52. Do you have any additional comments you would like to enter?</label>
         </input>
       </group>
