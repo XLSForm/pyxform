@@ -1312,8 +1312,6 @@ def parse_file_to_json(
     if warnings is None:
         warnings = []
     workbook_dict = parse_file_to_workbook_dict(path, file_object)
-    if default_name is None:
-        default_name = unicode(get_filename(path))
     return workbook_to_json(workbook_dict, default_name, default_language, warnings)
 
 
