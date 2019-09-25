@@ -3,6 +3,7 @@
 Test setting form name to data.
 """
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
+from pyxform.utils import unicode
 
 class FormNameTest(PyxformTestCase):
 
