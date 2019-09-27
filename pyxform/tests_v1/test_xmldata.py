@@ -174,12 +174,12 @@ class ExternalInstanceTests(PyxformTestCase):
       <instance id="states">
         <root>
           <item>
-            <itextId>static_instance-states-0</itextId>
             <name>1</name>
+            <label>Pass</label>
           </item>
           <item>
-            <itextId>static_instance-states-1</itextId>
             <name>2</name>
+            <label>Fail</label>
           </item>
         </root>
       </instance>

@@ -55,7 +55,7 @@ class RangeWidgetTest(PyxformTestCase):
       <label>Rank</label>
       <itemset nodeset="instance('mylist')/root/item[color='blue']">
         <value ref="name"/>
-        <label ref="jr:itext(itextId)"/>
+        <label ref="label"/>
       </itemset>
     </odk:rank>""",
             ],
