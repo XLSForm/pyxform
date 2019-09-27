@@ -1470,10 +1470,7 @@ if __name__ == "__main__":
 
     warnings = []
 
-    directory, filename = os.path.split(path)
-    root_filename, extension = os.path.splitext(filename)
-
-    json_dict = parse_file_to_json(path, default_name=root_filename, warnings=warnings)
+    json_dict = parse_file_to_json(path, warnings=warnings)
     print_pyobj_to_json(json_dict)
 
     if len(warnings) > 0:

@@ -13,15 +13,36 @@ class FormNameTest(PyxformTestCase):
         """
         survey = self.md_to_pyxform_survey(
             """
-            | survey |      |      |           |
-            |        | type | name | label     |
-            |        | text | city | City Name |
+            | survey   |           |      |           |
+            |          | type      | name | label     |
+            |          | text      | city | City Name |
+            | settings |           |      |           |
+            |          | id_string | name |
+            |          | some-id   | data |
             """,
-            {},
+            kwargs={},
             autoname=False,
         )
 
+        # We're passing autoname false when creating the survey object.
+        self.assertEqual(survey.id_string, None)
         self.assertEqual(survey.name, unicode("data"))
+        self.assertEqual(survey.title, None)
+
+        # Set required fields because we need them if we want to do xml comparison.
+        survey.id_string = "some-id"
+        survey.title = 'data'
+
+        self.assertPyxformXform(
+            survey=survey,
+            instance__contains=['<data id="some-id">'],
+            model__contains=['<bind nodeset="/data/city" type="string"/>'],
+            xml__contains=[
+                '<input ref="/data/city">',
+                '<label>City Name</label>',
+                '</input>',
+            ],
+        )
 
     def test_default_to_data(self):
         """
