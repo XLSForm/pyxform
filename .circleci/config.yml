@@ -27,7 +27,11 @@ jobs:
             if ! type /home/circleci/.local/bin/black > /dev/null; then
                 echo "Black is not supported in this python version :("
             else
-                /home/circleci/.local/bin/black --target-version=py27 pyxform --check || (echo 'The source code could use a bit more black.' && exit 1)
+                output="$(/home/circleci/.local/bin/black --target-version=py27 pyxform --check  2>&1 >/dev/null)"
+                if [[ $output == *"would be reformatted"* ]]; then
+                    echo 'The source code could use a bit more black.'
+                    exit 1
+                fi
             fi
       - run:
           name: Run tests
