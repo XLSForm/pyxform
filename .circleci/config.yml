@@ -27,7 +27,7 @@ jobs:
             if ! type /home/circleci/.local/bin/black > /dev/null; then
                 echo "Black is not supported in this python version :("
             else
-                /home/circleci/.local/bin/black --target-version=py27 pyxform --check --quiet || (echo 'The source code could use a bit more black.' && exit 1)
+                /home/circleci/.local/bin/black --target-version=py27 pyxform --check || (echo 'The source code could use a bit more black.' && exit 1)
             fi
       - run:
           name: Run tests
