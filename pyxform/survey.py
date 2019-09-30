@@ -193,7 +193,7 @@ class Survey(Section):
             "h:html",
             node("h:head", node("h:title", self.title), self.xml_model()),
             node("h:body", *self.xml_control(), **body_kwargs),
-            **nsmap
+            **nsmap,
         )
 
     @staticmethod
@@ -297,9 +297,9 @@ class Survey(Section):
             uri = "jr://file-csv/{}.csv".format(file_id)
 
             return InstanceInfo(
-                type=u"pulldata",
+                type="pulldata",
                 context="[type: {t}, name: {n}]".format(
-                    t=element[u"parent"][u"type"], n=element[u"parent"][u"name"]
+                    t=element["parent"]["type"], n=element["parent"]["name"]
                 ),
                 name=file_id,
                 src=uri,
