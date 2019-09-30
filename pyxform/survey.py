@@ -217,7 +217,7 @@ class Survey(Section):
                 itext_id = "-".join(["static_instance", list_name, str(idx)])
                 choice_element_list.append(node("itextId", itext_id))
 
-            for name, value in choice.items():
+            for name, value in sorted(choice.items()):
                 if isinstance(value, basestring) and name != "label":
                     choice_element_list.append(node(name, unicode(value)))
                 if not multi_language and isinstance(value, basestring) and name == "label":
