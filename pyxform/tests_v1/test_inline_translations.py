@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Test setting form name to data.
+Testing inlining translation when no translation is specified.
 """
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
@@ -8,7 +8,8 @@ class InlineTranslationsTest(PyxformTestCase):
 
     def test_inline_translations(self):
         """
-        Test using data as the name of the form which will generate <data />.
+        Dynamic choice (marked with choice filter) should inline the labels instead of using
+        itext fields. There should be no itext definition in the model.
         """
         self.assertPyxformXform(
             md="""
@@ -36,7 +37,7 @@ class InlineTranslationsTest(PyxformTestCase):
 
     def test_multiple_translations(self):
         """
-        Test using data as the name of the form which will generate <data />.
+        Dynamic choice with potential translation should generate itext fields.
         """
         self.assertPyxformXform(
             md="""
