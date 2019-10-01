@@ -32,6 +32,8 @@ class Section(SurveyElement):
         """
         Creates an xml representation of the section
         """
+        append_template = kwargs.pop("append_template", False)
+
         attributes = {}
         attributes.update(kwargs)
         attributes.update(self.get("instance", {}))
@@ -49,10 +51,11 @@ class Section(SurveyElement):
             elif isinstance(child, ExternalInstance):
                 continue
             else:
-                result.appendChild(child.xml_instance())
-                if isinstance(child, RepeatingSection):
+                if isinstance(child, RepeatingSection) and not append_template:
+                    append_template = not append_template
                     repeating_template = child.generate_repeating_template()
-            if repeating_template:
+                result.appendChild(child.xml_instance(append_template=append_template))
+            if append_template and repeating_template:
                 result.appendChild(repeating_template)
         return result
     
@@ -121,9 +124,6 @@ class RepeatingSection(Section):
     # I'm anal about matching function signatures when overriding a function,
     # but there's no reason for kwargs to be an argument
     def template_instance(self, **kwargs):
-        kwargs = {"jr:template": ""}  # It might make more sense to add this
-        #                               as a child on initialization
-
         return super(RepeatingSection, self).generate_repeating_template(**kwargs)
 
 
