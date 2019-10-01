@@ -40,13 +40,29 @@ class Section(SurveyElement):
         for key, value in attributes.items():
             attributes[key] = survey.insert_xpaths(value, self)
         result = node(self.name, **attributes)
+
         for child in self.children:
+            repeating_template = None
             if child.get("flat"):
                 for grandchild in child.xml_instance_array():
                     result.appendChild(grandchild)
             elif isinstance(child, ExternalInstance):
                 continue
             else:
+                result.appendChild(child.xml_instance())
+                if isinstance(child, RepeatingSection):
+                    repeating_template = child.generate_repeating_template()
+            if survey["name"] == result.tagName and repeating_template:
+                result.appendChild(repeating_template)
+        return result
+    
+    def generate_repeating_template(self, **kwargs):
+        attributes = {"jr:template": ""}
+        result = node(self.name, **attributes)
+        for child in self.children:
+            if isinstance(child, RepeatingSection):
+                result.appendChild(child.template_instance())
+            else:   
                 result.appendChild(child.xml_instance())
         return result
 
@@ -104,11 +120,11 @@ class RepeatingSection(Section):
 
     # I'm anal about matching function signatures when overriding a function,
     # but there's no reason for kwargs to be an argument
-    def xml_instance(self, **kwargs):
+    def template_instance(self, **kwargs):
         kwargs = {"jr:template": ""}  # It might make more sense to add this
         #                               as a child on initialization
 
-        return super(RepeatingSection, self).xml_instance(**kwargs)
+        return super(RepeatingSection, self).generate_repeating_template(**kwargs)
 
 
 class GroupedSection(Section):
