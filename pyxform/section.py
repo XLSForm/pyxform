@@ -57,7 +57,7 @@ class Section(SurveyElement):
                 result.appendChild(child.xml_instance(append_template=append_template))
             if append_template and repeating_template:
                 append_template = not append_template
-                result.appendChild(repeating_template)
+                result.insertBefore(repeating_template, result._get_lastChild())
         return result
     
     def generate_repeating_template(self, **kwargs):
