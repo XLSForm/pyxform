@@ -52,7 +52,7 @@ class Section(SurveyElement):
                 result.appendChild(child.xml_instance())
                 if isinstance(child, RepeatingSection):
                     repeating_template = child.generate_repeating_template()
-            if survey["name"] == result.tagName and repeating_template:
+            if repeating_template:
                 result.appendChild(repeating_template)
         return result
     
