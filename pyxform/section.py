@@ -56,6 +56,7 @@ class Section(SurveyElement):
                     repeating_template = child.generate_repeating_template()
                 result.appendChild(child.xml_instance(append_template=append_template))
             if append_template and repeating_template:
+                append_template = not append_template
                 result.appendChild(repeating_template)
         return result
     
