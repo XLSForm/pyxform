@@ -615,6 +615,22 @@
               <compact-test/>
               <compact-2-test/>
             </repeat_test>
+            <repeat_test>
+              <group_test>
+                <required_text/>
+                <select_multiple_test/>
+              </group_test>
+              <labeled_select_group>
+                <label-test/>
+                <list-nolabel-test/>
+              </labeled_select_group>
+              <name>
+                <reserved_name_for_field_list_labels_25/>
+                <table_list_question/>
+              </name>
+              <compact-test/>
+              <compact-2-test/>
+            </repeat_test>
             <acknowledge_test/>
             <date_test/>
             <time_test/>

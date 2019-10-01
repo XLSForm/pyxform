@@ -942,7 +942,7 @@
             </sectionC2>
             <sectionC3>
               <note_hygiene/>
-              <villager>
+              <villager jr:template="">
                 <q25_faeces_mouth/>
                 <q26_prevent_faeces_mouth/>
                 <q27_handwashing/>
@@ -952,7 +952,7 @@
                 <q31_child_faeces_disposal/>
                 <q32_latrine_hygiene/>
               </villager>
-              <villager jr:template="">
+              <villager>
                 <q25_faeces_mouth/>
                 <q26_prevent_faeces_mouth/>
                 <q27_handwashing/>
@@ -965,7 +965,7 @@
             </sectionC3>
             <sectionC4>
               <sectionC4_note/>
-              <household>
+              <household jr:template="">
                 <q33_hh_latrine_usage/>
                 <q34_latrine_screen_vent/>
                 <q35_latrine_seat_cover/>
@@ -976,7 +976,7 @@
                 <q40_latrine_handwash/>
                 <q41_latrine_soap/>
               </household>
-              <household jr:template="">
+              <household>
                 <q33_hh_latrine_usage/>
                 <q34_latrine_screen_vent/>
                 <q35_latrine_seat_cover/>
