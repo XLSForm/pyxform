@@ -76,7 +76,10 @@ def check_java_version():
     # version number is usually inside double-quotes.
     # Using regex to find that in the string
     java_version = re.findall(r"\"(.+?)\"", java_version_str)[0]
-    major, minor, _ = java_version.split(".")
+    if "." in java_version:
+        major, minor, _ = java_version.split(".")
+    else:
+        major, minor = int(java_version), 0
     if not ((int(major) == 1 and int(minor) >= 8) or int(major) >= 8):
         raise EnvironmentError(
             "pyxform odk validate dependency: " "java 8 or newer version not found"

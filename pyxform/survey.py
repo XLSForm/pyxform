@@ -232,11 +232,6 @@ class Survey(Section):
         )
 
     @staticmethod
-    def _get_dummy_instance():
-        """Instance content required by ODK Validate for select inputs."""
-        return node("root", node("item", node("name", "_"), node("label", "_")))
-
-    @staticmethod
     def _generate_external_instances(element):
         if isinstance(element, ExternalInstance):
             name = element["name"]
@@ -248,9 +243,7 @@ class Survey(Section):
                 ),
                 name=name,
                 src=src,
-                instance=node(
-                    "instance", Survey._get_dummy_instance(), id=name, src=src
-                ),
+                instance=node("instance", id=name, src=src),
             )
 
         return None
@@ -300,6 +293,19 @@ class Survey(Section):
                     functions_present.append(element["bind"][formula_name])
             return functions_present
 
+        def get_instance_info(element, file_id):
+            uri = "jr://file-csv/{}.csv".format(file_id)
+
+            return InstanceInfo(
+                type=u"pulldata",
+                context="[type: {t}, name: {n}]".format(
+                    t=element[u"parent"][u"type"], n=element[u"parent"][u"name"]
+                ),
+                name=file_id,
+                src=uri,
+                instance=node("instance", id=file_id, src=uri),
+            )
+
         formulas = get_pulldata_functions(element)
         if len(formulas) > 0:
             formula_instances = []
@@ -307,24 +313,7 @@ class Survey(Section):
                 pieces = formula.split('"') if '"' in formula else formula.split("'")
                 if len(pieces) > 1 and pieces[1]:
                     file_id = pieces[1]
-                    uri = "jr://file-csv/{}.csv".format(file_id)
-                    formula_instances.append(
-                        InstanceInfo(
-                            type=u"pulldata",
-                            context="[type: {t}, name: {n}]".format(
-                                t=element[u"parent"][u"type"],
-                                n=element[u"parent"][u"name"],
-                            ),
-                            name=file_id,
-                            src=uri,
-                            instance=node(
-                                "instance",
-                                Survey._get_dummy_instance(),
-                                id=file_id,
-                                src=uri,
-                            ),
-                        )
-                    )
+                    formula_instances.append(get_instance_info(element, file_id))
             return formula_instances
         return None
 
@@ -344,9 +333,7 @@ class Survey(Section):
                 ),
                 name=file_id,
                 src=uri,
-                instance=node(
-                    "instance", Survey._get_dummy_instance(), id=file_id, src=uri
-                ),
+                instance=node("instance", id=file_id, src=uri),
             )
 
         return None
