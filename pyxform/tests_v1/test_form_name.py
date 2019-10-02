@@ -5,8 +5,8 @@ Test setting form name to data.
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 from pyxform.utils import unicode
 
-class FormNameTest(PyxformTestCase):
 
+class FormNameTest(PyxformTestCase):
     def test_default_to_data_when_no_name(self):
         """
         Test no form_name will default to survey name to 'data'.
@@ -31,7 +31,7 @@ class FormNameTest(PyxformTestCase):
 
         # Set required fields because we need them if we want to do xml comparison.
         survey.id_string = "some-id"
-        survey.title = 'data'
+        survey.title = "data"
 
         self.assertPyxformXform(
             survey=survey,
@@ -39,8 +39,8 @@ class FormNameTest(PyxformTestCase):
             model__contains=['<bind nodeset="/data/city" type="string"/>'],
             xml__contains=[
                 '<input ref="/data/city">',
-                '<label>City Name</label>',
-                '</input>',
+                "<label>City Name</label>",
+                "</input>",
             ],
         )
 
@@ -54,14 +54,14 @@ class FormNameTest(PyxformTestCase):
                |        | type | name | label     |
                |        | text | city | City Name |
                """,
-            name='data',
-            id_string='some-id',
+            name="data",
+            id_string="some-id",
             instance__contains=['<data id="some-id">'],
             model__contains=['<bind nodeset="/data/city" type="string"/>'],
             xml__contains=[
                 '<input ref="/data/city">',
-                '<label>City Name</label>',
-                '</input>',
+                "<label>City Name</label>",
+                "</input>",
             ],
         )
 
@@ -76,13 +76,13 @@ class FormNameTest(PyxformTestCase):
                |        | type | name | label     |
                |        | text | city | City Name |
                """,
-            name='some-name',
-            id_string='some-id',
+            name="some-name",
+            id_string="some-id",
             instance__contains=['<some-name id="some-id">'],
             model__contains=['<bind nodeset="/some-name/city" type="string"/>'],
             xml__contains=[
                 '<input ref="/some-name/city">',
-                '<label>City Name</label>',
-                '</input>',
+                "<label>City Name</label>",
+                "</input>",
             ],
         )

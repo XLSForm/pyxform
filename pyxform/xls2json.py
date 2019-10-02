@@ -1304,7 +1304,11 @@ def get_filename(path):
 
 
 def parse_file_to_json(
-    path, default_name='data', default_language="default", warnings=None, file_object=None
+    path,
+    default_name="data",
+    default_language="default",
+    warnings=None,
+    file_object=None,
 ):
     """
     A wrapper for workbook_to_json
@@ -1402,7 +1406,10 @@ class SurveyReader(SpreadsheetReader):
 
         self._warnings = []
         self._dict = parse_file_to_json(
-            path, default_name=default_name, warnings=self._warnings, file_object=self._file_object
+            path,
+            default_name=default_name,
+            warnings=self._warnings,
+            file_object=self._file_object,
         )
         self._path = path
 

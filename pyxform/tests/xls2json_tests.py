@@ -46,7 +46,9 @@ class BasicXls2JsonApiTests(TestCase):
                 self.assertEqual(expected_json, actual_json)
 
     def test_hidden(self):
-        x = SurveyReader(utils.path_to_text_fixture("hidden.xls"), default_name="hidden")
+        x = SurveyReader(
+            utils.path_to_text_fixture("hidden.xls"), default_name="hidden"
+        )
         x_results = x.to_json_dict()
 
         expected_dict = [
@@ -88,7 +90,10 @@ class BasicXls2JsonApiTests(TestCase):
         self.assertEqual(x.to_json_dict()["children"], expected_dict)
 
     def test_text_and_integer(self):
-        x = SurveyReader(utils.path_to_text_fixture("text_and_integer.xls"), default_name="text_and_integer")
+        x = SurveyReader(
+            utils.path_to_text_fixture("text_and_integer.xls"),
+            default_name="text_and_integer",
+        )
 
         expected_dict = [
             {
@@ -143,7 +148,7 @@ class BasicXls2JsonApiTests(TestCase):
         """
         choice_filter_survey = SurveyReader(
             utils.path_to_text_fixture("choice_filter_test.xlsx"),
-            default_name="choice_filter_test"
+            default_name="choice_filter_test",
         )
 
         expected_dict = [

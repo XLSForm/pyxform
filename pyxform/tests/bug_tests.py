@@ -49,7 +49,9 @@ class NotClosedGroup(unittest.TestCase):
         warnings = []
         with self.assertRaises(Exception):
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, default_name="not_closed_group_test", warnings=warnings
+                path_to_excel_file,
+                default_name="not_closed_group_test",
+                warnings=warnings,
             )
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(output_path, warnings=warnings)
@@ -197,7 +199,9 @@ class CascadeOldFormatIndexError(unittest.TestCase):
         warnings = []
         with self.assertRaises(PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, default_name="cascades_old_with_no_cascade_sheet", warnings=warnings
+                path_to_excel_file,
+                default_name="cascades_old_with_no_cascade_sheet",
+                warnings=warnings,
             )
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(output_path, warnings=warnings)
@@ -218,7 +222,11 @@ class BadChoicesSheetHeaders(unittest.TestCase):
         filename = "spaces_in_choices_header.xls"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
         warnings = []
-        pyxform.xls2json.parse_file_to_json(path_to_excel_file, default_name="spaces_in_choices_header", warnings=warnings)
+        pyxform.xls2json.parse_file_to_json(
+            path_to_excel_file,
+            default_name="spaces_in_choices_header",
+            warnings=warnings,
+        )
         self.assertEquals(len(warnings), 3, "Found " + str(len(warnings)) + " warnings")
 
     def test_values_with_spaces_are_cleaned(self):
@@ -230,7 +238,9 @@ class BadChoicesSheetHeaders(unittest.TestCase):
         """
         filename = "spaces_in_choices_header.xls"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
-        survey_reader = SurveyReader(path_to_excel_file, default_name="spaces_in_choices_header")
+        survey_reader = SurveyReader(
+            path_to_excel_file, default_name="spaces_in_choices_header"
+        )
         result = survey_reader.to_json_dict()
 
         self.assertEqual(
@@ -242,7 +252,9 @@ class TestChoiceNameAsType(unittest.TestCase):
     def test_choice_name_as_type(self):
         filename = "choice_name_as_type.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
-        xls_reader = SurveyReader(path_to_excel_file, default_name="choice_name_as_type")
+        xls_reader = SurveyReader(
+            path_to_excel_file, default_name="choice_name_as_type"
+        )
         survey_dict = xls_reader.to_json_dict()
         self.assertTrue(has_external_choices(survey_dict))
 
