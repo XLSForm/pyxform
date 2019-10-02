@@ -220,7 +220,11 @@ class Survey(Section):
             for name, value in sorted(choice.items()):
                 if isinstance(value, basestring) and name != "label":
                     choice_element_list.append(node(name, unicode(value)))
-                if not multi_language and isinstance(value, basestring) and name == "label":
+                if (
+                    not multi_language
+                    and isinstance(value, basestring)
+                    and name == "label"
+                ):
                     choice_element_list.append(node(name, unicode(value)))
 
             instance_element_list.append(node("item", *choice_element_list))
@@ -537,7 +541,7 @@ class Survey(Section):
         for list_name, choice_list in self.choices.items():
             multi_language = isinstance(choice_list[0].get("label"), dict)
             if not multi_language:
-              continue
+                continue
             for idx, choice in zip(range(len(choice_list)), choice_list):
                 for name, choice_value in choice.items():
                     itext_id = "-".join(["static_instance", list_name, str(idx)])
