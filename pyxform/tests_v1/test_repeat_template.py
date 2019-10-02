@@ -54,30 +54,31 @@ class TestRepeatTemplate(PyxformTestCase):
         repeat_d_template = '<repeat_d jr:template="">'
         self.assertEqual(1, survey_xml.count(repeat_d_template))
 
-        section_instance = '<section>'
+        section_instance = "<section>"
         self.assertEqual(1, survey_xml.count(section_instance))
-        repeat_a_instance = '<repeat_a>'
+        repeat_a_instance = "<repeat_a>"
         self.assertEqual(1, survey_xml.count(repeat_a_instance))
-        repeat_b_instance = '<repeat_b>'
+        repeat_b_instance = "<repeat_b>"
         self.assertEqual(1, survey_xml.count(repeat_b_instance))
-        repeat_c_instance = '<repeat_c>'
+        repeat_c_instance = "<repeat_c>"
         self.assertEqual(1, survey_xml.count(repeat_c_instance))
-        repeat_d_instance = '<repeat_d>'
+        repeat_d_instance = "<repeat_d>"
         self.assertEqual(1, survey_xml.count(repeat_d_instance))
 
         self.assertPyxformXform(
             md=md,
-            instance__contains=['<section jr:template="">',
-                                '<repeat_a jr:template="">',
-                                '<repeat_b jr:template="">',
-                                '<repeat_c jr:template="">',
-                                '<repeat_d jr:template="">',
-                                '<section>',
-                                '<repeat_a>',
-                                '<repeat_b>',
-                                '<repeat_c>',
-                                '<repeat_d>',
-                                ]
+            instance__contains=[
+                '<section jr:template="">',
+                '<repeat_a jr:template="">',
+                '<repeat_b jr:template="">',
+                '<repeat_c jr:template="">',
+                '<repeat_d jr:template="">',
+                "<section>",
+                "<repeat_a>",
+                "<repeat_b>",
+                "<repeat_c>",
+                "<repeat_d>",
+            ],
         )
 
     def test_repeat_adding_template_and_instance_with_group(self):
@@ -120,20 +121,21 @@ class TestRepeatTemplate(PyxformTestCase):
         repeat_b_template = '<repeat_b jr:template="">'
         self.assertEqual(1, survey_xml.count(repeat_b_template))
 
-        section_instance = '<section>'
+        section_instance = "<section>"
         self.assertEqual(1, survey_xml.count(section_instance))
-        repeat_a_instance = '<repeat_a>'
+        repeat_a_instance = "<repeat_a>"
         self.assertEqual(1, survey_xml.count(repeat_a_instance))
-        repeat_b_instance = '<repeat_b>'
+        repeat_b_instance = "<repeat_b>"
         self.assertEqual(1, survey_xml.count(repeat_b_instance))
 
         self.assertPyxformXform(
             md=md,
-            instance__contains=['<section jr:template="">',
-                                '<repeat_a jr:template="">',
-                                '<repeat_b jr:template="">',
-                                '<section>',
-                                '<repeat_a>',
-                                '<repeat_b>',
-                                ]
+            instance__contains=[
+                '<section jr:template="">',
+                '<repeat_a jr:template="">',
+                '<repeat_b jr:template="">',
+                "<section>",
+                "<repeat_a>",
+                "<repeat_b>",
+            ],
         )
