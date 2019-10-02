@@ -29,7 +29,9 @@ class MainTest(XFormTestCase):
 
             output_csv = os.path.join(DIR, "test_output", self.root_filename + ".csv")
             # Do the conversion:
-            json_survey = pyxform.xls2json.parse_file_to_json(self.path_to_excel_file)
+            json_survey = pyxform.xls2json.parse_file_to_json(
+                self.path_to_excel_file, default_name="select_one_external"
+            )
 
             self.assertTrue(
                 sheet_to_csv(self.path_to_excel_file, output_csv, "external_choices")

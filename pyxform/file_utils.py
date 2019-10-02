@@ -27,7 +27,7 @@ def load_file_to_dict(path):
         return name, utils.get_pyobj_from_json(path)
     else:
         name = _section_name(path)
-        excel_reader = SurveyReader(path)
+        excel_reader = SurveyReader(path, name)
         return name, excel_reader.to_json_dict()
 
 

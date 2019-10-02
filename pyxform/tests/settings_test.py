@@ -18,7 +18,7 @@ class SettingsTests(TestCase):
         self.path = utils.path_to_text_fixture("settings.xls")
 
     def test_survey_reader(self):
-        survey_reader = SurveyReader(self.path)
+        survey_reader = SurveyReader(self.path, default_name="settings")
         expected_dict = {
             u"id_string": u"new_id",
             u"sms_keyword": u"new_id",

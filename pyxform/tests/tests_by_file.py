@@ -33,7 +33,9 @@ class MainTest(TestCase):
             path_to_expected_xform = os.path.join(directory, root_filename + ".xml")
 
             # Do the conversion:
-            json_survey = xls2json.parse_file_to_json(path_to_excel_file)
+            json_survey = xls2json.parse_file_to_json(
+                path_to_excel_file, default_name=root_filename
+            )
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(path_to_output_xform)
 

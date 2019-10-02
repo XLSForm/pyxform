@@ -1304,7 +1304,11 @@ def get_filename(path):
 
 
 def parse_file_to_json(
-    path, default_name=None, default_language="default", warnings=None, file_object=None
+    path,
+    default_name="data",
+    default_language="default",
+    warnings=None,
+    file_object=None,
 ):
     """
     A wrapper for workbook_to_json
@@ -1312,8 +1316,6 @@ def parse_file_to_json(
     if warnings is None:
         warnings = []
     workbook_dict = parse_file_to_workbook_dict(path, file_object)
-    if default_name is None:
-        default_name = unicode(get_filename(path))
     return workbook_to_json(workbook_dict, default_name, default_language, warnings)
 
 
@@ -1394,7 +1396,7 @@ class SurveyReader(SpreadsheetReader):
     based object is created then a to_json_dict function is called on it.
     """
 
-    def __init__(self, path_or_file):
+    def __init__(self, path_or_file, default_name=None):
         if isinstance(path_or_file, basestring):
             self._file_object = None
             path = path_or_file
@@ -1404,7 +1406,10 @@ class SurveyReader(SpreadsheetReader):
 
         self._warnings = []
         self._dict = parse_file_to_json(
-            path, warnings=self._warnings, file_object=self._file_object
+            path,
+            default_name=default_name,
+            warnings=self._warnings,
+            file_object=self._file_object,
         )
         self._path = path
 
@@ -1471,6 +1476,7 @@ if __name__ == "__main__":
         path = sys.argv[1]
 
     warnings = []
+
     json_dict = parse_file_to_json(path, warnings=warnings)
     print_pyobj_to_json(json_dict)
 
