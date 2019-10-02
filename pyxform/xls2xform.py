@@ -13,6 +13,7 @@ from os.path import splitext
 
 from pyxform import builder, xls2json
 from pyxform.utils import has_external_choices, sheet_to_csv
+from pyxform.validators.odk_validate import ODKValidateError
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
@@ -167,18 +168,26 @@ def main_cli():
 
         logger.info(json.dumps(response))
     else:
-        warnings = xls2xform_convert(
-            xlsform_path=args.path_to_XLSForm,
-            xform_path=args.output_path,
-            validate=args.odk_validate,
-            pretty_print=args.pretty_print,
-            enketo=args.enketo_validate,
-        )
-        if len(warnings) > 0:
-            logger.warning("Warnings:")
-        for w in warnings:
-            logger.warning(w)
-        logger.info("Conversion complete!")
+        try:
+            warnings = xls2xform_convert(
+                xlsform_path=args.path_to_XLSForm,
+                xform_path=args.output_path,
+                validate=args.odk_validate,
+                pretty_print=args.pretty_print,
+                enketo=args.enketo_validate,
+            )
+            if len(warnings) > 0:
+                logger.warning("Warnings:")
+            for w in warnings:
+                logger.warning(w)
+            logger.info("Conversion complete!")
+        except EnvironmentError as e:
+            # Do not crash if 'java' not installed
+            logger.error(e)
+        except ODKValidateError as e:
+            # Remove output file if there is an error
+            os.remove(args.output_path)
+            logger.error(e)
 
 
 if __name__ == "__main__":
