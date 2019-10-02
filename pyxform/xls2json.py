@@ -1077,6 +1077,7 @@ def workbook_to_json(
                     list_name not in choices
                     and select_type != "select one external"
                     and file_extension not in [".csv", ".xml"]
+                    and not re.match(r"\$\{(.*?)\}", list_name)
                 ):
                     if not choices:
                         raise PyXFormError(
@@ -1187,6 +1188,8 @@ def workbook_to_json(
                     json_dict["choices"] = choices
                 elif file_extension in [".csv", ".xml"]:
                     new_json_dict["itemset"] = list_name
+                elif re.match(r"\$\{(.*?)\}", list_name):
+                    new_json_dict["list_name"] = list_name
                 else:
                     new_json_dict["list_name"] = list_name
                     new_json_dict[constants.CHOICES] = choices[list_name]

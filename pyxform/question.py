@@ -238,9 +238,21 @@ class MultipleChoiceQuestion(Question):
                 node("label", ref=itemset_label_ref),
             ]
             result.appendChild(node("itemset", *itemset_children, nodeset=nodeset))
+        elif not self["children"] and self["list_name"]:
+            list_name = survey.insert_xpaths(self["list_name"], self).strip()
+            path = list_name.split("/")
+            depth = len(path)
+            if depth > 2:
+                name = path[-1]
+                nodeset = "/".join(
+                    path[:-2] + [path[-2] + "[string-length(./" + name + ") > 0]"]
+                )
+                itemset_children = [node("value", ref=name), node("label", ref=name)]
+                result.appendChild(node("itemset", *itemset_children, nodeset=nodeset))
         else:
-            for n in [o.xml() for o in self.children]:
-                result.appendChild(n)
+            for child in self.children:
+                result.appendChild(child.xml())
+
         return result
 
 
