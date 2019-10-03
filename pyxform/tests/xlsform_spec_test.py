@@ -27,7 +27,7 @@ class MainTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings
+            self.path_to_excel_file, default_name="xlsform_spec_test", warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
@@ -51,7 +51,7 @@ class FlatXlsformTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings
+            self.path_to_excel_file, default_name="flat_xlsform_test", warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
@@ -75,7 +75,7 @@ class TestNewWidgets(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings
+            self.path_to_excel_file, default_name="widgets", warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
@@ -96,7 +96,9 @@ class WarningsTest(unittest.TestCase):
         filename = "warnings.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
         warnings = []
-        pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
+        pyxform.xls2json.parse_file_to_json(
+            path_to_excel_file, default_name="warnings", warnings=warnings
+        )
         self.assertEquals(
             len(warnings), 21, "Found " + str(len(warnings)) + " warnings"
         )
@@ -128,7 +130,7 @@ class PullDataTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings
+            self.path_to_excel_file, default_name="pull_data", warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
@@ -155,7 +157,7 @@ class SeachAndSelectTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings
+            self.path_to_excel_file, default_name="search_and_select", warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)

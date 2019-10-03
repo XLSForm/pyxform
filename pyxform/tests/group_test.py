@@ -11,7 +11,7 @@ from pyxform.xls2json import SurveyReader
 
 class GroupTests(TestCase):
     def test_json(self):
-        x = SurveyReader(utils.path_to_text_fixture("group.xls"))
+        x = SurveyReader(utils.path_to_text_fixture("group.xls"), default_name="group")
         x_results = x.to_json_dict()
         expected_dict = {
             "name": "group",
@@ -61,7 +61,7 @@ class GroupTests(TestCase):
         self.assertEqual(x_results, expected_dict)
 
     def test_equality_of_to_dict(self):
-        x = SurveyReader(utils.path_to_text_fixture("group.xls"))
+        x = SurveyReader(utils.path_to_text_fixture("group.xls"), default_name="group")
         x_results = x.to_json_dict()
 
         survey = create_survey_element_from_dict(x_results)

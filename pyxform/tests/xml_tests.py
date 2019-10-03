@@ -15,7 +15,7 @@ from pyxform.utils import node
 class XMLTests(utils.XFormTestCase):
     def setUp(self):
         self.survey = create_survey_from_xls(
-            utils.path_to_text_fixture("yes_or_no_question.xls")
+            utils.path_to_text_fixture("yes_or_no_question.xls"), "yes_or_no_question"
         )
 
     def test_to_xml(self):

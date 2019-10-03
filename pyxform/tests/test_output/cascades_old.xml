@@ -94,1752 +94,1752 @@
           </meta>
         </cascades_old>
       </instance>
-      <instance id="district">
-        <root>
-          <item>
-            <phase>a</phase>
-            <name>berea_a</name>
-            <label>Berea_A</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>botha_bothe_a</name>
-            <label>Botha Bothe_A</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>leribe_a</name>
-            <label>Leribe_A</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>mafeteng_a</name>
-            <label>Mafeteng_A</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>maseru_a</name>
-            <label>Maseru_A</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>mohale_s_hoek_a</name>
-            <label>Mohale's Hoek_A</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>qacha_s_nek_a</name>
-            <label>Qacha's Nek_A</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>quthing_a</name>
-            <label>Quthing_A</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>thaba_tseka_a</name>
-            <label>Thaba-Tseka_A</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>mokhotlong_a1</name>
-            <label>Mokhotlong_A1</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>qacha_s_nek_a1</name>
-            <label>Qacha's Nek_A1</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>thaba_tseka_a1</name>
-            <label>Thaba-Tseka_A1</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>berea_b</name>
-            <label>Berea_B</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>botha_bothe_b</name>
-            <label>Botha Bothe_B</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>leribe_b</name>
-            <label>Leribe_B</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mafeteng_b</name>
-            <label>Mafeteng_B</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>maseru_b</name>
-            <label>Maseru_B</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mohale_s_hoek_b</name>
-            <label>Mohale's Hoek_B</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mokhotlong_b</name>
-            <label>Mokhotlong_B</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>qacha_s_nek_b</name>
-            <label>Qacha's Nek_B</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>quthing_b</name>
-            <label>Quthing_B</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>thaba_tseka_b</name>
-            <label>Thaba-Tseka_B</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>berea_c</name>
-            <label>Berea_C</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>botha_bothe_c</name>
-            <label>Botha Bothe_C</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>leribe_c</name>
-            <label>Leribe_C</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>mafeteng_c</name>
-            <label>Mafeteng_C</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>maseru_c</name>
-            <label>Maseru_C</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>maseru__c</name>
-            <label>Maseru _C</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>mohale_s_hoek_c</name>
-            <label>Mohale's Hoek_C</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>mokhotlong_c</name>
-            <label>Mokhotlong_C</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>qacha_s_nek_c</name>
-            <label>Qacha's Nek_C</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>quthing_c</name>
-            <label>Quthing_C</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>thaba_tseka_c</name>
-            <label>Thaba-Tseka_C</label>
-          </item>
-        </root>
-      </instance>
       <instance id="name_list">
         <root>
           <item>
-            <name>name1</name>
             <label>Name 1</label>
+            <name>name1</name>
           </item>
           <item>
-            <name>name2</name>
             <label>Name 2</label>
+            <name>name2</name>
           </item>
           <item>
-            <name>name3</name>
             <label>Name 3</label>
+            <name>name3</name>
           </item>
           <item>
-            <name>othername</name>
             <label>Other</label>
-          </item>
-        </root>
-      </instance>
-      <instance id="gender_list">
-        <root>
-          <item>
-            <name>male</name>
-            <label>Male</label>
-          </item>
-          <item>
-            <name>female</name>
-            <label>Female</label>
-          </item>
-        </root>
-      </instance>
-      <instance id="site">
-        <root>
-          <item>
-            <phase>a</phase>
-            <name>ha_koone_br_329_</name>
-            <district>berea_a</district>
-            <label>Ha Koone (BR-329)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_makebe_br_011_</name>
-            <district>berea_a</district>
-            <label>Ha Makebe (BR-011)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_mohatlane_br_113_</name>
-            <district>berea_a</district>
-            <label>Ha Mohatlane (BR-113)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_motloang_br_103_</name>
-            <district>berea_a</district>
-            <label>Ha Motloang (BR-103)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_ntlama_br_048_</name>
-            <district>berea_a</district>
-            <label>Ha Ntlama (BR-048)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_polaki_matheneng_br_141_2_</name>
-            <district>berea_a</district>
-            <label>Ha Polaki/Matheneng (BR-141/2)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>lekhalong_br_400_</name>
-            <district>berea_a</district>
-            <label>Lekhalong (BR-400)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>lifotholeng_br_070_</name>
-            <district>berea_a</district>
-            <label>Lifotholeng (BR-070)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_lemphane_bb_195_</name>
-            <district>botha_bothe_a</district>
-            <label>Ha Lemphane (BB-195)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>kepile_bb_209_</name>
-            <district>botha_bothe_a</district>
-            <label>Kepile (BB-209)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>liteleng_ha_moluoane_bb_248_</name>
-            <district>botha_bothe_a</district>
-            <label>Liteleng (Ha moluoane) (BB-248)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>luma_bb_235_</name>
-            <district>botha_bothe_a</district>
-            <label>Luma (BB-235)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>motete_bb_146_</name>
-            <district>botha_bothe_a</district>
-            <label>Motete (BB-146)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>patuoe_moepanyane_bb_201_</name>
-            <district>botha_bothe_a</district>
-            <label>Patuoe/Moepanyane (BB-201)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>pokojoe_khoaba_bb_095_</name>
-            <district>botha_bothe_a</district>
-            <label>Pokojoe-Khoaba (BB-095)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>solane_bb_094_</name>
-            <district>botha_bothe_a</district>
-            <label>Solane (BB-094)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_mahlomola_lr_337_</name>
-            <district>leribe_a</district>
-            <label>Ha Mahlomola (LR-337)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_matoli_lr_152_</name>
-            <district>leribe_a</district>
-            <label>Ha Matoli (LR-152)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_rantuba_lr_044_</name>
-            <district>leribe_a</district>
-            <label>Ha Rantuba (LR-044)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_senyenyane_lr_423_</name>
-            <district>leribe_a</district>
-            <label>Ha Senyenyane (LR-423)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_tsae_lr_256_</name>
-            <district>leribe_a</district>
-            <label>Ha Tsae (LR-256)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>mapheaneng_lr_334_</name>
-            <district>leribe_a</district>
-            <label>Mapheaneng (LR-334)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>phahameng_lr_061_</name>
-            <district>leribe_a</district>
-            <label>Phahameng (LR-061)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>phelandaba_lr_164_</name>
-            <district>leribe_a</district>
-            <label>Phelandaba (LR-164)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_lepolesa_mf_098_</name>
-            <district>mafeteng_a</district>
-            <label>Ha Lepolesa (MF-098)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_mathabang_lifajaneng_mf_472_</name>
-            <district>mafeteng_a</district>
-            <label>Ha Mathabang(Lifajaneng) (MF-472)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_ranteme_mf_039_</name>
-            <district>mafeteng_a</district>
-            <label>Ha Ranteme (MF-039)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_tjale_mf_583_</name>
-            <district>mafeteng_a</district>
-            <label>Ha Tjale (MF-583)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>maieaneng_mf_009_</name>
-            <district>mafeteng_a</district>
-            <label>Maieaneng (MF-009)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>makokotoaneng_mf_564_</name>
-            <district>mafeteng_a</district>
-            <label>Makokotoaneng (MF-564)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>mathebe_mf_083_</name>
-            <district>mafeteng_a</district>
-            <label>Mathebe (MF-083)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>salae_mf_529_</name>
-            <district>mafeteng_a</district>
-            <label>Salae (MF-529)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_leutsoa_ms_133_</name>
-            <district>maseru_a</district>
-            <label>Ha Leutsoa (MS-133)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_moruthoane_ms_191_</name>
-            <district>maseru_a</district>
-            <label>Ha Moruthoane (MS-191)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_phallang_ms_488_</name>
-            <district>maseru_a</district>
-            <label>Ha Phallang (MS-488)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>joala_boholo_ms_155_</name>
-            <district>maseru_a</district>
-            <label>Joala Boholo (MS-155)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>mahlabatheng_ms_258_</name>
-            <district>maseru_a</district>
-            <label>Mahlabatheng (MS-258)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>nazareth_ms_077_</name>
-            <district>maseru_a</district>
-            <label>Nazareth (MS-077)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>polateng_ms_489_</name>
-            <district>maseru_a</district>
-            <label>Polateng (MS-489)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>setibing_ms_581_</name>
-            <district>maseru_a</district>
-            <label>Setibing (MS-581)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_makhabane_mh_186_</name>
-            <district>mohale_s_hoek_a</district>
-            <label>Ha Makhabane (MH-186)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_mokotane_mh_223_</name>
-            <district>mohale_s_hoek_a</district>
-            <label>Ha Mokotane (MH-223)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_monyake_mh_089_</name>
-            <district>mohale_s_hoek_a</district>
-            <label>Ha Monyake (MH-089)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_phatalla_mh_097_</name>
-            <district>mohale_s_hoek_a</district>
-            <label>Ha Phatalla (MH-097)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_tumo_mh_384_</name>
-            <district>mohale_s_hoek_a</district>
-            <label>Ha Tumo (MH-384)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>mataoeng_mh_219_</name>
-            <district>mohale_s_hoek_a</district>
-            <label>Mataoeng (MH-219)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>phatlalla_mh_097_</name>
-            <district>mohale_s_hoek_a</district>
-            <label>Phatlalla (MH-097)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>rakoloi_mh_149_</name>
-            <district>mohale_s_hoek_a</district>
-            <label>Rakoloi (MH-149)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>raporong_mh_088_</name>
-            <district>mohale_s_hoek_a</district>
-            <label>Raporong (MH-088)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_ralengoele_qn_068_</name>
-            <district>qacha_s_nek_a</district>
-            <label>Ha Ralengoele (QN-068)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_ramokakatela_qn_048_</name>
-            <district>qacha_s_nek_a</district>
-            <label>Ha Ramokakatela (QN-048)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>ha_isaac_qn_059_</name>
-            <district>qacha_s_nek_a</district>
-            <label>Ha-Isaac (QN-059)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>mosenekeng_qn_064_</name>
-            <district>qacha_s_nek_a</district>
-            <label>Mosenekeng (QN-064)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>sekoti_qn_069_</name>
-            <district>qacha_s_nek_a</district>
-            <label>Sekoti (QN-069)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>filoane_qt_358_</name>
-            <district>quthing_a</district>
-            <label>Filoane (QT-358)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>kelebone_qt_034_</name>
-            <district>quthing_a</district>
-            <label>Kelebone (QT-034)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>matebeleng_qt_078_</name>
-            <district>quthing_a</district>
-            <label>Matebeleng (QT-078)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>mofetoli_qt_366_</name>
-            <district>quthing_a</district>
-            <label>Mofetoli (QT-366)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>mots_oane_qt_075_</name>
-            <district>quthing_a</district>
-            <label>Mots'oane (QT-075)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>nosi_qt_355_</name>
-            <district>quthing_a</district>
-            <label>Nosi (QT-355)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>seputeng_qt_354_</name>
-            <district>quthing_a</district>
-            <label>Seputeng (QT-354)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>swatsi_qt_238_</name>
-            <district>quthing_a</district>
-            <label>Swatsi (QT-238)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>lihlabaneng_ha_morapeli_tt_170_</name>
-            <district>thaba_tseka_a</district>
-            <label>Lihlabaneng Ha Morapeli (TT-170)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>mohlakeng_tt_011_</name>
-            <district>thaba_tseka_a</district>
-            <label>Mohlakeng (TT-011)</label>
-          </item>
-          <item>
-            <phase>a</phase>
-            <name>motsitseng_tt_160_</name>
-            <district>thaba_tseka_a</district>
-            <label>Motsitseng (TT-160)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>bokhina_pere_mk_304_</name>
-            <district>mokhotlong_a1</district>
-            <label>Bokhina Pere (MK-304)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>ha_ralit_sepe_mk_393_</name>
-            <district>mokhotlong_a1</district>
-            <label>Ha Ralit'sepe (MK-393)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>ha_senepi_mk_404_</name>
-            <district>mokhotlong_a1</district>
-            <label>Ha Senepi (MK-404)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>makorong_mk_232_</name>
-            <district>mokhotlong_a1</district>
-            <label>Makorong (MK-232)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>mpakatheng_mk_265_</name>
-            <district>mokhotlong_a1</district>
-            <label>Mpakatheng (MK-265)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>sekhutlong_mk_356_</name>
-            <district>mokhotlong_a1</district>
-            <label>Sekhutlong (MK-356)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>sepatleng_mk_343_</name>
-            <district>mokhotlong_a1</district>
-            <label>Sepatleng (MK-343)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>tseko_mk_154_</name>
-            <district>mokhotlong_a1</district>
-            <label>Tseko (MK-154)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>ha_isaac_qt_059_</name>
-            <district>qacha_s_nek_a1</district>
-            <label>Ha Isaac (QT-059)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>ha_katela_qn_219_</name>
-            <district>qacha_s_nek_a1</district>
-            <label>Ha Katela (QN-219)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>ha_makhoa_qn_073_</name>
-            <district>qacha_s_nek_a1</district>
-            <label>Ha-Makhoa (QN-073)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>maphotong_qn_216_</name>
-            <district>qacha_s_nek_a1</district>
-            <label>Maphotong (QN-216)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>ha_laka_tt_009_</name>
-            <district>thaba_tseka_a1</district>
-            <label>Ha Laka (TT-009)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>ha_sekhohola_tt_138_</name>
-            <district>thaba_tseka_a1</district>
-            <label>Ha Sekhohola (TT-138)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>mantsonyane_tt_051_</name>
-            <district>thaba_tseka_a1</district>
-            <label>Mantsonyane (TT-051)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>ha_labane_tt_363_</name>
-            <district>thaba_tseka_a1</district>
-            <label>Ha Labane (TT-363)</label>
-          </item>
-          <item>
-            <phase>a1</phase>
-            <name>maholi_a_llang_tt_210_</name>
-            <district>thaba_tseka_a1</district>
-            <label>Maholi-a Llang (TT-210)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>boranta_br_327_</name>
-            <district>berea_b</district>
-            <label>Boranta (BR-327)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>letsoela_br_008_</name>
-            <district>berea_b</district>
-            <label>Letsoela (BR-008)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>maholong_br_328_</name>
-            <district>berea_b</district>
-            <label>Maholong (BR-328)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>masaleng_ha_janki_br_238_</name>
-            <district>berea_b</district>
-            <label>Masaleng Ha Janki (BR-238)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mokhachane_br_330_</name>
-            <district>berea_b</district>
-            <label>Mokhachane (BR-330)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mokomahatsi_br_210_</name>
-            <district>berea_b</district>
-            <label>Mokomahatsi (BR-210)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>nokong_br_060_</name>
-            <district>berea_b</district>
-            <label>Nokong (BR-060)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>qalaheng_mafotholeng_br_45_84_</name>
-            <district>berea_b</district>
-            <label>Qalaheng/Mafotholeng (BR-45/84)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>tsenoli_br_001_</name>
-            <district>berea_b</district>
-            <label>Tsenoli (BR-001)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_lesia_bb_258_</name>
-            <district>botha_bothe_b</district>
-            <label>Ha Lesia (BB-258)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_lishobana_bb_217_</name>
-            <district>botha_bothe_b</district>
-            <label>Ha Lishobana (BB-217)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_rampai_bb_045_</name>
-            <district>botha_bothe_b</district>
-            <label>Ha Rampai (BB-045)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_rakotoane_bb_185_</name>
-            <district>botha_bothe_b</district>
-            <label>Ha-Rakotoane (BB-185)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>hlakacha_bb_029_</name>
-            <district>botha_bothe_b</district>
-            <label>Hlakacha (BB-029)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>khutlo_sea_ja_bb_188_</name>
-            <district>botha_bothe_b</district>
-            <label>Khutlo-sea-ja (BB-188)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>lekanyane_bb_212_</name>
-            <district>botha_bothe_b</district>
-            <label>Lekanyane (BB-212)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>maphepheng_bb_147_</name>
-            <district>botha_bothe_b</district>
-            <label>Maphepheng (BB-147)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>setenong_bb_246_</name>
-            <district>botha_bothe_b</district>
-            <label>Setenong (BB-246)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_makhaketsa_lr_045_</name>
-            <district>leribe_b</district>
-            <label>Ha Makhaketsa (LR-045)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_manamolela_lr_429_</name>
-            <district>leribe_b</district>
-            <label>Ha Manamolela (LR-429)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_matala_lr_124_</name>
-            <district>leribe_b</district>
-            <label>Ha Matala (LR-124)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_mukemane_lr_507_</name>
-            <district>leribe_b</district>
-            <label>Ha Mukemane (LR-507)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_ramapepe_lr_183_</name>
-            <district>leribe_b</district>
-            <label>Ha Ramapepe (LR-183)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_tsepe_lr_269_</name>
-            <district>leribe_b</district>
-            <label>Ha Tsepe (LR-269)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>rankhelepe_lr_210_</name>
-            <district>leribe_b</district>
-            <label>Rankhelepe (LR-210)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>thaba_phatsoa_lr_049_</name>
-            <district>leribe_b</district>
-            <label>Thaba-Phatsoa (LR-049)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>tiping_lr_428_</name>
-            <district>leribe_b</district>
-            <label>Tiping (LR-428)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_joele_mf_419_</name>
-            <district>mafeteng_b</district>
-            <label>Ha Joele (MF-419)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_mashapha_mf_676_</name>
-            <district>mafeteng_b</district>
-            <label>Ha Mashapha (MF-676)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_ralintoane_mf_698_</name>
-            <district>mafeteng_b</district>
-            <label>Ha- Ralintoane (MF-698)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_ramatima_mf_107_</name>
-            <district>mafeteng_b</district>
-            <label>Ha Ramatima (MF-107)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_seoli_mf_816_</name>
-            <district>mafeteng_b</district>
-            <label>Ha Seoli (MF-816)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_hlehlisi_mf_319_</name>
-            <district>mafeteng_b</district>
-            <label>Ha-Hlehlisi (MF-319)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>khalimane_lijoetsa_mf_415_</name>
-            <district>mafeteng_b</district>
-            <label>Khalimane/Lijoetsa (MF-415)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>lithipeng_mosuoane_mf_651_</name>
-            <district>mafeteng_b</district>
-            <label>Lithipeng/Mosuoane (MF-651)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>molleloa_ha_patsa_mf_393_</name>
-            <district>mafeteng_b</district>
-            <label>Molleloa/Ha Patsa (MF-393)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_mashenephe_ms_414_</name>
-            <district>maseru_b</district>
-            <label>Ha Mashenephe (MS-414)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_sechache_ms_497_</name>
-            <district>maseru_b</district>
-            <label>Ha Sechache (MS-497)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mokotleng_ms_462_</name>
-            <district>maseru_b</district>
-            <label>Mokotleng (MS-462)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mphephee_moeaneng_ms_521_</name>
-            <district>maseru_b</district>
-            <label>Mphephee/Moeaneng (MS-521)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ramakhaleng_ms_474_</name>
-            <district>maseru_b</district>
-            <label>Ramakhaleng (MS-474)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>rothe_ms_001_</name>
-            <district>maseru_b</district>
-            <label>Rothe (MS-001)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>tlokotsane_ms_490_</name>
-            <district>maseru_b</district>
-            <label>Tlokotsane (MS-490)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>tsutsulupa_ms_516_</name>
-            <district>maseru_b</district>
-            <label>Tsutsulupa (MS-516)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>keleke_moleko_ms_465_</name>
-            <district>maseru_b</district>
-            <label>Keleke/Moleko (MS-465)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_boroko_mh_009_</name>
-            <district>mohale_s_hoek_b</district>
-            <label>Ha Boroko (MH-009)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_hamo_moko_mh_142_</name>
-            <district>mohale_s_hoek_b</district>
-            <label>Ha Hamo/Moko (MH-142)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_mokhatla_mh_158_</name>
-            <district>mohale_s_hoek_b</district>
-            <label>Ha Mokhatla (MH-158)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_nthamaha_mh_478_</name>
-            <district>mohale_s_hoek_b</district>
-            <label>Ha Nthamaha (MH-478)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_ranti_mh_538_</name>
-            <district>mohale_s_hoek_b</district>
-            <label>Ha Ranti (MH-538)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>lecheche_mh_557_</name>
-            <district>mohale_s_hoek_b</district>
-            <label>Lecheche (MH-557)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>matsoareng_mh_073_</name>
-            <district>mohale_s_hoek_b</district>
-            <label>Matsoareng (MH-073)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>moru_motso_mh_507_</name>
-            <district>mohale_s_hoek_b</district>
-            <label>Moru Motso (MH-507)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>pontseng_mh_027_</name>
-            <district>mohale_s_hoek_b</district>
-            <label>Pontseng (MH-027)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>draaihoek_mk_384_</name>
-            <district>mokhotlong_b</district>
-            <label>Draaihoek (MK-384)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_tlenyane_mk_212_</name>
-            <district>mokhotlong_b</district>
-            <label>Ha Tlenyane (MK-212)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>khohlong_mk_312_</name>
-            <district>mokhotlong_b</district>
-            <label>Khohlong (MK-312)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>liotloaneng_mk_379_</name>
-            <district>mokhotlong_b</district>
-            <label>Liotloaneng (MK-379)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mabuleng_mk_269_</name>
-            <district>mokhotlong_b</district>
-            <label>Mabuleng (MK-269)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>maheneng_mk_342_</name>
-            <district>mokhotlong_b</district>
-            <label>Maheneng (MK-342)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>matebeleng_mk_334_</name>
-            <district>mokhotlong_b</district>
-            <label>Matebeleng (MK-334)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>matlong_mk_387_</name>
-            <district>mokhotlong_b</district>
-            <label>Matlong (MK-387)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mosenekeng_mk_341_</name>
-            <district>mokhotlong_b</district>
-            <label>Mosenekeng (MK-341)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_lehata_qn_088_</name>
-            <district>qacha_s_nek_b</district>
-            <label>Ha Lehata (QN-088)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_molomo_qn_206_</name>
-            <district>qacha_s_nek_b</district>
-            <label>Ha Molomo (QN-206)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_ranqhongoana_qn_007_</name>
-            <district>qacha_s_nek_b</district>
-            <label>Ha Ranqhongoana (QN-007)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_seholoholo_qn_055_</name>
-            <district>qacha_s_nek_b</district>
-            <label>Ha Seholoholo (QN-055)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>liboteng_qn_096_</name>
-            <district>qacha_s_nek_b</district>
-            <label>Liboteng (QN-096)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mankoe_qn_091_</name>
-            <district>qacha_s_nek_b</district>
-            <label>Mankoe (QN-091)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>qenehellong_qn_070_</name>
-            <district>qacha_s_nek_b</district>
-            <label>Qenehellong (QN-070)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>sekiring_qn_094_</name>
-            <district>qacha_s_nek_b</district>
-            <label>Sekiring (QN-094)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>tsolo_qn_104_</name>
-            <district>qacha_s_nek_b</district>
-            <label>Tsolo (QN-104)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mamokeli_qt_337_</name>
-            <district>quthing_b</district>
-            <label>Mamokeli (QT-337)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>marakabei_qt_398_</name>
-            <district>quthing_b</district>
-            <label>Marakabei (QT-398)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>masuoaneng_qt_392_</name>
-            <district>quthing_b</district>
-            <label>Masuoaneng (QT-392)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>mats_ela_habeli_qt_246_</name>
-            <district>quthing_b</district>
-            <label>Mats'ela-Habeli (QT-246)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ngoae_sekokoaneng_qt_067_</name>
-            <district>quthing_b</district>
-            <label>Ngoae &amp; Sekokoaneng (QT-067)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>nkoto_silase_qt_334_</name>
-            <district>quthing_b</district>
-            <label>Nkoto-Silase (QT-334)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>photha_photha_qt_401_</name>
-            <district>quthing_b</district>
-            <label>Photha-Photha (QT-401)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>raseeng_qt_076_</name>
-            <district>quthing_b</district>
-            <label>Raseeng (QT-076)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>thaba_chitja_qt_292_</name>
-            <district>quthing_b</district>
-            <label>Thaba-Chitja (QT-292)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_long_tt_298_</name>
-            <district>thaba_tseka_b</district>
-            <label>Ha Long (TT-298)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_moriana_tt_297_</name>
-            <district>thaba_tseka_b</district>
-            <label>Ha Moriana (TT-297)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_motake_tt_303_</name>
-            <district>thaba_tseka_b</district>
-            <label>Ha Motake (TT-303)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_nkune_tt_212_</name>
-            <district>thaba_tseka_b</district>
-            <label>Ha Nkune (TT-212)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_poko_tt_225_</name>
-            <district>thaba_tseka_b</district>
-            <label>Ha Poko (TT-225)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_ratau_tt_165_</name>
-            <district>thaba_tseka_b</district>
-            <label>Ha Ratau (TT-165)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>ha_sekhaupane_tt_344_</name>
-            <district>thaba_tseka_b</district>
-            <label>Ha Sekhaupane (TT-344)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>masakoane_tt_304_</name>
-            <district>thaba_tseka_b</district>
-            <label>Masakoane (TT-304)</label>
-          </item>
-          <item>
-            <phase>b</phase>
-            <name>tholanyane_tt_299_</name>
-            <district>thaba_tseka_b</district>
-            <label>Tholanyane (TT-299)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_matjotjo_br_175_</name>
-            <district>berea_c</district>
-            <label>Ha Matjotjo  (BR-175)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_mokhati_br_025_</name>
-            <district>berea_c</district>
-            <label>Ha Mokhati  (BR-025)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_phalatsane_br_075_</name>
-            <district>berea_c</district>
-            <label>Ha Phalatsane (BR-075)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_phoofolo_br_090_</name>
-            <district>berea_c</district>
-            <label>Ha Phoofolo  (BR-090)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_telukhunoana_br_166_</name>
-            <district>berea_c</district>
-            <label>Ha Telukhunoana (BR-166)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_tumo_br_043_</name>
-            <district>berea_c</district>
-            <label>Ha Tumo  (BR-043)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>kolojane_br_036_</name>
-            <district>berea_c</district>
-            <label>Kolojane  (BR-036)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>mokhethoaneng_br_16_</name>
-            <district>berea_c</district>
-            <label>Mokhethoaneng  (BR-16)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>community_bb_136_</name>
-            <district>botha_bothe_c</district>
-            <label>Community (BB-136)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_masekh_ou_bb_130_</name>
-            <district>botha_bothe_c</district>
-            <label>Ha 'Masekh'ou (BB-130)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>kopanong_bb_250_</name>
-            <district>botha_bothe_c</district>
-            <label>Kopanong (BB-250)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>mantlakala_bb_221_</name>
-            <district>botha_bothe_c</district>
-            <label>Mantlakala (BB-221)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>masianokeng_bb_259_</name>
-            <district>botha_bothe_c</district>
-            <label>Masianokeng (BB-259)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>motabola_bb_214_</name>
-            <district>botha_bothe_c</district>
-            <label>Motabola (BB-214)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>mphale_bb_156_</name>
-            <district>botha_bothe_c</district>
-            <label>Mphale (BB-156)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>thoteng_bb_251_</name>
-            <district>botha_bothe_c</district>
-            <label>Thoteng (BB-251)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_leaooa_lr_299_</name>
-            <district>leribe_c</district>
-            <label>Ha Leaooa (LR-299)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_ralikuku_lr_240_</name>
-            <district>leribe_c</district>
-            <label>Ha Ralikuku (LR-240)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_tente_lr_258_</name>
-            <district>leribe_c</district>
-            <label>Ha Tente (LR-258)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_tobolela_lr_257_</name>
-            <district>leribe_c</district>
-            <label>Ha Tobolela (LR-257)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>maqasane_lr_128_</name>
-            <district>leribe_c</district>
-            <label>Maqasane (LR-128)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>metolong_lr_227_</name>
-            <district>leribe_c</district>
-            <label>Metolong (LR-227)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>nkoeng_lr_361_</name>
-            <district>leribe_c</district>
-            <label>Nkoeng (LR-361)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>tale_lr_223_</name>
-            <district>leribe_c</district>
-            <label>Tale (LR-223)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_likupa_mf_008_</name>
-            <district>mafeteng_c</district>
-            <label>Ha Likupa (MF-008)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_manehella_mf_669_</name>
-            <district>mafeteng_c</district>
-            <label>Ha Manehella (MF-669)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_sebeli_lehananeng_mf_054_</name>
-            <district>mafeteng_c</district>
-            <label>Ha Sebeli-Lehananeng (MF-054)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_tebelo_mf_679_</name>
-            <district>mafeteng_c</district>
-            <label>Ha Tebelo (MF- 679)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>khasapane_mf_219_</name>
-            <district>mafeteng_c</district>
-            <label>Khasapane (MF-219)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>lihlookong_mf_221_</name>
-            <district>mafeteng_c</district>
-            <label>Lihlookong (MF-221)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>sekiring_mf_292_</name>
-            <district>mafeteng_c</district>
-            <label>Sekiring (MF-292)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>t_soeute_mf_750_</name>
-            <district>mafeteng_c</district>
-            <label>T'soeute (MF-750)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_lekhafola_ms_215_426_</name>
-            <district>maseru_c</district>
-            <label>Ha Lekhafola (MS-215/426)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_nkoankoa_ms_447_</name>
-            <district>maseru_c</district>
-            <label>Ha Nkoankoa (MS-447)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_pita_ms_025_</name>
-            <district>maseru_c</district>
-            <label>Ha Pita (MS-025)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_salemone_morainyane_ms_475_</name>
-            <district>maseru_c</district>
-            <label>Ha Salemone Morainyane (MS-475)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_sofonia_ms_021_</name>
-            <district>maseru_c</district>
-            <label>Ha Sofonia (MS-021)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>khubetsoana_sekoting_ms_508_</name>
-            <district>maseru_c</district>
-            <label>Khubetsoana &amp; Sekoting (MS-508)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>kubake_moreneng_ms_422_</name>
-            <district>maseru__c</district>
-            <label>Kubake Moreneng (MS-422)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>machekoaneng_ms_104_</name>
-            <district>maseru__c</district>
-            <label>Machekoaneng (MS-104)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_bereng_matsoho_mh_115_</name>
-            <district>mohale_s_hoek_c</district>
-            <label>Ha Bereng Matsoho (MH-115)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_mohohlo_mh_404_</name>
-            <district>mohale_s_hoek_c</district>
-            <label>Ha Mohohlo (MH-404)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_nkau_mh_293_</name>
-            <district>mohale_s_hoek_c</district>
-            <label>Ha Nkau (MH-293)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_raboroko_mh_156_</name>
-            <district>mohale_s_hoek_c</district>
-            <label>Ha Raboroko (MH-156)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_senekane_mh_321_</name>
-            <district>mohale_s_hoek_c</district>
-            <label>Ha Senekane (MH-321)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>malahleha_mh_036_</name>
-            <district>mohale_s_hoek_c</district>
-            <label>Malahleha (MH-036)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>maluke_mh_473_</name>
-            <district>mohale_s_hoek_c</district>
-            <label>Maluke (MH-473)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>setotoma_mh_110_</name>
-            <district>mohale_s_hoek_c</district>
-            <label>Setotoma (MH-110)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>bloodberg_mk_048_</name>
-            <district>mokhotlong_c</district>
-            <label>Bloodberg (MK-048)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_masasane_mk_381_</name>
-            <district>mokhotlong_c</district>
-            <label>Ha Masasane (MK-381)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_nthimolane_mk_382_</name>
-            <district>mokhotlong_c</district>
-            <label>Ha Nthimolane (MK-382)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>limapong_mk_268_</name>
-            <district>mokhotlong_c</district>
-            <label>Limapong (MK-268)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>lithoteng_mk_131_</name>
-            <district>mokhotlong_c</district>
-            <label>Lithoteng (MK-131)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>moteetee_mk_037_</name>
-            <district>mokhotlong_c</district>
-            <label>Moteetee (MK-037)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>t_sila_nt_so_mk_233_</name>
-            <district>mokhotlong_c</district>
-            <label>T'sila-nt'so (MK-233)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>tsoenene_mk_002_</name>
-            <district>mokhotlong_c</district>
-            <label>Tsoenene (MK-002)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_nkofo_qn_120_</name>
-            <district>qacha_s_nek_c</district>
-            <label>Ha Nkofo (QN-120)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_sephelane_qn_154_</name>
-            <district>qacha_s_nek_c</district>
-            <label>Ha Sephelane (QN-154)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_tamose_qn_051_</name>
-            <district>qacha_s_nek_c</district>
-            <label>Ha Tamose (QN-051)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_t_sita_qn_009_</name>
-            <district>qacha_s_nek_c</district>
-            <label>Ha T'sita (QN-009)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>khubetsoana_qn_101_</name>
-            <district>qacha_s_nek_c</district>
-            <label>Khubetsoana (QN-101)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>lepapaneng_qn_121_</name>
-            <district>qacha_s_nek_c</district>
-            <label>Lepapaneng (QN-121)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>rasekoele_qn_100_</name>
-            <district>qacha_s_nek_c</district>
-            <label>Rasekoele (QN-100)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>sefaha_qn_003_</name>
-            <district>qacha_s_nek_c</district>
-            <label>Sefaha (QN-003)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>mohale_qt_196_</name>
-            <district>quthing_c</district>
-            <label>Mohale (QT-196)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>mokokoane_qt_273_</name>
-            <district>quthing_c</district>
-            <label>Mokokoane (QT-273)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>mpharane_qt_287_</name>
-            <district>quthing_c</district>
-            <label>Mpharane (QT-287)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>paballong_qt_117_</name>
-            <district>quthing_c</district>
-            <label>Paballong (QT-117)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>rat_sit_so_qt_074_</name>
-            <district>quthing_c</district>
-            <label>Rat'sit'so (QT-074)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>sekakeng_qt_335_</name>
-            <district>quthing_c</district>
-            <label>Sekakeng (QT-335)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>sello_qt_283_</name>
-            <district>quthing_c</district>
-            <label>Sello (QT-283)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>thoteng_qt_034_</name>
-            <district>quthing_c</district>
-            <label>Thoteng (QT-034)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_chooko_tt_312_</name>
-            <district>thaba_tseka_c</district>
-            <label>Ha Chooko (TT-312)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_ntsokoane_tt_301_</name>
-            <district>thaba_tseka_c</district>
-            <label>Ha Ntsokoane (TT-301)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>ha_ts_oeu_khala_tt_049_</name>
-            <district>thaba_tseka_c</district>
-            <label>Ha Ts'oeu-Khala  (TT-049)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>makhuleng_tt_239_</name>
-            <district>thaba_tseka_c</district>
-            <label>Makhuleng  (TT-239)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>makunyapane_tt_083_</name>
-            <district>thaba_tseka_c</district>
-            <label>Makunyapane  (TT-083)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>matsaile_manganeng_tt_411_</name>
-            <district>thaba_tseka_c</district>
-            <label>Matsaile Manganeng (TT-411)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>matsaile_moreneng_tt_038_</name>
-            <district>thaba_tseka_c</district>
-            <label>Matsaile Moreneng (TT-038)</label>
-          </item>
-          <item>
-            <phase>c</phase>
-            <name>moeling_tt_268_</name>
-            <district>thaba_tseka_c</district>
-            <label>Moeling  (TT-268)</label>
+            <name>othername</name>
           </item>
         </root>
       </instance>
       <instance id="yes_no_list">
         <root>
           <item>
-            <name>yes</name>
             <label>Yes</label>
+            <name>yes</name>
           </item>
           <item>
-            <name>no</name>
             <label>No</label>
+            <name>no</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="gender_list">
+        <root>
+          <item>
+            <label>Male</label>
+            <name>male</name>
+          </item>
+          <item>
+            <label>Female</label>
+            <name>female</name>
           </item>
         </root>
       </instance>
       <instance id="phase">
         <root>
           <item>
-            <name>a</name>
             <label>A</label>
+            <name>a</name>
           </item>
           <item>
-            <name>a1</name>
             <label>A1</label>
+            <name>a1</name>
           </item>
           <item>
-            <name>b</name>
             <label>B</label>
+            <name>b</name>
           </item>
           <item>
-            <name>c</name>
             <label>C</label>
+            <name>c</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="district">
+        <root>
+          <item>
+            <label>Berea_A</label>
+            <name>berea_a</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <label>Botha Bothe_A</label>
+            <name>botha_bothe_a</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <label>Leribe_A</label>
+            <name>leribe_a</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <label>Mafeteng_A</label>
+            <name>mafeteng_a</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <label>Maseru_A</label>
+            <name>maseru_a</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <label>Mohale's Hoek_A</label>
+            <name>mohale_s_hoek_a</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <label>Qacha's Nek_A</label>
+            <name>qacha_s_nek_a</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <label>Quthing_A</label>
+            <name>quthing_a</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <label>Thaba-Tseka_A</label>
+            <name>thaba_tseka_a</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <label>Mokhotlong_A1</label>
+            <name>mokhotlong_a1</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <label>Qacha's Nek_A1</label>
+            <name>qacha_s_nek_a1</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <label>Thaba-Tseka_A1</label>
+            <name>thaba_tseka_a1</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <label>Berea_B</label>
+            <name>berea_b</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <label>Botha Bothe_B</label>
+            <name>botha_bothe_b</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <label>Leribe_B</label>
+            <name>leribe_b</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <label>Mafeteng_B</label>
+            <name>mafeteng_b</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <label>Maseru_B</label>
+            <name>maseru_b</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <label>Mohale's Hoek_B</label>
+            <name>mohale_s_hoek_b</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <label>Mokhotlong_B</label>
+            <name>mokhotlong_b</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <label>Qacha's Nek_B</label>
+            <name>qacha_s_nek_b</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <label>Quthing_B</label>
+            <name>quthing_b</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <label>Thaba-Tseka_B</label>
+            <name>thaba_tseka_b</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <label>Berea_C</label>
+            <name>berea_c</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <label>Botha Bothe_C</label>
+            <name>botha_bothe_c</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <label>Leribe_C</label>
+            <name>leribe_c</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <label>Mafeteng_C</label>
+            <name>mafeteng_c</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <label>Maseru_C</label>
+            <name>maseru_c</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <label>Maseru _C</label>
+            <name>maseru__c</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <label>Mohale's Hoek_C</label>
+            <name>mohale_s_hoek_c</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <label>Mokhotlong_C</label>
+            <name>mokhotlong_c</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <label>Qacha's Nek_C</label>
+            <name>qacha_s_nek_c</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <label>Quthing_C</label>
+            <name>quthing_c</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <label>Thaba-Tseka_C</label>
+            <name>thaba_tseka_c</name>
+            <phase>c</phase>
+          </item>
+        </root>
+      </instance>
+      <instance id="site">
+        <root>
+          <item>
+            <district>berea_a</district>
+            <label>Ha Koone (BR-329)</label>
+            <name>ha_koone_br_329_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>berea_a</district>
+            <label>Ha Makebe (BR-011)</label>
+            <name>ha_makebe_br_011_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>berea_a</district>
+            <label>Ha Mohatlane (BR-113)</label>
+            <name>ha_mohatlane_br_113_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>berea_a</district>
+            <label>Ha Motloang (BR-103)</label>
+            <name>ha_motloang_br_103_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>berea_a</district>
+            <label>Ha Ntlama (BR-048)</label>
+            <name>ha_ntlama_br_048_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>berea_a</district>
+            <label>Ha Polaki/Matheneng (BR-141/2)</label>
+            <name>ha_polaki_matheneng_br_141_2_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>berea_a</district>
+            <label>Lekhalong (BR-400)</label>
+            <name>lekhalong_br_400_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>berea_a</district>
+            <label>Lifotholeng (BR-070)</label>
+            <name>lifotholeng_br_070_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>botha_bothe_a</district>
+            <label>Ha Lemphane (BB-195)</label>
+            <name>ha_lemphane_bb_195_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>botha_bothe_a</district>
+            <label>Kepile (BB-209)</label>
+            <name>kepile_bb_209_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>botha_bothe_a</district>
+            <label>Liteleng (Ha moluoane) (BB-248)</label>
+            <name>liteleng_ha_moluoane_bb_248_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>botha_bothe_a</district>
+            <label>Luma (BB-235)</label>
+            <name>luma_bb_235_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>botha_bothe_a</district>
+            <label>Motete (BB-146)</label>
+            <name>motete_bb_146_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>botha_bothe_a</district>
+            <label>Patuoe/Moepanyane (BB-201)</label>
+            <name>patuoe_moepanyane_bb_201_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>botha_bothe_a</district>
+            <label>Pokojoe-Khoaba (BB-095)</label>
+            <name>pokojoe_khoaba_bb_095_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>botha_bothe_a</district>
+            <label>Solane (BB-094)</label>
+            <name>solane_bb_094_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>leribe_a</district>
+            <label>Ha Mahlomola (LR-337)</label>
+            <name>ha_mahlomola_lr_337_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>leribe_a</district>
+            <label>Ha Matoli (LR-152)</label>
+            <name>ha_matoli_lr_152_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>leribe_a</district>
+            <label>Ha Rantuba (LR-044)</label>
+            <name>ha_rantuba_lr_044_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>leribe_a</district>
+            <label>Ha Senyenyane (LR-423)</label>
+            <name>ha_senyenyane_lr_423_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>leribe_a</district>
+            <label>Ha Tsae (LR-256)</label>
+            <name>ha_tsae_lr_256_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>leribe_a</district>
+            <label>Mapheaneng (LR-334)</label>
+            <name>mapheaneng_lr_334_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>leribe_a</district>
+            <label>Phahameng (LR-061)</label>
+            <name>phahameng_lr_061_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>leribe_a</district>
+            <label>Phelandaba (LR-164)</label>
+            <name>phelandaba_lr_164_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mafeteng_a</district>
+            <label>Ha Lepolesa (MF-098)</label>
+            <name>ha_lepolesa_mf_098_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mafeteng_a</district>
+            <label>Ha Mathabang(Lifajaneng) (MF-472)</label>
+            <name>ha_mathabang_lifajaneng_mf_472_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mafeteng_a</district>
+            <label>Ha Ranteme (MF-039)</label>
+            <name>ha_ranteme_mf_039_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mafeteng_a</district>
+            <label>Ha Tjale (MF-583)</label>
+            <name>ha_tjale_mf_583_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mafeteng_a</district>
+            <label>Maieaneng (MF-009)</label>
+            <name>maieaneng_mf_009_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mafeteng_a</district>
+            <label>Makokotoaneng (MF-564)</label>
+            <name>makokotoaneng_mf_564_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mafeteng_a</district>
+            <label>Mathebe (MF-083)</label>
+            <name>mathebe_mf_083_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mafeteng_a</district>
+            <label>Salae (MF-529)</label>
+            <name>salae_mf_529_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>maseru_a</district>
+            <label>Ha Leutsoa (MS-133)</label>
+            <name>ha_leutsoa_ms_133_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>maseru_a</district>
+            <label>Ha Moruthoane (MS-191)</label>
+            <name>ha_moruthoane_ms_191_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>maseru_a</district>
+            <label>Ha Phallang (MS-488)</label>
+            <name>ha_phallang_ms_488_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>maseru_a</district>
+            <label>Joala Boholo (MS-155)</label>
+            <name>joala_boholo_ms_155_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>maseru_a</district>
+            <label>Mahlabatheng (MS-258)</label>
+            <name>mahlabatheng_ms_258_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>maseru_a</district>
+            <label>Nazareth (MS-077)</label>
+            <name>nazareth_ms_077_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>maseru_a</district>
+            <label>Polateng (MS-489)</label>
+            <name>polateng_ms_489_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>maseru_a</district>
+            <label>Setibing (MS-581)</label>
+            <name>setibing_ms_581_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_a</district>
+            <label>Ha Makhabane (MH-186)</label>
+            <name>ha_makhabane_mh_186_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_a</district>
+            <label>Ha Mokotane (MH-223)</label>
+            <name>ha_mokotane_mh_223_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_a</district>
+            <label>Ha Monyake (MH-089)</label>
+            <name>ha_monyake_mh_089_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_a</district>
+            <label>Ha Phatalla (MH-097)</label>
+            <name>ha_phatalla_mh_097_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_a</district>
+            <label>Ha Tumo (MH-384)</label>
+            <name>ha_tumo_mh_384_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_a</district>
+            <label>Mataoeng (MH-219)</label>
+            <name>mataoeng_mh_219_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_a</district>
+            <label>Phatlalla (MH-097)</label>
+            <name>phatlalla_mh_097_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_a</district>
+            <label>Rakoloi (MH-149)</label>
+            <name>rakoloi_mh_149_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_a</district>
+            <label>Raporong (MH-088)</label>
+            <name>raporong_mh_088_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_a</district>
+            <label>Ha Ralengoele (QN-068)</label>
+            <name>ha_ralengoele_qn_068_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_a</district>
+            <label>Ha Ramokakatela (QN-048)</label>
+            <name>ha_ramokakatela_qn_048_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_a</district>
+            <label>Ha-Isaac (QN-059)</label>
+            <name>ha_isaac_qn_059_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_a</district>
+            <label>Mosenekeng (QN-064)</label>
+            <name>mosenekeng_qn_064_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_a</district>
+            <label>Sekoti (QN-069)</label>
+            <name>sekoti_qn_069_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>quthing_a</district>
+            <label>Filoane (QT-358)</label>
+            <name>filoane_qt_358_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>quthing_a</district>
+            <label>Kelebone (QT-034)</label>
+            <name>kelebone_qt_034_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>quthing_a</district>
+            <label>Matebeleng (QT-078)</label>
+            <name>matebeleng_qt_078_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>quthing_a</district>
+            <label>Mofetoli (QT-366)</label>
+            <name>mofetoli_qt_366_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>quthing_a</district>
+            <label>Mots'oane (QT-075)</label>
+            <name>mots_oane_qt_075_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>quthing_a</district>
+            <label>Nosi (QT-355)</label>
+            <name>nosi_qt_355_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>quthing_a</district>
+            <label>Seputeng (QT-354)</label>
+            <name>seputeng_qt_354_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>quthing_a</district>
+            <label>Swatsi (QT-238)</label>
+            <name>swatsi_qt_238_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_a</district>
+            <label>Lihlabaneng Ha Morapeli (TT-170)</label>
+            <name>lihlabaneng_ha_morapeli_tt_170_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_a</district>
+            <label>Mohlakeng (TT-011)</label>
+            <name>mohlakeng_tt_011_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_a</district>
+            <label>Motsitseng (TT-160)</label>
+            <name>motsitseng_tt_160_</name>
+            <phase>a</phase>
+          </item>
+          <item>
+            <district>mokhotlong_a1</district>
+            <label>Bokhina Pere (MK-304)</label>
+            <name>bokhina_pere_mk_304_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>mokhotlong_a1</district>
+            <label>Ha Ralit'sepe (MK-393)</label>
+            <name>ha_ralit_sepe_mk_393_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>mokhotlong_a1</district>
+            <label>Ha Senepi (MK-404)</label>
+            <name>ha_senepi_mk_404_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>mokhotlong_a1</district>
+            <label>Makorong (MK-232)</label>
+            <name>makorong_mk_232_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>mokhotlong_a1</district>
+            <label>Mpakatheng (MK-265)</label>
+            <name>mpakatheng_mk_265_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>mokhotlong_a1</district>
+            <label>Sekhutlong (MK-356)</label>
+            <name>sekhutlong_mk_356_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>mokhotlong_a1</district>
+            <label>Sepatleng (MK-343)</label>
+            <name>sepatleng_mk_343_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>mokhotlong_a1</district>
+            <label>Tseko (MK-154)</label>
+            <name>tseko_mk_154_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_a1</district>
+            <label>Ha Isaac (QT-059)</label>
+            <name>ha_isaac_qt_059_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_a1</district>
+            <label>Ha Katela (QN-219)</label>
+            <name>ha_katela_qn_219_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_a1</district>
+            <label>Ha-Makhoa (QN-073)</label>
+            <name>ha_makhoa_qn_073_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_a1</district>
+            <label>Maphotong (QN-216)</label>
+            <name>maphotong_qn_216_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_a1</district>
+            <label>Ha Laka (TT-009)</label>
+            <name>ha_laka_tt_009_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_a1</district>
+            <label>Ha Sekhohola (TT-138)</label>
+            <name>ha_sekhohola_tt_138_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_a1</district>
+            <label>Mantsonyane (TT-051)</label>
+            <name>mantsonyane_tt_051_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_a1</district>
+            <label>Ha Labane (TT-363)</label>
+            <name>ha_labane_tt_363_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_a1</district>
+            <label>Maholi-a Llang (TT-210)</label>
+            <name>maholi_a_llang_tt_210_</name>
+            <phase>a1</phase>
+          </item>
+          <item>
+            <district>berea_b</district>
+            <label>Boranta (BR-327)</label>
+            <name>boranta_br_327_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>berea_b</district>
+            <label>Letsoela (BR-008)</label>
+            <name>letsoela_br_008_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>berea_b</district>
+            <label>Maholong (BR-328)</label>
+            <name>maholong_br_328_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>berea_b</district>
+            <label>Masaleng Ha Janki (BR-238)</label>
+            <name>masaleng_ha_janki_br_238_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>berea_b</district>
+            <label>Mokhachane (BR-330)</label>
+            <name>mokhachane_br_330_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>berea_b</district>
+            <label>Mokomahatsi (BR-210)</label>
+            <name>mokomahatsi_br_210_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>berea_b</district>
+            <label>Nokong (BR-060)</label>
+            <name>nokong_br_060_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>berea_b</district>
+            <label>Qalaheng/Mafotholeng (BR-45/84)</label>
+            <name>qalaheng_mafotholeng_br_45_84_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>berea_b</district>
+            <label>Tsenoli (BR-001)</label>
+            <name>tsenoli_br_001_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>botha_bothe_b</district>
+            <label>Ha Lesia (BB-258)</label>
+            <name>ha_lesia_bb_258_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>botha_bothe_b</district>
+            <label>Ha Lishobana (BB-217)</label>
+            <name>ha_lishobana_bb_217_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>botha_bothe_b</district>
+            <label>Ha Rampai (BB-045)</label>
+            <name>ha_rampai_bb_045_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>botha_bothe_b</district>
+            <label>Ha-Rakotoane (BB-185)</label>
+            <name>ha_rakotoane_bb_185_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>botha_bothe_b</district>
+            <label>Hlakacha (BB-029)</label>
+            <name>hlakacha_bb_029_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>botha_bothe_b</district>
+            <label>Khutlo-sea-ja (BB-188)</label>
+            <name>khutlo_sea_ja_bb_188_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>botha_bothe_b</district>
+            <label>Lekanyane (BB-212)</label>
+            <name>lekanyane_bb_212_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>botha_bothe_b</district>
+            <label>Maphepheng (BB-147)</label>
+            <name>maphepheng_bb_147_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>botha_bothe_b</district>
+            <label>Setenong (BB-246)</label>
+            <name>setenong_bb_246_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>leribe_b</district>
+            <label>Ha Makhaketsa (LR-045)</label>
+            <name>ha_makhaketsa_lr_045_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>leribe_b</district>
+            <label>Ha Manamolela (LR-429)</label>
+            <name>ha_manamolela_lr_429_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>leribe_b</district>
+            <label>Ha Matala (LR-124)</label>
+            <name>ha_matala_lr_124_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>leribe_b</district>
+            <label>Ha Mukemane (LR-507)</label>
+            <name>ha_mukemane_lr_507_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>leribe_b</district>
+            <label>Ha Ramapepe (LR-183)</label>
+            <name>ha_ramapepe_lr_183_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>leribe_b</district>
+            <label>Ha Tsepe (LR-269)</label>
+            <name>ha_tsepe_lr_269_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>leribe_b</district>
+            <label>Rankhelepe (LR-210)</label>
+            <name>rankhelepe_lr_210_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>leribe_b</district>
+            <label>Thaba-Phatsoa (LR-049)</label>
+            <name>thaba_phatsoa_lr_049_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>leribe_b</district>
+            <label>Tiping (LR-428)</label>
+            <name>tiping_lr_428_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mafeteng_b</district>
+            <label>Ha Joele (MF-419)</label>
+            <name>ha_joele_mf_419_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mafeteng_b</district>
+            <label>Ha Mashapha (MF-676)</label>
+            <name>ha_mashapha_mf_676_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mafeteng_b</district>
+            <label>Ha- Ralintoane (MF-698)</label>
+            <name>ha_ralintoane_mf_698_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mafeteng_b</district>
+            <label>Ha Ramatima (MF-107)</label>
+            <name>ha_ramatima_mf_107_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mafeteng_b</district>
+            <label>Ha Seoli (MF-816)</label>
+            <name>ha_seoli_mf_816_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mafeteng_b</district>
+            <label>Ha-Hlehlisi (MF-319)</label>
+            <name>ha_hlehlisi_mf_319_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mafeteng_b</district>
+            <label>Khalimane/Lijoetsa (MF-415)</label>
+            <name>khalimane_lijoetsa_mf_415_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mafeteng_b</district>
+            <label>Lithipeng/Mosuoane (MF-651)</label>
+            <name>lithipeng_mosuoane_mf_651_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mafeteng_b</district>
+            <label>Molleloa/Ha Patsa (MF-393)</label>
+            <name>molleloa_ha_patsa_mf_393_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>maseru_b</district>
+            <label>Ha Mashenephe (MS-414)</label>
+            <name>ha_mashenephe_ms_414_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>maseru_b</district>
+            <label>Ha Sechache (MS-497)</label>
+            <name>ha_sechache_ms_497_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>maseru_b</district>
+            <label>Mokotleng (MS-462)</label>
+            <name>mokotleng_ms_462_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>maseru_b</district>
+            <label>Mphephee/Moeaneng (MS-521)</label>
+            <name>mphephee_moeaneng_ms_521_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>maseru_b</district>
+            <label>Ramakhaleng (MS-474)</label>
+            <name>ramakhaleng_ms_474_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>maseru_b</district>
+            <label>Rothe (MS-001)</label>
+            <name>rothe_ms_001_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>maseru_b</district>
+            <label>Tlokotsane (MS-490)</label>
+            <name>tlokotsane_ms_490_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>maseru_b</district>
+            <label>Tsutsulupa (MS-516)</label>
+            <name>tsutsulupa_ms_516_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>maseru_b</district>
+            <label>Keleke/Moleko (MS-465)</label>
+            <name>keleke_moleko_ms_465_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_b</district>
+            <label>Ha Boroko (MH-009)</label>
+            <name>ha_boroko_mh_009_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_b</district>
+            <label>Ha Hamo/Moko (MH-142)</label>
+            <name>ha_hamo_moko_mh_142_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_b</district>
+            <label>Ha Mokhatla (MH-158)</label>
+            <name>ha_mokhatla_mh_158_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_b</district>
+            <label>Ha Nthamaha (MH-478)</label>
+            <name>ha_nthamaha_mh_478_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_b</district>
+            <label>Ha Ranti (MH-538)</label>
+            <name>ha_ranti_mh_538_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_b</district>
+            <label>Lecheche (MH-557)</label>
+            <name>lecheche_mh_557_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_b</district>
+            <label>Matsoareng (MH-073)</label>
+            <name>matsoareng_mh_073_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_b</district>
+            <label>Moru Motso (MH-507)</label>
+            <name>moru_motso_mh_507_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_b</district>
+            <label>Pontseng (MH-027)</label>
+            <name>pontseng_mh_027_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mokhotlong_b</district>
+            <label>Draaihoek (MK-384)</label>
+            <name>draaihoek_mk_384_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mokhotlong_b</district>
+            <label>Ha Tlenyane (MK-212)</label>
+            <name>ha_tlenyane_mk_212_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mokhotlong_b</district>
+            <label>Khohlong (MK-312)</label>
+            <name>khohlong_mk_312_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mokhotlong_b</district>
+            <label>Liotloaneng (MK-379)</label>
+            <name>liotloaneng_mk_379_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mokhotlong_b</district>
+            <label>Mabuleng (MK-269)</label>
+            <name>mabuleng_mk_269_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mokhotlong_b</district>
+            <label>Maheneng (MK-342)</label>
+            <name>maheneng_mk_342_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mokhotlong_b</district>
+            <label>Matebeleng (MK-334)</label>
+            <name>matebeleng_mk_334_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mokhotlong_b</district>
+            <label>Matlong (MK-387)</label>
+            <name>matlong_mk_387_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>mokhotlong_b</district>
+            <label>Mosenekeng (MK-341)</label>
+            <name>mosenekeng_mk_341_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_b</district>
+            <label>Ha Lehata (QN-088)</label>
+            <name>ha_lehata_qn_088_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_b</district>
+            <label>Ha Molomo (QN-206)</label>
+            <name>ha_molomo_qn_206_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_b</district>
+            <label>Ha Ranqhongoana (QN-007)</label>
+            <name>ha_ranqhongoana_qn_007_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_b</district>
+            <label>Ha Seholoholo (QN-055)</label>
+            <name>ha_seholoholo_qn_055_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_b</district>
+            <label>Liboteng (QN-096)</label>
+            <name>liboteng_qn_096_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_b</district>
+            <label>Mankoe (QN-091)</label>
+            <name>mankoe_qn_091_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_b</district>
+            <label>Qenehellong (QN-070)</label>
+            <name>qenehellong_qn_070_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_b</district>
+            <label>Sekiring (QN-094)</label>
+            <name>sekiring_qn_094_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_b</district>
+            <label>Tsolo (QN-104)</label>
+            <name>tsolo_qn_104_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>quthing_b</district>
+            <label>Mamokeli (QT-337)</label>
+            <name>mamokeli_qt_337_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>quthing_b</district>
+            <label>Marakabei (QT-398)</label>
+            <name>marakabei_qt_398_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>quthing_b</district>
+            <label>Masuoaneng (QT-392)</label>
+            <name>masuoaneng_qt_392_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>quthing_b</district>
+            <label>Mats'ela-Habeli (QT-246)</label>
+            <name>mats_ela_habeli_qt_246_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>quthing_b</district>
+            <label>Ngoae &amp; Sekokoaneng (QT-067)</label>
+            <name>ngoae_sekokoaneng_qt_067_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>quthing_b</district>
+            <label>Nkoto-Silase (QT-334)</label>
+            <name>nkoto_silase_qt_334_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>quthing_b</district>
+            <label>Photha-Photha (QT-401)</label>
+            <name>photha_photha_qt_401_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>quthing_b</district>
+            <label>Raseeng (QT-076)</label>
+            <name>raseeng_qt_076_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>quthing_b</district>
+            <label>Thaba-Chitja (QT-292)</label>
+            <name>thaba_chitja_qt_292_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_b</district>
+            <label>Ha Long (TT-298)</label>
+            <name>ha_long_tt_298_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_b</district>
+            <label>Ha Moriana (TT-297)</label>
+            <name>ha_moriana_tt_297_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_b</district>
+            <label>Ha Motake (TT-303)</label>
+            <name>ha_motake_tt_303_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_b</district>
+            <label>Ha Nkune (TT-212)</label>
+            <name>ha_nkune_tt_212_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_b</district>
+            <label>Ha Poko (TT-225)</label>
+            <name>ha_poko_tt_225_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_b</district>
+            <label>Ha Ratau (TT-165)</label>
+            <name>ha_ratau_tt_165_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_b</district>
+            <label>Ha Sekhaupane (TT-344)</label>
+            <name>ha_sekhaupane_tt_344_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_b</district>
+            <label>Masakoane (TT-304)</label>
+            <name>masakoane_tt_304_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_b</district>
+            <label>Tholanyane (TT-299)</label>
+            <name>tholanyane_tt_299_</name>
+            <phase>b</phase>
+          </item>
+          <item>
+            <district>berea_c</district>
+            <label>Ha Matjotjo  (BR-175)</label>
+            <name>ha_matjotjo_br_175_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>berea_c</district>
+            <label>Ha Mokhati  (BR-025)</label>
+            <name>ha_mokhati_br_025_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>berea_c</district>
+            <label>Ha Phalatsane (BR-075)</label>
+            <name>ha_phalatsane_br_075_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>berea_c</district>
+            <label>Ha Phoofolo  (BR-090)</label>
+            <name>ha_phoofolo_br_090_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>berea_c</district>
+            <label>Ha Telukhunoana (BR-166)</label>
+            <name>ha_telukhunoana_br_166_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>berea_c</district>
+            <label>Ha Tumo  (BR-043)</label>
+            <name>ha_tumo_br_043_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>berea_c</district>
+            <label>Kolojane  (BR-036)</label>
+            <name>kolojane_br_036_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>berea_c</district>
+            <label>Mokhethoaneng  (BR-16)</label>
+            <name>mokhethoaneng_br_16_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>botha_bothe_c</district>
+            <label>Community (BB-136)</label>
+            <name>community_bb_136_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>botha_bothe_c</district>
+            <label>Ha 'Masekh'ou (BB-130)</label>
+            <name>ha_masekh_ou_bb_130_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>botha_bothe_c</district>
+            <label>Kopanong (BB-250)</label>
+            <name>kopanong_bb_250_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>botha_bothe_c</district>
+            <label>Mantlakala (BB-221)</label>
+            <name>mantlakala_bb_221_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>botha_bothe_c</district>
+            <label>Masianokeng (BB-259)</label>
+            <name>masianokeng_bb_259_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>botha_bothe_c</district>
+            <label>Motabola (BB-214)</label>
+            <name>motabola_bb_214_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>botha_bothe_c</district>
+            <label>Mphale (BB-156)</label>
+            <name>mphale_bb_156_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>botha_bothe_c</district>
+            <label>Thoteng (BB-251)</label>
+            <name>thoteng_bb_251_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>leribe_c</district>
+            <label>Ha Leaooa (LR-299)</label>
+            <name>ha_leaooa_lr_299_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>leribe_c</district>
+            <label>Ha Ralikuku (LR-240)</label>
+            <name>ha_ralikuku_lr_240_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>leribe_c</district>
+            <label>Ha Tente (LR-258)</label>
+            <name>ha_tente_lr_258_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>leribe_c</district>
+            <label>Ha Tobolela (LR-257)</label>
+            <name>ha_tobolela_lr_257_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>leribe_c</district>
+            <label>Maqasane (LR-128)</label>
+            <name>maqasane_lr_128_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>leribe_c</district>
+            <label>Metolong (LR-227)</label>
+            <name>metolong_lr_227_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>leribe_c</district>
+            <label>Nkoeng (LR-361)</label>
+            <name>nkoeng_lr_361_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>leribe_c</district>
+            <label>Tale (LR-223)</label>
+            <name>tale_lr_223_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mafeteng_c</district>
+            <label>Ha Likupa (MF-008)</label>
+            <name>ha_likupa_mf_008_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mafeteng_c</district>
+            <label>Ha Manehella (MF-669)</label>
+            <name>ha_manehella_mf_669_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mafeteng_c</district>
+            <label>Ha Sebeli-Lehananeng (MF-054)</label>
+            <name>ha_sebeli_lehananeng_mf_054_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mafeteng_c</district>
+            <label>Ha Tebelo (MF- 679)</label>
+            <name>ha_tebelo_mf_679_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mafeteng_c</district>
+            <label>Khasapane (MF-219)</label>
+            <name>khasapane_mf_219_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mafeteng_c</district>
+            <label>Lihlookong (MF-221)</label>
+            <name>lihlookong_mf_221_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mafeteng_c</district>
+            <label>Sekiring (MF-292)</label>
+            <name>sekiring_mf_292_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mafeteng_c</district>
+            <label>T'soeute (MF-750)</label>
+            <name>t_soeute_mf_750_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>maseru_c</district>
+            <label>Ha Lekhafola (MS-215/426)</label>
+            <name>ha_lekhafola_ms_215_426_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>maseru_c</district>
+            <label>Ha Nkoankoa (MS-447)</label>
+            <name>ha_nkoankoa_ms_447_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>maseru_c</district>
+            <label>Ha Pita (MS-025)</label>
+            <name>ha_pita_ms_025_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>maseru_c</district>
+            <label>Ha Salemone Morainyane (MS-475)</label>
+            <name>ha_salemone_morainyane_ms_475_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>maseru_c</district>
+            <label>Ha Sofonia (MS-021)</label>
+            <name>ha_sofonia_ms_021_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>maseru_c</district>
+            <label>Khubetsoana &amp; Sekoting (MS-508)</label>
+            <name>khubetsoana_sekoting_ms_508_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>maseru__c</district>
+            <label>Kubake Moreneng (MS-422)</label>
+            <name>kubake_moreneng_ms_422_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>maseru__c</district>
+            <label>Machekoaneng (MS-104)</label>
+            <name>machekoaneng_ms_104_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_c</district>
+            <label>Ha Bereng Matsoho (MH-115)</label>
+            <name>ha_bereng_matsoho_mh_115_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_c</district>
+            <label>Ha Mohohlo (MH-404)</label>
+            <name>ha_mohohlo_mh_404_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_c</district>
+            <label>Ha Nkau (MH-293)</label>
+            <name>ha_nkau_mh_293_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_c</district>
+            <label>Ha Raboroko (MH-156)</label>
+            <name>ha_raboroko_mh_156_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_c</district>
+            <label>Ha Senekane (MH-321)</label>
+            <name>ha_senekane_mh_321_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_c</district>
+            <label>Malahleha (MH-036)</label>
+            <name>malahleha_mh_036_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_c</district>
+            <label>Maluke (MH-473)</label>
+            <name>maluke_mh_473_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mohale_s_hoek_c</district>
+            <label>Setotoma (MH-110)</label>
+            <name>setotoma_mh_110_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mokhotlong_c</district>
+            <label>Bloodberg (MK-048)</label>
+            <name>bloodberg_mk_048_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mokhotlong_c</district>
+            <label>Ha Masasane (MK-381)</label>
+            <name>ha_masasane_mk_381_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mokhotlong_c</district>
+            <label>Ha Nthimolane (MK-382)</label>
+            <name>ha_nthimolane_mk_382_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mokhotlong_c</district>
+            <label>Limapong (MK-268)</label>
+            <name>limapong_mk_268_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mokhotlong_c</district>
+            <label>Lithoteng (MK-131)</label>
+            <name>lithoteng_mk_131_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mokhotlong_c</district>
+            <label>Moteetee (MK-037)</label>
+            <name>moteetee_mk_037_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mokhotlong_c</district>
+            <label>T'sila-nt'so (MK-233)</label>
+            <name>t_sila_nt_so_mk_233_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>mokhotlong_c</district>
+            <label>Tsoenene (MK-002)</label>
+            <name>tsoenene_mk_002_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_c</district>
+            <label>Ha Nkofo (QN-120)</label>
+            <name>ha_nkofo_qn_120_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_c</district>
+            <label>Ha Sephelane (QN-154)</label>
+            <name>ha_sephelane_qn_154_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_c</district>
+            <label>Ha Tamose (QN-051)</label>
+            <name>ha_tamose_qn_051_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_c</district>
+            <label>Ha T'sita (QN-009)</label>
+            <name>ha_t_sita_qn_009_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_c</district>
+            <label>Khubetsoana (QN-101)</label>
+            <name>khubetsoana_qn_101_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_c</district>
+            <label>Lepapaneng (QN-121)</label>
+            <name>lepapaneng_qn_121_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_c</district>
+            <label>Rasekoele (QN-100)</label>
+            <name>rasekoele_qn_100_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>qacha_s_nek_c</district>
+            <label>Sefaha (QN-003)</label>
+            <name>sefaha_qn_003_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>quthing_c</district>
+            <label>Mohale (QT-196)</label>
+            <name>mohale_qt_196_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>quthing_c</district>
+            <label>Mokokoane (QT-273)</label>
+            <name>mokokoane_qt_273_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>quthing_c</district>
+            <label>Mpharane (QT-287)</label>
+            <name>mpharane_qt_287_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>quthing_c</district>
+            <label>Paballong (QT-117)</label>
+            <name>paballong_qt_117_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>quthing_c</district>
+            <label>Rat'sit'so (QT-074)</label>
+            <name>rat_sit_so_qt_074_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>quthing_c</district>
+            <label>Sekakeng (QT-335)</label>
+            <name>sekakeng_qt_335_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>quthing_c</district>
+            <label>Sello (QT-283)</label>
+            <name>sello_qt_283_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>quthing_c</district>
+            <label>Thoteng (QT-034)</label>
+            <name>thoteng_qt_034_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_c</district>
+            <label>Ha Chooko (TT-312)</label>
+            <name>ha_chooko_tt_312_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_c</district>
+            <label>Ha Ntsokoane (TT-301)</label>
+            <name>ha_ntsokoane_tt_301_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_c</district>
+            <label>Ha Ts'oeu-Khala  (TT-049)</label>
+            <name>ha_ts_oeu_khala_tt_049_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_c</district>
+            <label>Makhuleng  (TT-239)</label>
+            <name>makhuleng_tt_239_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_c</district>
+            <label>Makunyapane  (TT-083)</label>
+            <name>makunyapane_tt_083_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_c</district>
+            <label>Matsaile Manganeng (TT-411)</label>
+            <name>matsaile_manganeng_tt_411_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_c</district>
+            <label>Matsaile Moreneng (TT-038)</label>
+            <name>matsaile_moreneng_tt_038_</name>
+            <phase>c</phase>
+          </item>
+          <item>
+            <district>thaba_tseka_c</district>
+            <label>Moeling  (TT-268)</label>
+            <name>moeling_tt_268_</name>
+            <phase>c</phase>
           </item>
         </root>
       </instance>
