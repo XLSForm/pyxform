@@ -619,6 +619,9 @@ def workbook_to_json(
         question_type = row.get(constants.TYPE)
         question_name = row.get(constants.NAME)
 
+        if question_type == "xml-internal":
+            json_dict["choices"] = choices
+
         if not question_type:
             # if name and label are also missing,
             # then its a comment row, and we skip it with warning

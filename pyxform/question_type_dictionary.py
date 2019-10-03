@@ -371,6 +371,7 @@ QUESTION_TYPE_DICT = {
     "xml-external": {
         # Only effect is to add an external instance.
     },
+    "xml-internal": {},
     "start-geopoint": {
         "control": {"tag": "action"},
         "bind": {"type": "geopoint"},
