@@ -211,7 +211,7 @@ def xls_to_dict(path_or_file):
         if sheet.name not in constants.SUPPORTED_SHEET_NAMES:
             if len(workbook.sheets()) == 1:
                 result[constants.SURVEY], result[
-                    "%s_header" % sheet.name
+                    "%s_header" % constants.SURVEY
                 ] = xls_to_dict_normal_sheet(sheet)
             else:
                 continue
