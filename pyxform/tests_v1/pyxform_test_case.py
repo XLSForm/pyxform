@@ -219,7 +219,9 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 )
             for v_err in odk_validate_error__contains:
                 self.assertContains(
-                    e.args[0], v_err, msg_prefix="odk_validate_error__contains"
+                    e.args[0].decode("utf-8"),
+                    v_err,
+                    msg_prefix="odk_validate_error__contains",
                 )
         else:
             survey = True

@@ -110,7 +110,8 @@ def check_xform(path_to_xform):
     else:
         if returncode > 0:  # Error invalid
             raise ODKValidateError(
-                "ODK Validate Errors:\n" + ErrorCleaner.odk_validate(stderr)
+                b"ODK Validate Errors:\n"
+                + ErrorCleaner.odk_validate(stderr).encode("utf-8")
             )
         elif returncode == 0:
             if stderr:

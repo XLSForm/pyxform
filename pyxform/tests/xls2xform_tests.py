@@ -7,6 +7,8 @@ Test xls2xform module.
 # breaks that function.
 
 import argparse
+import logging
+import os
 from unittest import TestCase
 
 import pyxform
@@ -16,6 +18,8 @@ from pyxform.xls2xform import (
     get_xml_path,
     main_cli,
 )
+
+from pyxform.tests.utils import path_to_text_fixture
 
 try:
     from unittest import mock
@@ -220,6 +224,27 @@ class XLS2XFormTests(TestCase):
             pretty_print=False,
             enketo=False,
         )
+
+    @mock.patch(
+        "argparse.ArgumentParser.parse_args",
+        return_value=argparse.Namespace(
+            path_to_XLSForm=path_to_text_fixture("bad_calc.xlsx"),
+            output_path=None,
+            json=False,
+            skip_validate=True,
+            odk_validate=True,
+            enketo_validate=True,
+            pretty_print=True,
+        ),
+    )
+    def test_xls2xform_convert_throwing_odk_error(self, parser_mock_args):
+        """
+        Parse and validate bad_calc.xlsx
+        """
+        logger = logging.getLogger("pyxform.xls2xform")
+        with mock.patch.object(logger, "error") as mock_debug:
+            main_cli()
+            self.assertEqual(mock_debug.call_count, 1)
 
     def test_get_xml_path_function(self):
         """Should return an xml path in the same directory as the xlsx file"""
