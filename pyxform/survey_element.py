@@ -8,7 +8,13 @@ import re
 from pyxform import constants
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
-from pyxform.utils import INVALID_XFORM_TAG_REGEXP, is_valid_xml_tag, node, unicode
+from pyxform.utils import (
+    INVALID_XFORM_TAG_REGEXP,
+    is_valid_xml_tag,
+    node,
+    unicode,
+    basestring,
+)
 from pyxform.xls2json import print_pyobj_to_json
 
 try:
@@ -336,6 +342,9 @@ class SurveyElement(dict):
         )
 
     def dynamic_default(self):
+        if not isinstance(self.default, basestring):
+            return False
+
         expression = []
         contains_dynamic = False
         expression_construct = {"[", "]", "{", "}", "(", ")"}
