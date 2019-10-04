@@ -335,6 +335,39 @@ class SurveyElement(dict):
             type(self.media) is dict and len(self.media) > 0
         )
 
+    def dynamic_default(self):
+        expression = []
+        contains_dynamic = False
+        expression_construct = {"[", "]", "{", "}", "(", ")"}
+        expression_pair = {"]": "[", "}": "{", ")": "("}
+        for expression_element in self.default:
+            if expression_element in expression_construct:
+                contains_dynamic = True
+                if (
+                    expression
+                    and expression.pop() != expression_pair[expression_element]
+                ):
+                    return False
+                else:
+                    expression.append(expression_element)
+        return contains_dynamic
+
+    def xml_dynamic_default(self, in_binding=False):
+        if not self.default or not self.dynamic_default():
+            return
+
+        if self.parent.__class__.__name__ == "Survey" and in_binding:
+            default_handler = {"event": "odk-instance-first-load"}
+            return node(
+                "setvalue", ref=self.get_xpath(), value=self.default, **default_handler
+            )
+
+        if self.parent.__class__.__name__ != "Survey" and not in_binding:
+            default_handler = {"event": "odk-instance-first-load odk-new-repeat"}
+            return node(
+                "setvalue", ref=self.get_xpath(), value=self.default, **default_handler
+            )
+
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):
         if self.needs_itext_ref():
@@ -412,6 +445,9 @@ class SurveyElement(dict):
             xml_binding = e.xml_binding()
             if xml_binding is not None:
                 result.append(xml_binding)
+            dynamic_default = e.xml_dynamic_default(True)
+            if dynamic_default:
+                result.append(dynamic_default)
         return result
 
     def xml_control(self):
