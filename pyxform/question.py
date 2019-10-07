@@ -26,7 +26,7 @@ class Question(SurveyElement):
         for key, value in attributes.items():
             attributes[key] = survey.insert_xpaths(value, self)
 
-        if self.get("default"):
+        if self.get("default") and not self.dynamic_default():
             return node(self.name, unicode(self.get("default")), **attributes)
         return node(self.name, **attributes)
 
