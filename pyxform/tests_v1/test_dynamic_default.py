@@ -17,9 +17,9 @@ class DynamicDefaultTests(PyxformTestCase):
         md = """
         | survey |         |            |            |                   |
         |        | type    | name       | label      | default           |
-        |        | text    | first_name | First name | first-name${idea} |
-        |        | text    | last_name  | Last name  | not-func$         |
-        |        | integer | age        | Your age   | some-rando-func() |
+        |        | text    | first_name | First name | first_name${idea} |
+        |        | text    | last_name  | Last name  | not_func$         |
+        |        | integer | age        | Your age   | some_rando_func() |
         """
 
         self.assertPyxformXform(
@@ -28,10 +28,10 @@ class DynamicDefaultTests(PyxformTestCase):
             id_string="id",
             model__contains=[
                 "<first_name/>",
-                "<last_name>not-func$</last_name>",
+                "<last_name>not_func$</last_name>",
                 "<age/>",
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/first_name" value="first-name${idea}"/>',
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="some-rando-func()"/>',
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/first_name" value="first_name${idea}"/>',
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="some_rando_func()"/>',
             ],
         )
 
@@ -43,25 +43,25 @@ class DynamicDefaultTests(PyxformTestCase):
         survey_xml = survey._to_pretty_xml()
 
         self.assertContains(survey_xml, "<first_name/>", 1)
-        self.assertContains(survey_xml, "<last_name>not-func$</last_name>", 1)
+        self.assertContains(survey_xml, "<last_name>not_func$</last_name>", 1)
         self.assertContains(survey_xml, "<age/>", 1)
         self.assertContains(
             survey_xml,
-            '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="some-rando-func()"/>',
+            '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="some_rando_func()"/>',
             1,
         )
         self.assertContains(
             survey_xml,
-            '<setvalue event="odk-instance-first-load" ref="/dynamic/first_name" value="first-name${idea}"/>',
+            '<setvalue event="odk-instance-first-load" ref="/dynamic/first_name" value="first_name${idea}"/>',
             1,
         )
         self.assertNotContains(
             survey_xml,
-            '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/age" value="some-rando-func()"/>',
+            '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/age" value="some_rando_func()"/>',
         )
         self.assertNotContains(
             survey_xml,
-            '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/first_name" value="first-name${idea}"/>',
+            '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/first_name" value="first_name${idea}"/>',
         )
 
     def test_handling_dynamic_default_in_repeat(self):
@@ -72,8 +72,8 @@ class DynamicDefaultTests(PyxformTestCase):
         | survey |              |            |              |                   |
         |        | type         | name       | label        | default           |
         |        | begin repeat | household  | Households   |                   |
-        |        | integer      | age        | Your age     | some-rando-func() |
-        |        | text         | feeling    | Your feeling | not-func$         |
+        |        | integer      | age        | Your age     | some_rando_func() |
+        |        | text         | feeling    | Your feeling | not_func$         |
         |        | end repeat   | household  |              |                   |
         """
 
@@ -81,9 +81,9 @@ class DynamicDefaultTests(PyxformTestCase):
             md=md,
             name="dynamic",
             id_string="id",
-            model__contains=["<age/>", "<feeling>not-func$</feeling>"],
+            model__contains=["<age/>", "<feeling>not_func$</feeling>"],
             xml__contains=[
-                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="some-rando-func()"/>'
+                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="some_rando_func()"/>'
             ],
         )
 
@@ -94,14 +94,40 @@ class DynamicDefaultTests(PyxformTestCase):
         )
         survey_xml = survey._to_pretty_xml()
 
-        self.assertContains(survey_xml, "<feeling>not-func$</feeling>", 1)
+        self.assertContains(survey_xml, "<feeling>not_func$</feeling>", 1)
         self.assertContains(survey_xml, "<age/>", 1)
         self.assertContains(
             survey_xml,
-            '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="some-rando-func()"/>',
+            '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="some_rando_func()"/>',
             1,
         )
         self.assertNotContains(
             survey_xml,
-            '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="some-rando-func()"/>',
+            '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="some_rando_func()"/>',
+        )
+
+    def test_handling_arithmetic_expression(self):
+        """
+        Should use set-value for dynamic default form
+        """
+        md = """
+        | survey |         |            |             |                   |
+        |        | type    | name       | label       | default           |
+        |        | text    | expr_1     | First expr  | 2 + 3 * 4         |
+        |        | text    | expr_2     | Second expr | 5 / 5 - 5         |
+        |        | integer | expr_3     | Third expr  | expr() + 2 * 5    |
+        """
+
+        self.assertPyxformXform(
+            md=md,
+            name="dynamic",
+            id_string="id",
+            model__contains=[
+                "<expr_1/>",
+                "<expr_2/>",
+                "<expr_3/>",
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_1" value="2 + 3 * 4"/>',
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_2" value="5 / 5 - 5"/>',
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_3" value="expr() + 2 * 5"/>',
+            ],
         )

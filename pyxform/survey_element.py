@@ -347,11 +347,20 @@ class SurveyElement(dict):
 
         expression = []
         contains_dynamic = False
+        arithmetic_construct = {"*", "/", "+", "-"}
+        if self.type == "date":
+            arithmetic_construct.remove("/")
+            arithmetic_construct.remove("-")
+
         expression_construct = {"[", "]", "{", "}", "(", ")"}
         expression_pair = {"]": "[", "}": "{", ")": "("}
         for expression_element in self.default:
+            contains_dynamic = (
+                contains_dynamic
+                or expression_element in expression_construct
+                or expression_element in arithmetic_construct
+            )
             if expression_element in expression_construct:
-                contains_dynamic = True
                 if (
                     expression
                     and expression.pop() != expression_pair[expression_element]
