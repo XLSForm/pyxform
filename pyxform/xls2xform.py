@@ -176,11 +176,6 @@ def main_cli():
                 pretty_print=args.pretty_print,
                 enketo=args.enketo_validate,
             )
-            if len(warnings) > 0:
-                logger.warning("Warnings:")
-            for w in warnings:
-                logger.warning(w)
-            logger.info("Conversion complete!")
         except EnvironmentError as e:
             # Do not crash if 'java' not installed
             logger.error(e)
@@ -188,6 +183,12 @@ def main_cli():
             # Remove output file if there is an error
             os.remove(args.output_path)
             logger.error(e)
+        else:
+            if len(warnings) > 0:
+                logger.warning("Warnings:")
+            for w in warnings:
+                logger.warning(w)
+            logger.info("Conversion complete!")
 
 
 if __name__ == "__main__":
