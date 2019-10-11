@@ -300,8 +300,8 @@ def create_survey_element_from_json(str_or_path):
     return create_survey_element_from_dict(d)
 
 
-def create_survey_from_xls(path_or_file):
-    excel_reader = SurveyReader(path_or_file)
+def create_survey_from_xls(path_or_file, default_name=None):
+    excel_reader = SurveyReader(path_or_file, default_name=default_name)
     d = excel_reader.to_json_dict()
     survey = create_survey_element_from_dict(d)
     if not survey.id_string:

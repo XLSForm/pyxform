@@ -141,6 +141,12 @@ class MultipleChoiceQuestion(Question):
         result = node(**control_dict)
         for element in self.xml_label_and_hint():
             result.appendChild(element)
+
+        choices = survey.get("choices")
+        if choices is not None and len(choices) > 0:
+            first_choices = next(iter(choices.values()))
+            multi_language = isinstance(first_choices[0].get("label"), dict)
+
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
         if self["itemset"] and isinstance(self["itemset"], basestring):
@@ -150,8 +156,12 @@ class MultipleChoiceQuestion(Question):
                 itemset = itemset
                 itemset_label_ref = "label"
             else:
-                itemset = self["itemset"]
-                itemset_label_ref = "jr:itext(itextId)"
+                if not multi_language:
+                    itemset = self["itemset"]
+                    itemset_label_ref = "label"
+                else:
+                    itemset = self["itemset"]
+                    itemset_label_ref = "jr:itext(itextId)"
             nodeset = "instance('" + itemset + "')/root/item"
             choice_filter = survey.insert_xpaths(choice_filter, self, True)
             if choice_filter:
