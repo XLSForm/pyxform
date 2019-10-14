@@ -19,8 +19,20 @@ jobs:
           # Validate calls GUI code which fails if assistive_technologies are on
           name: Install dependencies for ODK Validate
           command: |
-            sudo apt-get install -y openjdk-8-jre-headless
+            sudo apt-get install -y openjdk-11-jre-headless
             sudo sed -i -e '/^assistive_technologies=/s/^/#/' /etc/java-*-openjdk/accessibility.properties
+      - run:
+          name: Test code is well formatted
+          command: |
+            if ! type /home/circleci/.local/bin/black > /dev/null; then
+                echo "Black is not supported in this python version :("
+            else
+                output="$(/home/circleci/.local/bin/black --target-version=py27 pyxform --check  2>&1 >/dev/null)"
+                if [[ $output == *"would be reformatted"* ]]; then
+                    echo 'The source code could use a bit more black.'
+                    exit 1
+                fi
+            fi
       - run:
           name: Run tests
           command: |
@@ -30,7 +42,7 @@ jobs:
           name: upload coverage report
           command: |
             /home/circleci/.local/bin/coverage xml
-            /home/circleci/.local/bin/codecov --required -X search gcov pycov -f coverage.xml
+            (/home/circleci/.local/bin/codecov --required -X search gcov pycov -f coverage.xml) || echo 'Codecov failed to upload'
       - run:
           name: Building artifacts
           command: |
@@ -52,10 +64,6 @@ jobs:
     <<: *build-template
     docker:
       - image: circleci/python:3.5
-  py-3.4:
-    <<: *build-template
-    docker:
-      - image: circleci/python:3.4
   py-2.7:
     <<: *build-template
     docker:
@@ -67,5 +75,4 @@ workflows:
       - py-3.7
       - py-3.6
       - py-3.5
-      - py-3.4
       - py-2.7

@@ -3,7 +3,7 @@
   <h:head>
     <h:title>Flat test</h:title>
     <model>
-      <submission action="https://example-odk-aggregate.appspot.com/submission" base64RsaPublicKey="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo93+Dgn3iDleC9XMTDH7ez1MOm/BOt287DgkldNkdvrtdC4oUegx3N8Say9tq47k2EOzeLYkezVnKdtserx+g/+R6pDIOS66bwbH+HoslDEUaZRZ47EipSGC1JhtOp/nQGQCsdVc5q/fPvw8d2rLLi+PQUZPBOiBxUo9h/CFc41hl/quUELmylSdL4O06OAP8OCEDA+tl0C2Ik+uCYMDJLD4m7YVbkV7jJXjtILj+GW+noLriFMRsgg7WKQe2j9fw5+v46nzhokOnDnHh+yGwQMfs/B0jfFAgXllLNjIPlXQf2UVzuxEax6wLCyqUXMIjCPSNfnzDRgFB4Qw3QbJCwIDAQAB" method="form-data-post"/>
+      <submission action="https://example-odk-aggregate.appspot.com/submission" base64RsaPublicKey="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo93+Dgn3iDleC9XMTDH7ez1MOm/BOt287DgkldNkdvrtdC4oUegx3N8Say9tq47k2EOzeLYkezVnKdtserx+g/+R6pDIOS66bwbH+HoslDEUaZRZ47EipSGC1JhtOp/nQGQCsdVc5q/fPvw8d2rLLi+PQUZPBOiBxUo9h/CFc41hl/quUELmylSdL4O06OAP8OCEDA+tl0C2Ik+uCYMDJLD4m7YVbkV7jJXjtILj+GW+noLriFMRsgg7WKQe2j9fw5+v46nzhokOnDnHh+yGwQMfs/B0jfFAgXllLNjIPlXQf2UVzuxEax6wLCyqUXMIjCPSNfnzDRgFB4Qw3QbJCwIDAQAB" method="post"/>
       <itext>
         <translation default="true()" lang="default">
           <text id="/flat_xlsform_test/deviceid_test_output:label">
@@ -242,9 +242,7 @@
           <text id="/flat_xlsform_test/invalid_variable:label">
             <value>-</value>
           </text>
-          <text id="/flat_xlsform_test/compact-2-test/a:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/flat_xlsform_test/compact-2-test/a:label"/>
           <text id="/flat_xlsform_test/address:label">
             <value>您好</value>
           </text>
@@ -309,9 +307,7 @@
             <value>ni hao</value>
           </text>
           <text id="/flat_xlsform_test/text_image_audio_video_test:label">
-            <value form="image">jr://images/-</value>
             <value form="audio">jr://audio/chinese_audio.wav</value>
-            <value form="video">jr://video/-</value>
             <value>您好</value>
           </text>
           <text id="/flat_xlsform_test/number_label:label">
@@ -323,9 +319,7 @@
           <text id="/flat_xlsform_test/autocomplete_test/yes:label">
             <value>是</value>
           </text>
-          <text id="/flat_xlsform_test/compact-test/b:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/flat_xlsform_test/compact-test/b:label"/>
           <text id="/flat_xlsform_test/select_multiple_test:label">
             <value>-</value>
           </text>
@@ -344,15 +338,11 @@
           <text id="/flat_xlsform_test/start_test_output:label">
             <value>-</value>
           </text>
-          <text id="/flat_xlsform_test/compact-2-test/b:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/flat_xlsform_test/compact-2-test/b:label"/>
           <text id="/flat_xlsform_test/note_test:label">
             <value>-</value>
           </text>
-          <text id="/flat_xlsform_test/display_image_test:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/flat_xlsform_test/display_image_test:label"/>
           <text id="/flat_xlsform_test/list-nolabel-test/no:label">
             <value>没有</value>
           </text>
@@ -401,9 +391,7 @@
           <text id="/flat_xlsform_test/autocomplete_test/no:label">
             <value>没有</value>
           </text>
-          <text id="/flat_xlsform_test/compact-test/a:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/flat_xlsform_test/compact-test/a:label"/>
         </translation>
         <translation lang="english">
           <text id="/flat_xlsform_test/deviceid_test_output:label">
@@ -438,9 +426,7 @@
           <text id="/flat_xlsform_test/reserved_name_for_field_list_labels_25/no:label">
             <value>-</value>
           </text>
-          <text id="/flat_xlsform_test/compact-2-test/a:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/flat_xlsform_test/compact-2-test/a:label"/>
           <text id="/flat_xlsform_test/text_image_audio_video_test:hint">
             <value>-</value>
           </text>
@@ -494,9 +480,7 @@
           <text id="/flat_xlsform_test/select_multiple_test:jr:constraintMsg">
             <value>Sorry <output value=" /flat_xlsform_test/my_name "/>, you can't select yes and no.</value>
           </text>
-          <text id="/flat_xlsform_test/compact-test/a:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/flat_xlsform_test/compact-test/a:label"/>
           <text id="/flat_xlsform_test/select_multiple_test/yes:label">
             <value>-</value>
           </text>
@@ -508,8 +492,6 @@
           </text>
           <text id="/flat_xlsform_test/text_image_audio_video_test:label">
             <value form="image">jr://images/img_test_2.jpg</value>
-            <value form="audio">jr://audio/-</value>
-            <value form="video">jr://video/-</value>
             <value>text_image_audio_video_test</value>
           </text>
           <text id="/flat_xlsform_test/date_test:label">
@@ -554,9 +536,7 @@
           <text id="/flat_xlsform_test/autocomplete_test/yes:label">
             <value>-</value>
           </text>
-          <text id="/flat_xlsform_test/display_image_test:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/flat_xlsform_test/display_image_test:label"/>
           <text id="/flat_xlsform_test/list-nolabel-test/no:label">
             <value>-</value>
           </text>
@@ -565,9 +545,7 @@
           <text id="/flat_xlsform_test/number_label:hint">
             <value>-</value>
           </text>
-          <text id="/flat_xlsform_test/compact-2-test/b:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/flat_xlsform_test/compact-2-test/b:label"/>
           <text id="/flat_xlsform_test/datetime_test:label">
             <value>datetime_test</value>
           </text>
@@ -579,9 +557,7 @@
           </text>
           <text id="/flat_xlsform_test/end_test_output:label">
             <value>end test output: <output value=" /flat_xlsform_test/end "/></value></text>
-          <text id="/flat_xlsform_test/compact-test/b:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/flat_xlsform_test/compact-test/b:label"/>
           <text id="/flat_xlsform_test/audio_test:label">
             <value>audio_test</value>
           </text>
@@ -704,7 +680,7 @@
       <bind nodeset="/flat_xlsform_test/_1" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind nodeset="/flat_xlsform_test/FALSE" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind jr:noAppErrorString="Sorry, app does not exist." nodeset="/flat_xlsform_test/launch" type="int"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/flat_xlsform_test/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/flat_xlsform_test/meta/instanceID" readonly="true()" type="string"/>
       <bind calculate=" /flat_xlsform_test/my_name " nodeset="/flat_xlsform_test/meta/instanceName" type="string"/>
     </model>
   </h:head>

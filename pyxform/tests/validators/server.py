@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
 import os
 import posixpath
 import threading
+
 try:
     from http.server import SimpleHTTPRequestHandler
     from socketserver import ThreadingTCPServer
@@ -15,11 +17,11 @@ HERE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
 class SimpleHTTPRequestHandlerHere(SimpleHTTPRequestHandler, object):
-
     def send_head(self):
         if self.client_address[0] != "127.0.0.1":
-            self.send_error(401, "Unauthorized", 
-                            "No permission -- see authorization schemes")
+            self.send_error(
+                401, "Unauthorized", "No permission -- see authorization schemes"
+            )
             return None
         else:
             return super(SimpleHTTPRequestHandlerHere, self).send_head()
@@ -72,7 +74,8 @@ class ThreadingServerInThread(object):
         self._server_address = ("127.0.0.1", port)
         self._handler = SimpleHTTPRequestHandlerHere
         self.httpd = ThreadingTCPServer(
-            self._server_address, self._handler, bind_and_activate=False)
+            self._server_address, self._handler, bind_and_activate=False
+        )
 
     def _bind_and_activate(self):
         try:

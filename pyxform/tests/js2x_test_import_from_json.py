@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Testing our ability to import from a JSON text file.
 """
@@ -15,9 +16,9 @@ class Json2XformTestJsonImport(TestCase):
                 {
                     "label": {"French": "Combien?", "English": "How many?"},
                     "type": "decimal",
-                    "name": "exchange_rate"
+                    "name": "exchange_rate",
                 }
-            ]
+            ],
         }
         s = create_survey_element_from_dict(json_text)
 

@@ -1,13 +1,16 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-
+# -*- coding: utf-8 -*-
+"""
+XFormInstanceParser class module - parses an instance XML.
+"""
 # todo: this has been copied from xform_manager, we need to figure out
 # where this code is actually going to live.
 
-from xml.dom import minidom
 import re
+from xml.dom import minidom
+
 from pyxform.utils import unicode
 
-XFORM_ID_STRING = u"_xform_id_string"
+XFORM_ID_STRING = "_xform_id_string"
 
 
 def _xml_node_to_dict(node):
@@ -15,8 +18,7 @@ def _xml_node_to_dict(node):
     if len(node.childNodes) == 0:
         # there's no data for this leaf node
         value = None
-    elif len(node.childNodes) == 1 and \
-            node.childNodes[0].nodeType == node.TEXT_NODE:
+    elif len(node.childNodes) == 1 and node.childNodes[0].nodeType == node.TEXT_NODE:
         # there is data for this leaf node
         value = node.childNodes[0].nodeValue
     else:
@@ -57,7 +59,7 @@ def _flatten_dict(d, prefix):
                 # implemented that [0] should be the first node, but
                 # according to the W3C standard it should have been
                 # [1]. I'm adding 1 to i to start at 1.
-                item_prefix[-1] += u"[%s]" % unicode(i + 1)
+                item_prefix[-1] += "[%s]" % unicode(i + 1)
                 if type(item) == dict:
                     for pair in _flatten_dict(item, item_prefix):
                         yield pair
@@ -91,7 +93,7 @@ class XFormInstanceParser(object):
         self._dict = _xml_node_to_dict(self._root_node)
         self._flat_dict = {}
         for path, value in _flatten_dict(self._dict, []):
-            self._flat_dict[u"/".join(path[1:])] = value
+            self._flat_dict["/".join(path[1:])] = value
         self._set_attributes()
 
     def get_root_node_name(self):
@@ -117,7 +119,7 @@ class XFormInstanceParser(object):
             self._attributes[key] = value
 
     def get_xform_id_string(self):
-        return self._attributes[u"id"]
+        return self._attributes["id"]
 
     def get_flat_dict_with_attributes(self):
         result = self.to_flat_dict().copy()

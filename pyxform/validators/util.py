@@ -1,24 +1,31 @@
+# -*- coding: utf-8 -*-
+"""
+The validators utility functions.
+"""
 import collections
-from contextlib import closing
 import io
 import logging
 import os
-import subprocess
-import time
-from subprocess import Popen, PIPE
-import threading
 import signal
+import subprocess
+import threading
+import time
+from contextlib import closing
+from subprocess import PIPE, Popen
+
+from pyxform.errors import PyXFormError
+
 try:
     from urllib.request import urlopen, Request
     from urllib.error import URLError, HTTPError
 except ImportError:
     from urllib2 import urlopen, Request, URLError, HTTPError
-from pyxform.errors import PyXFormError
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-XFORM_SPEC_PATH = os.path.join(os.path.dirname(HERE), "tests",
-                               "test_expected_output", "xlsform_spec_test.xml")
+XFORM_SPEC_PATH = os.path.join(
+    os.path.dirname(HERE), "tests", "test_expected_output", "xlsform_spec_test.xml"
+)
 
 
 # Adapted from:
@@ -40,7 +47,7 @@ def run_popen_with_timeout(command, timeout):
     # Workarounds for pyinstaller
     # https://github.com/pyinstaller/pyinstaller/wiki/Recipe-subprocess
     startup_info = None
-    if os.name == 'nt':
+    if os.name == "nt":
         # disable command window when run from pyinstaller
         startup_info = subprocess.STARTUPINFO()
         # Less fancy version of bitwise-or-assignment (x |= y) shown in ref url.
@@ -49,10 +56,8 @@ def run_popen_with_timeout(command, timeout):
         else:
             startup_info.dwFlags = 0
 
-    p = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE,
-              startupinfo=startup_info)
-    watchdog = threading.Timer(
-        timeout, _kill_process_after_a_timeout, args=(p.pid,))
+    p = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, startupinfo=startup_info)
+    watchdog = threading.Timer(timeout, _kill_process_after_a_timeout, args=(p.pid,))
     watchdog.start()
     (stdout, stderr) = p.communicate()
     watchdog.cancel()  # if it's still waiting to run
@@ -68,13 +73,13 @@ def decode_stream(stream):
     On Windows, stderr may be latin-1; in which case utf-8 decode will fail.
     If both utf-8 and latin-1 decoding fail then raise all as IOError.
     If the above validate jar call fails, add make sure that the java path
-    is set, e.g. PATH=C:\Program Files (x86)\Java\jre1.8.0_71\bin
+    is set, e.g. PATH=C:\\Program Files (x86)\\Java\\jre1.8.0_71\\bin
     """
     try:
-        return stream.decode('utf-8')
+        return stream.decode("utf-8")
     except UnicodeDecodeError as ude:
         try:
-            return stream.decode('latin-1')
+            return stream.decode("latin-1")
         except BaseException as be:
             msg = "Failed to decode validate stderr as utf-8 or latin-1."
             raise IOError(msg, ude, be)
@@ -94,12 +99,16 @@ def request_get(url):
         else:
             return content
     except HTTPError as e:
-        raise PyXFormError("Unable to fulfill request. Error code: '{c}'. "
-                           "Reason: '{r}'. URL: '{u}'."
-                           "".format(r=e.reason, c=e.code, u=url))
+        raise PyXFormError(
+            "Unable to fulfill request. Error code: '{c}'. "
+            "Reason: '{r}'. URL: '{u}'."
+            "".format(r=e.reason, c=e.code, u=url)
+        )
     except URLError as e:
-        raise PyXFormError("Unable to reach a server. Reason: {r}. "
-                           "URL: {u}".format(r=e.reason, u=url))
+        raise PyXFormError(
+            "Unable to reach a server. Reason: {r}. "
+            "URL: {u}".format(r=e.reason, u=url)
+        )
 
 
 class CapturingHandler(logging.Handler):
@@ -140,7 +149,8 @@ class CapturingHandler(logging.Handler):
     @staticmethod
     def _get_watcher():
         _LoggingWatcher = collections.namedtuple(
-            "_LoggingWatcher", ["records", "output"])
+            "_LoggingWatcher", ["records", "output"]
+        )
         levels = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
         return _LoggingWatcher([], {x: [] for x in levels})
 
@@ -161,12 +171,14 @@ def check_readable(file_path, retry_limit=10, wait_seconds=0.5):
     :param wait_seconds: Amount of sleep time between read attempts.
     :return: True or raise IOError.
     """
+
     def catch_try():
         try:
             with io.open(file_path, mode="r"):
                 return True
         except IOError:
             return False
+
     tries = 0
     while not catch_try():
         if tries < retry_limit:

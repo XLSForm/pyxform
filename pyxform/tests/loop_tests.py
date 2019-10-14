@@ -1,92 +1,92 @@
+# -*- coding: utf-8 -*-
+"""
+Test loop syntax.
+"""
 from unittest import TestCase
+
 from pyxform.builder import create_survey_from_xls
 from pyxform.tests import utils
 
 
 class LoopTests(TestCase):
     def test_loop(self):
-        path = utils.path_to_text_fixture('another_loop.xls')
-        survey = create_survey_from_xls(path)
+        path = utils.path_to_text_fixture("another_loop.xls")
+        survey = create_survey_from_xls(path, "another_loop")
         self.maxDiff = None
         expected_dict = {
-            u'name': u'another_loop',
-            u'id_string': u'another_loop',
-            u'sms_keyword': u'another_loop',
-            u'default_language': u'default',
-            u'title': u'another_loop',
-            u'type': u'survey',
-            u'children': [
+            "name": "another_loop",
+            "id_string": "another_loop",
+            "sms_keyword": "another_loop",
+            "default_language": "default",
+            "title": "another_loop",
+            "type": "survey",
+            "children": [
                 {
-                    u'name': u'loop_vehicle_types',
-                    u'type': u'group',
-                    u'children': [
+                    "name": "loop_vehicle_types",
+                    "type": "group",
+                    "children": [
                         {
-                            u'label': {u'English': u'Car',
-                                       u'French': u'Voiture'},
-                            u'name': u'car',
-                            u'type': u'group',
-                            u'children': [
+                            "label": {"English": "Car", "French": "Voiture"},
+                            "name": "car",
+                            "type": "group",
+                            "children": [
                                 {
-                                    u'label': {
-                                        u'English': u'How many do you have?',
-                                        u'French': u'Combien avoir?'
+                                    "label": {
+                                        "English": "How many do you have?",
+                                        "French": "Combien avoir?",
                                     },
-                                    u'name': u'total',
-                                    u'type': u'integer'
+                                    "name": "total",
+                                    "type": "integer",
                                 },
                                 {
-                                    u'bind': {u'constraint': u'. <= ../total'},
-                                    u'label': {
-                                        u'English': u'How many are working?',
-                                        u'French': u'Combien marcher?'
+                                    "bind": {"constraint": ". <= ../total"},
+                                    "label": {
+                                        "English": "How many are working?",
+                                        "French": "Combien marcher?",
                                     },
-                                    u'name': u'working',
-                                    u'type': u'integer'
-                                }
+                                    "name": "working",
+                                    "type": "integer",
+                                },
                             ],
                         },
                         {
-                            u'label': {u'English': u'Motorcycle',
-                                       u'French': u'Moto'},
-                            u'name': u'motor_cycle',
-                            u'type': u'group',
-                            u'children': [
+                            "label": {"English": "Motorcycle", "French": "Moto"},
+                            "name": "motor_cycle",
+                            "type": "group",
+                            "children": [
                                 {
-                                    u'label': {
-                                        u'English': u'How many do you have?',
-                                        u'French': u'Combien avoir?'
+                                    "label": {
+                                        "English": "How many do you have?",
+                                        "French": "Combien avoir?",
                                     },
-                                    u'name': u'total',
-                                    u'type': u'integer'
+                                    "name": "total",
+                                    "type": "integer",
                                 },
                                 {
-                                    u'bind': {u'constraint': u'. <= ../total'},
-                                    u'label': {
-                                        u'English': u'How many are working?',
-                                        u'French': u'Combien marcher?'
+                                    "bind": {"constraint": ". <= ../total"},
+                                    "label": {
+                                        "English": "How many are working?",
+                                        "French": "Combien marcher?",
                                     },
-                                    u'name': u'working',
-                                    u'type': u'integer'
-                                }
+                                    "name": "working",
+                                    "type": "integer",
+                                },
                             ],
-                        }]},
+                        },
+                    ],
+                },
                 {
-                    u'children': [
+                    "children": [
                         {
-                            u'bind': {
-                                'calculate': "concat('uuid:', uuid())",
-                                'readonly': 'true()'
-                            },
-                            u'name': 'instanceID',
-                            u'type': 'calculate'
+                            "bind": {"jr:preload": "uid", "readonly": "true()"},
+                            "name": "instanceID",
+                            "type": "calculate",
                         }
                     ],
-                    u'control': {
-                        'bodyless': True
-                    },
-                    u'name': 'meta',
-                    u'type': u'group'
-                }
+                    "control": {"bodyless": True},
+                    "name": "meta",
+                    "type": "group",
+                },
             ],
         }
         self.assertEquals(survey.to_json_dict(), expected_dict)

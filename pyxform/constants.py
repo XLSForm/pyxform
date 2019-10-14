@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 This file contains constants that correspond with the property names in the
 json survey format. (@see json_form_schema.json) These names are to be shared
@@ -8,68 +9,74 @@ are easier to find.
 # TODO: Replace matching strings in the json2xforms code (builder.py,
 # survey.py, survey_element.py, question.py) with these constants
 
-TYPE = u"type"
-TITLE = u"title"
-NAME = u"name"
-ID_STRING = u"id_string"
-SMS_KEYWORD = u"sms_keyword"
-SMS_FIELD = u"sms_field"
-SMS_OPTION = u"sms_option"
-SMS_SEPARATOR = u"sms_separator"
-SMS_ALLOW_MEDIA = u"sms_allow_media"
-SMS_DATE_FORMAT = u"sms_date_format"
-SMS_DATETIME_FORMAT = u"sms_datetime_format"
-SMS_RESPONSE = u"sms_response"
+TYPE = "type"
+TITLE = "title"
+NAME = "name"
+ID_STRING = "id_string"
+SMS_KEYWORD = "sms_keyword"
+SMS_FIELD = "sms_field"
+SMS_OPTION = "sms_option"
+SMS_SEPARATOR = "sms_separator"
+SMS_ALLOW_MEDIA = "sms_allow_media"
+SMS_DATE_FORMAT = "sms_date_format"
+SMS_DATETIME_FORMAT = "sms_datetime_format"
+SMS_RESPONSE = "sms_response"
 
 # compact representation (https://opendatakit.github.io/xforms-spec/#compact-record-representation-(for-sms))
-COMPACT_PREFIX = u"prefix"
-COMPACT_DELIMITER = u"delimiter"
-COMPACT_TAG = u"compact_tag"
+COMPACT_PREFIX = "prefix"
+COMPACT_DELIMITER = "delimiter"
+COMPACT_TAG = "compact_tag"
 
-VERSION = u"version"
-PUBLIC_KEY = u"public_key"
-SUBMISSION_URL = u"submission_url"
-AUTO_SEND = u"auto_send"
-AUTO_DELETE = u"auto_delete"
-DEFAULT_LANGUAGE = u"default_language"
-LABEL = u"label"
-HINT = u"hint"
-STYLE = u"style"
-ATTRIBUTE = u"attribute"
+VERSION = "version"
+PUBLIC_KEY = "public_key"
+SUBMISSION_URL = "submission_url"
+AUTO_SEND = "auto_send"
+AUTO_DELETE = "auto_delete"
+DEFAULT_LANGUAGE = "default_language"
+LABEL = "label"
+HINT = "hint"
+STYLE = "style"
+ATTRIBUTE = "attribute"
+ALLOW_CHOICE_DUPLICATES = "allow_choice_duplicates"
 
-BIND = u"bind"  # TODO: What should I do with the nested types? (readonly and relevant) # noqa
-MEDIA = u"media"
-CONTROL = u"control"
-APPEARANCE = u"appearance"
+BIND = (
+    "bind"
+)  # TODO: What should I do with the nested types? (readonly and relevant) # noqa
+MEDIA = "media"
+CONTROL = "control"
+APPEARANCE = "appearance"
 
-LOOP = u"loop"
-COLUMNS = u"columns"
+LOOP = "loop"
+COLUMNS = "columns"
 
-REPEAT = u"repeat"
-GROUP = u"group"
-CHILDREN = u"children"
+REPEAT = "repeat"
+GROUP = "group"
+CHILDREN = "children"
 
-SELECT_ONE = u"select one"
-SELECT_ALL_THAT_APPLY = u"select all that apply"
-RANK = u"rank"
-CHOICES = u"choices"
+SELECT_ONE = "select one"
+SELECT_ALL_THAT_APPLY = "select all that apply"
+RANK = "rank"
+CHOICES = "choices"
 
 # XLS Specific constants
-LIST_NAME = u"list name"
-CASCADING_SELECT = u"cascading_select"
-TABLE_LIST = u"table-list"  # hyphenated because it goes in appearance, and convention for appearance column is dashes # noqa
+LIST_NAME = "list name"
+CASCADING_SELECT = "cascading_select"
+TABLE_LIST = (
+    "table-list"
+)  # hyphenated because it goes in appearance, and convention for appearance column is dashes # noqa
 
 # The following are the possible sheet names:
-SURVEY = u"survey"
-SETTINGS = u"settings"
+SURVEY = "survey"
+SETTINGS = "settings"
+EXTERNAL_CHOICES = "external_choices"
 # These sheet names are for list sheets
-CHOICES_AND_COLUMNS = u"choices and columns"
-CASCADING_CHOICES = u"cascades"
+CHOICES_AND_COLUMNS = "choices and columns"
+CASCADING_CHOICES = "cascades"
 
-OSM = u"osm"
-OSM_TYPE = u"binary"
+OSM = "osm"
+OSM_TYPE = "binary"
 
-NAMESPACES = u"namespaces"
+NAMESPACES = "namespaces"
 
 SUPPORTED_SHEET_NAMES = [
     SURVEY,
@@ -78,10 +85,15 @@ SUPPORTED_SHEET_NAMES = [
     COLUMNS,
     CHOICES_AND_COLUMNS,
     SETTINGS,
+    EXTERNAL_CHOICES,
     OSM,
 ]
-SUPPORTED_FILE_EXTENSIONS = ['.xls', '.xlsx', '.xlsm']
+SUPPORTED_FILE_EXTENSIONS = [".xls", ".xlsx", ".xlsm"]
 
-LOCATION_PRIORITY = u"location-priority"
-LOCATION_MIN_INTERVAL = u"location-min-interval"
-LOCATION_MAX_AGE = u"location-max-age"
+LOCATION_PRIORITY = "location-priority"
+LOCATION_MIN_INTERVAL = "location-min-interval"
+LOCATION_MAX_AGE = "location-max-age"
+TRACK_CHANGES = "track-changes"
+
+# supported bind keywords for which external instances will be created for pulldata function
+EXTERNAL_INSTANCES = ["calculate", "constraint", "readonly", "required", "relevant"]

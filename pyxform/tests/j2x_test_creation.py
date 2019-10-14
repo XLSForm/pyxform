@@ -1,8 +1,15 @@
+# -*- coding: utf-8 -*-
 """
 Testing creation of Surveys using verbose methods
 """
 from unittest import TestCase
-from pyxform import *
+
+from pyxform import (
+    InputQuestion,
+    MultipleChoiceQuestion,
+    Survey,
+    create_survey_from_xls,
+)
 from pyxform.tests import utils
 
 
@@ -19,17 +26,12 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
         s.add_child(q)
 
         expected_dict = {
-            u'name': 'simple_survey',
-            u'children': [
+            "name": "simple_survey",
+            "children": [
                 {
-                    u'name': 'cow_color',
-                    u'type': 'select one',
-                    u'children': [
-                        {
-                            u'label': 'Green',
-                            u'name': 'green',
-                        }
-                    ],
+                    "name": "cow_color",
+                    "type": "select one",
+                    "children": [{"label": "Green", "name": "green"}],
                 }
             ],
         }
@@ -38,24 +40,23 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
 
     def test_survey_can_be_created_in_a_slightly_less_verbose_manner(self):
         option_dict_array = [
-            {'name': 'red', 'label': 'Red'},
-            {'name': 'blue', 'label': 'Blue'}
+            {"name": "red", "label": "Red"},
+            {"name": "blue", "label": "Blue"},
         ]
 
-        q = MultipleChoiceQuestion(name="Favorite_Color",
-                                   choices=option_dict_array)
-        q.type = u"select one"
+        q = MultipleChoiceQuestion(name="Favorite_Color", choices=option_dict_array)
+        q.type = "select one"
         s = Survey(name="Roses_are_Red", children=[q])
 
         expected_dict = {
-            u'name': 'Roses_are_Red',
-            u'children': [
+            "name": "Roses_are_Red",
+            "children": [
                 {
-                    u'name': 'Favorite_Color',
-                    u'type': u'select one',
-                    u'children': [
-                        {u'label': 'Red', u'name': 'red'},
-                        {u'label': 'Blue', u'name': 'blue'}
+                    "name": "Favorite_Color",
+                    "type": "select one",
+                    "children": [
+                        {"label": "Red", "name": "red"},
+                        {"label": "Blue", "name": "blue"},
                     ],
                 }
             ],
@@ -67,18 +68,18 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
         q = MultipleChoiceQuestion(name="Favorite Color")
         q.add_choice(name="grey", label="Gray")
         q.add_choice(name="grey", label="Grey")
-        self.assertRaises(Exception, q, 'validate')
+        self.assertRaises(Exception, q, "validate")
 
     def test_one_section_cannot_have_two_conflicting_slugs(self):
         q1 = InputQuestion(name="YourName")
         q2 = InputQuestion(name="YourName")
         s = Survey(name="Roses are Red", children=[q1, q2])
-        self.assertRaises(Exception, s, 'validate')
+        self.assertRaises(Exception, s, "validate")
 
     def allow_surveys_with_comment_rows(self):
         """assume that a survey with rows that don't have name, type, or label
         headings raise warning only"""
-        path = utils.path_to_text_fixture('allow_comment_rows_test.xls')
+        path = utils.path_to_text_fixture("allow_comment_rows_test.xls")
         survey = create_survey_from_xls(path)
         expected_dict = {
             "default_language": "default",
@@ -86,10 +87,8 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
             "children": [
                 {
                     "name": "farmer_name",
-                    "label": {
-                        "English": "First and last name of farmer"
-                    },
-                    "type": "text"
+                    "label": {"English": "First and last name of farmer"},
+                    "type": "text",
                 }
             ],
             "name": "allow_comment_rows_test",
@@ -103,8 +102,8 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
             "title": "allow_comment_rows_test",
             "_xpath": {
                 "allow_comment_rows_test": "/allow_comment_rows_test",
-                "farmer_name": "/allow_comment_rows_test/farmer_name"
+                "farmer_name": "/allow_comment_rows_test/farmer_name",
             },
-            "type": "survey"
+            "type": "survey",
         }
         self.assertEquals(survey.to_json_dict(), expected_dict)

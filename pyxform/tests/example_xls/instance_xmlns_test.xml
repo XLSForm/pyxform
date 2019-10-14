@@ -11,7 +11,7 @@
         </instance_xmlns_test>
       </instance>
       <bind nodeset="/instance_xmlns_test/yes_or_no" type="select1"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/instance_xmlns_test/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/instance_xmlns_test/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

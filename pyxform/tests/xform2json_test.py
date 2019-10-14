@@ -1,10 +1,15 @@
-from __future__ import print_function
-from pyxform.builder import create_survey_from_path
-from pyxform.xform2json import create_survey_element_from_xml, _try_parse
+# -*- coding: utf-8 -*-
+"""
+Test xform2json module.
+"""
 import os
-from pyxform.tests import utils
-from unittest2 import TestCase
 from xml.etree.ElementTree import ParseError
+
+from unittest2 import TestCase
+
+from pyxform.builder import create_survey_from_path
+from pyxform.tests import utils
+from pyxform.xform2json import _try_parse, create_survey_element_from_xml
 
 
 class DumpAndLoadXForm2JsonTests(utils.XFormTestCase):
@@ -31,18 +36,13 @@ class DumpAndLoadXForm2JsonTests(utils.XFormTestCase):
         self.this_directory = os.path.dirname(__file__)
         for filename in self.excel_files:
             path = utils.path_to_text_fixture(filename)
-            try:
-                self.surveys[filename] = create_survey_from_path(path)
-            except Exception as e:
-                print("Error on : " + filename)
-                raise e
+            self.surveys[filename] = create_survey_from_path(path)
 
     def test_load_from_dump(self):
         for filename, survey in iter(self.surveys.items()):
             survey.json_dump()
             survey_from_dump = create_survey_element_from_xml(survey.to_xml())
-            self.assertXFormEqual(
-                survey.to_xml(), survey_from_dump.to_xml())
+            self.assertXFormEqual(survey.to_xml(), survey_from_dump.to_xml())
 
     def tearDown(self):
         for filename, survey in self.surveys.items():
@@ -52,7 +52,6 @@ class DumpAndLoadXForm2JsonTests(utils.XFormTestCase):
 
 
 class TestXMLParse(TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.cwd = os.path.dirname(__file__)

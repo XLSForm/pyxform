@@ -24,3 +24,8 @@ env
 
 # ignore pypi manifest
 MANIFEST
+pyxform/tests/test_output/
+
+# ignore pyxform_validator_update files
+pyxform/validators/odk_validate/.last_check
+pyxform/validators/odk_validate/latest.json

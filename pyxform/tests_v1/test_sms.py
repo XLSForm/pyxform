@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+Test sms syntax.
+"""
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
@@ -13,9 +17,7 @@ class SMSTest(PyxformTestCase):
             |          | prefix    |          |       |           |
             |          | sms_test  |          |       |           |
             """,
-            xml__contains=[
-                'odk:prefix="sms_test"'
-            ]
+            xml__contains=['odk:prefix="sms_test"'],
         )
 
     def test_delimiter_only(self):
@@ -29,9 +31,7 @@ class SMSTest(PyxformTestCase):
             |          | delimiter |          |       |           |
             |          | ~         |          |       |           |
             """,
-            xml__contains=[
-                'odk:delimiter="~"'
-            ]
+            xml__contains=['odk:delimiter="~"'],
         )
 
     def test_prefix_and_delimiter(self):
@@ -45,10 +45,7 @@ class SMSTest(PyxformTestCase):
             |          | delimiter | prefix   |       |           |
             |          | *         | sms_test2|       |           |
             """,
-            xml__contains=[
-                'odk:delimiter="*"',
-                'odk:prefix="sms_test2"'
-            ]
+            xml__contains=['odk:delimiter="*"', 'odk:prefix="sms_test2"'],
         )
 
     def test_sms_tag(self):
@@ -64,6 +61,6 @@ class SMSTest(PyxformTestCase):
             xml__contains=[
                 '<name odk:tag="n"/>',
                 '<age odk:tag="+a">7</age>',
-                '<fruit/>'
-            ]
+                "<fruit/>",
+            ],
         )

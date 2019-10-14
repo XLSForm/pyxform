@@ -2800,7 +2800,7 @@
       <bind nodeset="/cascades_old/sectionC/sectionC5/q50_wm_minor_repairs" required="true()" type="select1"/>
       <bind nodeset="/cascades_old/sectionC/sectionC5/q51_wm_repair_supplies" required="true()" type="select1"/>
       <bind nodeset="/cascades_old/sectionC/sectionC6/q52_add_comments" required="false()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/cascades_old/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/cascades_old/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
