@@ -1,17 +1,24 @@
+# -*- coding: utf-8 -*-
+"""
+Test custom namespaces.
+"""
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
-
-MD = '''
+MD = """
 | survey   |                                                                                              |      |       |
 |          | type                                                                                         | name | label |
 |          | note                                                                                         | q    | Q     |
 | settings |                                                                                              |      |       |
 |          | namespaces                                                                                   |      |       |
 |          | esri="http://esri.com/xforms" enk="http://enketo.org/xforms" naf="http://nafundi.com/xforms" |      |       |
-'''  # nopep8
+"""  # nopep8
 
 
 class CustomXMLNamespacesTest(PyxformTestCase):
+    """
+    Test custom namespaces.
+    """
+
     def test_custom_xml_name_spaces(self):
         # re: https://github.com/XLSForm/pyxform/issues/65
         self.assertPyxformXform(

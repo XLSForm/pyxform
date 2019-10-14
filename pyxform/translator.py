@@ -1,5 +1,7 @@
-# vim: ai ts=4 sts=4 et sw=4 encoding=utf-8
-
+# -*- coding: utf-8 -*-
+"""
+Translator class module.
+"""
 from collections import defaultdict
 
 
@@ -12,6 +14,7 @@ def infinite_dict():
 # translator = Translator()
 # translator.add_translation(...)
 # translator.translate('How are you?').from('English').to('French')
+
 
 class _StringWithLanguageTranslator(object):
     def __init__(self, dictionary):
@@ -41,13 +44,13 @@ class Translator(object):
         self._dict = infinite_dict()
         self._languages = []
 
-    def add_translation(self, string, source_language,
-                        destination_language, translated_string):
+    def add_translation(
+        self, string, source_language, destination_language, translated_string
+    ):
         for lang in [source_language, destination_language]:
             if lang not in self._languages:
                 self._languages.append(lang)
-        self._dict[string][source_language][
-            destination_language] = translated_string
+        self._dict[string][source_language][destination_language] = translated_string
 
     def translate(self, string):
         dictionary = self._dict[string]
@@ -55,6 +58,7 @@ class Translator(object):
 
     def to_json_dict(self):
         return self._dict
+
 
 # code used to construct a translator from the excel files from phase II.
 # import glob, os
@@ -74,7 +78,7 @@ class Translator(object):
 
 # def add_row(d):
 #     assert type(d)==dict, str(d)
-#     for k, v in d.items(): 
+#     for k, v in d.items():
 #         if type(v)==dict and u"English" in v.keys():
 #             for result in add_dict(v): yield result
 

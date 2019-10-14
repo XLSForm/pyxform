@@ -12,7 +12,7 @@
         </default_time_demo>
       </instance>
       <bind nodeset="/default_time_demo/start_time" type="time"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/default_time_demo/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/default_time_demo/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

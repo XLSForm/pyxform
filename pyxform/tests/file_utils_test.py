@@ -1,7 +1,11 @@
-from __future__ import print_function
+# -*- coding: utf-8 -*-
+"""
+Test xls2json_backends util functions.
+"""
 from unittest import TestCase
-from pyxform.xls2json_backends import convert_file_to_csv_string
+
 from pyxform.tests import utils
+from pyxform.xls2json_backends import convert_file_to_csv_string
 
 
 class BackendUtilsTests(TestCase):
@@ -10,9 +14,4 @@ class BackendUtilsTests(TestCase):
         converted_xls = convert_file_to_csv_string(specify_other_xls)
         specify_other_csv = utils.path_to_text_fixture("specify_other.csv")
         converted_csv = convert_file_to_csv_string(specify_other_csv)
-        print("csv:")
-        print(converted_csv)
-        print("xls:")
-        print(converted_xls)
         self.assertEqual(converted_csv, converted_xls)
-

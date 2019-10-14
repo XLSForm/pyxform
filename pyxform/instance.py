@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+SurveyInstance class module.
+"""
 from pyxform.xform_instance_parser import parse_xform_instance
 
 
@@ -45,20 +49,15 @@ class SurveyInstance(object):
     def to_json_dict(self):
         children = []
         for k, v in self._answers.items():
-            children.append({'node_name': k, 'value': v})
-        return {
-            'node_name': self._name,
-            'id': self._id,
-            'children': children
-        }
+            children.append({"node_name": k, "value": v})
+        return {"node_name": self._name, "id": self._id, "children": children}
 
     def to_xml(self):
         """
         A horrible way to do this, but it works (until we need the attributes
          pumped out in order, etc)
         """
-        open_str = """<?xml version='1.0' ?><%s id="%s">""" % (
-            self._name, self._id)
+        open_str = """<?xml version='1.0' ?><%s id="%s">""" % (self._name, self._id)
         close_str = """</%s>""" % self._name
         vals = ""
         for k, v in self._answers.items():
@@ -77,6 +76,7 @@ class SurveyInstance(object):
 
     def import_from_xml(self, xml_string_or_filename):
         import os.path
+
         if os.path.isfile(xml_string_or_filename):
             xml_str = open(xml_string_or_filename).read()
         else:
@@ -90,4 +90,7 @@ class SurveyInstance(object):
         placed_count = len(self._answers.keys())
         answer_count = orphan_count + placed_count
         return "<Instance (%d answers: %d placed. %d orphans)>" % (
-            answer_count, placed_count, orphan_count)
+            answer_count,
+            placed_count,
+            orphan_count,
+        )

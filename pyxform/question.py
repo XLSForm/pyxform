@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+XForm Survey element classes for different question types.
+"""
 import os.path
 
 from pyxform.errors import PyXFormError
@@ -18,12 +22,12 @@ class Question(SurveyElement):
     def xml_instance(self, **kwargs):
         survey = self.get_root()
         attributes = {}
-        attributes.update(self.get(u"instance", {}))
+        attributes.update(self.get("instance", {}))
         for key, value in attributes.items():
             attributes[key] = survey.insert_xpaths(value, self)
 
-        if self.get(u"default"):
-            return node(self.name, unicode(self.get(u"default")), **attributes)
+        if self.get("default"):
+            return node(self.name, unicode(self.get("default")), **attributes)
         return node(self.name, **attributes)
 
     def xml_control(self):
@@ -69,12 +73,12 @@ class TriggerQuestion(Question):
         for key, value in control_dict.items():
             control_dict[key] = survey.insert_xpaths(value, self)
         control_dict["ref"] = self.get_xpath()
-        return node(u"trigger", *self.xml_label_and_hint(), **control_dict)
+        return node("trigger", *self.xml_label_and_hint(), **control_dict)
 
 
 class UploadQuestion(Question):
     def _get_media_type(self):
-        return self.control[u"mediatype"]
+        return self.control["mediatype"]
 
     def xml_control(self):
         control_dict = self.control
@@ -84,15 +88,15 @@ class UploadQuestion(Question):
             control_dict[key] = survey.insert_xpaths(value, self)
         control_dict["ref"] = self.get_xpath()
         control_dict["mediatype"] = self._get_media_type()
-        return node(u"upload", *self.xml_label_and_hint(), **control_dict)
+        return node("upload", *self.xml_label_and_hint(), **control_dict)
 
 
 class Option(SurveyElement):
     def xml_value(self):
-        return node(u"value", self.name)
+        return node("value", self.name)
 
     def xml(self):
-        item = node(u"item")
+        item = node("item")
         self.xml_label()
         item.appendChild(self.xml_label())
         item.appendChild(self.xml_value())
@@ -110,8 +114,8 @@ class MultipleChoiceQuestion(Question):
         # I'm going to try to stick to just choices.
         # Aliases in the json format will make it more difficult
         # to use going forward.
-        choices = list(kwargs_copy.pop(u"choices", [])) + list(
-            kwargs_copy.pop(u"children", [])
+        choices = list(kwargs_copy.pop("choices", [])) + list(
+            kwargs_copy.pop("children", [])
         )
         Question.__init__(self, **kwargs_copy)
         for choice in choices:
@@ -130,7 +134,7 @@ class MultipleChoiceQuestion(Question):
             choice.validate()
 
     def xml_control(self):
-        assert self.bind[u"type"] in [u"select", u"select1", u"odk:rank"]
+        assert self.bind["type"] in ["select", "select1", "odk:rank"]
         survey = self.get_root()
         control_dict = self.control.copy()
         # Resolve field references in attributes
@@ -141,6 +145,12 @@ class MultipleChoiceQuestion(Question):
         result = node(**control_dict)
         for element in self.xml_label_and_hint():
             result.appendChild(element)
+
+        choices = survey.get("choices")
+        if choices is not None and len(choices) > 0:
+            first_choices = next(iter(choices.values()))
+            multi_language = isinstance(first_choices[0].get("label"), dict)
+
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
         if self["itemset"] and isinstance(self["itemset"], basestring):
@@ -150,8 +160,12 @@ class MultipleChoiceQuestion(Question):
                 itemset = itemset
                 itemset_label_ref = "label"
             else:
-                itemset = self["itemset"]
-                itemset_label_ref = "jr:itext(itextId)"
+                if not multi_language:
+                    itemset = self["itemset"]
+                    itemset_label_ref = "label"
+                else:
+                    itemset = self["itemset"]
+                    itemset_label_ref = "jr:itext(itextId)"
             nodeset = "instance('" + itemset + "')/root/item"
             choice_filter = survey.insert_xpaths(choice_filter, self, True)
             if choice_filter:
@@ -168,9 +182,7 @@ class MultipleChoiceQuestion(Question):
                             nodeset = (
                                 nodeset
                                 + ", "
-                                + survey.insert_xpaths(
-                                    params["seed"], self
-                                ).strip()
+                                + survey.insert_xpaths(params["seed"], self).strip()
                             )
                         else:
                             nodeset = nodeset + ", " + params["seed"]
@@ -181,9 +193,7 @@ class MultipleChoiceQuestion(Question):
                 node("value", ref="name"),
                 node("label", ref=itemset_label_ref),
             ]
-            result.appendChild(
-                node("itemset", *itemset_children, nodeset=nodeset)
-            )
+            result.appendChild(node("itemset", *itemset_children, nodeset=nodeset))
         else:
             for n in [o.xml() for o in self.children]:
                 result.appendChild(n)
@@ -193,15 +203,13 @@ class MultipleChoiceQuestion(Question):
 class SelectOneQuestion(MultipleChoiceQuestion):
     def __init__(self, **kwargs):
         super(SelectOneQuestion, self).__init__(**kwargs)
-        self._dict[self.TYPE] = u"select one"
+        self._dict[self.TYPE] = "select one"
 
 
 class Tag(SurveyElement):
     def __init__(self, **kwargs):
         kwargs_copy = kwargs.copy()
-        choices = kwargs_copy.pop(u"choices", []) + kwargs_copy.pop(
-            u"children", []
-        )
+        choices = kwargs_copy.pop("choices", []) + kwargs_copy.pop("children", [])
 
         super(Tag, self).__init__(**kwargs_copy)
 
@@ -213,7 +221,7 @@ class Tag(SurveyElement):
                 self.add_child(option)
 
     def xml(self):
-        result = node(u"tag", key=self.name)
+        result = node("tag", key=self.name)
         self.xml_label()
         result.appendChild(self.xml_label())
         for choice in self.children:
@@ -228,7 +236,7 @@ class Tag(SurveyElement):
 class OsmUploadQuestion(UploadQuestion):
     def __init__(self, **kwargs):
         kwargs_copy = kwargs.copy()
-        tags = kwargs_copy.pop(u"tags", []) + kwargs_copy.pop(u"children", [])
+        tags = kwargs_copy.pop("tags", []) + kwargs_copy.pop("children", [])
 
         super(OsmUploadQuestion, self).__init__(**kwargs_copy)
 
@@ -246,7 +254,7 @@ class OsmUploadQuestion(UploadQuestion):
         control_dict = self.control
         control_dict["ref"] = self.get_xpath()
         control_dict["mediatype"] = self._get_media_type()
-        result = node(u"upload", *self.xml_label_and_hint(), **control_dict)
+        result = node("upload", *self.xml_label_and_hint(), **control_dict)
 
         for osm_tag in self.children:
             result.appendChild(osm_tag.xml())

@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+Section survey element module.
+"""
 from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.question import SurveyElement
@@ -19,8 +23,8 @@ class Section(SurveyElement):
             if any(element.name.lower() == s.lower() for s in element_slugs):
                 raise PyXFormError(
                     "There are more than one survey elements named '%s' "
-                    "(case-insensitive) in the section named '%s'." %
-                    (element.name.lower(), self.name)
+                    "(case-insensitive) in the section named '%s'."
+                    % (element.name.lower(), self.name)
                 )
             element_slugs.append(element.name)
 
@@ -30,14 +34,14 @@ class Section(SurveyElement):
         """
         attributes = {}
         attributes.update(kwargs)
-        attributes.update(self.get(u'instance', {}))
+        attributes.update(self.get("instance", {}))
         survey = self.get_root()
         # Resolve field references in attributes
         for key, value in attributes.items():
             attributes[key] = survey.insert_xpaths(value, self)
         result = node(self.name, **attributes)
         for child in self.children:
-            if child.get(u"flat"):
+            if child.get("flat"):
                 for grandchild in child.xml_instance_array():
                     result.appendChild(grandchild)
             elif isinstance(child, ExternalInstance):
@@ -51,7 +55,7 @@ class Section(SurveyElement):
         This method is used for generating flat instances.
         """
         for child in self.children:
-            if child.get(u"flat"):
+            if child.get("flat"):
                 for grandchild in child.xml_instance_array():
                     yield grandchild
             else:
@@ -88,19 +92,15 @@ class RepeatingSection(Section):
         # Resolve field references in attributes
         for key, value in control_dict.items():
             control_dict[key] = survey.insert_xpaths(value, self)
-        repeat_node = node(u"repeat", nodeset=self.get_xpath(), **control_dict)
+        repeat_node = node("repeat", nodeset=self.get_xpath(), **control_dict)
 
         for n in Section.xml_control(self):
             repeat_node.appendChild(n)
 
         label = self.xml_label()
         if label:
-            return node(
-                u"group", self.xml_label(), repeat_node,
-                ref=self.get_xpath()
-            )
-        return node(u"group", repeat_node, ref=self.get_xpath(),
-                    **self.control)
+            return node("group", self.xml_label(), repeat_node, ref=self.get_xpath())
+        return node("group", repeat_node, ref=self.get_xpath(), **self.control)
 
     # I'm anal about matching function signatures when overriding a function,
     # but there's no reason for kwargs to be an argument
@@ -140,27 +140,26 @@ class GroupedSection(Section):
         for key, value in attributes.items():
             attributes[key] = survey.insert_xpaths(value, self)
 
-        if not self.get('flat'):
-            attributes['ref'] = self.get_xpath()
+        if not self.get("flat"):
+            attributes["ref"] = self.get_xpath()
 
-        if 'label' in self and len(self['label']) > 0:
+        if "label" in self and len(self["label"]) > 0:
             children.append(self.xml_label())
         for n in Section.xml_control(self):
             children.append(n)
 
-        if u"appearance" in control_dict:
-            attributes['appearance'] = control_dict['appearance']
+        if "appearance" in control_dict:
+            attributes["appearance"] = control_dict["appearance"]
 
-        if u"intent" in control_dict:
+        if "intent" in control_dict:
             survey = self.get_root()
-            attributes['intent'] = survey.insert_xpaths(control_dict['intent'],
-                                                       self)
+            attributes["intent"] = survey.insert_xpaths(control_dict["intent"], self)
 
-        return node(u"group", *children, **attributes)
+        return node("group", *children, **attributes)
 
     def to_json_dict(self):
         # This is quite hacky, might want to think about a smart way
         # to approach this problem.
         result = super(GroupedSection, self).to_json_dict()
-        result[u"type"] = u"group"
+        result["type"] = "group"
         return result

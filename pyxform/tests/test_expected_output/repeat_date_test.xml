@@ -24,7 +24,7 @@
       <bind nodeset="/repeat_date_test/repeat_test/table_list_3" type="select1"/>
       <bind nodeset="/repeat_date_test/repeat_test/table_list_4" type="select1"/>
       <bind nodeset="/repeat_date_test/generated_note_name_8" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/repeat_date_test/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/repeat_date_test/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>

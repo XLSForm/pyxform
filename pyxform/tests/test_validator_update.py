@@ -1,22 +1,33 @@
-from contextlib import contextmanager
-from datetime import datetime, timedelta
+# -*- coding: utf-8 -*-
+"""
+Test validator update cli command.
+"""
 import os
 import platform
 import shutil
-from stat import S_IXUSR, S_IXGRP
 import tempfile
+from contextlib import contextmanager
+from datetime import datetime, timedelta
+from stat import S_IXGRP, S_IXUSR
 from zipfile import ZipFile
-try:
-    from zipfile import BadZipFile
-except ImportError:
-    from zipfile import BadZipfile as BadZipFile
+
 from unittest2 import TestCase, skipIf
+
 from pyxform.errors import PyXFormError
 from pyxform.tests import validators
 from pyxform.tests.validators.server import ThreadingServerInThread
 from pyxform.utils import unicode
-from pyxform.validators.updater import _UpdateInfo, _UpdateHandler, \
-    capture_handler, EnketoValidateUpdater
+from pyxform.validators.updater import (
+    EnketoValidateUpdater,
+    _UpdateHandler,
+    _UpdateInfo,
+    capture_handler,
+)
+
+try:
+    from zipfile import BadZipFile
+except ImportError:
+    from zipfile import BadZipfile as BadZipFile
 
 
 TEST_PATH = validators.HERE
@@ -43,9 +54,13 @@ def get_update_info(check_ok, mod_root=None):
     else:
         install_check = install_check_fail
     return _UpdateInfo(
-        api_url="", repo_url="", validate_subfolder="",
-        install_check=install_check, validator_basename="validate",
-        mod_root=mod_root)
+        api_url="",
+        repo_url="",
+        validate_subfolder="",
+        install_check=install_check,
+        validator_basename="validate",
+        mod_root=mod_root,
+    )
 
 
 @contextmanager
@@ -71,7 +86,6 @@ def get_temp_dir():
 
 
 class TestTempUtils(TestCase):
-
     def test_get_temp_file(self):
         """Should provide a temp file that's cleared on exit."""
         with get_temp_file() as temp_file:
@@ -146,8 +160,7 @@ class TestUpdateHandler(TestCase):
         """Should write the supplied dict to a file."""
         with get_temp_file() as temp_file:
             self.assertEqual(0, os.path.getsize(temp_file))
-            self.updater._write_json(
-                file_path=temp_file, content={"some": "data"})
+            self.updater._write_json(file_path=temp_file, content={"some": "data"})
             self.assertTrue(20 <= os.path.getsize(temp_file))
 
     def test_read_last_check(self):
@@ -161,37 +174,47 @@ class TestUpdateHandler(TestCase):
         with get_temp_file() as temp_file:
             self.assertEqual(0, os.path.getsize(temp_file))
             self.updater._write_last_check(
-                file_path=temp_file, content=datetime.utcnow())
+                file_path=temp_file, content=datetime.utcnow()
+            )
             self.assertEqual(20, os.path.getsize(temp_file))
 
     def test_check_necessary__true_if_last_check_not_found(self):
         """Should return true if the last check file wasn't found."""
         self.update_info.last_check_path = self.phantom_file
-        self.assertTrue(self.updater._check_necessary(
-            update_info=self.update_info, utc_now=self.utc_now))
+        self.assertTrue(
+            self.updater._check_necessary(
+                update_info=self.update_info, utc_now=self.utc_now
+            )
+        )
 
     def test_check_necessary__true_if_latest_json_not_found(self):
         """Should return true if the latest.json file wasn't found."""
         self.update_info.last_check_path = self.last_check
         self.update_info.latest_path = self.phantom_file
-        self.assertTrue(self.updater._check_necessary(
-            update_info=self.update_info, utc_now=self.utc_now))
+        self.assertTrue(
+            self.updater._check_necessary(
+                update_info=self.update_info, utc_now=self.utc_now
+            )
+        )
 
     def test_check_necessary__true_if_last_check_empty(self):
         """Should return true if the last check file was empty."""
-        self.update_info.last_check_path = os.path.join(
-            TEST_PATH, ".last_check_none")
+        self.update_info.last_check_path = os.path.join(TEST_PATH, ".last_check_none")
         self.update_info.latest_path = self.latest_enketo
-        self.assertTrue(self.updater._check_necessary(
-            update_info=self.update_info, utc_now=self.utc_now))
+        self.assertTrue(
+            self.updater._check_necessary(
+                update_info=self.update_info, utc_now=self.utc_now
+            )
+        )
 
     def test_check_necessary__true_if_last_check_too_old(self):
         """Should return true if the last check was too long ago."""
         self.update_info.last_check_path = self.last_check
         self.update_info.latest_path = self.latest_enketo
         old = self.utc_now - timedelta(minutes=45.0)
-        self.assertTrue(self.updater._check_necessary(
-            update_info=self.update_info, utc_now=old))
+        self.assertTrue(
+            self.updater._check_necessary(update_info=self.update_info, utc_now=old)
+        )
 
     def test_check_necessary__false_last_check_very_recent(self):
         """Should return false if the last check was very recent."""
@@ -203,7 +226,9 @@ class TestUpdateHandler(TestCase):
             self.update_info.latest_path = self.latest_enketo
             self.assertFalse(
                 self.updater._check_necessary(
-                    update_info=self.update_info, utc_now=self.utc_now))
+                    update_info=self.update_info, utc_now=self.utc_now
+                )
+            )
 
     def test_get_latest__if_check_necessary_true(self):
         """Should get latest from remote, rather than file."""
@@ -211,8 +236,7 @@ class TestUpdateHandler(TestCase):
         old = self.utc_now - timedelta(minutes=45.0)
 
         with get_temp_file() as temp_check, get_temp_file() as temp_json:
-            self.updater._write_last_check(
-                file_path=temp_check, content=old)
+            self.updater._write_last_check(file_path=temp_check, content=old)
             self.update_info.last_check_path = temp_check
             self.update_info.latest_path = temp_json
             latest = self.updater._get_latest(update_info=self.update_info)
@@ -235,8 +259,7 @@ class TestUpdateHandler(TestCase):
         self.update_info.latest_path = self.latest_odk
 
         with get_temp_file() as temp_check:
-            self.updater._write_last_check(
-                file_path=temp_check, content=self.utc_now)
+            self.updater._write_last_check(file_path=temp_check, content=self.utc_now)
             self.update_info.last_check_path = temp_check
             self.updater.list(update_info=self.update_info)
         info = capture_handler.watcher.output["INFO"][0]
@@ -249,8 +272,7 @@ class TestUpdateHandler(TestCase):
         self.update_info.latest_path = self.latest_enketo
 
         with get_temp_file() as temp_check:
-            self.updater._write_last_check(
-                file_path=temp_check, content=self.utc_now)
+            self.updater._write_last_check(file_path=temp_check, content=self.utc_now)
             self.update_info.last_check_path = temp_check
             self.updater.list(update_info=self.update_info)
         info = capture_handler.watcher.output["INFO"][0]
@@ -263,8 +285,7 @@ class TestUpdateHandler(TestCase):
         self.update_info.latest_path = self.latest_odk
 
         with get_temp_file() as temp_check:
-            self.updater._write_last_check(
-                file_path=temp_check, content=self.utc_now)
+            self.updater._write_last_check(file_path=temp_check, content=self.utc_now)
             self.update_info.last_check_path = temp_check
             self.updater.list(update_info=self.update_info)
         info = capture_handler.watcher.output["INFO"][0]
@@ -277,8 +298,7 @@ class TestUpdateHandler(TestCase):
         self.update_info.latest_path = self.latest_enketo
 
         with get_temp_file() as temp_check:
-            self.updater._write_last_check(
-                file_path=temp_check, content=self.utc_now)
+            self.updater._write_last_check(file_path=temp_check, content=self.utc_now)
             self.update_info.last_check_path = temp_check
             self.updater.list(update_info=self.update_info)
         info = capture_handler.watcher.output["INFO"][0]
@@ -292,23 +312,20 @@ class TestUpdateHandler(TestCase):
 
         with self.assertRaises(PyXFormError) as ctx:
             self.updater._find_download_url(
-                update_info=self.update_info,
-                json_data=json_data,
-                file_name=file_name)
+                update_info=self.update_info, json_data=json_data, file_name=file_name
+            )
         self.assertIn("No files attached", unicode(ctx.exception))
 
     def test_find_download_url__not_found(self):
         """Should raise an error if the file was not found."""
         file_name = "windows.zip"
         json_data = self.updater._read_json(file_path=self.latest_enketo)
-        json_data["assets"] = [x for x in json_data["assets"]
-                               if x["name"] != file_name]
+        json_data["assets"] = [x for x in json_data["assets"] if x["name"] != file_name]
 
         with self.assertRaises(PyXFormError) as ctx:
             self.updater._find_download_url(
-                update_info=self.update_info,
-                json_data=json_data,
-                file_name=file_name)
+                update_info=self.update_info, json_data=json_data, file_name=file_name
+            )
         self.assertIn("No files with the name", unicode(ctx.exception))
 
     def test_find_download_url__duplicates(self):
@@ -320,22 +337,22 @@ class TestUpdateHandler(TestCase):
 
         with self.assertRaises(PyXFormError) as ctx:
             self.updater._find_download_url(
-                update_info=self.update_info,
-                json_data=json_data,
-                file_name=file_name)
+                update_info=self.update_info, json_data=json_data, file_name=file_name
+            )
         self.assertIn("2 files with the name", unicode(ctx.exception))
 
     def test_find_download_url__ok(self):
         """Should return the url for the matching file name."""
         file_name = "windows.zip"
         json_data = self.updater._read_json(file_path=self.latest_enketo)
-        expected = "https://github.com/enketo/enketo-validate/releases/" \
-                   "download/1.0.3/windows.zip"
+        expected = (
+            "https://github.com/enketo/enketo-validate/releases/"
+            "download/1.0.3/windows.zip"
+        )
 
         observed = self.updater._find_download_url(
-            update_info=self.update_info,
-            json_data=json_data,
-            file_name=file_name)
+            update_info=self.update_info, json_data=json_data, file_name=file_name
+        )
         self.assertEqual(expected, observed)
 
     def test_download_file(self):
@@ -344,14 +361,16 @@ class TestUpdateHandler(TestCase):
         with get_temp_file() as temp_file:
             self.assertEqual(0, os.path.getsize(temp_file))
             self.updater._download_file(
-                url=self.update_info.api_url, file_path=temp_file)
+                url=self.update_info.api_url, file_path=temp_file
+            )
             self.assertEqual(13, os.path.getsize(temp_file))
 
     def test_get_bin_paths__ok(self):
         """Should return the path mappings."""
         file_path = os.path.join(TEST_PATH, "linux.zip")
         observed = self.updater._get_bin_paths(
-            update_info=self.update_info, file_path=file_path)
+            update_info=self.update_info, file_path=file_path
+        )
         self.assertEqual(3, len(observed))
 
     def test_get_bin_paths__unsupported_raises(self):
@@ -359,39 +378,47 @@ class TestUpdateHandler(TestCase):
         file_path = self.last_check = os.path.join(TEST_PATH, "bacon.zip")
         with self.assertRaises(PyXFormError) as ctx:
             self.updater._get_bin_paths(
-                update_info=self.update_info, file_path=file_path)
+                update_info=self.update_info, file_path=file_path
+            )
         self.assertIn("Did not find", unicode(ctx.exception))
 
     def test_unzip_find_zip_jobs__ok_real_current(self):
         """Should return a list of zip jobs same length as search."""
-        with get_temp_dir() as temp_dir, \
-                ZipFile(self.zip_file, mode="r") as zip_file:
+        with get_temp_dir() as temp_dir, ZipFile(self.zip_file, mode="r") as zip_file:
             bin_paths = self.updater._get_bin_paths(
-                update_info=self.update_info, file_path=self.zip_file)
+                update_info=self.update_info, file_path=self.zip_file
+            )
             jobs = self.updater._unzip_find_jobs(
-                open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir)
+                open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir
+            )
         self.assertEqual(3, len(jobs.keys()))
         self.assertTrue(list(jobs.keys())[0].startswith(temp_dir))
 
     def test_unzip_find_zip_jobs__ok_real_ideal(self):
         """Should return a list of zip jobs same length as search."""
-        with get_temp_dir() as temp_dir, \
-                ZipFile(self.zip_file_ideal, mode="r") as zip_file:
+        with get_temp_dir() as temp_dir, ZipFile(
+            self.zip_file_ideal, mode="r"
+        ) as zip_file:
             bin_paths = self.updater._get_bin_paths(
-                update_info=self.update_info, file_path=self.zip_file_ideal)
+                update_info=self.update_info, file_path=self.zip_file_ideal
+            )
             jobs = self.updater._unzip_find_jobs(
-                open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir)
+                open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir
+            )
         self.assertEqual(3, len(jobs.keys()))
         self.assertTrue(list(jobs.keys())[0].startswith(temp_dir))
 
     def test_unzip_find_zip_jobs__ok_real_dupes(self):
         """Should return a list of zip jobs same length as search."""
-        with get_temp_dir() as temp_dir, \
-                ZipFile(self.zip_file_dupes, mode="r") as zip_file:
+        with get_temp_dir() as temp_dir, ZipFile(
+            self.zip_file_dupes, mode="r"
+        ) as zip_file:
             bin_paths = self.updater._get_bin_paths(
-                update_info=self.update_info, file_path=self.zip_file_dupes)
+                update_info=self.update_info, file_path=self.zip_file_dupes
+            )
             jobs = self.updater._unzip_find_jobs(
-                open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir)
+                open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir
+            )
         self.assertEqual(3, len(jobs.keys()))
         self.assertTrue(list(jobs.keys())[0].startswith(temp_dir))
 
@@ -399,49 +426,48 @@ class TestUpdateHandler(TestCase):
         """Should raise an error if zip jobs isn't same length as search."""
         bin_paths = [(".non_existent", ".non_existent")]
 
-        with get_temp_dir() as temp_dir, \
-                ZipFile(self.zip_file, mode="r") as zip_file, \
-                self.assertRaises(PyXFormError) as ctx:
+        with get_temp_dir() as temp_dir, ZipFile(
+            self.zip_file, mode="r"
+        ) as zip_file, self.assertRaises(PyXFormError) as ctx:
             self.updater._unzip_find_jobs(
-                open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir)
+                open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir
+            )
         self.assertIn("1 zip job files, found: 0", unicode(ctx.exception))
 
     def test_unzip_extract_file__ok(self):
         """Should extract the specified item to the target output path."""
-        with get_temp_dir() as temp_dir, \
-                ZipFile(self.zip_file, mode="r") as zip_file:
+        with get_temp_dir() as temp_dir, ZipFile(self.zip_file, mode="r") as zip_file:
             zip_item = zip_file.infolist()[0]
             file_out_path = os.path.join(temp_dir, "validate")
             self.updater._unzip_extract_file(
-                open_zip_file=zip_file,
-                zip_item=zip_item,
-                file_out_path=file_out_path)
+                open_zip_file=zip_file, zip_item=zip_item, file_out_path=file_out_path
+            )
             self.assertTrue(os.path.exists(file_out_path))
 
     def test_unzip_extract_file__bad_crc_raises(self):
         """Should raise an error if the zip file CRC doesn't match."""
-        with get_temp_dir() as temp_dir, \
-                ZipFile(self.zip_file, mode="r") as zip_file,\
-                self.assertRaises(BadZipFile) as ctx:
-            zip_item = [x for x in zip_file.infolist()
-                        if x.filename.endswith("validate")][0]
+        with get_temp_dir() as temp_dir, ZipFile(
+            self.zip_file, mode="r"
+        ) as zip_file, self.assertRaises(BadZipFile) as ctx:
+            zip_item = [
+                x for x in zip_file.infolist() if x.filename.endswith("validate")
+            ][0]
             zip_item.CRC = 12345
             file_out_path = os.path.join(temp_dir, "validate")
             self.updater._unzip_extract_file(
-                open_zip_file=zip_file,
-                zip_item=zip_item,
-                file_out_path=file_out_path)
+                open_zip_file=zip_file, zip_item=zip_item, file_out_path=file_out_path
+            )
         self.assertIn("Bad CRC-32 for file", unicode(ctx.exception))
 
     def test_unzip(self):
         """Should unzip the file to the locations in the bin_path map."""
         with get_temp_dir() as temp_dir:
             self.updater._unzip(
-                update_info=self.update_info,
-                file_path=self.zip_file,
-                out_path=temp_dir)
-            dir_list = [os.path.join(r, f)
-                        for r, _, fs in os.walk(temp_dir) for f in fs]
+                update_info=self.update_info, file_path=self.zip_file, out_path=temp_dir
+            )
+            dir_list = [
+                os.path.join(r, f) for r, _, fs in os.walk(temp_dir) for f in fs
+            ]
             self.assertEqual(3, len(dir_list))
 
     def test_install__ok(self):
@@ -450,15 +476,15 @@ class TestUpdateHandler(TestCase):
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_file() as temp_check, get_temp_dir() as temp_dir:
-            self.updater._write_last_check(
-                file_path=temp_check, content=new)
+            self.updater._write_last_check(file_path=temp_check, content=new)
             self.update_info.last_check_path = temp_check
             self.update_info.bin_new_path = temp_dir
             installed = self.updater._install(
-                update_info=self.update_info,
-                file_name="linux.zip")
-            dir_list = [os.path.join(r, f)
-                        for r, _, fs in os.walk(temp_dir) for f in fs]
+                update_info=self.update_info, file_name="linux.zip"
+            )
+            dir_list = [
+                os.path.join(r, f) for r, _, fs in os.walk(temp_dir) for f in fs
+            ]
             self.assertEqual(5, len(dir_list))
 
         latest = self.updater._read_json(file_path=self.install_fake)
@@ -471,15 +497,11 @@ class TestUpdateHandler(TestCase):
         new = self.utc_now - timedelta(minutes=15.0)
 
         with get_temp_file() as temp_check, get_temp_dir() as temp_dir:
-            self.updater._write_last_check(
-                file_path=temp_check, content=new)
+            self.updater._write_last_check(file_path=temp_check, content=new)
             self.update_info.last_check_path = temp_check
             self.update_info.bin_new_path = temp_dir
-            self.updater._install(
-                update_info=self.update_info,
-                file_name="linux.zip")
-            bin_new = os.path.join(
-                temp_dir, self.update_info.validator_basename)
+            self.updater._install(update_info=self.update_info, file_name="linux.zip")
+            bin_new = os.path.join(temp_dir, self.update_info.validator_basename)
             bin_new_stat_mode = os.stat(bin_new).st_mode
             self.assertEqual(bin_new_stat_mode & S_IXUSR, S_IXUSR)
             self.assertEqual(bin_new_stat_mode & S_IXGRP, S_IXGRP)
@@ -505,7 +527,8 @@ class TestUpdateHandler(TestCase):
             update_info = get_update_info(check_ok=True, mod_root=mod_root)
             update_info.latest_path = self.install_fake
             self.updater._write_last_check(
-                file_path=update_info.last_check_path, content=new)
+                file_path=update_info.last_check_path, content=new
+            )
 
             expected_path = os.path.join(update_info.bin_path, "validate")
             self.assertFalse(os.path.exists(expected_path))
@@ -523,7 +546,8 @@ class TestUpdateHandler(TestCase):
             update_info = get_update_info(check_ok=False, mod_root=mod_root)
             update_info.latest_path = self.install_fake
             self.updater._write_last_check(
-                file_path=update_info.last_check_path, content=new)
+                file_path=update_info.last_check_path, content=new
+            )
 
             self.assertFalse(os.path.exists(update_info.bin_path))
             self.updater.update(update_info=update_info, file_name="linux.zip")
@@ -542,7 +566,8 @@ class TestUpdateHandler(TestCase):
             update_info = get_update_info(check_ok=True, mod_root=mod_root)
             update_info.latest_path = self.install_fake_old
             self.updater._write_last_check(
-                file_path=update_info.last_check_path, content=new)
+                file_path=update_info.last_check_path, content=new
+            )
 
             self.updater.update(update_info=update_info, file_name="linux.zip")
             update_info.latest_path = self.install_fake
@@ -560,7 +585,8 @@ class TestUpdateHandler(TestCase):
             update_info = get_update_info(check_ok=True, mod_root=mod_root)
             update_info.latest_path = self.install_fake
             self.updater._write_last_check(
-                file_path=update_info.last_check_path, content=new)
+                file_path=update_info.last_check_path, content=new
+            )
 
             self.updater.update(update_info=update_info, file_name="linux.zip")
             update_info.latest_path = self.install_fake
@@ -578,7 +604,8 @@ class TestUpdateHandler(TestCase):
             update_info = get_update_info(check_ok=False, mod_root=mod_root)
             update_info.latest_path = self.install_fake
             self.updater._write_last_check(
-                file_path=update_info.last_check_path, content=new)
+                file_path=update_info.last_check_path, content=new
+            )
 
             self.updater.update(update_info=update_info, file_name="linux.zip")
             update_info.latest_path = self.install_fake
@@ -609,7 +636,8 @@ class TestUpdateHandler(TestCase):
             update_info = get_update_info(check_ok=True, mod_root=mod_root)
             update_info.latest_path = self.install_fake_old
             self.updater._write_last_check(
-                file_path=update_info.last_check_path, content=new)
+                file_path=update_info.last_check_path, content=new
+            )
 
             self.updater.update(update_info=update_info, file_name="linux.zip")
             self.updater.check(update_info=update_info)
@@ -626,7 +654,8 @@ class TestUpdateHandler(TestCase):
             update_info = get_update_info(check_ok=True, mod_root=mod_root)
             update_info.latest_path = self.install_fake_old
             self.updater._write_last_check(
-                file_path=update_info.last_check_path, content=new)
+                file_path=update_info.last_check_path, content=new
+            )
 
             self.updater.update(update_info=update_info, file_name="linux.zip")
             update_info.install_check = install_check_fail

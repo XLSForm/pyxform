@@ -1,73 +1,67 @@
+# -*- coding: utf-8 -*-
 """
 Testing simple cases for Xls2Json
 """
 from unittest import TestCase
-from pyxform.xls2json import SurveyReader
+
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.tests import utils
+from pyxform.xls2json import SurveyReader
 
 
 class GroupTests(TestCase):
-
     def test_json(self):
-        x = SurveyReader(utils.path_to_text_fixture("group.xls"))
+        x = SurveyReader(utils.path_to_text_fixture("group.xls"), default_name="group")
         x_results = x.to_json_dict()
         expected_dict = {
-            u'name': u'group',
-            u'title': u'group',
-            u'id_string': u'group',
-            u'sms_keyword': u'group',
-            u'default_language': u'default',
-            u'type': u'survey',
-            u'children': [
+            "name": "group",
+            "title": "group",
+            "id_string": "group",
+            "sms_keyword": "group",
+            "default_language": "default",
+            "type": "survey",
+            "children": [
                 {
-                    u'name': u'family_name',
-                    u'type': u'text',
-                    u'label': {u'English': u"What's your family name?"}
-                    },
+                    "name": "family_name",
+                    "type": "text",
+                    "label": {"English": "What's your family name?"},
+                },
                 {
-                    u'name': u'father',
-                    u'type': u'group',
-                    u'label': {u'English': u'Father'},
-                    u'children': [
+                    "name": "father",
+                    "type": "group",
+                    "label": {"English": "Father"},
+                    "children": [
                         {
-                            u'name': u'phone_number',
-                            u'type': u'phone number',
-                            u'label': {
-                                u'English':
-                                    u"What's your father's phone number?"}
-                            },
+                            "name": "phone_number",
+                            "type": "phone number",
+                            "label": {"English": "What's your father's phone number?"},
+                        },
                         {
-                            u'name': u'age',
-                            u'type': u'integer',
-                            u'label': {u'English': u'How old is your father?'}
-                            }
-                        ],
-                    },
+                            "name": "age",
+                            "type": "integer",
+                            "label": {"English": "How old is your father?"},
+                        },
+                    ],
+                },
                 {
-                    u'children': [
+                    "children": [
                         {
-                            u'bind': {
-                                'calculate': "concat('uuid:', uuid())",
-                                'readonly': 'true()'
-                            },
-                            u'name': 'instanceID',
-                            u'type': 'calculate'
+                            "bind": {"jr:preload": "uid", "readonly": "true()"},
+                            "name": "instanceID",
+                            "type": "calculate",
                         }
                     ],
-                    u'control': {
-                        'bodyless': True
-                    },
-                    u'name': 'meta',
-                    u'type': u'group'
-                }
-                ],
-            }
+                    "control": {"bodyless": True},
+                    "name": "meta",
+                    "type": "group",
+                },
+            ],
+        }
         self.maxDiff = None
         self.assertEqual(x_results, expected_dict)
 
     def test_equality_of_to_dict(self):
-        x = SurveyReader(utils.path_to_text_fixture("group.xls"))
+        x = SurveyReader(utils.path_to_text_fixture("group.xls"), default_name="group")
         x_results = x.to_json_dict()
 
         survey = create_survey_element_from_dict(x_results)

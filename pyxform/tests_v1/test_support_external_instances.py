@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""
+Test external instance syntax
+"""
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
@@ -13,26 +17,12 @@ class ExternalCSVInstancesTest(PyxformTestCase):
             |        | select_multiple_from_file neighbourhoods.csv | neighbourhoods | Neighbourhoods |
             """,  # noqa
             xml__contains=[
-                """<instance id="cities" src="jr://file-csv/cities.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                '<instance id="cities" src="jr://file-csv/cities.csv"/>',
                 '<select1 ref="/ecsv/city">',
-                '<itemset nodeset="instance(\'cities\')/root/item">',
-                """<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                "<itemset nodeset=\"instance('cities')/root/item\">",
+                '<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv"/>',  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
-                '<itemset nodeset="instance(\'neighbourhoods\')/root/item">',
+                "<itemset nodeset=\"instance('neighbourhoods')/root/item\">",
             ],
             run_odk_validate=True,
         )
@@ -48,25 +38,11 @@ class ExternalCSVInstancesTest(PyxformTestCase):
             |        | select_multiple_from_file neighbourhoods.csv | neighbourhoods | Neighbourhoods | city=${city}  |
             """,  # noqa
             xml__contains=[
-                """<instance id="cities" src="jr://file-csv/cities.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                '<instance id="cities" src="jr://file-csv/cities.csv"/>',  # noqa
                 '<select1 ref="/ecsv/city">',
-                """<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                '<instance id="neighbourhoods" src="jr://file-csv/neighbourhoods.csv"/>',  # noqa
                 '<select ref="/ecsv/neighbourhoods">',
-                '<itemset nodeset="instance(\'neighbourhoods\')/root/item[city= /ecsv/city ]">',  # noqa
+                "<itemset nodeset=\"instance('neighbourhoods')/root/item[city= /ecsv/city ]\">",  # noqa
             ],
             run_odk_validate=True,
         )
@@ -84,26 +60,12 @@ class ExternalXMLInstancesTest(PyxformTestCase):
             |        | select_multiple_from_file neighbourhoods.xml | neighbourhoods | Neighbourhoods |
             """,  # noqa
             xml__contains=[
-                """<instance id="cities" src="jr://file/cities.xml">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                '<instance id="cities" src="jr://file/cities.xml"/>',  # noqa
                 '<select1 ref="/exml/city">',
-                '<itemset nodeset="instance(\'cities\')/root/item">',
-                """<instance id="neighbourhoods" src="jr://file/neighbourhoods.xml">
-        <root>
-          <item>
-            <name>_</name>
-            <label>_</label>
-          </item>
-        </root>
-      </instance>""",  # noqa
+                "<itemset nodeset=\"instance('cities')/root/item\">",
+                '<instance id="neighbourhoods" src="jr://file/neighbourhoods.xml"/>',  # noqa
                 '<select ref="/exml/neighbourhoods">',
-                '<itemset nodeset="instance(\'neighbourhoods\')/root/item">',
+                "<itemset nodeset=\"instance('neighbourhoods')/root/item\">",
             ],
             run_odk_validate=True,
         )
@@ -160,4 +122,51 @@ class ExternalCSVInstancesBugsTest(PyxformTestCase):
         <label ref="label"/>
       </itemset>"""
             ],
+        )
+
+    def test_external_choices_sheet_values_required(self):
+        md = """
+            | survey           |                               |          |           |                                     |
+            |                  | type                          | name     | label     | choice_filter                       |
+            |                  | text                          | S1       | s1        |                                     |
+            |                  | select_one_external counties  | county   | county    | S1=${S1}                            |
+            |                  | select_one_external cities    | city     | city      | S1=${S1} and county=${county}       |
+            | choices          |                               |          |           |
+            |                  | list name                     | name     | label     |
+            |                  | list                          | option a | a         |
+            | external_choices |              |                |
+            |                  | list_name    | name           |
+            |                  | counties     | Kajiado        |
+            |                  | counties     | Nakuru         |
+            |                  | cities       | Kisumu         |
+            |                  | cities       | Mombasa        |
+            """
+        expected = """
+    <input query="instance('cities')/root/item[S1= /pyxform_autotestname/S1  and county= /pyxform_autotestname/county ]" ref="/pyxform_autotestname/city">
+"""
+
+        self.assertPyxformXform(
+            md=md, debug=False, xml__contains=[expected], run_odk_validate=True
+        )
+
+    def test_list_name_not_in_external_choices_sheet_raises_error(self):
+        self.assertPyxformXform(
+            md="""
+                | survey           |                              |                |           |                                     |
+                |                  | type                         | name           | label     | choice_filter                       |
+                |                  | select_one list              | S1             | s1        |                                     |
+                |                  | select_one_external counties | county         | County    | S1=${S1}                            |
+                |                  | select_one_external cities   | city           | City      | S1=${S1} and county=${county}       |
+                | choices          |                              |                |           |
+                |                  | list name                    | name           | label     |
+                |                  | list                         | option a       | a         |
+                |                  | list                         | option b       | b         |
+                |                  | list                         | option c       | c         |
+                | external_choices |                              |                |
+                |                  | list_name                    | name           |
+                |                  | counties                     | Kajiado        |
+                |                  | counties                     | Nakuru         |
+                """,  # noqa
+            errored=True,
+            error__contains=["List name not in external choices sheet: cities"],
         )

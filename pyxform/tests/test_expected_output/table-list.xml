@@ -54,7 +54,7 @@
       <bind nodeset="/table-list/happy_sad_table/reserved_name_for_field_list_labels_8" type="select"/>
       <bind nodeset="/table-list/happy_sad_table/happy_sad_brian" type="select"/>
       <bind nodeset="/table-list/happy_sad_table/happy_sad_michael" type="select"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/table-list/meta/instanceID" readonly="true()" type="string"/>
+      <bind jr:preload="uid" nodeset="/table-list/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
   <h:body>
