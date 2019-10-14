@@ -82,6 +82,10 @@ class UploadQuestion(Question):
 
     def xml_control(self):
         control_dict = self.control
+        survey = self.get_root()
+        # Resolve field references in attributes
+        for key, value in control_dict.items():
+            control_dict[key] = survey.insert_xpaths(value, self)
         control_dict["ref"] = self.get_xpath()
         control_dict["mediatype"] = self._get_media_type()
         return node("upload", *self.xml_label_and_hint(), **control_dict)
