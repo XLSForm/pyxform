@@ -4,8 +4,6 @@ Test upload (image, audio, file) question types in XLSForm
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
-
-
 class UploadTest(PyxformTestCase):
     def test_image_question(self):
         self.assertPyxformXform(
@@ -17,10 +15,11 @@ class UploadTest(PyxformTestCase):
             """,
             errored=False,
             xml__contains=[
-                "<bind nodeset=\"/data/photo\" type=\"binary\"/>", 
-                "<upload mediatype=\"image/*\" ref=\"/data/photo\">",
-                "<label>Take a photo:</label>", 
-                "</upload>"]
+                '<bind nodeset="/data/photo" type="binary"/>',
+                '<upload mediatype="image/*" ref="/data/photo">',
+                "<label>Take a photo:</label>",
+                "</upload>",
+            ],
         )
 
     def test_audio_question(self):
@@ -33,10 +32,11 @@ class UploadTest(PyxformTestCase):
             """,
             errored=False,
             xml__contains=[
-                "<bind nodeset=\"/data/recording1\" type=\"binary\"/>", 
-                "<upload mediatype=\"audio/*\" ref=\"/data/recording1\">",
-                "<label>Record a sound:</label>", 
-                "</upload>"]
+                '<bind nodeset="/data/recording1" type="binary"/>',
+                '<upload mediatype="audio/*" ref="/data/recording1">',
+                "<label>Record a sound:</label>",
+                "</upload>",
+            ],
         )
 
     def test_file_question(self):
@@ -49,10 +49,11 @@ class UploadTest(PyxformTestCase):
             """,
             errored=False,
             xml__contains=[
-                "<bind nodeset=\"/data/file1\" type=\"binary\"/>", 
-                "<upload mediatype=\"application/*\" ref=\"/data/file1\">",
-                "<label>Upload a file:</label>", 
-                "</upload>"]
+                '<bind nodeset="/data/file1" type="binary"/>',
+                '<upload mediatype="application/*" ref="/data/file1">',
+                "<label>Upload a file:</label>",
+                "</upload>",
+            ],
         )
 
     def test_file_question_restrict_filetype(self):
@@ -64,14 +65,11 @@ class UploadTest(PyxformTestCase):
             |        | file | upload_a_pdf | Upload a PDF: | application/pdf |
             """,
             errored=False,
-            xml__contains=[
-                "<upload accept=\"application/pdf\"",
-                ]
+            xml__contains=['<upload accept="application/pdf"'],
         )
 
     def test_image_question_custom_col_calc(self):
         self.assertPyxformXform(
-            debug=True,
             name="data",
             md="""
             | survey |       |                  |                 |                               |
@@ -79,10 +77,7 @@ class UploadTest(PyxformTestCase):
             |        | text  | watermark_phrase | Watermark Text: |                               |
             |        | text  | text1            | Text            |                               |
             |        | image | image1           | Take a Photo:   | watermark=${watermark_phrase} |
-            """, # noqa
+            """,  # noqa
             errored=False,
-            xml__contains=[
-                "watermark= /data/watermark_phrase "
-                ]
-
+            xml__contains=["watermark= /data/watermark_phrase "],
         )
