@@ -299,7 +299,11 @@ def process_range_question_type(row):
 
 
 def workbook_to_json(
-    workbook_dict, form_name=None, default_language="default", warnings=None
+    workbook_dict,
+    form_name=None,
+    form_id=None,
+    default_language="default",
+    warnings=None,
 ):
     """
     workbook_dict -- nested dictionaries representing a spreadsheet.
@@ -388,7 +392,7 @@ def workbook_to_json(
         )
 
     # Here we create our json dict root with default settings:
-    id_string = settings.get(constants.ID_STRING, form_name)
+    id_string = settings.get(constants.ID_STRING, form_id)
     sms_keyword = settings.get(constants.SMS_KEYWORD, id_string)
     json_dict = {
         constants.TYPE: constants.SURVEY,
@@ -1316,7 +1320,10 @@ def parse_file_to_json(
     if warnings is None:
         warnings = []
     workbook_dict = parse_file_to_workbook_dict(path, file_object)
-    return workbook_to_json(workbook_dict, default_name, default_language, warnings)
+    default_form_id = unicode(get_filename(path))
+    return workbook_to_json(
+        workbook_dict, default_name, default_form_id, default_language, warnings
+    )
 
 
 def organize_by_values(dict_list, key):
