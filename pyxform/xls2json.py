@@ -591,6 +591,7 @@ def workbook_to_json(
     # Rows from the survey sheet that should be nested in meta
     survey_meta = []
 
+    repeat_behavior_warning_added = False
     for row in survey_sheet:
         row_number += 1
         if stack[-1] is not None:
@@ -859,6 +860,20 @@ def workbook_to_json(
                 # until an end command is encountered.
                 control_type = aliases.control[parse_dict["type"]]
                 control_name = question_name
+
+                if (
+                    control_type == constants.REPEAT
+                    and not repeat_behavior_warning_added
+                ):
+                    warnings.append(
+                        "Repeat behavior has changed. Previously, some clients like "
+                        "ODK Collect prompted users to add the first repeat. Now, "
+                        "the user will only be prompted to add repeats after the first "
+                        "one. Representing 0 repetitions will require changing the form "
+                        "design. Read more at http://xlsform.org/en/#repeats."
+                    )
+                    repeat_behavior_warning_added = True
+
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type
                 child_list = list()

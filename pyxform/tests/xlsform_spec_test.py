@@ -98,7 +98,7 @@ class WarningsTest(unittest.TestCase):
         warnings = []
         pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
         self.assertEquals(
-            len(warnings), 21, "Found " + str(len(warnings)) + " warnings"
+            len(warnings), 22, "Found " + str(len(warnings)) + " warnings"
         )
 
 
