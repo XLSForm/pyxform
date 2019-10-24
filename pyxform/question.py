@@ -7,7 +7,7 @@ import os.path
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import basestring, node, unicode
+from pyxform.utils import basestring, node, unicode, default_is_dynamic
 
 
 class Question(SurveyElement):
@@ -26,7 +26,7 @@ class Question(SurveyElement):
         for key, value in attributes.items():
             attributes[key] = survey.insert_xpaths(value, self)
 
-        if self.get("default") and not self.dynamic_default():
+        if self.get("default") and not default_is_dynamic(self.default, self.type):
             return node(self.name, unicode(self.get("default")), **attributes)
         return node(self.name, **attributes)
 

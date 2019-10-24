@@ -234,3 +234,37 @@ def get_languages_with_bad_tags(languages):
         ):
             languages_with_bad_tags.append(lang)
     return languages_with_bad_tags
+
+
+def default_is_dynamic(element_default, element_type=None):
+    """
+    Returns true if the default value is a dynamic value.
+
+    Dynamic value for now is defined as:
+    * Contains arithmetic operator (except '/' and '-' for date type).
+    * Contains balanced set of [] and/or {} and/or ().
+    """
+    if not isinstance(element_default, basestring):
+        return False
+
+    expression = []
+    contains_dynamic = False
+    arithmetic_construct = {"*", "/", "+", "-"}
+    if element_type is not None and element_type == "date":
+        arithmetic_construct.remove("/")
+        arithmetic_construct.remove("-")
+
+    expression_construct = {"[", "]", "{", "}", "(", ")"}
+    expression_pair = {"]": "[", "}": "{", ")": "("}
+    for expression_element in element_default:
+        contains_dynamic = (
+            contains_dynamic
+            or expression_element in expression_construct
+            or expression_element in arithmetic_construct
+        )
+        if expression_element in expression_construct:
+            if expression and expression.pop() != expression_pair[expression_element]:
+                return False
+            else:
+                expression.append(expression_element)
+    return contains_dynamic

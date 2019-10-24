@@ -14,6 +14,7 @@ from pyxform.utils import (
     node,
     unicode,
     basestring,
+    default_is_dynamic,
 )
 from pyxform.xls2json import print_pyobj_to_json
 
@@ -341,37 +342,8 @@ class SurveyElement(dict):
             type(self.media) is dict and len(self.media) > 0
         )
 
-    def dynamic_default(self):
-        if not isinstance(self.default, basestring):
-            return False
-
-        expression = []
-        contains_dynamic = False
-        arithmetic_construct = {"*", "/", "+", "-"}
-        if self.type == "date":
-            arithmetic_construct.remove("/")
-            arithmetic_construct.remove("-")
-
-        expression_construct = {"[", "]", "{", "}", "(", ")"}
-        expression_pair = {"]": "[", "}": "{", ")": "("}
-        for expression_element in self.default:
-            contains_dynamic = (
-                contains_dynamic
-                or expression_element in expression_construct
-                or expression_element in arithmetic_construct
-            )
-            if expression_element in expression_construct:
-                if (
-                    expression
-                    and expression.pop() != expression_pair[expression_element]
-                ):
-                    return False
-                else:
-                    expression.append(expression_element)
-        return contains_dynamic
-
     def xml_dynamic_default(self, in_binding=False):
-        if not self.default or not self.dynamic_default():
+        if not self.default or not default_is_dynamic(self.default, self.type):
             return
 
         if self.parent.__class__.__name__ == "Survey" and in_binding:
