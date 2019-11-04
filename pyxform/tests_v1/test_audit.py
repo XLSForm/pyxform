@@ -192,10 +192,10 @@ class AuditTest(PyxformTestCase):
             md="""
             | survey |        |          |                   |
             |        | type   |   name   | parameters        |
-            |        | audit  |   audit  | user-identity=foo |
+            |        | audit  |   audit  | identify-user=foo |
             """,
             errored=True,
-            error__contains=["user-identity must be set to true or false"],
+            error__contains=["identify-user must be set to true or false"],
         )
 
     def test_audit_identify_user_true(self):
@@ -204,13 +204,13 @@ class AuditTest(PyxformTestCase):
             md="""
             | survey |        |          |                    |
             |        | type   |   name   | parameters         |
-            |        | audit  |   audit  | user-identity=true |
+            |        | audit  |   audit  | identify-user=true |
             """,
             xml__contains=[
                 "<meta>",
                 "<audit/>",
                 "</meta>",
-                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:user-identity="true"/>',
+                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:identify-user="true"/>',
             ],
         )
 
@@ -220,13 +220,13 @@ class AuditTest(PyxformTestCase):
             md="""
             | survey |        |          |                    |
             |        | type   |   name   | parameters         |
-            |        | audit  |   audit  | user-identity=false |
+            |        | audit  |   audit  | identify-user=false |
             """,
             xml__contains=[
                 "<meta>",
                 "<audit/>",
                 "</meta>",
-                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:user-identity="false"/>',
+                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:identify-user="false"/>',
             ],
         )
 
