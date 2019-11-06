@@ -870,7 +870,7 @@ def workbook_to_json(
                         "ODK Collect prompted users to add the first repeat. Now, "
                         "the user will only be prompted to add repeats after the first "
                         "one. Representing 0 repetitions will require changing the form "
-                        "design. Read more at http://xlsform.org/en/#repeats."
+                        "design. Read more at http://xlsform.org#representing-zero-repeats."
                     )
                     repeat_behavior_warning_added = True
 
