@@ -241,7 +241,7 @@ def default_is_dynamic(element_default, element_type=None):
     Returns true if the default value is a dynamic value.
 
     Dynamic value for now is defined as:
-    * Contains arithmetic operator (except '/' and '-' for date type).
+    * Contains arithmetic operator, including 'div' and 'mod' (except '-' for 'date' type).
     * Contains balanced set of [] and/or {} and/or ().
     """
     if not isinstance(element_default, basestring):
