@@ -248,10 +248,10 @@ def default_is_dynamic(element_default, element_type=None):
         return False
 
     expression = []
-    contains_dynamic = False
-    arithmetic_construct = {"*", "/", "+", "-"}
+    arithmetic_text = {" mod ", " div "}
+    contains_dynamic = any(s in element_default for s in arithmetic_text)
+    arithmetic_construct = {"*", "|", "+", "-"}
     if element_type is not None and element_type == "date":
-        arithmetic_construct.remove("/")
         arithmetic_construct.remove("-")
 
     expression_construct = {"[", "]", "{", "}", "(", ")"}

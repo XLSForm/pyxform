@@ -114,7 +114,7 @@ class DynamicDefaultTests(PyxformTestCase):
         | survey |         |            |             |                   |
         |        | type    | name       | label       | default           |
         |        | text    | expr_1     | First expr  | 2 + 3 * 4         |
-        |        | text    | expr_2     | Second expr | 5 / 5 - 5         |
+        |        | text    | expr_2     | Second expr | 5 div 5 - 5       |
         |        | integer | expr_3     | Third expr  | expr() + 2 * 5    |
         """
 
@@ -127,7 +127,30 @@ class DynamicDefaultTests(PyxformTestCase):
                 "<expr_2/>",
                 "<expr_3/>",
                 '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_1" value="2 + 3 * 4"/>',
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_2" value="5 / 5 - 5"/>',
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_2" value="5 div 5 - 5"/>',
                 '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_3" value="expr() + 2 * 5"/>',
+            ],
+        )
+
+    def test_handling_arithmetic_text(self):
+        """
+        Should use set-value for dynamic default form with arithmetic text
+        """
+        md = """
+        | survey |         |            |             |         |
+        |        | type    | name       | label       | default |
+        |        | text    | expr_1     | First expr  | 3 mod 3 |
+        |        | text    | expr_2     | Second expr | 5 div 5 |
+        """
+
+        self.assertPyxformXform(
+            md=md,
+            name="dynamic",
+            id_string="id",
+            model__contains=[
+                "<expr_1/>",
+                "<expr_2/>",
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_1" value="3 mod 3"/>',
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_2" value="5 div 5"/>',
             ],
         )
