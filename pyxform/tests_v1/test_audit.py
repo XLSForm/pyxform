@@ -186,6 +186,50 @@ class AuditTest(PyxformTestCase):
             error__contains=["track-changes must be set to true or false"],
         )
 
+    def test_audit_identify_user_foo(self):
+        self.assertPyxformXform(
+            name="meta_audit",
+            md="""
+            | survey |        |          |                   |
+            |        | type   |   name   | parameters        |
+            |        | audit  |   audit  | identify-user=foo |
+            """,
+            errored=True,
+            error__contains=["identify-user must be set to true or false"],
+        )
+
+    def test_audit_identify_user_true(self):
+        self.assertPyxformXform(
+            name="meta_audit",
+            md="""
+            | survey |        |          |                    |
+            |        | type   |   name   | parameters         |
+            |        | audit  |   audit  | identify-user=true |
+            """,
+            xml__contains=[
+                "<meta>",
+                "<audit/>",
+                "</meta>",
+                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:identify-user="true"/>',
+            ],
+        )
+
+    def test_audit_identify_user_false(self):
+        self.assertPyxformXform(
+            name="meta_audit",
+            md="""
+            | survey |        |          |                    |
+            |        | type   |   name   | parameters         |
+            |        | audit  |   audit  | identify-user=false |
+            """,
+            xml__contains=[
+                "<meta>",
+                "<audit/>",
+                "</meta>",
+                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:identify-user="false"/>',
+            ],
+        )
+
     def test_audit_location_track_changes(self):
         self.assertPyxformXform(
             name="meta_audit",

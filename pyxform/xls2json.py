@@ -656,6 +656,7 @@ def workbook_to_json(
                     constants.LOCATION_MIN_INTERVAL,
                     constants.LOCATION_MAX_AGE,
                     constants.TRACK_CHANGES,
+                    constants.IDENTIFY_USER,
                 ],
             )
 
@@ -675,6 +676,26 @@ def workbook_to_json(
                             "odk:"
                             + constants.TRACK_CHANGES: parameters[
                                 constants.TRACK_CHANGES
+                            ]
+                        }
+                    )
+
+            if constants.IDENTIFY_USER in parameters.keys():
+                if (
+                    parameters[constants.IDENTIFY_USER] != "true"
+                    and parameters[constants.IDENTIFY_USER] != "false"
+                ):
+                    raise PyXFormError(
+                        constants.IDENTIFY_USER + " must be set to true or false: "
+                        "'%s' is an invalid value" % parameters[constants.IDENTIFY_USER]
+                    )
+                else:
+                    new_dict["bind"] = new_dict.get("bind", {})
+                    new_dict["bind"].update(
+                        {
+                            "odk:"
+                            + constants.IDENTIFY_USER: parameters[
+                                constants.IDENTIFY_USER
                             ]
                         }
                     )
