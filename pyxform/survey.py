@@ -130,6 +130,7 @@ class Survey(Section):
             "public_key": unicode,
             "instance_xmlns": unicode,
             "version": unicode,
+            "pyxform_version": unicode,
             "choices": dict,
             "style": unicode,
             "attribute": dict,
@@ -474,6 +475,9 @@ class Survey(Section):
 
         if self.version:
             result.setAttribute("version", self.version)
+
+        if self.pyxform_version:
+            result.setAttribute("odk:pyxform-version", self.pyxform_version)
 
         if self.prefix:
             result.setAttribute("odk:prefix", self.prefix)

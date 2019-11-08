@@ -57,6 +57,7 @@ class GroupTests(TestCase):
                 },
             ],
         }
+        x_results.pop("pyxform_version", None)
         self.maxDiff = None
         self.assertEqual(x_results, expected_dict)
 

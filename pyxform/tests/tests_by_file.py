@@ -37,6 +37,7 @@ class MainTest(TestCase):
                 path_to_excel_file, default_name=root_filename
             )
             survey = pyxform.create_survey_element_from_dict(json_survey)
+            survey.pyxform_version = ""
             survey.print_xform_to_file(path_to_output_xform)
 
             # Compare with the expected output:

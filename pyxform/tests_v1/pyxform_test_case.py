@@ -174,6 +174,10 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             else:
                 survey = kwargs.get("survey")
 
+            # Remove the pyxform-version attribute
+            if survey:
+                survey.pyxform_version = ""
+
             xml = survey._to_pretty_xml()
             root = ETree.fromstring(xml.encode("utf-8"))
 

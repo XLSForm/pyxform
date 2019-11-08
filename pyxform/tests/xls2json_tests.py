@@ -43,6 +43,7 @@ class BasicXls2JsonApiTests(TestCase):
             with codecs.open(output_path, "rb", encoding="utf-8") as actual_file:
                 expected_json = json.load(expected_file)
                 actual_json = json.load(actual_file)
+                actual_json.pop("pyxform_version", None)
                 self.assertEqual(expected_json, actual_json)
 
     def test_hidden(self):
@@ -140,6 +141,7 @@ class BasicXls2JsonApiTests(TestCase):
             with codecs.open(output_path, "rb", encoding="utf-8") as actual_file:
                 expected_json = json.load(expected_file)
                 actual_json = json.load(actual_file)
+                actual_json.pop("pyxform_version", None)
                 self.assertEqual(expected_json, actual_json)
 
     def test_choice_filter_choice_fields(self):
