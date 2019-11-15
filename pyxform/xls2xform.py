@@ -68,7 +68,7 @@ def _create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "path_to_XLSForm",
-        help="Path to the Excel XSLX file with the XLSForm definition.",
+        help="Path to the Excel XLSX file with the XLSForm definition.",
     )
     parser.add_argument("output_path", help="Path to save the output to.", nargs="?")
     parser.add_argument(
