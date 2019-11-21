@@ -13,9 +13,9 @@ class GuidanceHintTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey |        |          |       |           |
-            |        | type   |   name   | label | hint      |
-            |        | string |   name   | Name  | your name |
+            | survey |      |          |       |           |
+            |        | type |   name   | label | hint      |
+            |        | text |   name   | Name  | your name |
             """,
             xml__contains=["<hint>your name</hint>"],
         )
@@ -25,9 +25,9 @@ class GuidanceHintTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey |        |          |       |                              |
-            |        | type   |   name   | label | guidance_hint                |
-            |        | string |   name   | Name  | as shown on birth certificate|
+            | survey |      |          |       |                              |
+            |        | type |   name   | label | guidance_hint                |
+            |        | text |   name   | Name  | as shown on birth certificate|
             """,  # noqa
             xml__contains=[
                 "<hint ref=\"jr:itext('/data/name:hint')\"/>",
@@ -42,9 +42,9 @@ class GuidanceHintTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey |        |          |       |           |                              |
-            |        | type   |   name   | label | hint      | guidance_hint                |
-            |        | string |   name   | Name  | your name | as shown on birth certificate|
+            | survey |      |          |       |           |                              |
+            |        | type |   name   | label | hint      | guidance_hint                |
+            |        | text |   name   | Name  | your name | as shown on birth certificate|
             """,  # noqa
             xml__contains=[
                 "<hint ref=\"jr:itext('/data/name:hint')\"/>",
@@ -58,9 +58,9 @@ class GuidanceHintTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey |        |          |       |           |                              |                                     |
-            |        | type   |   name   | label | hint      | guidance_hint                | guidance_hint::French (fr)          |
-            |        | string |   name   | Name  | your name | as shown on birth certificate| comme sur le certificat de naissance|
+            | survey |      |          |       |           |                              |                                     |
+            |        | type |   name   | label | hint      | guidance_hint                | guidance_hint::French (fr)          |
+            |        | text |   name   | Name  | your name | as shown on birth certificate| comme sur le certificat de naissance|
             """,  # noqa
             xml__contains=[
                 '<translation lang="French (fr)">',
@@ -77,9 +77,9 @@ class GuidanceHintTest(PyxformTestCase):
             name="data",
             errored=True,
             md="""
-            | survey |        |          |                              |
-            |        | type   |   name   | guidance_hint                |
-            |        | string |   name   | as shown on birth certificate|
+            | survey |      |          |                              |
+            |        | type |   name   | guidance_hint                |
+            |        | text |   name   | as shown on birth certificate|
             """,
             error__contains=["The survey element named 'name' has no label or hint."],
         )
@@ -90,9 +90,9 @@ class GuidanceHintTest(PyxformTestCase):
             name="data",
             errored=True,
             md="""
-            | survey |        |          |                              |                                     |
-            |        | type   |   name   | guidance_hint                | guidance_hint::French (fr)          |
-            |        | string |   name   | as shown on birth certificate| comme sur le certificat de naissance|
+            | survey |      |          |                              |                                     |
+            |        | type |   name   | guidance_hint                | guidance_hint::French (fr)          |
+            |        | text |   name   | as shown on birth certificate| comme sur le certificat de naissance|
             """,  # noqa
             error__contains=["The survey element named 'name' has no label or hint."],
         )
@@ -102,9 +102,9 @@ class GuidanceHintTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey |        |          |                      |                    |
-            |        | type   |   name   | hint                 | hint::French (fr)  |
-            |        | string |   name   | default language hint| French hint        |
+            | survey |      |          |                      |                    |
+            |        | type |   name   | hint                 | hint::French (fr)  |
+            |        | text |   name   | default language hint| French hint        |
             """,  # noqa
             xml__contains=[
                 "<hint ref=\"jr:itext('/data/name:hint')\"/>",
