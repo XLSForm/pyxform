@@ -218,8 +218,8 @@ class AuditTest(PyxformTestCase):
         self.assertPyxformXform(
             name="meta_audit",
             md="""
-            | survey |        |          |                    |
-            |        | type   |   name   | parameters         |
+            | survey |        |          |                     |
+            |        | type   |   name   | parameters          |
             |        | audit  |   audit  | identify-user=false |
             """,
             xml__contains=[
@@ -227,6 +227,34 @@ class AuditTest(PyxformTestCase):
                 "<audit/>",
                 "</meta>",
                 '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:identify-user="false"/>',
+            ],
+        )
+
+    def test_audit_track_changes_reasons_foo(self):
+        self.assertPyxformXform(
+            name="meta_audit",
+            md="""
+            | survey |        |          |                          |
+            |        | type   |   name   | parameters               |
+            |        | audit  |   audit  | track-changes-reasons=foo |
+            """,
+            errored=True,
+            error__contains=["track-changes-reasons must be set to on-form-edit"],
+        )
+
+    def test_audit_track_changes_reasons_on_form_edit(self):
+        self.assertPyxformXform(
+            name="meta_audit",
+            md="""
+            | survey |        |          |                          |
+            |        | type   |   name   | parameters               |
+            |        | audit  |   audit  | track-changes-reasons=on-form-edit |
+            """,
+            xml__contains=[
+                "<meta>",
+                "<audit/>",
+                "</meta>",
+                '<bind nodeset="/meta_audit/meta/audit" type="binary" odk:track-changes-reasons="on-form-edit"/>',
             ],
         )
 

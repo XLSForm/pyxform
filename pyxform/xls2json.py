@@ -657,6 +657,7 @@ def workbook_to_json(
                     constants.LOCATION_MAX_AGE,
                     constants.TRACK_CHANGES,
                     constants.IDENTIFY_USER,
+                    constants.TRACK_CHANGES_REASONS,
                 ],
             )
 
@@ -677,6 +678,19 @@ def workbook_to_json(
                             + constants.TRACK_CHANGES: parameters[
                                 constants.TRACK_CHANGES
                             ]
+                        }
+                    )
+
+            if constants.TRACK_CHANGES_REASONS in parameters.keys():
+                if (parameters[constants.TRACK_CHANGES_REASONS] != "on-form-edit"):
+                    raise PyXFormError(
+                        constants.TRACK_CHANGES_REASONS + " must be set to on-form-edit"
+                    )
+                else:
+                    new_dict["bind"] = new_dict.get("bind", {})
+                    new_dict["bind"].update(
+                        {
+                            "odk:"+ constants.TRACK_CHANGES_REASONS: "on-form-edit"
                         }
                     )
 
