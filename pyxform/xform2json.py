@@ -16,7 +16,7 @@ from pyxform import builder
 from pyxform.utils import NSMAP, basestring
 
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler)
+logger.addHandler(logging.NullHandler())
 
 
 # {{{ http://code.activestate.com/recipes/573463/ (r7)
