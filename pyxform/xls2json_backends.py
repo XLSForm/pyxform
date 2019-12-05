@@ -210,17 +210,19 @@ def xls_to_dict(path_or_file):
         # Do not process sheets that have nothing to do with XLSForm.
         if sheet.name not in constants.SUPPORTED_SHEET_NAMES:
             if len(workbook.sheets()) == 1:
-                result[constants.SURVEY], result[
-                    "%s_header" % constants.SURVEY
-                ] = xls_to_dict_normal_sheet(sheet)
+                (
+                    result[constants.SURVEY],
+                    result["%s_header" % constants.SURVEY],
+                ) = xls_to_dict_normal_sheet(sheet)
             else:
                 continue
         if sheet.name == constants.CASCADING_CHOICES:
             result[sheet.name] = _xls_to_dict_cascade_sheet(sheet)
         else:
-            result[sheet.name], result[
-                "%s_header" % sheet.name
-            ] = xls_to_dict_normal_sheet(sheet)
+            (
+                result[sheet.name],
+                result["%s_header" % sheet.name],
+            ) = xls_to_dict_normal_sheet(sheet)
 
     return result
 
