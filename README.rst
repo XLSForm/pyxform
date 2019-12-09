@@ -77,15 +77,24 @@ You can then run xls2xform from the commandline::
 
     xls2xform path_to_XLSForm [output_path]
 
-Testing
-=======
-To make sure the install worked out, you can do the following::
+Development
+===========
+To set up for development/contributing::
 
-    pip install nose==1.0.0
+    pip install -r requirements.pip
+
+    python setup.py develop
 
     cd your-virtual-env-dir/src/pyxform
 
+You can run tests with::
+
     nosetests
+
+
+Before committing, make sure to format your code using `black`::
+
+    black --target-version=py27 pyxform
 
 Documentation
 =============
@@ -127,5 +136,3 @@ Releasing pyxform
 10. Publish release to PyPI with ``twine``::
 
     $ twine upload dist/pyxform-0.15.0-py2.py3-none-any.whl dist/pyxform-0.15.0.tar.gz
-
-
