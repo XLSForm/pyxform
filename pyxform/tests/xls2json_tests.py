@@ -248,7 +248,7 @@ class DefaultToSurveyTest(TestCase):
     def test_default_sheet_name_to_survey(self):
         xls_path = utils.path_to_text_fixture("survey_no_name.xlsx")
         dict_value = xls_to_dict(xls_path)
-        print(json.dumps(dict_value))
+        print (json.dumps(dict_value))
         self.assertTrue("survey" in json.dumps(dict_value))
         self.assertTrue("state" in json.dumps(dict_value))
         self.assertTrue("The State" in json.dumps(dict_value))
