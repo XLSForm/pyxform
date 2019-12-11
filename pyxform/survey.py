@@ -315,15 +315,21 @@ class Survey(Section):
                 instance=node("instance", id=file_id, src=uri),
             )
 
-        formulas = get_pulldata_functions(element)
-        if len(formulas) > 0:
-            formula_instances = []
-            for formula in formulas:
-                pieces = formula.split('"') if '"' in formula else formula.split("'")
-                if len(pieces) > 1 and pieces[1]:
-                    file_id = pieces[1]
-                    formula_instances.append(get_instance_info(element, file_id))
-            return formula_instances
+        pulldata_calls = get_pulldata_functions(element)
+        if len(pulldata_calls) > 0:
+            pulldata_instances = []
+            for pulldata_call in pulldata_calls:
+                pulldata_arguments = re.sub("pulldata\s*\(\s*", "", pulldata_call)
+                parsed_pulldata_arguments = pulldata_arguments.split(",")
+                if len(parsed_pulldata_arguments) > 0:
+                    first_argument = parsed_pulldata_arguments[0]
+                    first_argument = (
+                        first_argument.replace("'", "").replace('"', "").strip()
+                    )
+                    pulldata_instances.append(
+                        get_instance_info(element, first_argument)
+                    )
+            return pulldata_instances
         return None
 
     @staticmethod
