@@ -94,8 +94,8 @@ class DynamicDefaultTests(PyxformTestCase):
         )
         survey_xml = survey._to_pretty_xml()
 
-        self.assertContains(survey_xml, "<feeling>not_func$</feeling>", 1)
-        self.assertContains(survey_xml, "<age/>", 1)
+        self.assertContains(survey_xml, "<feeling>not_func$</feeling>", 2)
+        self.assertContains(survey_xml, "<age/>", 2)
         self.assertContains(
             survey_xml,
             '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="some_rando_func()"/>',
