@@ -13,7 +13,7 @@ from collections import Counter
 
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
-from pyxform.utils import basestring, is_valid_xml_tag, unicode
+from pyxform.utils import basestring, is_valid_xml_tag, unicode, default_is_dynamic
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
@@ -595,6 +595,7 @@ def workbook_to_json(
     # Rows from the survey sheet that should be nested in meta
     survey_meta = []
 
+    dynamic_default_warning_added = False
     for row in survey_sheet:
         row_number += 1
         if stack[-1] is not None:
@@ -622,6 +623,19 @@ def workbook_to_json(
         # Get question type
         question_type = row.get(constants.TYPE)
         question_name = row.get(constants.NAME)
+
+        question_default = row.get("default")
+        if (
+            default_is_dynamic(question_default, question_type)
+            and not dynamic_default_warning_added
+        ):
+            warnings.append(
+                "This form definition contains dynamic defaults. Not all "
+                "form filling software and versions support dynamic defaults "
+                "so you should test the form with the software version you "
+                "plan to use."
+            )
+            dynamic_default_warning_added = True
 
         if not question_type:
             # if name and label are also missing,

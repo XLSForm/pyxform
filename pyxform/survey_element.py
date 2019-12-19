@@ -8,7 +8,14 @@ import re
 from pyxform import constants
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
-from pyxform.utils import INVALID_XFORM_TAG_REGEXP, is_valid_xml_tag, node, unicode
+from pyxform.utils import (
+    INVALID_XFORM_TAG_REGEXP,
+    is_valid_xml_tag,
+    node,
+    unicode,
+    basestring,
+    default_is_dynamic,
+)
 from pyxform.xls2json import print_pyobj_to_json
 
 try:
@@ -335,6 +342,22 @@ class SurveyElement(dict):
             type(self.media) is dict and len(self.media) > 0
         )
 
+    def xml_dynamic_default(self, in_binding=False):
+        if not self.default or not default_is_dynamic(self.default, self.type):
+            return
+
+        if self.parent.__class__.__name__ == "Survey" and in_binding:
+            default_handler = {"event": "odk-instance-first-load"}
+            return node(
+                "setvalue", ref=self.get_xpath(), value=self.default, **default_handler
+            )
+
+        if self.parent.__class__.__name__ != "Survey" and not in_binding:
+            default_handler = {"event": "odk-instance-first-load odk-new-repeat"}
+            return node(
+                "setvalue", ref=self.get_xpath(), value=self.default, **default_handler
+            )
+
     # XML generating functions, these probably need to be moved around.
     def xml_label(self):
         if self.needs_itext_ref():
@@ -412,6 +435,9 @@ class SurveyElement(dict):
             xml_binding = e.xml_binding()
             if xml_binding is not None:
                 result.append(xml_binding)
+            dynamic_default = e.xml_dynamic_default(True)
+            if dynamic_default:
+                result.append(dynamic_default)
         return result
 
     def xml_control(self):
