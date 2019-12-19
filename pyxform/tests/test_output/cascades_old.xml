@@ -57,10 +57,31 @@
                 <q31_child_faeces_disposal/>
                 <q32_latrine_hygiene/>
               </villager>
+              <villager>
+                <q25_faeces_mouth/>
+                <q26_prevent_faeces_mouth/>
+                <q27_handwashing/>
+                <q28_handwashing_facilities/>
+                <q29_water_storage/>
+                <q30_diseases/>
+                <q31_child_faeces_disposal/>
+                <q32_latrine_hygiene/>
+              </villager>
             </sectionC3>
             <sectionC4>
               <sectionC4_note/>
               <household jr:template="">
+                <q33_hh_latrine_usage/>
+                <q34_latrine_screen_vent/>
+                <q35_latrine_seat_cover/>
+                <q36_latrine_door/>
+                <q37_latrine_flies/>
+                <q38_latrine_odour/>
+                <q39_latrine_cleaned/>
+                <q40_latrine_handwash/>
+                <q41_latrine_soap/>
+              </household>
+              <household>
                 <q33_hh_latrine_usage/>
                 <q34_latrine_screen_vent/>
                 <q35_latrine_seat_cover/>
