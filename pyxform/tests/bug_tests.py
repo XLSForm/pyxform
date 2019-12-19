@@ -8,6 +8,7 @@ import os
 import unittest2 as unittest
 
 import pyxform
+from pyxform.validators.odk_validate import check_xform, ODKValidateError
 from pyxform.errors import PyXFormError
 from pyxform.tests.utils import XFormTestCase
 from pyxform.utils import has_external_choices
@@ -307,6 +308,15 @@ class TestSpreadSheetFilesWithMacrosAreAllowed(unittest.TestCase):
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
         result = parse_file_to_workbook_dict(path_to_excel_file)
         self.assertIsInstance(result, dict)
+
+
+class TestBadCalculation(unittest.TestCase):
+    """Bad calculation should not kill the application"""
+
+    def test_bad_calculate_javarosa_error(self):
+        filename = "bad_calc.xml"
+        test_xml = os.path.join(DIR, "test_output", filename)
+        self.assertRaises(ODKValidateError, check_xform, test_xml)
 
 
 if __name__ == "__main__":

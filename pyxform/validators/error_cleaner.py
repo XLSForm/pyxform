@@ -52,7 +52,9 @@ class ErrorCleaner(object):
                 line = line.replace("org.javarosa.xpath.XPathUnhandledException: ", "")
             # remove java.lang.NullPointerException
             if line.startswith("java.lang.NullPointerException"):
-                return None
+                line = line.replace("java.lang.NullPointerException", "")
+            if line.startswith("org.javarosa.xform.parse.XFormParseException"):
+                line = line.replace("org.javarosa.xform.parse.XFormParseException", "")
             return line
 
     @staticmethod
