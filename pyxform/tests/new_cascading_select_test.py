@@ -29,7 +29,9 @@ class MainTest(XFormTestCase):
             )
 
             # Do the conversion:
-            json_survey = pyxform.xls2json.parse_file_to_json(self.path_to_excel_file)
+            json_survey = pyxform.xls2json.parse_file_to_json(
+                self.path_to_excel_file, default_name=self.root_filename
+            )
 
             survey = pyxform.create_survey_element_from_dict(json_survey)
 

@@ -8,6 +8,7 @@ import os
 import unittest2 as unittest
 
 import pyxform
+from pyxform.validators.odk_validate import check_xform, ODKValidateError
 from pyxform.errors import PyXFormError
 from pyxform.tests.utils import XFormTestCase
 from pyxform.utils import has_external_choices
@@ -30,7 +31,7 @@ class GroupNames(unittest.TestCase):
         warnings = []
         with self.assertRaises(Exception):
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, warnings=warnings
+                path_to_excel_file, default_name="group_name_test", warnings=warnings
             )
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(output_path, warnings=warnings)
@@ -49,7 +50,9 @@ class NotClosedGroup(unittest.TestCase):
         warnings = []
         with self.assertRaises(Exception):
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, warnings=warnings
+                path_to_excel_file,
+                default_name="not_closed_group_test",
+                warnings=warnings,
             )
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(output_path, warnings=warnings)
@@ -68,7 +71,7 @@ class DuplicateColumns(unittest.TestCase):
         warnings = []
         with self.assertRaises(Exception):
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, warnings=warnings
+                path_to_excel_file, default_name="duplicate_columns", warnings=warnings
             )
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(output_path, warnings=warnings)
@@ -87,7 +90,7 @@ class RepeatDateTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings
+            self.path_to_excel_file, default_name="repeat_date_test", warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
@@ -111,7 +114,7 @@ class XmlEscaping(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings
+            self.path_to_excel_file, default_name="xml_escaping", warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
@@ -137,7 +140,7 @@ class DefaultTimeTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings
+            path_to_excel_file, default_name="default_time_demo", warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
@@ -160,7 +163,7 @@ class CascadeOldFormat(unittest.TestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings
+            path_to_excel_file, default_name="cascades_old", warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
@@ -178,7 +181,7 @@ class ValidateWrapper(unittest.TestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, warnings=warnings
+            path_to_excel_file, default_name="ODKValidateWarnings", warnings=warnings
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
@@ -197,7 +200,9 @@ class CascadeOldFormatIndexError(unittest.TestCase):
         warnings = []
         with self.assertRaises(PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, warnings=warnings
+                path_to_excel_file,
+                default_name="cascades_old_with_no_cascade_sheet",
+                warnings=warnings,
             )
             survey = pyxform.create_survey_element_from_dict(json_survey)
             survey.print_xform_to_file(output_path, warnings=warnings)
@@ -218,7 +223,11 @@ class BadChoicesSheetHeaders(unittest.TestCase):
         filename = "spaces_in_choices_header.xls"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
         warnings = []
-        pyxform.xls2json.parse_file_to_json(path_to_excel_file, warnings=warnings)
+        pyxform.xls2json.parse_file_to_json(
+            path_to_excel_file,
+            default_name="spaces_in_choices_header",
+            warnings=warnings,
+        )
         self.assertEquals(len(warnings), 3, "Found " + str(len(warnings)) + " warnings")
 
     def test_values_with_spaces_are_cleaned(self):
@@ -230,7 +239,9 @@ class BadChoicesSheetHeaders(unittest.TestCase):
         """
         filename = "spaces_in_choices_header.xls"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
-        survey_reader = SurveyReader(path_to_excel_file)
+        survey_reader = SurveyReader(
+            path_to_excel_file, default_name="spaces_in_choices_header"
+        )
         result = survey_reader.to_json_dict()
 
         self.assertEqual(
@@ -242,7 +253,9 @@ class TestChoiceNameAsType(unittest.TestCase):
     def test_choice_name_as_type(self):
         filename = "choice_name_as_type.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
-        xls_reader = SurveyReader(path_to_excel_file)
+        xls_reader = SurveyReader(
+            path_to_excel_file, default_name="choice_name_as_type"
+        )
         survey_dict = xls_reader.to_json_dict()
         self.assertTrue(has_external_choices(survey_dict))
 
@@ -251,7 +264,7 @@ class TestBlankSecondRow(unittest.TestCase):
     def test_blank_second_row(self):
         filename = "blank_second_row.xls"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
-        xls_reader = SurveyReader(path_to_excel_file)
+        xls_reader = SurveyReader(path_to_excel_file, default_name="blank_second_row")
         survey_dict = xls_reader.to_json_dict()
         self.assertTrue(len(survey_dict) > 0)
 
@@ -263,7 +276,7 @@ class TestXLDateAmbigous(unittest.TestCase):
         """Test non standard sheet with exception is processed successfully."""
         filename = "xl_date_ambiguous.xlsx"
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
-        xls_reader = SurveyReader(path_to_excel_file)
+        xls_reader = SurveyReader(path_to_excel_file, default_name="xl_date_ambiguous")
         survey_dict = xls_reader.to_json_dict()
         self.assertTrue(len(survey_dict) > 0)
 
@@ -295,6 +308,15 @@ class TestSpreadSheetFilesWithMacrosAreAllowed(unittest.TestCase):
         path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
         result = parse_file_to_workbook_dict(path_to_excel_file)
         self.assertIsInstance(result, dict)
+
+
+class TestBadCalculation(unittest.TestCase):
+    """Bad calculation should not kill the application"""
+
+    def test_bad_calculate_javarosa_error(self):
+        filename = "bad_calc.xml"
+        test_xml = os.path.join(DIR, "test_output", filename)
+        self.assertRaises(ODKValidateError, check_xform, test_xml)
 
 
 if __name__ == "__main__":

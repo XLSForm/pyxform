@@ -208,15 +208,23 @@ class Survey(Section):
         compatibility.
         """
         instance_element_list = []
+        multi_language = isinstance(choice_list[0].get("label"), dict)
         for idx, choice in enumerate(choice_list):
             choice_element_list = []
             # Add a unique id to the choice element in case there is itext
             # it references
-            itext_id = "-".join(["static_instance", list_name, str(idx)])
-            choice_element_list.append(node("itextId", itext_id))
+            if multi_language:
+                itext_id = "-".join(["static_instance", list_name, str(idx)])
+                choice_element_list.append(node("itextId", itext_id))
 
-            for name, value in choice.items():
+            for name, value in sorted(choice.items()):
                 if isinstance(value, basestring) and name != "label":
+                    choice_element_list.append(node(name, unicode(value)))
+                if (
+                    not multi_language
+                    and isinstance(value, basestring)
+                    and name == "label"
+                ):
                     choice_element_list.append(node(name, unicode(value)))
 
             instance_element_list.append(node("item", *choice_element_list))
@@ -531,6 +539,9 @@ class Survey(Section):
 
         # This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
+            multi_language = isinstance(choice_list[0].get("label"), dict)
+            if not multi_language:
+                continue
             for idx, choice in zip(range(len(choice_list)), choice_list):
                 for name, choice_value in choice.items():
                     itext_id = "-".join(["static_instance", list_name, str(idx)])

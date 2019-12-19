@@ -78,7 +78,7 @@ class PyxformMarkdown(object):
         # ideally, when all these tests are working, this would be
         # refactored as well
         survey = create_survey_element_from_dict(imported_survey_json)
-        survey.name = kwargs.get("name")
+        survey.name = kwargs.get("name", "data")
         survey.title = kwargs.get("title")
         survey.id_string = kwargs.get("id_string")
 
@@ -219,9 +219,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 )
             for v_err in odk_validate_error__contains:
                 self.assertContains(
-                    e.args[0].decode("utf-8"),
-                    v_err,
-                    msg_prefix="odk_validate_error__contains",
+                    e.args[0], v_err, msg_prefix="odk_validate_error__contains"
                 )
         else:
             survey = True

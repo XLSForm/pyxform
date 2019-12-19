@@ -25,3 +25,17 @@ class ValidateUnicodeException(PyxformTestCase):
                 "understand the expression starting at this point:"
             ],
         )
+
+    def test_validate_with_more_unicode(self):
+        self.assertPyxformXform(
+            md=u"""
+            | survey  |           |       |       |                |
+            |         | type      | name  | label | calculation    |
+            |         | calculate | bad   | bad   | £¥§©®₱₩        |
+            """,
+            run_odk_validate=True,
+            odk_validate_error__contains=[
+                'Invalid calculate for the bind attached to "${bad}" : Couldn\'t '
+                "understand the expression starting at this point:"
+            ],
+        )

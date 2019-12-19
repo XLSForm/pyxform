@@ -67,3 +67,15 @@ class TestCheckReadable(TestCase):
         fake_file = os.path.join(os.path.dirname(XFORM_SPEC_PATH), ".fake")
         with self.assertRaises(IOError):
             check_readable(file_path=fake_file, retry_limit=2, wait_seconds=0.1)
+
+
+class TestErrorMessageCleaning(TestCase):
+    def should_clean_odk_validate_stacktrace(self):
+        message = """java.lang.NullPointerException Null Pointer\norg.javarosa.xform.parse.XFormParseException Parser"""
+        cleaned = ErrorCleaner.odk_validate(message)
+        self.assertEqual(cleaned, " Null Pointer\n Parser")
+
+    def should_clean_enketo_validate_stacktrace(self):
+        message = """Error in gugu/gaga\nError in gugu/gaga"""
+        cleaned = ErrorCleaner.enketo_validate(message)
+        self.assertEqual(cleaned, "Error in gugu/gaga")

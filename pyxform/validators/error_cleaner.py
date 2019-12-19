@@ -40,9 +40,9 @@ class ErrorCleaner(object):
     @staticmethod
     def _remove_java_content(line):
         # has a java filename (with line number)
-        has_java_filename = line.find(".java:") is not -1
+        has_java_filename = line.find(".java:") != -1
         # starts with '    at java class path or method path'
-        is_a_java_method = line.find("\tat") is not -1
+        is_a_java_method = line.find("\tat") != -1
         if not has_java_filename and not is_a_java_method:
             # remove java.lang.RuntimeException
             if line.startswith("java.lang.RuntimeException: "):
@@ -52,7 +52,9 @@ class ErrorCleaner(object):
                 line = line.replace("org.javarosa.xpath.XPathUnhandledException: ", "")
             # remove java.lang.NullPointerException
             if line.startswith("java.lang.NullPointerException"):
-                return None
+                line = line.replace("java.lang.NullPointerException", "")
+            if line.startswith("org.javarosa.xform.parse.XFormParseException"):
+                line = line.replace("org.javarosa.xform.parse.XFormParseException", "")
             return line
 
     @staticmethod

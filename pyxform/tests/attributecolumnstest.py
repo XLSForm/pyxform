@@ -27,7 +27,9 @@ class AttributeColumnsTest(XFormTestCase):
         # Do the conversion:
         warnings = []
         json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, warnings=warnings
+            self.path_to_excel_file,
+            default_name="attribute_columns_test",
+            warnings=warnings,
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)

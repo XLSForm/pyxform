@@ -3,901 +3,6 @@
   <h:head>
     <h:title>cascades_old</h:title>
     <model>
-      <itext>
-        <translation default="true()" lang="default">
-          <text id="static_instance-name_list-0">
-            <value>Name 1</value>
-          </text>
-          <text id="static_instance-name_list-1">
-            <value>Name 2</value>
-          </text>
-          <text id="static_instance-name_list-2">
-            <value>Name 3</value>
-          </text>
-          <text id="static_instance-name_list-3">
-            <value>Other</value>
-          </text>
-          <text id="static_instance-yes_no_list-0">
-            <value>Yes</value>
-          </text>
-          <text id="static_instance-yes_no_list-1">
-            <value>No</value>
-          </text>
-          <text id="static_instance-gender_list-0">
-            <value>Male</value>
-          </text>
-          <text id="static_instance-gender_list-1">
-            <value>Female</value>
-          </text>
-          <text id="static_instance-phase-0">
-            <value>A</value>
-          </text>
-          <text id="static_instance-phase-1">
-            <value>A1</value>
-          </text>
-          <text id="static_instance-phase-2">
-            <value>B</value>
-          </text>
-          <text id="static_instance-phase-3">
-            <value>C</value>
-          </text>
-          <text id="static_instance-district-0">
-            <value>Berea_A</value>
-          </text>
-          <text id="static_instance-district-1">
-            <value>Botha Bothe_A</value>
-          </text>
-          <text id="static_instance-district-2">
-            <value>Leribe_A</value>
-          </text>
-          <text id="static_instance-district-3">
-            <value>Mafeteng_A</value>
-          </text>
-          <text id="static_instance-district-4">
-            <value>Maseru_A</value>
-          </text>
-          <text id="static_instance-district-5">
-            <value>Mohale's Hoek_A</value>
-          </text>
-          <text id="static_instance-district-6">
-            <value>Qacha's Nek_A</value>
-          </text>
-          <text id="static_instance-district-7">
-            <value>Quthing_A</value>
-          </text>
-          <text id="static_instance-district-8">
-            <value>Thaba-Tseka_A</value>
-          </text>
-          <text id="static_instance-district-9">
-            <value>Mokhotlong_A1</value>
-          </text>
-          <text id="static_instance-district-10">
-            <value>Qacha's Nek_A1</value>
-          </text>
-          <text id="static_instance-district-11">
-            <value>Thaba-Tseka_A1</value>
-          </text>
-          <text id="static_instance-district-12">
-            <value>Berea_B</value>
-          </text>
-          <text id="static_instance-district-13">
-            <value>Botha Bothe_B</value>
-          </text>
-          <text id="static_instance-district-14">
-            <value>Leribe_B</value>
-          </text>
-          <text id="static_instance-district-15">
-            <value>Mafeteng_B</value>
-          </text>
-          <text id="static_instance-district-16">
-            <value>Maseru_B</value>
-          </text>
-          <text id="static_instance-district-17">
-            <value>Mohale's Hoek_B</value>
-          </text>
-          <text id="static_instance-district-18">
-            <value>Mokhotlong_B</value>
-          </text>
-          <text id="static_instance-district-19">
-            <value>Qacha's Nek_B</value>
-          </text>
-          <text id="static_instance-district-20">
-            <value>Quthing_B</value>
-          </text>
-          <text id="static_instance-district-21">
-            <value>Thaba-Tseka_B</value>
-          </text>
-          <text id="static_instance-district-22">
-            <value>Berea_C</value>
-          </text>
-          <text id="static_instance-district-23">
-            <value>Botha Bothe_C</value>
-          </text>
-          <text id="static_instance-district-24">
-            <value>Leribe_C</value>
-          </text>
-          <text id="static_instance-district-25">
-            <value>Mafeteng_C</value>
-          </text>
-          <text id="static_instance-district-26">
-            <value>Maseru_C</value>
-          </text>
-          <text id="static_instance-district-27">
-            <value>Maseru _C</value>
-          </text>
-          <text id="static_instance-district-28">
-            <value>Mohale's Hoek_C</value>
-          </text>
-          <text id="static_instance-district-29">
-            <value>Mokhotlong_C</value>
-          </text>
-          <text id="static_instance-district-30">
-            <value>Qacha's Nek_C</value>
-          </text>
-          <text id="static_instance-district-31">
-            <value>Quthing_C</value>
-          </text>
-          <text id="static_instance-district-32">
-            <value>Thaba-Tseka_C</value>
-          </text>
-          <text id="static_instance-site-0">
-            <value>Ha Koone (BR-329)</value>
-          </text>
-          <text id="static_instance-site-1">
-            <value>Ha Makebe (BR-011)</value>
-          </text>
-          <text id="static_instance-site-2">
-            <value>Ha Mohatlane (BR-113)</value>
-          </text>
-          <text id="static_instance-site-3">
-            <value>Ha Motloang (BR-103)</value>
-          </text>
-          <text id="static_instance-site-4">
-            <value>Ha Ntlama (BR-048)</value>
-          </text>
-          <text id="static_instance-site-5">
-            <value>Ha Polaki/Matheneng (BR-141/2)</value>
-          </text>
-          <text id="static_instance-site-6">
-            <value>Lekhalong (BR-400)</value>
-          </text>
-          <text id="static_instance-site-7">
-            <value>Lifotholeng (BR-070)</value>
-          </text>
-          <text id="static_instance-site-8">
-            <value>Ha Lemphane (BB-195)</value>
-          </text>
-          <text id="static_instance-site-9">
-            <value>Kepile (BB-209)</value>
-          </text>
-          <text id="static_instance-site-10">
-            <value>Liteleng (Ha moluoane) (BB-248)</value>
-          </text>
-          <text id="static_instance-site-11">
-            <value>Luma (BB-235)</value>
-          </text>
-          <text id="static_instance-site-12">
-            <value>Motete (BB-146)</value>
-          </text>
-          <text id="static_instance-site-13">
-            <value>Patuoe/Moepanyane (BB-201)</value>
-          </text>
-          <text id="static_instance-site-14">
-            <value>Pokojoe-Khoaba (BB-095)</value>
-          </text>
-          <text id="static_instance-site-15">
-            <value>Solane (BB-094)</value>
-          </text>
-          <text id="static_instance-site-16">
-            <value>Ha Mahlomola (LR-337)</value>
-          </text>
-          <text id="static_instance-site-17">
-            <value>Ha Matoli (LR-152)</value>
-          </text>
-          <text id="static_instance-site-18">
-            <value>Ha Rantuba (LR-044)</value>
-          </text>
-          <text id="static_instance-site-19">
-            <value>Ha Senyenyane (LR-423)</value>
-          </text>
-          <text id="static_instance-site-20">
-            <value>Ha Tsae (LR-256)</value>
-          </text>
-          <text id="static_instance-site-21">
-            <value>Mapheaneng (LR-334)</value>
-          </text>
-          <text id="static_instance-site-22">
-            <value>Phahameng (LR-061)</value>
-          </text>
-          <text id="static_instance-site-23">
-            <value>Phelandaba (LR-164)</value>
-          </text>
-          <text id="static_instance-site-24">
-            <value>Ha Lepolesa (MF-098)</value>
-          </text>
-          <text id="static_instance-site-25">
-            <value>Ha Mathabang(Lifajaneng) (MF-472)</value>
-          </text>
-          <text id="static_instance-site-26">
-            <value>Ha Ranteme (MF-039)</value>
-          </text>
-          <text id="static_instance-site-27">
-            <value>Ha Tjale (MF-583)</value>
-          </text>
-          <text id="static_instance-site-28">
-            <value>Maieaneng (MF-009)</value>
-          </text>
-          <text id="static_instance-site-29">
-            <value>Makokotoaneng (MF-564)</value>
-          </text>
-          <text id="static_instance-site-30">
-            <value>Mathebe (MF-083)</value>
-          </text>
-          <text id="static_instance-site-31">
-            <value>Salae (MF-529)</value>
-          </text>
-          <text id="static_instance-site-32">
-            <value>Ha Leutsoa (MS-133)</value>
-          </text>
-          <text id="static_instance-site-33">
-            <value>Ha Moruthoane (MS-191)</value>
-          </text>
-          <text id="static_instance-site-34">
-            <value>Ha Phallang (MS-488)</value>
-          </text>
-          <text id="static_instance-site-35">
-            <value>Joala Boholo (MS-155)</value>
-          </text>
-          <text id="static_instance-site-36">
-            <value>Mahlabatheng (MS-258)</value>
-          </text>
-          <text id="static_instance-site-37">
-            <value>Nazareth (MS-077)</value>
-          </text>
-          <text id="static_instance-site-38">
-            <value>Polateng (MS-489)</value>
-          </text>
-          <text id="static_instance-site-39">
-            <value>Setibing (MS-581)</value>
-          </text>
-          <text id="static_instance-site-40">
-            <value>Ha Makhabane (MH-186)</value>
-          </text>
-          <text id="static_instance-site-41">
-            <value>Ha Mokotane (MH-223)</value>
-          </text>
-          <text id="static_instance-site-42">
-            <value>Ha Monyake (MH-089)</value>
-          </text>
-          <text id="static_instance-site-43">
-            <value>Ha Phatalla (MH-097)</value>
-          </text>
-          <text id="static_instance-site-44">
-            <value>Ha Tumo (MH-384)</value>
-          </text>
-          <text id="static_instance-site-45">
-            <value>Mataoeng (MH-219)</value>
-          </text>
-          <text id="static_instance-site-46">
-            <value>Phatlalla (MH-097)</value>
-          </text>
-          <text id="static_instance-site-47">
-            <value>Rakoloi (MH-149)</value>
-          </text>
-          <text id="static_instance-site-48">
-            <value>Raporong (MH-088)</value>
-          </text>
-          <text id="static_instance-site-49">
-            <value>Ha Ralengoele (QN-068)</value>
-          </text>
-          <text id="static_instance-site-50">
-            <value>Ha Ramokakatela (QN-048)</value>
-          </text>
-          <text id="static_instance-site-51">
-            <value>Ha-Isaac (QN-059)</value>
-          </text>
-          <text id="static_instance-site-52">
-            <value>Mosenekeng (QN-064)</value>
-          </text>
-          <text id="static_instance-site-53">
-            <value>Sekoti (QN-069)</value>
-          </text>
-          <text id="static_instance-site-54">
-            <value>Filoane (QT-358)</value>
-          </text>
-          <text id="static_instance-site-55">
-            <value>Kelebone (QT-034)</value>
-          </text>
-          <text id="static_instance-site-56">
-            <value>Matebeleng (QT-078)</value>
-          </text>
-          <text id="static_instance-site-57">
-            <value>Mofetoli (QT-366)</value>
-          </text>
-          <text id="static_instance-site-58">
-            <value>Mots'oane (QT-075)</value>
-          </text>
-          <text id="static_instance-site-59">
-            <value>Nosi (QT-355)</value>
-          </text>
-          <text id="static_instance-site-60">
-            <value>Seputeng (QT-354)</value>
-          </text>
-          <text id="static_instance-site-61">
-            <value>Swatsi (QT-238)</value>
-          </text>
-          <text id="static_instance-site-62">
-            <value>Lihlabaneng Ha Morapeli (TT-170)</value>
-          </text>
-          <text id="static_instance-site-63">
-            <value>Mohlakeng (TT-011)</value>
-          </text>
-          <text id="static_instance-site-64">
-            <value>Motsitseng (TT-160)</value>
-          </text>
-          <text id="static_instance-site-65">
-            <value>Bokhina Pere (MK-304)</value>
-          </text>
-          <text id="static_instance-site-66">
-            <value>Ha Ralit'sepe (MK-393)</value>
-          </text>
-          <text id="static_instance-site-67">
-            <value>Ha Senepi (MK-404)</value>
-          </text>
-          <text id="static_instance-site-68">
-            <value>Makorong (MK-232)</value>
-          </text>
-          <text id="static_instance-site-69">
-            <value>Mpakatheng (MK-265)</value>
-          </text>
-          <text id="static_instance-site-70">
-            <value>Sekhutlong (MK-356)</value>
-          </text>
-          <text id="static_instance-site-71">
-            <value>Sepatleng (MK-343)</value>
-          </text>
-          <text id="static_instance-site-72">
-            <value>Tseko (MK-154)</value>
-          </text>
-          <text id="static_instance-site-73">
-            <value>Ha Isaac (QT-059)</value>
-          </text>
-          <text id="static_instance-site-74">
-            <value>Ha Katela (QN-219)</value>
-          </text>
-          <text id="static_instance-site-75">
-            <value>Ha-Makhoa (QN-073)</value>
-          </text>
-          <text id="static_instance-site-76">
-            <value>Maphotong (QN-216)</value>
-          </text>
-          <text id="static_instance-site-77">
-            <value>Ha Laka (TT-009)</value>
-          </text>
-          <text id="static_instance-site-78">
-            <value>Ha Sekhohola (TT-138)</value>
-          </text>
-          <text id="static_instance-site-79">
-            <value>Mantsonyane (TT-051)</value>
-          </text>
-          <text id="static_instance-site-80">
-            <value>Ha Labane (TT-363)</value>
-          </text>
-          <text id="static_instance-site-81">
-            <value>Maholi-a Llang (TT-210)</value>
-          </text>
-          <text id="static_instance-site-82">
-            <value>Boranta (BR-327)</value>
-          </text>
-          <text id="static_instance-site-83">
-            <value>Letsoela (BR-008)</value>
-          </text>
-          <text id="static_instance-site-84">
-            <value>Maholong (BR-328)</value>
-          </text>
-          <text id="static_instance-site-85">
-            <value>Masaleng Ha Janki (BR-238)</value>
-          </text>
-          <text id="static_instance-site-86">
-            <value>Mokhachane (BR-330)</value>
-          </text>
-          <text id="static_instance-site-87">
-            <value>Mokomahatsi (BR-210)</value>
-          </text>
-          <text id="static_instance-site-88">
-            <value>Nokong (BR-060)</value>
-          </text>
-          <text id="static_instance-site-89">
-            <value>Qalaheng/Mafotholeng (BR-45/84)</value>
-          </text>
-          <text id="static_instance-site-90">
-            <value>Tsenoli (BR-001)</value>
-          </text>
-          <text id="static_instance-site-91">
-            <value>Ha Lesia (BB-258)</value>
-          </text>
-          <text id="static_instance-site-92">
-            <value>Ha Lishobana (BB-217)</value>
-          </text>
-          <text id="static_instance-site-93">
-            <value>Ha Rampai (BB-045)</value>
-          </text>
-          <text id="static_instance-site-94">
-            <value>Ha-Rakotoane (BB-185)</value>
-          </text>
-          <text id="static_instance-site-95">
-            <value>Hlakacha (BB-029)</value>
-          </text>
-          <text id="static_instance-site-96">
-            <value>Khutlo-sea-ja (BB-188)</value>
-          </text>
-          <text id="static_instance-site-97">
-            <value>Lekanyane (BB-212)</value>
-          </text>
-          <text id="static_instance-site-98">
-            <value>Maphepheng (BB-147)</value>
-          </text>
-          <text id="static_instance-site-99">
-            <value>Setenong (BB-246)</value>
-          </text>
-          <text id="static_instance-site-100">
-            <value>Ha Makhaketsa (LR-045)</value>
-          </text>
-          <text id="static_instance-site-101">
-            <value>Ha Manamolela (LR-429)</value>
-          </text>
-          <text id="static_instance-site-102">
-            <value>Ha Matala (LR-124)</value>
-          </text>
-          <text id="static_instance-site-103">
-            <value>Ha Mukemane (LR-507)</value>
-          </text>
-          <text id="static_instance-site-104">
-            <value>Ha Ramapepe (LR-183)</value>
-          </text>
-          <text id="static_instance-site-105">
-            <value>Ha Tsepe (LR-269)</value>
-          </text>
-          <text id="static_instance-site-106">
-            <value>Rankhelepe (LR-210)</value>
-          </text>
-          <text id="static_instance-site-107">
-            <value>Thaba-Phatsoa (LR-049)</value>
-          </text>
-          <text id="static_instance-site-108">
-            <value>Tiping (LR-428)</value>
-          </text>
-          <text id="static_instance-site-109">
-            <value>Ha Joele (MF-419)</value>
-          </text>
-          <text id="static_instance-site-110">
-            <value>Ha Mashapha (MF-676)</value>
-          </text>
-          <text id="static_instance-site-111">
-            <value>Ha- Ralintoane (MF-698)</value>
-          </text>
-          <text id="static_instance-site-112">
-            <value>Ha Ramatima (MF-107)</value>
-          </text>
-          <text id="static_instance-site-113">
-            <value>Ha Seoli (MF-816)</value>
-          </text>
-          <text id="static_instance-site-114">
-            <value>Ha-Hlehlisi (MF-319)</value>
-          </text>
-          <text id="static_instance-site-115">
-            <value>Khalimane/Lijoetsa (MF-415)</value>
-          </text>
-          <text id="static_instance-site-116">
-            <value>Lithipeng/Mosuoane (MF-651)</value>
-          </text>
-          <text id="static_instance-site-117">
-            <value>Molleloa/Ha Patsa (MF-393)</value>
-          </text>
-          <text id="static_instance-site-118">
-            <value>Ha Mashenephe (MS-414)</value>
-          </text>
-          <text id="static_instance-site-119">
-            <value>Ha Sechache (MS-497)</value>
-          </text>
-          <text id="static_instance-site-120">
-            <value>Mokotleng (MS-462)</value>
-          </text>
-          <text id="static_instance-site-121">
-            <value>Mphephee/Moeaneng (MS-521)</value>
-          </text>
-          <text id="static_instance-site-122">
-            <value>Ramakhaleng (MS-474)</value>
-          </text>
-          <text id="static_instance-site-123">
-            <value>Rothe (MS-001)</value>
-          </text>
-          <text id="static_instance-site-124">
-            <value>Tlokotsane (MS-490)</value>
-          </text>
-          <text id="static_instance-site-125">
-            <value>Tsutsulupa (MS-516)</value>
-          </text>
-          <text id="static_instance-site-126">
-            <value>Keleke/Moleko (MS-465)</value>
-          </text>
-          <text id="static_instance-site-127">
-            <value>Ha Boroko (MH-009)</value>
-          </text>
-          <text id="static_instance-site-128">
-            <value>Ha Hamo/Moko (MH-142)</value>
-          </text>
-          <text id="static_instance-site-129">
-            <value>Ha Mokhatla (MH-158)</value>
-          </text>
-          <text id="static_instance-site-130">
-            <value>Ha Nthamaha (MH-478)</value>
-          </text>
-          <text id="static_instance-site-131">
-            <value>Ha Ranti (MH-538)</value>
-          </text>
-          <text id="static_instance-site-132">
-            <value>Lecheche (MH-557)</value>
-          </text>
-          <text id="static_instance-site-133">
-            <value>Matsoareng (MH-073)</value>
-          </text>
-          <text id="static_instance-site-134">
-            <value>Moru Motso (MH-507)</value>
-          </text>
-          <text id="static_instance-site-135">
-            <value>Pontseng (MH-027)</value>
-          </text>
-          <text id="static_instance-site-136">
-            <value>Draaihoek (MK-384)</value>
-          </text>
-          <text id="static_instance-site-137">
-            <value>Ha Tlenyane (MK-212)</value>
-          </text>
-          <text id="static_instance-site-138">
-            <value>Khohlong (MK-312)</value>
-          </text>
-          <text id="static_instance-site-139">
-            <value>Liotloaneng (MK-379)</value>
-          </text>
-          <text id="static_instance-site-140">
-            <value>Mabuleng (MK-269)</value>
-          </text>
-          <text id="static_instance-site-141">
-            <value>Maheneng (MK-342)</value>
-          </text>
-          <text id="static_instance-site-142">
-            <value>Matebeleng (MK-334)</value>
-          </text>
-          <text id="static_instance-site-143">
-            <value>Matlong (MK-387)</value>
-          </text>
-          <text id="static_instance-site-144">
-            <value>Mosenekeng (MK-341)</value>
-          </text>
-          <text id="static_instance-site-145">
-            <value>Ha Lehata (QN-088)</value>
-          </text>
-          <text id="static_instance-site-146">
-            <value>Ha Molomo (QN-206)</value>
-          </text>
-          <text id="static_instance-site-147">
-            <value>Ha Ranqhongoana (QN-007)</value>
-          </text>
-          <text id="static_instance-site-148">
-            <value>Ha Seholoholo (QN-055)</value>
-          </text>
-          <text id="static_instance-site-149">
-            <value>Liboteng (QN-096)</value>
-          </text>
-          <text id="static_instance-site-150">
-            <value>Mankoe (QN-091)</value>
-          </text>
-          <text id="static_instance-site-151">
-            <value>Qenehellong (QN-070)</value>
-          </text>
-          <text id="static_instance-site-152">
-            <value>Sekiring (QN-094)</value>
-          </text>
-          <text id="static_instance-site-153">
-            <value>Tsolo (QN-104)</value>
-          </text>
-          <text id="static_instance-site-154">
-            <value>Mamokeli (QT-337)</value>
-          </text>
-          <text id="static_instance-site-155">
-            <value>Marakabei (QT-398)</value>
-          </text>
-          <text id="static_instance-site-156">
-            <value>Masuoaneng (QT-392)</value>
-          </text>
-          <text id="static_instance-site-157">
-            <value>Mats'ela-Habeli (QT-246)</value>
-          </text>
-          <text id="static_instance-site-158">
-            <value>Ngoae &amp; Sekokoaneng (QT-067)</value>
-          </text>
-          <text id="static_instance-site-159">
-            <value>Nkoto-Silase (QT-334)</value>
-          </text>
-          <text id="static_instance-site-160">
-            <value>Photha-Photha (QT-401)</value>
-          </text>
-          <text id="static_instance-site-161">
-            <value>Raseeng (QT-076)</value>
-          </text>
-          <text id="static_instance-site-162">
-            <value>Thaba-Chitja (QT-292)</value>
-          </text>
-          <text id="static_instance-site-163">
-            <value>Ha Long (TT-298)</value>
-          </text>
-          <text id="static_instance-site-164">
-            <value>Ha Moriana (TT-297)</value>
-          </text>
-          <text id="static_instance-site-165">
-            <value>Ha Motake (TT-303)</value>
-          </text>
-          <text id="static_instance-site-166">
-            <value>Ha Nkune (TT-212)</value>
-          </text>
-          <text id="static_instance-site-167">
-            <value>Ha Poko (TT-225)</value>
-          </text>
-          <text id="static_instance-site-168">
-            <value>Ha Ratau (TT-165)</value>
-          </text>
-          <text id="static_instance-site-169">
-            <value>Ha Sekhaupane (TT-344)</value>
-          </text>
-          <text id="static_instance-site-170">
-            <value>Masakoane (TT-304)</value>
-          </text>
-          <text id="static_instance-site-171">
-            <value>Tholanyane (TT-299)</value>
-          </text>
-          <text id="static_instance-site-172">
-            <value>Ha Matjotjo  (BR-175)</value>
-          </text>
-          <text id="static_instance-site-173">
-            <value>Ha Mokhati  (BR-025)</value>
-          </text>
-          <text id="static_instance-site-174">
-            <value>Ha Phalatsane (BR-075)</value>
-          </text>
-          <text id="static_instance-site-175">
-            <value>Ha Phoofolo  (BR-090)</value>
-          </text>
-          <text id="static_instance-site-176">
-            <value>Ha Telukhunoana (BR-166)</value>
-          </text>
-          <text id="static_instance-site-177">
-            <value>Ha Tumo  (BR-043)</value>
-          </text>
-          <text id="static_instance-site-178">
-            <value>Kolojane  (BR-036)</value>
-          </text>
-          <text id="static_instance-site-179">
-            <value>Mokhethoaneng  (BR-16)</value>
-          </text>
-          <text id="static_instance-site-180">
-            <value>Community (BB-136)</value>
-          </text>
-          <text id="static_instance-site-181">
-            <value>Ha 'Masekh'ou (BB-130)</value>
-          </text>
-          <text id="static_instance-site-182">
-            <value>Kopanong (BB-250)</value>
-          </text>
-          <text id="static_instance-site-183">
-            <value>Mantlakala (BB-221)</value>
-          </text>
-          <text id="static_instance-site-184">
-            <value>Masianokeng (BB-259)</value>
-          </text>
-          <text id="static_instance-site-185">
-            <value>Motabola (BB-214)</value>
-          </text>
-          <text id="static_instance-site-186">
-            <value>Mphale (BB-156)</value>
-          </text>
-          <text id="static_instance-site-187">
-            <value>Thoteng (BB-251)</value>
-          </text>
-          <text id="static_instance-site-188">
-            <value>Ha Leaooa (LR-299)</value>
-          </text>
-          <text id="static_instance-site-189">
-            <value>Ha Ralikuku (LR-240)</value>
-          </text>
-          <text id="static_instance-site-190">
-            <value>Ha Tente (LR-258)</value>
-          </text>
-          <text id="static_instance-site-191">
-            <value>Ha Tobolela (LR-257)</value>
-          </text>
-          <text id="static_instance-site-192">
-            <value>Maqasane (LR-128)</value>
-          </text>
-          <text id="static_instance-site-193">
-            <value>Metolong (LR-227)</value>
-          </text>
-          <text id="static_instance-site-194">
-            <value>Nkoeng (LR-361)</value>
-          </text>
-          <text id="static_instance-site-195">
-            <value>Tale (LR-223)</value>
-          </text>
-          <text id="static_instance-site-196">
-            <value>Ha Likupa (MF-008)</value>
-          </text>
-          <text id="static_instance-site-197">
-            <value>Ha Manehella (MF-669)</value>
-          </text>
-          <text id="static_instance-site-198">
-            <value>Ha Sebeli-Lehananeng (MF-054)</value>
-          </text>
-          <text id="static_instance-site-199">
-            <value>Ha Tebelo (MF- 679)</value>
-          </text>
-          <text id="static_instance-site-200">
-            <value>Khasapane (MF-219)</value>
-          </text>
-          <text id="static_instance-site-201">
-            <value>Lihlookong (MF-221)</value>
-          </text>
-          <text id="static_instance-site-202">
-            <value>Sekiring (MF-292)</value>
-          </text>
-          <text id="static_instance-site-203">
-            <value>T'soeute (MF-750)</value>
-          </text>
-          <text id="static_instance-site-204">
-            <value>Ha Lekhafola (MS-215/426)</value>
-          </text>
-          <text id="static_instance-site-205">
-            <value>Ha Nkoankoa (MS-447)</value>
-          </text>
-          <text id="static_instance-site-206">
-            <value>Ha Pita (MS-025)</value>
-          </text>
-          <text id="static_instance-site-207">
-            <value>Ha Salemone Morainyane (MS-475)</value>
-          </text>
-          <text id="static_instance-site-208">
-            <value>Ha Sofonia (MS-021)</value>
-          </text>
-          <text id="static_instance-site-209">
-            <value>Khubetsoana &amp; Sekoting (MS-508)</value>
-          </text>
-          <text id="static_instance-site-210">
-            <value>Kubake Moreneng (MS-422)</value>
-          </text>
-          <text id="static_instance-site-211">
-            <value>Machekoaneng (MS-104)</value>
-          </text>
-          <text id="static_instance-site-212">
-            <value>Ha Bereng Matsoho (MH-115)</value>
-          </text>
-          <text id="static_instance-site-213">
-            <value>Ha Mohohlo (MH-404)</value>
-          </text>
-          <text id="static_instance-site-214">
-            <value>Ha Nkau (MH-293)</value>
-          </text>
-          <text id="static_instance-site-215">
-            <value>Ha Raboroko (MH-156)</value>
-          </text>
-          <text id="static_instance-site-216">
-            <value>Ha Senekane (MH-321)</value>
-          </text>
-          <text id="static_instance-site-217">
-            <value>Malahleha (MH-036)</value>
-          </text>
-          <text id="static_instance-site-218">
-            <value>Maluke (MH-473)</value>
-          </text>
-          <text id="static_instance-site-219">
-            <value>Setotoma (MH-110)</value>
-          </text>
-          <text id="static_instance-site-220">
-            <value>Bloodberg (MK-048)</value>
-          </text>
-          <text id="static_instance-site-221">
-            <value>Ha Masasane (MK-381)</value>
-          </text>
-          <text id="static_instance-site-222">
-            <value>Ha Nthimolane (MK-382)</value>
-          </text>
-          <text id="static_instance-site-223">
-            <value>Limapong (MK-268)</value>
-          </text>
-          <text id="static_instance-site-224">
-            <value>Lithoteng (MK-131)</value>
-          </text>
-          <text id="static_instance-site-225">
-            <value>Moteetee (MK-037)</value>
-          </text>
-          <text id="static_instance-site-226">
-            <value>T'sila-nt'so (MK-233)</value>
-          </text>
-          <text id="static_instance-site-227">
-            <value>Tsoenene (MK-002)</value>
-          </text>
-          <text id="static_instance-site-228">
-            <value>Ha Nkofo (QN-120)</value>
-          </text>
-          <text id="static_instance-site-229">
-            <value>Ha Sephelane (QN-154)</value>
-          </text>
-          <text id="static_instance-site-230">
-            <value>Ha Tamose (QN-051)</value>
-          </text>
-          <text id="static_instance-site-231">
-            <value>Ha T'sita (QN-009)</value>
-          </text>
-          <text id="static_instance-site-232">
-            <value>Khubetsoana (QN-101)</value>
-          </text>
-          <text id="static_instance-site-233">
-            <value>Lepapaneng (QN-121)</value>
-          </text>
-          <text id="static_instance-site-234">
-            <value>Rasekoele (QN-100)</value>
-          </text>
-          <text id="static_instance-site-235">
-            <value>Sefaha (QN-003)</value>
-          </text>
-          <text id="static_instance-site-236">
-            <value>Mohale (QT-196)</value>
-          </text>
-          <text id="static_instance-site-237">
-            <value>Mokokoane (QT-273)</value>
-          </text>
-          <text id="static_instance-site-238">
-            <value>Mpharane (QT-287)</value>
-          </text>
-          <text id="static_instance-site-239">
-            <value>Paballong (QT-117)</value>
-          </text>
-          <text id="static_instance-site-240">
-            <value>Rat'sit'so (QT-074)</value>
-          </text>
-          <text id="static_instance-site-241">
-            <value>Sekakeng (QT-335)</value>
-          </text>
-          <text id="static_instance-site-242">
-            <value>Sello (QT-283)</value>
-          </text>
-          <text id="static_instance-site-243">
-            <value>Thoteng (QT-034)</value>
-          </text>
-          <text id="static_instance-site-244">
-            <value>Ha Chooko (TT-312)</value>
-          </text>
-          <text id="static_instance-site-245">
-            <value>Ha Ntsokoane (TT-301)</value>
-          </text>
-          <text id="static_instance-site-246">
-            <value>Ha Ts'oeu-Khala  (TT-049)</value>
-          </text>
-          <text id="static_instance-site-247">
-            <value>Makhuleng  (TT-239)</value>
-          </text>
-          <text id="static_instance-site-248">
-            <value>Makunyapane  (TT-083)</value>
-          </text>
-          <text id="static_instance-site-249">
-            <value>Matsaile Manganeng (TT-411)</value>
-          </text>
-          <text id="static_instance-site-250">
-            <value>Matsaile Moreneng (TT-038)</value>
-          </text>
-          <text id="static_instance-site-251">
-            <value>Moeling  (TT-268)</value>
-          </text>
-        </translation>
-      </itext>
       <instance>
         <cascades_old id="cascades_old">
           <start/>
@@ -1013,19 +118,19 @@
       <instance id="name_list">
         <root>
           <item>
-            <itextId>static_instance-name_list-0</itextId>
+            <label>Name 1</label>
             <name>name1</name>
           </item>
           <item>
-            <itextId>static_instance-name_list-1</itextId>
+            <label>Name 2</label>
             <name>name2</name>
           </item>
           <item>
-            <itextId>static_instance-name_list-2</itextId>
+            <label>Name 3</label>
             <name>name3</name>
           </item>
           <item>
-            <itextId>static_instance-name_list-3</itextId>
+            <label>Other</label>
             <name>othername</name>
           </item>
         </root>
@@ -1033,11 +138,11 @@
       <instance id="yes_no_list">
         <root>
           <item>
-            <itextId>static_instance-yes_no_list-0</itextId>
+            <label>Yes</label>
             <name>yes</name>
           </item>
           <item>
-            <itextId>static_instance-yes_no_list-1</itextId>
+            <label>No</label>
             <name>no</name>
           </item>
         </root>
@@ -1045,11 +150,11 @@
       <instance id="gender_list">
         <root>
           <item>
-            <itextId>static_instance-gender_list-0</itextId>
+            <label>Male</label>
             <name>male</name>
           </item>
           <item>
-            <itextId>static_instance-gender_list-1</itextId>
+            <label>Female</label>
             <name>female</name>
           </item>
         </root>
@@ -1057,19 +162,19 @@
       <instance id="phase">
         <root>
           <item>
-            <itextId>static_instance-phase-0</itextId>
+            <label>A</label>
             <name>a</name>
           </item>
           <item>
-            <itextId>static_instance-phase-1</itextId>
+            <label>A1</label>
             <name>a1</name>
           </item>
           <item>
-            <itextId>static_instance-phase-2</itextId>
+            <label>B</label>
             <name>b</name>
           </item>
           <item>
-            <itextId>static_instance-phase-3</itextId>
+            <label>C</label>
             <name>c</name>
           </item>
         </root>
@@ -1077,167 +182,167 @@
       <instance id="district">
         <root>
           <item>
-            <itextId>static_instance-district-0</itextId>
+            <label>Berea_A</label>
             <name>berea_a</name>
             <phase>a</phase>
           </item>
           <item>
-            <itextId>static_instance-district-1</itextId>
+            <label>Botha Bothe_A</label>
             <name>botha_bothe_a</name>
             <phase>a</phase>
           </item>
           <item>
-            <itextId>static_instance-district-2</itextId>
+            <label>Leribe_A</label>
             <name>leribe_a</name>
             <phase>a</phase>
           </item>
           <item>
-            <itextId>static_instance-district-3</itextId>
+            <label>Mafeteng_A</label>
             <name>mafeteng_a</name>
             <phase>a</phase>
           </item>
           <item>
-            <itextId>static_instance-district-4</itextId>
+            <label>Maseru_A</label>
             <name>maseru_a</name>
             <phase>a</phase>
           </item>
           <item>
-            <itextId>static_instance-district-5</itextId>
+            <label>Mohale's Hoek_A</label>
             <name>mohale_s_hoek_a</name>
             <phase>a</phase>
           </item>
           <item>
-            <itextId>static_instance-district-6</itextId>
+            <label>Qacha's Nek_A</label>
             <name>qacha_s_nek_a</name>
             <phase>a</phase>
           </item>
           <item>
-            <itextId>static_instance-district-7</itextId>
+            <label>Quthing_A</label>
             <name>quthing_a</name>
             <phase>a</phase>
           </item>
           <item>
-            <itextId>static_instance-district-8</itextId>
+            <label>Thaba-Tseka_A</label>
             <name>thaba_tseka_a</name>
             <phase>a</phase>
           </item>
           <item>
-            <itextId>static_instance-district-9</itextId>
+            <label>Mokhotlong_A1</label>
             <name>mokhotlong_a1</name>
             <phase>a1</phase>
           </item>
           <item>
-            <itextId>static_instance-district-10</itextId>
+            <label>Qacha's Nek_A1</label>
             <name>qacha_s_nek_a1</name>
             <phase>a1</phase>
           </item>
           <item>
-            <itextId>static_instance-district-11</itextId>
+            <label>Thaba-Tseka_A1</label>
             <name>thaba_tseka_a1</name>
             <phase>a1</phase>
           </item>
           <item>
-            <itextId>static_instance-district-12</itextId>
+            <label>Berea_B</label>
             <name>berea_b</name>
             <phase>b</phase>
           </item>
           <item>
-            <itextId>static_instance-district-13</itextId>
+            <label>Botha Bothe_B</label>
             <name>botha_bothe_b</name>
             <phase>b</phase>
           </item>
           <item>
-            <itextId>static_instance-district-14</itextId>
+            <label>Leribe_B</label>
             <name>leribe_b</name>
             <phase>b</phase>
           </item>
           <item>
-            <itextId>static_instance-district-15</itextId>
+            <label>Mafeteng_B</label>
             <name>mafeteng_b</name>
             <phase>b</phase>
           </item>
           <item>
-            <itextId>static_instance-district-16</itextId>
+            <label>Maseru_B</label>
             <name>maseru_b</name>
             <phase>b</phase>
           </item>
           <item>
-            <itextId>static_instance-district-17</itextId>
+            <label>Mohale's Hoek_B</label>
             <name>mohale_s_hoek_b</name>
             <phase>b</phase>
           </item>
           <item>
-            <itextId>static_instance-district-18</itextId>
+            <label>Mokhotlong_B</label>
             <name>mokhotlong_b</name>
             <phase>b</phase>
           </item>
           <item>
-            <itextId>static_instance-district-19</itextId>
+            <label>Qacha's Nek_B</label>
             <name>qacha_s_nek_b</name>
             <phase>b</phase>
           </item>
           <item>
-            <itextId>static_instance-district-20</itextId>
+            <label>Quthing_B</label>
             <name>quthing_b</name>
             <phase>b</phase>
           </item>
           <item>
-            <itextId>static_instance-district-21</itextId>
+            <label>Thaba-Tseka_B</label>
             <name>thaba_tseka_b</name>
             <phase>b</phase>
           </item>
           <item>
-            <itextId>static_instance-district-22</itextId>
+            <label>Berea_C</label>
             <name>berea_c</name>
             <phase>c</phase>
           </item>
           <item>
-            <itextId>static_instance-district-23</itextId>
+            <label>Botha Bothe_C</label>
             <name>botha_bothe_c</name>
             <phase>c</phase>
           </item>
           <item>
-            <itextId>static_instance-district-24</itextId>
+            <label>Leribe_C</label>
             <name>leribe_c</name>
             <phase>c</phase>
           </item>
           <item>
-            <itextId>static_instance-district-25</itextId>
+            <label>Mafeteng_C</label>
             <name>mafeteng_c</name>
             <phase>c</phase>
           </item>
           <item>
-            <itextId>static_instance-district-26</itextId>
+            <label>Maseru_C</label>
             <name>maseru_c</name>
             <phase>c</phase>
           </item>
           <item>
-            <itextId>static_instance-district-27</itextId>
+            <label>Maseru _C</label>
             <name>maseru__c</name>
             <phase>c</phase>
           </item>
           <item>
-            <itextId>static_instance-district-28</itextId>
+            <label>Mohale's Hoek_C</label>
             <name>mohale_s_hoek_c</name>
             <phase>c</phase>
           </item>
           <item>
-            <itextId>static_instance-district-29</itextId>
+            <label>Mokhotlong_C</label>
             <name>mokhotlong_c</name>
             <phase>c</phase>
           </item>
           <item>
-            <itextId>static_instance-district-30</itextId>
+            <label>Qacha's Nek_C</label>
             <name>qacha_s_nek_c</name>
             <phase>c</phase>
           </item>
           <item>
-            <itextId>static_instance-district-31</itextId>
+            <label>Quthing_C</label>
             <name>quthing_c</name>
             <phase>c</phase>
           </item>
           <item>
-            <itextId>static_instance-district-32</itextId>
+            <label>Thaba-Tseka_C</label>
             <name>thaba_tseka_c</name>
             <phase>c</phase>
           </item>
@@ -1246,1516 +351,1516 @@
       <instance id="site">
         <root>
           <item>
-            <itextId>static_instance-site-0</itextId>
+            <district>berea_a</district>
+            <label>Ha Koone (BR-329)</label>
             <name>ha_koone_br_329_</name>
             <phase>a</phase>
-            <district>berea_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-1</itextId>
+            <district>berea_a</district>
+            <label>Ha Makebe (BR-011)</label>
             <name>ha_makebe_br_011_</name>
             <phase>a</phase>
-            <district>berea_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-2</itextId>
+            <district>berea_a</district>
+            <label>Ha Mohatlane (BR-113)</label>
             <name>ha_mohatlane_br_113_</name>
             <phase>a</phase>
-            <district>berea_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-3</itextId>
+            <district>berea_a</district>
+            <label>Ha Motloang (BR-103)</label>
             <name>ha_motloang_br_103_</name>
             <phase>a</phase>
-            <district>berea_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-4</itextId>
+            <district>berea_a</district>
+            <label>Ha Ntlama (BR-048)</label>
             <name>ha_ntlama_br_048_</name>
             <phase>a</phase>
-            <district>berea_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-5</itextId>
+            <district>berea_a</district>
+            <label>Ha Polaki/Matheneng (BR-141/2)</label>
             <name>ha_polaki_matheneng_br_141_2_</name>
             <phase>a</phase>
-            <district>berea_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-6</itextId>
+            <district>berea_a</district>
+            <label>Lekhalong (BR-400)</label>
             <name>lekhalong_br_400_</name>
             <phase>a</phase>
-            <district>berea_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-7</itextId>
+            <district>berea_a</district>
+            <label>Lifotholeng (BR-070)</label>
             <name>lifotholeng_br_070_</name>
             <phase>a</phase>
-            <district>berea_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-8</itextId>
+            <district>botha_bothe_a</district>
+            <label>Ha Lemphane (BB-195)</label>
             <name>ha_lemphane_bb_195_</name>
             <phase>a</phase>
-            <district>botha_bothe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-9</itextId>
+            <district>botha_bothe_a</district>
+            <label>Kepile (BB-209)</label>
             <name>kepile_bb_209_</name>
             <phase>a</phase>
-            <district>botha_bothe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-10</itextId>
+            <district>botha_bothe_a</district>
+            <label>Liteleng (Ha moluoane) (BB-248)</label>
             <name>liteleng_ha_moluoane_bb_248_</name>
             <phase>a</phase>
-            <district>botha_bothe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-11</itextId>
+            <district>botha_bothe_a</district>
+            <label>Luma (BB-235)</label>
             <name>luma_bb_235_</name>
             <phase>a</phase>
-            <district>botha_bothe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-12</itextId>
+            <district>botha_bothe_a</district>
+            <label>Motete (BB-146)</label>
             <name>motete_bb_146_</name>
             <phase>a</phase>
-            <district>botha_bothe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-13</itextId>
+            <district>botha_bothe_a</district>
+            <label>Patuoe/Moepanyane (BB-201)</label>
             <name>patuoe_moepanyane_bb_201_</name>
             <phase>a</phase>
-            <district>botha_bothe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-14</itextId>
+            <district>botha_bothe_a</district>
+            <label>Pokojoe-Khoaba (BB-095)</label>
             <name>pokojoe_khoaba_bb_095_</name>
             <phase>a</phase>
-            <district>botha_bothe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-15</itextId>
+            <district>botha_bothe_a</district>
+            <label>Solane (BB-094)</label>
             <name>solane_bb_094_</name>
             <phase>a</phase>
-            <district>botha_bothe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-16</itextId>
+            <district>leribe_a</district>
+            <label>Ha Mahlomola (LR-337)</label>
             <name>ha_mahlomola_lr_337_</name>
             <phase>a</phase>
-            <district>leribe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-17</itextId>
+            <district>leribe_a</district>
+            <label>Ha Matoli (LR-152)</label>
             <name>ha_matoli_lr_152_</name>
             <phase>a</phase>
-            <district>leribe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-18</itextId>
+            <district>leribe_a</district>
+            <label>Ha Rantuba (LR-044)</label>
             <name>ha_rantuba_lr_044_</name>
             <phase>a</phase>
-            <district>leribe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-19</itextId>
+            <district>leribe_a</district>
+            <label>Ha Senyenyane (LR-423)</label>
             <name>ha_senyenyane_lr_423_</name>
             <phase>a</phase>
-            <district>leribe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-20</itextId>
+            <district>leribe_a</district>
+            <label>Ha Tsae (LR-256)</label>
             <name>ha_tsae_lr_256_</name>
             <phase>a</phase>
-            <district>leribe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-21</itextId>
+            <district>leribe_a</district>
+            <label>Mapheaneng (LR-334)</label>
             <name>mapheaneng_lr_334_</name>
             <phase>a</phase>
-            <district>leribe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-22</itextId>
+            <district>leribe_a</district>
+            <label>Phahameng (LR-061)</label>
             <name>phahameng_lr_061_</name>
             <phase>a</phase>
-            <district>leribe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-23</itextId>
+            <district>leribe_a</district>
+            <label>Phelandaba (LR-164)</label>
             <name>phelandaba_lr_164_</name>
             <phase>a</phase>
-            <district>leribe_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-24</itextId>
+            <district>mafeteng_a</district>
+            <label>Ha Lepolesa (MF-098)</label>
             <name>ha_lepolesa_mf_098_</name>
             <phase>a</phase>
-            <district>mafeteng_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-25</itextId>
+            <district>mafeteng_a</district>
+            <label>Ha Mathabang(Lifajaneng) (MF-472)</label>
             <name>ha_mathabang_lifajaneng_mf_472_</name>
             <phase>a</phase>
-            <district>mafeteng_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-26</itextId>
+            <district>mafeteng_a</district>
+            <label>Ha Ranteme (MF-039)</label>
             <name>ha_ranteme_mf_039_</name>
             <phase>a</phase>
-            <district>mafeteng_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-27</itextId>
+            <district>mafeteng_a</district>
+            <label>Ha Tjale (MF-583)</label>
             <name>ha_tjale_mf_583_</name>
             <phase>a</phase>
-            <district>mafeteng_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-28</itextId>
+            <district>mafeteng_a</district>
+            <label>Maieaneng (MF-009)</label>
             <name>maieaneng_mf_009_</name>
             <phase>a</phase>
-            <district>mafeteng_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-29</itextId>
+            <district>mafeteng_a</district>
+            <label>Makokotoaneng (MF-564)</label>
             <name>makokotoaneng_mf_564_</name>
             <phase>a</phase>
-            <district>mafeteng_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-30</itextId>
+            <district>mafeteng_a</district>
+            <label>Mathebe (MF-083)</label>
             <name>mathebe_mf_083_</name>
             <phase>a</phase>
-            <district>mafeteng_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-31</itextId>
+            <district>mafeteng_a</district>
+            <label>Salae (MF-529)</label>
             <name>salae_mf_529_</name>
             <phase>a</phase>
-            <district>mafeteng_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-32</itextId>
+            <district>maseru_a</district>
+            <label>Ha Leutsoa (MS-133)</label>
             <name>ha_leutsoa_ms_133_</name>
             <phase>a</phase>
-            <district>maseru_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-33</itextId>
+            <district>maseru_a</district>
+            <label>Ha Moruthoane (MS-191)</label>
             <name>ha_moruthoane_ms_191_</name>
             <phase>a</phase>
-            <district>maseru_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-34</itextId>
+            <district>maseru_a</district>
+            <label>Ha Phallang (MS-488)</label>
             <name>ha_phallang_ms_488_</name>
             <phase>a</phase>
-            <district>maseru_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-35</itextId>
+            <district>maseru_a</district>
+            <label>Joala Boholo (MS-155)</label>
             <name>joala_boholo_ms_155_</name>
             <phase>a</phase>
-            <district>maseru_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-36</itextId>
+            <district>maseru_a</district>
+            <label>Mahlabatheng (MS-258)</label>
             <name>mahlabatheng_ms_258_</name>
             <phase>a</phase>
-            <district>maseru_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-37</itextId>
+            <district>maseru_a</district>
+            <label>Nazareth (MS-077)</label>
             <name>nazareth_ms_077_</name>
             <phase>a</phase>
-            <district>maseru_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-38</itextId>
+            <district>maseru_a</district>
+            <label>Polateng (MS-489)</label>
             <name>polateng_ms_489_</name>
             <phase>a</phase>
-            <district>maseru_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-39</itextId>
+            <district>maseru_a</district>
+            <label>Setibing (MS-581)</label>
             <name>setibing_ms_581_</name>
             <phase>a</phase>
-            <district>maseru_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-40</itextId>
+            <district>mohale_s_hoek_a</district>
+            <label>Ha Makhabane (MH-186)</label>
             <name>ha_makhabane_mh_186_</name>
             <phase>a</phase>
-            <district>mohale_s_hoek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-41</itextId>
+            <district>mohale_s_hoek_a</district>
+            <label>Ha Mokotane (MH-223)</label>
             <name>ha_mokotane_mh_223_</name>
             <phase>a</phase>
-            <district>mohale_s_hoek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-42</itextId>
+            <district>mohale_s_hoek_a</district>
+            <label>Ha Monyake (MH-089)</label>
             <name>ha_monyake_mh_089_</name>
             <phase>a</phase>
-            <district>mohale_s_hoek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-43</itextId>
+            <district>mohale_s_hoek_a</district>
+            <label>Ha Phatalla (MH-097)</label>
             <name>ha_phatalla_mh_097_</name>
             <phase>a</phase>
-            <district>mohale_s_hoek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-44</itextId>
+            <district>mohale_s_hoek_a</district>
+            <label>Ha Tumo (MH-384)</label>
             <name>ha_tumo_mh_384_</name>
             <phase>a</phase>
-            <district>mohale_s_hoek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-45</itextId>
+            <district>mohale_s_hoek_a</district>
+            <label>Mataoeng (MH-219)</label>
             <name>mataoeng_mh_219_</name>
             <phase>a</phase>
-            <district>mohale_s_hoek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-46</itextId>
+            <district>mohale_s_hoek_a</district>
+            <label>Phatlalla (MH-097)</label>
             <name>phatlalla_mh_097_</name>
             <phase>a</phase>
-            <district>mohale_s_hoek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-47</itextId>
+            <district>mohale_s_hoek_a</district>
+            <label>Rakoloi (MH-149)</label>
             <name>rakoloi_mh_149_</name>
             <phase>a</phase>
-            <district>mohale_s_hoek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-48</itextId>
+            <district>mohale_s_hoek_a</district>
+            <label>Raporong (MH-088)</label>
             <name>raporong_mh_088_</name>
             <phase>a</phase>
-            <district>mohale_s_hoek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-49</itextId>
+            <district>qacha_s_nek_a</district>
+            <label>Ha Ralengoele (QN-068)</label>
             <name>ha_ralengoele_qn_068_</name>
             <phase>a</phase>
-            <district>qacha_s_nek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-50</itextId>
+            <district>qacha_s_nek_a</district>
+            <label>Ha Ramokakatela (QN-048)</label>
             <name>ha_ramokakatela_qn_048_</name>
             <phase>a</phase>
-            <district>qacha_s_nek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-51</itextId>
+            <district>qacha_s_nek_a</district>
+            <label>Ha-Isaac (QN-059)</label>
             <name>ha_isaac_qn_059_</name>
             <phase>a</phase>
-            <district>qacha_s_nek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-52</itextId>
+            <district>qacha_s_nek_a</district>
+            <label>Mosenekeng (QN-064)</label>
             <name>mosenekeng_qn_064_</name>
             <phase>a</phase>
-            <district>qacha_s_nek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-53</itextId>
+            <district>qacha_s_nek_a</district>
+            <label>Sekoti (QN-069)</label>
             <name>sekoti_qn_069_</name>
             <phase>a</phase>
-            <district>qacha_s_nek_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-54</itextId>
+            <district>quthing_a</district>
+            <label>Filoane (QT-358)</label>
             <name>filoane_qt_358_</name>
             <phase>a</phase>
-            <district>quthing_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-55</itextId>
+            <district>quthing_a</district>
+            <label>Kelebone (QT-034)</label>
             <name>kelebone_qt_034_</name>
             <phase>a</phase>
-            <district>quthing_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-56</itextId>
+            <district>quthing_a</district>
+            <label>Matebeleng (QT-078)</label>
             <name>matebeleng_qt_078_</name>
             <phase>a</phase>
-            <district>quthing_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-57</itextId>
+            <district>quthing_a</district>
+            <label>Mofetoli (QT-366)</label>
             <name>mofetoli_qt_366_</name>
             <phase>a</phase>
-            <district>quthing_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-58</itextId>
+            <district>quthing_a</district>
+            <label>Mots'oane (QT-075)</label>
             <name>mots_oane_qt_075_</name>
             <phase>a</phase>
-            <district>quthing_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-59</itextId>
+            <district>quthing_a</district>
+            <label>Nosi (QT-355)</label>
             <name>nosi_qt_355_</name>
             <phase>a</phase>
-            <district>quthing_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-60</itextId>
+            <district>quthing_a</district>
+            <label>Seputeng (QT-354)</label>
             <name>seputeng_qt_354_</name>
             <phase>a</phase>
-            <district>quthing_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-61</itextId>
+            <district>quthing_a</district>
+            <label>Swatsi (QT-238)</label>
             <name>swatsi_qt_238_</name>
             <phase>a</phase>
-            <district>quthing_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-62</itextId>
+            <district>thaba_tseka_a</district>
+            <label>Lihlabaneng Ha Morapeli (TT-170)</label>
             <name>lihlabaneng_ha_morapeli_tt_170_</name>
             <phase>a</phase>
-            <district>thaba_tseka_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-63</itextId>
+            <district>thaba_tseka_a</district>
+            <label>Mohlakeng (TT-011)</label>
             <name>mohlakeng_tt_011_</name>
             <phase>a</phase>
-            <district>thaba_tseka_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-64</itextId>
+            <district>thaba_tseka_a</district>
+            <label>Motsitseng (TT-160)</label>
             <name>motsitseng_tt_160_</name>
             <phase>a</phase>
-            <district>thaba_tseka_a</district>
           </item>
           <item>
-            <itextId>static_instance-site-65</itextId>
+            <district>mokhotlong_a1</district>
+            <label>Bokhina Pere (MK-304)</label>
             <name>bokhina_pere_mk_304_</name>
             <phase>a1</phase>
-            <district>mokhotlong_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-66</itextId>
+            <district>mokhotlong_a1</district>
+            <label>Ha Ralit'sepe (MK-393)</label>
             <name>ha_ralit_sepe_mk_393_</name>
             <phase>a1</phase>
-            <district>mokhotlong_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-67</itextId>
+            <district>mokhotlong_a1</district>
+            <label>Ha Senepi (MK-404)</label>
             <name>ha_senepi_mk_404_</name>
             <phase>a1</phase>
-            <district>mokhotlong_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-68</itextId>
+            <district>mokhotlong_a1</district>
+            <label>Makorong (MK-232)</label>
             <name>makorong_mk_232_</name>
             <phase>a1</phase>
-            <district>mokhotlong_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-69</itextId>
+            <district>mokhotlong_a1</district>
+            <label>Mpakatheng (MK-265)</label>
             <name>mpakatheng_mk_265_</name>
             <phase>a1</phase>
-            <district>mokhotlong_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-70</itextId>
+            <district>mokhotlong_a1</district>
+            <label>Sekhutlong (MK-356)</label>
             <name>sekhutlong_mk_356_</name>
             <phase>a1</phase>
-            <district>mokhotlong_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-71</itextId>
+            <district>mokhotlong_a1</district>
+            <label>Sepatleng (MK-343)</label>
             <name>sepatleng_mk_343_</name>
             <phase>a1</phase>
-            <district>mokhotlong_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-72</itextId>
+            <district>mokhotlong_a1</district>
+            <label>Tseko (MK-154)</label>
             <name>tseko_mk_154_</name>
             <phase>a1</phase>
-            <district>mokhotlong_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-73</itextId>
+            <district>qacha_s_nek_a1</district>
+            <label>Ha Isaac (QT-059)</label>
             <name>ha_isaac_qt_059_</name>
             <phase>a1</phase>
-            <district>qacha_s_nek_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-74</itextId>
+            <district>qacha_s_nek_a1</district>
+            <label>Ha Katela (QN-219)</label>
             <name>ha_katela_qn_219_</name>
             <phase>a1</phase>
-            <district>qacha_s_nek_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-75</itextId>
+            <district>qacha_s_nek_a1</district>
+            <label>Ha-Makhoa (QN-073)</label>
             <name>ha_makhoa_qn_073_</name>
             <phase>a1</phase>
-            <district>qacha_s_nek_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-76</itextId>
+            <district>qacha_s_nek_a1</district>
+            <label>Maphotong (QN-216)</label>
             <name>maphotong_qn_216_</name>
             <phase>a1</phase>
-            <district>qacha_s_nek_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-77</itextId>
+            <district>thaba_tseka_a1</district>
+            <label>Ha Laka (TT-009)</label>
             <name>ha_laka_tt_009_</name>
             <phase>a1</phase>
-            <district>thaba_tseka_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-78</itextId>
+            <district>thaba_tseka_a1</district>
+            <label>Ha Sekhohola (TT-138)</label>
             <name>ha_sekhohola_tt_138_</name>
             <phase>a1</phase>
-            <district>thaba_tseka_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-79</itextId>
+            <district>thaba_tseka_a1</district>
+            <label>Mantsonyane (TT-051)</label>
             <name>mantsonyane_tt_051_</name>
             <phase>a1</phase>
-            <district>thaba_tseka_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-80</itextId>
+            <district>thaba_tseka_a1</district>
+            <label>Ha Labane (TT-363)</label>
             <name>ha_labane_tt_363_</name>
             <phase>a1</phase>
-            <district>thaba_tseka_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-81</itextId>
+            <district>thaba_tseka_a1</district>
+            <label>Maholi-a Llang (TT-210)</label>
             <name>maholi_a_llang_tt_210_</name>
             <phase>a1</phase>
-            <district>thaba_tseka_a1</district>
           </item>
           <item>
-            <itextId>static_instance-site-82</itextId>
+            <district>berea_b</district>
+            <label>Boranta (BR-327)</label>
             <name>boranta_br_327_</name>
             <phase>b</phase>
-            <district>berea_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-83</itextId>
+            <district>berea_b</district>
+            <label>Letsoela (BR-008)</label>
             <name>letsoela_br_008_</name>
             <phase>b</phase>
-            <district>berea_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-84</itextId>
+            <district>berea_b</district>
+            <label>Maholong (BR-328)</label>
             <name>maholong_br_328_</name>
             <phase>b</phase>
-            <district>berea_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-85</itextId>
+            <district>berea_b</district>
+            <label>Masaleng Ha Janki (BR-238)</label>
             <name>masaleng_ha_janki_br_238_</name>
             <phase>b</phase>
-            <district>berea_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-86</itextId>
+            <district>berea_b</district>
+            <label>Mokhachane (BR-330)</label>
             <name>mokhachane_br_330_</name>
             <phase>b</phase>
-            <district>berea_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-87</itextId>
+            <district>berea_b</district>
+            <label>Mokomahatsi (BR-210)</label>
             <name>mokomahatsi_br_210_</name>
             <phase>b</phase>
-            <district>berea_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-88</itextId>
+            <district>berea_b</district>
+            <label>Nokong (BR-060)</label>
             <name>nokong_br_060_</name>
             <phase>b</phase>
-            <district>berea_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-89</itextId>
+            <district>berea_b</district>
+            <label>Qalaheng/Mafotholeng (BR-45/84)</label>
             <name>qalaheng_mafotholeng_br_45_84_</name>
             <phase>b</phase>
-            <district>berea_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-90</itextId>
+            <district>berea_b</district>
+            <label>Tsenoli (BR-001)</label>
             <name>tsenoli_br_001_</name>
             <phase>b</phase>
-            <district>berea_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-91</itextId>
+            <district>botha_bothe_b</district>
+            <label>Ha Lesia (BB-258)</label>
             <name>ha_lesia_bb_258_</name>
             <phase>b</phase>
-            <district>botha_bothe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-92</itextId>
+            <district>botha_bothe_b</district>
+            <label>Ha Lishobana (BB-217)</label>
             <name>ha_lishobana_bb_217_</name>
             <phase>b</phase>
-            <district>botha_bothe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-93</itextId>
+            <district>botha_bothe_b</district>
+            <label>Ha Rampai (BB-045)</label>
             <name>ha_rampai_bb_045_</name>
             <phase>b</phase>
-            <district>botha_bothe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-94</itextId>
+            <district>botha_bothe_b</district>
+            <label>Ha-Rakotoane (BB-185)</label>
             <name>ha_rakotoane_bb_185_</name>
             <phase>b</phase>
-            <district>botha_bothe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-95</itextId>
+            <district>botha_bothe_b</district>
+            <label>Hlakacha (BB-029)</label>
             <name>hlakacha_bb_029_</name>
             <phase>b</phase>
-            <district>botha_bothe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-96</itextId>
+            <district>botha_bothe_b</district>
+            <label>Khutlo-sea-ja (BB-188)</label>
             <name>khutlo_sea_ja_bb_188_</name>
             <phase>b</phase>
-            <district>botha_bothe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-97</itextId>
+            <district>botha_bothe_b</district>
+            <label>Lekanyane (BB-212)</label>
             <name>lekanyane_bb_212_</name>
             <phase>b</phase>
-            <district>botha_bothe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-98</itextId>
+            <district>botha_bothe_b</district>
+            <label>Maphepheng (BB-147)</label>
             <name>maphepheng_bb_147_</name>
             <phase>b</phase>
-            <district>botha_bothe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-99</itextId>
+            <district>botha_bothe_b</district>
+            <label>Setenong (BB-246)</label>
             <name>setenong_bb_246_</name>
             <phase>b</phase>
-            <district>botha_bothe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-100</itextId>
+            <district>leribe_b</district>
+            <label>Ha Makhaketsa (LR-045)</label>
             <name>ha_makhaketsa_lr_045_</name>
             <phase>b</phase>
-            <district>leribe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-101</itextId>
+            <district>leribe_b</district>
+            <label>Ha Manamolela (LR-429)</label>
             <name>ha_manamolela_lr_429_</name>
             <phase>b</phase>
-            <district>leribe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-102</itextId>
+            <district>leribe_b</district>
+            <label>Ha Matala (LR-124)</label>
             <name>ha_matala_lr_124_</name>
             <phase>b</phase>
-            <district>leribe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-103</itextId>
+            <district>leribe_b</district>
+            <label>Ha Mukemane (LR-507)</label>
             <name>ha_mukemane_lr_507_</name>
             <phase>b</phase>
-            <district>leribe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-104</itextId>
+            <district>leribe_b</district>
+            <label>Ha Ramapepe (LR-183)</label>
             <name>ha_ramapepe_lr_183_</name>
             <phase>b</phase>
-            <district>leribe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-105</itextId>
+            <district>leribe_b</district>
+            <label>Ha Tsepe (LR-269)</label>
             <name>ha_tsepe_lr_269_</name>
             <phase>b</phase>
-            <district>leribe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-106</itextId>
+            <district>leribe_b</district>
+            <label>Rankhelepe (LR-210)</label>
             <name>rankhelepe_lr_210_</name>
             <phase>b</phase>
-            <district>leribe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-107</itextId>
+            <district>leribe_b</district>
+            <label>Thaba-Phatsoa (LR-049)</label>
             <name>thaba_phatsoa_lr_049_</name>
             <phase>b</phase>
-            <district>leribe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-108</itextId>
+            <district>leribe_b</district>
+            <label>Tiping (LR-428)</label>
             <name>tiping_lr_428_</name>
             <phase>b</phase>
-            <district>leribe_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-109</itextId>
+            <district>mafeteng_b</district>
+            <label>Ha Joele (MF-419)</label>
             <name>ha_joele_mf_419_</name>
             <phase>b</phase>
-            <district>mafeteng_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-110</itextId>
+            <district>mafeteng_b</district>
+            <label>Ha Mashapha (MF-676)</label>
             <name>ha_mashapha_mf_676_</name>
             <phase>b</phase>
-            <district>mafeteng_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-111</itextId>
+            <district>mafeteng_b</district>
+            <label>Ha- Ralintoane (MF-698)</label>
             <name>ha_ralintoane_mf_698_</name>
             <phase>b</phase>
-            <district>mafeteng_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-112</itextId>
+            <district>mafeteng_b</district>
+            <label>Ha Ramatima (MF-107)</label>
             <name>ha_ramatima_mf_107_</name>
             <phase>b</phase>
-            <district>mafeteng_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-113</itextId>
+            <district>mafeteng_b</district>
+            <label>Ha Seoli (MF-816)</label>
             <name>ha_seoli_mf_816_</name>
             <phase>b</phase>
-            <district>mafeteng_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-114</itextId>
+            <district>mafeteng_b</district>
+            <label>Ha-Hlehlisi (MF-319)</label>
             <name>ha_hlehlisi_mf_319_</name>
             <phase>b</phase>
-            <district>mafeteng_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-115</itextId>
+            <district>mafeteng_b</district>
+            <label>Khalimane/Lijoetsa (MF-415)</label>
             <name>khalimane_lijoetsa_mf_415_</name>
             <phase>b</phase>
-            <district>mafeteng_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-116</itextId>
+            <district>mafeteng_b</district>
+            <label>Lithipeng/Mosuoane (MF-651)</label>
             <name>lithipeng_mosuoane_mf_651_</name>
             <phase>b</phase>
-            <district>mafeteng_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-117</itextId>
+            <district>mafeteng_b</district>
+            <label>Molleloa/Ha Patsa (MF-393)</label>
             <name>molleloa_ha_patsa_mf_393_</name>
             <phase>b</phase>
-            <district>mafeteng_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-118</itextId>
+            <district>maseru_b</district>
+            <label>Ha Mashenephe (MS-414)</label>
             <name>ha_mashenephe_ms_414_</name>
             <phase>b</phase>
-            <district>maseru_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-119</itextId>
+            <district>maseru_b</district>
+            <label>Ha Sechache (MS-497)</label>
             <name>ha_sechache_ms_497_</name>
             <phase>b</phase>
-            <district>maseru_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-120</itextId>
+            <district>maseru_b</district>
+            <label>Mokotleng (MS-462)</label>
             <name>mokotleng_ms_462_</name>
             <phase>b</phase>
-            <district>maseru_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-121</itextId>
+            <district>maseru_b</district>
+            <label>Mphephee/Moeaneng (MS-521)</label>
             <name>mphephee_moeaneng_ms_521_</name>
             <phase>b</phase>
-            <district>maseru_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-122</itextId>
+            <district>maseru_b</district>
+            <label>Ramakhaleng (MS-474)</label>
             <name>ramakhaleng_ms_474_</name>
             <phase>b</phase>
-            <district>maseru_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-123</itextId>
+            <district>maseru_b</district>
+            <label>Rothe (MS-001)</label>
             <name>rothe_ms_001_</name>
             <phase>b</phase>
-            <district>maseru_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-124</itextId>
+            <district>maseru_b</district>
+            <label>Tlokotsane (MS-490)</label>
             <name>tlokotsane_ms_490_</name>
             <phase>b</phase>
-            <district>maseru_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-125</itextId>
+            <district>maseru_b</district>
+            <label>Tsutsulupa (MS-516)</label>
             <name>tsutsulupa_ms_516_</name>
             <phase>b</phase>
-            <district>maseru_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-126</itextId>
+            <district>maseru_b</district>
+            <label>Keleke/Moleko (MS-465)</label>
             <name>keleke_moleko_ms_465_</name>
             <phase>b</phase>
-            <district>maseru_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-127</itextId>
+            <district>mohale_s_hoek_b</district>
+            <label>Ha Boroko (MH-009)</label>
             <name>ha_boroko_mh_009_</name>
             <phase>b</phase>
-            <district>mohale_s_hoek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-128</itextId>
+            <district>mohale_s_hoek_b</district>
+            <label>Ha Hamo/Moko (MH-142)</label>
             <name>ha_hamo_moko_mh_142_</name>
             <phase>b</phase>
-            <district>mohale_s_hoek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-129</itextId>
+            <district>mohale_s_hoek_b</district>
+            <label>Ha Mokhatla (MH-158)</label>
             <name>ha_mokhatla_mh_158_</name>
             <phase>b</phase>
-            <district>mohale_s_hoek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-130</itextId>
+            <district>mohale_s_hoek_b</district>
+            <label>Ha Nthamaha (MH-478)</label>
             <name>ha_nthamaha_mh_478_</name>
             <phase>b</phase>
-            <district>mohale_s_hoek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-131</itextId>
+            <district>mohale_s_hoek_b</district>
+            <label>Ha Ranti (MH-538)</label>
             <name>ha_ranti_mh_538_</name>
             <phase>b</phase>
-            <district>mohale_s_hoek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-132</itextId>
+            <district>mohale_s_hoek_b</district>
+            <label>Lecheche (MH-557)</label>
             <name>lecheche_mh_557_</name>
             <phase>b</phase>
-            <district>mohale_s_hoek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-133</itextId>
+            <district>mohale_s_hoek_b</district>
+            <label>Matsoareng (MH-073)</label>
             <name>matsoareng_mh_073_</name>
             <phase>b</phase>
-            <district>mohale_s_hoek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-134</itextId>
+            <district>mohale_s_hoek_b</district>
+            <label>Moru Motso (MH-507)</label>
             <name>moru_motso_mh_507_</name>
             <phase>b</phase>
-            <district>mohale_s_hoek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-135</itextId>
+            <district>mohale_s_hoek_b</district>
+            <label>Pontseng (MH-027)</label>
             <name>pontseng_mh_027_</name>
             <phase>b</phase>
-            <district>mohale_s_hoek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-136</itextId>
+            <district>mokhotlong_b</district>
+            <label>Draaihoek (MK-384)</label>
             <name>draaihoek_mk_384_</name>
             <phase>b</phase>
-            <district>mokhotlong_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-137</itextId>
+            <district>mokhotlong_b</district>
+            <label>Ha Tlenyane (MK-212)</label>
             <name>ha_tlenyane_mk_212_</name>
             <phase>b</phase>
-            <district>mokhotlong_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-138</itextId>
+            <district>mokhotlong_b</district>
+            <label>Khohlong (MK-312)</label>
             <name>khohlong_mk_312_</name>
             <phase>b</phase>
-            <district>mokhotlong_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-139</itextId>
+            <district>mokhotlong_b</district>
+            <label>Liotloaneng (MK-379)</label>
             <name>liotloaneng_mk_379_</name>
             <phase>b</phase>
-            <district>mokhotlong_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-140</itextId>
+            <district>mokhotlong_b</district>
+            <label>Mabuleng (MK-269)</label>
             <name>mabuleng_mk_269_</name>
             <phase>b</phase>
-            <district>mokhotlong_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-141</itextId>
+            <district>mokhotlong_b</district>
+            <label>Maheneng (MK-342)</label>
             <name>maheneng_mk_342_</name>
             <phase>b</phase>
-            <district>mokhotlong_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-142</itextId>
+            <district>mokhotlong_b</district>
+            <label>Matebeleng (MK-334)</label>
             <name>matebeleng_mk_334_</name>
             <phase>b</phase>
-            <district>mokhotlong_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-143</itextId>
+            <district>mokhotlong_b</district>
+            <label>Matlong (MK-387)</label>
             <name>matlong_mk_387_</name>
             <phase>b</phase>
-            <district>mokhotlong_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-144</itextId>
+            <district>mokhotlong_b</district>
+            <label>Mosenekeng (MK-341)</label>
             <name>mosenekeng_mk_341_</name>
             <phase>b</phase>
-            <district>mokhotlong_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-145</itextId>
+            <district>qacha_s_nek_b</district>
+            <label>Ha Lehata (QN-088)</label>
             <name>ha_lehata_qn_088_</name>
             <phase>b</phase>
-            <district>qacha_s_nek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-146</itextId>
+            <district>qacha_s_nek_b</district>
+            <label>Ha Molomo (QN-206)</label>
             <name>ha_molomo_qn_206_</name>
             <phase>b</phase>
-            <district>qacha_s_nek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-147</itextId>
+            <district>qacha_s_nek_b</district>
+            <label>Ha Ranqhongoana (QN-007)</label>
             <name>ha_ranqhongoana_qn_007_</name>
             <phase>b</phase>
-            <district>qacha_s_nek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-148</itextId>
+            <district>qacha_s_nek_b</district>
+            <label>Ha Seholoholo (QN-055)</label>
             <name>ha_seholoholo_qn_055_</name>
             <phase>b</phase>
-            <district>qacha_s_nek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-149</itextId>
+            <district>qacha_s_nek_b</district>
+            <label>Liboteng (QN-096)</label>
             <name>liboteng_qn_096_</name>
             <phase>b</phase>
-            <district>qacha_s_nek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-150</itextId>
+            <district>qacha_s_nek_b</district>
+            <label>Mankoe (QN-091)</label>
             <name>mankoe_qn_091_</name>
             <phase>b</phase>
-            <district>qacha_s_nek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-151</itextId>
+            <district>qacha_s_nek_b</district>
+            <label>Qenehellong (QN-070)</label>
             <name>qenehellong_qn_070_</name>
             <phase>b</phase>
-            <district>qacha_s_nek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-152</itextId>
+            <district>qacha_s_nek_b</district>
+            <label>Sekiring (QN-094)</label>
             <name>sekiring_qn_094_</name>
             <phase>b</phase>
-            <district>qacha_s_nek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-153</itextId>
+            <district>qacha_s_nek_b</district>
+            <label>Tsolo (QN-104)</label>
             <name>tsolo_qn_104_</name>
             <phase>b</phase>
-            <district>qacha_s_nek_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-154</itextId>
+            <district>quthing_b</district>
+            <label>Mamokeli (QT-337)</label>
             <name>mamokeli_qt_337_</name>
             <phase>b</phase>
-            <district>quthing_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-155</itextId>
+            <district>quthing_b</district>
+            <label>Marakabei (QT-398)</label>
             <name>marakabei_qt_398_</name>
             <phase>b</phase>
-            <district>quthing_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-156</itextId>
+            <district>quthing_b</district>
+            <label>Masuoaneng (QT-392)</label>
             <name>masuoaneng_qt_392_</name>
             <phase>b</phase>
-            <district>quthing_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-157</itextId>
+            <district>quthing_b</district>
+            <label>Mats'ela-Habeli (QT-246)</label>
             <name>mats_ela_habeli_qt_246_</name>
             <phase>b</phase>
-            <district>quthing_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-158</itextId>
+            <district>quthing_b</district>
+            <label>Ngoae &amp; Sekokoaneng (QT-067)</label>
             <name>ngoae_sekokoaneng_qt_067_</name>
             <phase>b</phase>
-            <district>quthing_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-159</itextId>
+            <district>quthing_b</district>
+            <label>Nkoto-Silase (QT-334)</label>
             <name>nkoto_silase_qt_334_</name>
             <phase>b</phase>
-            <district>quthing_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-160</itextId>
+            <district>quthing_b</district>
+            <label>Photha-Photha (QT-401)</label>
             <name>photha_photha_qt_401_</name>
             <phase>b</phase>
-            <district>quthing_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-161</itextId>
+            <district>quthing_b</district>
+            <label>Raseeng (QT-076)</label>
             <name>raseeng_qt_076_</name>
             <phase>b</phase>
-            <district>quthing_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-162</itextId>
+            <district>quthing_b</district>
+            <label>Thaba-Chitja (QT-292)</label>
             <name>thaba_chitja_qt_292_</name>
             <phase>b</phase>
-            <district>quthing_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-163</itextId>
+            <district>thaba_tseka_b</district>
+            <label>Ha Long (TT-298)</label>
             <name>ha_long_tt_298_</name>
             <phase>b</phase>
-            <district>thaba_tseka_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-164</itextId>
+            <district>thaba_tseka_b</district>
+            <label>Ha Moriana (TT-297)</label>
             <name>ha_moriana_tt_297_</name>
             <phase>b</phase>
-            <district>thaba_tseka_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-165</itextId>
+            <district>thaba_tseka_b</district>
+            <label>Ha Motake (TT-303)</label>
             <name>ha_motake_tt_303_</name>
             <phase>b</phase>
-            <district>thaba_tseka_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-166</itextId>
+            <district>thaba_tseka_b</district>
+            <label>Ha Nkune (TT-212)</label>
             <name>ha_nkune_tt_212_</name>
             <phase>b</phase>
-            <district>thaba_tseka_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-167</itextId>
+            <district>thaba_tseka_b</district>
+            <label>Ha Poko (TT-225)</label>
             <name>ha_poko_tt_225_</name>
             <phase>b</phase>
-            <district>thaba_tseka_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-168</itextId>
+            <district>thaba_tseka_b</district>
+            <label>Ha Ratau (TT-165)</label>
             <name>ha_ratau_tt_165_</name>
             <phase>b</phase>
-            <district>thaba_tseka_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-169</itextId>
+            <district>thaba_tseka_b</district>
+            <label>Ha Sekhaupane (TT-344)</label>
             <name>ha_sekhaupane_tt_344_</name>
             <phase>b</phase>
-            <district>thaba_tseka_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-170</itextId>
+            <district>thaba_tseka_b</district>
+            <label>Masakoane (TT-304)</label>
             <name>masakoane_tt_304_</name>
             <phase>b</phase>
-            <district>thaba_tseka_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-171</itextId>
+            <district>thaba_tseka_b</district>
+            <label>Tholanyane (TT-299)</label>
             <name>tholanyane_tt_299_</name>
             <phase>b</phase>
-            <district>thaba_tseka_b</district>
           </item>
           <item>
-            <itextId>static_instance-site-172</itextId>
+            <district>berea_c</district>
+            <label>Ha Matjotjo  (BR-175)</label>
             <name>ha_matjotjo_br_175_</name>
             <phase>c</phase>
-            <district>berea_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-173</itextId>
+            <district>berea_c</district>
+            <label>Ha Mokhati  (BR-025)</label>
             <name>ha_mokhati_br_025_</name>
             <phase>c</phase>
-            <district>berea_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-174</itextId>
+            <district>berea_c</district>
+            <label>Ha Phalatsane (BR-075)</label>
             <name>ha_phalatsane_br_075_</name>
             <phase>c</phase>
-            <district>berea_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-175</itextId>
+            <district>berea_c</district>
+            <label>Ha Phoofolo  (BR-090)</label>
             <name>ha_phoofolo_br_090_</name>
             <phase>c</phase>
-            <district>berea_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-176</itextId>
+            <district>berea_c</district>
+            <label>Ha Telukhunoana (BR-166)</label>
             <name>ha_telukhunoana_br_166_</name>
             <phase>c</phase>
-            <district>berea_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-177</itextId>
+            <district>berea_c</district>
+            <label>Ha Tumo  (BR-043)</label>
             <name>ha_tumo_br_043_</name>
             <phase>c</phase>
-            <district>berea_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-178</itextId>
+            <district>berea_c</district>
+            <label>Kolojane  (BR-036)</label>
             <name>kolojane_br_036_</name>
             <phase>c</phase>
-            <district>berea_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-179</itextId>
+            <district>berea_c</district>
+            <label>Mokhethoaneng  (BR-16)</label>
             <name>mokhethoaneng_br_16_</name>
             <phase>c</phase>
-            <district>berea_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-180</itextId>
+            <district>botha_bothe_c</district>
+            <label>Community (BB-136)</label>
             <name>community_bb_136_</name>
             <phase>c</phase>
-            <district>botha_bothe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-181</itextId>
+            <district>botha_bothe_c</district>
+            <label>Ha 'Masekh'ou (BB-130)</label>
             <name>ha_masekh_ou_bb_130_</name>
             <phase>c</phase>
-            <district>botha_bothe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-182</itextId>
+            <district>botha_bothe_c</district>
+            <label>Kopanong (BB-250)</label>
             <name>kopanong_bb_250_</name>
             <phase>c</phase>
-            <district>botha_bothe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-183</itextId>
+            <district>botha_bothe_c</district>
+            <label>Mantlakala (BB-221)</label>
             <name>mantlakala_bb_221_</name>
             <phase>c</phase>
-            <district>botha_bothe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-184</itextId>
+            <district>botha_bothe_c</district>
+            <label>Masianokeng (BB-259)</label>
             <name>masianokeng_bb_259_</name>
             <phase>c</phase>
-            <district>botha_bothe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-185</itextId>
+            <district>botha_bothe_c</district>
+            <label>Motabola (BB-214)</label>
             <name>motabola_bb_214_</name>
             <phase>c</phase>
-            <district>botha_bothe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-186</itextId>
+            <district>botha_bothe_c</district>
+            <label>Mphale (BB-156)</label>
             <name>mphale_bb_156_</name>
             <phase>c</phase>
-            <district>botha_bothe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-187</itextId>
+            <district>botha_bothe_c</district>
+            <label>Thoteng (BB-251)</label>
             <name>thoteng_bb_251_</name>
             <phase>c</phase>
-            <district>botha_bothe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-188</itextId>
+            <district>leribe_c</district>
+            <label>Ha Leaooa (LR-299)</label>
             <name>ha_leaooa_lr_299_</name>
             <phase>c</phase>
-            <district>leribe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-189</itextId>
+            <district>leribe_c</district>
+            <label>Ha Ralikuku (LR-240)</label>
             <name>ha_ralikuku_lr_240_</name>
             <phase>c</phase>
-            <district>leribe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-190</itextId>
+            <district>leribe_c</district>
+            <label>Ha Tente (LR-258)</label>
             <name>ha_tente_lr_258_</name>
             <phase>c</phase>
-            <district>leribe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-191</itextId>
+            <district>leribe_c</district>
+            <label>Ha Tobolela (LR-257)</label>
             <name>ha_tobolela_lr_257_</name>
             <phase>c</phase>
-            <district>leribe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-192</itextId>
+            <district>leribe_c</district>
+            <label>Maqasane (LR-128)</label>
             <name>maqasane_lr_128_</name>
             <phase>c</phase>
-            <district>leribe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-193</itextId>
+            <district>leribe_c</district>
+            <label>Metolong (LR-227)</label>
             <name>metolong_lr_227_</name>
             <phase>c</phase>
-            <district>leribe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-194</itextId>
+            <district>leribe_c</district>
+            <label>Nkoeng (LR-361)</label>
             <name>nkoeng_lr_361_</name>
             <phase>c</phase>
-            <district>leribe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-195</itextId>
+            <district>leribe_c</district>
+            <label>Tale (LR-223)</label>
             <name>tale_lr_223_</name>
             <phase>c</phase>
-            <district>leribe_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-196</itextId>
+            <district>mafeteng_c</district>
+            <label>Ha Likupa (MF-008)</label>
             <name>ha_likupa_mf_008_</name>
             <phase>c</phase>
-            <district>mafeteng_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-197</itextId>
+            <district>mafeteng_c</district>
+            <label>Ha Manehella (MF-669)</label>
             <name>ha_manehella_mf_669_</name>
             <phase>c</phase>
-            <district>mafeteng_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-198</itextId>
+            <district>mafeteng_c</district>
+            <label>Ha Sebeli-Lehananeng (MF-054)</label>
             <name>ha_sebeli_lehananeng_mf_054_</name>
             <phase>c</phase>
-            <district>mafeteng_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-199</itextId>
+            <district>mafeteng_c</district>
+            <label>Ha Tebelo (MF- 679)</label>
             <name>ha_tebelo_mf_679_</name>
             <phase>c</phase>
-            <district>mafeteng_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-200</itextId>
+            <district>mafeteng_c</district>
+            <label>Khasapane (MF-219)</label>
             <name>khasapane_mf_219_</name>
             <phase>c</phase>
-            <district>mafeteng_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-201</itextId>
+            <district>mafeteng_c</district>
+            <label>Lihlookong (MF-221)</label>
             <name>lihlookong_mf_221_</name>
             <phase>c</phase>
-            <district>mafeteng_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-202</itextId>
+            <district>mafeteng_c</district>
+            <label>Sekiring (MF-292)</label>
             <name>sekiring_mf_292_</name>
             <phase>c</phase>
-            <district>mafeteng_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-203</itextId>
+            <district>mafeteng_c</district>
+            <label>T'soeute (MF-750)</label>
             <name>t_soeute_mf_750_</name>
             <phase>c</phase>
-            <district>mafeteng_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-204</itextId>
+            <district>maseru_c</district>
+            <label>Ha Lekhafola (MS-215/426)</label>
             <name>ha_lekhafola_ms_215_426_</name>
             <phase>c</phase>
-            <district>maseru_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-205</itextId>
+            <district>maseru_c</district>
+            <label>Ha Nkoankoa (MS-447)</label>
             <name>ha_nkoankoa_ms_447_</name>
             <phase>c</phase>
-            <district>maseru_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-206</itextId>
+            <district>maseru_c</district>
+            <label>Ha Pita (MS-025)</label>
             <name>ha_pita_ms_025_</name>
             <phase>c</phase>
-            <district>maseru_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-207</itextId>
+            <district>maseru_c</district>
+            <label>Ha Salemone Morainyane (MS-475)</label>
             <name>ha_salemone_morainyane_ms_475_</name>
             <phase>c</phase>
-            <district>maseru_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-208</itextId>
+            <district>maseru_c</district>
+            <label>Ha Sofonia (MS-021)</label>
             <name>ha_sofonia_ms_021_</name>
             <phase>c</phase>
-            <district>maseru_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-209</itextId>
+            <district>maseru_c</district>
+            <label>Khubetsoana &amp; Sekoting (MS-508)</label>
             <name>khubetsoana_sekoting_ms_508_</name>
             <phase>c</phase>
-            <district>maseru_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-210</itextId>
+            <district>maseru__c</district>
+            <label>Kubake Moreneng (MS-422)</label>
             <name>kubake_moreneng_ms_422_</name>
             <phase>c</phase>
-            <district>maseru__c</district>
           </item>
           <item>
-            <itextId>static_instance-site-211</itextId>
+            <district>maseru__c</district>
+            <label>Machekoaneng (MS-104)</label>
             <name>machekoaneng_ms_104_</name>
             <phase>c</phase>
-            <district>maseru__c</district>
           </item>
           <item>
-            <itextId>static_instance-site-212</itextId>
+            <district>mohale_s_hoek_c</district>
+            <label>Ha Bereng Matsoho (MH-115)</label>
             <name>ha_bereng_matsoho_mh_115_</name>
             <phase>c</phase>
-            <district>mohale_s_hoek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-213</itextId>
+            <district>mohale_s_hoek_c</district>
+            <label>Ha Mohohlo (MH-404)</label>
             <name>ha_mohohlo_mh_404_</name>
             <phase>c</phase>
-            <district>mohale_s_hoek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-214</itextId>
+            <district>mohale_s_hoek_c</district>
+            <label>Ha Nkau (MH-293)</label>
             <name>ha_nkau_mh_293_</name>
             <phase>c</phase>
-            <district>mohale_s_hoek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-215</itextId>
+            <district>mohale_s_hoek_c</district>
+            <label>Ha Raboroko (MH-156)</label>
             <name>ha_raboroko_mh_156_</name>
             <phase>c</phase>
-            <district>mohale_s_hoek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-216</itextId>
+            <district>mohale_s_hoek_c</district>
+            <label>Ha Senekane (MH-321)</label>
             <name>ha_senekane_mh_321_</name>
             <phase>c</phase>
-            <district>mohale_s_hoek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-217</itextId>
+            <district>mohale_s_hoek_c</district>
+            <label>Malahleha (MH-036)</label>
             <name>malahleha_mh_036_</name>
             <phase>c</phase>
-            <district>mohale_s_hoek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-218</itextId>
+            <district>mohale_s_hoek_c</district>
+            <label>Maluke (MH-473)</label>
             <name>maluke_mh_473_</name>
             <phase>c</phase>
-            <district>mohale_s_hoek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-219</itextId>
+            <district>mohale_s_hoek_c</district>
+            <label>Setotoma (MH-110)</label>
             <name>setotoma_mh_110_</name>
             <phase>c</phase>
-            <district>mohale_s_hoek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-220</itextId>
+            <district>mokhotlong_c</district>
+            <label>Bloodberg (MK-048)</label>
             <name>bloodberg_mk_048_</name>
             <phase>c</phase>
-            <district>mokhotlong_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-221</itextId>
+            <district>mokhotlong_c</district>
+            <label>Ha Masasane (MK-381)</label>
             <name>ha_masasane_mk_381_</name>
             <phase>c</phase>
-            <district>mokhotlong_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-222</itextId>
+            <district>mokhotlong_c</district>
+            <label>Ha Nthimolane (MK-382)</label>
             <name>ha_nthimolane_mk_382_</name>
             <phase>c</phase>
-            <district>mokhotlong_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-223</itextId>
+            <district>mokhotlong_c</district>
+            <label>Limapong (MK-268)</label>
             <name>limapong_mk_268_</name>
             <phase>c</phase>
-            <district>mokhotlong_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-224</itextId>
+            <district>mokhotlong_c</district>
+            <label>Lithoteng (MK-131)</label>
             <name>lithoteng_mk_131_</name>
             <phase>c</phase>
-            <district>mokhotlong_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-225</itextId>
+            <district>mokhotlong_c</district>
+            <label>Moteetee (MK-037)</label>
             <name>moteetee_mk_037_</name>
             <phase>c</phase>
-            <district>mokhotlong_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-226</itextId>
+            <district>mokhotlong_c</district>
+            <label>T'sila-nt'so (MK-233)</label>
             <name>t_sila_nt_so_mk_233_</name>
             <phase>c</phase>
-            <district>mokhotlong_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-227</itextId>
+            <district>mokhotlong_c</district>
+            <label>Tsoenene (MK-002)</label>
             <name>tsoenene_mk_002_</name>
             <phase>c</phase>
-            <district>mokhotlong_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-228</itextId>
+            <district>qacha_s_nek_c</district>
+            <label>Ha Nkofo (QN-120)</label>
             <name>ha_nkofo_qn_120_</name>
             <phase>c</phase>
-            <district>qacha_s_nek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-229</itextId>
+            <district>qacha_s_nek_c</district>
+            <label>Ha Sephelane (QN-154)</label>
             <name>ha_sephelane_qn_154_</name>
             <phase>c</phase>
-            <district>qacha_s_nek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-230</itextId>
+            <district>qacha_s_nek_c</district>
+            <label>Ha Tamose (QN-051)</label>
             <name>ha_tamose_qn_051_</name>
             <phase>c</phase>
-            <district>qacha_s_nek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-231</itextId>
+            <district>qacha_s_nek_c</district>
+            <label>Ha T'sita (QN-009)</label>
             <name>ha_t_sita_qn_009_</name>
             <phase>c</phase>
-            <district>qacha_s_nek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-232</itextId>
+            <district>qacha_s_nek_c</district>
+            <label>Khubetsoana (QN-101)</label>
             <name>khubetsoana_qn_101_</name>
             <phase>c</phase>
-            <district>qacha_s_nek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-233</itextId>
+            <district>qacha_s_nek_c</district>
+            <label>Lepapaneng (QN-121)</label>
             <name>lepapaneng_qn_121_</name>
             <phase>c</phase>
-            <district>qacha_s_nek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-234</itextId>
+            <district>qacha_s_nek_c</district>
+            <label>Rasekoele (QN-100)</label>
             <name>rasekoele_qn_100_</name>
             <phase>c</phase>
-            <district>qacha_s_nek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-235</itextId>
+            <district>qacha_s_nek_c</district>
+            <label>Sefaha (QN-003)</label>
             <name>sefaha_qn_003_</name>
             <phase>c</phase>
-            <district>qacha_s_nek_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-236</itextId>
+            <district>quthing_c</district>
+            <label>Mohale (QT-196)</label>
             <name>mohale_qt_196_</name>
             <phase>c</phase>
-            <district>quthing_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-237</itextId>
+            <district>quthing_c</district>
+            <label>Mokokoane (QT-273)</label>
             <name>mokokoane_qt_273_</name>
             <phase>c</phase>
-            <district>quthing_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-238</itextId>
+            <district>quthing_c</district>
+            <label>Mpharane (QT-287)</label>
             <name>mpharane_qt_287_</name>
             <phase>c</phase>
-            <district>quthing_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-239</itextId>
+            <district>quthing_c</district>
+            <label>Paballong (QT-117)</label>
             <name>paballong_qt_117_</name>
             <phase>c</phase>
-            <district>quthing_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-240</itextId>
+            <district>quthing_c</district>
+            <label>Rat'sit'so (QT-074)</label>
             <name>rat_sit_so_qt_074_</name>
             <phase>c</phase>
-            <district>quthing_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-241</itextId>
+            <district>quthing_c</district>
+            <label>Sekakeng (QT-335)</label>
             <name>sekakeng_qt_335_</name>
             <phase>c</phase>
-            <district>quthing_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-242</itextId>
+            <district>quthing_c</district>
+            <label>Sello (QT-283)</label>
             <name>sello_qt_283_</name>
             <phase>c</phase>
-            <district>quthing_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-243</itextId>
+            <district>quthing_c</district>
+            <label>Thoteng (QT-034)</label>
             <name>thoteng_qt_034_</name>
             <phase>c</phase>
-            <district>quthing_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-244</itextId>
+            <district>thaba_tseka_c</district>
+            <label>Ha Chooko (TT-312)</label>
             <name>ha_chooko_tt_312_</name>
             <phase>c</phase>
-            <district>thaba_tseka_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-245</itextId>
+            <district>thaba_tseka_c</district>
+            <label>Ha Ntsokoane (TT-301)</label>
             <name>ha_ntsokoane_tt_301_</name>
             <phase>c</phase>
-            <district>thaba_tseka_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-246</itextId>
+            <district>thaba_tseka_c</district>
+            <label>Ha Ts'oeu-Khala  (TT-049)</label>
             <name>ha_ts_oeu_khala_tt_049_</name>
             <phase>c</phase>
-            <district>thaba_tseka_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-247</itextId>
+            <district>thaba_tseka_c</district>
+            <label>Makhuleng  (TT-239)</label>
             <name>makhuleng_tt_239_</name>
             <phase>c</phase>
-            <district>thaba_tseka_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-248</itextId>
+            <district>thaba_tseka_c</district>
+            <label>Makunyapane  (TT-083)</label>
             <name>makunyapane_tt_083_</name>
             <phase>c</phase>
-            <district>thaba_tseka_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-249</itextId>
+            <district>thaba_tseka_c</district>
+            <label>Matsaile Manganeng (TT-411)</label>
             <name>matsaile_manganeng_tt_411_</name>
             <phase>c</phase>
-            <district>thaba_tseka_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-250</itextId>
+            <district>thaba_tseka_c</district>
+            <label>Matsaile Moreneng (TT-038)</label>
             <name>matsaile_moreneng_tt_038_</name>
             <phase>c</phase>
-            <district>thaba_tseka_c</district>
           </item>
           <item>
-            <itextId>static_instance-site-251</itextId>
+            <district>thaba_tseka_c</district>
+            <label>Moeling  (TT-268)</label>
             <name>moeling_tt_268_</name>
             <phase>c</phase>
-            <district>thaba_tseka_c</district>
           </item>
         </root>
       </instance>
@@ -2863,21 +1968,21 @@
         <label>Q05. Phase</label>
         <itemset nodeset="instance('phase')/root/item">
           <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
+          <label ref="label"/>
         </itemset>
       </select1>
       <select1 ref="/cascades_old/sectionB/q5_construction_site_district">
         <label>Q06. District</label>
         <itemset nodeset="instance('district')/root/item[phase= /cascades_old/sectionB/q5_construction_site_phase ]">
           <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
+          <label ref="label"/>
         </itemset>
       </select1>
       <select1 ref="/cascades_old/sectionB/q5_construction_site">
         <label>Q07. Site</label>
         <itemset nodeset="instance('site')/root/item[phase= /cascades_old/sectionB/q5_construction_site_phase  and district= /cascades_old/sectionB/q5_construction_site_district ]">
           <value ref="name"/>
-          <label ref="jr:itext(itextId)"/>
+          <label ref="label"/>
         </itemset>
       </select1>
       <select1 ref="/cascades_old/sectionB/q6_construction_site_summary1">

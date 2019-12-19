@@ -7,7 +7,7 @@ import os.path
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import basestring, node, unicode
+from pyxform.utils import basestring, node, unicode, default_is_dynamic
 
 
 class Question(SurveyElement):
@@ -26,7 +26,7 @@ class Question(SurveyElement):
         for key, value in attributes.items():
             attributes[key] = survey.insert_xpaths(value, self)
 
-        if self.get("default"):
+        if self.get("default") and not default_is_dynamic(self.default, self.type):
             return node(self.name, unicode(self.get("default")), **attributes)
         return node(self.name, **attributes)
 
@@ -82,6 +82,10 @@ class UploadQuestion(Question):
 
     def xml_control(self):
         control_dict = self.control
+        survey = self.get_root()
+        # Resolve field references in attributes
+        for key, value in control_dict.items():
+            control_dict[key] = survey.insert_xpaths(value, self)
         control_dict["ref"] = self.get_xpath()
         control_dict["mediatype"] = self._get_media_type()
         return node("upload", *self.xml_label_and_hint(), **control_dict)
@@ -141,6 +145,12 @@ class MultipleChoiceQuestion(Question):
         result = node(**control_dict)
         for element in self.xml_label_and_hint():
             result.appendChild(element)
+
+        choices = survey.get("choices")
+        if choices is not None and len(choices) > 0:
+            first_choices = next(iter(choices.values()))
+            multi_language = isinstance(first_choices[0].get("label"), dict)
+
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
         if self["itemset"] and isinstance(self["itemset"], basestring):
@@ -150,8 +160,12 @@ class MultipleChoiceQuestion(Question):
                 itemset = itemset
                 itemset_label_ref = "label"
             else:
-                itemset = self["itemset"]
-                itemset_label_ref = "jr:itext(itextId)"
+                if not multi_language:
+                    itemset = self["itemset"]
+                    itemset_label_ref = "label"
+                else:
+                    itemset = self["itemset"]
+                    itemset_label_ref = "jr:itext(itextId)"
             nodeset = "instance('" + itemset + "')/root/item"
             choice_filter = survey.insert_xpaths(choice_filter, self, True)
             if choice_filter:
