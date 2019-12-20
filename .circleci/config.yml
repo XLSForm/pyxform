@@ -24,6 +24,7 @@ jobs:
       - run:
           name: Test code is well formatted
           command: |
+            /home/circleci/.local/bin/black --version
             /home/circleci/.local/bin/black pyxform --check || exit;
       - run:
           name: Run tests
