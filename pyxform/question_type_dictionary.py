@@ -11,7 +11,7 @@ def generate_new_dict():
     type dictionary from all.xls again.
     It shouldn't be called as part of any application.
     """
-    path_to_question_types = ( "/pyxform/question_types/all.xls" )
+    path_to_question_types = "/pyxform/question_types/all.xls"
     json_dict = QuestionTypesReader(path_to_question_types).to_json_dict()
     print_pyobj_to_json(json_dict, "new_question_type_dict.json")
 
