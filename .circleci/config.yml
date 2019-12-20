@@ -24,15 +24,7 @@ jobs:
       - run:
           name: Test code is well formatted
           command: |
-            if ! type /home/circleci/.local/bin/black > /dev/null; then
-                echo "Black is not supported in this python version :("
-            else
-                output="$(/home/circleci/.local/bin/black pyxform --check  2>&1 >/dev/null)"
-                if [[ $output == *"would be reformatted"* ]]; then
-                    echo 'The source code could use a bit more black.'
-                    exit 1
-                fi
-            fi
+            /home/circleci/.local/bin/black pyxform --check || exit;
       - run:
           name: Run tests
           command: |
