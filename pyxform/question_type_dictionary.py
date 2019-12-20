@@ -15,7 +15,7 @@ def generate_new_dict():
         "/home/nathan/aptana-workspace/pyxform" "/pyxform/question_types/all.xls"
     )
     json_dict = QuestionTypesReader(path_to_question_types).to_json_dict()
-    print_pyobj_to_json(json_dict, "new_quesiton_type_dict.json")
+    print_pyobj_to_json(json_dict, "new_question_type_dict.json")
 
 
 QUESTION_TYPE_DICT = {
