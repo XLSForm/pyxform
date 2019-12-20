@@ -42,9 +42,9 @@
           </item>
         </root>
       </instance>
-      <bind nodeset="/or_other/fav_color" type="select1"/>
+      <bind nodeset="/or_other/fav_color" type="string"/>
       <bind nodeset="/or_other/fav_color_other" relevant="selected(../fav_color, 'other')" type="string"/>
-      <bind nodeset="/or_other/fav_pastel" type="select1"/>
+      <bind nodeset="/or_other/fav_pastel" type="string"/>
       <bind jr:preload="uid" nodeset="/or_other/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>

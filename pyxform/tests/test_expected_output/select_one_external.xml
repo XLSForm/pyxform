@@ -13,7 +13,7 @@
           </meta>
         </select_one_external>
       </instance>
-      <bind nodeset="/select_one_external/state" type="select1"/>
+      <bind nodeset="/select_one_external/state" type="string"/>
       <bind nodeset="/select_one_external/county" type="string"/>
       <bind nodeset="/select_one_external/city" type="string"/>
       <bind jr:preload="uid" nodeset="/select_one_external/meta/instanceID" readonly="true()" type="string"/>

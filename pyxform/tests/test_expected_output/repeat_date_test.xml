@@ -25,8 +25,8 @@
       <bind nodeset="/repeat_date_test/generated_note_name_2" readonly="true()" type="string"/>
       <bind calculate="1" nodeset="/repeat_date_test/repeat_count" type="string"/>
       <bind calculate=" /repeat_date_test/repeat_count " nodeset="/repeat_date_test/repeat_test_count" readonly="true()" type="string"/>
-      <bind nodeset="/repeat_date_test/repeat_test/table_list_3" type="select1"/>
-      <bind nodeset="/repeat_date_test/repeat_test/table_list_4" type="select1"/>
+      <bind nodeset="/repeat_date_test/repeat_test/table_list_3" type="string"/>
+      <bind nodeset="/repeat_date_test/repeat_test/table_list_4" type="string"/>
       <bind nodeset="/repeat_date_test/generated_note_name_8" readonly="true()" type="string"/>
       <bind jr:preload="uid" nodeset="/repeat_date_test/meta/instanceID" readonly="true()" type="string"/>
     </model>

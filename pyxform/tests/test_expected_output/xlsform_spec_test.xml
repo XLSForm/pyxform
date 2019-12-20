@@ -667,7 +667,7 @@
           </meta>
         </xlsform_spec_test>
       </instance>
-      <bind nodeset="/xlsform_spec_test/skip_to_end" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/skip_to_end" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything" relevant="not(selected( /xlsform_spec_test/skip_to_end , 'yes'))"/>
       <bind nodeset="/xlsform_spec_test/everything/my_name" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/invalid_variable" readonly="true()" type="string"/>
@@ -676,19 +676,19 @@
       <bind nodeset="/xlsform_spec_test/everything/number_label" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/text_image_audio_video_test" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/display_image_test" readonly="true()" type="string"/>
-      <bind nodeset="/xlsform_spec_test/everything/autocomplete_test" type="select1"/>
-      <bind nodeset="/xlsform_spec_test/everything/autocomplete_chars_test" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/everything/autocomplete_test" type="string"/>
+      <bind nodeset="/xlsform_spec_test/everything/autocomplete_chars_test" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/a_integer" type="int"/>
       <bind constraint=". &lt;=  /xlsform_spec_test/everything/a_integer " nodeset="/xlsform_spec_test/everything/a_decimal" type="decimal"/>
       <bind calculate="2" nodeset="/xlsform_spec_test/everything/repeat_test_count" readonly="true()" type="string"/>
       <bind jr:requiredMsg="Custom required message." nodeset="/xlsform_spec_test/everything/repeat_test/group_test/required_text" required="true()" type="string"/>
       <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="jr:itext('/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test:jr:constraintMsg')" nodeset="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test" required="false()" type="select"/>
-      <bind nodeset="/xlsform_spec_test/everything/repeat_test/labeled_select_group/label-test" type="select1"/>
-      <bind nodeset="/xlsform_spec_test/everything/repeat_test/labeled_select_group/list-nolabel-test" required="true()" type="select1"/>
-      <bind nodeset="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25" type="select1"/>
-      <bind nodeset="/xlsform_spec_test/everything/repeat_test/name/table_list_question" type="select1"/>
-      <bind nodeset="/xlsform_spec_test/everything/repeat_test/compact-test" type="select1"/>
-      <bind nodeset="/xlsform_spec_test/everything/repeat_test/compact-2-test" type="select1"/>
+      <bind nodeset="/xlsform_spec_test/everything/repeat_test/labeled_select_group/label-test" type="string"/>
+      <bind nodeset="/xlsform_spec_test/everything/repeat_test/labeled_select_group/list-nolabel-test" required="true()" type="string"/>
+      <bind nodeset="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25" type="string"/>
+      <bind nodeset="/xlsform_spec_test/everything/repeat_test/name/table_list_question" type="string"/>
+      <bind nodeset="/xlsform_spec_test/everything/repeat_test/compact-test" type="string"/>
+      <bind nodeset="/xlsform_spec_test/everything/repeat_test/compact-2-test" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/acknowledge_test" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/date_test" type="date"/>
       <bind nodeset="/xlsform_spec_test/everything/time_test" type="time"/>

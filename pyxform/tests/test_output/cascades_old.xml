@@ -1871,60 +1871,60 @@
       <bind jr:preload="property" jr:preloadParams="subscriberid" nodeset="/cascades_old/subscriberid" type="string"/>
       <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/cascades_old/simserial" type="string"/>
       <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/cascades_old/phonenumber" type="string"/>
-      <bind nodeset="/cascades_old/sectionA/q1_surveyor1" type="select1"/>
+      <bind nodeset="/cascades_old/sectionA/q1_surveyor1" type="string"/>
       <bind nodeset="/cascades_old/sectionA/q2_surveyor2" relevant=" /cascades_old/sectionA/q1_surveyor1  = 'othername'" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionA/q3_datetime" required="true()" type="dateTime"/>
       <bind nodeset="/cascades_old/sectionA/q4_gps_location" required="false()" type="geopoint"/>
-      <bind nodeset="/cascades_old/sectionB/q5_construction_site_phase" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionB/q5_construction_site_district" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionB/q5_construction_site" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionB/q6_construction_site_summary1" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionB/q5_construction_site_phase" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionB/q5_construction_site_district" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionB/q5_construction_site" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionB/q6_construction_site_summary1" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionB/q7_construction_site_summary2" relevant=" /cascades_old/sectionB/q6_construction_site_summary1 ='no'" required="true()" type="string"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC1/q10_wm_trained_aftercare" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC1/q10_wm_trained_aftercare" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionC/sectionC1/q11_households_water_access" required="true()" type="int"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC1/q12_system_functional" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC1/q12_system_functional" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionC/sectionC1/q13_male_hh_latrines" required="true()" type="int"/>
       <bind nodeset="/cascades_old/sectionC/sectionC1/q14_female_hh_latrines" required="true()" type="int"/>
       <bind nodeset="/cascades_old/sectionC/sectionC1/q15_child_hh_latrines" required="true()" type="int"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q16_vwhc_meeting" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q17_vwhc_collect_tariffs" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q18_vwhc_reports" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q19_conflicts_community" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC2/q16_vwhc_meeting" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC2/q17_vwhc_collect_tariffs" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC2/q18_vwhc_reports" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC2/q19_conflicts_community" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionC/sectionC2/q20_yes_conflict_description" relevant=" /cascades_old/sectionC/sectionC2/q19_conflicts_community ='yes'" required="true()" type="string"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q21_yes_problem_resolved" relevant=" /cascades_old/sectionC/sectionC2/q19_conflicts_community ='yes'" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q22_gender_chair" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q23_gender_treasurer" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC2/q24_gender_secretary" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC2/q21_yes_problem_resolved" relevant=" /cascades_old/sectionC/sectionC2/q19_conflicts_community ='yes'" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC2/q22_gender_chair" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC2/q23_gender_treasurer" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC2/q24_gender_secretary" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionC/sectionC3/note_hygiene" readonly="true()" required="false()" type="string"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q25_faeces_mouth" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q26_prevent_faeces_mouth" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q27_handwashing" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q28_handwashing_facilities" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q29_water_storage" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q30_diseases" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q31_child_faeces_disposal" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q32_latrine_hygiene" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q25_faeces_mouth" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q26_prevent_faeces_mouth" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q27_handwashing" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q28_handwashing_facilities" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q29_water_storage" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q30_diseases" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q31_child_faeces_disposal" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC3/villager/q32_latrine_hygiene" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionC/sectionC4/sectionC4_note" readonly="true()" required="false()" type="string"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q33_hh_latrine_usage" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q34_latrine_screen_vent" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q35_latrine_seat_cover" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q36_latrine_door" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q37_latrine_flies" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q38_latrine_odour" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q39_latrine_cleaned" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q40_latrine_handwash" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q41_latrine_soap" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q33_hh_latrine_usage" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q34_latrine_screen_vent" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q35_latrine_seat_cover" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q36_latrine_door" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q37_latrine_flies" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q38_latrine_odour" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q39_latrine_cleaned" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q40_latrine_handwash" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC4/household/q41_latrine_soap" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionC/sectionC5/sectionC5_note" readonly="true()" required="false()" type="string"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q42_wm_layout_system" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q43_wm_components_system" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q44_wm_pipes_fittings" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q45_wm_hygiene" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q46_wm_report_breakdowns" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC5/q42_wm_layout_system" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC5/q43_wm_components_system" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC5/q44_wm_pipes_fittings" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC5/q45_wm_hygiene" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC5/q46_wm_report_breakdowns" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionC/sectionC5/q47_wm_number_breakdowns" required="true()" type="int"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q48_wm_preventive_maintenance" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q49_wm_pump_operation" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q50_wm_minor_repairs" required="true()" type="select1"/>
-      <bind nodeset="/cascades_old/sectionC/sectionC5/q51_wm_repair_supplies" required="true()" type="select1"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC5/q48_wm_preventive_maintenance" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC5/q49_wm_pump_operation" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC5/q50_wm_minor_repairs" required="true()" type="string"/>
+      <bind nodeset="/cascades_old/sectionC/sectionC5/q51_wm_repair_supplies" required="true()" type="string"/>
       <bind nodeset="/cascades_old/sectionC/sectionC6/q52_add_comments" required="false()" type="string"/>
       <bind jr:preload="uid" nodeset="/cascades_old/meta/instanceID" readonly="true()" type="string"/>
     </model>
