@@ -47,7 +47,7 @@ QUESTION_TYPE_DICT = {
     },
     "add select multiple prompt using": {
         "control": {"tag": "select"},
-        "bind": {"type": "select"},
+        "bind": {"type": "string"},
     },
     "add note prompt": {
         "control": {"tag": "input"},
@@ -59,7 +59,7 @@ QUESTION_TYPE_DICT = {
     "text": {"control": {"tag": "input"}, "bind": {"type": "string"}},
     "select all that apply from": {
         "control": {"tag": "select"},
-        "bind": {"type": "select"},
+        "bind": {"type": "string"},
     },
     "simserial": {
         "bind": {
@@ -134,7 +134,7 @@ QUESTION_TYPE_DICT = {
         "control": {"tag": "upload", "mediatype": "image/*"},
         "bind": {"type": "binary"},
     },
-    "select all that apply": {"control": {"tag": "select"}, "bind": {"type": "select"}},
+    "select all that apply": {"control": {"tag": "select"}, "bind": {"type": "string"}},
     "get end time": {
         "bind": {
             "jr:preload": "timestamp",
@@ -150,7 +150,7 @@ QUESTION_TYPE_DICT = {
     "geopoint": {"control": {"tag": "input"}, "bind": {"type": "geopoint"}},
     "geoshape": {"control": {"tag": "input"}, "bind": {"type": "geoshape"}},
     "geotrace": {"control": {"tag": "input"}, "bind": {"type": "geotrace"}},
-    "select multiple from": {"control": {"tag": "select"}, "bind": {"type": "select"}},
+    "select multiple from": {"control": {"tag": "select"}, "bind": {"type": "string"}},
     "end time": {
         "bind": {
             "jr:preload": "timestamp",
@@ -173,7 +173,7 @@ QUESTION_TYPE_DICT = {
         }
     },
     "q barcode": {"control": {"tag": "input"}, "bind": {"type": "barcode"}},
-    "q select": {"control": {"tag": "select"}, "bind": {"type": "select"}},
+    "q select": {"control": {"tag": "select"}, "bind": {"type": "string"}},
     "select one using": {"control": {"tag": "select1"}, "bind": {"type": "string"}},
     "rank": {"control": {"tag": "odk:rank"}, "bind": {"type": "odk:rank"}},
     "image": {
@@ -234,7 +234,7 @@ QUESTION_TYPE_DICT = {
     },
     "int": {"control": {"tag": "input"}, "bind": {"type": "int"}},
     "add barcode prompt": {"control": {"tag": "input"}, "bind": {"type": "barcode"}},
-    "select multiple using": {"control": {"tag": "select"}, "bind": {"type": "select"}},
+    "select multiple using": {"control": {"tag": "select"}, "bind": {"type": "string"}},
     "q decimal": {"control": {"tag": "input"}, "bind": {"type": "decimal"}},
     "end": {
         "bind": {

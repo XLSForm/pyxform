@@ -691,7 +691,7 @@
       <bind calculate="2" nodeset="/attribute_columns_test/everything/repeat_test_count" readonly="true()" type="string"/>
       <bind bindAttribute="test" nodeset="/attribute_columns_test/everything/repeat_test"/>
       <bind jr:requiredMsg="Custom required message." nodeset="/attribute_columns_test/everything/repeat_test/group_test/required_text" required="true()" type="string"/>
-      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="jr:itext('/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test:jr:constraintMsg')" nodeset="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test" required="false()" type="select"/>
+      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="jr:itext('/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test:jr:constraintMsg')" nodeset="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test" required="false()" type="string"/>
       <bind nodeset="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test" type="string"/>
       <bind nodeset="/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test" required="true()" type="string"/>
       <bind nodeset="/attribute_columns_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25" type="string"/>

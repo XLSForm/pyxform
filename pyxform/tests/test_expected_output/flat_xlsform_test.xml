@@ -644,7 +644,7 @@
       <bind nodeset="/flat_xlsform_test/a_integer" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="int"/>
       <bind constraint=". &lt;=  /flat_xlsform_test/a_integer " nodeset="/flat_xlsform_test/a_decimal" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="decimal"/>
       <bind jr:requiredMsg="Custom required message." nodeset="/flat_xlsform_test/required_text" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" required="true()" type="string"/>
-      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="jr:itext('/flat_xlsform_test/select_multiple_test:jr:constraintMsg')" nodeset="/flat_xlsform_test/select_multiple_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" required="false()" type="select"/>
+      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="jr:itext('/flat_xlsform_test/select_multiple_test:jr:constraintMsg')" nodeset="/flat_xlsform_test/select_multiple_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" required="false()" type="string"/>
       <bind nodeset="/flat_xlsform_test/label-test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind nodeset="/flat_xlsform_test/list-nolabel-test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" required="true()" type="string"/>
       <bind nodeset="/flat_xlsform_test/reserved_name_for_field_list_labels_25" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>

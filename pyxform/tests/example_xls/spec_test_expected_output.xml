@@ -636,7 +636,7 @@
       <bind constraint=". &lt;= /xlsform_spec_test/everything/a_integer" nodeset="/xlsform_spec_test/everything/a_decimal" type="decimal"/>
       <bind nodeset="/xlsform_spec_test/everything/num_repeat_times" relevant="false()" type="int"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/group_test/required_text" required="true()" type="string"/>
-      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="you can't select yes and no" nodeset="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test" required="false()" type="select"/>
+      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="you can't select yes and no" nodeset="/xlsform_spec_test/everything/repeat_test/group_test/select_multiple_test" required="false()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/labeled_select_group/label-test" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/labeled_select_group/list-nolabel-test" required="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/repeat_test/name/reserved_name_for_field_list_labels_23" type="string"/>

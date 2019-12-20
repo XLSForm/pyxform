@@ -115,7 +115,7 @@
       <bind constraint=". &gt; 10.51 and . &lt; 18.39" jr:constraintMsg="number must be between 10.51 and 18.39" nodeset="/widgets/my_decimal" type="decimal"/>
       <bind constraint=". &gt;= today()" jr:constraintMsg="only future dates allowed" nodeset="/widgets/my_date" type="date"/>
       <bind nodeset="/widgets/my_time" type="time"/>
-      <bind constraint="not(selected(., 'c') and selected(., 'd'))" jr:constraintMsg="option c and d cannot be selected together" nodeset="/widgets/my_select" type="select"/>
+      <bind constraint="not(selected(., 'c') and selected(., 'd'))" jr:constraintMsg="option c and d cannot be selected together" nodeset="/widgets/my_select" type="string"/>
       <bind nodeset="/widgets/my_select1" type="string"/>
       <bind nodeset="/widgets/my_output" readonly="true()" type="string"/>
       <bind nodeset="/widgets/my_geopoint" type="geopoint"/>
@@ -127,7 +127,7 @@
       <bind nodeset="/widgets/locationMap" type="geopoint"/>
       <bind nodeset="/widgets/dateTime" type="dateTime"/>
       <bind nodeset="/widgets/spinner" type="string"/>
-      <bind nodeset="/widgets/spinner_all" type="select"/>
+      <bind nodeset="/widgets/spinner_all" type="string"/>
       <bind nodeset="/widgets/selectadvance" type="string"/>
       <bind nodeset="/widgets/grid_test" type="string"/>
       <bind nodeset="/widgets/grid_test_audio" type="string"/>
@@ -138,13 +138,13 @@
       <bind nodeset="/widgets/table_list_test2/reserved_name_for_field_list_labels_30" type="string"/>
       <bind nodeset="/widgets/table_list_test2/table_list_3" type="string"/>
       <bind nodeset="/widgets/table_list_test2/table_list_4" type="string"/>
-      <bind nodeset="/widgets/happy_sad_table_2/happy_sad_second_method" type="select"/>
-      <bind nodeset="/widgets/happy_sad_table_2/happy_sad_brian2" type="select"/>
-      <bind nodeset="/widgets/happy_sad_table_2/happy_sad_michael2" type="select"/>
+      <bind nodeset="/widgets/happy_sad_table_2/happy_sad_second_method" type="string"/>
+      <bind nodeset="/widgets/happy_sad_table_2/happy_sad_brian2" type="string"/>
+      <bind nodeset="/widgets/happy_sad_table_2/happy_sad_michael2" type="string"/>
       <bind nodeset="/widgets/happy_sad_table/generated_table_list_label_38" readonly="true()" type="string"/>
-      <bind nodeset="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39" type="select"/>
-      <bind nodeset="/widgets/happy_sad_table/happy_sad_brian" type="select"/>
-      <bind nodeset="/widgets/happy_sad_table/happy_sad_michael" type="select"/>
+      <bind nodeset="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39" type="string"/>
+      <bind nodeset="/widgets/happy_sad_table/happy_sad_brian" type="string"/>
+      <bind nodeset="/widgets/happy_sad_table/happy_sad_michael" type="string"/>
       <bind jr:preload="uid" nodeset="/widgets/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
