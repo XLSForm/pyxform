@@ -8,7 +8,7 @@ if [ -n "$FILES" ]; then
 fi
 
 if [ -n "$FILES" ]; then
-    if black --target-version=py27 $FILES; then
+    if black $FILES; then
         touch .commit
     fi
 fi

@@ -1,8 +1,8 @@
 version: 2
 jobs:
-  py-3.7: &build-template
+  py-3.8: &build-template
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
     working_directory: ~/work
     steps:
       - checkout
@@ -27,7 +27,7 @@ jobs:
             if ! type /home/circleci/.local/bin/black > /dev/null; then
                 echo "Black is not supported in this python version :("
             else
-                output="$(/home/circleci/.local/bin/black --target-version=py27 pyxform --check  2>&1 >/dev/null)"
+                output="$(/home/circleci/.local/bin/black pyxform --check  2>&1 >/dev/null)"
                 if [[ $output == *"would be reformatted"* ]]; then
                     echo 'The source code could use a bit more black.'
                     exit 1
@@ -56,23 +56,13 @@ jobs:
           paths:
             - /home/circleci/.local/lib
             - /home/circleci/.local/bin
-  py-3.6:
+  py-3.7:
     <<: *build-template
     docker:
-      - image: circleci/python:3.6
-  py-3.5:
-    <<: *build-template
-    docker:
-      - image: circleci/python:3.5
-  py-2.7:
-    <<: *build-template
-    docker:
-      - image: circleci/python:2.7
+      - image: circleci/python:3.7
 workflows:
   version: 2
   build:
     jobs:
+      - py-3.8
       - py-3.7
-      - py-3.6
-      - py-3.5
-      - py-2.7

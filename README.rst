@@ -94,7 +94,7 @@ You can run tests with::
 
 Before committing, make sure to format your code using `black`::
 
-    black --target-version=py27 pyxform
+    black pyxform
 
 Documentation
 =============
