@@ -407,7 +407,7 @@ def workbook_to_json(
         # problems for formhub.
         # constants.VERSION : datetime.datetime.now().strftime("%Y%m%d%H"),
         constants.CHILDREN: [],
-        constants.PYXFORM_VERSION: get_git_describe_tags(),
+        constants.GENERATED_BY: ("pyxform " + get_git_describe_tags()).strip(),
     }
     # Here the default settings are overridden by those in the settings sheet
     json_dict.update(settings)
@@ -1439,9 +1439,12 @@ def get_parameters(raw_parameters, allowed_parameters):
 
 
 def get_git_describe_tags():
-    return subprocess.check_output(
-        ["git", "describe", "--tags", "HEAD"], universal_newlines=True
-    ).strip()[1:]
+    try:
+        return subprocess.check_output(
+            ["git", "describe", "--tags", "HEAD"], universal_newlines=True
+        ).strip()
+    except:
+        return ""
 
 
 class SpreadsheetReader(object):

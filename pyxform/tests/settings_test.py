@@ -56,7 +56,7 @@ class SettingsTests(TestCase):
             ],
         }
         actual_dict = survey_reader.to_json_dict()
-        actual_dict.pop("pyxform_version", None)
+        actual_dict.pop("generated_by", None)
         self.assertEqual(actual_dict, expected_dict)
 
     def test_settings(self):

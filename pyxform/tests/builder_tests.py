@@ -160,7 +160,7 @@ class BuilderTests(TestCase):
             ],
         }
         actual_dict = survey.to_json_dict()
-        actual_dict.pop("pyxform_version", None)
+        actual_dict.pop("generated_by", None)
         self.maxDiff = None
         self.assertEqual(actual_dict, expected_dict)
 
@@ -202,7 +202,7 @@ class BuilderTests(TestCase):
             ],
         }
         actual_dict = survey.to_json_dict()
-        actual_dict.pop("pyxform_version", None)
+        actual_dict.pop("generated_by", None)
         self.maxDiff = None
         self.assertEqual(actual_dict, expected_dict)
 
@@ -317,7 +317,7 @@ class BuilderTests(TestCase):
             ],
         }
         actual_dict = survey.to_json_dict()
-        actual_dict.pop("pyxform_version", None)
+        actual_dict.pop("generated_by", None)
         self.maxDiff = None
         self.assertEqual(actual_dict, expected_dict)
 
@@ -456,7 +456,7 @@ class BuilderTests(TestCase):
             "type": "survey",
         }
         actual_dict = survey.to_json_dict()
-        actual_dict.pop("pyxform_version", None)
+        actual_dict.pop("generated_by", None)
         self.assertEqual(actual_dict, expected_dict)
 
     def test_style_column(self):
@@ -497,7 +497,7 @@ class BuilderTests(TestCase):
             "type": "survey",
         }
         actual_dict = survey.to_json_dict()
-        actual_dict.pop("pyxform_version", None)
+        actual_dict.pop("generated_by", None)
         self.assertEqual(actual_dict, expected_dict)
 
     STRIP_NS_FROM_TAG_RE = re.compile(r"\{.+\}")

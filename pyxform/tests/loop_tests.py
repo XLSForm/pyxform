@@ -90,5 +90,5 @@ class LoopTests(TestCase):
             ],
         }
         actual_dict = survey.to_json_dict()
-        actual_dict.pop("pyxform_version", None)
+        actual_dict.pop("generated_by", None)
         self.assertEquals(actual_dict, expected_dict)
