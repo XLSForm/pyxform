@@ -255,6 +255,9 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                     "Invalid parameter: 'body__contains'." "Use 'xml__contains' instead"
                 )
 
+            # preserve attribute ordering across all Python versions before writing to string
+            reorder_attributes(root)
+
             for code in ["xml", "instance", "model", "itext"]:
                 for verb in ["contains", "excludes"]:
                     (code__str, checker) = _check(code, verb)
@@ -330,3 +333,21 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         self.assertEqual(
             real_count, 0, msg_prefix + "Response should not contain %s" % text_repr
         )
+
+
+def reorder_attributes(root):
+    """
+        Forces alphabetical ordering of all XML attributes to match pre Python 3.8 behavior. 
+        In general, we should not rely on ordering, but changing all the tests is not 
+        realistic at this moment.
+
+        See bottom of https://docs.python.org/3/library/xml.etree.elementtree.html#element-objects and 
+        https://github.com/python/cpython/commit/a3697db0102b9b6747fe36009e42f9b08f0c1ea8 for more information.
+        """
+    for el in root.iter():
+        attrib = el.attrib
+        if len(attrib) > 1:
+            # adjust attribute order, e.g. by sorting
+            attribs = sorted(attrib.items())
+            attrib.clear()
+            attrib.update(attribs)
