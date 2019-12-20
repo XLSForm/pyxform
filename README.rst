@@ -96,6 +96,8 @@ Before committing, make sure to format your code using `black`::
 
     black pyxform
 
+If you are using a copy of black outside your virtualenv, make sure it is the same version as listed in requirements.pip.
+
 Documentation
 =============
 To check out the documentation for pyxform do the following::
