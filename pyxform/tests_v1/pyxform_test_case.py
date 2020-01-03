@@ -68,13 +68,13 @@ class PyxformMarkdown(object):
         sheets = {}
         for sheet, contents in md_table_to_ss_structure(md):
             sheets[sheet] = list_to_dicts(contents)
-
         return self._ss_structure_to_pyxform_survey(sheets, kwargs)
 
     @staticmethod
     def _ss_structure_to_pyxform_survey(ss_structure, kwargs):
         # using existing methods from the builder
-        imported_survey_json = workbook_to_json(ss_structure)
+        warnings = kwargs.get('warnings', None)
+        imported_survey_json = workbook_to_json(ss_structure, warnings=warnings)
         # ideally, when all these tests are working, this would be
         # refactored as well
         survey = create_survey_element_from_dict(imported_survey_json)
