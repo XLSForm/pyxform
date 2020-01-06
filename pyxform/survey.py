@@ -716,6 +716,21 @@ class Survey(Section):
     def _to_ugly_xml(self):
         return '<?xml version="1.0"?>' + self.xml().toxml()
 
+    def _to_testable_xml(self):
+        """Preserves attribute ordering across all Python versions.
+
+        See python_test_case.reorder_attributes for related code.
+        """
+        tree = ETree.fromstring(self.xml().toxml())
+        for el in tree.iter():
+            attrib = el.attrib
+            if len(attrib) > 1:
+                # adjust attribute order, e.g. by sorting
+                attribs = sorted(attrib.items())
+                attrib.clear()
+                attrib.update(attribs)
+        return ETree.tostring(tree, encoding="utf-8").decode("utf-8")
+
     def _to_pretty_xml(self):
         """
         I want the to_xml method to by default validate the xml we are

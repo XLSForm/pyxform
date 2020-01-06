@@ -343,6 +343,8 @@ def reorder_attributes(root):
 
         See bottom of https://docs.python.org/3/library/xml.etree.elementtree.html#element-objects and 
         https://github.com/python/cpython/commit/a3697db0102b9b6747fe36009e42f9b08f0c1ea8 for more information.
+
+        See survey._to_testable_xml for related code.
         """
     for el in root.iter():
         attrib = el.attrib

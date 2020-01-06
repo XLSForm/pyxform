@@ -40,7 +40,7 @@ class DynamicDefaultTests(PyxformTestCase):
             kwargs={"id_string": "id", "name": "dynamic", "title": "some-title"},
             autoname=False,
         )
-        survey_xml = survey._to_pretty_xml()
+        survey_xml = survey._to_testable_xml()
 
         self.assertContains(survey_xml, "<first_name/>", 1)
         self.assertContains(survey_xml, "<last_name>not_func$</last_name>", 1)
@@ -92,7 +92,7 @@ class DynamicDefaultTests(PyxformTestCase):
             kwargs={"id_string": "id", "name": "dynamic", "title": "some-title"},
             autoname=False,
         )
-        survey_xml = survey._to_pretty_xml()
+        survey_xml = survey._to_testable_xml()
 
         self.assertContains(survey_xml, "<feeling>not_func$</feeling>", 2)
         self.assertContains(survey_xml, "<age/>", 2)

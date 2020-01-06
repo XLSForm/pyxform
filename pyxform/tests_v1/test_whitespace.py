@@ -29,7 +29,7 @@ class WhitespaceTest(PyxformTestCase):
           """
 
         survey = self.md_to_pyxform_survey(md_raw=md)
-        expected = """<submission action="https://odk.ona.io/random_person/submission" base64RsaPublicKey="MIIB" method="post"/>"""
-        xml = survey._to_pretty_xml()
+        expected = """<submission action="https://odk.ona.io/random_person/submission" base64RsaPublicKey="MIIB" method="post" />"""
+        xml = survey._to_testable_xml()
         self.assertEqual(1, xml.count(expected))
         self.assertPyxformXform(md=md, xml__contains=expected, run_odk_validate=True)
