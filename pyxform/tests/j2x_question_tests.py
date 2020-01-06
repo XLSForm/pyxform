@@ -163,7 +163,9 @@ class Json2XformQuestionValidationTests(TestCase):
         self.assertEqual(ctw(q.xml_control()), expected_phone_number_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_binding()), expected_phone_number_binding_xml)
+            self.assertEqual(
+                expected_phone_number_binding_xml in ctw(q.xml_binding()), True
+            )
 
     def test_simple_select_all_question_multilingual(self):
         """
