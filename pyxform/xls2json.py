@@ -9,6 +9,7 @@ import json
 import os
 import re
 import sys
+import subprocess
 from collections import Counter
 
 from pyxform import aliases, constants
@@ -406,6 +407,7 @@ def workbook_to_json(
         # problems for formhub.
         # constants.VERSION : datetime.datetime.now().strftime("%Y%m%d%H"),
         constants.CHILDREN: [],
+        constants.GENERATED_BY: ("pyxform " + get_git_describe_tags()).strip(),
     }
     # Here the default settings are overridden by those in the settings sheet
     json_dict.update(settings)
@@ -1434,6 +1436,15 @@ def get_parameters(raw_parameters, allowed_parameters):
             )
 
     return params
+
+
+def get_git_describe_tags():
+    try:
+        return subprocess.check_output(
+            ["git", "describe", "--tags", "HEAD"], universal_newlines=True
+        ).strip()
+    except:
+        return ""
 
 
 class SpreadsheetReader(object):

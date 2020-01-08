@@ -64,6 +64,10 @@ class XFormTestCase(TestCase):
         xform1 = ETree.fromstring(xform1.encode("utf-8"))
         xform2 = ETree.fromstring(xform2.encode("utf-8"))
 
+        # Remove the odk:generated-by attribute from the primary instance child
+        self.remove_generated_by_attribute(xform1)
+        self.remove_generated_by_attribute(xform2)
+
         # Sort tags under <model> section in each form
         self.sort_model(xform1)
         self.sort_model(xform2)
@@ -92,6 +96,15 @@ class XFormTestCase(TestCase):
 
             key = elem_get_tag
         elems[:] = sorted(elems, key=key)
+
+    def remove_generated_by_attribute(self, xform):
+        xforms_ns = "{http://www.w3.org/2002/xforms}"
+        odk_ns = "{http://www.opendatakit.org/xforms}"
+        primary_instance = xform.find(".//" + xforms_ns + "instance")
+
+        # Remove the generated-by attribute
+        if primary_instance is not None:
+            primary_instance[0].attrib.pop(odk_ns + "generated-by", None)
 
     def sort_model(self, xform):
         ns = "{http://www.w3.org/2002/xforms}"

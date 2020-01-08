@@ -89,4 +89,6 @@ class LoopTests(TestCase):
                 },
             ],
         }
-        self.assertEquals(survey.to_json_dict(), expected_dict)
+        actual_dict = survey.to_json_dict()
+        actual_dict.pop("generated_by", None)
+        self.assertEquals(actual_dict, expected_dict)

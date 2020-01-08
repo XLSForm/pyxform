@@ -28,6 +28,7 @@ COMPACT_DELIMITER = "delimiter"
 COMPACT_TAG = "compact_tag"
 
 VERSION = "version"
+GENERATED_BY = "generated_by"
 PUBLIC_KEY = "public_key"
 SUBMISSION_URL = "submission_url"
 AUTO_SEND = "auto_send"

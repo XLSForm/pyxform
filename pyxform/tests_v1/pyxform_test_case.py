@@ -174,6 +174,10 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             else:
                 survey = kwargs.get("survey")
 
+            # Remove the generated-by attribute
+            if survey:
+                survey.generated_by = ""
+
             xml = survey._to_pretty_xml()
             root = ETree.fromstring(xml.encode("utf-8"))
 
