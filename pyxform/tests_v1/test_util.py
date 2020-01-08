@@ -1,5 +1,5 @@
 from unittest import TestCase
-from pyxform.xls2json import expression_is_repeated, expression_is_complex
+from pyxform.utils import expression_is_repeated, expression_is_complex
 
 
 class RelevanceTest(TestCase):
@@ -40,7 +40,7 @@ class RelevanceTest(TestCase):
             hashes,
         )
         expected_error_message = """7: Possible complex or long logical expression detected .
-        This mat cause stack overflows during form submission."""
+        This may cause stack overflows during form submission."""
         errors.extend(errors_list)
         self.assertListEqual([expected_error_message], errors)
 

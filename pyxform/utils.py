@@ -8,6 +8,7 @@ import json
 import os
 import re
 from xml.dom.minidom import Element, Text, parseString
+from hashlib import md5
 
 import unicodecsv as csv
 import xlrd
@@ -270,3 +271,46 @@ def default_is_dynamic(element_default, element_type=None):
             else:
                 expression.append(expression_element)
     return contains_dynamic
+def expression_is_repeated(expression, index, expression_hash_map):
+    """
+    Checks If a logical expression is complex or repeated
+
+    expression (str) - text representing expression to be tested
+    index (int) - attempt at giving the location of the error location
+    expression_hash_map (dict) - store hashes for error messages as keys and index
+        as values
+    return (list) the warning message in a list or an empty list if no warning
+    """
+    warnings_list = []
+    actual_row = (
+        index + 1
+    )  # this is assuming that order of rows is maintained to this point
+    this_expression_hash = md5(expression.encode()).hexdigest()
+    if this_expression_hash in expression_hash_map.keys():
+        # get list of locations where expression has been seen before
+        row_indices = expression_hash_map[this_expression_hash]
+        row_indices.append(actual_row)
+        warning_message = """%s: Duplicate relevancies detected.
+        In future, its best to store repeated logic in calculate 
+        and referring to that calculate.""" % (
+            ", ".join(map(str, row_indices[1:]))
+        )
+        warnings_list.append(warning_message)
+    else:
+        expression_hash_map[this_expression_hash] = [actual_row]
+
+    return warnings_list
+
+
+def expression_is_complex(expression, index):
+    """
+    A heuristic that checks whether a logical relevance expression is complex
+
+    expression (str) - text representing expression to be tested
+    index (int) - 0-based index that points to where the expression is
+    return (str) - a warning message one is necessary
+    """
+    warning_list = []
+    # will match a function syntax i.e. function name and the parenthesis
+    function_regex = r"(?:(\s?[a-z_0-9]+\s?\()|(\)))"
+

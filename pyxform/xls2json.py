@@ -12,12 +12,9 @@ import sys
 import subprocess
 from collections import Counter
 
-
-from hashlib import md5  # why md5
-
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
-from pyxform.utils import basestring, is_valid_xml_tag, unicode, default_is_dynamic
+from pyxform.utils import basestring, is_valid_xml_tag, unicode, default_is_dynamic, expression_is_repeated
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
@@ -300,51 +297,6 @@ def process_range_question_type(row):
     new_dict["parameters"] = parameters
 
     return new_dict
-
-
-def expression_is_repeated(expression, index, expression_hash_map):
-    """
-    Checks If a logical expression is complex or repeated
-
-    expression (str) - text representing expression to be tested
-    index (int) - attempt at giving the location of the error location
-    expression_hash_map (dict) - store hashes for error messages as keys and index
-        as values
-    return (list) the warning message in a list or an empty list if no warning
-    """
-    warnings_list = []
-    actual_row = (
-        index + 1
-    )  # this is assuming that order of rows is maintained to this point
-    this_expression_hash = md5(expression.encode()).hexdigest()
-    if this_expression_hash in expression_hash_map.keys():
-        # get list of locations where expression has been seen before
-        row_indices = expression_hash_map[this_expression_hash]
-        row_indices.append(actual_row)
-        warning_message = """%s: Duplicate relevancies detected.
-        In future, its best to store repeated logic in calculate 
-        and referring to that calculate.""" % (
-            ", ".join(map(str, row_indices[1:]))
-        )
-        warnings_list.append(warning_message)
-    else:
-        expression_hash_map[this_expression_hash] = [actual_row]
-
-    return warnings_list
-
-
-def expression_is_complex(expression, index):
-    """
-    A heuristic that attempts to check if an expression can be considered complex
-
-    expression (str) - text representing expression to be tested
-    index (int) - attempt at giving the location of the error location
-    return (str) - a warning message where one is necessary
-    """
-    warning_list = []
-    # will match a function syntax i.e. function name and the parenthesis
-    function_regex = r"(?:(\s?[a-z_0-9]+\s?\()|(\)))"
-
 
 def workbook_to_json(
     workbook_dict,
