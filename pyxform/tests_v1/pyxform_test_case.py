@@ -255,7 +255,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                     "Invalid parameter: 'body__contains'." "Use 'xml__contains' instead"
                 )
 
-            # preserve attribute ordering across all Python versions before writing to string
+            # guarantee that strings contain alphanumerically sorted attributes across Python versions
             reorder_attributes(root)
 
             for code in ["xml", "instance", "model", "itext"]:
@@ -337,17 +337,23 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
 
 def reorder_attributes(root):
     """
-        Forces alphabetical ordering of all XML attributes to match pre Python 3.8 behavior. 
-        In general, we should not rely on ordering, but changing all the tests is not 
-        realistic at this moment.
+    Forces alphabetical ordering of all XML attributes to match pre Python 3.8 behavior.
+    In general, we should not rely on ordering, but changing all the tests is not
+    realistic at this moment.
 
-        See bottom of https://docs.python.org/3/library/xml.etree.elementtree.html#element-objects and 
-        https://github.com/python/cpython/commit/a3697db0102b9b6747fe36009e42f9b08f0c1ea8 for more information.
-        """
+    See bottom of https://docs.python.org/3/library/xml.etree.elementtree.html#element-objects and
+    https://github.com/python/cpython/commit/a3697db0102b9b6747fe36009e42f9b08f0c1ea8 for more information.
+
+    NOTE: there's a similar ordering change made in utils.node. This one is also needed because in
+    assertPyxformXform, the survey is converted to XML and then read back in using ETree.fromstring. This
+    means that attribute ordering here is based on the attribute representation of xml.etree.ElementTree objects.
+    In utils.node, it is based on xml.dom.minidom.Element objects. See https://github.com/XLSForm/pyxform/issues/414.
+    """
     for el in root.iter():
         attrib = el.attrib
         if len(attrib) > 1:
-            # adjust attribute order, e.g. by sorting
+            # Sort attributes. Attributes are represented as {namespace}name so attributes with explicit
+            # namespaces will always sort after those without explicit namespaces.
             attribs = sorted(attrib.items())
             attrib.clear()
             attrib.update(attribs)
