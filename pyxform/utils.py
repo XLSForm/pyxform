@@ -101,9 +101,11 @@ def node(*args, **kwargs):
     unicode_args = [u for u in args if type(u) == unicode]
     assert len(unicode_args) <= 1
     parsed_string = False
-    # kwargs is an xml attribute dictionary,
-    # here we convert it to a xml.dom.minidom.Element
-    for k, v in iter(kwargs.items()):
+
+    # Convert the kwargs xml attribute dictionary to a xml.dom.minidom.Element. Sort the
+    # attributes to guarantee a consistent order across Python versions.
+    # See pyxform_test_case.reorder_attributes for details.
+    for k, v in iter(sorted(kwargs.items())):
         if k in blocked_attributes:
             continue
         if k == "toParseString":
