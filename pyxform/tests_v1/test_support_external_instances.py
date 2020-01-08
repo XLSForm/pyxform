@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Test external instance syntax
+
+See also test_xmldata
 """
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 

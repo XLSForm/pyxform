@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Test xml-external syntax.
+Test xml-external syntax and instances generated from pulldata calls.
+
+See also test_support_external_instances
 """
 from pyxform.errors import PyXFormError
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase, PyxformTestError
@@ -414,3 +416,24 @@ class ExternalInstanceTests(PyxformTestCase):
         xml = survey._to_pretty_xml()
         self.assertEqual(1, xml.count(node1))
         self.assertEqual(1, xml.count(node2))
+
+    def test_mixed_quotes_and_functions_in_pulldata(self):
+        # re: https://github.com/XLSForm/pyxform/issues/398
+        self.assertPyxformXform(
+            name="pulldata",
+            md="""
+                | survey |             |            |       |                                                            |
+                |        | type        | name       | label | calculation                                                |
+                |        | text        | rcid       | ID    |                                                            |
+                |        | calculate   | calculate1 |       | pulldata("instance1","first","rcid",concat("Foo",${rcid})) |
+                |        | calculate   | calculate2 |       | pulldata('instance2',"last",'rcid',concat('RC',${rcid}))   |
+                |        | calculate   | calculate3 |       | pulldata('instance3','envelope','rcid',"Bar")              |
+                |        | calculate   | calculate4 |       | pulldata('instance4'          ,'envelope','rcid',"Bar")    |
+                """,  # noqa
+            xml__contains=[
+                '<instance id="instance1" src="jr://file-csv/instance1.csv"/>',
+                '<instance id="instance2" src="jr://file-csv/instance2.csv"/>',
+                '<instance id="instance3" src="jr://file-csv/instance3.csv"/>',
+                '<instance id="instance4" src="jr://file-csv/instance4.csv"/>',
+            ],
+        )
