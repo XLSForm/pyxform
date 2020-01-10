@@ -272,46 +272,45 @@ def default_is_dynamic(element_default, element_type=None):
             else:
                 expression.append(expression_element)
     return contains_dynamic
-def expression_is_repeated(expression, index, expression_hash_map):
+
+def expression_is_repeated(expression, expression_hash_map, row_number):
     """
-    Checks If a logical expression is complex or repeated
+    Checks If a logical expression repeated
 
     expression (str) - text representing expression to be tested
-    index (int) - attempt at giving the location of the error location
-    expression_hash_map (dict) - store hashes for error messages as keys and index
-        as values
-    return (list) the warning message in a list or an empty list if no warning
+    expression_hash_map (dict) - store hashes of the expressions as keys
+        and their indexes as values on the work sheet
+    row_number (int) - location of the row in the sheet
+    return (bool) True if expression is already in surveySheet
     """
-    warnings_list = []
-    actual_row = (
-        index + 1
-    )  # this is assuming that order of rows is maintained to this point
-    this_expression_hash = md5(expression.encode()).hexdigest()
-    if this_expression_hash in expression_hash_map.keys():
-        # get list of locations where expression has been seen before
-        row_indices = expression_hash_map[this_expression_hash]
-        row_indices.append(actual_row)
-        warning_message = """%s: Duplicate relevancies detected.
-        In future, its best to store repeated logic in calculate 
-        and referring to that calculate.""" % (
-            ", ".join(map(str, row_indices[1:]))
+    if expression in expression_hash_map.keys():
+        return (
+            row_format_string % row_number
+            + " Duplicate expression detected. In future, "
+            + "it is best to store repeated logic in calculate"
+            + " and referring to that calculate."
         )
-        warnings_list.append(warning_message)
     else:
-        expression_hash_map[this_expression_hash] = [actual_row]
+        expression_hash_map[expression] = row_number
+        return ''
 
-    return warnings_list
 
-
-def expression_is_complex(expression, index):
+def expression_is_complex(expression, row_number):
     """
-    A heuristic that checks whether a logical relevance expression is complex
+    A heuristic that checks whether a logical relevance expression is complex.
+    using the number of logical combinations, which is imperatively a function
+    of the total number of operands whose operators are logical in nature i.e. and & or
 
     expression (str) - text representing expression to be tested
-    index (int) - 0-based index that points to where the expression is
-    return (str) - a warning message one is necessary
+    row_number (int) - location of the row in the sheet
+    return (string) - the warning message, blank string if no warning
     """
-    warning_list = []
-    # will match a function syntax i.e. function name and the parenthesis
-    function_regex = r"(?:(\s?[a-z_0-9]+\s?\()|(\)))"
-
+    regex = r"or|and"
+    num_of_variables = re.split(regex, expression)
+    if len(num_of_variables) > COMPLEX_RELEVANT_VARIABLES_MAX_THRESHOLD:
+        return (
+            row_format_string % row_number
+            + " Possible complex or long logical expression detected, "
+            + " This may cause stack overflows during form submission."
+        )
+    return ''
