@@ -96,3 +96,9 @@ TRACK_CHANGES_REASONS = "track-changes-reasons"
 
 # supported bind keywords for which external instances will be created for pulldata function
 EXTERNAL_INSTANCES = ["calculate", "constraint", "readonly", "required", "relevant"]
+
+# if variables inside a complex relevant logic expression exceed this number,
+# show a warning
+COMPLEX_RELEVANT_VARIABLES_MAX_THRESHOLD = 20
+
+row_format_string = "[row : %s]"

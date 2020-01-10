@@ -14,8 +14,16 @@ from collections import Counter
 
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
-from pyxform.utils import basestring, is_valid_xml_tag, unicode, default_is_dynamic, expression_is_repeated
+from pyxform.utils import (
+    basestring,
+    is_valid_xml_tag,
+    unicode,
+    default_is_dynamic,
+    expression_is_repeated,
+    expression_is_complex,
+)
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
+from pyxform.constants import row_format_string
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 
@@ -328,22 +336,14 @@ def workbook_to_json(
         warnings = []
     is_valid = False
     workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
-    expression_hash_map = {}
-    for index, row in enumerate(workbook_dict.get(constants.SURVEY, [])):
+    for row in workbook_dict.get(constants.SURVEY, []):
         is_valid = "type" in [z.lower() for z in row]
         if is_valid:
             break
-        if "relevant" in [z.lower() for z in row]:
-            warning_list = expression_is_repeated(
-                row["relevant"], index, expression_hash_map
-            )
-            warnings.extend(warning_list)
     if not is_valid:
         raise PyXFormError(
             "The survey sheet is either empty or missing important " "column headers."
         )
-
-    row_format_string = "[row : %s]"
 
     # Make sure the passed in vars are unicode
     form_name = unicode(form_name)

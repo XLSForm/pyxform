@@ -8,10 +8,11 @@ import json
 import os
 import re
 from xml.dom.minidom import Element, Text, parseString
-from hashlib import md5
 
 import unicodecsv as csv
 import xlrd
+
+from pyxform.constants import COMPLEX_RELEVANT_VARIABLES_MAX_THRESHOLD, row_format_string
 
 try:
     from json.decoder import JSONDecodeError
