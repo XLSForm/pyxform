@@ -73,7 +73,7 @@ class PyxformMarkdown(object):
     @staticmethod
     def _ss_structure_to_pyxform_survey(ss_structure, kwargs):
         # using existing methods from the builder
-        warnings = kwargs.get('warnings', None)
+        warnings = kwargs.get("warnings", None)
         imported_survey_json = workbook_to_json(ss_structure, warnings=warnings)
         # ideally, when all these tests are working, this would be
         # refactored as well

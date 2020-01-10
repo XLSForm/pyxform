@@ -12,7 +12,10 @@ from xml.dom.minidom import Element, Text, parseString
 import unicodecsv as csv
 import xlrd
 
-from pyxform.constants import COMPLEX_RELEVANT_VARIABLES_MAX_THRESHOLD, row_format_string
+from pyxform.constants import (
+    COMPLEX_RELEVANT_VARIABLES_MAX_THRESHOLD,
+    row_format_string,
+)
 
 try:
     from json.decoder import JSONDecodeError
@@ -292,7 +295,7 @@ def expression_is_repeated(expression, expression_hash_map, row_number):
         )
     else:
         expression_hash_map[expression] = row_number
-        return ''
+        return ""
 
 
 def expression_is_complex(expression, row_number):
@@ -313,4 +316,4 @@ def expression_is_complex(expression, row_number):
             + " Possible complex or long logical expression detected, "
             + " This may cause stack overflows during form submission."
         )
-    return ''
+    return ""

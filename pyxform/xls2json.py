@@ -306,6 +306,7 @@ def process_range_question_type(row):
 
     return new_dict
 
+
 def workbook_to_json(
     workbook_dict,
     form_name=None,
@@ -631,8 +632,8 @@ def workbook_to_json(
             continue
 
         # check for repeated or complex relevancies
-        if "relevant" in row.get('bind', {}):
-            expression = row.get('bind').get('relevant')
+        if "relevant" in row.get("bind", {}):
+            expression = row.get("bind").get("relevant")
             repeated_expression_warning = expression_is_repeated(
                 expression, repeated_expressions_map, row_number
             )
