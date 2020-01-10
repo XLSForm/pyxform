@@ -604,6 +604,8 @@ def workbook_to_json(
 
     repeat_behavior_warning_added = False
     dynamic_default_warning_added = False
+    repeated_expressions_map = {}
+
     for row in survey_sheet:
         row_number += 1
         if stack[-1] is not None:
@@ -627,6 +629,18 @@ def workbook_to_json(
         # skip empty rows
         if len(row) == 0:
             continue
+
+        # check for repeated or complex relevancies
+        if "relevant" in row.get('bind', {}):
+            expression = row.get('bind').get('relevant')
+            repeated_expression_warning = expression_is_repeated(
+                expression, repeated_expressions_map, row_number
+            )
+            complex_expression_warning = expression_is_complex(expression, row_number)
+            if repeated_expression_warning:
+                warnings.append(repeated_expression_warning)
+            if complex_expression_warning:
+                warnings.append(complex_expression_warning)
 
         # Get question type
         question_type = row.get(constants.TYPE)
