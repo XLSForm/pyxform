@@ -276,6 +276,7 @@ def default_is_dynamic(element_default, element_type=None):
                 expression.append(expression_element)
     return contains_dynamic
 
+
 def expression_is_repeated(expression, expression_hash_map, row_number):
     """
     Checks If a logical expression repeated

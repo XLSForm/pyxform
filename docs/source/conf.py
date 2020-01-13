@@ -184,7 +184,7 @@ latex_documents = [
         u"pyxform Documentation",
         u"Columbia University, Modi Research Group",
         "manual",
-    ),
+    )
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
