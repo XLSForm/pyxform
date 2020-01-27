@@ -175,7 +175,7 @@ class AliasesTests(PyxformTestCase):
                 """
                 % ({"name_alias": name_alias}),
                 instance__contains=["<q1/>"],
-                model__contains=['<bind nodeset="/aliases/q1" type="select1"/>'],
+                model__contains=['<bind nodeset="/aliases/q1" type="string"/>'],
                 xml__contains=[
                     '<select1 ref="/aliases/q1">',
                     "<value>yes</value>",

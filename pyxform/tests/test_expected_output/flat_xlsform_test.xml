@@ -631,7 +631,7 @@
           </meta>
         </flat_xlsform_test>
       </instance>
-      <bind nodeset="/flat_xlsform_test/skip_to_end" type="select1"/>
+      <bind nodeset="/flat_xlsform_test/skip_to_end" type="string"/>
       <bind nodeset="/flat_xlsform_test/email_note" readonly="true()" relevant="regex( /flat_xlsform_test/address , '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}')" type="string"/>
       <bind nodeset="/flat_xlsform_test/number_label" readonly="true()" type="string"/>
       <bind nodeset="/flat_xlsform_test/my_name" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
@@ -639,18 +639,18 @@
       <bind nodeset="/flat_xlsform_test/address" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind nodeset="/flat_xlsform_test/text_image_audio_video_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind nodeset="/flat_xlsform_test/display_image_test" readonly="true()" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
-      <bind nodeset="/flat_xlsform_test/autocomplete_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="select1"/>
-      <bind nodeset="/flat_xlsform_test/autocomplete_chars_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="select1"/>
+      <bind nodeset="/flat_xlsform_test/autocomplete_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
+      <bind nodeset="/flat_xlsform_test/autocomplete_chars_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind nodeset="/flat_xlsform_test/a_integer" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="int"/>
       <bind constraint=". &lt;=  /flat_xlsform_test/a_integer " nodeset="/flat_xlsform_test/a_decimal" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="decimal"/>
       <bind jr:requiredMsg="Custom required message." nodeset="/flat_xlsform_test/required_text" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" required="true()" type="string"/>
-      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="jr:itext('/flat_xlsform_test/select_multiple_test:jr:constraintMsg')" nodeset="/flat_xlsform_test/select_multiple_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" required="false()" type="select"/>
-      <bind nodeset="/flat_xlsform_test/label-test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="select1"/>
-      <bind nodeset="/flat_xlsform_test/list-nolabel-test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" required="true()" type="select1"/>
-      <bind nodeset="/flat_xlsform_test/reserved_name_for_field_list_labels_25" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="select1"/>
-      <bind nodeset="/flat_xlsform_test/table_list_question" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="select1"/>
-      <bind nodeset="/flat_xlsform_test/compact-test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="select1"/>
-      <bind nodeset="/flat_xlsform_test/compact-2-test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="select1"/>
+      <bind constraint="not(selected(., 'yes') and selected (., 'no'))" jr:constraintMsg="jr:itext('/flat_xlsform_test/select_multiple_test:jr:constraintMsg')" nodeset="/flat_xlsform_test/select_multiple_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" required="false()" type="string"/>
+      <bind nodeset="/flat_xlsform_test/label-test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
+      <bind nodeset="/flat_xlsform_test/list-nolabel-test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" required="true()" type="string"/>
+      <bind nodeset="/flat_xlsform_test/reserved_name_for_field_list_labels_25" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
+      <bind nodeset="/flat_xlsform_test/table_list_question" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
+      <bind nodeset="/flat_xlsform_test/compact-test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
+      <bind nodeset="/flat_xlsform_test/compact-2-test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind nodeset="/flat_xlsform_test/acknowledge_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="string"/>
       <bind nodeset="/flat_xlsform_test/date_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="date"/>
       <bind nodeset="/flat_xlsform_test/time_test" relevant="not(selected( /flat_xlsform_test/skip_to_end , 'yes'))" type="time"/>

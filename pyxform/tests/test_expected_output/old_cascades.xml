@@ -101,9 +101,9 @@
           </item>
         </root>
       </instance>
-      <bind nodeset="/old_cascades/state_states" type="select1"/>
-      <bind nodeset="/old_cascades/state_counties" type="select1"/>
-      <bind nodeset="/old_cascades/state" type="select1"/>
+      <bind nodeset="/old_cascades/state_states" type="string"/>
+      <bind nodeset="/old_cascades/state_counties" type="string"/>
+      <bind nodeset="/old_cascades/state" type="string"/>
       <bind jr:preload="uid" nodeset="/old_cascades/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
