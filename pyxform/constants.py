@@ -8,6 +8,7 @@ are easier to find.
 """
 # TODO: Replace matching strings in the json2xforms code (builder.py,
 # survey.py, survey_element.py, question.py) with these constants
+import re
 
 TYPE = "type"
 TITLE = "title"
@@ -40,7 +41,9 @@ STYLE = "style"
 ATTRIBUTE = "attribute"
 ALLOW_CHOICE_DUPLICATES = "allow_choice_duplicates"
 
-BIND = "bind"  # TODO: What should I do with the nested types? (readonly and relevant) # noqa
+BIND = (
+    "bind"
+)  # TODO: What should I do with the nested types? (readonly and relevant) # noqa
 MEDIA = "media"
 CONTROL = "control"
 APPEARANCE = "appearance"
@@ -60,7 +63,9 @@ CHOICES = "choices"
 # XLS Specific constants
 LIST_NAME = "list name"
 CASCADING_SELECT = "cascading_select"
-TABLE_LIST = "table-list"  # hyphenated because it goes in appearance, and convention for appearance column is dashes # noqa
+TABLE_LIST = (
+    "table-list"
+)  # hyphenated because it goes in appearance, and convention for appearance column is dashes # noqa
 
 # The following are the possible sheet names:
 SURVEY = "survey"
