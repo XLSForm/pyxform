@@ -304,6 +304,11 @@ class Survey(Section):
             for formula_name in constants.EXTERNAL_INSTANCES:
                 if "pulldata(" in unicode(element["bind"].get(formula_name)):
                     functions_present.append(element["bind"][formula_name])
+            if "pulldata(" in unicode(element["choice_filter"]):
+                functions_present.append(element["choice_filter"])
+            if "pulldata(" in unicode(element["default"]):
+                functions_present.append(element["default"])
+
             return functions_present
 
         def get_instance_info(element, file_id):

@@ -395,6 +395,31 @@ class ExternalInstanceTests(PyxformTestCase):
         node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
         self.assertPyxformXform(md=md, xml__contains=[node], debug=False)
 
+    # This is not something that is recommended since pulldata and choice_filter both should use XPath predicates
+    # behind the scenes but it should still be possible.
+    def test_external_instance_pulldata_choice_filter(self):
+        self.assertPyxformXform(
+            md="""
+            | survey |                |      |       |                                                                         |
+            |        | type           | name | label | choice_filter                                                           |
+            |        | select_one foo | foo  | Foo   | contains(name, pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.)) |
+            | choices|                |      |       |                                                                         |
+            |        | list_name      | name | label |                                                                         |
+            |        | foo            | a    | A     |                                                                         |
+            """,
+            xml__contains=["""<instance id="ID" src="jr://file-csv/ID.csv"/>"""],
+        )
+
+    def test_external_instance_pulldata_default(self):
+        self.assertPyxformXform(
+            md="""
+            | survey |      |      |       |                                                         |
+            |        | type | name | label | default                                                 |
+            |        | text | foo  | Foo   | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
+            """,
+            xml__contains=["""<instance id="ID" src="jr://file-csv/ID.csv"/>"""],
+        )
+
     def test_external_instance_pulldata(self):
         """
         Checks that only one instance node for pulldata is created
