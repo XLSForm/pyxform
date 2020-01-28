@@ -346,16 +346,23 @@ class SurveyElement(dict):
         if not self.default or not default_is_dynamic(self.default, self.type):
             return
 
+        default_with_xpaths = self.get_root().insert_xpaths(self.default, self)
         if self.parent.__class__.__name__ == "Survey" and in_binding:
             default_handler = {"event": "odk-instance-first-load"}
             return node(
-                "setvalue", ref=self.get_xpath(), value=self.default, **default_handler
+                "setvalue",
+                ref=self.get_xpath(),
+                value=default_with_xpaths,
+                **default_handler
             )
 
         if self.parent.__class__.__name__ != "Survey" and not in_binding:
             default_handler = {"event": "odk-instance-first-load odk-new-repeat"}
             return node(
-                "setvalue", ref=self.get_xpath(), value=self.default, **default_handler
+                "setvalue",
+                ref=self.get_xpath(),
+                value=default_with_xpaths,
+                **default_handler
             )
 
     # XML generating functions, these probably need to be moved around.
