@@ -345,6 +345,16 @@ class ExternalInstanceTests(PyxformTestCase):
         node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
         self.assertPyxformXform(md=md, xml__contains=[node])
 
+    def test_external_instance_pulldata_constraint_in_expression(self):
+        self.assertPyxformXform(
+            md="""
+            | survey |        |         |                |                                                             |
+            |        | type   | name    | label          | constraint                                                  |
+            |        | text   | Part_ID | Participant ID | . > pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
+            """,
+            xml__contains=["""<instance id="ID" src="jr://file-csv/ID.csv"/>"""],
+        )
+
     def test_external_instance_pulldata_readonly(self):
         """
         Checks if instance node for pulldata function is added

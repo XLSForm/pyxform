@@ -301,7 +301,7 @@ class Survey(Section):
             """
             functions_present = []
             for formula_name in constants.EXTERNAL_INSTANCES:
-                if unicode(element["bind"].get(formula_name)).startswith("pulldata("):
+                if "pulldata(" in unicode(element["bind"].get(formula_name)):
                     functions_present.append(element["bind"][formula_name])
             return functions_present
 
@@ -322,7 +322,7 @@ class Survey(Section):
         if len(pulldata_calls) > 0:
             pulldata_instances = []
             for pulldata_call in pulldata_calls:
-                pulldata_arguments = re.sub("pulldata\s*\(\s*", "", pulldata_call)
+                pulldata_arguments = re.sub(".*pulldata\s*\(\s*", "", pulldata_call)
                 parsed_pulldata_arguments = pulldata_arguments.split(",")
                 if len(parsed_pulldata_arguments) > 0:
                     first_argument = parsed_pulldata_arguments[0]
