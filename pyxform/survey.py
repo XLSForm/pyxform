@@ -36,7 +36,8 @@ except ImportError:
     from functools32 import lru_cache
 
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
-BRACKETED_TAG_REGEX = re.compile(r"\$\{(last-saved#)?(.*?)\}")
+BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
+LAST_SAVED_REGEX = re.compile(r"\${last-saved#(.*?)}")
 
 
 def register_nsmap():
@@ -361,14 +362,14 @@ class Survey(Section):
     def _generate_last_saved_instance(element):
         for expression_type in constants.EXTERNAL_INSTANCES:
             last_saved_expression = re.search(
-                BRACKETED_TAG_REGEX, unicode(element["bind"].get(expression_type))
+                LAST_SAVED_REGEX, unicode(element["bind"].get(expression_type))
             )
             if last_saved_expression:
                 return True
 
         return re.search(
-            BRACKETED_TAG_REGEX, unicode(element["choice_filter"])
-        ) or re.search(BRACKETED_TAG_REGEX, unicode(element["default"]))
+            LAST_SAVED_REGEX, unicode(element["choice_filter"])
+        ) or re.search(LAST_SAVED_REGEX, unicode(element["default"]))
 
     @staticmethod
     def _get_last_saved_instance():

@@ -160,3 +160,17 @@ class LastSavedTest(PyxformTestCase):
                 "There has been a problem trying to replace ${last-saved#foo} with the XPath to the survey element named 'foo'. There is no survey element with this name."
             ],
         )
+
+    def test_last_saved_not_generated_without_last_save_call(self):
+        self.assertPyxformXform(
+            name="last-saved",
+            md="""
+            | survey |            |          |       |             |
+            |        | type       | name     | label | calculation |
+            |        | integer    | foo      | Foo   |             |
+            |        | calculate  | bar      | Bar   | ${foo} + 4  |
+            """,
+            xml__excludes=[
+                '<instance id="__last-saved" src="jr://instance/last-saved"/>'
+            ],
+        )
