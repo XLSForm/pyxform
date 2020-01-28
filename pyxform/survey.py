@@ -379,8 +379,8 @@ class Survey(Section):
     @staticmethod
     def _get_last_saved_instance():
         name = (
-            "__last-saved"
-        )  # double underscore used to minimize risk of name conflicts
+            "__last-saved"  # double underscore used to minimize risk of name conflicts
+        )
         uri = "jr://instance/last-saved"
 
         return InstanceInfo(
