@@ -366,12 +366,9 @@ class Survey(Section):
             if last_saved_expression:
                 return True
 
-        last_saved_expression = re.search(
+        return re.search(
             BRACKETED_TAG_REGEX, unicode(element["choice_filter"])
-        )
-        if last_saved_expression:
-            return True
-        return False
+        ) or re.search(BRACKETED_TAG_REGEX, unicode(element["default"]))
 
     @staticmethod
     def _get_last_saved_instance():
