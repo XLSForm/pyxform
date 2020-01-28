@@ -26,7 +26,6 @@ class DynamicDefaultTests(PyxformTestCase):
             name="dynamic",
             id_string="id",
             model__contains=[
-                "<first_name/>",
                 "<last_name>not_func$</last_name>",
                 "<age/>",
                 '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="some_rando_func()"/>',
@@ -40,7 +39,6 @@ class DynamicDefaultTests(PyxformTestCase):
         )
         survey_xml = survey._to_pretty_xml()
 
-        self.assertContains(survey_xml, "<first_name/>", 1)
         self.assertContains(survey_xml, "<last_name>not_func$</last_name>", 1)
         self.assertContains(survey_xml, "<age/>", 1)
         self.assertContains(
@@ -93,6 +91,54 @@ class DynamicDefaultTests(PyxformTestCase):
         self.assertNotContains(
             survey_xml,
             '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="some_rando_func()"/>',
+        )
+
+    def test_dynamic_default_in_group(self):
+        self.assertPyxformXform(
+            name="dynamic",
+            md="""
+            | survey |            |          |       |                   |
+            |        | type       | name     | label | default           |
+            |        | integer    | foo      | Foo   |                   |
+            |        | begin group| group    |       |                   |
+            |        | integer    | bar      | Bar   | ${foo}            |
+            |        | end group  | group    |       |                   |
+            """,
+            xml__contains=[
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/group/bar" value=" /dynamic/foo "/>'
+            ],
+        )
+
+    def test_sibling_dynamic_default_in_group(self):
+        self.assertPyxformXform(
+            name="dynamic",
+            md="""
+            | survey |              |          |       |                   |
+            |        | type         | name     | label | default           |
+            |        | begin group  | group    |       |                   |
+            |        | integer      | foo      | Foo   |                   |
+            |        | integer      | bar      | Bar   | ${foo}            |
+            |        | end group    | group    |       |                   |
+            """,
+            xml__contains=[
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/group/bar" value=" /dynamic/group/foo "/>'
+            ],
+        )
+
+    def test_sibling_dynamic_default_in_repeat(self):
+        self.assertPyxformXform(
+            name="dynamic",
+            md="""
+            | survey |              |          |       |                   |
+            |        | type         | name     | label | default           |
+            |        | begin repeat | repeat   |       |                   |
+            |        | integer      | foo      | Foo   |                   |
+            |        | integer      | bar      | Bar   | ${foo}            |
+            |        | end repeat   | repeat   |       |                   |
+            """,
+            xml__contains=[
+                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/bar" value=" ../foo "/>'
+            ],
         )
 
     def test_handling_arithmetic_expression(self):
