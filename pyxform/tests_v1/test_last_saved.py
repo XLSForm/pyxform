@@ -174,3 +174,21 @@ class LastSavedTest(PyxformTestCase):
                 '<instance id="__last-saved" src="jr://instance/last-saved"/>'
             ],
         )
+
+    def test_last_saved_call_and___last_saved_instance_conflict(self):
+        self.assertPyxformXform(
+            name="last-saved",
+            md="""
+            | survey |              |              |       |                       |
+            |        | type         | name         | label | calculation           |
+            |        | xml-external | __last-saved |       |                       |
+            |        | integer      | foo          | Foo   |                       |
+            |        | calculate    | bar          | Bar   | ${last-saved#foo} + 4 |
+            """,
+            errored=True,
+            error__contains=[
+                "The same instance id will be generated for different external instance source URIs. Please check the form.",
+                "Instance name: '__last-saved', Existing type: 'external', Existing URI: 'jr://file/__last-saved.xml'",
+                "Duplicate type: 'instance', Duplicate URI: 'jr://instance/last-saved', Duplicate context: 'None'.",
+            ],
+        )
