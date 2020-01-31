@@ -500,34 +500,28 @@ def workbook_to_json(
         list_name_choices = [option.get("name") for option in options]
         if len(list_name_choices) != len(set(list_name_choices)):
             duplicate_setting = settings.get("allow_choice_duplicates")
-            if not duplicate_setting:
-                raise PyXFormError(
-                    "There does not seem to be"
-                    " a `allow_choice_duplicates`"
-                    " column header defined in your settings sheet."
-                    " You must have set `allow_choice_duplicates`"
-                    " setting in your settings sheet"
-                    " to have duplicate choice list names"
-                    " in your choices sheet"
-                )  # noqa
             for k, v in Counter(list_name_choices).items():
                 if v > 1:
-                    if duplicate_setting and duplicate_setting.capitalize() != "Yes":
-                        result = [
+                    if not duplicate_setting or duplicate_setting.capitalize() != "Yes":
+                        choice_duplicates = [
                             item
                             for item, count in Counter(list_name_choices).items()
                             if count > 1
                         ]
-                        choice_duplicates = " ".join(result)
 
                         if choice_duplicates:
                             raise PyXFormError(
-                                "On the choices sheet the choice list name"
-                                " '{}' occurs more than once."
-                                " You must have set `allow_choice_duplicates`"
-                                " setting in your settings sheet"
-                                " for this to be a valid measure".format(
-                                    choice_duplicates
+                                "The name(s) {} occur(s) more than once in the '{}' choice list. The options with "
+                                "duplicate names will be impossible to identify in analysis unless a previous value in "
+                                "a cascading select differentiates them. If this is intentional, you can set the "
+                                "allow_choice_duplicates setting to 'yes'. Read more: https://xlsform.org/choice-names.".format(
+                                    ", ".join(
+                                        [
+                                            "'{}'".format(dupe)
+                                            for dupe in choice_duplicates
+                                        ]
+                                    ),
+                                    list_name,
                                 )
                             )  # noqa
 
