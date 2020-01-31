@@ -108,3 +108,23 @@ class LanguageWarningTest(PyxformTestCase):
 
         self.assertTrue(len(warnings) == 0)
         os.unlink(tmp.name)
+
+    def test_default_language_subtag_only_should_not_warn(self):
+        survey = self.md_to_pyxform_survey(
+            """
+            | survey |      |           |                     |            |
+            |        | type | name      | label::en           | label::pt  |
+            |        | note | my_note   | My note             | Minha nota |
+            |settings|                  |                     |            |
+            |        | default_language |                     |            |
+            |        | pt               |                     |            |
+            """
+        )
+
+        warnings = []
+        tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
+        tmp.close()
+        survey.print_xform_to_file(tmp.name, warnings=warnings)
+
+        self.assertTrue(len(warnings) == 0)
+        os.unlink(tmp.name)

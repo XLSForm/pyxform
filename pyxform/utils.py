@@ -232,7 +232,7 @@ def get_languages_with_bad_tags(languages):
         lang_code = re.search(lang_code_regex, lang)
 
         if not lang_code:
-            if lang != 'default' and lang not in iana_subtags:
+            if lang != "default" and lang not in iana_subtags:
                 languages_with_bad_tags.append(lang)
         elif not lang_code.group(1) in iana_subtags:
             languages_with_bad_tags.append(lang)
