@@ -42,81 +42,97 @@ class FieldsTests(PyxformTestCase):
             error__contains=["There are more than one survey elements named 'age'"],
         )
 
-    def test_duplicate_choice_list_without_settings(self):
+    def test_duplicate_choices_without_setting(self):
         self.assertPyxformXform(
             md="""
-            | survey  |                 |          |       |
-            |         | type            | name     | label |
-            |         | select_one list | S1       | s1    |
-            | choices |                 |          |       |
-            |         | list name       | name     | label  |
-            |         | list            | option a | a      |
-            |         | list            | option b | b      |
-            |         | list            | option b | c      |
+            | survey  |                 |          |          |
+            |         | type            | name     | label    |
+            |         | select_one list | S1       | s1       |
+            | choices |                 |          |          |
+            |         | list name       | name     | label    |
+            |         | list            | a        | option a |
+            |         | list            | b        | option b |
+            |         | list            | b        | option c |
             """,
             errored=True,
             error__contains=[
-                "There does not seem to be a"
-                " `allow_choice_duplicates` column header defined"
-                " in your settings sheet"
+                "The name column for the 'list' choice list contains these duplicates: 'b'"
             ],  # noqa
         )
 
-    def test_duplicate_choice_list_with_wrong_setting(self):
+    def test_multiple_duplicate_choices_without_setting(self):
         self.assertPyxformXform(
             md="""
-            | survey  |                 |          |       |
-            |         | type            | name     | label |
-            |         | select_one list | S1       | s1    |
-            | choices |                 |          |       |
-            |         | list name       | name     | label  |
-            |         | list            | option a | a      |
-            |         | list            | option b | b      |
-            |         | list            | option b | c      |
-            | settings |                |          |        |
+            | survey  |                 |          |          |
+            |         | type            | name     | label    |
+            |         | select_one list | S1       | s1       |
+            | choices |                 |          |          |
+            |         | list name       | name     | label    |
+            |         | list            | a        | option a |
+            |         | list            | a        | option b |
+            |         | list            | b        | option c |
+            |         | list            | b        | option d |
+            """,
+            errored=True,
+            error__contains=[
+                "The name column for the 'list' choice list contains these duplicates: 'a', 'b'"
+            ],  # noqa
+        )
+
+    def test_duplicate_choices_with_setting_not_set_to_yes(self):
+        self.assertPyxformXform(
+            md="""
+            | survey  |                 |          |          |
+            |         | type            | name     | label    |
+            |         | select_one list | S1       | s1       |
+            | choices |                 |          |          |
+            |         | list name       | name     | label    |
+            |         | list            | a        | option a |
+            |         | list            | b        | option b |
+            |         | list            | b        | option c |
+            | settings |                |          |          |
             |          | id_string    | allow_choice_duplicates   |
-            |          | Duplicates   | True                       |
+            |          | Duplicates   | Bob                       |
             """,
             errored=True,
             error__contains=[
-                "On the choices sheet the choice list name"
-                " 'option b' occurs more than once."
+                "The name column for the 'list' choice list contains these duplicates: 'b'"
             ],  # noqa
         )
 
-    def test_duplicate_choice_list_with_setting(self):
+    def test_duplicate_choices_with_allow_choice_duplicates_setting(self):
         md = """
-            | survey  |                 |          |       |
-            |         | type            | name     | label |
-            |         | select_one list | S1       | s1    |
-            | choices |                 |          |       |
-            |         | list name       | name     | label  |
-            |         | list            | option a | a      |
-            |         | list            | option b | b      |
-            |         | list            | option b | c      |
-            | settings |                |          |        |
-            |          | id_string    | allow_choice_duplicates   |
-            |          | Duplicates   | Yes                       |
+            | survey  |                 |          |          |
+            |         | type            | name     | label    |
+            |         | select_one list | S1       | s1       |
+            | choices |                 |          |          |
+            |         | list name       | name     | label    |
+            |         | list            | a        | option a |
+            |         | list            | b        | option b |
+            |         | list            | b        | option c |
+            | settings |                |          |          |
+            |          | id_string      | allow_choice_duplicates   |
+            |          | Duplicates     | Yes                       |
             """
 
         expected = """
     <select1 ref="/pyxform_autotestname/S1">
       <label>s1</label>
       <item>
-        <label>a</label>
-        <value>option a</value>
+        <label>option a</label>
+        <value>a</value>
       </item>
       <item>
-        <label>b</label>
-        <value>option b</value>
+        <label>option b</label>
+        <value>b</value>
       </item>
       <item>
-        <label>c</label>
-        <value>option b</value>
+        <label>option c</label>
+        <value>b</value>
       </item>
     </select1>
 """
-        self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
+        self.assertPyxformXform(md=md, xml__contains=[expected])
 
     def test_choice_list_without_duplicates_is_successful(self):
         md = """
@@ -145,4 +161,4 @@ class FieldsTests(PyxformTestCase):
       </item>
     </select1>
 """
-        self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
+        self.assertPyxformXform(md=md, xml__contains=[expected])
