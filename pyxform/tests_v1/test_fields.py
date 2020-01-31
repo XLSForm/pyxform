@@ -42,7 +42,7 @@ class FieldsTests(PyxformTestCase):
             error__contains=["There are more than one survey elements named 'age'"],
         )
 
-    def test_duplicate_choices_without_settings(self):
+    def test_duplicate_choices_without_setting(self):
         self.assertPyxformXform(
             md="""
             | survey  |                 |          |          |
@@ -56,7 +56,7 @@ class FieldsTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "The name(s) 'b' occur(s) more than once in the 'list' choice list"
+                "The name column for the 'list' choice list contains these duplicates: 'b'"
             ],  # noqa
         )
 
@@ -75,7 +75,7 @@ class FieldsTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "The name(s) 'a', 'b' occur(s) more than once in the 'list' choice list."
+                "The name column for the 'list' choice list contains these duplicates: 'a', 'b'"
             ],  # noqa
         )
 
@@ -92,11 +92,11 @@ class FieldsTests(PyxformTestCase):
             |         | list            | b        | option c |
             | settings |                |          |          |
             |          | id_string    | allow_choice_duplicates   |
-            |          | Duplicates   | True                       |
+            |          | Duplicates   | Bob                       |
             """,
             errored=True,
             error__contains=[
-                "The name(s) 'b' occur(s) more than once in the 'list' choice list"
+                "The name column for the 'list' choice list contains these duplicates: 'b'"
             ],  # noqa
         )
 

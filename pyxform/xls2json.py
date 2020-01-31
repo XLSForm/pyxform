@@ -511,17 +511,17 @@ def workbook_to_json(
 
                         if choice_duplicates:
                             raise PyXFormError(
-                                "The name(s) {} occur(s) more than once in the '{}' choice list. The options with "
-                                "duplicate names will be impossible to identify in analysis unless a previous value in "
-                                "a cascading select differentiates them. If this is intentional, you can set the "
+                                "The name column for the '{}' choice list contains these duplicates: {}. Duplicate names "
+                                "will be impossible to identify in analysis unless a previous value in a cascading "
+                                "select differentiates them. If this is intentional, you can set the "
                                 "allow_choice_duplicates setting to 'yes'. Read more: https://xlsform.org/choice-names.".format(
+                                    list_name,
                                     ", ".join(
                                         [
                                             "'{}'".format(dupe)
                                             for dupe in choice_duplicates
                                         ]
                                     ),
-                                    list_name,
                                 )
                             )  # noqa
 
