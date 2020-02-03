@@ -2,6 +2,7 @@
 """
 Test handling dynamic default in forms
 """
+
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
@@ -212,10 +213,29 @@ class DynamicDefaultTests(PyxformTestCase):
             md="""
             | survey |            |          |       |                   |
             |        | type       | name     | label | default           |
-            |        | integer    | bar      | Bar   |                   |
-            |        | integer    | foo      | Foo   | ${bar}            |
+            |        | integer    | foo      | Foo   |                   |
+            |        | integer    | bar      | Bar   | ${foo}            |
             """,
             xml__contains=[
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/foo" value=" /dynamic/bar "/>'
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/bar" value=" /dynamic/foo "/>'
             ],
+        )
+
+    def test_dynamic_default_warns(self):
+        warnings = []
+
+        self.md_to_pyxform_survey(
+            """
+            | survey |      |         |       |         |
+            |        | type | name    | label | default |
+            |        | text | foo     | Foo   |         |
+            |        | text | bar     | Bar   | ${foo}  |
+            """,
+            warnings=warnings
+        )
+
+        self.assertTrue(len(warnings) == 1)
+        self.assertTrue(
+            "Not all form filling software and versions support dynamic defaults"
+            in warnings[0]
         )
