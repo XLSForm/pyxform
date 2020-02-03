@@ -239,3 +239,14 @@ class DynamicDefaultTests(PyxformTestCase):
             "Not all form filling software and versions support dynamic defaults"
             in warnings[0]
         )
+
+    def test_default_date_not_considered_dynamic(self):
+        self.assertPyxformXform(
+            name="dynamic",
+            md="""
+            | survey |            |          |       |                   |
+            |        | type       | name     | label | default           |
+            |        | date       | foo      | Foo   | 2020-01-01        |
+            """,
+            xml__contains=["<foo>2020-01-01</foo>"],
+        )

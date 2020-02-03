@@ -8,7 +8,6 @@ are easier to find.
 """
 # TODO: Replace matching strings in the json2xforms code (builder.py,
 # survey.py, survey_element.py, question.py) with these constants
-import re
 
 TYPE = "type"
 TITLE = "title"
