@@ -120,23 +120,6 @@ class LastSavedTest(PyxformTestCase):
             ],
         )
 
-    def test_last_saved_in_choice_filter_does_not_use_current_or_relative_ref(self):
-        self.assertPyxformXform(
-            name="last-saved",
-            md="""
-            | survey |                |          |       |                                        |
-            |        | type           | name     | label | choice_filter                          |
-            |        | select_one foo | foo      | Foo   | not(selected(${last-saved#foo}, name)) |
-            | choices|                |          |       |                                        |
-            |        | list_name      | name     | label |                                        |
-            |        | foo            | a        | A     |                                        |
-            """,
-            xml__contains=[
-                '<instance id="__last-saved" src="jr://instance/last-saved"/>',
-                "<itemset nodeset=\"instance('foo')/root/item[not(selected( instance('__last-saved')/last-saved/foo , name))]\">",
-            ],
-        )
-
     def test_last_saved_in_default(self):
         self.assertPyxformXform(
             name="last-saved",
@@ -169,6 +152,29 @@ class LastSavedTest(PyxformTestCase):
                 '<instance id="__last-saved" src="jr://instance/last-saved"/>',
                 "required=\" instance('__last-saved')/last-saved/my-repeat/foo  &lt; 12\"",
                 "calculate=\" ../bar  +  instance('__last-saved')/last-saved/my-repeat/bar \"",
+            ],
+        )
+
+    # In repeats, ${} references in choice filters get expanded to relative references using current(). ${last-saved}
+    # references should be expanded to absolute references.
+    def test_last_saved_in_choice_filter_does_not_use_current_or_relative_ref(self):
+        self.assertPyxformXform(
+            name="last-saved",
+            md="""
+            | survey |                |          |       |                                        |
+            |        | type           | name     | label | choice_filter                          |
+            |        | begin repeat   | repeat   |       |                                        |
+            |        | select_one foo | foo      | Foo   | not(selected(${last-saved#foo}, name)) |
+            |        | select_one foo | bar      | Bar   | not(selected(${foo}, name)             |
+            |        | end repeat     | repeat   |       |                                        |
+            | choices|                |          |       |                                        |
+            |        | list_name      | name     | label |                                        |
+            |        | foo            | a        | A     |                                        |
+            """,
+            xml__contains=[
+                '<instance id="__last-saved" src="jr://instance/last-saved"/>',
+                "<itemset nodeset=\"instance('foo')/root/item[not(selected( instance('__last-saved')/last-saved/repeat/foo , name))]\">",
+                "<itemset nodeset=\"instance('foo')/root/item[not(selected( current()/../foo , name)]\">",
             ],
         )
 
