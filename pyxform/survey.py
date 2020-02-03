@@ -35,6 +35,10 @@ try:
 except ImportError:
     from functools32 import lru_cache
 
+LAST_SAVED_INSTANCE_NAME = "__last-saved"
+BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
+LAST_SAVED_REGEX = re.compile(r"\${last-saved#(.*?)}")
+
 
 def register_nsmap():
     """Function to register NSMAP namespaces with ETree"""
@@ -298,8 +302,13 @@ class Survey(Section):
             """
             functions_present = []
             for formula_name in constants.EXTERNAL_INSTANCES:
-                if unicode(element["bind"].get(formula_name)).startswith("pulldata("):
+                if "pulldata(" in unicode(element["bind"].get(formula_name)):
                     functions_present.append(element["bind"][formula_name])
+            if "pulldata(" in unicode(element["choice_filter"]):
+                functions_present.append(element["choice_filter"])
+            if "pulldata(" in unicode(element["default"]):
+                functions_present.append(element["default"])
+
             return functions_present
 
         def get_instance_info(element, file_id):
@@ -319,7 +328,7 @@ class Survey(Section):
         if len(pulldata_calls) > 0:
             pulldata_instances = []
             for pulldata_call in pulldata_calls:
-                pulldata_arguments = re.sub("pulldata\s*\(\s*", "", pulldata_call)
+                pulldata_arguments = re.sub(".*pulldata\s*\(\s*", "", pulldata_call)
                 parsed_pulldata_arguments = pulldata_arguments.split(",")
                 if len(parsed_pulldata_arguments) > 0:
                     first_argument = parsed_pulldata_arguments[0]
@@ -353,6 +362,35 @@ class Survey(Section):
 
         return None
 
+    # True if a last-saved instance should be generated, false otherwise
+    @staticmethod
+    def _generate_last_saved_instance(element):
+        for expression_type in constants.EXTERNAL_INSTANCES:
+            last_saved_expression = re.search(
+                LAST_SAVED_REGEX, unicode(element["bind"].get(expression_type))
+            )
+            if last_saved_expression:
+                return True
+
+        return re.search(
+            LAST_SAVED_REGEX, unicode(element["choice_filter"])
+        ) or re.search(LAST_SAVED_REGEX, unicode(element["default"]))
+
+    @staticmethod
+    def _get_last_saved_instance():
+        name = (
+            "__last-saved"  # double underscore used to minimize risk of name conflicts
+        )
+        uri = "jr://instance/last-saved"
+
+        return InstanceInfo(
+            type="instance",
+            context=None,
+            name=name,
+            src=uri,
+            instance=node("instance", id=name, src=uri),
+        )
+
     def _generate_instances(self):
         """
         Get instances from all the different ways that they may be generated.
@@ -365,6 +403,7 @@ class Survey(Section):
         - pulldata: first arg to calculation->pulldata()
         - select from file: file name arg to type->itemset
         - choices: list_name (for type==select_*)
+        - last-saved: static name of jr://instance/last-saved
 
         Validation and business rules for output of instances:
 
@@ -388,13 +427,19 @@ class Survey(Section):
           uses XPath-like expressions for querying.
         """
         instances = []
+        generate_last_saved = False
         for i in self.iter_descendants():
             i_ext = self._generate_external_instances(element=i)
             i_pull = self._generate_pulldata_instances(element=i)
             i_file = self._generate_from_file_instances(element=i)
+            if not generate_last_saved:
+                generate_last_saved = self._generate_last_saved_instance(element=i)
             for x in [i_ext, i_pull, i_file]:
                 if x is not None:
                     instances += x if isinstance(x, list) else [x]
+
+        if generate_last_saved:
+            instances += [self._get_last_saved_instance()]
 
         # Append last so the choice instance is excluded on a name clash.
         for name, value in self.choices.items():
@@ -764,10 +809,11 @@ class Survey(Section):
         Given a dictionary of xpaths, return a function we can use to
         replace ${varname} with the xpath to varname.
         """
-        name = matchobj.group(1)
+        name = matchobj.group(2)
+        last_saved = matchobj.group(1) is not None
         intro = (
-            "There has been a problem trying to replace ${%s} with the "
-            "XPath to the survey element named '%s'." % (name, name)
+            "There has been a problem trying to replace %s with the "
+            "XPath to the survey element named '%s'." % (matchobj.group(0), name)
         )
         if name not in self._xpath:
             raise PyXFormError(intro + " There is no survey element with this name.")
@@ -775,9 +821,13 @@ class Survey(Section):
             raise PyXFormError(
                 intro + " There are multiple survey elements" " with this name."
             )
-        if context and not (
-            context["type"] == "calculate"
-            and "indexed-repeat" in context["bind"]["calculate"]
+        if (
+            not last_saved
+            and context
+            and not (
+                context["type"] == "calculate"
+                and "indexed-repeat" in context["bind"]["calculate"]
+            )
         ):
             xpath, context_xpath = self._xpath[name], context.get_xpath()
             # share same root i.e repeat_a from /data/repeat_a/...
@@ -791,7 +841,10 @@ class Survey(Section):
 
                     return prefix + "/".join([".."] * steps) + ref_path + " "
 
-        return " " + self._xpath[name] + " "
+        last_saved_prefix = (
+            "instance('" + LAST_SAVED_INSTANCE_NAME + "')" if last_saved else ""
+        )
+        return " " + last_saved_prefix + self._xpath[name] + " "
 
     def insert_xpaths(self, text, context, use_current=False):
         """
@@ -801,9 +854,7 @@ class Survey(Section):
         def _var_repl_function(matchobj):
             return self._var_repl_function(matchobj, context, use_current)
 
-        bracketed_tag = r"\$\{(.*?)\}"
-
-        return re.sub(bracketed_tag, _var_repl_function, unicode(text))
+        return re.sub(BRACKETED_TAG_REGEX, _var_repl_function, unicode(text))
 
     def _var_repl_output_function(self, matchobj, context):
         """
@@ -831,12 +882,13 @@ class Survey(Section):
         text_node.data = text
         xml_text = text_node.toxml()
 
-        bracketed_tag = r"\$\{(.*?)\}"
         # need to make sure we have reason to replace
         # since at this point < is &lt,
         # the net effect &lt gets translated again to &amp;lt;
         if unicode(xml_text).find("{") != -1:
-            result = re.sub(bracketed_tag, _var_repl_output_function, unicode(xml_text))
+            result = re.sub(
+                BRACKETED_TAG_REGEX, _var_repl_output_function, unicode(xml_text)
+            )
             return result, not result == xml_text
         return text, False
 

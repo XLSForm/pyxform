@@ -342,20 +342,27 @@ class SurveyElement(dict):
             type(self.media) is dict and len(self.media) > 0
         )
 
-    def xml_dynamic_default(self, in_binding=False):
+    def xml_dynamic_default(self):
         if not self.default or not default_is_dynamic(self.default, self.type):
             return
 
-        if self.parent.__class__.__name__ == "Survey" and in_binding:
+        default_with_xpaths = self.get_root().insert_xpaths(self.default, self)
+        if self.parent.__class__.__name__ in ["Survey", "GroupedSection"]:
             default_handler = {"event": "odk-instance-first-load"}
             return node(
-                "setvalue", ref=self.get_xpath(), value=self.default, **default_handler
+                "setvalue",
+                ref=self.get_xpath(),
+                value=default_with_xpaths,
+                **default_handler
             )
 
-        if self.parent.__class__.__name__ != "Survey" and not in_binding:
+        if self.parent.__class__.__name__ == "RepeatingSection":
             default_handler = {"event": "odk-instance-first-load odk-new-repeat"}
             return node(
-                "setvalue", ref=self.get_xpath(), value=self.default, **default_handler
+                "setvalue",
+                ref=self.get_xpath(),
+                value=default_with_xpaths,
+                **default_handler
             )
 
     # XML generating functions, these probably need to be moved around.
@@ -435,7 +442,7 @@ class SurveyElement(dict):
             xml_binding = e.xml_binding()
             if xml_binding is not None:
                 result.append(xml_binding)
-            dynamic_default = e.xml_dynamic_default(True)
+            dynamic_default = e.xml_dynamic_default()
             if dynamic_default:
                 result.append(dynamic_default)
         return result
