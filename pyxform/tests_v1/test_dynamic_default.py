@@ -190,6 +190,22 @@ class DynamicDefaultTests(PyxformTestCase):
             ],
         )
 
+    def test_dynamic_default_with_nested_expression(self):
+        self.assertPyxformXform(
+            name="dynamic",
+            md="""
+            | survey |         |               |               |                   |
+            |        | type    | name          | label         | default           |
+            |        | integer | patient_count | Patient count | if(${last-saved#patient_count} == '', 0, ${last-saved#patient_count} + 1) |
+            """,
+            xml__contains=[
+                "<instance id=\"__last-saved\" src=\"jr://instance/last-saved\"/>",
+                "<setvalue event=\"odk-instance-first-load\" ref=\"/dynamic/patient_count\" "
+                "value=\"if( instance('__last-saved')/dynamic/patient_count  == '', 0,  "
+                "instance('__last-saved')/dynamic/patient_count  + 1)\"/>"
+            ],
+        )
+
     def test_dynamic_default_with_reference(self):
         self.assertPyxformXform(
             name="dynamic",
