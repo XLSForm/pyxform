@@ -21,6 +21,33 @@ class LastSavedTest(PyxformTestCase):
             ],
         )
 
+    def test_last_saved_calculate_self(self):
+        self.assertPyxformXform(
+            name="last-saved",
+            md="""
+            | survey |            |          |       |                       |
+            |        | type       | name     | label | calculation           |
+            |        | integer    | foo      | Foo   | ${last-saved#foo} + 1 |
+            """,
+            xml__contains=[
+                '<instance id="__last-saved" src="jr://instance/last-saved"/>',
+                "calculate=\" instance('__last-saved')/last-saved/foo  + 1\" nodeset=\"/last-saved/foo\"",
+            ],
+        )
+
+    def test_last_saved_in_label(self):
+        self.assertPyxformXform(
+            name="last-saved",
+            md="""
+            | survey |            |          |                                      |
+            |        | type       | name     | label                                |
+            |        | text       | foo      | Foo was previously ${last-saved#foo} |
+            """,
+            xml__contains=[
+                "<label> Foo was previously <output value=\" instance('__last-saved')/last-saved/foo \"/> </label>",
+            ],
+        )
+
     def test_multiple_last_saved_in_calculate(self):
         self.assertPyxformXform(
             name="last-saved",
