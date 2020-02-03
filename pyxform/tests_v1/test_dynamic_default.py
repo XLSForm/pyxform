@@ -200,10 +200,10 @@ class DynamicDefaultTests(PyxformTestCase):
             |        | integer | patient_count | Patient count | if(${last-saved#patient_count} == '', 0, ${last-saved#patient_count} + 1) |
             """,
             xml__contains=[
-                "<instance id=\"__last-saved\" src=\"jr://instance/last-saved\"/>",
-                "<setvalue event=\"odk-instance-first-load\" ref=\"/dynamic/patient_count\" "
+                '<instance id="__last-saved" src="jr://instance/last-saved"/>',
+                '<setvalue event="odk-instance-first-load" ref="/dynamic/patient_count" '
                 "value=\"if( instance('__last-saved')/dynamic/patient_count  == '', 0,  "
-                "instance('__last-saved')/dynamic/patient_count  + 1)\"/>"
+                "instance('__last-saved')/dynamic/patient_count  + 1)\"/>",
             ],
         )
 
@@ -231,7 +231,7 @@ class DynamicDefaultTests(PyxformTestCase):
             |        | text | foo     | Foo   |         |
             |        | text | bar     | Bar   | ${foo}  |
             """,
-            warnings=warnings
+            warnings=warnings,
         )
 
         self.assertTrue(len(warnings) == 1)

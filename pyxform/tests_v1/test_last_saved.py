@@ -31,7 +31,7 @@ class LastSavedTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<instance id="__last-saved" src="jr://instance/last-saved"/>',
-                "calculate=\" instance('__last-saved')/last-saved/foo  + 1\" nodeset=\"/last-saved/foo\"",
+                'calculate=" instance(\'__last-saved\')/last-saved/foo  + 1" nodeset="/last-saved/foo"',
             ],
         )
 
@@ -141,17 +141,18 @@ class LastSavedTest(PyxformTestCase):
         self.assertPyxformXform(
             name="last-saved",
             md="""
-            | survey |              |           |       |                        |                            |
-            |        | type         | name      | label | required               | calculation                |
-            |        | begin repeat | my-repeat |       |                        |                            |
-            |        | integer      | foo       | Foo   | ${last-saved#foo} < 12 |                            |
-            |        | calculate    | bar       |       |                        | ${bar} + ${last-saved#bar} |
-            |        | end repeat   | my-repeat |       |                        |                            |
+            | survey |              |           |       |                            |
+            |        | type         | name      | label | calculation                |
+            |        | begin repeat | my-repeat |       |                            |
+            |        | integer      | foo       | Foo   |                            |
+            |        | calculate    | bar       |       | ${foo} + ${last-saved#foo} |
+            |        | end repeat   | my-repeat |       |                            |
+            |        | calculate    | baz       |       | ${foo} + ${last-saved#foo} |
             """,
             xml__contains=[
                 '<instance id="__last-saved" src="jr://instance/last-saved"/>',
-                "required=\" instance('__last-saved')/last-saved/my-repeat/foo  &lt; 12\"",
-                "calculate=\" ../bar  +  instance('__last-saved')/last-saved/my-repeat/bar \"",
+                'calculate=" ../foo  +  instance(\'__last-saved\')/last-saved/my-repeat/foo " nodeset="/last-saved/my-repeat/bar"',
+                'calculate=" /last-saved/my-repeat/foo  +  instance(\'__last-saved\')/last-saved/my-repeat/foo " nodeset="/last-saved/baz"',
             ],
         )
 

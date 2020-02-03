@@ -249,7 +249,20 @@ def default_is_dynamic(element_default, element_type=None):
     if not isinstance(element_default, basestring):
         return False
 
-    dynamic_markers = {" mod ", " div ", "*", "|", "+", "-", "[", "]", "{", "}", "(", ")"}
+    dynamic_markers = {
+        " mod ",
+        " div ",
+        "*",
+        "|",
+        "+",
+        "-",
+        "[",
+        "]",
+        "{",
+        "}",
+        "(",
+        ")",
+    }
     if element_type is not None and element_type == "date":
         dynamic_markers.remove("-")
 
