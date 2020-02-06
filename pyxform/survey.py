@@ -134,7 +134,6 @@ class Survey(Section):
             "public_key": unicode,
             "instance_xmlns": unicode,
             "version": unicode,
-            "generated_by": unicode,
             "choices": dict,
             "style": unicode,
             "attribute": dict,
@@ -526,9 +525,6 @@ class Survey(Section):
 
         if self.version:
             result.setAttribute("version", self.version)
-
-        if self.generated_by:
-            result.setAttribute("odk:generated-by", self.generated_by)
 
         if self.prefix:
             result.setAttribute("odk:prefix", self.prefix)

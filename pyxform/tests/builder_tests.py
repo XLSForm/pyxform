@@ -159,10 +159,8 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-        actual_dict = survey.to_json_dict()
-        actual_dict.pop("generated_by", None)
         self.maxDiff = None
-        self.assertEqual(actual_dict, expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_select_one_question_with_identical_choice_name(self):
         """
@@ -201,10 +199,8 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-        actual_dict = survey.to_json_dict()
-        actual_dict.pop("generated_by", None)
         self.maxDiff = None
-        self.assertEqual(actual_dict, expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_loop(self):
         survey = utils.create_survey_from_fixture("loop", filetype=FIXTURE_FILETYPE)
@@ -316,10 +312,8 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-        actual_dict = survey.to_json_dict()
-        actual_dict.pop("generated_by", None)
         self.maxDiff = None
-        self.assertEqual(actual_dict, expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_sms_columns(self):
         survey = utils.create_survey_from_fixture("sms_info", filetype=FIXTURE_FILETYPE)
@@ -455,9 +449,7 @@ class BuilderTests(TestCase):
             "title": "SMS Example",
             "type": "survey",
         }
-        actual_dict = survey.to_json_dict()
-        actual_dict.pop("generated_by", None)
-        self.assertEqual(actual_dict, expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_style_column(self):
         survey = utils.create_survey_from_fixture(
@@ -496,9 +488,7 @@ class BuilderTests(TestCase):
             "title": "My Survey",
             "type": "survey",
         }
-        actual_dict = survey.to_json_dict()
-        actual_dict.pop("generated_by", None)
-        self.assertEqual(actual_dict, expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)
 
     STRIP_NS_FROM_TAG_RE = re.compile(r"\{.+\}")
 
