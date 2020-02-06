@@ -1,5 +1,52 @@
 Pyxform Changelog
 
+# v1.0.0, 2020-02-06
+
+* #357 Add list_name to generated JSON to get static choice list
+  * Carlos Quiros @qlands (QLands Technology Consultants)
+* #372 Add support for Java versions that don't have dots in them
+  * Yaw Anokwa @yanokwa (Nafundi)
+* #289 Do not generate dummy instance content for external instances
+  * Vincent Buscarello @KeynesYouDigIt (Devetry)
+* #378 Fix black configuration for CircleCI
+  * Nyoman Ribeka @nribeka (DIAL)
+* #375 Use data as the default root node name instead of the filename
+  * Nyoman Ribeka @nribeka (DIAL)
+* #384 If there is only one sheet, use that as the survey sheet
+  * Nyoman Ribeka @nribeka (DIAL)
+* #376 Don't generate translation blocks if there is only one language
+  * Nyoman Ribeka @nribeka (DIAL)
+* #386 Expand XPath references in upload questions
+  * James Tedrick @tedrick (ESRI)
+* #389 Use the filename as the form_id if no explicit form_id is set by settings
+  * Nyoman Ribeka @nribeka (DIAL)
+* #392 Add identify-user audit attribute
+  * Callum Stott @seadowg (Nafundi)
+* #397 Better Python 2/3 unicode support for ODKValidateError strings
+  * Yaw Anokwa @yanokwa (Nafundi)
+* #402 Create instance of NullHandler, instead of class reference
+  * Brendan Zerr @axonxorz
+* #400 Add track-changes-reasons audit attribute
+  * Callum Stott @seadowg (Nafundi)
+* #385 Add support for dynamic defaults
+  * Nyoman Ribeka @nribeka (DIAL)
+* #382 Fix crash when displaying ODK Validate errors
+  * Nyoman Ribeka @nribeka (DIAL)
+* #380 Add repeat instance in addition to template to the model
+  * Nyoman Ribeka @nribeka (DIAL)
+* #408 Remove Python 2.7, 3.5 and 3.6 support, add Python 3.8
+  * Yaw Anokwa @yanokwa (Nafundi)
+* #412 Preserve attribute ordering across all Python versions
+  * Yaw Anokwa @yanokwa (Nafundi)
+* #406 Identify first argument of pulldata by splitting on comma
+  * Hélène Martin @lognaturel (Nafundi)
+* #410 Output a string bind type for selects
+  * Yaw Anokwa @yanokwa (Nafundi)
+* #418 Clarify duplicate choice error message
+  * Hélène Martin @lognaturel (Nafundi)
+* #417 Add support for last-saved
+  * Hélène Martin @lognaturel (Nafundi)
+
 v0.15.1, 2019 09 19
   -- Conversion fails if label has language and choice_filter is used
      Issue #355, https://github.com/XLSForm/pyxform/issues/355
