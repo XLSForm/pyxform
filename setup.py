@@ -14,7 +14,7 @@ REQUIRES = [
 
 setup(
     name="pyxform",
-    version="0.15.1",
+    version="1.0.0",
     author="github.com/xlsform",
     author_email="info@xlsform.org",
     packages=find_packages(),
