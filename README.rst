@@ -116,9 +116,9 @@ Releasing pyxform
 
 1. Make sure the version of ODK Validate in the repo is up-to-date::
 
-    $ pyxform_validator_update odk update ODK-Validate-vx.x.x.jar
+    pyxform_validator_update odk update ODK-Validate-vx.x.x.jar
 
-2. Run all tests through Validate by setting the default for ``run_odk_validate`` to `True`` in ``pyxform_test_case``.
+2. Run all tests through Validate by setting the default for ``run_odk_validate`` to ``True`` in ``pyxform_test_case``.
 3. Draft a new GitHub release with the list of merged PRs. Follow the title and description pattern of the previous release.
 4. Checkout a release branch from latest upstream master.
 5. Update ``CHANGES.txt`` with the text of the draft release.
@@ -127,23 +127,23 @@ Releasing pyxform
 8. In a clean new release only directory, checkout master. 
 9. Create a new virtualenv in this directory to ensure a clean Python environment::
 
-    mkvirtualenv pyxform-release
+     mkvirtualenv pyxform-release
 
 10. Install the development and release requirements::
 
-    pip install -r requirements.pip
-    pip install wheel twine
+     pip install -r requirements.pip
+     pip install wheel twine
 
 11. Cleanup build and dist folders::
 
-    rm -rf build dist pyxform.egg-info
+     rm -rf build dist pyxform.egg-info
 
 12. Prepare ``sdist`` and ``bdist_wheel`` distributions::
 
-    python setup.py sdist bdist_wheel
+     python setup.py sdist bdist_wheel
 
 13. Publish release to PyPI with ``twine``::
 
-    twine upload dist/pyxform-*-py2.py3-none-any.whl dist/pyxform-*.tar.gz
+     twine upload dist/pyxform-*-py2.py3-none-any.whl dist/pyxform-*.tar.gz
 
 14. Tag the GitHub release and publish it.
