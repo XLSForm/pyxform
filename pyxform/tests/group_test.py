@@ -57,7 +57,6 @@ class GroupTests(TestCase):
                 },
             ],
         }
-        x_results.pop("generated_by", None)
         self.maxDiff = None
         self.assertEqual(x_results, expected_dict)
 
