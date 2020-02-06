@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+# v1.0.1, 2020-02-06
+
+* #423 Update to ODK Validate v1.14.0
+  * Hélène Martin @lognaturel (Nafundi)
+
 # v1.0.0, 2020-02-06
 
 * #357 Add list_name to generated JSON to get static choice list
