@@ -5,6 +5,7 @@
     "default_language": "default", 
     "id_string": "simple_loop", 
     "type": "survey", 
+    "xforms_version": "1.0.0", 
     "children": [
         {
             "children": [
