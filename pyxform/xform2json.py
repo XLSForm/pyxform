@@ -12,7 +12,7 @@ import re
 import xml.etree.ElementTree as ETree
 from operator import itemgetter
 
-from pyxform import builder
+from pyxform import builder, constants
 from pyxform.utils import NSMAP, basestring
 
 logger = logging.getLogger(__name__)
@@ -238,6 +238,7 @@ class XFormToDictBuilder:
             "id_string": self.title,
             "sms_keyword": self.title,
             "default_language": "default",
+            constants.XFORMS_VERSION: self.model["xforms-version"]
         }
         self._set_submission_info()
         self._set_survey_name()

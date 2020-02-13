@@ -96,3 +96,6 @@ TRACK_CHANGES_REASONS = "track-changes-reasons"
 
 # supported bind keywords for which external instances will be created for pulldata function
 EXTERNAL_INSTANCES = ["calculate", "constraint", "readonly", "required", "relevant"]
+
+# The ODK XForms version that generated forms comply to
+CURRENT_XFORMS_VERSION = "1.0.0"
