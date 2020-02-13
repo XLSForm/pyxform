@@ -148,6 +148,28 @@ class DynamicDefaultTests(PyxformTestCase):
             ],
         )
 
+    def test_dynamic_default_in_group_nested_in_repeat(self):
+        self.assertPyxformXform(
+            name="dynamic",
+            md="""
+            | survey |              |          |       |                   |
+            |        | type         | name     | label | default           |
+            |        | begin repeat | repeat   |       |                   |
+            |        | begin group  | group    |       |                   |
+            |        | integer      | foo      | Foo   |                   |
+            |        | integer      | bar      | Bar   | ${foo}            |
+            |        | end group    | group    |       |                   |
+            |        | end repeat   | repeat   |       |                   |
+            """,
+            debug=True,
+            xml__contains=[
+                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/group/bar" value=" ../foo "/>'
+            ],
+            model__excludes=[
+                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/group/bar" value=" ../foo "/>'
+            ],
+        )
+
     def test_handling_arithmetic_expression(self):
         """
         Should use set-value for dynamic default form
