@@ -134,6 +134,7 @@ class Survey(Section):
             "public_key": unicode,
             "instance_xmlns": unicode,
             "version": unicode,
+            "xforms_version": unicode,
             "choices": dict,
             "style": unicode,
             "attribute": dict,
@@ -486,6 +487,10 @@ class Survey(Section):
         self._setup_media()
         self._add_empty_translations()
 
+        model_kwargs = {}
+        if hasattr(self, constants.XFORMS_VERSION):
+            model_kwargs["odk:xforms-version"] = getattr(self, constants.XFORMS_VERSION)
+
         model_children = []
         if self._translations:
             model_children.append(self.itext())
@@ -508,7 +513,7 @@ class Survey(Section):
             submission_node = node("submission", **submission_attrs)
             model_children.insert(0, submission_node)
 
-        return node("model", *model_children)
+        return node("model", *model_children, **model_kwargs)
 
     def xml_instance(self, **kwargs):
         result = Section.xml_instance(self, **kwargs)

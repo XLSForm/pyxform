@@ -406,6 +406,7 @@ def workbook_to_json(
         # problems for formhub.
         # constants.VERSION : datetime.datetime.now().strftime("%Y%m%d%H"),
         constants.CHILDREN: [],
+        constants.XFORMS_VERSION: "1.0.0",
     }
     # Here the default settings are overridden by those in the settings sheet
     json_dict.update(settings)
