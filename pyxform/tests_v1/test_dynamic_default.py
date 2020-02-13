@@ -69,10 +69,13 @@ class DynamicDefaultTests(PyxformTestCase):
             md=md,
             name="dynamic",
             id_string="id",
-            debug=True,
             model__contains=["<age/>", "<feeling>not_func$</feeling>"],
-            model__excludes=['<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="some_rando_func()"/>'],
-            xml__contains=['<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="some_rando_func()"/>']
+            model__excludes=[
+                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="some_rando_func()"/>'
+            ],
+            xml__contains=[
+                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="some_rando_func()"/>'
+            ],
         )
 
         survey = self.md_to_pyxform_survey(
@@ -137,8 +140,12 @@ class DynamicDefaultTests(PyxformTestCase):
             |        | integer      | bar      | Bar   | ${foo}            |
             |        | end repeat   | repeat   |       |                   |
             """,
-            xml__contains=['<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/bar" value=" ../foo "/>'],
-            model__excludes=['<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/bar" value=" ../foo "/>']
+            xml__contains=[
+                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/bar" value=" ../foo "/>'
+            ],
+            model__excludes=[
+                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/bar" value=" ../foo "/>'
+            ],
         )
 
     def test_handling_arithmetic_expression(self):

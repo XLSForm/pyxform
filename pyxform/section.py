@@ -117,6 +117,11 @@ class RepeatingSection(Section):
         for n in Section.xml_control(self):
             repeat_node.appendChild(n)
 
+        for e in self.children:
+            dynamic_default = e.get_setvalue_node_for_dynamic_default()
+            if dynamic_default:
+                repeat_node.appendChild(dynamic_default)
+
         label = self.xml_label()
         if label:
             return node("group", self.xml_label(), repeat_node, ref=self.get_xpath())
