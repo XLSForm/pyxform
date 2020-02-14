@@ -237,7 +237,7 @@ class XFormToDictBuilder:
             "children": [],
             "id_string": self.title,
             "sms_keyword": self.title,
-            "default_language": "default"
+            "default_language": "default",
         }
         self._set_submission_info()
         self._set_survey_name()
