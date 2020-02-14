@@ -12,7 +12,7 @@ import re
 import xml.etree.ElementTree as ETree
 from operator import itemgetter
 
-from pyxform import builder, constants
+from pyxform import builder
 from pyxform.utils import NSMAP, basestring
 
 logger = logging.getLogger(__name__)
