@@ -342,15 +342,14 @@ class SurveyElement(dict):
             type(self.media) is dict and len(self.media) > 0
         )
 
-    def get_setvalue_node_for_dynamic_default(self):
+    def get_setvalue_node_for_dynamic_default(self, in_repeat=False):
         if not self.default or not default_is_dynamic(self.default, self.type):
             return None
 
         default_with_xpath_paths = self.get_root().insert_xpaths(self.default, self)
 
         triggering_events = "odk-instance-first-load"
-
-        if self.parent.__class__.__name__ == "RepeatingSection":
+        if in_repeat:
             triggering_events = triggering_events + " odk-new-repeat"
 
         return node(
@@ -439,7 +438,16 @@ class SurveyElement(dict):
                 result.append(xml_binding)
 
             # dynamic defaults for repeats go in the body. All other dynamic defaults (setvalue actions) go in the model
-            if e.parent.__class__.__name__ != "RepeatingSection":
+            if (
+                len(
+                    [
+                        ancestor
+                        for ancestor in e.get_lineage()
+                        if ancestor.type == "repeat"
+                    ]
+                )
+                == 0
+            ):
                 dynamic_default = e.get_setvalue_node_for_dynamic_default()
                 if dynamic_default:
                     result.append(dynamic_default)

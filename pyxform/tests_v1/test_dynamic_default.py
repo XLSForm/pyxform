@@ -52,6 +52,21 @@ class DynamicDefaultTests(PyxformTestCase):
             '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/age" value="some_rando_func()"/>',
         )
 
+    def test_static_defaults(self):
+        self.assertPyxformXform(
+            name="dynamic",
+            md="""
+            | survey |              |          |       |                   |
+            |        | type         | name     | label | default           |
+            |        | integer      | foo      | Foo   | foo               |
+            |        | begin repeat | repeat   |       |                   |
+            |        | integer      | bar      | Bar   | 12                |
+            |        | end repeat   | repeat   |       |                   |
+            """,
+            model__contains=["<foo>foo</foo>", "<bar>12</bar>"],
+            model__excludes=["setvalue"],
+        )
+
     def test_handling_dynamic_default_in_repeat(self):
         """
         Should use set-value for dynamic default form inside repeat
@@ -161,13 +176,46 @@ class DynamicDefaultTests(PyxformTestCase):
             |        | end group    | group    |       |                   |
             |        | end repeat   | repeat   |       |                   |
             """,
-            debug=True,
             xml__contains=[
                 '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/group/bar" value=" ../foo "/>'
             ],
-            model__excludes=[
-                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/group/bar" value=" ../foo "/>'
+            model__excludes=['<setvalue event="odk-instance-first-load'],
+        )
+
+    def test_dynamic_defaults_in_nested_repeat(self):
+        md = """
+            | survey |              |          |       |                   |
+            |        | type         | name     | label | default           |
+            |        | begin repeat | outer    |       |                   |
+            |        | date         | date     | Date  | now()             |
+            |        | integer      | foo      | Foo   |                   |
+            |        | begin repeat | inner    |       |                   |
+            |        | integer      | bar      | Bar   | ${foo}            |
+            |        | end repeat   | inner    |       |                   |
+            |        | end repeat   | outer    |       |                   |
+            """
+
+        self.assertPyxformXform(
+            name="dynamic",
+            md=md,
+            xml__contains=[
+                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/outer/inner/bar" value=" ../../foo "/>',
+                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/outer/date" value="now()"/>',
             ],
+            model__excludes=['<setvalue event="odk-instance-first-load'],
+        )
+
+        survey = self.md_to_pyxform_survey(
+            md_raw=md,
+            kwargs={"id_string": "id", "name": "dynamic", "title": "some-title"},
+            autoname=False,
+        )
+        survey_xml = survey._to_pretty_xml()
+
+        self.assertContains(
+            survey_xml,
+            '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/outer/inner/bar" value=" ../../foo "/>',
+            1,
         )
 
     def test_handling_arithmetic_expression(self):
