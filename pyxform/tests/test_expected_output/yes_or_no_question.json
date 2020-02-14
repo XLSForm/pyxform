@@ -4,7 +4,7 @@
     "sms_keyword": "yes_or_no_question", 
     "default_language": "default", 
     "id_string": "yes_or_no_question", 
-    "type": "survey", 
+    "type": "survey",  
     "children": [
         {
             "choices": [

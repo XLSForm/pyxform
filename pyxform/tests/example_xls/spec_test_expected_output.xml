@@ -1,7 +1,7 @@
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>Spec test</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <submission action="https://example-odk-aggregate.appspot.com/submission" base64RsaPublicKey="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo93+Dgn3iDleC9XMTDH7ez1MOm/BOt287DgkldNkdvrtdC4oUegx3N8Say9tq47k2EOzeLYkezVnKdtserx+g/+R6pDIOS66bwbH+HoslDEUaZRZ47EipSGC1JhtOp/nQGQCsdVc5q/fPvw8d2rLLi+PQUZPBOiBxUo9h/CFc41hl/quUELmylSdL4O06OAP8OCEDA+tl0C2Ik+uCYMDJLD4m7YVbkV7jJXjtILj+GW+noLriFMRsgg7WKQe2j9fw5+v46nzhokOnDnHh+yGwQMfs/B0jfFAgXllLNjIPlXQf2UVzuxEax6wLCyqUXMIjCPSNfnzDRgFB4Qw3QbJCwIDAQAB" method="form-data-post"/>
       <itext>
         <translation default="true()" lang="default">

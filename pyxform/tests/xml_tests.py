@@ -25,10 +25,11 @@ class XMLTests(utils.XFormTestCase):
     xmlns:h="http://www.w3.org/1999/xhtml"
     xmlns:jr="http://openrosa.org/javarosa"
     xmlns:orx="http://openrosa.org/xforms"
+    xmlns:odk="http://www.opendatakit.org/xforms"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
     <h:title>yes_or_no_question</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="english">
           <text id="/yes_or_no_question/good_day:label">

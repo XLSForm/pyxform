@@ -486,6 +486,9 @@ class Survey(Section):
         self._setup_media()
         self._add_empty_translations()
 
+        model_kwargs = {}
+        model_kwargs["odk:xforms-version"] = constants.CURRENT_XFORMS_VERSION
+
         model_children = []
         if self._translations:
             model_children.append(self.itext())
@@ -508,7 +511,7 @@ class Survey(Section):
             submission_node = node("submission", **submission_attrs)
             model_children.insert(0, submission_node)
 
-        return node("model", *model_children)
+        return node("model", *model_children, **model_kwargs)
 
     def xml_instance(self, **kwargs):
         result = Section.xml_instance(self, **kwargs)
