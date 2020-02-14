@@ -134,7 +134,6 @@ class Survey(Section):
             "public_key": unicode,
             "instance_xmlns": unicode,
             "version": unicode,
-            "xforms_version": unicode,
             "choices": dict,
             "style": unicode,
             "attribute": dict,
@@ -488,8 +487,7 @@ class Survey(Section):
         self._add_empty_translations()
 
         model_kwargs = {}
-        if hasattr(self, constants.XFORMS_VERSION):
-            model_kwargs["odk:xforms-version"] = getattr(self, constants.XFORMS_VERSION)
+        model_kwargs["odk:xforms-version"] = constants.CURRENT_XFORMS_VERSION
 
         model_children = []
         if self._translations:

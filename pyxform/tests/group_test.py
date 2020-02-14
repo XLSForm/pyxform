@@ -20,7 +20,6 @@ class GroupTests(TestCase):
             "sms_keyword": "group",
             "default_language": "default",
             "type": "survey",
-            "xforms_version": "1.0.0",
             "children": [
                 {
                     "name": "family_name",

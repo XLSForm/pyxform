@@ -121,7 +121,6 @@ class BuilderTests(TestCase):
         expected_dict = {
             "name": "specify_other",
             "type": "survey",
-            "xforms_version": "1.0.0",
             "title": "specify_other",
             "default_language": "default",
             "id_string": "specify_other",
@@ -178,7 +177,6 @@ class BuilderTests(TestCase):
             "default_language": "default",
             "id_string": "choice_name_same_as_select_name",
             "type": "survey",
-            "xforms_version": "1.0.0",
             "children": [
                 {
                     "children": [{"name": "zone", "label": "Zone"}],
@@ -212,7 +210,6 @@ class BuilderTests(TestCase):
             "sms_keyword": "loop",
             "title": "loop",
             "type": "survey",
-            "xforms_version": "1.0.0",
             "default_language": "default",
             "children": [
                 {
@@ -451,7 +448,6 @@ class BuilderTests(TestCase):
             "sms_separator": "+",
             "title": "SMS Example",
             "type": "survey",
-            "xforms_version": "1.0.0",
         }
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
@@ -491,7 +487,6 @@ class BuilderTests(TestCase):
             "style": "ltr",
             "title": "My Survey",
             "type": "survey",
-            "xforms_version": "1.0.0",
         }
         self.assertEqual(survey.to_json_dict(), expected_dict)
 

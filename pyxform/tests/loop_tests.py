@@ -20,7 +20,6 @@ class LoopTests(TestCase):
             "default_language": "default",
             "title": "another_loop",
             "type": "survey",
-            "xforms_version": "1.0.0",
             "children": [
                 {
                     "name": "loop_vehicle_types",

@@ -4,8 +4,7 @@
     "sms_keyword": "yes_or_no_question", 
     "default_language": "default", 
     "id_string": "yes_or_no_question", 
-    "type": "survey", 
-    "xforms_version": "1.0.0", 
+    "type": "survey",  
     "children": [
         {
             "choices": [

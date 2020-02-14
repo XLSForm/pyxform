@@ -28,7 +28,6 @@ COMPACT_DELIMITER = "delimiter"
 COMPACT_TAG = "compact_tag"
 
 VERSION = "version"
-XFORMS_VERSION = "xforms_version"
 PUBLIC_KEY = "public_key"
 SUBMISSION_URL = "submission_url"
 AUTO_SEND = "auto_send"
