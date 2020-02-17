@@ -117,10 +117,31 @@ class RepeatingSection(Section):
         for n in Section.xml_control(self):
             repeat_node.appendChild(n)
 
+        setvalue_nodes = self._get_setvalue_nodes_for_dynamic_defaults()
+
+        for setvalue_node in setvalue_nodes:
+            repeat_node.appendChild(setvalue_node)
+
         label = self.xml_label()
         if label:
             return node("group", self.xml_label(), repeat_node, ref=self.get_xpath())
         return node("group", repeat_node, ref=self.get_xpath(), **self.control)
+
+    # Get setvalue nodes for all descendants of this repeat that have dynamic defaults and aren't nested in other repeats.
+    def _get_setvalue_nodes_for_dynamic_defaults(self):
+        setvalue_nodes = []
+        self._dynamic_defaults_helper(self, setvalue_nodes)
+        return setvalue_nodes
+
+    def _dynamic_defaults_helper(self, current, nodes):
+        for e in current.children:
+            if e.type != "repeat":  # let nested repeats handle their own defaults
+                dynamic_default = e.get_setvalue_node_for_dynamic_default(
+                    in_repeat=True
+                )
+                if dynamic_default:
+                    nodes.append(dynamic_default)
+                self._dynamic_defaults_helper(e, nodes)
 
     # I'm anal about matching function signatures when overriding a function,
     # but there's no reason for kwargs to be an argument
