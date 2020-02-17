@@ -1,5 +1,14 @@
 Pyxform Changelog
 
+# v1.1.0, 2020-02-17
+
+* #429 Adding a hash to properly route to the choicenames url
+  * Zach Weed @zachhweed
+* #430 Add odk:xforms-version="1.0.0" attribute to <model>
+   * Martijn van de Rijdt @MartijnR (Enketo)
+* #431 Put setvalue action for repeats in the body
+  * Hélène Martin @lognaturel (Nafundi)
+
 # v1.0.1, 2020-02-06
 
 * #423 Update to ODK Validate v1.14.0
