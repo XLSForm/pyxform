@@ -166,7 +166,7 @@ class LastSavedTest(PyxformTestCase):
             |        | type           | name     | label | choice_filter                          |
             |        | begin repeat   | repeat   |       |                                        |
             |        | select_one foo | foo      | Foo   | not(selected(${last-saved#foo}, name)) |
-            |        | select_one foo | bar      | Bar   | not(selected(${foo}, name)             |
+            |        | select_one foo | bar      | Bar   | not(selected(${foo}, name))            |
             |        | end repeat     | repeat   |       |                                        |
             | choices|                |          |       |                                        |
             |        | list_name      | name     | label |                                        |
@@ -175,7 +175,7 @@ class LastSavedTest(PyxformTestCase):
             xml__contains=[
                 '<instance id="__last-saved" src="jr://instance/last-saved"/>',
                 "<itemset nodeset=\"instance('foo')/root/item[not(selected( instance('__last-saved')/last-saved/repeat/foo , name))]\">",
-                "<itemset nodeset=\"instance('foo')/root/item[not(selected( current()/../foo , name)]\">",
+                "<itemset nodeset=\"instance('foo')/root/item[not(selected( current()/../foo , name))]\">",
             ],
         )
 
