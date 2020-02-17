@@ -1,5 +1,5 @@
 ===============
-pyxform v1.0.1
+pyxform v1.1.0
 ===============
 
 |circleci|  |appveyor| |codecov| |black|
@@ -118,7 +118,7 @@ Releasing pyxform
 
     pyxform_validator_update odk update ODK-Validate-vx.x.x.jar
 
-2. Run all tests through Validate by setting the default for ``run_odk_validate`` to ``True`` in ``pyxform_test_case``.
+2. Run all tests through Validate by setting the default for ``run_odk_validate`` to ``kwargs.get("run_odk_validate", True)`` in ``pyxform_test_case``.
 3. Draft a new GitHub release with the list of merged PRs. Follow the title and description pattern of the previous release.
 4. Checkout a release branch from latest upstream master.
 5. Update ``CHANGES.txt`` with the text of the draft release.
