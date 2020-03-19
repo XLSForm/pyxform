@@ -239,6 +239,9 @@ class XFormToDictBuilder:
             "sms_keyword": self.title,
             "default_language": "default",
         }
+        self.multi_instance_xml = isinstance(self.model["instance"], list)
+        if self.multi_instance_xml:
+            self.new_doc["choices"] = self._get_choices_from_secondary_instances()
         self._set_submission_info()
         self._set_survey_name()
         self.children = []
@@ -267,7 +270,11 @@ class XFormToDictBuilder:
         obj = self.bindings[0]
         name = obj["nodeset"].split("/")[1]
         self.new_doc["name"] = name
-        self.new_doc["id_string"] = self.model["instance"][name]["id"]
+        if self.multi_instance_xml:
+            # Retrieve id_string from the primary instance node
+            self.new_doc["id_string"] = self.model["instance"][0][name]["id"]
+        else:
+            self.new_doc["id_string"] = self.model["instance"][name]["id"]
 
     def _set_submission_info(self):
         if "submission" in self.model:
@@ -374,6 +381,12 @@ class XFormToDictBuilder:
                     return self.ordered_binding_refs.index(i) + 1
             return self.ordered_binding_refs.__len__() + 1
 
+    def _get_choices_from_secondary_instances(self):
+        choices = {}
+        for obj in self.model["instance"][1:]:
+            choices[obj["id"]] = obj["root"]["item"]
+        return choices
+
     def _get_question_from_object(self, obj, type=None):
         try:
             ref = obj["ref"]
@@ -423,6 +436,14 @@ class XFormToDictBuilder:
                     k, v = self._get_label(i["label"])
                     children.append({"name": i["value"], k: v})
             question["children"] = children
+
+        if "itemset" in obj:
+            question["itemset"], choice_filter = self._get_itemset_and_choice_filter(
+                obj["itemset"]
+            )
+            if choice_filter:
+                question["choice_filter"] = choice_filter
+
         question_type = question["type"] if "type" in question else type
         if (
             question_type == "text"
@@ -476,6 +497,20 @@ class XFormToDictBuilder:
                     child = self._get_question_from_object(i, type=k)
                     children.append(child)
         return children
+
+    def _get_itemset_and_choice_filter(self, itemset):
+        itemset_name = itemset["nodeset"].split("'")[1]
+        split_choice_filter = itemset["nodeset"].split("[")
+        choice_filter = None
+
+        if len(split_choice_filter) > 1:
+            item, filter_exp = (
+                split_choice_filter[1].replace("]", "").strip().split(" ")
+            )
+            item = item.split("/")[-1]
+            choice_filter = f"${{{item}}}{filter_exp}"
+
+        return itemset_name, choice_filter
 
     def _get_question_params_from_bindings(self, ref):
         for item in self.bindings:
