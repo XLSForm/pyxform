@@ -586,8 +586,12 @@ def workbook_to_json(
         r"(?P<osm_command>(" + "|".join(aliases.osm.keys()) + r")) (?P<list_name>\S+)"
     )
 
+    repeat_count_with_calculated_regexp = re.compile(r"\s[+\-*\/]\s")
+
     # Rows from the survey sheet that should be nested in meta
     survey_meta = []
+
+    survey_children_array = stack[0]["parent_children"]
 
     repeat_behavior_warning_added = False
     dynamic_default_warning_added = False
@@ -945,20 +949,21 @@ def workbook_to_json(
                     "jr:count"
                 )
                 if repeat_count_expression:
-                    generated_node_name = new_json_dict["name"] + "_count"
-                    parent_children_array.append(
-                        {
-                            "name": generated_node_name,
-                            "bind": {
-                                "readonly": "true()",
-                                "calculate": repeat_count_expression,
-                            },
-                            "type": "calculate",
-                        }
-                    )
-                    new_json_dict["control"]["jr:count"] = (
-                        "${" + generated_node_name + "}"
-                    )
+                    if repeat_count_with_calculated_regexp.search(
+                        repeat_count_expression
+                    ):
+                        generated_node_name = new_json_dict["name"] + "_count"
+                        survey_children_array.append(
+                            {
+                                "name": generated_node_name,
+                                "bind": {
+                                    "readonly": "true()",
+                                    "calculate": repeat_count_expression,
+                                },
+                                "type": "calculate",
+                            }
+                        )
+                    new_json_dict["control"]["jr:count"] = repeat_count_expression
 
                 # Code to deal with table_list appearance flags
                 # (for groups of selects)
@@ -1326,7 +1331,6 @@ def workbook_to_json(
             "control": {"bodyless": True},
             "children": meta_children,
         }
-        survey_children_array = stack[0]["parent_children"]
         survey_children_array.append(meta_element)
 
     # print_pyobj_to_json(json_dict)
