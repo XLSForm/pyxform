@@ -591,8 +591,6 @@ def workbook_to_json(
     # Rows from the survey sheet that should be nested in meta
     survey_meta = []
 
-    survey_children_array = stack[0]["parent_children"]
-
     repeat_behavior_warning_added = False
     dynamic_default_warning_added = False
     for row in survey_sheet:
@@ -953,7 +951,7 @@ def workbook_to_json(
                         repeat_count_expression
                     ):
                         generated_node_name = new_json_dict["name"] + "_count"
-                        survey_children_array.append(
+                        parent_children_array.append(
                             {
                                 "name": generated_node_name,
                                 "bind": {
@@ -1331,6 +1329,7 @@ def workbook_to_json(
             "control": {"bodyless": True},
             "children": meta_children,
         }
+        survey_children_array = stack[0]["parent_children"]
         survey_children_array.append(meta_element)
 
     # print_pyobj_to_json(json_dict)
