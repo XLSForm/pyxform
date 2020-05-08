@@ -49,19 +49,34 @@ class InputQuestion(Question):
             control_dict[key] = survey.insert_xpaths(value, self)
         control_dict["ref"] = self.get_xpath()
 
-        result = node(**control_dict)
+        result = None
         if label_and_hint:
+            result = node(**control_dict)
             for element in self.xml_label_and_hint():
                 result.appendChild(element)
 
-        # Input types are used for selects with external choices sheets.
-        if self["query"]:
-            choice_filter = self.get("choice_filter")
-            query = "instance('" + self["query"] + "')/root/item"
-            choice_filter = survey.insert_xpaths(choice_filter, self, True)
-            if choice_filter:
-                query += "[" + choice_filter + "]"
-            result.setAttribute("query", query)
+        if result != None:
+            # Create setvalue node(s) if setvalues list is not empty
+            if len(self["setvalues"]) > 0:
+                for setvalue in self["setvalues"]:
+                    setValueNode = node(
+                        "setvalue",
+                        ref=survey.insert_xpaths(setvalue["ref"], context=self),
+                        value=setvalue["value"],
+                        event=setvalue["event"],
+                    )
+
+                    if setValueNode:
+                        result.appendChild(setValueNode)
+
+            # Input types are used for selects with external choices sheets.
+            if self["query"]:
+                choice_filter = self.get("choice_filter")
+                query = "instance('" + self["query"] + "')/root/item"
+                choice_filter = survey.insert_xpaths(choice_filter, self, True)
+                if choice_filter:
+                    query += "[" + choice_filter + "]"
+                result.setAttribute("query", query)
         return result
 
 

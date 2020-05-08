@@ -69,6 +69,8 @@ class SurveyElement(dict):
         "flat": lambda: False,
         "action": unicode,
         "list_name": unicode,
+        "when": unicode,
+        "setvalues": list,
     }
 
     def _default(self):
@@ -392,7 +394,9 @@ class SurveyElement(dict):
         if self.hint or self.guidance_hint:
             result.append(self.xml_hint())
 
-        if len(result) == 0 or self.guidance_hint and len(result) == 1:
+        if (
+            len(result) == 0 or self.guidance_hint and len(result) == 1
+        ) and not self.when:
             msg = "The survey element named '%s' " "has no label or hint." % self.name
             raise PyXFormError(msg)
 
@@ -424,6 +428,8 @@ class SurveyElement(dict):
                 if k == "jr:noAppErrorString" and type(v) is dict:
                     v = "jr:itext('%s')" % self._translation_path("jr:noAppErrorString")
                 bind_dict[k] = survey.insert_xpaths(v, context=self)
+            if self.when != "" and "calculate" in bind_dict.keys():
+                del bind_dict["calculate"]
             return node("bind", nodeset=self.get_xpath(), **bind_dict)
         return None
 

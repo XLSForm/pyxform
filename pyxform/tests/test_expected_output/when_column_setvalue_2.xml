@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>when_column_setvalue_2</h:title>
+    <model odk:xforms-version="1.0.0">
+      <instance>
+        <when_column_setvalue_2 id="when_column_setvalue_2">
+          <a/>
+          <c/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </when_column_setvalue_2>
+      </instance>
+      <bind nodeset="/when_column_setvalue_2/a" type="string"/>
+      <bind nodeset="/when_column_setvalue_2/c" type="dateTime"/>
+      <bind jr:preload="uid" nodeset="/when_column_setvalue_2/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/when_column_setvalue_2/a">
+      <label>Enter text</label>
+      <setvalue event="xforms-value-changed" ref=" /when_column_setvalue_2/c " value="now()"/>
+    </input>
+    <input ref="/when_column_setvalue_2/c">
+      <label>Date of diagnostic</label>
+    </input>
+  </h:body>
+</h:html>

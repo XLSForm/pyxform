@@ -73,6 +73,7 @@ class SurveyElementBuilder(object):
         # select alls
         self._add_none_option = False
         self.set_sections(kwargs.get("sections", {}))
+        self.when_setvalues_array = []
 
     def set_sections(self, sections):
         """
@@ -83,6 +84,42 @@ class SurveyElementBuilder(object):
         assert type(sections) == dict
         self._sections = sections
 
+    @staticmethod
+    def _get_when_setvalue_dict(d):
+        """
+        Return setvalue dict from node dict that have not empty 'when' value
+        """
+        setvalue_dict = None
+        if "when" in d.keys() and d["when"] != "" and d["type"] != "group":
+            when_setvalue_value = ""
+            if "bind" in d.keys() and "calculate" in d["bind"].keys():
+                when_setvalue_value = d["bind"]["calculate"]
+            setvalue_dict = {
+                "node": d["when"],
+                "ref": "${" + d["name"] + "}",
+                "event": "xforms-value-changed",
+                "value": when_setvalue_value,
+            }
+        return setvalue_dict
+
+    @staticmethod
+    def _get_when_setvalues_list(d):
+        """
+        Get all dict with not empty 'when' value from survey
+        and return list of setvalue dict that will be used to create setvalue node later
+        """
+        when_setvalues_list = []
+        when_setvalue = SurveyElementBuilder._get_when_setvalue_dict(d)
+        if when_setvalue != None:
+            when_setvalues_list = [when_setvalue]
+        if "children" in d.keys():
+            children = d.pop("children", [])
+            for child in children:
+                when_setvalues_list.extend(
+                    SurveyElementBuilder._get_when_setvalues_list(child)
+                )
+        return when_setvalues_list
+
     def create_survey_element_from_dict(self, d):
         """
         Convert from a nested python dictionary/array structure (a json dict I
@@ -92,6 +129,12 @@ class SurveyElementBuilder(object):
         if "add_none_option" in d:
             self._add_none_option = d["add_none_option"]
         if d["type"] in self.SECTION_CLASSES:
+            # If current dict is survey (root element),
+            # put all when setvalues dict into self.when_setvalues_array
+            if d["type"] == "survey":
+                self.when_setvalues_array = self._get_when_setvalues_list(
+                    copy.deepcopy(d)
+                )
             return self._create_section_from_dict(d)
         elif d["type"] == "loop":
             return self._create_loop_from_dict(d)
@@ -207,7 +250,16 @@ class SurveyElementBuilder(object):
         if d["type"] == "survey" and "title" not in d:
             d_copy["title"] = d["name"]
         result = section_class(**d_copy)
+
         for child in children:
+            # Find setvalue(s) that have same node as current node (child)
+            when_setvalues = [
+                item
+                for item in self.when_setvalues_array
+                if item["node"] == "${" + child["name"] + "}"
+            ]
+            if when_setvalues:
+                child["setvalues"] = when_setvalues
             # Deep copying the child is a hacky solution to the or_other bug.
             # I don't know why it works.
             # And I hope it doesn't break something else.
