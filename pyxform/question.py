@@ -59,15 +59,24 @@ class InputQuestion(Question):
             # Create setvalue node(s) if setvalues list is not empty
             if len(self["setvalues"]) > 0:
                 for setvalue in self["setvalues"]:
-                    setValueNode = node(
-                        "setvalue",
-                        ref=survey.insert_xpaths(setvalue["ref"], context=self),
-                        value=setvalue["value"],
-                        event=setvalue["event"],
-                    )
+                    node_setvalue = None
+                    setvalue_value = setvalue["value"]
+                    if setvalue_value and setvalue_value != "":
+                        node_setvalue = node(
+                            "setvalue",
+                            ref=survey.insert_xpaths(setvalue["ref"], context=self),
+                            value=setvalue_value,
+                            event=setvalue["event"],
+                        )
+                    else:
+                        node_setvalue = node(
+                            "setvalue",
+                            ref=survey.insert_xpaths(setvalue["ref"], context=self),
+                            event=setvalue["event"],
+                        )
 
-                    if setValueNode:
-                        result.appendChild(setValueNode)
+                    if node_setvalue:
+                        result.appendChild(node_setvalue)
 
             # Input types are used for selects with external choices sheets.
             if self["query"]:

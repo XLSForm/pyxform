@@ -104,7 +104,7 @@ class WhenSetvalueTests(PyxformTestCase):
                 '<bind nodeset="/when-column/d" type="dateTime"/>',
                 '<input ref="/when-column/a">',
                 '<input ref="/when-column/d">',
-                '<setvalue event="xforms-value-changed" ref=" /when-column/d " value=""/>',
+                '<setvalue event="xforms-value-changed" ref=" /when-column/d "/>',
             ],
             xml__excludes=[
                 '<bind nodeset="/when-column/d" type="dateTime" calculate=""/>'
@@ -127,7 +127,7 @@ class WhenSetvalueTests(PyxformTestCase):
             xml__contains=[
                 '<bind nodeset="/when-column/e" type="decimal"/>',
                 '<input ref="/when-column/a">',
-                '<setvalue event="xforms-value-changed" ref=" /when-column/e " value=""/>',
+                '<setvalue event="xforms-value-changed" ref=" /when-column/e "/>',
             ],
             xml__excludes=[
                 '<bind nodeset="/when-column/e" type="decimal" calculate=""/>',
