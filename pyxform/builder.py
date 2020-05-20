@@ -99,7 +99,7 @@ class SurveyElementBuilder(object):
             section = self._create_section_from_dict(d)
 
             if d["type"] == "survey":
-                section["values_by_triggering_ref"] = self.setvalues_by_triggering_ref
+                section.setvalues_by_triggering_ref = self.setvalues_by_triggering_ref
 
             return section
         elif d["type"] == "loop":

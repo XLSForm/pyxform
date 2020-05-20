@@ -191,7 +191,10 @@ class Survey(Section):
         self._setup_xpath_dictionary()
 
         for triggering_reference in self.setvalues_by_triggering_ref.keys():
-            # trigger exception if reference can't be resolved
+            if not(re.match(BRACKETED_TAG_REGEX, triggering_reference)):
+                raise PyXFormError("Only references to other fields are allowed in the 'when' column.")
+
+            # try to resolve reference and fail if can't
             self.insert_xpaths(triggering_reference, self)
 
         body_kwargs = {}

@@ -7,10 +7,6 @@ from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class WhenSetvalueTests(PyxformTestCase):
-    """
-    Handling 'when' column setvalue(s) tests
-    """
-
     def test_when_without_calculation_gives_error(self):
         self.assertPyxformXform(
             name="when-missing-ref",
@@ -18,7 +14,7 @@ class WhenSetvalueTests(PyxformTestCase):
             | survey |          |      |             |      |
             |        | type     | name | label       | when |
             |        | integer  | a    | A           |      |
-            |        | dateTime | b    | B           | ${a} |
+            |        | dateTime | b    |             | ${a} |
             """,
             errored=True,
             error__contains=[
@@ -32,7 +28,7 @@ class WhenSetvalueTests(PyxformTestCase):
             md="""
             | survey |          |      |             |             |      |
             |        | type     | name | label       | calculation | when |
-            |        | dateTime | b    | B           | now()       | ${a} |
+            |        | dateTime | b    |             | now()       | ${a} |
             """,
             errored=True,
             error__contains=[
@@ -40,6 +36,21 @@ class WhenSetvalueTests(PyxformTestCase):
             ],
         )
 
+    def test_when_with_something_other_than_node_ref_gives_error(self):
+        self.assertPyxformXform(
+            name="when-invalid-ref",
+            md="""
+            | survey |          |      |             |             |      |
+            |        | type     | name | label       | calculation | when |
+            |        | dateTime | b    |             | now()       | 6    |
+            """,
+            errored=True,
+            error__contains=[
+                "Only references to other fields are allowed in the 'when' column."
+            ]
+        )
+
+    #
     # def test_handling_when_column_no_label_and_no_hint(self):
     #     md = """
     #     | survey |          |      |             |             |      |
@@ -62,7 +73,7 @@ class WhenSetvalueTests(PyxformTestCase):
     #             '<input ref="/when-column/b">',
     #         ],
     #     )
-
+    #
     # def test_handling_when_column_with_label_and_hint(self):
     #     md = """
     #     | survey |          |      |                    |             |      |
