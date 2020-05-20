@@ -4,6 +4,7 @@ Survey builder functionality.
 """
 import copy
 import os
+import re
 
 from pyxform import file_utils, utils
 from pyxform.errors import PyXFormError
@@ -74,6 +75,9 @@ class SurveyElementBuilder(object):
         self._add_none_option = False
         self.set_sections(kwargs.get("sections", {}))
 
+        # dictionary of setvalue target and value tuple indexed by triggering element
+        self.setvalues_by_triggering_ref = {}
+
     def set_sections(self, sections):
         """
         sections is a dict of python objects, a key in this dict is
@@ -92,7 +96,12 @@ class SurveyElementBuilder(object):
         if "add_none_option" in d:
             self._add_none_option = d["add_none_option"]
         if d["type"] in self.SECTION_CLASSES:
-            return self._create_section_from_dict(d)
+            section = self._create_section_from_dict(d)
+
+            if d["type"] == "survey":
+                section["values_by_triggering_ref"] = self.setvalues_by_triggering_ref
+
+            return section
         elif d["type"] == "loop":
             return self._create_loop_from_dict(d)
         elif d["type"] == "include":
@@ -109,9 +118,30 @@ class SurveyElementBuilder(object):
         elif d["type"] == "xml-external":
             return ExternalInstance(**d)
         else:
+            self._save_when_as_setvalue(d)
+
             return self._create_question_from_dict(
                 d, copy_json_dict(QUESTION_TYPE_DICT), self._add_none_option
             )
+
+    def _save_when_as_setvalue(self, d):
+        if "when" in d:
+            if "bind" in d and "calculate" in d["bind"]:
+                triggering_ref = re.sub(r"\s+", "", d["when"])
+
+                if triggering_ref in self.setvalues_by_triggering_ref:
+                    self.setvalues_by_triggering_ref[triggering_ref].append(
+                        (d["name"], d["bind"]["calculate"])
+                    )
+                else:
+                    self.setvalues_by_triggering_ref[triggering_ref] = [
+                        (d["name"], d["bind"]["calculate"])
+                    ]
+            else:
+                raise PyXFormError(
+                    "There should be a calculation for the ${%s} field because it specifies a triggering event in the 'when' column."
+                    % d["name"]
+                )
 
     @staticmethod
     def _create_question_from_dict(d, question_type_dictionary, add_none_option=False):
@@ -353,7 +383,6 @@ def create_survey(
     if title is not None:
         survey.title = title
     survey.def_lang = default_language
-
     return survey
 
 

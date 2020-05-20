@@ -115,6 +115,7 @@ class Survey(Section):
         {
             "_xpath": dict,
             "_created": datetime.now,  # This can't be dumped to json
+            "setvalues_by_triggering_ref": dict,
             "title": unicode,
             "id_string": unicode,
             "sms_keyword": unicode,
@@ -188,6 +189,11 @@ class Survey(Section):
         """
         self.validate()
         self._setup_xpath_dictionary()
+
+        for triggering_reference in self.setvalues_by_triggering_ref.keys():
+            # trigger exception if reference can't be resolved
+            self.insert_xpaths(triggering_reference, self)
+
         body_kwargs = {}
         if hasattr(self, constants.STYLE) and getattr(self, constants.STYLE):
             body_kwargs["class"] = getattr(self, constants.STYLE)
@@ -199,6 +205,9 @@ class Survey(Section):
             node("h:body", *self.xml_control(), **body_kwargs),
             **nsmap
         )
+
+    def get_setvalue_actions_for_question_reference(self, question):
+        return self.setvalues_by_triggering_ref.get("${%s}" % question.name)
 
     @staticmethod
     def _generate_static_instances(list_name, choice_list):
