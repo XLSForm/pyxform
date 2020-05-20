@@ -41,6 +41,9 @@ class InputQuestion(Question):
     """
 
     def xml_control(self):
+        if "calculate" in self.bind and not (self.label or self.hint):
+            return None
+
         control_dict = self.control
         label_and_hint = self.xml_label_and_hint()
         survey = self.get_root()
