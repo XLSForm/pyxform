@@ -32,7 +32,7 @@ class WhenSetvalueTests(PyxformTestCase):
             errored=True,
             error__contains=[
                 "Only references to other fields are allowed in the 'when' column."
-            ]
+            ],
         )
 
     def test_handling_when_column_no_label_and_no_hint(self):
@@ -79,7 +79,7 @@ class WhenSetvalueTests(PyxformTestCase):
             ],
             xml__excludes=[
                 '<bind nodeset="/when-column/c" type="dateTime" calculate="now()"/>'
-            ]
+            ],
         )
 
     def test_handling_multiple_when_column(self):
@@ -107,7 +107,7 @@ class WhenSetvalueTests(PyxformTestCase):
             xml__excludes=[
                 '<bind nodeset="/when-column/b" type="int" calculate="1+1"/>',
                 '<bind nodeset="/when-column/c" type="dateTime" calculate="now()"/>',
-            ]
+            ],
         )
 
     def test_handling_when_column_with_no_calculation(self):
@@ -131,7 +131,7 @@ class WhenSetvalueTests(PyxformTestCase):
             ],
             xml__excludes=[
                 '<bind nodeset="/when-column/d" type="dateTime" calculate=""/>'
-            ]
+            ],
         )
 
     def test_handling_when_column_with_no_calculation_no_label_no_hint(self):
@@ -194,7 +194,9 @@ class WhenSetvalueTests(PyxformTestCase):
             |        | dateTime | a    | A date      |                         |      |
             |        | integer  | b    |             | decimal-date-time(${a}) | ${a} |
             """,
-            xml__contains=['<setvalue event="xforms-value-changed" ref=" /when-column/b " value="decimal-date-time( /when-column/a )"/>']
+            xml__contains=[
+                '<setvalue event="xforms-value-changed" ref=" /when-column/b " value="decimal-date-time( /when-column/a )"/>'
+            ],
         )
 
     def test_when_with_trigger_of_type_select_nests_setvalue_in_select(self):
@@ -210,5 +212,7 @@ class WhenSetvalueTests(PyxformTestCase):
             |        | choices            | a    | A           |
             |        | choices            | aa   | AA          |
             """,
-            xml__contains=['<setvalue event="xforms-value-changed" ref=" /when-select_trigger/b " value="string-length( /when-select_trigger/a )"/>\n    </select1>']
+            xml__contains=[
+                '<setvalue event="xforms-value-changed" ref=" /when-select_trigger/b " value="string-length( /when-select_trigger/a )"/>\n    </select1>'
+            ],
         )

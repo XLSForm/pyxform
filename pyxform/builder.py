@@ -127,16 +127,16 @@ class SurveyElementBuilder(object):
     def _save_when_as_setvalue_and_remove_calculate(self, d):
         if "when" in d:
             triggering_ref = re.sub(r"\s+", "", d["when"])
-            value = d["bind"]["calculate"] if "bind" in d and "calculate" in d["bind"] else ''
+            value = ""
+            if "bind" in d and "calculate" in d["bind"]:
+                value = d["bind"]["calculate"]
 
             if triggering_ref in self.setvalues_by_triggering_ref:
                 self.setvalues_by_triggering_ref[triggering_ref].append(
                     (d["name"], value)
                 )
             else:
-                self.setvalues_by_triggering_ref[triggering_ref] = [
-                    (d["name"], value)
-                ]
+                self.setvalues_by_triggering_ref[triggering_ref] = [(d["name"], value)]
 
     @staticmethod
     def _create_question_from_dict(d, question_type_dictionary, add_none_option=False):

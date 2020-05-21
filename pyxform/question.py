@@ -43,15 +43,16 @@ class Question(SurveyElement):
 
         if nested_setvalues:
             for setvalue in nested_setvalues:
-                setvalue_attrs = {"ref": self.get_root().insert_xpaths('${%s}' % setvalue[0], self),
-                                  "event": 'xforms-value-changed'}
-                if not(setvalue[1] == ''):
-                    setvalue_attrs["value"] = self.get_root().insert_xpaths(setvalue[1], self)
+                setvalue_attrs = {
+                    "ref": self.get_root().insert_xpaths("${%s}" % setvalue[0], self),
+                    "event": "xforms-value-changed",
+                }
+                if not (setvalue[1] == ""):
+                    setvalue_attrs["value"] = self.get_root().insert_xpaths(
+                        setvalue[1], self
+                    )
 
-                setvalue_node = node(
-                    "setvalue",
-                    **setvalue_attrs
-                )
+                setvalue_node = node("setvalue", **setvalue_attrs)
 
                 xml_node.appendChild(setvalue_node)
 

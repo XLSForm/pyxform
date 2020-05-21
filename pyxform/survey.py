@@ -191,8 +191,10 @@ class Survey(Section):
         self._setup_xpath_dictionary()
 
         for triggering_reference in self.setvalues_by_triggering_ref.keys():
-            if not(re.match(BRACKETED_TAG_REGEX, triggering_reference)):
-                raise PyXFormError("Only references to other fields are allowed in the 'when' column.")
+            if not (re.match(BRACKETED_TAG_REGEX, triggering_reference)):
+                raise PyXFormError(
+                    "Only references to other fields are allowed in the 'when' column."
+                )
 
             # try to resolve reference and fail if can't
             self.insert_xpaths(triggering_reference, self)
@@ -842,7 +844,10 @@ class Survey(Section):
         ):
             xpath, context_xpath = self._xpath[name], context.get_xpath()
             # share same root i.e repeat_a from /data/repeat_a/...
-            if len(context_xpath.split("/")) > 2 and xpath.split("/")[2] == context_xpath.split("/")[2]:
+            if (
+                len(context_xpath.split("/")) > 2
+                and xpath.split("/")[2] == context_xpath.split("/")[2]
+            ):
                 # if context xpath and target xpath fall under the same
                 # repeat use relative xpath referencing.
                 steps, ref_path = share_same_repeat_parent(self, xpath, context_xpath)
