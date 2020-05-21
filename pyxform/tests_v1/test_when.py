@@ -110,77 +110,77 @@ class WhenSetvalueTests(PyxformTestCase):
             ],
         )
 
-    # def test_handling_when_column_with_no_calculation(self):
-    #     md = """
-    #     | survey |          |      |                    |             |      |
-    #     |        | type     | name | label              | calculation | when |
-    #     |        | text     | a    | Enter text         |             |      |
-    #     |        | dateTime | d    | Date of something  |             | ${a} |
-    #     """
-    #
-    #     self.assertPyxformXform(
-    #         md=md,
-    #         name="when-column",
-    #         id_string="id",
-    #         model__contains=["<a/>", "<d/>",],
-    #         xml__contains=[
-    #             '<bind nodeset="/when-column/d" type="dateTime"/>',
-    #             '<input ref="/when-column/a">',
-    #             '<input ref="/when-column/d">',
-    #             '<setvalue event="xforms-value-changed" ref=" /when-column/d "/>',
-    #         ],
-    #         xml__excludes=[
-    #             '<bind nodeset="/when-column/d" type="dateTime" calculate=""/>'
-    #         ],debug=True
-    #     )
-    #
-    # def test_handling_when_column_with_no_calculation_no_label_no_hint(self):
-    #     md = """
-    #     | survey |          |      |            |             |      |
-    #     |        | type     | name | label      | calculation | when |
-    #     |        | text     | a    | Enter text |             |      |
-    #     |        | decimal  | e    |            |             | ${a} |
-    #     """
-    #
-    #     self.assertPyxformXform(
-    #         md=md,
-    #         name="when-column",
-    #         id_string="id",
-    #         model__contains=["<a/>", "<e/>",],
-    #         xml__contains=[
-    #             '<bind nodeset="/when-column/e" type="decimal"/>',
-    #             '<input ref="/when-column/a">',
-    #             '<setvalue event="xforms-value-changed" ref=" /when-column/e "/>',
-    #         ],
-    #         xml__excludes=[
-    #             '<bind nodeset="/when-column/e" type="decimal" calculate=""/>',
-    #             '<input ref="/when-column/e">',
-    #         ],
-    #     )
-    #
-    # def test_handling_when_column_in_group(self):
-    #     md = """
-    #     | survey |             |      |                    |             |      |
-    #     |        | type        | name | label              | calculation | when |
-    #     |        | text        | a    | Enter text         |             |      |
-    #     |        | begin_group | grp  |                    |             | ${a} |
-    #     |        | dateTime    | c    | Date of diagnostic | now()       | ${a} |
-    #     |        | end_group   |      |                    |             |      |
-    #     """
-    #
-    #     self.assertPyxformXform(
-    #         md=md,
-    #         name="when-column",
-    #         id_string="id",
-    #         model__contains=["<a/>", "<grp>", "<c/>",],
-    #         xml__contains=[
-    #             '<bind nodeset="/when-column/grp/c" type="dateTime"/>',
-    #             '<input ref="/when-column/a">',
-    #             '<group ref="/when-column/grp">',
-    #             '<input ref="/when-column/grp/c">',
-    #             '<setvalue event="xforms-value-changed" ref=" /when-column/grp/c " value="now()"/>',
-    #         ],
-    #         xml__excludes=[
-    #             '<bind nodeset="/when-column/c" type="dateTime" calculate="now()"/>',
-    #         ],
-    #     )
+    def test_handling_when_column_with_no_calculation(self):
+        md = """
+        | survey |          |      |                    |             |      |
+        |        | type     | name | label              | calculation | when |
+        |        | text     | a    | Enter text         |             |      |
+        |        | dateTime | d    | Date of something  |             | ${a} |
+        """
+
+        self.assertPyxformXform(
+            md=md,
+            name="when-column",
+            id_string="id",
+            model__contains=["<a/>", "<d/>",],
+            xml__contains=[
+                '<bind nodeset="/when-column/d" type="dateTime"/>',
+                '<input ref="/when-column/a">',
+                '<input ref="/when-column/d">',
+                '<setvalue event="xforms-value-changed" ref=" /when-column/d "/>',
+            ],
+            xml__excludes=[
+                '<bind nodeset="/when-column/d" type="dateTime" calculate=""/>'
+            ]
+        )
+
+    def test_handling_when_column_with_no_calculation_no_label_no_hint(self):
+        md = """
+        | survey |          |      |            |             |      |
+        |        | type     | name | label      | calculation | when |
+        |        | text     | a    | Enter text |             |      |
+        |        | decimal  | e    |            |             | ${a} |
+        """
+
+        self.assertPyxformXform(
+            md=md,
+            name="when-column",
+            id_string="id",
+            model__contains=["<a/>", "<e/>",],
+            xml__contains=[
+                '<bind nodeset="/when-column/e" type="decimal"/>',
+                '<input ref="/when-column/a">',
+                '<setvalue event="xforms-value-changed" ref=" /when-column/e "/>',
+            ],
+            xml__excludes=[
+                '<bind nodeset="/when-column/e" type="decimal" calculate=""/>',
+                '<input ref="/when-column/e">',
+            ],
+        )
+
+    def test_handling_when_column_in_group(self):
+        md = """
+        | survey |             |      |                    |             |      |
+        |        | type        | name | label              | calculation | when |
+        |        | text        | a    | Enter text         |             |      |
+        |        | begin_group | grp  |                    |             | ${a} |
+        |        | dateTime    | c    | Date of diagnostic | now()       | ${a} |
+        |        | end_group   |      |                    |             |      |
+        """
+
+        self.assertPyxformXform(
+            md=md,
+            name="when-column",
+            id_string="id",
+            model__contains=["<a/>", "<grp>", "<c/>",],
+            xml__contains=[
+                '<bind nodeset="/when-column/grp/c" type="dateTime"/>',
+                '<input ref="/when-column/a">',
+                '<group ref="/when-column/grp">',
+                '<input ref="/when-column/grp/c">',
+                '<setvalue event="xforms-value-changed" ref=" /when-column/grp/c " value="now()"/>',
+            ],
+            xml__excludes=[
+                '<bind nodeset="/when-column/c" type="dateTime" calculate="now()"/>',
+            ],
+        )

@@ -43,11 +43,14 @@ class Question(SurveyElement):
 
         if nested_setvalues:
             for setvalue in nested_setvalues:
+                setvalue_attrs = {"ref": self.get_root().insert_xpaths('${%s}' % setvalue[0], self),
+                                  "event": 'xforms-value-changed'}
+                if not(setvalue[1] == ''):
+                    setvalue_attrs["value"] = setvalue[1]
+
                 setvalue_node = node(
                     "setvalue",
-                    ref=self.get_root().insert_xpaths('${%s}' % setvalue[0], self),
-                    value=setvalue[1],
-                    event='xforms-value-changed',
+                    **setvalue_attrs
                 )
 
                 xml_node.appendChild(setvalue_node)
@@ -63,7 +66,7 @@ class InputQuestion(Question):
     """
 
     def build_xml(self):
-        if "calculate" in self.bind and not (self.label or self.hint):
+        if ("calculate" in self.bind or self.when) and not (self.label or self.hint):
             return None
 
         control_dict = self.control
