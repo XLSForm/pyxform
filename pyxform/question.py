@@ -46,7 +46,7 @@ class Question(SurveyElement):
                 setvalue_attrs = {"ref": self.get_root().insert_xpaths('${%s}' % setvalue[0], self),
                                   "event": 'xforms-value-changed'}
                 if not(setvalue[1] == ''):
-                    setvalue_attrs["value"] = setvalue[1]
+                    setvalue_attrs["value"] = self.get_root().insert_xpaths(setvalue[1], self)
 
                 setvalue_node = node(
                     "setvalue",

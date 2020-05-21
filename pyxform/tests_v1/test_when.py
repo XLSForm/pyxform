@@ -184,3 +184,15 @@ class WhenSetvalueTests(PyxformTestCase):
                 '<bind nodeset="/when-column/c" type="dateTime" calculate="now()"/>',
             ],
         )
+
+    def test_calculation_with_when_column_should_have_expanded_xpath(self):
+        self.assertPyxformXform(
+            name="when-column",
+            md="""
+            | survey |          |      |             |                         |      |
+            |        | type     | name | label       | calculation             | when |
+            |        | dateTime | a    | A date      |                         |      |
+            |        | integer  | b    |             | decimal-date-time(${a}) | ${a} |
+            """,
+            xml__contains=['<setvalue event="xforms-value-changed" ref=" /when-column/b " value="decimal-date-time( /when-column/a )"/>']
+        )
