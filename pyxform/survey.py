@@ -209,8 +209,8 @@ class Survey(Section):
             **nsmap
         )
 
-    def get_setvalue_actions_for_question_reference(self, question):
-        return self.setvalues_by_triggering_ref.get("${%s}" % question.name)
+    def get_setvalues_for_question_name(self, question_name):
+        return self.setvalues_by_triggering_ref.get("${%s}" % question_name)
 
     @staticmethod
     def _generate_static_instances(list_name, choice_list):
@@ -842,7 +842,7 @@ class Survey(Section):
         ):
             xpath, context_xpath = self._xpath[name], context.get_xpath()
             # share same root i.e repeat_a from /data/repeat_a/...
-            if xpath.split("/")[2] == context_xpath.split("/")[2]:
+            if len(context_xpath.split("/")) > 2 and xpath.split("/")[2] == context_xpath.split("/")[2]:
                 # if context xpath and target xpath fall under the same
                 # repeat use relative xpath referencing.
                 steps, ref_path = share_same_repeat_parent(self, xpath, context_xpath)

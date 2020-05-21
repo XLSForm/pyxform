@@ -118,30 +118,25 @@ class SurveyElementBuilder(object):
         elif d["type"] == "xml-external":
             return ExternalInstance(**d)
         else:
-            self._save_when_as_setvalue(d)
+            self._save_when_as_setvalue_and_remove_calculate(d)
 
             return self._create_question_from_dict(
                 d, copy_json_dict(QUESTION_TYPE_DICT), self._add_none_option
             )
 
-    def _save_when_as_setvalue(self, d):
+    def _save_when_as_setvalue_and_remove_calculate(self, d):
         if "when" in d:
-            if "bind" in d and "calculate" in d["bind"]:
-                triggering_ref = re.sub(r"\s+", "", d["when"])
+            triggering_ref = re.sub(r"\s+", "", d["when"])
+            value = d["bind"]["calculate"] if "bind" in d and "calculate" in d["bind"] else ''
 
-                if triggering_ref in self.setvalues_by_triggering_ref:
-                    self.setvalues_by_triggering_ref[triggering_ref].append(
-                        (d["name"], d["bind"]["calculate"])
-                    )
-                else:
-                    self.setvalues_by_triggering_ref[triggering_ref] = [
-                        (d["name"], d["bind"]["calculate"])
-                    ]
-            else:
-                raise PyXFormError(
-                    "There should be a calculation for the ${%s} field because it specifies a triggering event in the 'when' column."
-                    % d["name"]
+            if triggering_ref in self.setvalues_by_triggering_ref:
+                self.setvalues_by_triggering_ref[triggering_ref].append(
+                    (d["name"], value)
                 )
+            else:
+                self.setvalues_by_triggering_ref[triggering_ref] = [
+                    (d["name"], value)
+                ]
 
     @staticmethod
     def _create_question_from_dict(d, question_type_dictionary, add_none_option=False):
