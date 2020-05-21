@@ -75,6 +75,8 @@ def check_java_version():
     java_version = re.findall(r"\"(.+?)\"", java_version_str)[0]
     if "." in java_version:
         major, minor, _ = java_version.split(".")
+    elif "-" in java_version:
+        major, minor = int(java_version.split("-")[0]), 0
     else:
         major, minor = int(java_version), 0
     if not ((int(major) == 1 and int(minor) >= 8) or int(major) >= 8):
