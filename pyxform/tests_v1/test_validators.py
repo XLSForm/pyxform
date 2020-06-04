@@ -32,6 +32,10 @@ OPENJDK_13 = """openjdk version "13" 2019-09-17
 OpenJDK Runtime Environment (build 13+33)
 OpenJDK 64-Bit Server VM (build 13+33, mixed mode, sharing)
 """
+OPENJDK_9_INT = """openjdk version "9-internal"
+OpenJDK Runtime Environment (build 9-internal+0-2016-04-14-195246.buildd.src)
+OpenJDK 64-Bit Server VM (build 9-internal+0-2016-04-14-195246.buildd.src, mixed mode)
+"""
 
 
 class TestValidators(TestCase):
@@ -67,4 +71,8 @@ class TestValidators(TestCase):
 
         with patch(mock_func) as mock_popen:
             mock_popen.return_value = (0, False, "", OPENJDK_13)
+            check_java_version()
+
+        with patch(mock_func) as mock_popen:
+            mock_popen.return_value = (0, False, "", OPENJDK_9_INT)
             check_java_version()
