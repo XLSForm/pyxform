@@ -193,7 +193,7 @@ class Survey(Section):
         for triggering_reference in self.setvalues_by_triggering_ref.keys():
             if not (re.match(BRACKETED_TAG_REGEX, triggering_reference)):
                 raise PyXFormError(
-                    "Only references to other fields are allowed in the 'when' column."
+                    "Only references to other fields are allowed in the 'trigger' column."
                 )
 
             # try to resolve reference and fail if can't

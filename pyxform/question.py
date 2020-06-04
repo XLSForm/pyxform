@@ -67,7 +67,7 @@ class InputQuestion(Question):
     """
 
     def build_xml(self):
-        if ("calculate" in self.bind or self.when) and not (self.label or self.hint):
+        if ("calculate" in self.bind or self.trigger) and not (self.label or self.hint):
             return None
 
         control_dict = self.control

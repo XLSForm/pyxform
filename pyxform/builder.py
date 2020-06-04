@@ -118,15 +118,15 @@ class SurveyElementBuilder(object):
         elif d["type"] == "xml-external":
             return ExternalInstance(**d)
         else:
-            self._save_when_as_setvalue_and_remove_calculate(d)
+            self._save_trigger_as_setvalue_and_remove_calculate(d)
 
             return self._create_question_from_dict(
                 d, copy_json_dict(QUESTION_TYPE_DICT), self._add_none_option
             )
 
-    def _save_when_as_setvalue_and_remove_calculate(self, d):
-        if "when" in d:
-            triggering_ref = re.sub(r"\s+", "", d["when"])
+    def _save_trigger_as_setvalue_and_remove_calculate(self, d):
+        if "trigger" in d:
+            triggering_ref = re.sub(r"\s+", "", d["trigger"])
             value = ""
             if "bind" in d and "calculate" in d["bind"]:
                 value = d["bind"]["calculate"]
