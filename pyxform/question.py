@@ -31,6 +31,9 @@ class Question(SurveyElement):
         return node(self.name, **attributes)
 
     def xml_control(self):
+        if ("calculate" in self.bind or self.trigger) and not (self.label or self.hint):
+            return None
+
         xml_node = self.build_xml()
 
         if xml_node:
@@ -67,9 +70,6 @@ class InputQuestion(Question):
     """
 
     def build_xml(self):
-        if ("calculate" in self.bind or self.trigger) and not (self.label or self.hint):
-            return None
-
         control_dict = self.control
         label_and_hint = self.xml_label_and_hint()
         survey = self.get_root()
