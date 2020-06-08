@@ -31,6 +31,35 @@ class Question(SurveyElement):
         return node(self.name, **attributes)
 
     def xml_control(self):
+        if ("calculate" in self.bind or self.trigger) and not (self.label or self.hint):
+            return None
+
+        xml_node = self.build_xml()
+
+        if xml_node:
+            self.nest_setvalues(xml_node)
+
+        return xml_node
+
+    def nest_setvalues(self, xml_node):
+        nested_setvalues = self.get_root().get_setvalues_for_question_name(self.name)
+
+        if nested_setvalues:
+            for setvalue in nested_setvalues:
+                setvalue_attrs = {
+                    "ref": self.get_root().insert_xpaths("${%s}" % setvalue[0], self),
+                    "event": "xforms-value-changed",
+                }
+                if not (setvalue[1] == ""):
+                    setvalue_attrs["value"] = self.get_root().insert_xpaths(
+                        setvalue[1], self
+                    )
+
+                setvalue_node = node("setvalue", **setvalue_attrs)
+
+                xml_node.appendChild(setvalue_node)
+
+    def build_xml(self):
         return None
 
 
@@ -40,7 +69,7 @@ class InputQuestion(Question):
     dates, geopoints, barcodes ...
     """
 
-    def xml_control(self):
+    def build_xml(self):
         control_dict = self.control
         label_and_hint = self.xml_label_and_hint()
         survey = self.get_root()
@@ -66,7 +95,7 @@ class InputQuestion(Question):
 
 
 class TriggerQuestion(Question):
-    def xml_control(self):
+    def build_xml(self):
         control_dict = self.control
         survey = self.get_root()
         # Resolve field references in attributes
@@ -80,7 +109,7 @@ class UploadQuestion(Question):
     def _get_media_type(self):
         return self.control["mediatype"]
 
-    def xml_control(self):
+    def build_xml(self):
         control_dict = self.control
         survey = self.get_root()
         # Resolve field references in attributes
@@ -133,7 +162,7 @@ class MultipleChoiceQuestion(Question):
         for choice in descendants:
             choice.validate()
 
-    def xml_control(self):
+    def build_xml(self):
         assert self.bind["type"] in ["string", "odk:rank"]
         survey = self.get_root()
         control_dict = self.control.copy()
@@ -250,7 +279,7 @@ class OsmUploadQuestion(UploadQuestion):
         tag = Tag(**kwargs)
         self.add_child(tag)
 
-    def xml_control(self):
+    def build_xml(self):
         control_dict = self.control
         control_dict["ref"] = self.get_xpath()
         control_dict["mediatype"] = self._get_media_type()
@@ -263,12 +292,7 @@ class OsmUploadQuestion(UploadQuestion):
 
 
 class RangeQuestion(Question):
-    """
-    This control string is the same for: strings, integers, decimals,
-    dates, geopoints, barcodes ...
-    """
-
-    def xml_control(self):
+    def build_xml(self):
         control_dict = self.control
         label_and_hint = self.xml_label_and_hint()
         survey = self.get_root()

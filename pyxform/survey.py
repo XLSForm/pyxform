@@ -115,6 +115,7 @@ class Survey(Section):
         {
             "_xpath": dict,
             "_created": datetime.now,  # This can't be dumped to json
+            "setvalues_by_triggering_ref": dict,
             "title": unicode,
             "id_string": unicode,
             "sms_keyword": unicode,
@@ -188,6 +189,16 @@ class Survey(Section):
         """
         self.validate()
         self._setup_xpath_dictionary()
+
+        for triggering_reference in self.setvalues_by_triggering_ref.keys():
+            if not (re.match(BRACKETED_TAG_REGEX, triggering_reference)):
+                raise PyXFormError(
+                    "Only references to other fields are allowed in the 'trigger' column."
+                )
+
+            # try to resolve reference and fail if can't
+            self.insert_xpaths(triggering_reference, self)
+
         body_kwargs = {}
         if hasattr(self, constants.STYLE) and getattr(self, constants.STYLE):
             body_kwargs["class"] = getattr(self, constants.STYLE)
@@ -199,6 +210,9 @@ class Survey(Section):
             node("h:body", *self.xml_control(), **body_kwargs),
             **nsmap
         )
+
+    def get_setvalues_for_question_name(self, question_name):
+        return self.setvalues_by_triggering_ref.get("${%s}" % question_name)
 
     @staticmethod
     def _generate_static_instances(list_name, choice_list):
@@ -830,7 +844,10 @@ class Survey(Section):
         ):
             xpath, context_xpath = self._xpath[name], context.get_xpath()
             # share same root i.e repeat_a from /data/repeat_a/...
-            if xpath.split("/")[2] == context_xpath.split("/")[2]:
+            if (
+                len(context_xpath.split("/")) > 2
+                and xpath.split("/")[2] == context_xpath.split("/")[2]
+            ):
                 # if context xpath and target xpath fall under the same
                 # repeat use relative xpath referencing.
                 steps, ref_path = share_same_repeat_parent(self, xpath, context_xpath)

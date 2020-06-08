@@ -69,6 +69,7 @@ class SurveyElement(dict):
         "flat": lambda: False,
         "action": unicode,
         "list_name": unicode,
+        "trigger": unicode,
     }
 
     def _default(self):
@@ -408,6 +409,10 @@ class SurveyElement(dict):
             # Don't generate bind element for flat groups.
             return None
         if bind_dict:
+            # the expression goes in a setvalue action
+            if self.trigger and "calculate" in self.bind:
+                del bind_dict["calculate"]
+
             for k, v in bind_dict.items():
                 # I think all the binding conversions should be happening on
                 # the xls2json side.
