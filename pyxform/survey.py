@@ -603,7 +603,14 @@ class Survey(Section):
                     self._translations[d["lang"]][d["path"]] = self._translations[
                         d["lang"]
                     ].get(d["path"], {})
-                    self._translations[d["lang"]][d["path"]].update({"long": d["text"]})
+                    if "element" in d:
+                        self._translations[d["lang"]][d["path"]].update(
+                            {"long": {"text": d["text"], "element": d["element"]}}
+                        )
+                    else:
+                        self._translations[d["lang"]][d["path"]].update(
+                            {"long": d["text"]}
+                        )
 
         # This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
@@ -722,34 +729,40 @@ class Survey(Section):
                     raise Exception()
 
                 for media_type, media_value in content.items():
-                    # There is a odk/jr bug where hints can't have a value
-                    # for the "form" attribute.
-                    # This is my workaround.
-                    if label_type == "hint":
-                        value, output_inserted = self.insert_output_values(media_value)
-
-                        if media_type == "guidance":
-                            itext_nodes.append(
-                                node(
-                                    "value",
-                                    value,
-                                    form="guidance",
-                                    toParseString=output_inserted,
-                                )
+                    if label_type == "hint" or media_type == "long":
+                        if "text" in media_value and "element" in media_value:
+                            value, output_inserted = self.insert_output_values(
+                                media_value["text"], context=media_value["element"]
                             )
                         else:
+                            value, output_inserted = self.insert_output_values(
+                                media_value
+                            )
+                        # There is a odk/jr bug where hints can't have a value
+                        # for the "form" attribute.
+                        # This is my workaround.
+                        if label_type == "hint":
+                            if media_type == "guidance":
+                                itext_nodes.append(
+                                    node(
+                                        "value",
+                                        value,
+                                        form="guidance",
+                                        toParseString=output_inserted,
+                                    )
+                                )
+                            else:
+                                itext_nodes.append(
+                                    node("value", value, toParseString=output_inserted)
+                                )
+                            continue
+
+                        if media_type == "long":
+                            # I'm ignoring long types for now because I don't know
+                            # how they are supposed to work.
                             itext_nodes.append(
                                 node("value", value, toParseString=output_inserted)
                             )
-                        continue
-
-                    if media_type == "long":
-                        value, output_inserted = self.insert_output_values(media_value)
-                        # I'm ignoring long types for now because I don't know
-                        # how they are supposed to work.
-                        itext_nodes.append(
-                            node("value", value, toParseString=output_inserted)
-                        )
                     elif media_type == "image":
                         value, output_inserted = self.insert_output_values(media_value)
                         if value != "-":
