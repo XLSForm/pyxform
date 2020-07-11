@@ -285,4 +285,3 @@ class TestRepeat(PyxformTestCase):
     </group>"""  # noqa
 
         self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
-
