@@ -326,7 +326,8 @@ class SurveyElement(dict):
                     yield {
                         "display_element": display_element,  # Not used
                         "path": self._translation_path(display_element),
-                        "element": self,
+                        "element": self,  # Not used
+                        "output_context": self,
                         "lang": lang,
                         "text": text,
                     }

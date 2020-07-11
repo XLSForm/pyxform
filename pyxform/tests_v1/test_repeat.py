@@ -187,6 +187,25 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
+    def test_output_with_translation_relative_path(self):
+        md = """
+        | survey |              |             |                |              |
+        |        | type         | name        | label::English | calculation  |
+        |        | begin repeat | member      |                |              |
+        |        | calculate    | pos         |                | position(..) |
+        |        | text         | member_name | Name of ${pos} |              |
+        |        | end repeat   |             |                |              |
+        """
+
+        self.assertPyxformXform(
+            md=md,
+            name="inside-repeat-relative-path",
+            xml__contains=[
+                '<translation lang="English">',
+                '<value> Name of <output value=" ../pos "/> </value>',
+            ],
+        )
+
     def test_hints_are_not_present_within_repeats(self):
         """Hints are not present within repeats"""
         md = """
@@ -267,21 +286,3 @@ class TestRepeat(PyxformTestCase):
 
         self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
 
-    def test_inside_repeat_has_relative_path(self):
-        md = """
-        | survey |              |             |                |              |
-        |        | type         | name        | label::English | calculation  |
-        |        | begin repeat | member      |                |              |
-        |        | calculate    | pos         |                | position(..) |
-        |        | text         | member_name | Name of ${pos} |              |
-        |        | end repeat   |             |                |              |
-        """
-
-        self.assertPyxformXform(
-            md=md,
-            name="inside-repeat-relative-path",
-            xml__contains=[
-                '<translation lang="English">',
-                '<value> Name of <output value=" ../pos "/> </value>',
-            ],
-        )
