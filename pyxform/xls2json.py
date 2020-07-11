@@ -819,7 +819,8 @@ def workbook_to_json(
 
         if question_type == "calculate":
             calculation = row.get("bind", {}).get("calculate")
-            if not calculation:
+            question_default = row.get("default")
+            if not calculation and not (question_default and default_is_dynamic(question_default, question_type)):
                 raise PyXFormError(
                     row_format_string % row_number + " Missing calculation."
                 )
