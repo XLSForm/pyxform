@@ -158,6 +158,22 @@ class TriggerSetvalueTests(PyxformTestCase):
             ],
         )
 
+    def test_trigger_refer_to_hidden_node_ref_gives_error(self):
+        self.assertPyxformXform(
+            name="trigger-invalid-ref",
+            md="""
+            | survey |           |        |                      |         |             |
+            |        | type      | name   | label                | trigger | calculation |
+            |        | calculate | one    |                      |         | 5 + 4       |
+            |        | calculate | one-ts |                      | ${one}  | now()       |
+            |        | note      | note   | timestamp: ${one-ts} |         |             |
+            """,
+            errored=True,
+            error__contains=[
+                "Trigger was added for ${one-ts} that refers to hidden question. This is not allowed."
+            ],
+        )
+
     def test_handling_trigger_column_in_group(self):
         md = """
         | survey |             |      |                    |             |         |

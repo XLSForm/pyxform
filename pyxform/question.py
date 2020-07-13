@@ -32,6 +32,16 @@ class Question(SurveyElement):
 
     def xml_control(self):
         if ("calculate" in self.bind or self.trigger) and not (self.label or self.hint):
+            nested_setvalues = self.get_root().get_setvalues_for_question_name(
+                self.name
+            )
+            if nested_setvalues:
+                for setvalue in nested_setvalues:
+                    msg = (
+                        "Trigger was added for ${%s} that refers to hidden question. This is not allowed."
+                        % setvalue[0]
+                    )
+                    raise PyXFormError(msg)
             return None
 
         xml_node = self.build_xml()
