@@ -979,9 +979,12 @@ class Survey(Section):
             if os.path.exists(tmp.name):
                 os.remove(tmp.name)
         if pretty_print:
-            return self._to_pretty_xml()
-
-        return self._to_ugly_xml()
+            output = self._to_pretty_xml()
+        else:
+            output = self._to_ugly_xml()
+        # reset the self._translations object so to_xml() can be called again
+        self._translations = OrderedDict()
+        return output
 
     def instantiate(self):
         """
