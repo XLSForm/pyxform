@@ -593,7 +593,7 @@ class Survey(Section):
             for d in element.get_translations(self.default_language):
 
                 translation_path = d["path"]
-                translation_key = "long"
+                translation_key = "form"
 
                 if "guidance_hint" in d["path"]:
                     translation_path = d["path"].replace("guidance_hint", "hint")
@@ -603,19 +603,14 @@ class Survey(Section):
                     d["lang"]
                 ].get(translation_path, {})
 
-                if "output_context" in d:
-                    self._translations[d["lang"]][translation_path].update(
-                        {
-                            translation_key: {
-                                "text": d["text"],
-                                "output_context": d["output_context"],
-                            }
+                self._translations[d["lang"]][translation_path].update(
+                    {
+                        translation_key: {
+                            "text": d["text"],
+                            "output_context": d["output_context"],
                         }
-                    )
-                else:
-                    self._translations[d["lang"]][translation_path].update(
-                        {translation_key: d["text"]}
-                    )
+                    }
+                )
 
         # This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
@@ -734,11 +729,7 @@ class Survey(Section):
                     raise Exception()
 
                 for media_type, media_value in content.items():
-                    if (
-                        isinstance(media_value, dict)
-                        and "text" in media_value
-                        and "output_context" in media_value
-                    ):
+                    if isinstance(media_value, dict):
                         value, output_inserted = self.insert_output_values(
                             media_value["text"], context=media_value["output_context"]
                         )
@@ -761,7 +752,7 @@ class Survey(Section):
                             )
                         continue
 
-                    if media_type == "long":
+                    if media_type == "form":
                         # I'm ignoring long types for now because I don't know
                         # how they are supposed to work.
                         itext_nodes.append(

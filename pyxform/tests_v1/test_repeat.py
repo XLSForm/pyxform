@@ -206,6 +206,46 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
+    def test_output_with_guidance_hint_translation_relative_path(self):
+        md = """
+        | survey |              |             |                |                        |              |
+        |        | type         | name        | label::English | guidance_hint::English | calculation  |
+        |        | begin repeat | member      |                |                        |              |
+        |        | calculate    | pos         |                |                        | position(..) |
+        |        | text         | member_name | Name of ${pos} | More ${pos}            |              |
+        |        | end repeat   |             |                |                        |              |
+        """
+
+        self.assertPyxformXform(
+            md=md,
+            name="inside-repeat-relative-path",
+            xml__contains=[
+                '<translation lang="English">',
+                '<value> Name of <output value=" ../pos "/> </value>',
+                '<value form="guidance"> More <output value=" ../pos "/> </value>'
+            ],
+        )
+
+    def test_output_with_multiple_translations_relative_path(self):
+        md = """
+        | survey |              |                |                |                  |              | 
+        |        | type         | name           | label::English | label::Indonesia | calculation  |
+        |        | begin repeat | member         |                |                  |              |
+        |        | calculate    | pos            |                |                  | position(..) | 
+        |        | text         | member_name    | Name of ${pos} | Nama ${pos}      |              |
+        |        | text         | member_address |                | Alamat           |              |
+        |        | end repeat   |                |                |                  |              | 
+        """
+
+        self.assertPyxformXform(
+            md=md,
+            name="inside-repeat-relative-path",
+            xml__contains=[
+                '<translation lang="English">',
+                '<value> Name of <output value=" ../pos "/> </value>',
+            ],
+        )
+
     def test_hints_are_not_present_within_repeats(self):
         """Hints are not present within repeats"""
         md = """

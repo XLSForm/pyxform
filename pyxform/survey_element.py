@@ -271,6 +271,7 @@ class SurveyElement(dict):
                 for lang, text in constraint_msg.items():
                     yield {
                         "path": self._translation_path("jr:constraintMsg"),
+                        "output_context": self,
                         "lang": lang,
                         "text": text,
                     }
@@ -279,6 +280,7 @@ class SurveyElement(dict):
                 for lang, text in required_msg.items():
                     yield {
                         "path": self._translation_path("jr:requiredMsg"),
+                        "output_context": self,
                         "lang": lang,
                         "text": text,
                     }
@@ -287,6 +289,7 @@ class SurveyElement(dict):
                 for lang, text in no_app_error_string.items():
                     yield {
                         "path": self._translation_path("jr:noAppErrorString"),
+                        "output_context": self,
                         "lang": lang,
                         "text": text,
                     }
