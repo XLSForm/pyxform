@@ -9,7 +9,7 @@ import os
 import re
 import tempfile
 import xml.etree.ElementTree as ETree
-from collections import defaultdict
+from collections import OrderedDict
 from datetime import datetime
 
 from pyxform import constants
@@ -141,6 +141,10 @@ class Survey(Section):
             "namespaces": unicode,
         }
     )  # yapf: disable
+
+    def __init__(self, *args, **kwargs):
+        super(Survey, self).__init__(*args, **kwargs)
+        self._translations = OrderedDict()
 
     def validate(self):
         if self.id_string in [None, "None"]:
@@ -588,22 +592,25 @@ class Survey(Section):
                             value,
                         )
 
-        self._translations = defaultdict(dict)  # pylint: disable=W0201
         for element in self.iter_descendants():
             for d in element.get_translations(self.default_language):
+                d_lang = d["lang"]
+                if d_lang not in self._translations:
+                    self._translations[d_lang] = {}
+
                 if "guidance_hint" in d["path"]:
                     hint_path = d["path"].replace("guidance_hint", "hint")
-                    self._translations[d["lang"]][hint_path] = self._translations[
-                        d["lang"]
+                    self._translations[d_lang][hint_path] = self._translations[
+                        d_lang
                     ].get(hint_path, {})
-                    self._translations[d["lang"]][hint_path].update(
+                    self._translations[d_lang][hint_path].update(
                         {"guidance": d["text"]}
                     )
                 else:
-                    self._translations[d["lang"]][d["path"]] = self._translations[
-                        d["lang"]
+                    self._translations[d_lang][d["path"]] = self._translations[
+                        d_lang
                     ].get(d["path"], {})
-                    self._translations[d["lang"]][d["path"]].update({"long": d["text"]})
+                    self._translations[d_lang][d["path"]].update({"long": d["text"]})
 
         # This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
@@ -649,9 +656,6 @@ class Survey(Section):
         {language : {element_xpath : {media_type : media}}}
         It matches the xform nesting order.
         """
-        if not self._translations:
-            self._translations = defaultdict(dict)  # pylint: disable=W0201
-
         for survey_element in self.iter_descendants():
 
             translation_key = survey_element.get_xpath() + ":label"
