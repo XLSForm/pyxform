@@ -883,6 +883,11 @@ def workbook_to_json(
             constants.LABEL not in row
             and row.get(constants.MEDIA) is None
             and question_type not in aliases.label_optional_types
+            and not row.get("bind", {}).get("calculate")
+            and not (
+                row.get("default")
+                and default_is_dynamic(row.get("default"), question_type)
+            )
         ):
             # TODO: Should there be a default label?
             #      Not sure if we should throw warnings for groups...
