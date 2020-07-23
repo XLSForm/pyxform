@@ -593,23 +593,18 @@ class Survey(Section):
             for d in element.get_translations(self.default_language):
 
                 translation_path = d["path"]
-                translation_key = "form"
+                form = "long"
 
                 if "guidance_hint" in d["path"]:
                     translation_path = d["path"].replace("guidance_hint", "hint")
-                    translation_key = "guidance"
+                    form = "guidance"
 
                 self._translations[d["lang"]][translation_path] = self._translations[
                     d["lang"]
                 ].get(translation_path, {})
 
                 self._translations[d["lang"]][translation_path].update(
-                    {
-                        translation_key: {
-                            "text": d["text"],
-                            "output_context": d["output_context"],
-                        }
-                    }
+                    {form: {"text": d["text"], "output_context": d["output_context"],}}
                 )
 
         # This code sets up translations for choices in filtered selects.
@@ -752,7 +747,7 @@ class Survey(Section):
                             )
                         continue
 
-                    if media_type == "form":
+                    if media_type == "long":
                         # I'm ignoring long types for now because I don't know
                         # how they are supposed to work.
                         itext_nodes.append(

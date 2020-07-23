@@ -222,7 +222,7 @@ class TestRepeat(PyxformTestCase):
             xml__contains=[
                 '<translation lang="English">',
                 '<value> Name of <output value=" ../pos "/> </value>',
-                '<value form="guidance"> More <output value=" ../pos "/> </value>'
+                '<value form="guidance"> More <output value=" ../pos "/> </value>',
             ],
         )
 
