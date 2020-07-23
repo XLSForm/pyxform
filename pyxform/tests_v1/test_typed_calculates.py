@@ -156,3 +156,39 @@ class TypedCalculatesTest(PyxformTestCase):
             errored=True,
             error__contains="The survey element named 'a' has no label or hint.",
         )
+
+    def test_calculate_without_calculation_without_default(self):
+        self.assertPyxformXform(
+            name="calculate-without-calculation-without-default",
+            md="""
+        | survey |            |      |             |             |         |
+        |        | type       | name | label       | calculation | default |
+        |        | calculate  | a    |             |             |         |
+        """,
+            errored=True,
+            error__contains="Missing calculation",
+        )
+
+    def test_calculate_without_calculation_with_default_without_dynamic_default(self):
+        self.assertPyxformXform(
+            name="calculate-without-calculation-with-default-without-dynamic-default",
+            md="""
+        | survey |            |      |             |             |         |
+        |        | type       | name | label       | calculation | default |
+        |        | calculate  | a    |             |             | foo     |
+        """,
+            errored=True,
+            error__contains="Missing calculation",
+        )
+
+    def test_calculate_without_calculation_with_dynamic_default(self):
+        self.assertPyxformXform(
+            name="calculate-without-calculation-with-dynamic-default",
+            md="""
+        | survey |            |      |             |             |          |
+        |        | type       | name | label       | calculation | default  |
+        |        | calculate  | a    |             |             | random() |
+        """,
+            errored=False,
+            instance__contains=["<a/>"],
+        )
