@@ -170,7 +170,22 @@ class TriggerSetvalueTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Trigger was added for ${one-ts} that refers to hidden question. This is not allowed."
+                "The question ${one} is not user-visible so it can't be used as a calculation trigger for question ${one-ts}.",
+            ],
+        )
+
+    def test_typed_calculate_cant_be_trigger(self):
+        self.assertPyxformXform(
+            name="trigger-invalid-ref",
+            md="""
+                | survey |           |        |         |             |
+                |        | type      | name   | trigger | calculation |
+                |        | integer   | two    |         | 1 + 1       |
+                |        | integer   | two-ts | ${two}  | now()       | 
+                """,
+            errored=True,
+            error__contains=[
+                "The question ${two} is not user-visible so it can't be used as a calculation trigger for question ${two-ts}."
             ],
         )
 

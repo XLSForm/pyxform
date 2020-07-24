@@ -38,8 +38,8 @@ class Question(SurveyElement):
             if nested_setvalues:
                 for setvalue in nested_setvalues:
                     msg = (
-                        "Trigger was added for ${%s} that refers to hidden question. This is not allowed."
-                        % setvalue[0]
+                        "The question ${%s} is not user-visible so it can't be used as a calculation trigger for question ${%s}."
+                        % (self.name, setvalue[0])
                     )
                     raise PyXFormError(msg)
             return None
