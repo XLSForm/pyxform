@@ -273,6 +273,7 @@ class SurveyElement(dict):
                         "path": self._translation_path("jr:constraintMsg"),
                         "lang": lang,
                         "text": text,
+                        "output_context": self,
                     }
             required_msg = bind_dict.get("jr:requiredMsg")
             if type(required_msg) is dict:
@@ -281,6 +282,7 @@ class SurveyElement(dict):
                         "path": self._translation_path("jr:requiredMsg"),
                         "lang": lang,
                         "text": text,
+                        "output_context": self,
                     }
             no_app_error_string = bind_dict.get("jr:noAppErrorString")
             if type(no_app_error_string) is dict:
@@ -289,6 +291,7 @@ class SurveyElement(dict):
                         "path": self._translation_path("jr:noAppErrorString"),
                         "lang": lang,
                         "text": text,
+                        "output_context": self,
                     }
 
         for display_element in ["label", "hint", "guidance_hint"]:
@@ -327,6 +330,7 @@ class SurveyElement(dict):
                         "display_element": display_element,  # Not used
                         "path": self._translation_path(display_element),
                         "element": self,  # Not used
+                        "output_context": self,
                         "lang": lang,
                         "text": text,
                     }

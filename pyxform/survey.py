@@ -591,19 +591,21 @@ class Survey(Section):
         self._translations = defaultdict(dict)  # pylint: disable=W0201
         for element in self.iter_descendants():
             for d in element.get_translations(self.default_language):
+
+                translation_path = d["path"]
+                form = "long"
+
                 if "guidance_hint" in d["path"]:
-                    hint_path = d["path"].replace("guidance_hint", "hint")
-                    self._translations[d["lang"]][hint_path] = self._translations[
-                        d["lang"]
-                    ].get(hint_path, {})
-                    self._translations[d["lang"]][hint_path].update(
-                        {"guidance": d["text"]}
-                    )
-                else:
-                    self._translations[d["lang"]][d["path"]] = self._translations[
-                        d["lang"]
-                    ].get(d["path"], {})
-                    self._translations[d["lang"]][d["path"]].update({"long": d["text"]})
+                    translation_path = d["path"].replace("guidance_hint", "hint")
+                    form = "guidance"
+
+                self._translations[d["lang"]][translation_path] = self._translations[
+                    d["lang"]
+                ].get(translation_path, {})
+
+                self._translations[d["lang"]][translation_path].update(
+                    {form: {"text": d["text"], "output_context": d["output_context"],}}
+                )
 
         # This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
@@ -722,12 +724,14 @@ class Survey(Section):
                     raise Exception()
 
                 for media_type, media_value in content.items():
-                    # There is a odk/jr bug where hints can't have a value
-                    # for the "form" attribute.
-                    # This is my workaround.
-                    if label_type == "hint":
+                    if isinstance(media_value, dict):
+                        value, output_inserted = self.insert_output_values(
+                            media_value["text"], context=media_value["output_context"]
+                        )
+                    else:
                         value, output_inserted = self.insert_output_values(media_value)
 
+                    if label_type == "hint":
                         if media_type == "guidance":
                             itext_nodes.append(
                                 node(
@@ -744,14 +748,12 @@ class Survey(Section):
                         continue
 
                     if media_type == "long":
-                        value, output_inserted = self.insert_output_values(media_value)
                         # I'm ignoring long types for now because I don't know
                         # how they are supposed to work.
                         itext_nodes.append(
                             node("value", value, toParseString=output_inserted)
                         )
                     elif media_type == "image":
-                        value, output_inserted = self.insert_output_values(media_value)
                         if value != "-":
                             itext_nodes.append(
                                 node(
@@ -762,7 +764,6 @@ class Survey(Section):
                                 )
                             )
                     else:
-                        value, output_inserted = self.insert_output_values(media_value)
                         if value != "-":
                             itext_nodes.append(
                                 node(
