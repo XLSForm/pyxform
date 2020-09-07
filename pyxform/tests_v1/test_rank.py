@@ -79,21 +79,21 @@ class RangeWidgetTest(PyxformTestCase):
                 """<text id="/data/order:label">
             <value>Ranger</value>
           </text>""",
-                """<text id="/data/order/a:label">
+                """<text id="static_instance-mylist-a">
             <value>AA</value>
           </text>""",
-                """<text id="/data/order/b:label">
+                """<text id="static_instance-mylist-b">
             <value>BB</value>
           </text>""",
                 "</translation>",
                 """<odk:rank ref="/data/order">
       <label ref="jr:itext('/data/order:label')"/>
       <item>
-        <label ref="jr:itext('/data/order/a:label')"/>
+        <label ref="jr:itext('static_instance-mylist-a')"/>
         <value>a</value>
       </item>
       <item>
-        <label ref="jr:itext('/data/order/b:label')"/>
+        <label ref="jr:itext('static_instance-mylist-b')"/>
         <value>b</value>
       </item>
     </odk:rank>""",

@@ -35,10 +35,10 @@ class XMLTests(utils.XFormTestCase):
           <text id="/yes_or_no_question/good_day:label">
             <value>have you had a good day today?</value>
           </text>
-          <text id="/yes_or_no_question/good_day/no:label">
+          <text id="static_instance-yes_or_no-no">
             <value>no</value>
           </text>
-          <text id="/yes_or_no_question/good_day/yes:label">
+          <text id="static_instance-yes_or_no-yes">
             <value>yes</value>
           </text>
         </translation>
@@ -61,11 +61,11 @@ class XMLTests(utils.XFormTestCase):
     <select1 ref="/yes_or_no_question/good_day">
       <label ref="jr:itext('/yes_or_no_question/good_day:label')"/>
       <item>
-        <label ref="jr:itext('/yes_or_no_question/good_day/yes:label')"/>
+        <label ref="jr:itext('static_instance-yes_or_no-yes')"/>
         <value>yes</value>
       </item>
       <item>
-        <label ref="jr:itext('/yes_or_no_question/good_day/no:label')"/>
+        <label ref="jr:itext('static_instance-yes_or_no-no')"/>
         <value>no</value>
       </item>
     </select1>

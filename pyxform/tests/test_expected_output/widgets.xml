@@ -5,56 +5,24 @@
     <model odk:xforms-version="1.0.0">
       <itext>
         <translation default="true()" lang="default">
-          <text id="/widgets/happy_sad_table_2/happy_sad_second_method/happy:label">
+          <text id="static_instance-a_b-a">
+            <value>a</value>
+            <value form="image">jr://images/a.jpg</value>
+          </text>
+          <text id="static_instance-a_b-b">
+            <value>b</value>
+            <value form="image">jr://images/b.jpg</value>
+          </text>
+          <text id="static_instance-happy_sad-happy">
             <value form="image">jr://images/happy.jpg</value>
           </text>
-          <text id="/widgets/happy_sad_table/happy_sad_michael/sad:label">
+          <text id="static_instance-happy_sad-sad">
             <value form="image">jr://images/sad.jpg</value>
           </text>
           <text id="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/happy:label">
             <value form="image">jr://images/happy.jpg</value>
           </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_second_method/sad:label">
-            <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_brian2/sad:label">
-            <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table/happy_sad_brian/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
           <text id="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/sad:label">
-            <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_brian2/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
-          <text id="/widgets/grid_test_audio/a:label">
-            <value form="image">jr://images/a.jpg</value>
-            <value>a</value>
-          </text>
-          <text id="/widgets/grid_test_audio/b:label">
-            <value form="image">jr://images/b.jpg</value>
-            <value>b</value>
-          </text>
-          <text id="/widgets/grid_test/b:label">
-            <value form="image">jr://images/b.jpg</value>
-            <value>b</value>
-          </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_michael2/sad:label">
-            <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/grid_test/a:label">
-            <value form="image">jr://images/a.jpg</value>
-            <value>a</value>
-          </text>
-          <text id="/widgets/happy_sad_table/happy_sad_michael/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_michael2/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table/happy_sad_brian/sad:label">
             <value form="image">jr://images/sad.jpg</value>
           </text>
         </translation>
@@ -325,11 +293,11 @@
       <label>Grid test</label>
       <hint>make sure to put a.jpg and b.jpg in the form-media folder</hint>
       <item>
-        <label ref="jr:itext('/widgets/grid_test/a:label')"/>
+        <label ref="jr:itext('static_instance-a_b-a')"/>
         <value>a</value>
       </item>
       <item>
-        <label ref="jr:itext('/widgets/grid_test/b:label')"/>
+        <label ref="jr:itext('static_instance-a_b-b')"/>
         <value>b</value>
       </item>
     </select1>
@@ -337,11 +305,11 @@
       <label>Grid auto-advance test</label>
       <hint>make sure to put a.jpg and b.jpg in the form-media folder</hint>
       <item>
-        <label ref="jr:itext('/widgets/grid_test_audio/a:label')"/>
+        <label ref="jr:itext('static_instance-a_b-a')"/>
         <value>a</value>
       </item>
       <item>
-        <label ref="jr:itext('/widgets/grid_test_audio/b:label')"/>
+        <label ref="jr:itext('static_instance-a_b-b')"/>
         <value>b</value>
       </item>
     </select1>
@@ -424,33 +392,33 @@
       <select appearance="label" ref="/widgets/happy_sad_table_2/happy_sad_second_method">
         <label>Multi Choice List</label>
         <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_second_method/happy:label')"/>
+          <label ref="jr:itext('static_instance-happy_sad-happy')"/>
           <value>happy</value>
         </item>
         <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_second_method/sad:label')"/>
+          <label ref="jr:itext('static_instance-happy_sad-sad')"/>
           <value>sad</value>
         </item>
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table_2/happy_sad_brian2">
         <label>Brian</label>
         <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_brian2/happy:label')"/>
+          <label ref="jr:itext('static_instance-happy_sad-happy')"/>
           <value>happy</value>
         </item>
         <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_brian2/sad:label')"/>
+          <label ref="jr:itext('static_instance-happy_sad-sad')"/>
           <value>sad</value>
         </item>
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table_2/happy_sad_michael2">
         <label>Michael</label>
         <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_michael2/happy:label')"/>
+          <label ref="jr:itext('static_instance-happy_sad-happy')"/>
           <value>happy</value>
         </item>
         <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_michael2/sad:label')"/>
+          <label ref="jr:itext('static_instance-happy_sad-sad')"/>
           <value>sad</value>
         </item>
       </select>
@@ -473,22 +441,22 @@
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table/happy_sad_brian">
         <label>Brian</label>
         <item>
-          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_brian/happy:label')"/>
+          <label ref="jr:itext('static_instance-happy_sad-happy')"/>
           <value>happy</value>
         </item>
         <item>
-          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_brian/sad:label')"/>
+          <label ref="jr:itext('static_instance-happy_sad-sad')"/>
           <value>sad</value>
         </item>
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table/happy_sad_michael">
         <label>Michael</label>
         <item>
-          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_michael/happy:label')"/>
+          <label ref="jr:itext('static_instance-happy_sad-happy')"/>
           <value>happy</value>
         </item>
         <item>
-          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_michael/sad:label')"/>
+          <label ref="jr:itext('static_instance-happy_sad-sad')"/>
           <value>sad</value>
         </item>
       </select>
