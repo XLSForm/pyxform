@@ -369,7 +369,14 @@ class SurveyElement(dict):
         if self.needs_itext_ref():
             # If there is a dictionary label, or non-empty media dict,
             # then we need to make a label with an itext ref
-            ref = "jr:itext('%s')" % self._translation_path("label")
+            parent = self.get("parent")
+            if parent and parent.get("list_name"):
+                itextId = "-".join(
+                    ["static_instance", parent.get("list_name"), self.get("name")]
+                )
+                ref = f"jr:itext('{itextId}')"
+            else:
+                ref = "jr:itext('%s')" % self._translation_path("label")
             return node("label", ref=ref)
         else:
             survey = self.get_root()

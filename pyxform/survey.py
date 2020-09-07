@@ -227,11 +227,12 @@ class Survey(Section):
         """
         instance_element_list = []
         multi_language = isinstance(choice_list[0].get("label"), dict)
+        has_media = bool(choice_list[0].get("media"))
         for idx, choice in enumerate(choice_list):
             choice_element_list = []
             # Add a unique id to the choice element in case there is itext
             # it references
-            if multi_language:
+            if multi_language or has_media:
                 itext_id = "-".join(["static_instance", list_name, str(idx)])
                 choice_element_list.append(node("itextId", itext_id))
 
