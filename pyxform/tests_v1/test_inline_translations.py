@@ -59,12 +59,12 @@ class InlineTranslationsTest(PyxformTestCase):
             name="data",
             id_string="some-id",
             model__contains=[
-                '<text id="static_instance-states-0">',
-                '<text id="static_instance-states-1">',
-                '<text id="static_instance-states-2">',
-                "<itextId>static_instance-states-0</itextId>",
-                "<itextId>static_instance-states-1</itextId>",
-                "<itextId>static_instance-states-2</itextId>",
+                '<text id="static_instance-states-option_a">',
+                '<text id="static_instance-states-option_b">',
+                '<text id="static_instance-states-option_c">',
+                "<itextId>static_instance-states-option_a</itextId>",
+                "<itextId>static_instance-states-option_b</itextId>",
+                "<itextId>static_instance-states-option_c</itextId>",
             ],
             model__excludes=[
                 "<label>a</label>",

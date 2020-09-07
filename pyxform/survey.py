@@ -228,12 +228,13 @@ class Survey(Section):
         instance_element_list = []
         multi_language = isinstance(choice_list[0].get("label"), dict)
         has_media = bool(choice_list[0].get("media"))
-        for idx, choice in enumerate(choice_list):
+        for choice in choice_list:
             choice_element_list = []
             # Add a unique id to the choice element in case there is itext
             # it references
             if multi_language or has_media:
-                itext_id = "-".join(["static_instance", list_name, str(idx)])
+                name = choice.get("name").replace(" ", "_")
+                itext_id = "-".join(["static_instance", list_name, name])
                 choice_element_list.append(node("itextId", itext_id))
 
             for name, value in sorted(choice.items()):
@@ -611,11 +612,13 @@ class Survey(Section):
         # This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
             multi_language = isinstance(choice_list[0].get("label"), dict)
-            if not multi_language:
+            has_media = bool(choice_list[0].get("media"))
+            if not multi_language and not has_media:
                 continue
-            for idx, choice in zip(range(len(choice_list)), choice_list):
+            for choice in choice_list:
                 for name, choice_value in choice.items():
-                    itext_id = "-".join(["static_instance", list_name, str(idx)])
+                    name = choice.get("name").replace(" ", "_")
+                    itext_id = "-".join(["static_instance", list_name, name])
                     if isinstance(choice_value, dict):
                         _setup_choice_translations(name, choice_value, itext_id)
                     elif name == "label":
@@ -656,8 +659,14 @@ class Survey(Section):
             self._translations = defaultdict(dict)  # pylint: disable=W0201
 
         for survey_element in self.iter_descendants():
-
-            translation_key = survey_element.get_xpath() + ":label"
+            parent_element = survey_element.get("parent")
+            if parent_element and parent_element.get("list_name"):
+                name = survey_element.get("name").replace(" ", "_")
+                translation_key = "-".join(
+                    ["static_instance", parent_element.get("list_name"), name,]
+                )
+            else:
+                translation_key = survey_element.get_xpath() + ":label"
             media_dict = survey_element.get("media")
 
             # This is probably papering over a real problem, but anyway,

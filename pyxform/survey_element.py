@@ -326,7 +326,9 @@ class SurveyElement(dict):
 
             if type(label_or_hint) is dict:
                 for lang, text in label_or_hint.items():
-                    yield {
+                    parent = self.get("parent")
+                    list_name = parent.get("list_name")
+                    translation = {
                         "display_element": display_element,  # Not used
                         "path": self._translation_path(display_element),
                         "element": self,  # Not used
@@ -334,6 +336,11 @@ class SurveyElement(dict):
                         "lang": lang,
                         "text": text,
                     }
+                    if list_name:
+                        name = self.get("name").replace(" ", "_")
+                        itextId = "-".join(["static_instance", list_name, name])
+                        translation.update({"path": itextId})
+                    yield translation
 
     def get_media_keys(self):
         """
@@ -371,9 +378,8 @@ class SurveyElement(dict):
             # then we need to make a label with an itext ref
             parent = self.get("parent")
             if parent and parent.get("list_name"):
-                itextId = "-".join(
-                    ["static_instance", parent.get("list_name"), self.get("name")]
-                )
+                name = self.get("name").replace(" ", "_")
+                itextId = "-".join(["static_instance", parent.get("list_name"), name])
                 ref = f"jr:itext('{itextId}')"
             else:
                 ref = "jr:itext('%s')" % self._translation_path("label")
