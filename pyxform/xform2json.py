@@ -418,6 +418,7 @@ class XFormToDictBuilder:
             question["type"] = obj["mediatype"].replace("/*", "")
         if "item" in obj:
             children = []
+            question["list_name"] = self._get_list_name(obj["item"])
             for i in obj["item"]:
                 if isinstance(i, dict) and "label" in i.keys() and "value" in i.keys():
                     k, v = self._get_label(i["label"])
@@ -545,6 +546,15 @@ class XFormToDictBuilder:
             self.translations = [self.translations]
         assert "text" in self.translations[0]
         assert "lang" in self.translations[0]
+
+    def _get_list_name(self, itemset):
+        item = itemset[0]
+        if isinstance(item.get("label"), dict):
+            label_ref = item["label"].get("ref")
+            if "static_instance" in label_ref:
+                label_ref = label_ref.replace("jr:itext('", "").replace("')", "")
+                return label_ref.split("-")[1]
+        return ""
 
     def _get_label(self, label_obj, key="label"):
         if isinstance(label_obj, dict):
