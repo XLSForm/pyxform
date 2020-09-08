@@ -75,3 +75,41 @@ class TransaltionsTest(PyxformTestCase):
             ],
             itext__excludes=['<value form="audio">jr://audio/-</value>'],
         )
+
+    def test_select_with_choice_filter_translation(self):
+        """Test translations are correctly generated for selects with choice filters"""
+        xform_md = """
+        | survey |                    |                 |                                 |                           |
+        |        | type               | name            | label                           | choice_filter             |
+        |        | select_one consent | consent         | Would you like to participate ? |                           |
+        |        | select_one mood    | enumerator_mood | How are you feeling today ?     | selected(${consent}, 'y') |
+        | choices |
+        |         | list_name | name | label | label::Latin | media::image |
+        |         | mood      | h    | Happy | Felix        | happy.jpg    |
+        |         | mood      | s    | Sad   | Miserabilis  | sad.jpg      |
+        |         | consent   | y    | Yes   |              |              |
+        |         | consent   | n    | No    |              |              |
+        """
+        self.assertPyxformXform(
+            name="mood_form",
+            id_string="mood_form",
+            md=xform_md,
+            errored=False,
+            debug=False,
+            itext__contains=[
+                '<translation default="true()" lang="default">',
+                '<text id="static_instance-mood-h">',
+                "<value>Happy</value>",
+                '<value form="image">jr://images/happy.jpg</value>',
+                '<text id="static_instance-mood-s">',
+                "<value>Sad</value>",
+                '<value form="image">jr://images/sad.jpg</value>',
+                '<translation lang="Latin">',
+                "<value>Felix</value>",
+                "<value>Miserabilis</value>",
+            ],
+            itext__excludes=[
+                '<text id="/data/enumerator_mood/h:label">',
+                '<text id="/data/enumerator_mood/s:label">',
+            ],
+        )
