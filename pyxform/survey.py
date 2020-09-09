@@ -233,7 +233,7 @@ class Survey(Section):
             # Add a unique id to the choice element in case there is itext
             # it references
             if multi_language or has_media:
-                itext_id = "-".join(["static_instance", list_name, str(idx)])
+                itext_id = "-".join([list_name, str(idx)])
                 choice_element_list.append(node("itextId", itext_id))
 
             for name, value in sorted(choice.items()):
@@ -625,7 +625,7 @@ class Survey(Section):
                 continue
             for idx, choice in zip(range(len(choice_list)), choice_list):
                 for name, choice_value in choice.items():
-                    itext_id = "-".join(["static_instance", list_name, str(idx)])
+                    itext_id = "-".join([list_name, str(idx)])
                     if isinstance(choice_value, dict):
                         _setup_choice_translations(name, choice_value, itext_id)
                     elif name == "label":
@@ -723,7 +723,7 @@ class Survey(Section):
             if not has_media:
                 continue
             for idx, choice in zip(range(len(choice_list)), choice_list):
-                itext_id = "-".join(["static_instance", list_name, str(idx)])
+                itext_id = "-".join([list_name, str(idx)])
                 _set_up_media_translations(choice.get("media"), itext_id)
 
     def itext(self):
