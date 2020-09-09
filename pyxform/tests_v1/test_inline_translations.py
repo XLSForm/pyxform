@@ -79,7 +79,7 @@ class InlineTranslationsTest(PyxformTestCase):
         self,
     ):
         """
-        Selects with media and choice filter should generate itext fields.
+        Selects with media and choice filter should generate itext fields for the media.
         """
         xform_md = """
         | survey |                    |                 |                                 |                           |
@@ -104,6 +104,10 @@ class InlineTranslationsTest(PyxformTestCase):
                 '<text id="mood-1">',
                 "<itextId>mood-0</itextId>",
                 "<itextId>mood-1</itextId>",
+            ],
+            model__excludes=[
+                '<text id="/data/enumerator_mood/h:label">',
+                '<text id="/data/enumerator_mood/s:label">',
             ],
             xml__contains=['<label ref="jr:itext(itextId)"/>'],
             xml__excludes=['<label ref="label"/>'],
