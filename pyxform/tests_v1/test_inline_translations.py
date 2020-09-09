@@ -94,8 +94,8 @@ class InlineTranslationsTest(PyxformTestCase):
         |         | consent   | n    | No    |              |
         """
         self.assertPyxformXform(
-            name="mood_form",
-            id_string="mood_form",
+            name="data",
+            id_string="some-id",
             md=xform_md,
             errored=False,
             debug=False,
@@ -107,4 +107,38 @@ class InlineTranslationsTest(PyxformTestCase):
             ],
             xml__contains=['<label ref="jr:itext(itextId)"/>'],
             xml__excludes=['<label ref="label"/>'],
+        )
+
+    def test_select_with_choice_filter_and_translations_generates_single_translation(
+        self,
+    ):
+        """
+        Selects with choice filter and translations should only have a single itext entry.
+        """
+        xform_md = """
+        | survey |                    |      |       |               |
+        |        | type               | name | label | choice_filter |
+        |        | select_one list    | foo  | Foo   | name != "     |
+        | choices |
+        |         | list_name | name | label | image | label::French |
+        |         | list      | a    | A     | a.jpg | Ah            |
+        |         | list      | b    | B     | b.jpg | Bé            |
+        |         | list      | c    | C     | c.jpg | Cé            |
+        """
+        self.assertPyxformXform(
+            name="data",
+            id_string="some-id",
+            md=xform_md,
+            errored=False,
+            debug=False,
+            itext__contains=[
+                '<text id="static_instance-list-0">',
+                '<text id="static_instance-list-1">',
+                '<text id="static_instance-list-2">',
+            ],
+            itext__excludes=[
+                '<text id="/data/foo/a:label">',
+                '<text id="/data/foo/b:label">',
+                '<text id="/data/foo/c:label">',
+            ],
         )
