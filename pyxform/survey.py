@@ -593,7 +593,7 @@ class Survey(Section):
         for element in self.iter_descendants():
             # Skip creation of translations for choices in filtered selects
             # The creation of these translations is done futher below in this
-            # function(line 614)
+            # function
             parent = element.get("parent")
             if parent and not parent.get("choice_filter"):
                 for d in element.get_translations(self.default_language):
