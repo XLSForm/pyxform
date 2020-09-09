@@ -711,11 +711,14 @@ class Survey(Section):
             self._translations = defaultdict(dict)  # pylint: disable=W0201
 
         for survey_element in self.iter_descendants():
-            # parent = survey_element.get("parent")
-            # if parent and not parent.get("choice_filter"):
-            translation_key = survey_element.get_xpath() + ":label"
-            media_dict = survey_element.get("media")
-            _set_up_media_translations(media_dict, translation_key)
+            # Skip set up of media for choices in filtered selects.
+            # Translations for the media content should have been set up
+            # in _setup_translations
+            parent = survey_element.get("parent")
+            if parent and not parent.get("choice_filter"):
+                translation_key = survey_element.get_xpath() + ":label"
+                media_dict = survey_element.get("media")
+                _set_up_media_translations(media_dict, translation_key)
 
         # This code sets up media for choices in filtered selects.
         # for list_name, choice_list in self.choices.items():
