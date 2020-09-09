@@ -227,12 +227,13 @@ class Survey(Section):
         """
         instance_element_list = []
         multi_language = isinstance(choice_list[0].get("label"), dict)
+        has_media = bool(choice_list[0].get("media"))
         for idx, choice in enumerate(choice_list):
             choice_element_list = []
             # Add a unique id to the choice element in case there is itext
             # it references
-            if multi_language:
-                itext_id = "-".join(["static_instance", list_name, str(idx)])
+            if multi_language or has_media:
+                itext_id = "-".join([list_name, str(idx)])
                 choice_element_list.append(node("itextId", itext_id))
 
             for name, value in sorted(choice.items()):
@@ -590,31 +591,41 @@ class Survey(Section):
 
         self._translations = defaultdict(dict)  # pylint: disable=W0201
         for element in self.iter_descendants():
-            for d in element.get_translations(self.default_language):
+            # Skip creation of translations for choices in filtered selects
+            # The creation of these translations is done futher below in this
+            # function
+            parent = element.get("parent")
+            if parent and not parent.get("choice_filter"):
+                for d in element.get_translations(self.default_language):
+                    translation_path = d["path"]
+                    form = "long"
 
-                translation_path = d["path"]
-                form = "long"
+                    if "guidance_hint" in d["path"]:
+                        translation_path = d["path"].replace("guidance_hint", "hint")
+                        form = "guidance"
 
-                if "guidance_hint" in d["path"]:
-                    translation_path = d["path"].replace("guidance_hint", "hint")
-                    form = "guidance"
+                    self._translations[d["lang"]][
+                        translation_path
+                    ] = self._translations[d["lang"]].get(translation_path, {})
 
-                self._translations[d["lang"]][translation_path] = self._translations[
-                    d["lang"]
-                ].get(translation_path, {})
-
-                self._translations[d["lang"]][translation_path].update(
-                    {form: {"text": d["text"], "output_context": d["output_context"],}}
-                )
+                    self._translations[d["lang"]][translation_path].update(
+                        {
+                            form: {
+                                "text": d["text"],
+                                "output_context": d["output_context"],
+                            }
+                        }
+                    )
 
         # This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
             multi_language = isinstance(choice_list[0].get("label"), dict)
-            if not multi_language:
+            has_media = bool(choice_list[0].get("media"))
+            if not multi_language and not has_media:
                 continue
             for idx, choice in zip(range(len(choice_list)), choice_list):
                 for name, choice_value in choice.items():
-                    itext_id = "-".join(["static_instance", list_name, str(idx)])
+                    itext_id = "-".join([list_name, str(idx)])
                     if isinstance(choice_value, dict):
                         _setup_choice_translations(name, choice_value, itext_id)
                     elif name == "label":
@@ -651,14 +662,8 @@ class Survey(Section):
         {language : {element_xpath : {media_type : media}}}
         It matches the xform nesting order.
         """
-        if not self._translations:
-            self._translations = defaultdict(dict)  # pylint: disable=W0201
 
-        for survey_element in self.iter_descendants():
-
-            translation_key = survey_element.get_xpath() + ":label"
-            media_dict = survey_element.get("media")
-
+        def _set_up_media_translations(media_dict, translation_key):
             # This is probably papering over a real problem, but anyway,
             # in py3, sometimes if an item is on an xform with multiple
             # languages and the item only has media defined in # "default"
@@ -701,6 +706,19 @@ class Survey(Section):
                         translations_trans_key[media_type] = {}
 
                     translations_trans_key[media_type] = media
+
+        if not self._translations:
+            self._translations = defaultdict(dict)  # pylint: disable=W0201
+
+        for survey_element in self.iter_descendants():
+            # Skip set up of media for choices in filtered selects.
+            # Translations for the media content should have been set up
+            # in _setup_translations
+            parent = survey_element.get("parent")
+            if parent and not parent.get("choice_filter"):
+                translation_key = survey_element.get_xpath() + ":label"
+                media_dict = survey_element.get("media")
+                _set_up_media_translations(media_dict, translation_key)
 
     def itext(self):
         """
