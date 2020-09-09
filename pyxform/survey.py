@@ -227,11 +227,12 @@ class Survey(Section):
         """
         instance_element_list = []
         multi_language = isinstance(choice_list[0].get("label"), dict)
+        has_media = bool(choice_list[0].get("media"))
         for idx, choice in enumerate(choice_list):
             choice_element_list = []
             # Add a unique id to the choice element in case there is itext
             # it references
-            if multi_language:
+            if multi_language or has_media:
                 itext_id = "-".join(["static_instance", list_name, str(idx)])
                 choice_element_list.append(node("itextId", itext_id))
 
@@ -610,7 +611,8 @@ class Survey(Section):
         # This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
             multi_language = isinstance(choice_list[0].get("label"), dict)
-            if not multi_language:
+            has_media = bool(choice_list[0].get("media"))
+            if not multi_language and not has_media:
                 continue
             for idx, choice in zip(range(len(choice_list)), choice_list):
                 for name, choice_value in choice.items():

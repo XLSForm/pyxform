@@ -195,11 +195,16 @@ class MultipleChoiceQuestion(Question):
         if self["itemset"] and isinstance(self["itemset"], basestring):
             choice_filter = self.get("choice_filter")
             itemset, file_extension = os.path.splitext(self["itemset"])
+            has_media = False
+
+            if choices.get(itemset):
+                has_media = bool(choices[itemset][0].get("media"))
+
             if file_extension in [".csv", ".xml"]:
                 itemset = itemset
                 itemset_label_ref = "label"
             else:
-                if not multi_language:
+                if not multi_language and not has_media:
                     itemset = self["itemset"]
                     itemset_label_ref = "label"
                 else:
