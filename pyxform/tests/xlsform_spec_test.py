@@ -100,7 +100,7 @@ class WarningsTest(unittest.TestCase):
             path_to_excel_file, default_name="warnings", warnings=warnings
         )
         self.assertEquals(
-            len(warnings), 22, "Found " + str(len(warnings)) + " warnings"
+            len(warnings), 21, "Found " + str(len(warnings)) + " warnings"
         )
 
 
