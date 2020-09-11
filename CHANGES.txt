@@ -1,5 +1,24 @@
 Pyxform Changelog
 
+# v1.2.0, 2020-09-10
+
+* #436 support another java version string for 9-internal
+  * @kenhorn 
+* #438 Add "trigger" column to use value changes as triggers for calculations
+  * Agus Hilman @gushil (OpenClinica) and Hélène Martin @lognaturel (Nafundi)
+* #70 Add non-string calculation types
+  * Agus Hilman @gushil (OpenClinica) and Hélène Martin @lognaturel (Nafundi)
+* #458 New non-text calculations output a missing-label warning
+  * Agus Hilman @gushil (OpenClinica)
+* #456 Fix calculate with dynamic default
+  * Agus Hilman @gushil (OpenClinica)
+* #457 Triggers referring to hidden question will produce an error
+  * Agus Hilman @gushil (OpenClinica)
+* #450 Fixed <output> inside repeat has absolute path instead of relative
+  * Agus Hilman @gushil (OpenClinica)
+* #468 Fixed duplicate label translations for secondary itemsets and use itextID for selects with choices that have media specified
+  * Davis Raymond @DavisRayM (Ona)
+
 # v1.1.0, 2020-02-17
 
 * #429 Adding a hash to properly route to the choicenames url
