@@ -353,3 +353,33 @@ class TestRepeat(PyxformTestCase):
             ],
             run_odk_validate=True,
         )
+
+    def test_choice_from_previous_repeat_answers_with_choice_filter(self):
+        """Select one choices from previous repeat answers with choice filter"""
+        xlsform_md = """
+        | survey  |                    |                |                |                           |
+        |         | type               | name           | label          | choice_filter             |
+        |         | begin repeat       | rep            | Repeat         |                           |
+        |         | text               | name           | Enter name     |                           |
+        |         | begin group        | demographics   | Demographics   |                           |
+        |         | integer            | age            | Enter age      |                           |
+        |         | end group          | demographics   |                |                           |
+        |         | end repeat         |                |                |                           |
+        |         | select one fruits  | fruit          | Choose a fruit |                           |
+        |         | select one ${name} | choice         | Choose name    | starts-with(./name, "b")  |
+        |         | select one ${name} | choice_18_over | Choose name    | ${age} > 18               |
+        | choices |                    |                |                |                           |
+        |         | list name          | name           | label          |                           |
+        |         | fruits             | banana         | Banana         |                           |
+        |         | fruits             | mango          | Mango          |                           |
+        """
+        self.assertPyxformXform(
+            name="data",
+            id_string="some-id",
+            md=xlsform_md,
+            xml__contains=[
+                '<itemset nodeset="/data/rep[starts-with(./name, &quot;b&quot;)]">',
+                '<itemset nodeset="/data/rep[./demographics/age &gt; 18]">',
+            ],
+            run_odk_validate=True,
+        )
