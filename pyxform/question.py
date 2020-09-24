@@ -254,9 +254,9 @@ class MultipleChoiceQuestion(Question):
             depth = len(path)
             if depth > 2:
                 name = path[-1]
-                nodeset = "/".join(
-                    path[:-2] + [path[-2] + "[string-length(./" + name + ") > 0]"]
-                )
+                # Choices must have a value. Filter out repeat instances without
+                # an answer for the linked question
+                nodeset = "/".join(path[:-2] + [path[-2] + f"[./{name} != '']"])
                 itemset_children = [node("value", ref=name), node("label", ref=name)]
                 result.appendChild(node("itemset", *itemset_children, nodeset=nodeset))
         else:

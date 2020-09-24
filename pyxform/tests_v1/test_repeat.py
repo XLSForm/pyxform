@@ -349,7 +349,7 @@ class TestRepeat(PyxformTestCase):
         self.assertPyxformXform(
             md=xlsform_md,
             xml__contains=[
-                '<itemset nodeset="/pyxform_autotestname/rep[string-length(./name) &gt; 0]">'
+                "<itemset nodeset=\"/pyxform_autotestname/rep[./name != '']\">"
             ],
             run_odk_validate=True,
         )
