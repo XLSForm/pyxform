@@ -3,6 +3,7 @@
 XForm Survey element classes for different question types.
 """
 import os.path
+import re
 
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
@@ -196,6 +197,7 @@ class MultipleChoiceQuestion(Question):
             choice_filter = self.get("choice_filter")
             itemset, file_extension = os.path.splitext(self["itemset"])
             has_media = False
+            is_previous_question = bool(re.match(r"^\${.*}$", self.get("itemset")))
 
             if choices.get(itemset):
                 has_media = bool(choices[itemset][0].get("media"))
@@ -210,9 +212,17 @@ class MultipleChoiceQuestion(Question):
                 else:
                     itemset = self["itemset"]
                     itemset_label_ref = "jr:itext(itextId)"
-            nodeset = "instance('" + itemset + "')/root/item"
+
             choice_filter = survey.insert_xpaths(choice_filter, self, True)
+            if is_previous_question:
+                path = survey.insert_xpaths(self["itemset"], self).strip().split("/")
+                nodeset = "/".join(path[:-1])
+                itemset_label_ref = path[-1]
+            else:
+                nodeset = "instance('" + itemset + "')/root/item"
+
             if choice_filter:
+                choice_filter = choice_filter.replace(nodeset, ".")
                 nodeset += "[" + choice_filter + "]"
 
             if self["parameters"]:

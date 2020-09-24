@@ -379,7 +379,7 @@ class TestRepeat(PyxformTestCase):
             md=xlsform_md,
             xml__contains=[
                 '<itemset nodeset="/data/rep[starts-with(./name, &quot;b&quot;)]">',
-                '<itemset nodeset="/data/rep[./demographics/age &gt; 18]">',
+                '<itemset nodeset="/data/rep[ ./demographics/age  &gt; 18]">',
             ],
             run_odk_validate=True,
         )
