@@ -187,6 +187,7 @@ class MultipleChoiceQuestion(Question):
             result.appendChild(element)
 
         choices = survey.get("choices")
+        multi_language = False
         if choices is not None and len(choices) > 0:
             first_choices = next(iter(choices.values()))
             multi_language = isinstance(first_choices[0].get("label"), dict)
