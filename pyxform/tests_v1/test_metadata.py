@@ -14,56 +14,29 @@ class MetadataTest(PyxformTestCase):
     """
 
     def test_metadata_bindings(self):
-        pass
-        # we should assert this stuff is here for meta data fields
-        # "subscriber id": {
-        #     "bind": {
-        #         "jr:preload": "property",
-        #         "type": "string",
-        #         "jr:preloadParams": "subscriberid",
-        #     }
-        # },
-        #         <?xml version="1.0"?>
-        # <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-        #   <h:head>
-        #     <h:title>pyxform_autotesttitle</h:title>
-        #     <model odk:xforms-version="1.0.0">
-        #       <instance>
-        #         <pyxform_autotestname id="pyxform_autotest_id_string">
-        #           <simserial/>
-        #           <simserial_test_output/>
-        #           <subscriberid/>
-        #           <subscriberid_test_output/>
-        #           <deviceid/>
-        #           <deviceid_test_output/>
-        #           <YERPDERP/>
-        #           <meta>
-        #             <instanceID/>
-        #           </meta>
-        #         </pyxform_autotestname>
-        #       </instance>
-        #       <bind jr:preload="property" jr:preloadParams="simserial" nodeset="/pyxform_autotestname/simserial" type="string"/>
-        #       <bind nodeset="/pyxform_autotestname/simserial_test_output" readonly="true()" type="string"/>
-        #       <bind jr:preload="property" jr:preloadParams="subscriberid" nodeset="/pyxform_autotestname/subscriberid" type="string"/>
-        #       <bind nodeset="/pyxform_autotestname/subscriberid_test_output" readonly="true()" type="string"/>
-        #       <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/pyxform_autotestname/deviceid" type="string"/>
-        #       <bind nodeset="/pyxform_autotestname/deviceid_test_output" readonly="true()" type="string"/>
-        #       <bind nodeset="/pyxform_autotestname/YERPDERP" type="string"/>
-        #       <bind jr:preload="uid" nodeset="/pyxform_autotestname/meta/instanceID" readonly="true()" type="string"/>
-        #     </model>
-        #   </h:head>
-        #   <h:body>
-        #     <input ref="/pyxform_autotestname/simserial_test_output">
-        #       <label> simserial_test_output: <output value=" /pyxform_autotestname/simserial "/> </label></input>
-        #     <input ref="/pyxform_autotestname/subscriberid_test_output">
-        #       <label> subscriberid_test_output: <output value=" /pyxform_autotestname/subscriberid "/> </label></input>
-        #     <input ref="/pyxform_autotestname/deviceid_test_output">
-        #       <label> deviceid_test_output: <output value=" /pyxform_autotestname/deviceid "/> </label></input>
-        #     <input ref="/pyxform_autotestname/YERPDERP">
-        #       <label>yerp derp derp yerp derp</label>
-        #     </input>
-        #   </h:body>
-        # </h:html>
+        self.assertPyxformXform(
+            name="metadata",
+            md="""
+            | survey |             |             |       |
+            |        | type        | name        | label |
+            |        | deviceid    | deviceid    |       |
+            |        | phonenumber | phonenumber |       |
+            |        | start       | start       |       |
+            |        | end         | end         |       |
+            |        | today       | today       |       |
+            |        | username    | username    |       |
+            |        | email       | email       |       |
+            """,
+            xml__contains=[
+                'jr:preload="property" jr:preloadParams="deviceid"',
+                'jr:preload="property" jr:preloadParams="phonenumber"',
+                'jr:preload="timestamp" jr:preloadParams="start"',
+                'jr:preload="timestamp" jr:preloadParams="end"',
+                'jr:preload="date" jr:preloadParams="today"',
+                'jr:preload="property" jr:preloadParams="username"',
+                'jr:preload="property" jr:preloadParams="email"',
+            ],
+        )
 
 
     def test_simserial_deprecation_warning(self):
