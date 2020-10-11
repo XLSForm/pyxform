@@ -621,7 +621,6 @@ def workbook_to_json(
         question_type = row.get(constants.TYPE)
         question_name = row.get(constants.NAME)
 
-
         question_default = row.get("default")
         if (
             default_is_dynamic(question_default, question_type)
@@ -831,8 +830,10 @@ def workbook_to_json(
                 )
         if question_type in constants.DEPRECATED_DEVICE_ID_METADATA_FIELDS:
             warnings.append(
-                (row_format_string % row_number) + ' ' + question_type +
-                " is no longer supported on most devices. "
+                (row_format_string % row_number)
+                + " "
+                + question_type
+                + " is no longer supported on most devices. "
                 "Only old versions of Collect on Android versions older than 11 still support it."
             )
         # Check if the question is actually a setting specified

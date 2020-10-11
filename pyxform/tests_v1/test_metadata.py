@@ -38,7 +38,6 @@ class MetadataTest(PyxformTestCase):
             ],
         )
 
-
     def test_simserial_deprecation_warning(self):
         warnings = []
         survey = self.md_to_pyxform_survey(
@@ -48,11 +47,11 @@ class MetadataTest(PyxformTestCase):
             |        | simserial    | simserial                |                                            |
             |        | note         | simserial_test_output    | simserial_test_output: ${simserial}        |
             """,
-            warnings = warnings
+            warnings=warnings,
         )
         tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
         tmp.close()
-        survey.print_xform_to_file(tmp.name, warnings=warnings)        
+        survey.print_xform_to_file(tmp.name, warnings=warnings)
         self.assertTrue(len(warnings) == 1)
         warning_expected = (
             "[row : 2] simserial is no longer supported on most devices. "
@@ -70,7 +69,7 @@ class MetadataTest(PyxformTestCase):
             |        | subscriberid | subscriberid             | sub id is not lable optional I guess       |
             |        | note         | subscriberid_test_output | subscriberid_test_output: ${subscriberid}  |
             """,
-            warnings=warnings
+            warnings=warnings,
         )
         tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
         tmp.close()
