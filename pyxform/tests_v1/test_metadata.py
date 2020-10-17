@@ -74,7 +74,6 @@ class MetadataTest(PyxformTestCase):
         tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
         tmp.close()
         survey.print_xform_to_file(tmp.name, warnings=warnings)
-        import ipdb; ipdb.set_trace()
         self.assertTrue(len(warnings) == 1)
         warning_expected = (
             "[row : 2] subscriberid is no longer supported on most devices. "
