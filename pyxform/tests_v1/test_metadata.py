@@ -66,7 +66,7 @@ class MetadataTest(PyxformTestCase):
             """
             | survey |              |                          |                                            |
             |        | type         | name                     | label                                      |
-            |        | subscriberid | subscriberid             | sub id is not lable optional I guess       |
+            |        | subscriberid | subscriberid             | sub id - extra warning generated w/o this  |
             |        | note         | subscriberid_test_output | subscriberid_test_output: ${subscriberid}  |
             """,
             warnings=warnings,
@@ -74,6 +74,7 @@ class MetadataTest(PyxformTestCase):
         tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
         tmp.close()
         survey.print_xform_to_file(tmp.name, warnings=warnings)
+        import ipdb; ipdb.set_trace()
         self.assertTrue(len(warnings) == 1)
         warning_expected = (
             "[row : 2] subscriberid is no longer supported on most devices. "
