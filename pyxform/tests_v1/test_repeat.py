@@ -384,6 +384,30 @@ class TestRepeat(PyxformTestCase):
             run_odk_validate=True,
         )
 
+    def test_choice_from_previous_repeat_answers_in_child_repeat(self):
+        """
+        Select one choice from previous repeat answers when within a child of a repeat
+        """
+        xlsform_md = """
+        | survey  |                    |                           |                                                |                             |
+        |         | type               | name                      | label                                          | choice_filter               |
+        |         | begin repeat       | household                 | Household Repeat                               |                             |
+        |         | begin repeat       | member                    | Household member repeat                        |                             |
+        |         | text               | name                      | Enter name of a household member               |                             |
+        |         | integer            | age                       | Enter age of the household member              |                             |
+        |         | begin repeat       | adult                     | Select a representative                        |                             |
+        |         | select one ${name} | adult_name                | Choose a name                                  | ${age} > 18                 |
+        |         | end repeat         | adult                     |                                                |                             |
+        |         | end repeat         | member                    |                                                |                             |
+        |         | end repeat         | household                 |                                                |                             |
+        """
+        self.assertPyxformXform(
+            name="data",
+            id_string="some-id",
+            md=xlsform_md,
+            xml__contains=['<itemset nodeset="../../../member[ ./age  &gt; 18]">',],
+        )
+
     def test_choice_from_previous_repeat_answers_in_nested_repeat(self):
         """Select one choices from previous repeat answers within a nested repeat"""
         xlsform_md = """
