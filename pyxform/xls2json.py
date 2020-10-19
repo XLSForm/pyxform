@@ -590,6 +590,9 @@ def workbook_to_json(
     survey_meta = []
 
     dynamic_default_warning_added = False
+
+    # row by row, validate questions, throwing errors and adding warnings
+    # where needed.
     for row in survey_sheet:
         row_number += 1
         if stack[-1] is not None:
@@ -825,7 +828,14 @@ def workbook_to_json(
                 raise PyXFormError(
                     row_format_string % row_number + " Missing calculation."
                 )
-
+        if question_type in constants.DEPRECATED_DEVICE_ID_METADATA_FIELDS:
+            warnings.append(
+                (row_format_string % row_number)
+                + " "
+                + question_type
+                + " is no longer supported on most devices. "
+                "Only old versions of Collect on Android versions older than 11 still support it."
+            )
         # Check if the question is actually a setting specified
         # on the survey sheet
         settings_type = aliases.settings_header.get(question_type)

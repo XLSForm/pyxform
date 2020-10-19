@@ -122,9 +122,6 @@
           <text id="/xlsform_spec_test/everything/some_text:label">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/simserial_test_output:label">
-            <value>-</value>
-          </text>
           <text id="/xlsform_spec_test/everything/number_label:label">
             <value>-</value>
           </text>
@@ -373,9 +370,6 @@
           <text id="/xlsform_spec_test/everything/start_test_output:label">
             <value>-</value>
           </text>
-          <text id="/xlsform_spec_test/everything/simserial_test_output:label">
-            <value>-</value>
-          </text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-test:label">
             <value>-</value>
           </text>
@@ -556,8 +550,6 @@
           </text>
           <text id="/xlsform_spec_test/everything/start_test_output:label">
             <value>start test output: <output value="/xlsform_spec_test/everything/start"/></value>  </text>
-          <text id="/xlsform_spec_test/everything/simserial_test_output:label">
-            <value>simserial_test_output: <output value="/xlsform_spec_test/everything/simserial"/></value>  </text>
           <text id="/xlsform_spec_test/everything/repeat_test/compact-test:label">
             <value>compact-test</value>
           </text>
@@ -612,8 +604,6 @@
             <today_test_output/>
             <deviceid/>
             <deviceid_test_output/>
-            <simserial/>
-            <simserial_test_output/>
             <phonenumber/>
             <phonenumber_test_output/>
             <_1/>
@@ -663,8 +653,6 @@
       <bind nodeset="/xlsform_spec_test/everything/today_test_output" readonly="true()" type="string"/>
       <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/xlsform_spec_test/everything/deviceid" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/deviceid_test_output" readonly="true()" type="string"/>
-      <bind jr:preload="property" jr:preloadParams="simserial" nodeset="/xlsform_spec_test/everything/simserial" type="string"/>
-      <bind nodeset="/xlsform_spec_test/everything/simserial_test_output" readonly="true()" type="string"/>
       <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/xlsform_spec_test/everything/phonenumber" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/phonenumber_test_output" readonly="true()" type="string"/>
       <bind nodeset="/xlsform_spec_test/everything/_1" type="string"/>
@@ -880,9 +868,6 @@
       </input>
       <input ref="/xlsform_spec_test/everything/deviceid_test_output">
         <label ref="jr:itext('/xlsform_spec_test/everything/deviceid_test_output:label')"/>
-      </input>
-      <input ref="/xlsform_spec_test/everything/simserial_test_output">
-        <label ref="jr:itext('/xlsform_spec_test/everything/simserial_test_output:label')"/>
       </input>
       <input ref="/xlsform_spec_test/everything/phonenumber_test_output">
         <label ref="jr:itext('/xlsform_spec_test/everything/phonenumber_test_output:label')"/>
