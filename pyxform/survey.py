@@ -79,9 +79,8 @@ def share_same_repeat_parent(survey, xpath, context_xpath):
 
         returns (2, '/group_a/name')'
     """
-    context_parent = is_parent_a_repeat(survey, context_xpath)
-    xpath_parent = is_parent_a_repeat(survey, xpath)
-    if context_parent and xpath_parent and xpath_parent in context_parent:
+
+    def _get_steps_and_target_xpath(context_parent, xpath_parent):
         context_parts = context_xpath[len(xpath_parent) + 1 :].split("/")
         parts = []
         steps = 1
@@ -99,8 +98,26 @@ def share_same_repeat_parent(survey, xpath, context_xpath):
                 steps = len(context_parts[index - 1 :])
                 parts = xpath_parts[index - 1 :]
                 break
-
         return (steps, "/" + "/".join(parts) if parts else remainder_xpath)
+
+    context_parent = is_parent_a_repeat(survey, context_xpath)
+    xpath_parent = is_parent_a_repeat(survey, xpath)
+    if context_parent and xpath_parent and xpath_parent in context_parent:
+        return _get_steps_and_target_xpath(context_parent, xpath_parent)
+    elif context_parent and xpath_parent:
+        # Check if context_parent and xpath_parent share a common
+        # repeat ancestor
+        context_shared_ancestor = is_parent_a_repeat(survey, context_parent)
+        xpath_shared_ancestor = is_parent_a_repeat(survey, xpath_parent)
+
+        if (
+            xpath_shared_ancestor
+            and context_shared_ancestor
+            and xpath_shared_ancestor == context_shared_ancestor
+        ):
+            return _get_steps_and_target_xpath(
+                context_shared_ancestor, xpath_shared_ancestor
+            )
 
     return (None, None)
 
