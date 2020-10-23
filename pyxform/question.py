@@ -223,7 +223,9 @@ class MultipleChoiceQuestion(Question):
                 nodeset = "instance('" + itemset + "')/root/item"
 
             if choice_filter:
-                choice_filter = choice_filter.replace(nodeset, ".")
+                choice_filter = choice_filter.replace(
+                    "current()/" + nodeset, "."
+                ).replace(nodeset, ".")
                 nodeset += "[" + choice_filter + "]"
 
             if self["parameters"]:
