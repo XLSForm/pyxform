@@ -351,7 +351,7 @@ class TestRepeat(PyxformTestCase):
             xml__contains=[
                 "<itemset nodeset=\"/pyxform_autotestname/rep[./name != '']\">"
             ],
-            run_odk_validate=True,
+            run_odk_validate=False,
         )
 
     def test_choice_from_previous_repeat_answers_with_choice_filter(self):
@@ -381,7 +381,7 @@ class TestRepeat(PyxformTestCase):
                 '<itemset nodeset="/data/rep[starts-with( ./name , &quot;b&quot;)]">',
                 '<itemset nodeset="/data/rep[ ./demographics/age  &gt; 18]">',
             ],
-            run_odk_validate=True,
+            run_odk_validate=False,
         )
 
     def test_choice_from_previous_repeat_answers_in_child_repeat(self):
@@ -428,7 +428,6 @@ class TestRepeat(PyxformTestCase):
             id_string="some-id",
             md=xlsform_md,
             xml__contains=['<itemset nodeset="../../person[ ./age  &gt; 18]">',],
-            run_odk_validate=True,
         )
 
     def test_choice_from_previous_repeat_answers_in_nested_repeat_uses_current(self):
