@@ -7,6 +7,7 @@ from __future__ import print_function
 import codecs
 import os
 import re
+from re import split
 import tempfile
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
@@ -67,7 +68,7 @@ def is_parent_a_repeat(survey, xpath):
 
 
 @lru_cache(maxsize=None)
-def share_same_repeat_parent(survey, xpath, context_xpath):
+def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=False):
     """
     Returns a tuple of the number of steps from the context xpath to the shared
     repeat parent and the xpath to the target xpath from the shared repeat
@@ -80,12 +81,19 @@ def share_same_repeat_parent(survey, xpath, context_xpath):
         returns (2, '/group_a/name')'
     """
 
-    def _get_steps_and_target_xpath(context_parent, xpath_parent):
-        context_parts = context_xpath[len(xpath_parent) + 1 :].split("/")
+    def _get_steps_and_target_xpath(context_parent, xpath_parent, include_parent=False):
         parts = []
         steps = 1
-        remainder_xpath = xpath[len(xpath_parent) :]
-        xpath_parts = xpath[len(xpath_parent) + 1 :].split("/")
+        if not include_parent:
+            remainder_xpath = xpath[len(xpath_parent) :]
+            context_parts = context_xpath[len(xpath_parent) + 1 :].split("/")
+            xpath_parts = xpath[len(xpath_parent) + 1 :].split("/")
+        else:
+            split_idx = len(xpath_parent.split("/"))
+            context_parts = context_xpath.split("/")[split_idx - 1 :]
+            xpath_parts = xpath.split("/")[split_idx - 1 :]
+            remainder_xpath = "/".join(xpath_parts)
+
         for index, item in enumerate(context_parts[:-1]):
             try:
                 if xpath[len(context_parent) + 1 :].split("/")[index] != item:
@@ -103,7 +111,16 @@ def share_same_repeat_parent(survey, xpath, context_xpath):
     context_parent = is_parent_a_repeat(survey, context_xpath)
     xpath_parent = is_parent_a_repeat(survey, xpath)
     if context_parent and xpath_parent and xpath_parent in context_parent:
-        return _get_steps_and_target_xpath(context_parent, xpath_parent)
+        include_parent = False
+        if not context_parent == xpath_parent and reference_parent:
+            context_shared_ancestor = is_parent_a_repeat(survey, context_parent)
+            if context_shared_ancestor == xpath_parent:
+                # Check if context_parent is a child repeat of the xpath_parent
+                # If the context_parent is a child of the xpath_parent reference the entire
+                # xpath_parent in the generated nodeset
+                include_parent = True
+                context_parent = context_shared_ancestor
+        return _get_steps_and_target_xpath(context_parent, xpath_parent, include_parent)
     elif context_parent and xpath_parent:
         # Check if context_parent and xpath_parent share a common
         # repeat ancestor
@@ -853,7 +870,9 @@ class Survey(Section):
                 else:
                     self._xpath[element.name] = element.get_xpath()
 
-    def _var_repl_function(self, matchobj, context, use_current=False):
+    def _var_repl_function(
+        self, matchobj, context, use_current=False, reference_parent=False
+    ):
         """
         Given a dictionary of xpaths, return a function we can use to
         replace ${varname} with the xpath to varname.
@@ -886,7 +905,9 @@ class Survey(Section):
             ):
                 # if context xpath and target xpath fall under the same
                 # repeat use relative xpath referencing.
-                steps, ref_path = share_same_repeat_parent(self, xpath, context_xpath)
+                steps, ref_path = share_same_repeat_parent(
+                    self, xpath, context_xpath, reference_parent
+                )
                 if steps:
                     ref_path = ref_path if ref_path.endswith(name) else "/%s" % name
                     prefix = " current()/" if use_current else " "
@@ -898,13 +919,15 @@ class Survey(Section):
         )
         return " " + last_saved_prefix + self._xpath[name] + " "
 
-    def insert_xpaths(self, text, context, use_current=False):
+    def insert_xpaths(self, text, context, use_current=False, reference_parent=False):
         """
         Replace all instances of ${var} with the xpath to var.
         """
 
         def _var_repl_function(matchobj):
-            return self._var_repl_function(matchobj, context, use_current)
+            return self._var_repl_function(
+                matchobj, context, use_current, reference_parent
+            )
 
         return re.sub(BRACKETED_TAG_REGEX, _var_repl_function, unicode(text))
 
