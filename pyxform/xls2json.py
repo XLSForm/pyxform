@@ -1186,10 +1186,10 @@ def workbook_to_json(
                 ):
                     new_json_dict["itemset"] = list_name
                     json_dict["choices"] = choices
-                elif file_extension in [".csv", ".xml"]:
+                elif file_extension in [".csv", ".xml"] or re.match(
+                    r"\$\{(.*?)\}", list_name
+                ):
                     new_json_dict["itemset"] = list_name
-                elif re.match(r"\$\{(.*?)\}", list_name):
-                    new_json_dict["list_name"] = list_name
                 else:
                     new_json_dict["list_name"] = list_name
                     new_json_dict[constants.CHOICES] = choices[list_name]

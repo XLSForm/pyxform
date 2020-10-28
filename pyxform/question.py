@@ -219,13 +219,19 @@ class MultipleChoiceQuestion(Question):
                 path = survey.insert_xpaths(self["itemset"], self).strip().split("/")
                 nodeset = "/".join(path[:-1])
                 itemset_label_ref = path[-1]
+                if choice_filter:
+                    choice_filter = choice_filter.replace(
+                        "current()/" + nodeset, "."
+                    ).replace(nodeset, ".")
+                else:
+                    # Choices must have a value. Filter out repeat instances without
+                    # an answer for the linked question
+                    name = path[-1]
+                    choice_filter = f"./{name} != ''"
             else:
                 nodeset = "instance('" + itemset + "')/root/item"
 
             if choice_filter:
-                choice_filter = choice_filter.replace(
-                    "current()/" + nodeset, "."
-                ).replace(nodeset, ".")
                 nodeset += "[" + choice_filter + "]"
 
             if self["parameters"]:
@@ -251,17 +257,6 @@ class MultipleChoiceQuestion(Question):
                 node("label", ref=itemset_label_ref),
             ]
             result.appendChild(node("itemset", *itemset_children, nodeset=nodeset))
-        elif not self["children"] and self["list_name"]:
-            list_name = survey.insert_xpaths(self["list_name"], self).strip()
-            path = list_name.split("/")
-            depth = len(path)
-            if depth > 2:
-                name = path[-1]
-                # Choices must have a value. Filter out repeat instances without
-                # an answer for the linked question
-                nodeset = "/".join(path[:-2] + [path[-2] + f"[./{name} != '']"])
-                itemset_children = [node("value", ref=name), node("label", ref=name)]
-                result.appendChild(node("itemset", *itemset_children, nodeset=nodeset))
         else:
             for child in self.children:
                 result.appendChild(child.xml())
