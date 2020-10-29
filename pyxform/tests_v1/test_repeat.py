@@ -233,13 +233,13 @@ class TestRepeat(PyxformTestCase):
 
     def test_output_with_multiple_translations_relative_path(self):
         md = """
-        | survey |              |                |                |                  |              | 
+        | survey |              |                |                |                  |              |
         |        | type         | name           | label::English | label::Indonesia | calculation  |
         |        | begin repeat | member         |                |                  |              |
-        |        | calculate    | pos            |                |                  | position(..) | 
+        |        | calculate    | pos            |                |                  | position(..) |
         |        | text         | member_name    | Name of ${pos} | Nama ${pos}      |              |
         |        | text         | member_address |                | Alamat           |              |
-        |        | end repeat   |                |                |                  |              | 
+        |        | end repeat   |                |                |                  |              |
         """
 
         self.assertPyxformXform(
@@ -457,5 +457,4 @@ class TestRepeat(PyxformTestCase):
             xml__contains=[
                 '<itemset nodeset="../../household_mem_rep[ ./age  &gt;  current()/../target_min_age ]">',
             ],
-            run_odk_validate=True,
         )
