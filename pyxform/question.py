@@ -3,6 +3,7 @@
 XForm Survey element classes for different question types.
 """
 import os.path
+import re
 
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
@@ -186,6 +187,7 @@ class MultipleChoiceQuestion(Question):
             result.appendChild(element)
 
         choices = survey.get("choices")
+        multi_language = False
         if choices is not None and len(choices) > 0:
             first_choices = next(iter(choices.values()))
             multi_language = isinstance(first_choices[0].get("label"), dict)
@@ -196,6 +198,7 @@ class MultipleChoiceQuestion(Question):
             choice_filter = self.get("choice_filter")
             itemset, file_extension = os.path.splitext(self["itemset"])
             has_media = False
+            is_previous_question = bool(re.match(r"^\${.*}$", self.get("itemset")))
 
             if choices.get(itemset):
                 has_media = bool(choices[itemset][0].get("media"))
@@ -210,8 +213,28 @@ class MultipleChoiceQuestion(Question):
                 else:
                     itemset = self["itemset"]
                     itemset_label_ref = "jr:itext(itextId)"
-            nodeset = "instance('" + itemset + "')/root/item"
-            choice_filter = survey.insert_xpaths(choice_filter, self, True)
+
+            choice_filter = survey.insert_xpaths(choice_filter, self, True, True)
+            if is_previous_question:
+                path = (
+                    survey.insert_xpaths(self["itemset"], self, reference_parent=True)
+                    .strip()
+                    .split("/")
+                )
+                nodeset = "/".join(path[:-1])
+                itemset_label_ref = path[-1]
+                if choice_filter:
+                    choice_filter = choice_filter.replace(
+                        "current()/" + nodeset, "."
+                    ).replace(nodeset, ".")
+                else:
+                    # Choices must have a value. Filter out repeat instances without
+                    # an answer for the linked question
+                    name = path[-1]
+                    choice_filter = f"./{name} != ''"
+            else:
+                nodeset = "instance('" + itemset + "')/root/item"
+
             if choice_filter:
                 nodeset += "[" + choice_filter + "]"
 
@@ -239,8 +262,9 @@ class MultipleChoiceQuestion(Question):
             ]
             result.appendChild(node("itemset", *itemset_children, nodeset=nodeset))
         else:
-            for n in [o.xml() for o in self.children]:
-                result.appendChild(n)
+            for child in self.children:
+                result.appendChild(child.xml())
+
         return result
 
 

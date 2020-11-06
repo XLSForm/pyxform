@@ -233,13 +233,13 @@ class TestRepeat(PyxformTestCase):
 
     def test_output_with_multiple_translations_relative_path(self):
         md = """
-        | survey |              |                |                |                  |              | 
+        | survey |              |                |                |                  |              |
         |        | type         | name           | label::English | label::Indonesia | calculation  |
         |        | begin repeat | member         |                |                  |              |
-        |        | calculate    | pos            |                |                  | position(..) | 
+        |        | calculate    | pos            |                |                  | position(..) |
         |        | text         | member_name    | Name of ${pos} | Nama ${pos}      |              |
         |        | text         | member_address |                | Alamat           |              |
-        |        | end repeat   |                |                |                  |              | 
+        |        | end repeat   |                |                |                  |              |
         """
 
         self.assertPyxformXform(
@@ -330,3 +330,131 @@ class TestRepeat(PyxformTestCase):
     </group>"""  # noqa
 
         self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
+
+    def test_choice_from_previous_repeat_answers(self):
+        """Select one choices from previous repeat answers."""
+        xlsform_md = """
+        | survey  |                    |            |                |
+        |         | type               | name       | label          |
+        |         | begin repeat       | rep        | Repeat         |
+        |         | text               | name       | Enter name     |
+        |         | end repeat         |            |                |
+        |         | select one fruits  | fruit      | Choose a fruit |
+        |         | select one ${name} | choice     | Choose name    |
+        | choices |                    |            |                |
+        |         | list name          | name       | label          |
+        |         | fruits             | banana     | Banana         |
+        |         | fruits             | mango      | Mango          |
+        """
+        self.assertPyxformXform(
+            md=xlsform_md,
+            xml__contains=[
+                "<itemset nodeset=\"/pyxform_autotestname/rep[./name != '']\">"
+            ],
+            run_odk_validate=False,
+        )
+
+    def test_choice_from_previous_repeat_answers_with_choice_filter(self):
+        """Select one choices from previous repeat answers with choice filter"""
+        xlsform_md = """
+        | survey  |                    |                |                |                           |
+        |         | type               | name           | label          | choice_filter             |
+        |         | begin repeat       | rep            | Repeat         |                           |
+        |         | text               | name           | Enter name     |                           |
+        |         | begin group        | demographics   | Demographics   |                           |
+        |         | integer            | age            | Enter age      |                           |
+        |         | end group          | demographics   |                |                           |
+        |         | end repeat         |                |                |                           |
+        |         | select one fruits  | fruit          | Choose a fruit |                           |
+        |         | select one ${name} | choice         | Choose name    | starts-with(${name}, "b")  |
+        |         | select one ${name} | choice_18_over | Choose name    | ${age} > 18               |
+        | choices |                    |                |                |                           |
+        |         | list name          | name           | label          |                           |
+        |         | fruits             | banana         | Banana         |                           |
+        |         | fruits             | mango          | Mango          |                           |
+        """
+        self.assertPyxformXform(
+            name="data",
+            id_string="some-id",
+            md=xlsform_md,
+            xml__contains=[
+                '<itemset nodeset="/data/rep[starts-with( ./name , &quot;b&quot;)]">',
+                '<itemset nodeset="/data/rep[ ./demographics/age  &gt; 18]">',
+            ],
+            run_odk_validate=False,
+        )
+
+    def test_choice_from_previous_repeat_answers_in_child_repeat(self):
+        """
+        Select one choice from previous repeat answers when within a child of a repeat
+        """
+        xlsform_md = """
+        | survey  |                    |                           |                                                |                             |
+        |         | type               | name                      | label                                          | choice_filter               |
+        |         | begin repeat       | household                 | Household Repeat                               |                             |
+        |         | begin repeat       | member                    | Household member repeat                        |                             |
+        |         | text               | name                      | Enter name of a household member               |                             |
+        |         | integer            | age                       | Enter age of the household member              |                             |
+        |         | begin repeat       | adult                     | Select a representative                        |                             |
+        |         | select one ${name} | adult_name                | Choose a name                                  | ${age} > 18                 |
+        |         | end repeat         | adult                     |                                                |                             |
+        |         | end repeat         | member                    |                                                |                             |
+        |         | end repeat         | household                 |                                                |                             |
+        """
+        self.assertPyxformXform(
+            name="data",
+            id_string="some-id",
+            md=xlsform_md,
+            xml__contains=['<itemset nodeset="../../../member[ ./age  &gt; 18]">',],
+        )
+
+    def test_choice_from_previous_repeat_answers_in_nested_repeat(self):
+        """Select one choices from previous repeat answers within a nested repeat"""
+        xlsform_md = """
+        | survey  |                    |                           |                                                |                             |
+        |         | type               | name                      | label                                          | choice_filter               |
+        |         | begin repeat       | household                 | Household Repeat                               |                             |
+        |         | begin repeat       | person                    | Household member repeat                        |                             |
+        |         | text               | name                      | Enter name of a household member               |                             |
+        |         | integer            | age                       | Enter age of the household member              |                             |
+        |         | end repeat         | person                    |                                                |                             |
+        |         | begin repeat       | adult                     | Select a representative                        |                             |
+        |         | select one ${name} | adult_name                | Choose a name                                  | ${age} > 18                 |
+        |         | end repeat         | adult                     |                                                |                             |
+        |         | end repeat         | household                 |                                                |                             |
+        """
+        self.assertPyxformXform(
+            name="data",
+            id_string="some-id",
+            md=xlsform_md,
+            xml__contains=['<itemset nodeset="../../person[ ./age  &gt; 18]">',],
+        )
+
+    def test_choice_from_previous_repeat_answers_in_nested_repeat_uses_current(self):
+        """
+        Select one choices from previous repeat answers within a nested repeat should use current if a sibling node of a select is used
+        """
+        xlsform_md = """
+        | survey  |                    |                           |                                                |                             |
+        |         | type               | name                      | label                                          | choice_filter               |
+        |         | text               | enumerators_name          | Enter enumerators name                         |                             |
+        |         | begin repeat       | household_rep             | Household Repeat                               |                             |
+        |         | integer            | household_id              | Enter household ID                             |                             |
+        |         | begin repeat       | household_mem_rep         | Household member repeat                        |                             |
+        |         | text               | name                      | Enter name of a household member               |                             |
+        |         | integer            | age                       | Enter age of the household member              |                             |
+        |         | end repeat         | household_mem_rep         |                                                |                             |
+        |         | begin repeat       | selected                  | Select a representative                        |                             |
+        |         | integer            | target_min_age            | Minimum age requirement                        |                             |
+        |         | select one ${name} | selected_name             | Choose a name                                  | ${age} > ${target_min_age}  |
+        |         | end repeat         | selected                  |                                                |                             |
+        |         | end repeat         | household_rep             |                                                |                             |
+        """
+        self.assertPyxformXform(
+            name="data",
+            id_string="some-id",
+            md=xlsform_md,
+            xml__contains=[
+                '<itemset nodeset="../../household_mem_rep[ ./age  &gt;  current()/../target_min_age ]">',
+            ],
+        )
