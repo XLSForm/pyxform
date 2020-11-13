@@ -9,7 +9,6 @@ from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import basestring, node, unicode, default_is_dynamic
-from pyxform.xls2json import print_pyobj_to_json
 
 
 class Question(SurveyElement):
