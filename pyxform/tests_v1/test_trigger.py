@@ -247,3 +247,35 @@ class TriggerSetvalueTests(PyxformTestCase):
                 '<setvalue event="xforms-value-changed" ref=" /trigger-select_trigger/b " value="string-length( /trigger-select_trigger/a )"/>\n    </select1>'
             ],
         )
+
+    def test_trigger_column_in_repeat_should_have_expanded_xpath(self):
+        self.assertPyxformXform(
+            name="trigger-column",
+            md="""
+            | survey |              |       |                        |              |         |
+            |        | type         | name  | label                  | calculation  | trigger |
+            |        | begin repeat | rep   |                        |              |         |
+            |        | dateTime     | one   | Enter text             |              |         |
+            |        | dateTime     | three | Enter text (triggered) | now()        | ${one}  |
+            |        | end repeat   |       |                        |              |         |
+            """,
+            xml__contains=[
+                '<setvalue event="xforms-value-changed" ref=" /trigger-column/rep/three " value="now()"/>'
+            ],
+        )
+
+    def test_trigger_column_in_repeat_should_have_expanded_xpath_in_value(self):
+        self.assertPyxformXform(
+            name="trigger-column",
+            md="""
+            | survey |              |       |                        |                        |         |
+            |        | type         | name  | label                  | calculation            | trigger |
+            |        | begin repeat | rep   |                        |                        |         |
+            |        | dateTime     | one   | Enter text             |                        |         |
+            |        | dateTime     | three | Enter text (triggered) | string-length(${one})  | ${one}  |
+            |        | end repeat   |       |                        |                        |         |
+            """,
+            xml__contains=[
+                '<setvalue event="xforms-value-changed" ref=" /trigger-column/rep/three " value="string-length( /trigger-column/rep/one )"/>'
+            ],
+        )

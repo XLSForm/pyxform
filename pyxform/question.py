@@ -9,6 +9,7 @@ from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import basestring, node, unicode, default_is_dynamic
+from pyxform.xls2json import print_pyobj_to_json
 
 
 class Question(SurveyElement):
@@ -58,12 +59,14 @@ class Question(SurveyElement):
         if nested_setvalues:
             for setvalue in nested_setvalues:
                 setvalue_attrs = {
-                    "ref": self.get_root().insert_xpaths("${%s}" % setvalue[0], self),
+                    "ref": self.get_root().insert_xpaths(
+                        "${%s}" % setvalue[0], self.get_root()
+                    ),
                     "event": "xforms-value-changed",
                 }
                 if not (setvalue[1] == ""):
                     setvalue_attrs["value"] = self.get_root().insert_xpaths(
-                        setvalue[1], self
+                        setvalue[1], self.get_root()
                     )
 
                 setvalue_node = node("setvalue", **setvalue_attrs)
