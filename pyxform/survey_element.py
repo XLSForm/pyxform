@@ -326,43 +326,29 @@ class SurveyElement(dict):
         for display_element in ["label", "hint", "guidance_hint"]:
             label_or_hint = self[display_element]
 
-            if (
-                display_element == "label"
-                and self.needs_itext_ref()
-                and type(label_or_hint) is not dict
-                and label_or_hint
-            ):
-                label_or_hint = {default_language: label_or_hint}
+            if label_or_hint:
+                if not (
+                    isinstance(label_or_hint, dict)
+                ):  # no explicit language declaration, nest this under default language.
+                    # always use itext for guidance hints because that's
+                    # how they're defined - https://opendatakit.github.io/xforms-spec/#languages
+                    if (
+                        (display_element == "label" and self.needs_itext_ref())
+                        or display_element == "guidance_hint"
+                        or (display_element == "hint" and self.get("guidance_hint"))
+                    ):
+                        label_or_hint = {default_language: label_or_hint}
 
-            # always use itext for guidance hints because that's
-            # how they're defined - https://opendatakit.github.io/xforms-spec/#languages
-            if (
-                display_element == "guidance_hint"
-                and not (isinstance(label_or_hint, dict))
-                and len(label_or_hint) > 0
-            ):
-                label_or_hint = {default_language: label_or_hint}
-
-            # always use itext for hint if there's a guidance hint
-            if (
-                display_element == "hint"
-                and not (isinstance(label_or_hint, dict))
-                and len(label_or_hint) > 0
-                and "guidance_hint" in self.keys()
-                and len(self["guidance_hint"]) > 0
-            ):
-                label_or_hint = {default_language: label_or_hint}
-
-            if type(label_or_hint) is dict:
-                for lang, text in label_or_hint.items():
-                    yield {
-                        "display_element": display_element,  # Not used
-                        "path": self._translation_path(display_element),
-                        "element": self,  # Not used
-                        "output_context": self,
-                        "lang": lang,
-                        "text": text,
-                    }
+                if type(label_or_hint) is dict:
+                    for lang, text in label_or_hint.items():
+                        yield {
+                            "display_element": display_element,  # Not used
+                            "path": self._translation_path(display_element),
+                            "element": self,  # Not used
+                            "output_context": self,
+                            "lang": lang,
+                            "text": text,
+                        }
 
     def get_media_keys(self):
         """
