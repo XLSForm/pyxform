@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+# v1.2.1, 2020-11-14
+
+* #479 Java versions can have patch versions
+  * Yaw Anokwa @yanokwa (ODK)
+
 # v1.2.0, 2020-09-10
 
 * #436 support another java version string for 9-internal
