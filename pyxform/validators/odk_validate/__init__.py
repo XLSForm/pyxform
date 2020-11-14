@@ -74,11 +74,11 @@ def check_java_version():
     # Using regex to find that in the string
     java_version = re.findall(r"\"(.+?)\"", java_version_str)[0]
     if "." in java_version:
-        major, minor, _ = java_version.split(".")
+        major, minor = java_version.split(".")[0], java_version.split(".")[1]
     elif "-" in java_version:
-        major, minor = int(java_version.split("-")[0]), 0
+        major, minor = java_version.split("-")[0], 0
     else:
-        major, minor = int(java_version), 0
+        major, minor = java_version, 0
     if not ((int(major) == 1 and int(minor) >= 8) or int(major) >= 8):
         raise EnvironmentError(
             "pyxform odk validate dependency: " "java 8 or newer version not found"
