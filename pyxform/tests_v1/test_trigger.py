@@ -276,6 +276,6 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | end repeat   |       |                        |                        |         |
             """,
             xml__contains=[
-                '<setvalue event="xforms-value-changed" ref=" /trigger-column/rep/three " value="string-length( /trigger-column/rep/one )"/>'
+                '<setvalue event="xforms-value-changed" ref=" /trigger-column/rep/three " value="string-length( ../one )"/>'
             ],
         )

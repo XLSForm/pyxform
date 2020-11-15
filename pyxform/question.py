@@ -65,7 +65,7 @@ class Question(SurveyElement):
                 }
                 if not (setvalue[1] == ""):
                     setvalue_attrs["value"] = self.get_root().insert_xpaths(
-                        setvalue[1], self.get_root()
+                        setvalue[1], self
                     )
 
                 setvalue_node = node("setvalue", **setvalue_attrs)
