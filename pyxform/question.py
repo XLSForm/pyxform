@@ -58,9 +58,9 @@ class Question(SurveyElement):
         if nested_setvalues:
             for setvalue in nested_setvalues:
                 setvalue_attrs = {
-                    "ref": self.get_root().insert_xpaths(
-                        "${%s}" % setvalue[0], self.get_root()
-                    ),
+                    "ref": self.get_root()
+                    .insert_xpaths("${%s}" % setvalue[0], self.get_root())
+                    .strip(),
                     "event": "xforms-value-changed",
                 }
                 if not (setvalue[1] == ""):
