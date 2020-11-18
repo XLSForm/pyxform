@@ -1283,6 +1283,22 @@ def workbook_to_json(
             parent_children_array.append(new_dict)
             continue
 
+        if question_type == "audio":
+            new_dict = row.copy()
+            parameters = get_parameters(row.get("parameters", ""), ["quality"])
+
+            if "quality" in parameters.keys():
+                if parameters["quality"] not in ["voice-only", "normal", "external"]:
+                    raise PyXFormError(
+                        "Invalid value for quality."
+                    )
+
+                new_dict["bind"] = new_dict.get("bind", {})
+                new_dict["bind"].update({"odk:quality": parameters["quality"]})
+
+            parent_children_array.append(new_dict)
+            continue
+
         # TODO: Consider adding some question_type validation here.
 
         # Put the row in the json dict as is:
