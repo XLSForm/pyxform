@@ -50,7 +50,7 @@ class TriggerSetvalueTests(PyxformTestCase):
             xml__contains=[
                 '<bind nodeset="/trigger-column/b" type="dateTime"/>',
                 '<input ref="/trigger-column/a">',
-                '<setvalue event="xforms-value-changed" ref=" /trigger-column/b " value="now()"/>',
+                '<setvalue event="xforms-value-changed" ref="/trigger-column/b" value="now()"/>',
             ],
             xml__excludes=[
                 '<bind nodeset="/trigger-column/b" type="dateTime" calculate="now()"/>'
@@ -75,7 +75,7 @@ class TriggerSetvalueTests(PyxformTestCase):
                 '<bind nodeset="/trigger-column/c" type="dateTime"/>',
                 '<input ref="/trigger-column/a">',
                 '<input ref="/trigger-column/c">',
-                '<setvalue event="xforms-value-changed" ref=" /trigger-column/c " value="now()"/>',
+                '<setvalue event="xforms-value-changed" ref="/trigger-column/c" value="now()"/>',
             ],
             xml__excludes=[
                 '<bind nodeset="/trigger-column/c" type="dateTime" calculate="now()"/>'
@@ -101,8 +101,8 @@ class TriggerSetvalueTests(PyxformTestCase):
                 '<bind nodeset="/trigger-column/c" type="dateTime"/>',
                 '<input ref="/trigger-column/a">',
                 '<input ref="/trigger-column/c">',
-                '<setvalue event="xforms-value-changed" ref=" /trigger-column/b " value="1+1"/>',
-                '<setvalue event="xforms-value-changed" ref=" /trigger-column/c " value="now()"/>',
+                '<setvalue event="xforms-value-changed" ref="/trigger-column/b" value="1+1"/>',
+                '<setvalue event="xforms-value-changed" ref="/trigger-column/c" value="now()"/>',
             ],
             xml__excludes=[
                 '<bind nodeset="/trigger-column/b" type="int" calculate="1+1"/>',
@@ -127,7 +127,7 @@ class TriggerSetvalueTests(PyxformTestCase):
                 '<bind nodeset="/trigger-column/d" type="dateTime"/>',
                 '<input ref="/trigger-column/a">',
                 '<input ref="/trigger-column/d">',
-                '<setvalue event="xforms-value-changed" ref=" /trigger-column/d "/>',
+                '<setvalue event="xforms-value-changed" ref="/trigger-column/d"/>',
             ],
             xml__excludes=[
                 '<bind nodeset="/trigger-column/d" type="dateTime" calculate=""/>'
@@ -150,7 +150,7 @@ class TriggerSetvalueTests(PyxformTestCase):
             xml__contains=[
                 '<bind nodeset="/trigger-column/e" type="decimal"/>',
                 '<input ref="/trigger-column/a">',
-                '<setvalue event="xforms-value-changed" ref=" /trigger-column/e "/>',
+                '<setvalue event="xforms-value-changed" ref="/trigger-column/e"/>',
             ],
             xml__excludes=[
                 '<bind nodeset="/trigger-column/e" type="decimal" calculate=""/>',
@@ -209,7 +209,7 @@ class TriggerSetvalueTests(PyxformTestCase):
                 '<input ref="/trigger-column/a">',
                 '<group ref="/trigger-column/grp">',
                 '<input ref="/trigger-column/grp/c">',
-                '<setvalue event="xforms-value-changed" ref=" /trigger-column/grp/c " value="now()"/>',
+                '<setvalue event="xforms-value-changed" ref="/trigger-column/grp/c" value="now()"/>',
             ],
             xml__excludes=[
                 '<bind nodeset="/trigger-column/c" type="dateTime" calculate="now()"/>',
@@ -226,7 +226,7 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | integer  | b    |             | decimal-date-time(${a}) | ${a}    |
             """,
             xml__contains=[
-                '<setvalue event="xforms-value-changed" ref=" /trigger-column/b " value="decimal-date-time( /trigger-column/a )"/>'
+                '<setvalue event="xforms-value-changed" ref="/trigger-column/b" value="decimal-date-time( /trigger-column/a )"/>'
             ],
         )
 
@@ -244,6 +244,38 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | choices            | aa   | AA          |
             """,
             xml__contains=[
-                '<setvalue event="xforms-value-changed" ref=" /trigger-select_trigger/b " value="string-length( /trigger-select_trigger/a )"/>\n    </select1>'
+                '<setvalue event="xforms-value-changed" ref="/trigger-select_trigger/b" value="string-length( /trigger-select_trigger/a )"/>\n    </select1>'
+            ],
+        )
+
+    def test_trigger_column_in_repeat_should_have_expanded_xpath(self):
+        self.assertPyxformXform(
+            name="trigger-column",
+            md="""
+            | survey |              |       |                        |              |         |
+            |        | type         | name  | label                  | calculation  | trigger |
+            |        | begin repeat | rep   |                        |              |         |
+            |        | dateTime     | one   | Enter text             |              |         |
+            |        | dateTime     | three | Enter text (triggered) | now()        | ${one}  |
+            |        | end repeat   |       |                        |              |         |
+            """,
+            xml__contains=[
+                '<setvalue event="xforms-value-changed" ref="/trigger-column/rep/three" value="now()"/>'
+            ],
+        )
+
+    def test_trigger_column_in_repeat_should_have_expanded_xpath_in_value(self):
+        self.assertPyxformXform(
+            name="trigger-column",
+            md="""
+            | survey |              |       |                        |                        |         |
+            |        | type         | name  | label                  | calculation            | trigger |
+            |        | begin repeat | rep   |                        |                        |         |
+            |        | dateTime     | one   | Enter text             |                        |         |
+            |        | dateTime     | three | Enter text (triggered) | string-length(${one})  | ${one}  |
+            |        | end repeat   |       |                        |                        |         |
+            """,
+            xml__contains=[
+                '<setvalue event="xforms-value-changed" ref="/trigger-column/rep/three" value="string-length( ../one )"/>'
             ],
         )
