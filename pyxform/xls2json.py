@@ -1289,9 +1289,7 @@ def workbook_to_json(
 
             if "quality" in parameters.keys():
                 if parameters["quality"] not in ["voice-only", "normal", "external"]:
-                    raise PyXFormError(
-                        "Invalid value for quality."
-                    )
+                    raise PyXFormError("Invalid value for quality.")
 
                 new_dict["bind"] = new_dict.get("bind", {})
                 new_dict["bind"].update({"odk:quality": parameters["quality"]})

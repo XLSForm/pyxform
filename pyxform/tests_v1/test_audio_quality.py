@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
-class AudioQualityTest(PyxformTestCase):
 
+class AudioQualityTest(PyxformTestCase):
     def test_voice_only(self):
         self.assertPyxformXform(
             name="data",
