@@ -73,3 +73,27 @@ class TransaltionsTest(PyxformTestCase):
             ],
             itext__excludes=['<value form="audio">jr://audio/-</value>'],
         )
+
+    def test_guidance_hints(self):
+        xform_md = """
+        | survey  |                                |                    |                     |                 |                             |                           |
+        |         | name                           | type               | label               | label::Kyrgyz   | guidance_hint               | guidance_hint::Kyrgyz     |
+        |         | comments                       | text               | Respondent comments | This is Kyrgyz. | comments from the responder | Kyrgyz from the responder |
+        """
+        self.assertPyxformXform(
+            name="multi_language_form",
+            id_string="multi_language_form",
+            md=xform_md,
+            errored=False,
+            debug=False,
+            xml__contains=[
+                '<text id="/multi_language_form/comments:hint">',
+                '<value form="guidance">Kyrgyz from the responder</value>',
+                '<value form="guidance">comments from the responder</value>',
+            ],
+            # no hint translations without the guidance attribute are produced.
+            xml__excludes = [
+                '<value> Kyrgyz from the responder</value>',
+                '<value> comments from the responder</value>'
+            ]
+        )
