@@ -327,9 +327,8 @@ class SurveyElement(dict):
             label_or_hint = self[display_element]
 
             if label_or_hint:
-                if not (
-                    isinstance(label_or_hint, dict)
-                ):  # no explicit language declaration, nest this under default language.
+                if not (type(label_or_hint) is dict):
+                    # This means there was no explicit language declaration, nest this under default language.
                     # always use itext for guidance hints because that's
                     # how they're defined - https://opendatakit.github.io/xforms-spec/#languages
                     if (

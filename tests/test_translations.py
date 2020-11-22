@@ -92,8 +92,8 @@ class TransaltionsTest(PyxformTestCase):
                 '<value form="guidance">comments from the responder</value>',
             ],
             # no hint translations without the guidance attribute are produced.
-            xml__excludes = [
-                '<value> Kyrgyz from the responder</value>',
-                '<value> comments from the responder</value>'
-            ]
+            xml__excludes=[
+                "<value> Kyrgyz from the responder</value>",
+                "<value> comments from the responder</value>",
+            ],
         )
