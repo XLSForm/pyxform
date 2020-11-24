@@ -92,3 +92,26 @@ class LanguageWarningTest(PyxformTestCase):
 
         self.assertTrue(len(warnings) == 0)
         os.unlink(tmp.name)
+
+    def test_incomplete_translations(self):
+        survey = self.md_to_pyxform_survey(
+            """
+            | survey |                 |         |        |                     |               |                   |              |
+            |        | type            | name    | label  | label::English (en) | choice_filter | hint::Spanish(es) | media::image |
+            |        | select_one opts | opt     | My opt | My opt in English   | fake = 1      | elige su opcion   | opt.jpg      |
+            | choices|                 |         |        |                     |               |                   |              |
+            |        | list_name       | name    | label  | label::Spanish (es) | fake          |                   |              |
+            |        | opts            | opt1    | Opt1   | Opc1                | 1             |                   |              |
+            |        | opts            | opt2    | Opt2   | Opc2                | 1             |                   |              |
+
+            """
+        )
+
+        warnings = []
+        tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
+        tmp.close()
+        survey.print_xform_to_file(tmp.name, warnings=warnings)
+        ## REMEMBER TO TEST FOR THE DEFAULT LANG ISSUES TOO. labels and hints will not appear correct in the current form.
+
+        self.assertTrue(len(warnings) == 0)
+        os.unlink(tmp.name)
