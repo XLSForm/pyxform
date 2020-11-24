@@ -1288,7 +1288,12 @@ def workbook_to_json(
             parameters = get_parameters(row.get("parameters", ""), ["quality"])
 
             if "quality" in parameters.keys():
-                if parameters["quality"] not in ["voice-only", "normal", "external"]:
+                if parameters["quality"] not in [
+                    "voice-only",
+                    "low",
+                    "normal",
+                    "external",
+                ]:
                     raise PyXFormError("Invalid value for quality.")
 
                 new_dict["bind"] = new_dict.get("bind", {})

@@ -17,6 +17,20 @@ class AudioQualityTest(PyxformTestCase):
             ],
         )
 
+    def test_low(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |       |                |
+            |        | type   | name     | label | parameters     |
+            |        | audio  | audio    | Audio | quality=low |
+            """,
+            xml__contains=[
+                'xmlns:orx="http://openrosa.org/xforms"',
+                '<bind nodeset="/data/audio" type="binary" odk:quality="low"/>',
+            ],
+        )
+
     def test_normal(self):
         self.assertPyxformXform(
             name="data",
