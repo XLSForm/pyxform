@@ -71,7 +71,14 @@ class SurveyElement(dict):
         "action": str,
         "list_name": str,
         "trigger": str,
+
+        # This is a simple data store allowing internal logic to generate and hold warning messages.
+        "__internal_warnings__": set
     }
+
+    def _add_warning(self, message):
+        self['__internal_warnings__'].add(message)
+
 
     def _default(self):
         # TODO: need way to override question type dictionary
@@ -102,6 +109,7 @@ class SurveyElement(dict):
         self[key] = value
 
     def __init__(self, **kwargs):
+        # a set of strings to pass up to the user as warnings.
         for key, default in self.FIELDS.items():
             self[key] = kwargs.get(key, default())
         self._link_children()
@@ -112,6 +120,7 @@ class SurveyElement(dict):
         # themselves.
         if self.control.get("appearance") == "label" and not self.label:
             self["label"] = " "
+
 
     def _link_children(self):
         for child in self.children:
