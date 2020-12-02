@@ -877,26 +877,9 @@ class Survey(Section):
         Given a dictionary of xpaths, return a function we can use to
         replace ${varname} with the xpath to varname.
         """
-        name = matchobj.group(2)
-        last_saved = matchobj.group(1) is not None
-        intro = (
-            "There has been a problem trying to replace %s with the "
-            "XPath to the survey element named '%s'." % (matchobj.group(0), name)
-        )
-        if name not in self._xpath:
-            raise PyXFormError(intro + " There is no survey element with this name.")
-        if self._xpath[name] is None:
-            raise PyXFormError(
-                intro + " There are multiple survey elements" " with this name."
-            )
-        if (
-            not last_saved
-            and context
-            and not (
-                context["type"] == "calculate"
-                and "indexed-repeat" in context["bind"]["calculate"]
-            )
-        ):
+
+        def _relative_path(name):
+            return_path = None
             xpath, context_xpath = self._xpath[name], context.get_xpath()
             # share same root i.e repeat_a from /data/repeat_a/...
             if (
@@ -912,7 +895,63 @@ class Survey(Section):
                     ref_path = ref_path if ref_path.endswith(name) else "/%s" % name
                     prefix = " current()/" if use_current else " "
 
-                    return prefix + "/".join([".."] * steps) + ref_path + " "
+                    return_path = prefix + "/".join([".."] * steps) + ref_path + " "
+
+            return return_path
+
+        name = matchobj.group(2)
+        last_saved = matchobj.group(1) is not None
+        intro = (
+            "There has been a problem trying to replace %s with the "
+            "XPath to the survey element named '%s'." % (matchobj.group(0), name)
+        )
+        if name not in self._xpath:
+            raise PyXFormError(intro + " There is no survey element with this name.")
+        if self._xpath[name] is None:
+            raise PyXFormError(
+                intro + " There are multiple survey elements" " with this name."
+            )
+
+        return_relative_path = False
+        if not last_saved and context:
+            if context["type"] != "calculate":
+                indexed_repeat = None
+                if (
+                    "bind" in context
+                    and "calculate" in context["bind"]
+                    and "indexed-repeat" in context["bind"]["calculate"]
+                ):
+                    indexed_repeat = context["bind"]["calculate"]
+                elif "default" in context and "indexed-repeat" in context["default"]:
+                    indexed_repeat = context["default"]
+
+                if "type" in context and context["type"] == "text":
+                    indexed_repeat_name_index = None
+                    if indexed_repeat is not None:
+                        indexed_repeat_parameters = indexed_repeat.strip()[
+                            len("indexed-repeat") :
+                        ][1:-1].split(",")
+                        name_param = "${{{0}}}".format(name)
+                        for idx, param in enumerate(indexed_repeat_parameters):
+                            if name_param in param.strip():
+                                indexed_repeat_name_index = idx
+
+                    if (
+                        indexed_repeat_name_index is not None
+                        and indexed_repeat_name_index not in [0, 1, 3, 5]
+                    ) or indexed_repeat is None:
+                        return_relative_path = True
+                else:
+                    if indexed_repeat is None:
+                        return_relative_path = True
+            else:
+                if "indexed-repeat" not in context["bind"]["calculate"]:
+                    return_relative_path = True
+
+        if return_relative_path:
+            relative_path = _relative_path(name)
+            if relative_path is not None:
+                return relative_path
 
         last_saved_prefix = (
             "instance('" + LAST_SAVED_INSTANCE_NAME + "')" if last_saved else ""
