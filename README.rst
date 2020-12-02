@@ -90,12 +90,15 @@ You can run tests with::
 
     nosetests
 
-
 Before committing, make sure to format your code using `black`::
 
     black pyxform
 
 If you are using a copy of black outside your virtualenv, make sure it is the same version as listed in requirements.pip.
+
+Writing tests
+-------------
+Make sure to include tests for the changes you're working on. When writing new tests you should add them in `pyxform/test_v1` instead of in `pyxform/test` (which contains tests using an older style). Generally, the easiest way to write tests is to extend `PyxformTestCase` which will let you compile example XLSForm and make assertions on the resulting XForm.
 
 Documentation
 =============
@@ -124,7 +127,7 @@ Releasing pyxform
 5. Update ``CHANGES.txt`` with the text of the draft release.
 6. Update ``README.rst``, ``setup.py``, ``pyxform/__init__.py`` with the new release version number.
 7. Commit, push the branch, and initiate a pull request. Wait for tests to pass, then merge the PR.
-8. In a clean new release only directory, checkout master. 
+8. In a clean new release only directory, checkout master.
 9. Create a new virtualenv in this directory to ensure a clean Python environment::
 
      mkvirtualenv pyxform-release
