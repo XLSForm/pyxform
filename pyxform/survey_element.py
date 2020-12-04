@@ -10,10 +10,10 @@ from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.utils import (
     INVALID_XFORM_TAG_REGEXP,
+    BRACKETED_TAG_REGEX,
     is_valid_xml_tag,
     node,
     unicode,
-    basestring,
     default_is_dynamic,
 )
 from pyxform.xls2json import print_pyobj_to_json
@@ -275,6 +275,13 @@ class SurveyElement(dict):
                         "text": text,
                         "output_context": self,
                     }
+            elif constraint_msg and re.search(BRACKETED_TAG_REGEX, constraint_msg):
+                yield {
+                    "path": self._translation_path("jr:constraintMsg"),
+                    "lang": default_language,
+                    "text": constraint_msg,
+                    "output_context": self,
+                }
             required_msg = bind_dict.get("jr:requiredMsg")
             if type(required_msg) is dict:
                 for lang, text in required_msg.items():
@@ -426,7 +433,9 @@ class SurveyElement(dict):
                     and k in self.CONVERTIBLE_BIND_ATTRIBUTES
                 ):
                     v = self.binding_conversions[v]
-                if k == "jr:constraintMsg" and type(v) is dict:
+                if k == "jr:constraintMsg" and (
+                    type(v) is dict or re.search(BRACKETED_TAG_REGEX, v)
+                ):
                     v = "jr:itext('%s')" % self._translation_path("jr:constraintMsg")
                 if k == "jr:requiredMsg" and type(v) is dict:
                     v = "jr:itext('%s')" % self._translation_path("jr:requiredMsg")

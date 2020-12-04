@@ -45,6 +45,21 @@ class BindConversionsTest(PyxformTestCase):
             ],
         )
 
+    def test_bind_constraint_message_with_reference(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |       |      |       |                      |                    |
+            |        | type  | name | label | constraint           | constraint_message |
+            |        | int   | foo  | foo   |                      |                    |
+            |        | text  | text | text  | string-length(.) > 1 | too short ${foo}   |
+            """,
+            xml__contains=[
+                '<bind constraint="string-length(.) &gt; 1" nodeset="/data/text" type="string" jr:constraintMsg="jr:itext(\'/data/text:jr:constraintMsg\')"',
+                '<value> too short <output value=" /data/foo "/> </value>',
+            ],
+        )
+
     def test_bind_custom_conversion(self):
         self.assertPyxformXform(
             name="data",

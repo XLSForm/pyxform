@@ -43,6 +43,10 @@ XFORM_TAG_REGEXP = "%(start)s%(char)s*" % {"start": TAG_START_CHAR, "char": TAG_
 
 INVALID_XFORM_TAG_REGEXP = r"[^a-zA-Z:_][^a-zA-Z:_0-9\-.]*"
 
+LAST_SAVED_INSTANCE_NAME = "__last-saved"
+BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
+LAST_SAVED_REGEX = re.compile(r"\${last-saved#(.*?)}")
+
 NSMAP = {
     "xmlns": "http://www.w3.org/2002/xforms",
     "xmlns:h": "http://www.w3.org/1999/xhtml",
