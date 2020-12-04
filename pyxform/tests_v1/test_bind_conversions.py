@@ -32,6 +32,21 @@ class BindConversionsTest(PyxformTestCase):
             xml__contains=['<bind nodeset="/data/text" required="false()"'],
         )
 
+    def test_bind_required_message_with_reference(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |       |      |       |            |                    |
+            |        | type  | name | label | required   | required_message |
+            |        | int   | foo  | foo   |            |                    |
+            |        | text  | text | text  | true()     | required, ${foo}   |
+            """,
+            xml__contains=[
+                '<bind nodeset="/data/text" required="true()" type="string" jr:requiredMsg="jr:itext(\'/data/text:jr:requiredMsg\')"',
+                '<value> required, <output value=" /data/foo "/> </value>',
+            ],
+        )
+
     def test_bind_constraint_conversion(self):
         self.assertPyxformXform(
             name="data",

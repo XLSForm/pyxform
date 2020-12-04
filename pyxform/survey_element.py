@@ -282,6 +282,7 @@ class SurveyElement(dict):
                     "text": constraint_msg,
                     "output_context": self,
                 }
+
             required_msg = bind_dict.get("jr:requiredMsg")
             if type(required_msg) is dict:
                 for lang, text in required_msg.items():
@@ -291,6 +292,13 @@ class SurveyElement(dict):
                         "text": text,
                         "output_context": self,
                     }
+            elif required_msg and re.search(BRACKETED_TAG_REGEX, required_msg):
+                yield {
+                    "path": self._translation_path("jr:requiredMsg"),
+                    "lang": default_language,
+                    "text": required_msg,
+                    "output_context": self,
+                }
             no_app_error_string = bind_dict.get("jr:noAppErrorString")
             if type(no_app_error_string) is dict:
                 for lang, text in no_app_error_string.items():
@@ -437,7 +445,9 @@ class SurveyElement(dict):
                     type(v) is dict or re.search(BRACKETED_TAG_REGEX, v)
                 ):
                     v = "jr:itext('%s')" % self._translation_path("jr:constraintMsg")
-                if k == "jr:requiredMsg" and type(v) is dict:
+                if k == "jr:requiredMsg" and (
+                    type(v) is dict or re.search(BRACKETED_TAG_REGEX, v)
+                ):
                     v = "jr:itext('%s')" % self._translation_path("jr:requiredMsg")
                 if k == "jr:noAppErrorString" and type(v) is dict:
                     v = "jr:itext('%s')" % self._translation_path("jr:noAppErrorString")
