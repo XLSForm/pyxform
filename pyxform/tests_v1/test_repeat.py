@@ -516,3 +516,75 @@ class TestRepeat(PyxformTestCase):
                 """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/family/person/prev_name" value="indexed-repeat( /data/family/person/name ,  /data/family , 1,  /data/family/person , 2)"/>"""  # noqa pylint: disable=line-too-long
             ],
         )
+
+    def test_indexed_repeat_math_epression_dreaded_nested_repeat_relative_path_exception(
+        self,
+    ):
+        """Test relative path exception (absolute path) in indexed-repeat() with math expression using dreaded nested repeat."""
+        self.assertPyxformXform(
+            name="data",
+            title="dreaded nested repeat indexed-repeat 1st, 2nd, 4th, and 6th parameters is using absolute path",
+            md="""
+                | survey  |                |                |                                  |                                                        |
+                |         | type           | name           | label                            | default                                                |
+                |         | begin_repeat   | family         | Family                           |                                                        |
+                |         | integer        | members_number | How many members in this family? |                                                        |
+                |         | begin_repeat   | person         | Person                           |                                                        |
+                |         | text           | name           | Enter name                       |                                                        |
+                |         | integer        | age            | Enter age                        |                                                        |
+                |         | text           | prev_name      | Expression label                 | 7 * indexed-repeat(${age}, ${family}, 1, ${person}, 2) |
+                |         | end repeat     |                |                                  |                                                        |
+                |         | end repeat     |                |                                  |                                                        |
+            """,  # noqa pylint: disable=line-too-long
+            xml__contains=[
+                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/family/person/prev_name" value="7 * indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_multiple_indexed_repeat_in_epression_dreaded_nested_repeat_relative_path_exception(
+        self,
+    ):
+        """Test relative path exception (absolute path) in multiple indexed-repeat() inside an expression using dreaded nested repeat."""
+        self.assertPyxformXform(
+            name="data",
+            title="dreaded nested repeat indexed-repeat 1st, 2nd, 4th, and 6th parameters is using absolute path",
+            md="""
+                | survey  |                |                |                                  |                                                                                                                 |
+                |         | type           | name           | label                            | default                                                                                                         |
+                |         | begin_repeat   | family         | Family                           |                                                                                                                 |
+                |         | integer        | members_number | How many members in this family? |                                                                                                                 |
+                |         | begin_repeat   | person         | Person                           |                                                                                                                 |
+                |         | text           | name           | Enter name                       |                                                                                                                 |
+                |         | integer        | age            | Enter age                        |                                                                                                                 |
+                |         | text           | prev_name      | Expression label                 | concat(indexed-repeat(${name}, ${family}, 1, ${person}, 2), indexed-repeat(${age}, ${family}, 1, ${person}, 2)) |
+                |         | end repeat     |                |                                  |                                                                                                                 |
+                |         | end repeat     |                |                                  |                                                                                                                 |
+            """,  # noqa pylint: disable=line-too-long
+            xml__contains=[
+                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/family/person/prev_name" value="concat(indexed-repeat( /data/family/person/name ,  /data/family , 1,  /data/family/person , 2), indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2))"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_indexed_repeat_math_epression_with_double_variable_in_dreaded_nested_repeat_relative_path_exception(
+        self,
+    ):
+        """Test relative path exception (absolute path) in indexed-repeat() with math expression and double variable using dreaded nested repeat."""
+        self.assertPyxformXform(
+            name="data",
+            title="dreaded nested repeat indexed-repeat 1st, 2nd, 4th, and 6th parameters is using absolute path",
+            md="""
+                | survey  |                |                |                                  |                                                             |
+                |         | type           | name           | label                            | default                                                     |
+                |         | begin_repeat   | family         | Family                           |                                                             |
+                |         | integer        | members_number | How many members in this family? |                                                             |
+                |         | begin_repeat   | person         | Person                           |                                                             |
+                |         | text           | name           | Enter name                       |                                                             |
+                |         | integer        | age            | Enter age                        |                                                             |
+                |         | text           | prev_name      | Expression label                 | ${age} > indexed-repeat(${age}, ${family}, 1, ${person}, 2) |
+                |         | end repeat     |                |                                  |                                                             |
+                |         | end repeat     |                |                                  |                                                             |
+            """,  # noqa pylint: disable=line-too-long
+            xml__contains=[
+                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/family/person/prev_name" value=" ../age  &gt; indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
