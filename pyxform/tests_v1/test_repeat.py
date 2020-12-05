@@ -463,7 +463,7 @@ class TestRepeat(PyxformTestCase):
         """Test relative path exception (absolute path) in indexed-repeat() using regular calculation."""
         self.assertPyxformXform(
             name="data",
-            title="regular calculation indexed-repeat 1st, 2nd, 4th, and 6th parameters is using absolute path",
+            title="regular calculation indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |           |                                  |                                              |
                 |         | type           | name      | label                            | calculation                                  |
@@ -482,7 +482,7 @@ class TestRepeat(PyxformTestCase):
         """Test relative path exception (absolute path) in indexed-repeat() using dynamic default."""
         self.assertPyxformXform(
             name="data",
-            title="dynamic default indexed-repeat 1st, 2nd, 4th, and 6th parameters is using absolute path",
+            title="dynamic default indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |           |                                  |                                                    |
                 |         | type           | name      | label                            | default                                            |
@@ -496,11 +496,11 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_indexed_repeat_dreaded_nested_repeat_relative_path_exception(self):
-        """Test relative path exception (absolute path) in indexed-repeat() using dreaded nested repeat."""
+    def test_indexed_repeat_nested_repeat_relative_path_exception(self):
+        """Test relative path exception (absolute path) in indexed-repeat() using nested repeat."""
         self.assertPyxformXform(
             name="data",
-            title="dreaded nested repeat indexed-repeat 1st, 2nd, 4th, and 6th parameters is using absolute path",
+            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |                |                                                        |                                                     |
                 |         | type           | name           | label                                                  | default                                             |
@@ -517,16 +517,14 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_indexed_repeat_math_epression_dreaded_nested_repeat_relative_path_exception(
-        self,
-    ):
-        """Test relative path exception (absolute path) in indexed-repeat() with math expression using dreaded nested repeat."""
+    def test_indexed_repeat_math_epression_nested_repeat_relative_path_exception(self,):
+        """Test relative path exception (absolute path) in indexed-repeat() with math expression using nested repeat."""
         self.assertPyxformXform(
             name="data",
-            title="dreaded nested repeat indexed-repeat 1st, 2nd, 4th, and 6th parameters is using absolute path",
+            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |                |                                  |                                                        |
-                |         | type           | name           | label                            | default                                                |
+                |         | type           | name           | label                            | calculation                                            |
                 |         | begin_repeat   | family         | Family                           |                                                        |
                 |         | integer        | members_number | How many members in this family? |                                                        |
                 |         | begin_repeat   | person         | Person                           |                                                        |
@@ -537,20 +535,20 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |                |                                  |                                                        |
             """,  # noqa pylint: disable=line-too-long
             xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/family/person/prev_name" value="7 * indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="7 * indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" nodeset="/data/family/person/prev_name" type="string"/>"""  # noqa pylint: disable=line-too-long
             ],
         )
 
-    def test_multiple_indexed_repeat_in_epression_dreaded_nested_repeat_relative_path_exception(
+    def test_multiple_indexed_repeat_in_epression_nested_repeat_relative_path_exception(
         self,
     ):
-        """Test relative path exception (absolute path) in multiple indexed-repeat() inside an expression using dreaded nested repeat."""
+        """Test relative path exception (absolute path) in multiple indexed-repeat() inside an expression using nested repeat."""
         self.assertPyxformXform(
             name="data",
-            title="dreaded nested repeat indexed-repeat 1st, 2nd, 4th, and 6th parameters is using absolute path",
+            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |                |                                  |                                                                                                                 |
-                |         | type           | name           | label                            | default                                                                                                         |
+                |         | type           | name           | label                            | required                                                                                                        |
                 |         | begin_repeat   | family         | Family                           |                                                                                                                 |
                 |         | integer        | members_number | How many members in this family? |                                                                                                                 |
                 |         | begin_repeat   | person         | Person                           |                                                                                                                 |
@@ -561,20 +559,44 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |                |                                  |                                                                                                                 |
             """,  # noqa pylint: disable=line-too-long
             xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/family/person/prev_name" value="concat(indexed-repeat( /data/family/person/name ,  /data/family , 1,  /data/family/person , 2), indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2))"/>"""  # noqa pylint: disable=line-too-long
+                """<bind nodeset="/data/family/person/prev_name" required="concat(indexed-repeat( /data/family/person/name ,  /data/family , 1,  /data/family/person , 2), indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2))" type="string"/>"""  # noqa pylint: disable=line-too-long
             ],
         )
 
-    def test_indexed_repeat_math_epression_with_double_variable_in_dreaded_nested_repeat_relative_path_exception(
+    def test_mixed_variables_and_indexed_repeat_in_epression_nested_repeat_relative_path_exception(
         self,
     ):
-        """Test relative path exception (absolute path) in indexed-repeat() with math expression and double variable using dreaded nested repeat."""
+        """Test relative path exception (absolute path) in an expression contains variables and indexed-repeat() using nested repeat."""
         self.assertPyxformXform(
             name="data",
-            title="dreaded nested repeat indexed-repeat 1st, 2nd, 4th, and 6th parameters is using absolute path",
+            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
+            md="""
+                | survey  |                |                |                                  |                                                                                                                 |
+                |         | type           | name           | label                            | calculation                                                                                                        |
+                |         | begin_repeat   | family         | Family                           |                                                                                                                 |
+                |         | integer        | members_number | How many members in this family? |                                                                                                                 |
+                |         | begin_repeat   | person         | Person                           |                                                                                                                 |
+                |         | text           | name           | Enter name                       |                                                                                                                 |
+                |         | integer        | age            | Enter age                        |                                                                                                                 |
+                |         | text           | prev_name      | Expression label                 | concat(${name}, indexed-repeat(${age}, ${family}, 1, ${person}, 2), ${age})                                     |
+                |         | end repeat     |                |                                  |                                                                                                                 |
+                |         | end repeat     |                |                                  |                                                                                                                 |
+            """,  # noqa pylint: disable=line-too-long
+            xml__contains=[
+                """<bind calculate="concat( ../name , indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2),  ../age )" nodeset="/data/family/person/prev_name" type="string"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_indexed_repeat_math_epression_with_double_variable_in_nested_repeat_relative_path_exception(
+        self,
+    ):
+        """Test relative path exception (absolute path) in indexed-repeat() with math expression and double variable using nested repeat."""
+        self.assertPyxformXform(
+            name="data",
+            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |                |                                  |                                                             |
-                |         | type           | name           | label                            | default                                                     |
+                |         | type           | name           | label                            | relevant                                                    |
                 |         | begin_repeat   | family         | Family                           |                                                             |
                 |         | integer        | members_number | How many members in this family? |                                                             |
                 |         | begin_repeat   | person         | Person                           |                                                             |
@@ -585,6 +607,6 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |                |                                  |                                                             |
             """,  # noqa pylint: disable=line-too-long
             xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/family/person/prev_name" value=" ../age  &gt; indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)"/>"""  # noqa pylint: disable=line-too-long
+                """<bind nodeset="/data/family/person/prev_name" relevant=" ../age  &gt; indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" type="string"/>"""  # noqa pylint: disable=line-too-long
             ],
         )

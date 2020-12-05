@@ -918,13 +918,18 @@ class Survey(Section):
                         return True
 
                     # It is possible to have multiple indexed-repeat in an expression
-                    for indexed_repeat in indexed_repeat_regex.finditer(
+                    indexed_repeats_iter = indexed_repeat_regex.finditer(
                         matchobj.string
-                    ):
+                    )
+                    for indexed_repeat in indexed_repeats_iter:
 
                         # Make sure current ${name} is in the correct indexed-repeat
                         if current_matchobj.end() > indexed_repeat.end():
-                            continue
+                            try:
+                                next(indexed_repeats_iter)
+                                continue
+                            except StopIteration:
+                                return True
 
                         # ${name} outside of indexed-repeat always using relative path
                         if (
