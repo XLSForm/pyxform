@@ -7,13 +7,17 @@ from __future__ import print_function
 import codecs
 import os
 import re
-from re import split
 import tempfile
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
 
 from pyxform import constants
+from pyxform.utils import (
+    BRACKETED_TAG_REGEX,
+    LAST_SAVED_REGEX,
+    LAST_SAVED_INSTANCE_NAME,
+)
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -35,10 +39,6 @@ try:
     from functools import lru_cache
 except ImportError:
     from functools32 import lru_cache
-
-LAST_SAVED_INSTANCE_NAME = "__last-saved"
-BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
-LAST_SAVED_REGEX = re.compile(r"\${last-saved#(.*?)}")
 
 
 def register_nsmap():
