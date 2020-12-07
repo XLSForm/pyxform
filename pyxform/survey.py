@@ -877,26 +877,16 @@ class Survey(Section):
         Given a dictionary of xpaths, return a function we can use to
         replace ${varname} with the xpath to varname.
         """
+
         name = matchobj.group(2)
         last_saved = matchobj.group(1) is not None
-        intro = (
-            "There has been a problem trying to replace %s with the "
-            "XPath to the survey element named '%s'." % (matchobj.group(0), name)
-        )
-        if name not in self._xpath:
-            raise PyXFormError(intro + " There is no survey element with this name.")
-        if self._xpath[name] is None:
-            raise PyXFormError(
-                intro + " There are multiple survey elements" " with this name."
-            )
-        if (
-            not last_saved
-            and context
-            and not (
-                context["type"] == "calculate"
-                and "indexed-repeat" in context["bind"]["calculate"]
-            )
-        ):
+        is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
+        indexed_repeat_regex = re.compile(r"indexed-repeat\([^)]+\)")
+        function_args_regex = re.compile(r"\b[^()]+\((.*)\)$")
+
+        def _relative_path(name):
+            """Given name in ${name}, return relative xpath to ${name}."""
+            return_path = None
             xpath, context_xpath = self._xpath[name], context.get_xpath()
             # share same root i.e repeat_a from /data/repeat_a/...
             if (
@@ -912,7 +902,81 @@ class Survey(Section):
                     ref_path = ref_path if ref_path.endswith(name) else "/%s" % name
                     prefix = " current()/" if use_current else " "
 
-                    return prefix + "/".join([".."] * steps) + ref_path + " "
+                    return_path = prefix + "/".join([".."] * steps) + ref_path + " "
+
+            return return_path
+
+        def _is_return_relative_path():
+            """Determine condition to return relative xpath of current ${name}."""
+            indexed_repeat_relative_path_args_index = [0, 1, 3, 5]
+            current_matchobj = matchobj
+
+            if not last_saved and context:
+                if context["type"] == "text":
+
+                    if not is_indexed_repeat:
+                        return True
+
+                    # It is possible to have multiple indexed-repeat in an expression
+                    indexed_repeats_iter = indexed_repeat_regex.finditer(
+                        matchobj.string
+                    )
+                    for indexed_repeat in indexed_repeats_iter:
+
+                        # Make sure current ${name} is in the correct indexed-repeat
+                        if current_matchobj.end() > indexed_repeat.end():
+                            try:
+                                next(indexed_repeats_iter)
+                                continue
+                            except StopIteration:
+                                return True
+
+                        # ${name} outside of indexed-repeat always using relative path
+                        if (
+                            current_matchobj.end() < indexed_repeat.start()
+                            or current_matchobj.start() > indexed_repeat.end()
+                        ):
+                            return True
+
+                        indexed_repeat_name_index = None
+                        indexed_repeat_args = (
+                            function_args_regex.match(indexed_repeat.group())
+                            .group(1)
+                            .split(",")
+                        )
+                        name_arg = "${{{0}}}".format(name)
+                        for idx, arg in enumerate(indexed_repeat_args):
+                            if name_arg in arg.strip():
+                                indexed_repeat_name_index = idx
+
+                        return (
+                            indexed_repeat_name_index is not None
+                            and indexed_repeat_name_index
+                            not in indexed_repeat_relative_path_args_index
+                        )
+                else:
+                    return not (
+                        context["type"] == "calculate"
+                        and "indexed-repeat" in context["bind"]["calculate"]
+                    )
+
+            return False
+
+        intro = (
+            "There has been a problem trying to replace %s with the "
+            "XPath to the survey element named '%s'." % (matchobj.group(0), name)
+        )
+        if name not in self._xpath:
+            raise PyXFormError(intro + " There is no survey element with this name.")
+        if self._xpath[name] is None:
+            raise PyXFormError(
+                intro + " There are multiple survey elements" " with this name."
+            )
+
+        if _is_return_relative_path():
+            relative_path = _relative_path(name)
+            if relative_path:
+                return relative_path
 
         last_saved_prefix = (
             "instance('" + LAST_SAVED_INSTANCE_NAME + "')" if last_saved else ""
