@@ -174,6 +174,21 @@ class TriggerSetvalueTests(PyxformTestCase):
             ],
         )
 
+    def test_when_trigger_refers_to_calculate_with_label_error_is_shown(self):
+        self.assertPyxformXform(
+            name="trigger-invalid-ref",
+            md="""
+            | survey |           |        |                      |         |             |
+            |        | type      | name   | label                | trigger | calculation |
+            |        | calculate | one    | A label              |         | 5 + 4       |
+            |        | calculate | one-ts |                      | ${one}  | now()       |
+            """,
+            errored=True,
+            error__contains=[
+                "The question ${one} is not user-visible so it can't be used as a calculation trigger for question ${one-ts}.",
+            ],
+        )
+
     def test_typed_calculate_cant_be_trigger(self):
         self.assertPyxformXform(
             name="trigger-invalid-ref",

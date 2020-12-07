@@ -32,7 +32,9 @@ class Question(SurveyElement):
         return node(self.name, **attributes)
 
     def xml_control(self):
-        if ("calculate" in self.bind or self.trigger) and not (self.label or self.hint):
+        if self.type == "calculate" or (
+            ("calculate" in self.bind or self.trigger) and not (self.label or self.hint)
+        ):
             nested_setvalues = self.get_root().get_setvalues_for_question_name(
                 self.name
             )
