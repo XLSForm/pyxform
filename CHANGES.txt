@@ -1,5 +1,18 @@
 Pyxform Changelog
 
+# v1.3.0, 2020-12-08
+
+* #478 Output absolute ref attribute in trigger referring to repeat question
+  * Agus Hilman @gushil (OpenClinica)
+* #483 Add audio quality parameters
+  * Callum Stott @seadowg (ODK)
+* #485 Use absolute paths in `indexed-repeat` call in repeat
+  * Agus Hilman @gushil (OpenClinica)
+* #489 Prevent untyped calculates from being used as calculation triggers
+  * Hélène Martin @lognaturel (ODK)
+* #487 Support ref in constraint and required messages with single language
+  * Hélène Martin @lognaturel (ODK)
+
 # v1.2.1, 2020-11-14
 
 * #479 Java versions can have patch versions
