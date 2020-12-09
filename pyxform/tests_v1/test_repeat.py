@@ -339,19 +339,36 @@ class TestRepeat(PyxformTestCase):
         |         | begin repeat       | rep        | Repeat         |
         |         | text               | name       | Enter name     |
         |         | end repeat         |            |                |
-        |         | select one fruits  | fruit      | Choose a fruit |
         |         | select one ${name} | choice     | Choose name    |
-        | choices |                    |            |                |
-        |         | list name          | name       | label          |
-        |         | fruits             | banana     | Banana         |
-        |         | fruits             | mango      | Mango          |
         """
         self.assertPyxformXform(
+            name="data",
             md=xlsform_md,
             xml__contains=[
-                "<itemset nodeset=\"/pyxform_autotestname/rep[./name != '']\">"
+                "<itemset nodeset=\"/data/rep[./name != '']\">",
+                '<value ref="name"/>',
+                '<label ref="name"/>',
             ],
-            run_odk_validate=False,
+        )
+
+    def test_choice_from_previous_repeat_answers_not_name(self):
+        """Select one choices from previous repeat answers."""
+        xlsform_md = """
+        | survey  |                      |            |                |
+        |         | type                 | name       | label          |
+        |         | begin repeat         | rep        | Repeat         |
+        |         | text                 | answer     | Enter name     |
+        |         | end repeat           |            |                |
+        |         | select one ${answer} | choice     | Choose name    |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                "<itemset nodeset=\"/data/rep[./answer != '']\">",
+                '<value ref="answer"/>',
+                '<label ref="answer"/>',
+            ],
         )
 
     def test_choice_from_previous_repeat_answers_with_choice_filter(self):

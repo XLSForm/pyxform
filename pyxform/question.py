@@ -200,6 +200,7 @@ class MultipleChoiceQuestion(Question):
         # check to prevent the rare dicts that show up
         if self["itemset"] and isinstance(self["itemset"], basestring):
             choice_filter = self.get("choice_filter")
+            itemset_value_ref = "name"
             itemset, file_extension = os.path.splitext(self["itemset"])
             has_media = False
             is_previous_question = bool(re.match(r"^\${.*}$", self.get("itemset")))
@@ -226,6 +227,7 @@ class MultipleChoiceQuestion(Question):
                     .split("/")
                 )
                 nodeset = "/".join(path[:-1])
+                itemset_value_ref = path[-1]
                 itemset_label_ref = path[-1]
                 if choice_filter:
                     choice_filter = choice_filter.replace(
@@ -261,7 +263,7 @@ class MultipleChoiceQuestion(Question):
                     nodeset += ")"
 
             itemset_children = [
-                node("value", ref="name"),
+                node("value", ref=itemset_value_ref),
                 node("label", ref=itemset_label_ref),
             ]
             result.appendChild(node("itemset", *itemset_children, nodeset=nodeset))
