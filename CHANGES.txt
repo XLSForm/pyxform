@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+# v1.3.1, 2020-12-09
+
+* #493 Make value ref dynamic for selects from repeats
+  * Hélène Martin @lognaturel (ODK)
+
 # v1.3.0, 2020-12-08
 
 * #478 Output absolute ref attribute in trigger referring to repeat question
