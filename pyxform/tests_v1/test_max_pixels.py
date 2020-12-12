@@ -49,3 +49,19 @@ class MaxPixelsTest(PyxformTestCase):
                 "Accepted parameters are 'max-pixels': 'foo' is an invalid parameter."
             ],
         )
+
+    def test_image_with_no_max_pixels_should_warn(self):
+        warnings = []
+
+        self.md_to_pyxform_survey(
+            """
+            | survey |       |            |         |
+            |        | type  | name       | label   |
+            |        | image | my_image   | Image   |
+            |        | image | my_image_1 | Image 1 |
+            """,
+            warnings=warnings,
+        )
+
+        self.assertTrue(len(warnings) == 2)
+        self.assertTrue("max-pixels" in warnings[0] and "max-pixels" in warnings[1])

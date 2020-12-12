@@ -1280,6 +1280,11 @@ def workbook_to_json(
 
                 new_dict["bind"] = new_dict.get("bind", {})
                 new_dict["bind"].update({"orx:max-pixels": parameters["max-pixels"]})
+            else:
+                warnings.append(
+                    (row_format_string % row_number)
+                    + " Use the max-pixels parameter to speed up sending and save storage space. Learn more: https://xlsform.org/#image"
+                )
             parent_children_array.append(new_dict)
             continue
 
