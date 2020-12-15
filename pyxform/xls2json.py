@@ -512,7 +512,7 @@ def workbook_to_json(
                                 "The name column for the '{}' choice list contains these duplicates: {}. Duplicate names "
                                 "will be impossible to identify in analysis unless a previous value in a cascading "
                                 "select differentiates them. If this is intentional, you can set the "
-                                "allow_choice_duplicates setting to 'yes'. Read more: https://xlsform.org/#choice-names.".format(
+                                "allow_choice_duplicates setting to 'yes'. Learn more: https://xlsform.org/#choice-names.".format(
                                     list_name,
                                     ", ".join(
                                         [
@@ -1280,6 +1280,11 @@ def workbook_to_json(
 
                 new_dict["bind"] = new_dict.get("bind", {})
                 new_dict["bind"].update({"orx:max-pixels": parameters["max-pixels"]})
+            else:
+                warnings.append(
+                    (row_format_string % row_number)
+                    + " Use the max-pixels parameter to speed up sending and save storage space. Learn more: https://xlsform.org/#image"
+                )
             parent_children_array.append(new_dict)
             continue
 
