@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+# v1.3.2, 2020-12-15
+
+* #496 Add warning for images without max-pixel
+  * Yaw Anokwa @yanokwa (ODK)
+
 # v1.3.1, 2020-12-09
 
 * #493 Make value ref dynamic for selects from repeats
