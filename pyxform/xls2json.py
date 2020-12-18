@@ -1283,7 +1283,7 @@ def workbook_to_json(
             else:
                 warnings.append(
                     (row_format_string % row_number)
-                    + " Use the max-pixels parameter to speed up sending and save storage space. Learn more: https://xlsform.org/#image"
+                    + " Use the max-pixels parameter to speed up submission sending and save storage space. Learn more: https://xlsform.org/#image"
                 )
             parent_children_array.append(new_dict)
             continue
