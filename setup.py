@@ -5,10 +5,10 @@ pyxform - Python library that converts XLSForms to XForms.
 from setuptools import find_packages, setup
 
 REQUIRES = [
-    "xlrd>=1.1.0",
-    "unicodecsv>=0.14.1",
-    "formencode",
-    "unittest2",
+    "xlrd==1.2.0",
+    "unicodecsv==0.14.1",
+    "formencode==1.3.1",
+    "unittest2==1.1.0",
     'functools32==3.2.3.post2 ; python_version < "3.2"',
 ]
 
