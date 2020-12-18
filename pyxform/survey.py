@@ -912,7 +912,7 @@ class Survey(Section):
             current_matchobj = matchobj
 
             if not last_saved and context:
-                if context["type"] in ["text", "integer"]:
+                if context["type"] != "calculate":
 
                     if not is_indexed_repeat:
                         return True
@@ -955,10 +955,7 @@ class Survey(Section):
                             not in indexed_repeat_relative_path_args_index
                         )
                 else:
-                    return not (
-                        context["type"] == "calculate"
-                        and "indexed-repeat" in context["bind"]["calculate"]
-                    )
+                    return not ("indexed-repeat" in context["bind"]["calculate"])
 
             return False
 
