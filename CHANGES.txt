@@ -1,5 +1,12 @@
 Pyxform Changelog
 
+# v1.3.3, 2020-12-17
+
+* #500 Use same versions as requirements.pip to prevent unexpected upgrades
+  * Yaw Anokwa @yanokwa (ODK)
+* #498 Add warning for images without max-pixel
+  * Yaw Anokwa @yanokwa (ODK)
+
 # v1.3.2, 2020-12-15
 
 * #496 Add warning for images without max-pixel
