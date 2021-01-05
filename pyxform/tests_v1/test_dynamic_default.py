@@ -326,3 +326,18 @@ class DynamicDefaultTests(PyxformTestCase):
             """,
             xml__contains=["<foo>2020-01-01</foo>"],
         )
+
+    def test_dynamic_default_on_calculate(self):
+        self.assertPyxformXform(
+            name="dynamic",
+            md="""
+            | survey |            |          |       |             |                      |
+            |        | type       | name     | label | calculation | default              |
+            |        | calculate  | r        |       |             | random() + 0.5       |
+            |        | calculate  | one      |       |             | if(${r} < 1,'A','B') |
+            """,
+            xml__contains=[
+                """<setvalue event="odk-instance-first-load" ref="/dynamic/r" value="random() + 0.5"/>""",
+                """<setvalue event="odk-instance-first-load" ref="/dynamic/one" value="if( /dynamic/r  &lt; 1,'A','B')"/>""",
+            ],
+        )
