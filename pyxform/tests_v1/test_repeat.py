@@ -422,7 +422,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             id_string="some-id",
             md=xlsform_md,
-            xml__contains=['<itemset nodeset="../../../member[ ./age  &gt; 18]">',],
+            xml__contains=['<itemset nodeset="../../../member[ ./age  &gt; 18]">'],
         )
 
     def test_choice_from_previous_repeat_answers_in_nested_repeat(self):
@@ -444,7 +444,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             id_string="some-id",
             md=xlsform_md,
-            xml__contains=['<itemset nodeset="../../person[ ./age  &gt; 18]">',],
+            xml__contains=['<itemset nodeset="../../person[ ./age  &gt; 18]">'],
         )
 
     def test_choice_from_previous_repeat_answers_in_nested_repeat_uses_current(self):
@@ -534,7 +534,9 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_indexed_repeat_math_epression_nested_repeat_relative_path_exception(self,):
+    def test_indexed_repeat_math_expression_nested_repeat_relative_path_exception(
+        self,
+    ):
         """Test relative path exception (absolute path) in indexed-repeat() with math expression using nested repeat."""
         self.assertPyxformXform(
             name="data",
@@ -556,7 +558,7 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_multiple_indexed_repeat_in_epression_nested_repeat_relative_path_exception(
+    def test_multiple_indexed_repeat_in_expression_nested_repeat_relative_path_exception(
         self,
     ):
         """Test relative path exception (absolute path) in multiple indexed-repeat() inside an expression using nested repeat."""
@@ -580,10 +582,10 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_mixed_variables_and_indexed_repeat_in_epression_nested_repeat_relative_path_exception(
+    def test_mixed_variables_and_indexed_repeat_in_expression_text_type_nested_repeat_relative_path_exception(
         self,
     ):
-        """Test relative path exception (absolute path) in an expression contains variables and indexed-repeat() using nested repeat."""
+        """Test relative path exception (absolute path) in an expression contains variables and indexed-repeat() in a text type using nested repeat."""
         self.assertPyxformXform(
             name="data",
             title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
@@ -604,7 +606,31 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_indexed_repeat_math_epression_with_double_variable_in_nested_repeat_relative_path_exception(
+    def test_mixed_variables_and_indexed_repeat_in_expression_integer_type_nested_repeat_relative_path_exception(
+        self,
+    ):
+        """Test relative path exception (absolute path) in an expression contains variables and indexed-repeat() in an integer type using nested repeat."""
+        self.assertPyxformXform(
+            name="data",
+            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
+            md="""
+                | survey  |                |          |                        |                                                                             |
+                |         | type           | name     | label                  | default                                                                     |
+                |         | begin_group    | page     |                        |                                                                             |
+                |         | begin_repeat   | bp_rg    |                        |                                                                             |
+                |         | integer        | bp_row   | Repeating group entry  |                                                                             |
+                |         | text           | bp_pos   | Position               |                                                                             |
+                |         | integer        | bp_sys   | Systolic pressure      |                                                                             |
+                |         | integer        | bp_dia   | Diastolic pressure     | if(${bp_row} = 1, '',  indexed-repeat(${bp_dia}, ${bp_rg}, ${bp_row} - 1))  |
+                |         | end repeat     |          |                        |                                                                             |
+                |         | end group      |          |                        |                                                                             |
+            """,  # noqa pylint: disable=line-too-long
+            xml__contains=[
+                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/page/bp_rg/bp_dia" value="if( ../bp_row  = 1, '', indexed-repeat( /data/page/bp_rg/bp_dia ,  /data/page/bp_rg ,  ../bp_row  - 1))"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_indexed_repeat_math_expression_with_double_variable_in_nested_repeat_relative_path_exception(
         self,
     ):
         """Test relative path exception (absolute path) in indexed-repeat() with math expression and double variable using nested repeat."""

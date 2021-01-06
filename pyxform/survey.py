@@ -912,52 +912,44 @@ class Survey(Section):
             current_matchobj = matchobj
 
             if not last_saved and context:
-                if context["type"] == "text":
 
-                    if not is_indexed_repeat:
-                        return True
+                if not is_indexed_repeat:
+                    return True
 
-                    # It is possible to have multiple indexed-repeat in an expression
-                    indexed_repeats_iter = indexed_repeat_regex.finditer(
-                        matchobj.string
-                    )
-                    for indexed_repeat in indexed_repeats_iter:
+                # It is possible to have multiple indexed-repeat in an expression
+                indexed_repeats_iter = indexed_repeat_regex.finditer(matchobj.string)
+                for indexed_repeat in indexed_repeats_iter:
 
-                        # Make sure current ${name} is in the correct indexed-repeat
-                        if current_matchobj.end() > indexed_repeat.end():
-                            try:
-                                next(indexed_repeats_iter)
-                                continue
-                            except StopIteration:
-                                return True
-
-                        # ${name} outside of indexed-repeat always using relative path
-                        if (
-                            current_matchobj.end() < indexed_repeat.start()
-                            or current_matchobj.start() > indexed_repeat.end()
-                        ):
+                    # Make sure current ${name} is in the correct indexed-repeat
+                    if current_matchobj.end() > indexed_repeat.end():
+                        try:
+                            next(indexed_repeats_iter)
+                            continue
+                        except StopIteration:
                             return True
 
-                        indexed_repeat_name_index = None
-                        indexed_repeat_args = (
-                            function_args_regex.match(indexed_repeat.group())
-                            .group(1)
-                            .split(",")
-                        )
-                        name_arg = "${{{0}}}".format(name)
-                        for idx, arg in enumerate(indexed_repeat_args):
-                            if name_arg in arg.strip():
-                                indexed_repeat_name_index = idx
+                    # ${name} outside of indexed-repeat always using relative path
+                    if (
+                        current_matchobj.end() < indexed_repeat.start()
+                        or current_matchobj.start() > indexed_repeat.end()
+                    ):
+                        return True
 
-                        return (
-                            indexed_repeat_name_index is not None
-                            and indexed_repeat_name_index
-                            not in indexed_repeat_relative_path_args_index
-                        )
-                else:
-                    return not (
-                        context["type"] == "calculate"
-                        and "indexed-repeat" in context["bind"]["calculate"]
+                    indexed_repeat_name_index = None
+                    indexed_repeat_args = (
+                        function_args_regex.match(indexed_repeat.group())
+                        .group(1)
+                        .split(",")
+                    )
+                    name_arg = "${{{0}}}".format(name)
+                    for idx, arg in enumerate(indexed_repeat_args):
+                        if name_arg in arg.strip():
+                            indexed_repeat_name_index = idx
+
+                    return (
+                        indexed_repeat_name_index is not None
+                        and indexed_repeat_name_index
+                        not in indexed_repeat_relative_path_args_index
                     )
 
             return False
