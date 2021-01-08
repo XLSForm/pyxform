@@ -162,3 +162,20 @@ class FieldsTests(PyxformTestCase):
     </select1>
 """
         self.assertPyxformXform(md=md, xml__contains=[expected])
+
+    def test_duplicate_form_name_in_section_name(self):
+        """
+        Ensure that the section name cannot be the same as form name
+        """
+        self.assertPyxformXform(
+            name="foo",
+            md="""
+            | Survey   |             |         |               |
+            |          | Type        | Name    | Label         |
+            |          | begin group | foo     | A group       |
+            |          | text        | a       | Enter text    |
+            |          | end group   |         |               |
+            """,
+            errored=True,
+            error__contains=['The name "foo" is the same as the form name'],
+        )
