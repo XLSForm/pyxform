@@ -186,7 +186,7 @@ class Survey(Section):
         root_node_name = self.name
         section_names = []
         for element in self.iter_descendants():
-            if element.type != "survey" and element.name == root_node_name:
+            if not isinstance(element, Survey) and element.name == root_node_name:
                 raise PyXFormError(
                     'The name "%s" is the same as the form name. '
                     "Use a different section name "
