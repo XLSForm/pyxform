@@ -186,20 +186,19 @@ class Survey(Section):
         root_node_name = self.name
         section_names = []
         for element in self.iter_descendants():
-            if not isinstance(element, Survey):
-                if element.name == root_node_name:
+            if not isinstance(element, Survey) and element.name == root_node_name:
+                raise PyXFormError(
+                    'The name "%s" is the same as the form name. '
+                    "Use a different section name "
+                    '(or change the form name in the "name" column of the settings sheet).'
+                    % element.name
+                )
+            if isinstance(element, Section):
+                if element.name in section_names:
                     raise PyXFormError(
-                        'The name "%s" is the same as the form name. '
-                        "Use a different section name "
-                        '(or change the form name in the "name" column of the settings sheet).'
-                        % element.name
+                        "There are two sections with the name %s." % element.name
                     )
-                if isinstance(element, Section):
-                    if element.name in section_names:
-                        raise PyXFormError(
-                            "There are two sections with the name %s." % element.name
-                        )
-                    section_names.append(element.name)
+                section_names.append(element.name)
 
     def get_nsmap(self):
         """Add additional namespaces"""
