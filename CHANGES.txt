@@ -1,5 +1,15 @@
 Pyxform Changelog
 
+
+# v1.3.4, 2021-01-15
+
+* #510 Show a more helpful error message is section name is equal to form name
+  * Agus Hilman @gushil (OpenClinica)
+* #507 Fixed KeyError that occurs with some dynamic default expressions
+  * Agus Hilman @gushil (OpenClinica)
+* #484 Use absolute path for first argument in indexed-repeat() output 
+  * Agus Hilman @gushil (OpenClinica)
+
 # v1.3.3, 2020-12-17
 
 * #500 Use same versions as requirements.pip to prevent unexpected upgrades
