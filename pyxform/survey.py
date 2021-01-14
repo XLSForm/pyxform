@@ -183,8 +183,16 @@ class Survey(Section):
         self._validate_uniqueness_of_section_names()
 
     def _validate_uniqueness_of_section_names(self):
+        root_node_name = self.name
         section_names = []
         for element in self.iter_descendants():
+            if not isinstance(element, Survey) and element.name == root_node_name:
+                raise PyXFormError(
+                    'The name "%s" is the same as the form name. '
+                    "Use a different section name "
+                    '(or change the form name in the "name" column of the settings sheet).'
+                    % element.name
+                )
             if isinstance(element, Section):
                 if element.name in section_names:
                     raise PyXFormError(

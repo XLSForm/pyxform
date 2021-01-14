@@ -40,7 +40,7 @@ class BuilderTests(TestCase):
 
     def setUp(self):
         self.this_directory = os.path.dirname(__file__)
-        survey_out = Survey(name="age", sms_keyword="age", type="survey")
+        survey_out = Survey(name="survey_age", sms_keyword="age", type="survey")
         question = InputQuestion(name="age")
         question.type = "integer"
         question.label = "How old are you?"
