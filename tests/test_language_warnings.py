@@ -105,7 +105,6 @@ class LanguageWarningTest(PyxformTestCase):
             |        | opts            | opt2            | Opt2                 | Opc2                |                    |              |                      |                                  
             """
         )
-
         warnings = []
         tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
         tmp.close()

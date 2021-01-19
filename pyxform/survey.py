@@ -662,8 +662,6 @@ class Survey(Section):
                             form: {
                                 "text": d["text"],
                                 "output_context": d["output_context"],
-                                # TODO - consider adding more context here for downstream needs
-                                # (such as the missing translation warning, which is sometimes cryptic )
                             }
                         }
                     )
@@ -725,19 +723,31 @@ class Survey(Section):
 
     def _get_column_name_from_translation_path(self, path, content_type):
         if content_type not in ["long", "guidance"]:
+            # Images, media will hit this block, as well as other content_types missing translations.
             return content_type
 
+        # in the "path", the actual column that needs the translation added should appear after the ":"
         survey_column_name_ix = path.find(":")
         if survey_column_name_ix > -1:
             return path[path.find(":") + 1 :]
+
+        # if the ":" is not present, there may be a choice label present.
+        # First check for a "-"
         if path.find("-") > -1:
+            
+            # If a "-" is present, its a choice label.
             choice_list_name = {
                 cl for cl in self.choices.keys() if cl == path[: path.find("-")]
             }
             if choice_list_name:
                 return "choice label for " + choice_list_name.pop()
 
-        # TODO - improve this function or consider a reworking of _add_empty_translations to better reflect needs.
+        # if this return is hit, we dont really know exactly what column path represents.
+        # return the full path.
+        # TODO 
+        # - improve this function 
+        # or consider a reworking of _add_empty_translations to better reflect needs
+        # or consider simply returning "path" every time, if it is more user friendly.
         return path
 
     def _setup_media(self):
@@ -1131,6 +1141,8 @@ class Survey(Section):
                     + ". "
                     + "Learn more: http://xlsform.org#multiple-language-support"
                 )
+        
+        # Take the internal warnings (things found during form creation logic) and add them as well.
         warnings.extend(self["__internal_warnings__"])
 
     def to_xml(self, validate=True, pretty_print=True, warnings=None, enketo=False):
