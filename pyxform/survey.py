@@ -252,7 +252,7 @@ class Survey(Section):
             "h:html",
             node("h:head", node("h:title", self.title), self.xml_model()),
             node("h:body", *self.xml_control(), **body_kwargs),
-            **nsmap
+            **nsmap,
         )
 
     def get_setvalues_for_question_name(self, question_name):
@@ -380,9 +380,9 @@ class Survey(Section):
             uri = "jr://file-csv/{}.csv".format(file_id)
 
             return InstanceInfo(
-                type=u"pulldata",
+                type="pulldata",
                 context="[type: {t}, name: {n}]".format(
-                    t=element[u"parent"][u"type"], n=element[u"parent"][u"name"]
+                    t=element["parent"]["type"], n=element["parent"]["name"]
                 ),
                 name=file_id,
                 src=uri,
@@ -643,7 +643,9 @@ class Survey(Section):
             # function
             parent = element.get("parent")
             if parent and not parent.get("choice_filter"):
-                translations_for_element = element.get_translations(self.default_language)
+                translations_for_element = element.get_translations(
+                    self.default_language
+                )
                 for d in translations_for_element:
                     translation_path = d["path"]
                     form = "long"
@@ -694,11 +696,11 @@ class Survey(Section):
         When translations are not provided "-" will be used.
         This disables any of the default_language fallback functionality.
         """
-        
+
         # Create a paths:content_types map to track content types found at each path
         paths = {}
         for lang, translation_dict in self._translations.items():
-            for path, content in translation_dict.items():                
+            for path, content in translation_dict.items():
                 paths[path] = paths.get(path, set()).union(content.keys())
 
         for lang, translation in self._translations.items():
@@ -707,31 +709,36 @@ class Survey(Section):
                     self._translations[lang][path] = {}
                 for content_type in content_types:
                     if content_type not in self._translations[lang][path]:
-                        column_name = self._get_column_name_from_translation_path(path, content_type)
+                        column_name = self._get_column_name_from_translation_path(
+                            path, content_type
+                        )
                         missing_translation_warning = (
-                            f'There is no default language set, and no language specified for: {column_name},'
-                            ' Set a default language in the settings tab, or specifiy the language of this column.'
-                        ) if lang == 'default' else (
-                            f'Translation for {lang} missing for: {column_name}'
+                            (
+                                f"There is no default language set, and no language specified for: {column_name},"
+                                " Set a default language in the settings tab, or specifiy the language of this column."
+                            )
+                            if lang == "default"
+                            else (f"Translation for {lang} missing for: {column_name}")
                         )
                         self._add_warning(missing_translation_warning)
                         self._translations[lang][path][content_type] = "-"
 
     def _get_column_name_from_translation_path(self, path, content_type):
-        if content_type not in ['long', 'guidance']:
+        if content_type not in ["long", "guidance"]:
             return content_type
 
-        survey_column_name_ix = path.find(':')
+        survey_column_name_ix = path.find(":")
         if survey_column_name_ix > -1:
-            return path[path.find(':')+1:]
-        if path.find('-') > -1:
-            choice_list_name = { cl for cl in self.choices.keys() if cl == path[:path.find('-')] }
+            return path[path.find(":") + 1 :]
+        if path.find("-") > -1:
+            choice_list_name = {
+                cl for cl in self.choices.keys() if cl == path[: path.find("-")]
+            }
             if choice_list_name:
-                return 'choice label for ' + choice_list_name.pop()
-        
+                return "choice label for " + choice_list_name.pop()
+
         # TODO - improve this function or consider a reworking of _add_empty_translations to better reflect needs.
         return path
-
 
     def _setup_media(self):
         """
@@ -1123,8 +1130,8 @@ class Survey(Section):
                     + ", ".join(bad_languages)
                     + ". "
                     + "Learn more: http://xlsform.org#multiple-language-support"
-                )        
-        warnings.extend(self['__internal_warnings__'])
+                )
+        warnings.extend(self["__internal_warnings__"])
 
     def to_xml(self, validate=True, pretty_print=True, warnings=None, enketo=False):
         """

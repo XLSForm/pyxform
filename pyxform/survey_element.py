@@ -77,8 +77,7 @@ class SurveyElement(dict):
     }
 
     def _add_warning(self, message):
-        self['__internal_warnings__'].add(message)
-
+        self["__internal_warnings__"].add(message)
 
     def _default(self):
         # TODO: need way to override question type dictionary
@@ -120,7 +119,6 @@ class SurveyElement(dict):
         # themselves.
         if self.control.get("appearance") == "label" and not self.label:
             self["label"] = " "
-
 
     def _link_children(self):
         for child in self.children:
