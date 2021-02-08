@@ -3,12 +3,11 @@
 Test xform2json module.
 """
 import os
-import json
 from xml.etree.ElementTree import ParseError
 
 from unittest2 import TestCase
 
-from pyxform.builder import create_survey_element_from_dict, create_survey_from_path
+from pyxform.builder import create_survey_from_path
 from pyxform.tests import utils
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 from pyxform.xform2json import _try_parse, create_survey_element_from_xml
@@ -51,35 +50,6 @@ class DumpAndLoadXForm2JsonTests(utils.XFormTestCase, PyxformTestCase):
             path = survey.name + ".json"
             if os.path.exists(path):
                 os.remove(path)
-
-    def test_convert_toJSON_multi_language(self):
-        """
-        Test that it's possible to convert XLSForms with multiple languages
-        to JSON and back into XML without losing any of the required information
-        """
-        md = """
-        | survey  |
-        |         | type                   | name  | label:Eng  | label:Fr |
-        |         | text                   | name  | Name       | Prénom   |
-        |         | select_multiple fruits | fruit | Fruit      | Fruit    |
-        |         |                        |       |            |          |
-        | choices | list name              | name  | label:Eng  | label:Fr |
-        |         | fruits                 | 1     | Mango      | Mangue   |
-        |         | fruits                 | 2     | Orange     | Orange   |
-        |         | fruits                 | 3     | Apple      | Pomme    |
-        """
-
-        survey = self.md_to_pyxform_survey(
-            md_raw=md,
-            kwargs={"id_string": "id", "name": "multi-language", "title": "some-title"},
-            autoname=False,
-        )
-        expected_xml = survey.to_xml()
-        generated_json = survey.to_json()
-
-        survey = create_survey_element_from_dict(json.loads(generated_json))
-
-        self.assertEqual(expected_xml, survey.to_xml())
 
 
 class TestXMLParse(TestCase):
