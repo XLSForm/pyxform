@@ -9,10 +9,11 @@ from unittest2 import TestCase
 
 from pyxform.builder import create_survey_from_path
 from pyxform.tests import utils
+from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 from pyxform.xform2json import _try_parse, create_survey_element_from_xml
 
 
-class DumpAndLoadXForm2JsonTests(utils.XFormTestCase):
+class DumpAndLoadXForm2JsonTests(utils.XFormTestCase, PyxformTestCase):
 
     maxDiff = None
 

@@ -219,6 +219,19 @@ class SurveyElement(dict):
         else:
             return lineage[0].name
 
+    def _delete_keys_from_dict(self, dictionary: dict, keys: list):
+        """
+        Deletes a list of keys from a dictionary.
+        Credits: https://stackoverflow.com/a/49723101
+        """
+        for key in keys:
+            if key in dictionary:
+                del dictionary[key]
+
+        for value in dictionary.values():
+            if isinstance(value, dict):
+                self._delete_keys_from_dict(value, keys)
+
     def to_json_dict(self):
         """
         Create a dict copy of this survey element by removing inappropriate
@@ -227,9 +240,9 @@ class SurveyElement(dict):
         self.validate()
         result = self.copy()
         to_delete = ["parent", "question_type_dictionary", "_created"]
-        for key in to_delete:
-            if key in result:
-                del result[key]
+        # Delete all keys that may cause a "Circular Reference"
+        # error while converting the result to JSON
+        self._delete_keys_from_dict(result, to_delete)
         children = result.pop("children")
         result["children"] = []
         for child in children:
