@@ -653,3 +653,22 @@ class TestRepeat(PyxformTestCase):
                 """<bind nodeset="/data/family/person/prev_name" relevant=" ../age  &gt; indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" type="string"/>"""  # noqa pylint: disable=line-too-long
             ],
         )
+
+    def test_choice_from_previous_repeat_in_current_repeat_parents_out_to_repeat(self):
+        """Test choice from previous repeat in current repeat produces the correct reference"""
+        xlsform_md = """
+        | survey       |                           |               |                        |                                                      |            |                       |              |
+        |              | type                      | name          | label                  | choice_filter                                        | appearance | relevant              | calculation  |
+        |              | begin_repeat              | pet           | Pet                    |                                                      | field_list |                       |              |
+        |              | calculate                 | pos           |                        |                                                      |            |                       | position(..) |
+        |              | select_one ${animal_type} | animal_select | Select the animal type | position() != current()/../pos and animal_type != '' |            |                       |              |
+        |              | text                      | animal_type   | Animal type            |                                                      |            | ${animal_select} = '' |              |
+        |              | end_repeat                | pet           |                        |                                                      |            |                       |              |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                "<itemset nodeset=\"../../pet[position() != current()/../pos and animal_type != '']\">",
+            ],
+        )
