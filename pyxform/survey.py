@@ -112,16 +112,16 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
     context_parent = is_parent_a_repeat(survey, context_xpath)
     xpath_parent = is_parent_a_repeat(survey, xpath)
     if context_parent and xpath_parent and xpath_parent in context_parent:
-        include_parent = False
         if not context_parent == xpath_parent and reference_parent:
             context_shared_ancestor = is_parent_a_repeat(survey, context_parent)
             if context_shared_ancestor == xpath_parent:
                 # Check if context_parent is a child repeat of the xpath_parent
                 # If the context_parent is a child of the xpath_parent reference the entire
                 # xpath_parent in the generated nodeset
-                include_parent = True
                 context_parent = context_shared_ancestor
-        return _get_steps_and_target_xpath(context_parent, xpath_parent, include_parent)
+        return _get_steps_and_target_xpath(
+            context_parent, xpath_parent, reference_parent
+        )
     elif context_parent and xpath_parent:
         # Check if context_parent and xpath_parent share a common
         # repeat ancestor
