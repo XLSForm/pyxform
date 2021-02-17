@@ -257,7 +257,9 @@ class Survey(Section):
         return self.setvalues_by_triggering_ref.get("${%s}" % question_name)
 
     @staticmethod
-    def _generate_static_instances(list_name, choice_list):
+    def _generate_static_instances(
+        list_name, choice_list, has_choice_filter_with_condition
+    ):
         """
         Generates <instance> elements for static data
         (e.g. choices for select type questions)
@@ -274,19 +276,23 @@ class Survey(Section):
             choice_element_list = []
             # Add a unique id to the choice element in case there is itext
             # it references
-            if multi_language or has_media:
+            if multi_language or has_media or has_choice_filter_with_condition:
                 itext_id = "-".join([list_name, str(idx)])
                 choice_element_list.append(node("itextId", itext_id))
 
             for name, value in sorted(choice.items()):
-                if isinstance(value, basestring) and name != "label":
-                    choice_element_list.append(node(name, unicode(value)))
-                if (
-                    not multi_language
-                    and isinstance(value, basestring)
-                    and name == "label"
-                ):
-                    choice_element_list.append(node(name, unicode(value)))
+                if has_choice_filter_with_condition:
+                    if isinstance(value, basestring) and name == "name":
+                        choice_element_list.append(node(name, unicode(value)))
+                else:
+                    if isinstance(value, basestring) and name != "label":
+                        choice_element_list.append(node(name, unicode(value)))
+                    if (
+                        not multi_language
+                        and isinstance(value, basestring)
+                        and name == "label"
+                    ):
+                        choice_element_list.append(node(name, unicode(value)))
 
             instance_element_list.append(node("item", *choice_element_list))
 
@@ -447,6 +453,20 @@ class Survey(Section):
             instance=node("instance", id=name, src=uri),
         )
 
+    @staticmethod
+    def _has_bracketed_tag_in_choice_label(choices):
+        has_bracketed_tag_in_choice_label = False
+        for list_name, choice_list in choices.items():
+            for idx, choice in zip(range(len(choice_list)), choice_list):
+                for name, choice_value in choice.items():
+                    if (
+                        name == "label"
+                        and isinstance(choice_value, basestring)
+                        and re.search(BRACKETED_TAG_REGEX, choice_value) is not None
+                    ):
+                        has_bracketed_tag_in_choice_label = True
+        return has_bracketed_tag_in_choice_label
+
     def _generate_instances(self):
         """
         Get instances from all the different ways that they may be generated.
@@ -484,6 +504,7 @@ class Survey(Section):
         """
         instances = []
         generate_last_saved = False
+        choice_filter_is_not_empty = False
         for i in self.iter_descendants():
             i_ext = self._generate_external_instances(element=i)
             i_pull = self._generate_pulldata_instances(element=i)
@@ -493,14 +514,25 @@ class Survey(Section):
             for x in [i_ext, i_pull, i_file]:
                 if x is not None:
                     instances += x if isinstance(x, list) else [x]
+            parent = i.get("parent")
+            if parent and parent.get("choice_filter") != "":
+                choice_filter_is_not_empty = True
 
         if generate_last_saved:
             instances += [self._get_last_saved_instance()]
 
         # Append last so the choice instance is excluded on a name clash.
+        has_bracketed_tag_in_choice_label = self._has_bracketed_tag_in_choice_label(
+            self.choices
+        )
         for name, value in self.choices.items():
             instances += [
-                self._generate_static_instances(list_name=name, choice_list=value)
+                self._generate_static_instances(
+                    list_name=name,
+                    choice_list=value,
+                    has_choice_filter_with_condition=choice_filter_is_not_empty
+                    and has_bracketed_tag_in_choice_label,
+                )
             ]
 
         # Check that external instances have unique names.
@@ -632,11 +664,14 @@ class Survey(Section):
                         )
 
         self._translations = defaultdict(dict)  # pylint: disable=W0201
+        choice_filter_is_not_empty = False
         for element in self.iter_descendants():
             # Skip creation of translations for choices in filtered selects
             # The creation of these translations is done futher below in this
             # function
             parent = element.get("parent")
+            if parent and parent.get("choice_filter") != "":
+                choice_filter_is_not_empty = True
             if parent and not parent.get("choice_filter"):
                 for d in element.get_translations(self.default_language):
                     translation_path = d["path"]
@@ -660,22 +695,32 @@ class Survey(Section):
                     )
 
         # This code sets up translations for choices in filtered selects.
+        has_bracketed_tag_in_choice_label = self._has_bracketed_tag_in_choice_label(
+            self.choices
+        )
         for list_name, choice_list in self.choices.items():
             multi_language = isinstance(choice_list[0].get("label"), dict)
             has_media = bool(choice_list[0].get("media"))
-            if not multi_language and not has_media:
-                continue
-            for idx, choice in zip(range(len(choice_list)), choice_list):
-                for name, choice_value in choice.items():
-                    itext_id = "-".join([list_name, str(idx)])
-                    if isinstance(choice_value, dict):
-                        _setup_choice_translations(name, choice_value, itext_id)
-                    elif name == "label":
-                        self._add_to_nested_dict(
-                            self._translations,
-                            [self.default_language, itext_id, "long"],
-                            choice_value,
-                        )
+            has_choice_filter_and_condition = (
+                choice_filter_is_not_empty and has_bracketed_tag_in_choice_label
+            )
+
+            if (
+                multi_language
+                or (not multi_language and has_media)
+                or (not multi_language and has_choice_filter_and_condition)
+            ):
+                for idx, choice in zip(range(len(choice_list)), choice_list):
+                    for name, choice_value in choice.items():
+                        itext_id = "-".join([list_name, str(idx)])
+                        if isinstance(choice_value, dict):
+                            _setup_choice_translations(name, choice_value, itext_id)
+                        elif name == "label":
+                            self._add_to_nested_dict(
+                                self._translations,
+                                [self.default_language, itext_id, "long"],
+                                choice_value,
+                            )
 
     def _add_empty_translations(self):
         """

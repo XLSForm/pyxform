@@ -146,3 +146,39 @@ class InlineTranslationsTest(PyxformTestCase):
                 '<text id="/data/foo/c:label">',
             ],
         )
+
+    def test_select_with_options_contains_output_and_choice_filter_and_no_translations_generates_single_translation(
+        self,
+    ):
+        """
+        Selects with options contains output and choice filter and no translations should generate itext fields for choices.
+        """
+        xform_md = """
+        | survey |                    |      |            |               |         |
+        |        | type               | name | label      | choice_filter | default |
+        |        | text               | txt  | Enter text |               | default |
+        |        | select_one choices | one  | Select one | 1 < 2         |         |
+        | choices |
+        |         | list_name | name | label        |
+        |         | choices   | one  | One - ${txt} |
+        |         | choices   | two  | Two - ${txt} |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xform_md,
+            debug=False,
+            itext__contains=[
+                '<text id="choices-0">',
+                '<value> One - <output value=" /data/txt "/>',
+                '<text id="choices-1">',
+                '<value> Two - <output value=" /data/txt "/>',
+            ],
+            model__contains=[
+                "<itextId>choices-0</itextId>",
+                "<name>one</name>",
+                "<itextId>choices-1</itextId>",
+                "<name>two</name>",
+            ],
+            xml__contains=['<label ref="jr:itext(itextId)"/>'],
+            xml__excludes=['<label ref="label"/>'],
+        )

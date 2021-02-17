@@ -8,7 +8,13 @@ import re
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import basestring, node, unicode, default_is_dynamic
+from pyxform.utils import (
+    basestring,
+    node,
+    unicode,
+    default_is_dynamic,
+    BRACKETED_TAG_REGEX,
+)
 
 
 class Question(SurveyElement):
@@ -205,14 +211,32 @@ class MultipleChoiceQuestion(Question):
             has_media = False
             is_previous_question = bool(re.match(r"^\${.*}$", self.get("itemset")))
 
+            choice_filter_is_not_empty = choice_filter != ""
+            has_bracketed_tag_in_choice_label = False
             if choices.get(itemset):
                 has_media = bool(choices[itemset][0].get("media"))
+                for choice in choices[itemset]:
+                    if "label" in choice:
+                        choice_label = choice.get("label")
+                        if (
+                            choice_label
+                            and isinstance(choice_label, basestring)
+                            and re.search(BRACKETED_TAG_REGEX, choice_label) is not None
+                        ):
+                            has_bracketed_tag_in_choice_label = True
+            has_choice_filter_and_condition = (
+                choice_filter_is_not_empty and has_bracketed_tag_in_choice_label
+            )
 
             if file_extension in [".csv", ".xml"]:
                 itemset = itemset
                 itemset_label_ref = "label"
             else:
-                if not multi_language and not has_media:
+                if (
+                    not multi_language
+                    and not has_media
+                    and not has_choice_filter_and_condition
+                ):
                     itemset = self["itemset"]
                     itemset_label_ref = "label"
                 else:
