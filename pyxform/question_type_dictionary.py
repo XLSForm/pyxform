@@ -374,4 +374,8 @@ QUESTION_TYPE_DICT = {
         "bind": {"type": "geopoint"},
         "action": {"name": "odk:setgeopoint", "event": "odk-instance-first-load"},
     },
+    "background-audio": {
+        "control": {"tag": "action"},
+        "action": {"name": "odk:recordaudio", "event": "odk-instance-load"},
+    },
 }
