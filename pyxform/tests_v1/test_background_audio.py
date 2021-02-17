@@ -12,6 +12,7 @@ class BackgroundAudioTest(PyxformTestCase):
             |        | background-audio | my_recording |
             """,
             xml__contains=[
+                '<bind nodeset="/data/my_recording" type="binary"/>',
                 '<odk:recordaudio event="odk-instance-load" ref="/data/my_recording"/>',
             ],
         )

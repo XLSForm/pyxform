@@ -376,6 +376,7 @@ QUESTION_TYPE_DICT = {
     },
     "background-audio": {
         "control": {"tag": "action"},
+        "bind": {"type": "binary"},
         "action": {"name": "odk:recordaudio", "event": "odk-instance-load"},
     },
 }
