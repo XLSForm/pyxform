@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
-import unittest
 
 
 class BackgroundAudioTest(PyxformTestCase):
@@ -78,16 +77,4 @@ class BackgroundAudioTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=["Invalid value for quality."],
-        )
-
-    @unittest.skip("Required update to Validate to work")
-    def test_background_audio_is_valid(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey |                   |                 |
-            |        | type              |   name          |
-            |        | background-audio  |   my_recording  |
-            """,
-            run_odk_validate=True,
         )

@@ -1,19 +1,19 @@
 {
   "assets": [
     {
-      "browser_download_url": "https://github.com/getodk/validate/releases/download/v1.15.0/ODK-Validate-v1.15.0.jar",
+      "browser_download_url": "https://github.com/getodk/validate/releases/download/v1.16.0/ODK-Validate-v1.16.0.jar",
       "content_type": "application/java-archive",
-      "created_at": "2020-09-09T22:10:24Z",
-      "download_count": 0,
-      "id": 25270722,
+      "created_at": "2021-02-17T17:18:34Z",
+      "download_count": 1,
+      "id": 32212241,
       "label": null,
-      "name": "ODK-Validate-v1.15.0.jar",
-      "node_id": "MDEyOlJlbGVhc2VBc3NldDI1MjcwNzIy",
-      "size": 1634611,
+      "name": "ODK-Validate-v1.16.0.jar",
+      "node_id": "MDEyOlJlbGVhc2VBc3NldDMyMjEyMjQx",
+      "size": 1640452,
       "state": "uploaded",
-      "updated_at": "2020-09-09T22:10:31Z",
+      "updated_at": "2021-02-17T17:18:38Z",
       "uploader": {
-        "avatar_url": "https://avatars3.githubusercontent.com/u/967540?v=4",
+        "avatar_url": "https://avatars.githubusercontent.com/u/967540?v=4",
         "events_url": "https://api.github.com/users/lognaturel/events{/privacy}",
         "followers_url": "https://api.github.com/users/lognaturel/followers",
         "following_url": "https://api.github.com/users/lognaturel/following{/other_user}",
@@ -32,12 +32,12 @@
         "type": "User",
         "url": "https://api.github.com/users/lognaturel"
       },
-      "url": "https://api.github.com/repos/getodk/validate/releases/assets/25270722"
+      "url": "https://api.github.com/repos/getodk/validate/releases/assets/32212241"
     }
   ],
-  "assets_url": "https://api.github.com/repos/getodk/validate/releases/31011277/assets",
+  "assets_url": "https://api.github.com/repos/getodk/validate/releases/38181391/assets",
   "author": {
-    "avatar_url": "https://avatars3.githubusercontent.com/u/967540?v=4",
+    "avatar_url": "https://avatars.githubusercontent.com/u/967540?v=4",
     "events_url": "https://api.github.com/users/lognaturel/events{/privacy}",
     "followers_url": "https://api.github.com/users/lognaturel/followers",
     "following_url": "https://api.github.com/users/lognaturel/following{/other_user}",
@@ -56,19 +56,19 @@
     "type": "User",
     "url": "https://api.github.com/users/lognaturel"
   },
-  "body": "[All changes](https://github.com/opendatakit/validate/compare/v1.14.0..v1.15.0)\r\n\r\n**Highlights**\r\n* Upgrade to [JavaRosa v3.0.0](https://github.com/opendatakit/javarosa/releases/tag/v3.0.0)\r\n",
-  "created_at": "2020-09-09T22:05:47Z",
+  "body": "**Highlights**\r\n  * Upgrade to [JavaRosa v3.1.0](https://github.com/getodk/javarosa/releases/tag/v3.1.0)",
+  "created_at": "2021-02-17T16:50:50Z",
   "draft": false,
-  "html_url": "https://github.com/getodk/validate/releases/tag/v1.15.0",
-  "id": 31011277,
-  "name": "ODK Validate v1.15.0",
-  "node_id": "MDc6UmVsZWFzZTMxMDExMjc3",
+  "html_url": "https://github.com/getodk/validate/releases/tag/v1.16.0",
+  "id": 38181391,
+  "name": "ODK Validate v1.16.0",
+  "node_id": "MDc6UmVsZWFzZTM4MTgxMzkx",
   "prerelease": false,
-  "published_at": "2020-09-09T22:09:38Z",
-  "tag_name": "v1.15.0",
-  "tarball_url": "https://api.github.com/repos/getodk/validate/tarball/v1.15.0",
+  "published_at": "2021-02-17T17:16:50Z",
+  "tag_name": "v1.16.0",
+  "tarball_url": "https://api.github.com/repos/getodk/validate/tarball/v1.16.0",
   "target_commitish": "master",
-  "upload_url": "https://uploads.github.com/repos/getodk/validate/releases/31011277/assets{?name,label}",
-  "url": "https://api.github.com/repos/getodk/validate/releases/31011277",
-  "zipball_url": "https://api.github.com/repos/getodk/validate/zipball/v1.15.0"
+  "upload_url": "https://uploads.github.com/repos/getodk/validate/releases/38181391/assets{?name,label}",
+  "url": "https://api.github.com/repos/getodk/validate/releases/38181391",
+  "zipball_url": "https://api.github.com/repos/getodk/validate/zipball/v1.16.0"
 }
