@@ -1294,10 +1294,10 @@ def workbook_to_json(
 
             if "quality" in parameters.keys():
                 if parameters["quality"] not in [
-                    "voice-only",
-                    "low",
-                    "normal",
-                    "external",
+                    constants.AUDIO_QUALITY_VOICE_ONLY,
+                    constants.AUDIO_QUALITY_LOW,
+                    constants.AUDIO_QUALITY_NORMAL,
+                    constants.AUDIO_QUALITY_EXTERNAL,
                 ]:
                     raise PyXFormError("Invalid value for quality.")
 
@@ -1313,10 +1313,9 @@ def workbook_to_json(
 
             if "quality" in parameters.keys():
                 if parameters["quality"] not in [
-                    "voice-only",
-                    "low",
-                    "normal",
-                    "external",
+                    constants.AUDIO_QUALITY_VOICE_ONLY,
+                    constants.AUDIO_QUALITY_LOW,
+                    constants.AUDIO_QUALITY_NORMAL,
                 ]:
                     raise PyXFormError("Invalid value for quality.")
 

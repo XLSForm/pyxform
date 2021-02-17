@@ -56,6 +56,18 @@ class BackgroundAudioTest(PyxformTestCase):
             ],
         )
 
+    def test_external_quality_fails(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |                  |              |                      |
+            |        | type             | name         | parameters           |
+            |        | background-audio | my_recording | quality=external |
+            """,
+            errored=True,
+            error__contains=["Invalid value for quality."],
+        )
+
     def test_foo_quality_fails(self):
         self.assertPyxformXform(
             name="data",

@@ -100,3 +100,8 @@ EXTERNAL_INSTANCES = ["calculate", "constraint", "readonly", "required", "releva
 CURRENT_XFORMS_VERSION = "1.0.0"
 
 DEPRECATED_DEVICE_ID_METADATA_FIELDS = ["subscriberid", "simserial"]
+
+AUDIO_QUALITY_VOICE_ONLY = "voice-only"
+AUDIO_QUALITY_LOW = "low"
+AUDIO_QUALITY_NORMAL = "normal"
+AUDIO_QUALITY_EXTERNAL = "external"
