@@ -1294,15 +1294,33 @@ def workbook_to_json(
 
             if "quality" in parameters.keys():
                 if parameters["quality"] not in [
-                    "voice-only",
-                    "low",
-                    "normal",
-                    "external",
+                    constants.AUDIO_QUALITY_VOICE_ONLY,
+                    constants.AUDIO_QUALITY_LOW,
+                    constants.AUDIO_QUALITY_NORMAL,
+                    constants.AUDIO_QUALITY_EXTERNAL,
                 ]:
                     raise PyXFormError("Invalid value for quality.")
 
                 new_dict["bind"] = new_dict.get("bind", {})
                 new_dict["bind"].update({"odk:quality": parameters["quality"]})
+
+            parent_children_array.append(new_dict)
+            continue
+
+        if question_type == "background-audio":
+            new_dict = row.copy()
+            parameters = get_parameters(row.get("parameters", ""), ["quality"])
+
+            if "quality" in parameters.keys():
+                if parameters["quality"] not in [
+                    constants.AUDIO_QUALITY_VOICE_ONLY,
+                    constants.AUDIO_QUALITY_LOW,
+                    constants.AUDIO_QUALITY_NORMAL,
+                ]:
+                    raise PyXFormError("Invalid value for quality.")
+
+                new_dict["action"] = new_dict.get("action", {})
+                new_dict["action"].update({"odk:quality": parameters["quality"]})
 
             parent_children_array.append(new_dict)
             continue

@@ -317,7 +317,8 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             )
         else:
             self.assertTrue(
-                real_count != 0, msg_prefix + "Couldn't find %s in content" % text_repr
+                real_count != 0,
+                msg_prefix + "Couldn't find %s in content:\n" % text_repr + content,
             )
 
     def assertNotContains(self, content, text, msg_prefix=""):
