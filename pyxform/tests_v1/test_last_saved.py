@@ -149,6 +149,7 @@ class LastSavedTest(PyxformTestCase):
             |        | end repeat   | my-repeat |       |                            |
             |        | calculate    | baz       |       | ${foo} + ${last-saved#foo} |
             """,
+            run_odk_validate=False,  # This test is more for documentation. The unqualified ref fails Validate.
             xml__contains=[
                 '<instance id="__last-saved" src="jr://instance/last-saved"/>',
                 'calculate=" ../foo  +  instance(\'__last-saved\')/last-saved/my-repeat/foo " nodeset="/last-saved/my-repeat/bar"',
