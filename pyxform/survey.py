@@ -466,19 +466,20 @@ class Survey(Section):
     ):
         bracketed_tag_in_choice_label = False
         if list_name in list_with_choice_filter and len(choice_list) > 0:
-            bracketed_tag_in_choice_label = (
-                choice_list[0].get("label")
-                and isinstance(choice_list[0].get("label"), basestring)
-                and re.search(BRACKETED_TAG_REGEX, choice_list[0].get("label"))
-                is not None
-            )
-            if len(choice_list) > 1:
-                bracketed_tag_in_choice_label = bracketed_tag_in_choice_label and (
-                    choice_list[1].get("label")
-                    and isinstance(choice_list[1].get("label"), basestring)
-                    and re.search(BRACKETED_TAG_REGEX, choice_list[1].get("label"))
-                    is not None
-                )
+            choice_list_length_to_be_checked = 2
+            for choice_idx in range(choice_list_length_to_be_checked):
+                try:
+                    choice = choice_list[choice_idx]
+                    choice_label = choice.get("label")
+                    if (
+                        choice_label
+                        and isinstance(choice_label, basestring)
+                        and re.search(BRACKETED_TAG_REGEX, choice_label) is not None
+                    ):
+                        bracketed_tag_in_choice_label = True
+                        break
+                except IndexError:
+                    break
         return bracketed_tag_in_choice_label
 
     def _generate_instances(self):
