@@ -1,6 +1,13 @@
 Pyxform Changelog
 
 
+# v1.4.0, 2021-02-23
+
+* #514 Fix circular reference error raised when converting an XLSX form with multiple languages to JSON
+  * Davis Raymond @DavisRayM (Ona)
+* #519 Add support for odk:recordaudio
+  * Callum Stott @seadowg (ODK)
+
 # v1.3.4, 2021-01-15
 
 * #510 Show a more helpful error message is section name is equal to form name
