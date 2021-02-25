@@ -210,20 +210,18 @@ class MultipleChoiceQuestion(Question):
             itemset_value_ref = "name"
             itemset, file_extension = os.path.splitext(self["itemset"])
             has_media = False
+            has_dyn_label = False
             is_previous_question = bool(re.match(r"^\${.*}$", self.get("itemset")))
 
             if choices.get(itemset):
                 has_media = bool(choices[itemset][0].get("media"))
+                has_dyn_label = has_dynamic_label(choices[itemset], multi_language)
 
             if file_extension in [".csv", ".xml"]:
                 itemset = itemset
                 itemset_label_ref = "label"
             else:
-                if (
-                    not multi_language
-                    and not has_media
-                    and not has_dynamic_label(choices[itemset], multi_language)
-                ):
+                if not multi_language and not has_media and not has_dyn_label:
                     itemset = self["itemset"]
                     itemset_label_ref = "label"
                 else:
