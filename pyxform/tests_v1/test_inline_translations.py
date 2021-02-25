@@ -146,3 +146,67 @@ class InlineTranslationsTest(PyxformTestCase):
                 '<text id="/data/foo/c:label">',
             ],
         )
+
+    def test_select_with_dynamic_option_label__and_choice_filter__and_no_translations__generates_itext(
+        self,
+    ):
+        """
+        A select with a choice filter and no translations in which the first option label is dynamic should generate itext for choice labels.
+        """
+        xform_md = """
+            | survey |                    |      |            |               |         |
+            |        | type               | name | label      | choice_filter | default |
+            |        | text               | txt  | Enter text |               | default |
+            |        | select_one choices | one  | Select one | 1 < 2         |         |
+            | choices |
+            |         | list_name | name | label        |
+            |         | choices   | one  | One - ${txt} |
+            """
+        self.assertPyxformXform(
+            name="data",
+            md=xform_md,
+            debug=False,
+            itext__contains=[
+                '<text id="choices-0">',
+                '<value> One - <output value=" /data/txt "/>',
+            ],
+            model__contains=["<itextId>choices-0</itextId>", "<name>one</name>",],
+            xml__contains=['<label ref="jr:itext(itextId)"/>'],
+            xml__excludes=['<label ref="label"/>'],
+        )
+
+    def test_select_with_dynamic_option_label_for_second_choice__and_choice_filter__and_no_translations__generates_itext(
+        self,
+    ):
+        """
+        A select with a choice filter and no translations in which the second option label is dynamic should generate itext for choice labels.
+        """
+        xform_md = """
+            | survey |                    |      |            |               |         |
+            |        | type               | name | label      | choice_filter | default |
+            |        | text               | txt  | Enter text |               | default |
+            |        | select_one choices | one  | Select one | 1 < 2         |         |
+            | choices |
+            |         | list_name | name | label        |
+            |         | choices   | one  | One          |
+            |         | choices   | two  | Two - ${txt} |
+            """
+        self.assertPyxformXform(
+            name="data",
+            md=xform_md,
+            debug=False,
+            itext__contains=[
+                '<text id="choices-0">',
+                "<value>One</value>",
+                '<text id="choices-1">',
+                '<value> Two - <output value=" /data/txt "/>',
+            ],
+            model__contains=[
+                "<itextId>choices-0</itextId>",
+                "<name>one</name>",
+                "<itextId>choices-1</itextId>",
+                "<name>two</name>",
+            ],
+            xml__contains=['<label ref="jr:itext(itextId)"/>'],
+            xml__excludes=['<label ref="label"/>'],
+        )

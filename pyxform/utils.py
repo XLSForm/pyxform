@@ -271,3 +271,12 @@ def default_is_dynamic(element_default, element_type=None):
         dynamic_markers.remove("-")
 
     return any(s in element_default for s in dynamic_markers)
+
+
+# If the first or second choice label includes a reference, we must use itext. Check the first two choices in case first is something like "Other".
+def has_dynamic_label(choice_list, multi_language):
+    if not multi_language:
+        for i in range(0, min(2, len(choice_list))):
+            if re.search(BRACKETED_TAG_REGEX, choice_list[i].get("label")) is not None:
+                return True
+    return False

@@ -8,7 +8,14 @@ import re
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import basestring, node, unicode, default_is_dynamic
+from pyxform.utils import (
+    basestring,
+    node,
+    unicode,
+    default_is_dynamic,
+    BRACKETED_TAG_REGEX,
+    has_dynamic_label,
+)
 
 
 class Question(SurveyElement):
@@ -212,7 +219,11 @@ class MultipleChoiceQuestion(Question):
                 itemset = itemset
                 itemset_label_ref = "label"
             else:
-                if not multi_language and not has_media:
+                if (
+                    not multi_language
+                    and not has_media
+                    and not has_dynamic_label(choices[itemset], multi_language)
+                ):
                     itemset = self["itemset"]
                     itemset_label_ref = "label"
                 else:
