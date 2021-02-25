@@ -32,9 +32,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | type         | name   | label |
             |        | csv-external | mydata |       |
             """,
-            model__contains=[
-                '<instance id="mydata" src="jr://file/mydata.csv"/>'
-            ],
+            model__contains=['<instance id="mydata" src="jr://file/mydata.csv"/>'],
         )
 
     def test_cannot__use_same_external_xml_id_in_same_section(self):
@@ -182,6 +180,7 @@ class ExternalInstanceTests(PyxformTestCase):
             | survey |                                      |      |       |                                             |
             |        | type                                 | name | label | calculation                                 |
             |        | begin group                          | g1   |       |                                             |
+            |        | text                                 | foo  | Foo   |                                             |
             |        | csv-external                         | city |       |                                             |
             |        | end group                            | g1   |       |                                             |
             |        | begin group                          | g2   |       |                                             |
@@ -191,12 +190,11 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_multiple_from_file cities.csv | city | City  |                                             |
             |        | end group                            | g3   |       |                                             |
             |        | begin group                          | g4   |       |                                             |
+            |        | text                                 | foo  | Foo   |                                             |
             |        | calculate                            | city | City  | pulldata('fruits', 'name', 'name', 'mango') |
             |        | end group                            | g4   |       |                                             |
             """,  # noqa
-            model__contains=[
-                '<instance id="city" src="jr://file/city.csv"/>',
-            ]
+            model__contains=['<instance id="city" src="jr://file/city.csv"/>',],
         )
 
     def test_can__use_all_types_together_with_unique_ids(self):
@@ -332,9 +330,7 @@ class ExternalInstanceTests(PyxformTestCase):
         expected = """
       <instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>
 """  # noqa
-        self.assertPyxformXform(
-            md=md, model__contains=[expected]
-        )
+        self.assertPyxformXform(md=md, model__contains=[expected])
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
         self.assertEqual(1, xml.count(expected))
@@ -352,9 +348,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.csv      | pyear  | Location of worst pain this year.  |                                                   |
             """  # noqa
         expected = """<instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>"""  # noqa
-        self.assertPyxformXform(
-            md=md, model__contains=[expected]
-        )
+        self.assertPyxformXform(md=md, model__contains=[expected])
 
     def test_can__reuse_xml__selects_then_external(self):
         """Re-using the same xml external data source id and URI is OK."""
@@ -386,9 +380,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.xml      | pyear          | Location of worst pain this year.  |
             """  # noqa
         expected = """<instance id="pain_locations" src="jr://file/pain_locations.xml"/>"""  # noqa
-        self.assertPyxformXform(
-            md=md, model__contains=[expected]
-        )
+        self.assertPyxformXform(md=md, model__contains=[expected])
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
         self.assertEqual(1, xml.count(expected))
@@ -428,7 +420,11 @@ class ExternalInstanceTests(PyxformTestCase):
         """
         node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
 
-        self.assertPyxformXform(md=md, xml__contains=[node])
+        self.assertPyxformXform(
+            md=md,
+            xml__contains=[node],
+            run_odk_validate=False,  # Validate sees self references in readonly as circular but shouldn't
+        )
 
     def test_external_instance_pulldata_required(self):
         """
@@ -441,7 +437,11 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
         node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
-        self.assertPyxformXform(md=md, xml__contains=[node], debug=False)
+        self.assertPyxformXform(
+            md=md,
+            xml__contains=[node],
+            run_odk_validate=False,  # Validate sees self references in requireds as circular but shouldn't
+        )
 
     def test_external_instance_pulldata_relevant(self):
         """
@@ -454,7 +454,11 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
         node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
-        self.assertPyxformXform(md=md, xml__contains=[node], debug=False)
+        self.assertPyxformXform(
+            md=md,
+            xml__contains=[node],
+            run_odk_validate=False,  # Validate sees self references in relevants as circular but shouldn't
+        )
 
     # This is not something that is recommended since pulldata and choice_filter both should use XPath predicates
     # behind the scenes but it should still be possible.

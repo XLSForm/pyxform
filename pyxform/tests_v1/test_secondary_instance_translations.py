@@ -121,7 +121,7 @@ class TestSecondaryInstanceTest(PyxformTestCase):
         xform_md = """
         | survey |                    |      |       |               |
         |        | type               | name | label | choice_filter |
-        |        | select_one list    | foo  | Foo   | name != "     |
+        |        | select_one list    | foo  | Foo   | name != ''    |
         | choices |
         |         | list_name | name | label | image | label::French |
         |         | list      | a    | A     | a.jpg | Ah            |
