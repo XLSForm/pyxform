@@ -115,7 +115,7 @@ class SurveyElementBuilder(object):
             d = self._sections[section_name]
             full_survey = self.create_survey_element_from_dict(d)
             return full_survey.children
-        elif d["type"] == "xml-external":
+        elif d["type"] in ["xml-external", "csv-external"]:
             return ExternalInstance(**d)
         else:
             self._save_trigger_as_setvalue_and_remove_calculate(d)

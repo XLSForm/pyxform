@@ -312,7 +312,8 @@ class Survey(Section):
     def _generate_external_instances(element):
         if isinstance(element, ExternalInstance):
             name = element["name"]
-            src = "jr://file/{}.xml".format(name)
+            extension = element["type"].split("-")[0]
+            src = "jr://file/{}.{}".format(name, extension)
             return InstanceInfo(
                 type="external",
                 context="[type: {t}, name: {n}]".format(
