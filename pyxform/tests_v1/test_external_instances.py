@@ -32,7 +32,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | type         | name   | label |
             |        | csv-external | mydata |       |
             """,
-            model__contains=['<instance id="mydata" src="jr://file/mydata.csv"/>'],
+            model__contains=['<instance id="mydata" src="jr://file-csv/mydata.csv"/>'],
         )
 
     def test_cannot__use_same_external_xml_id_in_same_section(self):
@@ -78,8 +78,8 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | csv-external | mydata2 |       |
             """,
             model__contains=[
-                '<instance id="mydata" src="jr://file/mydata.csv"/>',
-                '<instance id="mydata2" src="jr://file/mydata2.csv"/>',
+                '<instance id="mydata" src="jr://file-csv/mydata.csv"/>',
+                '<instance id="mydata2" src="jr://file-csv/mydata2.csv"/>',
             ],
         )
 
@@ -194,7 +194,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | calculate                            | city | City  | pulldata('fruits', 'name', 'name', 'mango') |
             |        | end group                            | g4   |       |                                             |
             """,  # noqa
-            model__contains=['<instance id="city" src="jr://file/city.csv"/>',],
+            model__contains=['<instance id="city" src="jr://file-csv/city.csv"/>'],
         )
 
     def test_can__use_all_types_together_with_unique_ids(self):

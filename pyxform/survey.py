@@ -313,7 +313,8 @@ class Survey(Section):
         if isinstance(element, ExternalInstance):
             name = element["name"]
             extension = element["type"].split("-")[0]
-            src = "jr://file/{}.{}".format(name, extension)
+            prefix = "file-csv" if extension == "csv" else "file"
+            src = "jr://{}/{}.{}".format(prefix, name, extension)
             return InstanceInfo(
                 type="external",
                 context="[type: {t}, name: {n}]".format(
