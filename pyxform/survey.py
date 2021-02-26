@@ -289,6 +289,8 @@ class Survey(Section):
                     choice_element_list.append(node(name, unicode(value)))
                 if (
                     not multi_language
+                    and not has_media
+                    and not has_dynamic_label(choice_list, multi_language)
                     and isinstance(value, basestring)
                     and name == "label"
                 ):

@@ -98,7 +98,6 @@ class InlineTranslationsTest(PyxformTestCase):
             id_string="some-id",
             md=xform_md,
             errored=False,
-            debug=False,
             model__contains=[
                 '<text id="mood-0">',
                 '<text id="mood-1">',
@@ -110,7 +109,7 @@ class InlineTranslationsTest(PyxformTestCase):
                 '<text id="/data/enumerator_mood/s:label">',
             ],
             xml__contains=['<label ref="jr:itext(itextId)"/>'],
-            xml__excludes=['<label ref="label"/>'],
+            xml__excludes=['<label ref="label"/>', "<label>Happy</label>"],
         )
 
     def test_select_with_choice_filter_and_translations_generates_single_translation(
@@ -172,7 +171,7 @@ class InlineTranslationsTest(PyxformTestCase):
             ],
             model__contains=["<itextId>choices-0</itextId>", "<name>one</name>",],
             xml__contains=['<label ref="jr:itext(itextId)"/>'],
-            xml__excludes=['<label ref="label"/>'],
+            xml__excludes=['<label ref="label"/>', "<label>One - ${txt}</label>"],
         )
 
     def test_select_with_dynamic_option_label_for_second_choice__and_choice_filter__and_no_translations__generates_itext(
@@ -194,7 +193,6 @@ class InlineTranslationsTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md=xform_md,
-            debug=False,
             itext__contains=[
                 '<text id="choices-0">',
                 "<value>One</value>",
@@ -208,5 +206,24 @@ class InlineTranslationsTest(PyxformTestCase):
                 "<name>two</name>",
             ],
             xml__contains=['<label ref="jr:itext(itextId)"/>'],
-            xml__excludes=['<label ref="label"/>'],
+            xml__excludes=['<label ref="label"/>', "<label>One</label>"],
+        )
+
+    def test_select_with_dynamic_option_label__and_choice_filter__and_no_translations__maintains_additional_columns(
+        self,
+    ):
+        """
+        A select with a choice filter and no translations in which the first option label is dynamic should maintain data columns.
+        """
+        xform_md = """
+            | survey |                    |      |            |               |         |
+            |        | type               | name | label      | choice_filter | default |
+            |        | text               | txt  | Enter text |               | default |
+            |        | select_one choices | one  | Select one | 1 < 2         |         |
+            | choices |
+            |         | list_name | name | label        | foo |
+            |         | choices   | one  | One - ${txt} | baz |
+            """
+        self.assertPyxformXform(
+            name="data", md=xform_md, model__contains=["<foo>baz</foo>"],
         )
