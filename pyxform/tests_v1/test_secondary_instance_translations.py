@@ -5,7 +5,7 @@ Testing inlining translation when no translation is specified.
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
-class InlineTranslationsTest(PyxformTestCase):
+class TestSecondaryInstanceTest(PyxformTestCase):
     def test_inline_translations(self):
         """
         Dynamic choice (marked with choice filter) should inline the labels instead of using
@@ -226,4 +226,25 @@ class InlineTranslationsTest(PyxformTestCase):
             """
         self.assertPyxformXform(
             name="data", md=xform_md, model__contains=["<foo>baz</foo>"],
+        )
+
+    def test_select_with_dynamic_option_label__and_no_choice_filter__and_no_translations__inlines_output(
+        self,
+    ):
+        """
+        A select without a choice filter and no translations in which the first option label is dynamic should not use itext.
+        """
+        xform_md = """
+            | survey |                    |      |            |
+            |        | type               | name | label      |
+            |        | text               | txt  | Text       |
+            |        | select_one choices | one  | Select one |
+            | choices |
+            |         | list_name | name | label        |
+            |         | choices   | one  | One - ${txt} |
+            """
+        self.assertPyxformXform(
+            name="data",
+            md=xform_md,
+            xml__contains=['<label> One - <output value=" /data/txt "/> </label>'],
         )
