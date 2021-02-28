@@ -246,8 +246,10 @@ class SurveyElement(dict):
         attributes and converting its children to dicts
         """
         self.validate()
+
+        # cast warnings for json serializability
         result = self.copy()
-        to_delete = ["parent", "question_type_dictionary", "_created"]
+        to_delete = ["parent", "question_type_dictionary", "_created",]
         # Delete all keys that may cause a "Circular Reference"
         # error while converting the result to JSON
         self._delete_keys_from_dict(result, to_delete)
@@ -263,7 +265,7 @@ class SurveyElement(dict):
         return result
 
     def to_json(self):
-        return json.dumps(self.to_json_dict())
+        return json.dumps(self.to_json_dict(), default=lambda x:list(x))
 
     def json_dump(self, path=""):
         if not path:
