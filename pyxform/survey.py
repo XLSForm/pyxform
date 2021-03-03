@@ -889,6 +889,7 @@ class Survey(Section):
         name = matchobj.group(2)
         last_saved = matchobj.group(1) is not None
         is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
+        is_predicate = matchobj.string.startswith("instance(")
         indexed_repeat_regex = re.compile(r"indexed-repeat\([^)]+\)")
         function_args_regex = re.compile(r"\b[^()]+\((.*)\)$")
 
@@ -974,6 +975,8 @@ class Survey(Section):
             )
 
         if _is_return_relative_path():
+            if not use_current:
+                use_current = is_predicate
             relative_path = _relative_path(name)
             if relative_path:
                 return relative_path

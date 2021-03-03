@@ -653,3 +653,32 @@ class TestRepeat(PyxformTestCase):
                 """<bind nodeset="/data/family/person/prev_name" relevant=" ../age  &gt; indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" type="string"/>"""  # noqa pylint: disable=line-too-long
             ],
         )
+
+    def test_repeat_with_reference_path_in_predicate_uses_current(self,):
+        """
+        Test relative path expansion using current if reference path is inside a predicate
+        """
+        xlsform_md = """
+        | survey |                 |              |                                                |                                                             |
+        |        | type            | name         | label                                          | calculation                                                 |
+        |        | begin repeat    | item-repeat  | Item                                           |                                                             |
+        |        | calculate       | item-counter |                                                | position(..)                                                |
+        |        | calculate       | item         |                                                | instance('item')/root/item[itemindex=${item-counter}]/label |
+        |        | begin group     | item-info    | Item info                                      |                                                             |
+        |        | note            | item-note    | All the following questions are about ${item}. |                                                             |
+        |        | select one item | stock-item   | Do you stock this item?                        |                                                             |
+        |        | end group       | item-info    |                                                |                                                             |
+        |        | end repeat      |              |                                                |                                                             |
+        | choices |           |                  |                   |           |
+        |         | list_name | name             | label             | itemindex |
+        |         | item      | gasoline-regular | Gasoline, Regular | 1         |
+        |         | item      | gasoline-premium | Gasoline, Premium | 2         |
+        |         | item      | gasoline-diesel  | Gasoline, Diesel  | 3         |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate="instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/data/item-repeat/item" type="string"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
