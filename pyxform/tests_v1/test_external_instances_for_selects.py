@@ -2,7 +2,7 @@
 """
 Test external instance syntax
 
-See also test_xmldata
+See also test_external_instances
 """
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
