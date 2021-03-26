@@ -5,7 +5,7 @@ Testing inlining translation when no translation is specified.
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
-class InlineTranslationsTest(PyxformTestCase):
+class TestSecondaryInstanceTest(PyxformTestCase):
     def test_inline_translations(self):
         """
         Dynamic choice (marked with choice filter) should inline the labels instead of using
@@ -98,7 +98,6 @@ class InlineTranslationsTest(PyxformTestCase):
             id_string="some-id",
             md=xform_md,
             errored=False,
-            debug=False,
             model__contains=[
                 '<text id="mood-0">',
                 '<text id="mood-1">',
@@ -110,7 +109,7 @@ class InlineTranslationsTest(PyxformTestCase):
                 '<text id="/data/enumerator_mood/s:label">',
             ],
             xml__contains=['<label ref="jr:itext(itextId)"/>'],
-            xml__excludes=['<label ref="label"/>'],
+            xml__excludes=['<label ref="label"/>', "<label>Happy</label>"],
         )
 
     def test_select_with_choice_filter_and_translations_generates_single_translation(
@@ -145,4 +144,107 @@ class InlineTranslationsTest(PyxformTestCase):
                 '<text id="/data/foo/b:label">',
                 '<text id="/data/foo/c:label">',
             ],
+        )
+
+    def test_select_with_dynamic_option_label__and_choice_filter__and_no_translations__generates_itext(
+        self,
+    ):
+        """
+        A select with a choice filter and no translations in which the first option label is dynamic should generate itext for choice labels.
+        """
+        xform_md = """
+            | survey |                    |      |            |               |         |
+            |        | type               | name | label      | choice_filter | default |
+            |        | text               | txt  | Enter text |               | default |
+            |        | select_one choices | one  | Select one | 1 < 2         |         |
+            | choices |
+            |         | list_name | name | label        |
+            |         | choices   | one  | One - ${txt} |
+            """
+        self.assertPyxformXform(
+            name="data",
+            md=xform_md,
+            debug=False,
+            itext__contains=[
+                '<text id="choices-0">',
+                '<value> One - <output value=" /data/txt "/>',
+            ],
+            model__contains=["<itextId>choices-0</itextId>", "<name>one</name>",],
+            xml__contains=['<label ref="jr:itext(itextId)"/>'],
+            xml__excludes=['<label ref="label"/>', "<label>One - ${txt}</label>"],
+        )
+
+    def test_select_with_dynamic_option_label_for_second_choice__and_choice_filter__and_no_translations__generates_itext(
+        self,
+    ):
+        """
+        A select with a choice filter and no translations in which the second option label is dynamic should generate itext for choice labels.
+        """
+        xform_md = """
+            | survey |                    |      |            |               |         |
+            |        | type               | name | label      | choice_filter | default |
+            |        | text               | txt  | Enter text |               | default |
+            |        | select_one choices | one  | Select one | 1 < 2         |         |
+            | choices |
+            |         | list_name | name | label        |
+            |         | choices   | one  | One          |
+            |         | choices   | two  | Two - ${txt} |
+            """
+        self.assertPyxformXform(
+            name="data",
+            md=xform_md,
+            itext__contains=[
+                '<text id="choices-0">',
+                "<value>One</value>",
+                '<text id="choices-1">',
+                '<value> Two - <output value=" /data/txt "/>',
+            ],
+            model__contains=[
+                "<itextId>choices-0</itextId>",
+                "<name>one</name>",
+                "<itextId>choices-1</itextId>",
+                "<name>two</name>",
+            ],
+            xml__contains=['<label ref="jr:itext(itextId)"/>'],
+            xml__excludes=['<label ref="label"/>', "<label>One</label>"],
+        )
+
+    def test_select_with_dynamic_option_label__and_choice_filter__and_no_translations__maintains_additional_columns(
+        self,
+    ):
+        """
+        A select with a choice filter and no translations in which the first option label is dynamic should maintain data columns.
+        """
+        xform_md = """
+            | survey |                    |      |            |               |         |
+            |        | type               | name | label      | choice_filter | default |
+            |        | text               | txt  | Enter text |               | default |
+            |        | select_one choices | one  | Select one | 1 < 2         |         |
+            | choices |
+            |         | list_name | name | label        | foo |
+            |         | choices   | one  | One - ${txt} | baz |
+            """
+        self.assertPyxformXform(
+            name="data", md=xform_md, model__contains=["<foo>baz</foo>"],
+        )
+
+    def test_select_with_dynamic_option_label__and_no_choice_filter__and_no_translations__inlines_output(
+        self,
+    ):
+        """
+        A select without a choice filter and no translations in which the first option label is dynamic should not use itext.
+        """
+        xform_md = """
+            | survey |                    |      |            |
+            |        | type               | name | label      |
+            |        | text               | txt  | Text       |
+            |        | select_one choices | one  | Select one |
+            | choices |
+            |         | list_name | name | label        |
+            |         | choices   | one  | One - ${txt} |
+            """
+        self.assertPyxformXform(
+            name="data",
+            md=xform_md,
+            xml__contains=['<label> One - <output value=" /data/txt "/> </label>'],
         )
