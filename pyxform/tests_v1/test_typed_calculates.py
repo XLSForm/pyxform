@@ -107,8 +107,7 @@ class TypedCalculatesTest(PyxformTestCase):
             warnings=warnings,
         )
 
-        self.assertTrue(len(warnings) == 1)
-        self.assertTrue("This form definition contains dynamic defaults" in warnings[0])
+        self.assertTrue(len(warnings) == 0)
 
     def test_non_calculate_type_with_calculation_and_default_no_warns(self):
         warnings = []

@@ -589,8 +589,6 @@ def workbook_to_json(
     # Rows from the survey sheet that should be nested in meta
     survey_meta = []
 
-    dynamic_default_warning_added = False
-
     # row by row, validate questions, throwing errors and adding warnings
     # where needed.
     for row in survey_sheet:
@@ -622,17 +620,6 @@ def workbook_to_json(
         question_name = row.get(constants.NAME)
 
         question_default = row.get("default")
-        if (
-            default_is_dynamic(question_default, question_type)
-            and not dynamic_default_warning_added
-        ):
-            warnings.append(
-                "This form definition contains dynamic defaults. Not all "
-                "form filling software and versions support dynamic defaults "
-                "so you should test the form with the software version you "
-                "plan to use."
-            )
-            dynamic_default_warning_added = True
 
         if not question_type:
             # if name and label are also missing,

@@ -310,11 +310,7 @@ class DynamicDefaultTests(PyxformTestCase):
             warnings=warnings,
         )
 
-        self.assertTrue(len(warnings) == 1)
-        self.assertTrue(
-            "Not all form filling software and versions support dynamic defaults"
-            in warnings[0]
-        )
+        self.assertTrue(len(warnings) == 0)
 
     def test_default_date_not_considered_dynamic(self):
         self.assertPyxformXform(
