@@ -891,13 +891,19 @@ class Survey(Section):
         is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
         indexed_repeat_regex = re.compile(r"indexed-repeat\([^)]+\)")
         function_args_regex = re.compile(r"\b[^()]+\((.*)\)$")
+        instance_regex = re.compile(r"instance\([^)]+\S+")
 
-        # check if current matchobj is a predicate
-        # (starts with 'instance(' and have square bracket in it)
-        is_secondary_instance = (
-            matchobj.string.startswith("instance(")
-            and re.search(r"\[(.+)\]", matchobj.string) is not None
-        )
+        def _is_secondary_instance():
+            """check if current matchobj is a predicate and part of primary instance"""
+            # It is possible to have multiple instance in an expression
+            instance_match_iter = instance_regex.finditer(matchobj.string)
+            for instance_match in instance_match_iter:
+                if (
+                    matchobj.start() >= instance_match.start()
+                    and matchobj.end() <= instance_match.end()
+                ):
+                    return True
+            return False
 
         def _relative_path(name):
             """Given name in ${name}, return relative xpath to ${name}."""
@@ -982,7 +988,7 @@ class Survey(Section):
 
         if _is_return_relative_path():
             if not use_current:
-                use_current = is_secondary_instance
+                use_current = _is_secondary_instance()
             relative_path = _relative_path(name)
             if relative_path:
                 return relative_path
