@@ -902,9 +902,43 @@ class Survey(Section):
 
         name = matchobj.group(2)
         last_saved = matchobj.group(1) is not None
-        is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
-        indexed_repeat_regex = re.compile(r"indexed-repeat\([^)]+\)")
         function_args_regex = re.compile(r"\b[^()]+\((.*)\)$")
+        is_begin_function_regex = re.compile(r"\S+\(")
+
+        xpath_functions_with_node_set_args_indices = {
+            "count": [0],
+            "count-non-empty": [0],
+            "sum": [0],
+            "max": ["*"],
+            "min": ["*"],
+            "concat": ["*"],
+            "join": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+            ],
+            "randomize": [0],
+            "indexed-repeat": [0, 1, 3, 5],
+            "area": [0],
+            "distance": [0],
+        }
 
         def _relative_path(name):
             """Given name in ${name}, return relative xpath to ${name}."""
@@ -930,50 +964,75 @@ class Survey(Section):
 
         def _is_return_relative_path():
             """Determine condition to return relative xpath of current ${name}."""
-            indexed_repeat_relative_path_args_index = [0, 1, 3, 5]
             current_matchobj = matchobj
 
             if not last_saved and context:
+                is_xpath_function = False
 
-                if not is_indexed_repeat:
-                    return True
+                for xpath_function in xpath_functions_with_node_set_args_indices:
+                    xpath_function_node_set_args_indices = xpath_functions_with_node_set_args_indices[
+                        xpath_function
+                    ]
 
-                # It is possible to have multiple indexed-repeat in an expression
-                indexed_repeats_iter = indexed_repeat_regex.finditer(matchobj.string)
-                for indexed_repeat in indexed_repeats_iter:
+                    is_xpath_function = matchobj.string.find(xpath_function + "(") > -1
+                    if not is_xpath_function:
+                        continue
 
-                    # Make sure current ${name} is in the correct indexed-repeat
-                    if current_matchobj.end() > indexed_repeat.end():
-                        try:
-                            next(indexed_repeats_iter)
+                    # It is possible to have multiple xpath function in an expression
+                    xpath_function_regex = re.compile(
+                        r"{}\([^)]+\)".format(xpath_function)
+                    )
+                    xpath_function_iter = xpath_function_regex.finditer(matchobj.string)
+                    for xpath_func in xpath_function_iter:
+
+                        xpath_func_args = (
+                            function_args_regex.match(xpath_func.group())
+                            .group(1)
+                            .split(",")
+                        )
+
+                        if (
+                            len(xpath_func_args) > 0
+                            and is_begin_function_regex.match(xpath_func_args[0])
+                            is not None
+                        ):
                             continue
-                        except StopIteration:
+
+                        # Make sure current ${name} is in the correct xpath function
+                        if current_matchobj.end() > xpath_func.end():
+                            try:
+                                continue
+                            except StopIteration:
+                                return True
+
+                        # ${name} outside of xpath function always using relative path
+                        if (
+                            current_matchobj.end() < xpath_func.start()
+                            or current_matchobj.start() > xpath_func.end()
+                        ):
                             return True
 
-                    # ${name} outside of indexed-repeat always using relative path
-                    if (
-                        current_matchobj.end() < indexed_repeat.start()
-                        or current_matchobj.start() > indexed_repeat.end()
-                    ):
-                        return True
+                        name_arg = "${{{0}}}".format(name)
+                        xpath_func_name_index = None
+                        for idx, arg in enumerate(xpath_func_args):
+                            if name_arg in arg.strip():
+                                xpath_func_name_index = idx
 
-                    indexed_repeat_name_index = None
-                    indexed_repeat_args = (
-                        function_args_regex.match(indexed_repeat.group())
-                        .group(1)
-                        .split(",")
-                    )
-                    name_arg = "${{{0}}}".format(name)
-                    for idx, arg in enumerate(indexed_repeat_args):
-                        if name_arg in arg.strip():
-                            indexed_repeat_name_index = idx
+                        # Handles xpath function with ["*"] as xpath_function_node_set_args_indices
+                        if (
+                            xpath_func_name_index is not None
+                            and xpath_function_node_set_args_indices == ["*"]
+                        ):
+                            return False
 
-                    return (
-                        indexed_repeat_name_index is not None
-                        and indexed_repeat_name_index
-                        not in indexed_repeat_relative_path_args_index
-                    )
+                        return (
+                            xpath_func_name_index is not None
+                            and xpath_func_name_index
+                            not in xpath_function_node_set_args_indices
+                        )
 
+                if not is_xpath_function:
+                    return True
             return False
 
         intro = (
