@@ -472,7 +472,7 @@ class TestRepeat(PyxformTestCase):
             id_string="some-id",
             md=xlsform_md,
             xml__contains=[
-                '<itemset nodeset="../../household_mem_rep[ ./age  &gt;  current()/../../selected/target_min_age ]">',
+                '<itemset nodeset="../../household_mem_rep[ ./age  &gt;  current()/../target_min_age ]">',
             ],
         )
 
