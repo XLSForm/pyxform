@@ -903,7 +903,7 @@ class Survey(Section):
         name = matchobj.group(2)
         last_saved = matchobj.group(1) is not None
         function_args_regex = re.compile(r"\b[^()]+\((.*)\)$")
-        is_begin_function_regex = re.compile(r"\S+\(")
+        is_begin_function_regex = re.compile(r"\S+\s*\(")
 
         xpath_functions_with_node_set_args_indices = {
             "count": [0],
@@ -973,13 +973,18 @@ class Survey(Section):
                         xpath_function
                     ]
 
-                    is_xpath_function = matchobj.string.find(xpath_function + "(") > -1
+                    begin_xpath_function_regex = re.compile(
+                        r"{}\s*\(".format(xpath_function)
+                    )
+                    is_xpath_function = (
+                        begin_xpath_function_regex.search(matchobj.string) is not None
+                    )
                     if not is_xpath_function:
                         continue
 
                     # It is possible to have multiple xpath function in an expression
                     xpath_function_regex = re.compile(
-                        r"{}\([^)]+\)".format(xpath_function)
+                        r"{}\s*\([^)]+\)".format(xpath_function)
                     )
                     xpath_function_iter = xpath_function_regex.finditer(matchobj.string)
                     for xpath_func in xpath_function_iter:

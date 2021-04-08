@@ -666,7 +666,7 @@ class TestRepeat(PyxformTestCase):
                 |        | integer      | item1       | item1       |                                                |          |
                 |        | integer      | count1      | count1      | count(${item1})                                | yes      |
                 |        | integer      | countne1    | countne1    | count-non-empty(${item1})                      | yes      |
-                |        | integer      | sum1        | sum1        | sum(${item1})                                  | yes      |
+                |        | integer      | sum1        | sum1        | sum (${item1})                                  | yes      |
                 |        | integer      | max1        | max1        | max(${item1})                                  | yes      |
                 |        | integer      | min1        | min1        | min(${item1})                                  | yes      |
                 |        | text         | join1       | join1       | join('...', ${item1})                          | yes      |
@@ -680,7 +680,7 @@ class TestRepeat(PyxformTestCase):
             xml__contains=[
                 """<bind calculate="count( /data/repeat1/item1 )" nodeset="/data/repeat1/count1" readonly="true()" type="int"/>""",  # noqa pylint: disable=line-too-long
                 """<bind calculate="count-non-empty( /data/repeat1/item1 )" nodeset="/data/repeat1/countne1" readonly="true()" type="int"/>""",  # noqa pylint: disable=line-too-long
-                """<bind calculate="sum( /data/repeat1/item1 )" nodeset="/data/repeat1/sum1" readonly="true()" type="int"/>""",  # noqa pylint: disable=line-too-long
+                """<bind calculate="sum ( /data/repeat1/item1 )" nodeset="/data/repeat1/sum1" readonly="true()" type="int"/>""",  # noqa pylint: disable=line-too-long
                 """<bind calculate="max( /data/repeat1/item1 )" nodeset="/data/repeat1/max1" readonly="true()" type="int"/>""",  # noqa pylint: disable=line-too-long
                 """<bind calculate="min( /data/repeat1/item1 )" nodeset="/data/repeat1/min1" readonly="true()" type="int"/>""",  # noqa pylint: disable=line-too-long
                 """<bind calculate="join('...',  /data/repeat1/item1 )" nodeset="/data/repeat1/join1" readonly="true()" type="string"/>""",  # noqa pylint: disable=line-too-long
