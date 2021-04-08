@@ -911,7 +911,6 @@ class Survey(Section):
             "sum": [0],
             "max": ["*"],
             "min": ["*"],
-            "concat": ["*"],
             "join": [
                 1,
                 2,

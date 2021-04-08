@@ -602,7 +602,7 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |                |                                  |                                                                                                                 |
             """,  # noqa pylint: disable=line-too-long
             xml__contains=[
-                """<bind calculate="concat( /data/family/person/name , indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2),  ../age )" nodeset="/data/family/person/prev_name" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="concat( ../name , indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2),  ../age )" nodeset="/data/family/person/prev_name" type="string"/>"""  # noqa pylint: disable=line-too-long
             ],
         )
 
@@ -669,7 +669,6 @@ class TestRepeat(PyxformTestCase):
                 |        | integer      | sum1        | sum1        | sum(${item1})                                  | yes      |
                 |        | integer      | max1        | max1        | max(${item1})                                  | yes      |
                 |        | integer      | min1        | min1        | min(${item1})                                  | yes      |
-                |        | text         | concat1     | concat1     | concat(${item1})                               | yes      |
                 |        | text         | join1       | join1       | join('...', ${item1})                          | yes      |
                 |        | text         | randomize1  | randomize1  | randomize(${item1})                            | yes      |
                 |        | text         | area        | area        | area(${item1})                                 | yes      |
@@ -684,7 +683,6 @@ class TestRepeat(PyxformTestCase):
                 """<bind calculate="sum( /data/repeat1/item1 )" nodeset="/data/repeat1/sum1" readonly="true()" type="int"/>""",  # noqa pylint: disable=line-too-long
                 """<bind calculate="max( /data/repeat1/item1 )" nodeset="/data/repeat1/max1" readonly="true()" type="int"/>""",  # noqa pylint: disable=line-too-long
                 """<bind calculate="min( /data/repeat1/item1 )" nodeset="/data/repeat1/min1" readonly="true()" type="int"/>""",  # noqa pylint: disable=line-too-long
-                """<bind calculate="concat( /data/repeat1/item1 )" nodeset="/data/repeat1/concat1" readonly="true()" type="string"/>""",  # noqa pylint: disable=line-too-long
                 """<bind calculate="join('...',  /data/repeat1/item1 )" nodeset="/data/repeat1/join1" readonly="true()" type="string"/>""",  # noqa pylint: disable=line-too-long
                 """<bind calculate="randomize( /data/repeat1/item1 )" nodeset="/data/repeat1/randomize1" readonly="true()" type="string"/>""",  # noqa pylint: disable=line-too-long
                 """<bind calculate="area( /data/repeat1/item1 )" nodeset="/data/repeat1/area" readonly="true()" type="string"/>""",  # noqa pylint: disable=line-too-long
