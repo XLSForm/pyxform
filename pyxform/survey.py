@@ -893,8 +893,12 @@ class Survey(Section):
         function_args_regex = re.compile(r"\b[^()]+\((.*)\)$")
         instance_regex = re.compile(r"instance\([^)]+\S+")
 
-        def _is_secondary_instance():
-            """check if current matchobj is a predicate and part of primary instance"""
+        def _in_secondary_instance_predicate():
+            """
+            check if ${} expression represented by matchobj
+            is in a predicate for a path expression for a secondary instance
+            """
+
             # It is possible to have multiple instance in an expression
             instance_match_iter = instance_regex.finditer(matchobj.string)
             for instance_match in instance_match_iter:
@@ -988,7 +992,7 @@ class Survey(Section):
 
         if _is_return_relative_path():
             if not use_current:
-                use_current = _is_secondary_instance()
+                use_current = _in_secondary_instance_predicate()
             relative_path = _relative_path(name)
             if relative_path:
                 return relative_path
