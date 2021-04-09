@@ -193,4 +193,5 @@ class FieldsTests(PyxformTestCase):
             |         | date        | date     | Observation date  |
             |         | text        | activity | Describe activity |
             """,
+            errored=False,
         )
