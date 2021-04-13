@@ -653,3 +653,153 @@ class TestRepeat(PyxformTestCase):
                 """<bind nodeset="/data/family/person/prev_name" relevant=" ../age  &gt; indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" type="string"/>"""  # noqa pylint: disable=line-too-long
             ],
         )
+
+    def test_repeat_using_select_with_reference_path_in_predicate_uses_current(self,):
+        """
+        Test relative path expansion using current if reference path is inside a predicate in a survey with select choice list
+        """
+        xlsform_md = """
+        | survey |                 |              |                                                |                                                             |
+        |        | type            | name         | label                                          | calculation                                                 |
+        |        | begin repeat    | item-repeat  | Item                                           |                                                             |
+        |        | calculate       | item-counter |                                                | position(..)                                                |
+        |        | calculate       | item         |                                                | instance('item')/root/item[itemindex=${item-counter}]/label |
+        |        | begin group     | item-info    | Item info                                      |                                                             |
+        |        | note            | item-note    | All the following questions are about ${item}. |                                                             |
+        |        | select one item | stock-item   | Do you stock this item?                        |                                                             |
+        |        | end group       | item-info    |                                                |                                                             |
+        |        | end repeat      |              |                                                |                                                             |
+        | choices |           |                  |                   |           |
+        |         | list_name | name             | label             | itemindex |
+        |         | item      | gasoline-regular | Gasoline, Regular | 1         |
+        |         | item      | gasoline-premium | Gasoline, Premium | 2         |
+        |         | item      | gasoline-diesel  | Gasoline, Diesel  | 3         |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate="instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/data/item-repeat/item" type="string"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_repeat_using_select_uses_current_with_reference_path_in_predicate_and_instance_is_not_first_expression(
+        self,
+    ):
+        """
+        Test relative path expansion using current if reference path is inside a predicate and instance is not first expression in a survey with select choice list
+        """
+        xlsform_md = """
+        | survey |                 |              |                                                |                                                                               |
+        |        | type            | name         | label                                          | calculation                                                                   |
+        |        | begin repeat    | item-repeat  | Item                                           |                                                                               |
+        |        | calculate       | item-counter |                                                | position(..)                                                                  |
+        |        | calculate       | item         |                                                | ${item-counter} + instance('item')/root/item[itemindex=${item-counter}]/label |
+        |        | begin group     | item-info    | Item info                                      |                                                                               |
+        |        | note            | item-note    | All the following questions are about ${item}. |                                                                               |
+        |        | select one item | stock-item   | Do you stock this item?                        |                                                                               |
+        |        | end group       | item-info    |                                                |                                                                               |
+        |        | end repeat      |              |                                                |                                                                               |
+        | choices |           |                  |                   |           |
+        |         | list_name | name             | label             | itemindex |
+        |         | item      | gasoline-regular | Gasoline, Regular | 1         |
+        |         | item      | gasoline-premium | Gasoline, Premium | 2         |
+        |         | item      | gasoline-diesel  | Gasoline, Diesel  | 3         |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate=" ../item-counter  + instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/data/item-repeat/item" type="string"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_repeat_and_group_with_reference_path_in_predicate_uses_current(self,):
+        """
+        Test relative path expansion using current if reference path is inside a predicate in a survey with group
+        """
+        xlsform_md = """
+        | survey |              |       |       |                                                 |
+        |        | type         | name  | label | calculation                                     |
+        |        | xml-external | item  |       |                                                 |
+        |        | begin repeat | rep3  |       |                                                 |
+        |        | calculate    | pos3  |       | position(..)                                    |
+        |        | begin group  | grp3  |       |                                                 |
+        |        | text         | txt3  | Enter |                                                 |
+        |        | calculate    | item3 |       | instance('item')/root/item[index=${pos3}]/label |
+        |        | end group    |       |       |                                                 |
+        |        | end repeat   |       |       |                                                 |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate="instance('item')/root/item[index= current()/../../pos3 ]/label" nodeset="/data/rep3/grp3/item3" type="string"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_repeat_with_reference_path_in_predicate_uses_current(self,):
+        """
+        Test relative path expansion using current if reference path is inside a predicate
+        """
+        xlsform_md = """
+        | survey |              |       |       |                                                                 |
+        |        | type         | name  | label | calculation                                                     |
+        |        | xml-external | item  |       |                                                                 |
+        |        | calculate    | pos1  |       | position(..)                                                    |
+        |        | begin repeat | rep5  |       |                                                                 |
+        |        | calculate    | pos5  |       | position(..)                                                    |
+        |        | calculate    | item5 |       | instance('item')/root/item[index=${pos5} and ${pos1} = 1]/label |
+        |        | end repeat   |       |       |                                                                 |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate="instance('item')/root/item[index= current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_relative_path_expansion_not_using_current_if_reference_path_is_predicate_but_not_in_a_repeat(
+        self,
+    ):
+        """
+        Test relative path expansion using xpath without current() if reference path is inside a predicate and not inside a repeat
+        """
+        xlsform_md = """
+        | survey |              |       |       |                                                 |
+        |        | type         | name  | label | calculation                                     |
+        |        | xml-external | item  |       |                                                 |
+        |        | calculate    | pos1  |       | position(..)                                    |
+        |        | calculate    | item1 |       | instance('item')/root/item[index=${pos1}]/label |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate="instance('item')/root/item[index= /data/pos1 ]/label" nodeset="/data/item1" type="string"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_relative_path_expansion_not_using_current_if_reference_path_is_predicate_but_not_part_of_primary_instance(
+        self,
+    ):
+        """
+        Test relative path expansion using xpath without current() if reference path is inside a predicate but not part of the primary instance
+        """
+        xlsform_md = """
+        | survey |              |       |       |                                   |
+        |        | type         | name  | label | calculation                       |
+        |        | xml-external | item  |       |                                   |
+        |        | begin repeat | rep1  |       |                                   |
+        |        | calculate    | pos2  |       | 1                                 |
+        |        | calculate    | item2 |       | ${rep1}[number(${pos2})]/label    |
+        |        | end repeat   |       |       |                                   |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate=" /data/rep1 [number( ../pos2 )]/label" nodeset="/data/rep1/item2" type="string"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
