@@ -179,3 +179,19 @@ class FieldsTests(PyxformTestCase):
             errored=True,
             error__contains=['The name "foo" is the same as the form name'],
         )
+
+    def test_field_name_may_match_form_name(self):
+        """
+        Unlike section names, it's okay for a field name to match the form
+        name, which becomes the XML root node name
+        """
+        self.assertPyxformXform(
+            name="activity",
+            md="""
+            | survey  |             |          |                   |
+            |         | type        | name     | label             |
+            |         | date        | date     | Observation date  |
+            |         | text        | activity | Describe activity |
+            """,
+            errored=False,
+        )

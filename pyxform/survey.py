@@ -187,15 +187,17 @@ class Survey(Section):
         root_node_name = self.name
         section_names = []
         for element in self.iter_descendants():
-            if not isinstance(element, Survey) and element.name == root_node_name:
-                raise PyXFormError(
-                    'The name "%s" is the same as the form name. '
-                    "Use a different section name "
-                    '(or change the form name in the "name" column of the settings sheet).'
-                    % element.name
-                )
             if isinstance(element, Section):
                 if element.name in section_names:
+                    if element.name == root_node_name:
+                        # The root node name is rarely explictly set; explain
+                        # the problem in a more helpful way (#510)
+                        raise PyXFormError(
+                            'The name "%s" is the same as the form name. '
+                            "Use a different section name "
+                            '(or change the form name in the "name" column of '
+                            "the settings sheet)." % element.name
+                        )
                     raise PyXFormError(
                         "There are two sections with the name %s." % element.name
                     )
