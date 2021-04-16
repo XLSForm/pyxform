@@ -228,7 +228,9 @@ class MultipleChoiceQuestion(Question):
                     itemset = self["itemset"]
                     itemset_label_ref = "jr:itext(itextId)"
 
-            choice_filter = survey.insert_xpaths(choice_filter, self, True, True)
+            choice_filter = survey.insert_xpaths(
+                choice_filter, self, True, is_previous_question
+            )
             if is_previous_question:
                 path = (
                     survey.insert_xpaths(self["itemset"], self, reference_parent=True)
