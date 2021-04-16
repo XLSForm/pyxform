@@ -195,15 +195,17 @@ class Survey(Section):
         root_node_name = self.name
         section_names = []
         for element in self.iter_descendants():
-            if not isinstance(element, Survey) and element.name == root_node_name:
-                raise PyXFormError(
-                    'The name "%s" is the same as the form name. '
-                    "Use a different section name "
-                    '(or change the form name in the "name" column of the settings sheet).'
-                    % element.name
-                )
             if isinstance(element, Section):
                 if element.name in section_names:
+                    if element.name == root_node_name:
+                        # The root node name is rarely explictly set; explain
+                        # the problem in a more helpful way (#510)
+                        raise PyXFormError(
+                            'The name "%s" is the same as the form name. '
+                            "Use a different section name "
+                            '(or change the form name in the "name" column of '
+                            "the settings sheet)." % element.name
+                        )
                     raise PyXFormError(
                         "There are two sections with the name %s." % element.name
                     )
@@ -913,6 +915,23 @@ class Survey(Section):
         is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
         indexed_repeat_regex = re.compile(r"indexed-repeat\([^)]+\)")
         function_args_regex = re.compile(r"\b[^()]+\((.*)\)$")
+        instance_regex = re.compile(r"instance\([^)]+\S+")
+
+        def _in_secondary_instance_predicate():
+            """
+            check if ${} expression represented by matchobj
+            is in a predicate for a path expression for a secondary instance
+            """
+
+            # It is possible to have multiple instance in an expression
+            instance_match_iter = instance_regex.finditer(matchobj.string)
+            for instance_match in instance_match_iter:
+                if (
+                    matchobj.start() >= instance_match.start()
+                    and matchobj.end() <= instance_match.end()
+                ):
+                    return True
+            return False
 
         def _relative_path(name):
             """Given name in ${name}, return relative xpath to ${name}."""
@@ -996,6 +1015,8 @@ class Survey(Section):
             )
 
         if _is_return_relative_path():
+            if not use_current:
+                use_current = _in_secondary_instance_predicate()
             relative_path = _relative_path(name)
             if relative_path:
                 return relative_path
