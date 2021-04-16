@@ -1,5 +1,19 @@
 Pyxform Changelog
 
+# v1.5.0, 2021-04-16
+
+* #521 Use itext for dynamic selects with dynamic labels
+  * Agus Hilman @gushil (OpenClinica), Hélène Martin @lognaturel (ODK)
+* #522 Add support for csv-external
+  * Hélène Martin @lognaturel (ODK)
+* #526 Warning for dynamic defaults now more annoying than helpful
+  * Yaw Anokwa @yanokwa (ODK)
+* #524 ${} references in predicates should be expanded using current()
+  * Agus Hilman @gushil (OpenClinica)
+* #529 Apply section name check to sections only
+  * John Milner @jnm (KoBo)
+* #516 Generate correct reference when selecting choices from current repeat question
+  * Davis Raymond @DavisRayM (Ona)
 
 # v1.4.0, 2021-02-23
 
