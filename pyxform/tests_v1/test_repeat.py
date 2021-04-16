@@ -678,16 +678,16 @@ class TestRepeat(PyxformTestCase):
         Test relative path expansion using current if reference path is inside a predicate in a survey with select choice list
         """
         xlsform_md = """
-        | survey |                 |              |                                                |                                                             |
-        |        | type            | name         | label                                          | calculation                                                 |
-        |        | begin repeat    | item-repeat  | Item                                           |                                                             |
-        |        | calculate       | item-counter |                                                | position(..)                                                |
-        |        | calculate       | item         |                                                | instance('item')/root/item[itemindex=${item-counter}]/label |
-        |        | begin group     | item-info    | Item info                                      |                                                             |
-        |        | note            | item-note    | All the following questions are about ${item}. |                                                             |
-        |        | select one item | stock-item   | Do you stock this item?                        |                                                             |
-        |        | end group       | item-info    |                                                |                                                             |
-        |        | end repeat      |              |                                                |                                                             |
+        | survey |                 |              |                                                |               |                                                             |
+        |        | type            | name         | label                                          | choice_filter | calculation                                                 |
+        |        | begin repeat    | item-repeat  | Item                                           |               |                                                             |
+        |        | calculate       | item-counter |                                                |               | position(..)                                                |
+        |        | calculate       | item         |                                                |               | instance('item')/root/item[itemindex=${item-counter}]/label |
+        |        | begin group     | item-info    | Item info                                      |               |                                                             |
+        |        | note            | item-note    | All the following questions are about ${item}. |               |                                                             |
+        |        | select one item | stock-item   | Do you stock this item?                        | true()        |                                                             |
+        |        | end group       | item-info    |                                                |               |                                                             |
+        |        | end repeat      |              |                                                |               |                                                             |
         | choices |           |                  |                   |           |
         |         | list_name | name             | label             | itemindex |
         |         | item      | gasoline-regular | Gasoline, Regular | 1         |
@@ -709,16 +709,16 @@ class TestRepeat(PyxformTestCase):
         Test relative path expansion using current if reference path is inside a predicate and instance is not first expression in a survey with select choice list
         """
         xlsform_md = """
-        | survey |                 |              |                                                |                                                                               |
-        |        | type            | name         | label                                          | calculation                                                                   |
-        |        | begin repeat    | item-repeat  | Item                                           |                                                                               |
-        |        | calculate       | item-counter |                                                | position(..)                                                                  |
-        |        | calculate       | item         |                                                | ${item-counter} + instance('item')/root/item[itemindex=${item-counter}]/label |
-        |        | begin group     | item-info    | Item info                                      |                                                                               |
-        |        | note            | item-note    | All the following questions are about ${item}. |                                                                               |
-        |        | select one item | stock-item   | Do you stock this item?                        |                                                                               |
-        |        | end group       | item-info    |                                                |                                                                               |
-        |        | end repeat      |              |                                                |                                                                               |
+        | survey |                 |              |                                                |               |                                                                               |
+        |        | type            | name         | label                                          | choice_filter | calculation                                                                   |
+        |        | begin repeat    | item-repeat  | Item                                           |               |                                                                               |
+        |        | calculate       | item-counter |                                                |               | position(..)                                                                  |
+        |        | calculate       | item         |                                                |               | ${item-counter} + instance('item')/root/item[itemindex=${item-counter}]/label |
+        |        | begin group     | item-info    | Item info                                      |               |                                                                               |
+        |        | note            | item-note    | All the following questions are about ${item}. |               |                                                                               |
+        |        | select one item | stock-item   | Do you stock this item?                        | true()        |                                                                               |
+        |        | end group       | item-info    |                                                |               |                                                                               |
+        |        | end repeat      |              |                                                |               |                                                                               |
         | choices |           |                  |                   |           |
         |         | list_name | name             | label             | itemindex |
         |         | item      | gasoline-regular | Gasoline, Regular | 1         |
