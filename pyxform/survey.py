@@ -915,7 +915,7 @@ class Survey(Section):
         is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
         indexed_repeat_regex = re.compile(r"indexed-repeat\([^)]+\)")
         function_args_regex = re.compile(r"\b[^()]+\((.*)\)$")
-        instance_regex = re.compile(r"instance\([^)]+\S+")
+        instance_regex = re.compile(r"instance\([^)]+.+")
 
         def _in_secondary_instance_predicate():
             """
