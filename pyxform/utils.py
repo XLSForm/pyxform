@@ -277,6 +277,10 @@ def default_is_dynamic(element_default, element_type=None):
 def has_dynamic_label(choice_list, multi_language):
     if not multi_language:
         for i in range(0, min(2, len(choice_list))):
-            if re.search(BRACKETED_TAG_REGEX, choice_list[i].get("label")) is not None:
+            if (
+                choice_list[i].get("label") is not None
+                and re.search(BRACKETED_TAG_REGEX, choice_list[i].get("label"))
+                is not None
+            ):
                 return True
     return False
