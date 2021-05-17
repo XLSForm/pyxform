@@ -911,11 +911,13 @@ class Survey(Section):
         """
 
         name = matchobj.group(2)
+        bracketed_tag_name = "${{{0}}}".format(name)
         last_saved = matchobj.group(1) is not None
         is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
         indexed_repeat_regex = re.compile(r"indexed-repeat\([^)]+\)")
         function_args_regex = re.compile(r"\b[^()]+\((.*)\)$")
         instance_regex = re.compile(r"instance\([^)]+.+")
+        bracket_regex = re.compile(r"\[([^]]+)\]")
 
         def _in_secondary_instance_predicate():
             """
@@ -926,11 +928,20 @@ class Survey(Section):
             # It is possible to have multiple instance in an expression
             instance_match_iter = instance_regex.finditer(matchobj.string)
             for instance_match in instance_match_iter:
+                # Check whether current ${varname} is in the correct instance_match
                 if (
                     matchobj.start() >= instance_match.start()
                     and matchobj.end() <= instance_match.end()
                 ):
-                    return True
+                    bracket_regex_match_iter = bracket_regex.finditer(matchobj.string)
+                    # Check whether current ${varname} is in the correct bracket_regex_match
+                    for bracket_regex_match in bracket_regex_match_iter:
+                        if (
+                            matchobj.start() >= bracket_regex_match.start()
+                            and matchobj.end() <= bracket_regex_match.end()
+                        ):
+                            return True
+                    return False
             return False
 
         def _relative_path(name):
