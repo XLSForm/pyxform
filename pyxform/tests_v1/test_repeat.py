@@ -853,32 +853,6 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_repeat_with_reference_path_with_whitespaces_in_multiple_predicate_uses_current(
-        self,
-    ):
-        """
-        Test relative path expansion using current if reference path (with whitespaces before/after an operator of ${name}) is inside multiple predicate
-        """
-        xlsform_md = """
-        | survey |              |       |       |                                                                                         |
-        |        | type         | name  | label | calculation                                                                             |
-        |        | xml-external | item  |       |                                                                                         |
-        |        | calculate    | pos1  |       | position(..)                                                                            |
-        |        | begin repeat | rep5  |       |                                                                                         |
-        |        | calculate    | pos5  |       | position(..)                                                                            |
-        |        | calculate    | item5 |       | join(' ', instance('item')/root/item)[index = ${pos5} and ${pos1} = 1]/label)           |
-        |        | calculate    | item6 |       | translate(instance('item')/root/item)[index = ${pos5} and ${pos1} = 1]/label, ',', ' ') |
-        |        | end repeat   |       |       |                                                                                         |
-        """
-        self.assertPyxformXform(
-            name="data",
-            md=xlsform_md,
-            xml__contains=[
-                """<bind calculate="join(' ', instance('item')/root/item)[index =  current()/../pos5  and  /data/pos1  = 1]/label)" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
-                """<bind calculate="translate(instance('item')/root/item)[index =  current()/../pos5  and  /data/pos1  = 1]/label, ',', ' ')" nodeset="/data/rep5/item6" type="string"/>""",  # noqa pylint: disable=line-too-long
-            ],
-        )
-
     def test_relative_path_expansion_not_using_current_if_reference_path_is_predicate_but_not_in_a_repeat(
         self,
     ):
@@ -920,5 +894,103 @@ class TestRepeat(PyxformTestCase):
             md=xlsform_md,
             xml__contains=[
                 """<bind calculate=" /data/rep1 [number( ../pos2 )]/label" nodeset="/data/rep1/item2" type="string"/>"""  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_repeat_with_reference_path_in_multiple_predicate_uses_current(self,):
+        """
+        Test relative path expansion using current if reference path is in multiple predicate
+        """
+        xlsform_md = """
+        | survey |              |       |       |                                                                       |
+        |        | type         | name  | label | calculation                                                           |
+        |        | xml-external | item  |       |                                                                       |
+        |        | begin repeat | rep5  |       |                                                                       |
+        |        | calculate    | pos5  |       | position(..)                                                          |
+        |        | calculate    | pos6  |       | position(..)                                                          |
+        |        | calculate    | item5 |       | instance('item')/root/item[index = ${pos5}][position()=${pos6}]/label |
+        |        | end repeat   |       |       |                                                                       |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate="instance('item')/root/item[index =  current()/../pos5 ][position()= current()/../pos6 ]/label" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_repeat_with_reference_path_in_multiple_complex_predicate_uses_current(
+        self,
+    ):
+        """
+        Test relative path expansion using current if reference path is in multiple predicate, one of it is a complex one
+        ${pos1} is not using current because it is not in repeat
+        """
+        xlsform_md = """
+        | survey |              |       |       |                                                                                                       |
+        |        | type         | name  | label | calculation                                                                                           |
+        |        | xml-external | item  |       |                                                                                                       |
+        |        | calculate    | pos1  |       | position(..)                                                                                          |
+        |        | begin repeat | rep5  |       |                                                                                                       |
+        |        | calculate    | pos5  |       | position(..)                                                                                          |
+        |        | calculate    | pos6  |       | position(..)                                                                                          |
+        |        | calculate    | item5 |       | instance('item')/root/item[index =${pos5} and selected('1 2 3 4', ${pos1})][position()=${pos6}]/label |
+        |        | end repeat   |       |       |                                                                                                       |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate="instance('item')/root/item[index = current()/../pos5  and selected('1 2 3 4',  /data/pos1 )][position()= current()/../pos6 ]/label" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_repeat_with_reference_path_after_instance_in_predicate_uses_current(self,):
+        """
+        Test relative reference path expansion uses current if reference path is in predicate 
+            even if the reference path is found after the instance() expression
+        ${pos5} that is in 'index =${pos5}'' uses current because it is in a predicate
+        ${pos5} that is in 'position()=${pos5}'' uses current because it is in a predicate (eventhough not in an instance)
+        """
+        xlsform_md = """
+        | survey |              |       |       |                                                                                               |
+        |        | type         | name  | label | calculation                                                                                   |
+        |        | xml-external | item  |       |                                                                                               |
+        |        | begin repeat | rep5  |       |                                                                                               |
+        |        | calculate    | pos5  |       | position(..)                                                                                  |
+        |        | calculate    | item5 |       | concat(instance('item')/root/item[index =${pos5}]/label, @data/form/[position()=${pos5}]/text |
+        |        | end repeat   |       |       |                                                                                               |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label, @data/form/[position()= current()/../pos5 ]/text" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
+            ],
+        )
+
+    def test_repeat_with_reference_path_after_instance_not_in_predicate_not_using_current(
+        self,
+    ):
+        """
+        Test relative reference path expansion not using current if reference path is not in predicate 
+            and the reference path is found after the instance() expression
+        ${pos5} that is in 'index =${pos5} uses current because it is in a predicate
+        ${pos5} that is in '${pos5} + 1'' not using current because it is not in a predicate (regardless in an instance or not)
+        """
+        xlsform_md = """
+        | survey |              |       |            |                                                                       |
+        |        | type         | name  | label      | calculation                                                           |
+        |        | xml-external | item  |            |                                                                       |
+        |        | begin repeat | rep5  |            |                                                                       |
+        |        | calculate    | pos5  |            | position(..)                                                          |
+        |        | calculate    | item5 |            | concat(instance('item')/root/item[index =${pos5}]/label, ${pos5} + 1) |
+        |        | end repeat   |       |            |                                                                       |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=xlsform_md,
+            xml__contains=[
+                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label,  ../pos5  + 1)" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
             ],
         )
