@@ -1,5 +1,12 @@
 Pyxform Changelog
 
+# v1.5.1, 2021-05-18
+
+* #535 Don't check for dynamic label if there is no label
+  * Hélène Martin @lognaturel (ODK)
+* #536 Expand refs in predicates using current() even if preceded by whitespace
+  * Agus Hilman @gushil (OpenClinica)
+
 # v1.5.0, 2021-04-16
 
 * #521 Use itext for dynamic selects with dynamic labels

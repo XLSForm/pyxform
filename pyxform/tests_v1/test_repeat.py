@@ -818,14 +818,14 @@ class TestRepeat(PyxformTestCase):
         |        | calculate    | pos1  |       | position(..)                                                              |
         |        | begin repeat | rep5  |       |                                                                           |
         |        | calculate    | pos5  |       | position(..)                                                              |
-        |        | calculate    | item5 |       | instance('item')/root/item[index=number(1+ ${pos5} and ${pos1} = 1]/label |
+        |        | calculate    | item5 |       | instance('item')/root/item[index=number(1+ ${pos5}) and ${pos1} = 1]/label |
         |        | end repeat   |       |       |                                                                           |
         """
         self.assertPyxformXform(
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index=number(1+  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index=number(1+  current()/../pos5 ) and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # noqa pylint: disable=line-too-long
             ],
         )
 
@@ -953,19 +953,19 @@ class TestRepeat(PyxformTestCase):
         ${pos5} that is in 'position()=${pos5}'' uses current because it is in a predicate (eventhough not in an instance)
         """
         xlsform_md = """
-        | survey |              |       |       |                                                                                               |
-        |        | type         | name  | label | calculation                                                                                   |
-        |        | xml-external | item  |       |                                                                                               |
-        |        | begin repeat | rep5  |       |                                                                                               |
-        |        | calculate    | pos5  |       | position(..)                                                                                  |
-        |        | calculate    | item5 |       | concat(instance('item')/root/item[index =${pos5}]/label, @data/form/[position()=${pos5}]/text |
-        |        | end repeat   |       |       |                                                                                               |
+        | survey |              |       |       |                                                                                                |
+        |        | type         | name  | label | calculation                                                                                    |
+        |        | xml-external | item  |       |                                                                                                |
+        |        | begin repeat | rep5  |       |                                                                                                |
+        |        | calculate    | pos5  |       | position(..)                                                                                   |
+        |        | calculate    | item5 |       | concat(instance('item')/root/item[index =${pos5}]/label, /data[position()=${pos5}]/text) |
+        |        | end repeat   |       |       |                                                                                                |
         """
         self.assertPyxformXform(
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label, @data/form/[position()= current()/../pos5 ]/text" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
+                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label, /data[position()= current()/../pos5 ]/text)" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
             ],
         )
 
