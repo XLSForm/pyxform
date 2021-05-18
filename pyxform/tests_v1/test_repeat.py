@@ -836,20 +836,20 @@ class TestRepeat(PyxformTestCase):
         Test relative path expansion using current if reference path (with whitespaces before/after an operator of ${name}) is inside a predicate with parenthesis
         """
         xlsform_md = """
-        | survey |              |       |       |                                                                     |
-        |        | type         | name  | label | calculation                                                         |
-        |        | xml-external | item  |       |                                                                     |
-        |        | calculate    | pos1  |       | position(..)                                                        |
-        |        | begin repeat | rep5  |       |                                                                     |
-        |        | calculate    | pos5  |       | position(..)                                                        |
-        |        | calculate    | item5 |       | (instance('item')/root/item)[index = ${pos5} and ${pos1} = 1]/label |
-        |        | end repeat   |       |       |                                                                     |
+        | survey |              |       |       |                                                                   |
+        |        | type         | name  | label | calculation                                                       |
+        |        | xml-external | item  |       |                                                                   |
+        |        | calculate    | pos1  |       | position(..)                                                      |
+        |        | begin repeat | rep5  |       |                                                                   |
+        |        | calculate    | pos5  |       | position(..)                                                      |
+        |        | calculate    | item5 |       | instance('item')/root/item[index = ${pos5} and ${pos1} = 1]/label |
+        |        | end repeat   |       |       |                                                                   |
         """
         self.assertPyxformXform(
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="(instance('item')/root/item)[index =  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index =  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # noqa pylint: disable=line-too-long
             ],
         )
 
