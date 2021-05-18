@@ -925,23 +925,16 @@ class Survey(Section):
             is in a predicate for a path expression for a secondary instance
             """
 
-            # It is possible to have multiple instance in an expression
-            instance_match_iter = instance_regex.finditer(matchobj.string)
-            for instance_match in instance_match_iter:
-                # Check whether current ${varname} is in the correct instance_match
-                if (
-                    matchobj.start() >= instance_match.start()
-                    and matchobj.end() <= instance_match.end()
-                ):
-                    bracket_regex_match_iter = bracket_regex.finditer(matchobj.string)
-                    # Check whether current ${varname} is in the correct bracket_regex_match
-                    for bracket_regex_match in bracket_regex_match_iter:
-                        if (
-                            matchobj.start() >= bracket_regex_match.start()
-                            and matchobj.end() <= bracket_regex_match.end()
-                        ):
-                            return True
-                    return False
+            if instance_regex.search(matchobj.string) is not None:
+                bracket_regex_match_iter = bracket_regex.finditer(matchobj.string)
+                # Check whether current ${varname} is in the correct bracket_regex_match
+                for bracket_regex_match in bracket_regex_match_iter:
+                    if (
+                        matchobj.start() >= bracket_regex_match.start()
+                        and matchobj.end() <= bracket_regex_match.end()
+                    ):
+                        return True
+                return False
             return False
 
         def _relative_path(name):
