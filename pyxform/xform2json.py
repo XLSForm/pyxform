@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ETree
 from operator import itemgetter
 
 from pyxform import builder
+from pyxform.constants import SANDBOXED_TYPE_EP_PREFIX_MAP
 from pyxform.utils import NSMAP
 
 logger = logging.getLogger(__name__)
@@ -574,10 +575,11 @@ class XFormToDictBuilder:
                         if "form" in value and "_text" in value:
                             key = "media"
                             v = value["_text"]
-                            if value["form"] == "image":
-                                v = v.replace("jr://images/", "")
-                            else:
-                                v = v.replace("jr://%s/" % value["form"], "")
+                            if value["form"] in SANDBOXED_TYPE_EP_PREFIX_MAP:
+                                # TODO - it may be a good idea to validate that there is no
+                                # sandboxed file that isnt handled here and keeps its 'jr://' path
+                                # unintentionally.
+                                v = v.replace(SANDBOXED_TYPE_EP_PREFIX_MAP[value["form"]], "")
                             if v == "-":  # skip blank
                                 continue
                             text = {value["form"]: v}
@@ -587,10 +589,10 @@ class XFormToDictBuilder:
                                 k = "media"
                                 m_type = item["form"]
                                 v = item["_text"]
-                                if m_type == "image":
-                                    v = v.replace("jr://images/", "")
-                                else:
-                                    v = v.replace("jr://%s/" % m_type, "")
+                                if m_type in SANDBOXED_TYPE_EP_PREFIX_MAP:
+                                    # TODO - it may be a good idea to validate that there is no
+                                    # sandboxed file that isnt handled in SANDBOXED_TYPE_EP_PREFIX_MAP
+                                    v = v.replace(SANDBOXED_TYPE_EP_PREFIX_MAP[m_type], "")
                                 if v == "-":
                                     continue
                                 if k not in label:

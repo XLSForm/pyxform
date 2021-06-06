@@ -311,8 +311,8 @@ class Survey(Section):
         if isinstance(element, ExternalInstance):
             name = element["name"]
             extension = element["type"].split("-")[0]
-            prefix = "file-csv" if extension == "csv" else "file"
-            src = "jr://{}/{}.{}".format(prefix, name, extension)
+            prefix = constants.SANDBOXED_TYPE_EP_PREFIX_MAP.get(extension, "jr://file/")
+            src = "{}{}.{}".format(prefix, name, extension)
             return InstanceInfo(
                 type="external",
                 context="[type: {t}, name: {n}]".format(
@@ -376,7 +376,10 @@ class Survey(Section):
             return functions_present
 
         def get_instance_info(element, file_id):
-            uri = "jr://file-csv/{}.csv".format(file_id)
+            # TODO: do we know for sure we are looking for a csv at this point and not an xml file?
+            # if so document why.
+            prefix = constants.SANDBOXED_TYPE_EP_PREFIX_MAP['csv']
+            uri = "{}{}.csv".format(prefix, file_id)
 
             return InstanceInfo(
                 type=u"pulldata",
@@ -409,8 +412,9 @@ class Survey(Section):
         itemset = element.get("itemset")
         if itemset and (itemset.endswith(".csv") or itemset.endswith(".xml")):
             file_id, ext = os.path.splitext(itemset)
-            uri = "jr://%s/%s" % (
-                "file" if ext == ".xml" else "file-%s" % ext[1:],
+            uri = "{}{}".format(
+                # Per above if, must be csv or xml.
+                constants.SANDBOXED_TYPE_EP_PREFIX_MAP.get(ext[1:], 'jr://file/'),
                 itemset,
             )
             return InstanceInfo(
@@ -442,7 +446,7 @@ class Survey(Section):
     @staticmethod
     def _get_last_saved_instance():
         name = "__last-saved"  # double underscore used to minimize risk of name conflicts
-        uri = "jr://instance/last-saved"
+        uri = constants.SANDBOXED_TYPE_EP_PREFIX_MAP['lastsaved']
 
         return InstanceInfo(
             type="instance",
@@ -826,7 +830,7 @@ class Survey(Section):
                             itext_nodes.append(
                                 node(
                                     "value",
-                                    "jr://images/" + value,
+                                    constants.SANDBOXED_TYPE_EP_PREFIX_MAP['image'] + value,
                                     form=media_type,
                                     toParseString=output_inserted,
                                 )
@@ -836,7 +840,7 @@ class Survey(Section):
                             itext_nodes.append(
                                 node(
                                     "value",
-                                    "jr://" + media_type + "/" + value,
+                                    constants.SANDBOXED_TYPE_EP_PREFIX_MAP.get(media_type, 'jr://file/') + value,
                                     form=media_type,
                                     toParseString=output_inserted,
                                 )

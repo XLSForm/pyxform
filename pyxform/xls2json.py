@@ -156,8 +156,8 @@ def dealias_types(dict_array):
     """
     for row in dict_array:
         found_type = row.get(constants.TYPE)
-        if found_type in aliases._type.keys():
-            row[constants.TYPE] = aliases._type[found_type]
+        if found_type in aliases._type_alias_map.keys():
+            row[constants.TYPE] = aliases._type_alias_map[found_type]
     return dict_array
 
 
@@ -303,6 +303,14 @@ def process_range_question_type(row):
 
     return new_dict
 
+def process_binary_default(file_type, default_value):
+    if 'jr://' not in default_value:
+        return '{}{}'.format(
+            constants.SANDBOXED_TYPE_EP_PREFIX_MAP.get(file_type, 'jr://file/'),
+            default_value
+        )
+    return default_value
+
 
 def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
     """
@@ -357,7 +365,6 @@ def workbook_to_json(
     returns a nested dictionary equivalent to the format specified in the
     json form spec.
     """
-    # ensure required headers are present
     if warnings is None:
         warnings = []
     is_valid = False
@@ -370,11 +377,14 @@ def workbook_to_json(
         if similar is not None:
             msg += similar
         raise PyXFormError(msg)
+
+    # ensure required headers are present
     for row in workbook_dict.get(constants.SURVEY, []):
         is_valid = "type" in [z.lower() for z in row]
         if is_valid:
             break
     if not is_valid:
+        # TODO - could we state what headers are missing?
         raise PyXFormError(
             "The survey sheet is either empty or missing important column headers."
         )
@@ -566,7 +576,6 @@ def workbook_to_json(
     # #################################
 
     # Parse the survey sheet while generating a survey in our json format:
-
     row_number = 1  # We start at 1 because the column header row is not
     #                 included in the survey sheet (presumably).
     # A stack is used to keep track of begin/end expressions
@@ -580,6 +589,7 @@ def workbook_to_json(
     # If a group has a table-list appearance flag
     # this will be set to the name of the list
     table_list = None
+
     # For efficiency we compile all the regular expressions
     # that will be used to parse types:
     end_control_regex = re.compile(
@@ -1202,10 +1212,13 @@ def workbook_to_json(
             parent_children_array.append(new_dict)
             continue
 
+        if question_type in constants.SANDBOXED_TYPE_EP_PREFIX_MAP and row.get('default'):
+            row['default'] = process_binary_default(question_type, row['default'])
+
         if question_type == "photo":
             new_dict = row.copy()
+            # Validate max-pixels
             parameters = get_parameters(row.get("parameters", ""), ["max-pixels"])
-
             if "max-pixels" in parameters.keys():
                 try:
                     int(parameters["max-pixels"])
