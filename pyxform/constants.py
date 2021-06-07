@@ -107,15 +107,14 @@ AUDIO_QUALITY_EXTERNAL = "external"
 # TODO - theres key repetion here to handle the diverse use cases.
 # could I be a function? or a DefaultDict?
 SANDBOXED_TYPE_EP_PREFIX_MAP = {
-    'photo': 'jr://images/',
-    'image': 'jr://images/',
-    'audio': 'jr://audio/',
-    'background-audio': 'jr://audio/',
-    'video': 'jr://video/',
-    'xml': 'jr://file/',
-    'csv': 'jr://file-csv/',
-    'file': 'jr://file/',
-    'file-csv': 'jr://file-csv/',
-    'lastsaved': 'jr://instance/last-saved'
+    "photo": "jr://images/",
+    "image": "jr://images/",
+    "audio": "jr://audio/",
+    "background-audio": "jr://audio/",
+    "video": "jr://video/",
+    "xml": "jr://file/",
+    "csv": "jr://file-csv/",
+    "file": "jr://file/",
+    "file-csv": "jr://file-csv/",
+    "lastsaved": "jr://instance/last-saved",
 }
-

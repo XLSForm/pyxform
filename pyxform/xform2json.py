@@ -579,7 +579,9 @@ class XFormToDictBuilder:
                                 # TODO - it may be a good idea to validate that there is no
                                 # sandboxed file that isnt handled here and keeps its 'jr://' path
                                 # unintentionally.
-                                v = v.replace(SANDBOXED_TYPE_EP_PREFIX_MAP[value["form"]], "")
+                                v = v.replace(
+                                    SANDBOXED_TYPE_EP_PREFIX_MAP[value["form"]], ""
+                                )
                             if v == "-":  # skip blank
                                 continue
                             text = {value["form"]: v}
@@ -592,7 +594,9 @@ class XFormToDictBuilder:
                                 if m_type in SANDBOXED_TYPE_EP_PREFIX_MAP:
                                     # TODO - it may be a good idea to validate that there is no
                                     # sandboxed file that isnt handled in SANDBOXED_TYPE_EP_PREFIX_MAP
-                                    v = v.replace(SANDBOXED_TYPE_EP_PREFIX_MAP[m_type], "")
+                                    v = v.replace(
+                                        SANDBOXED_TYPE_EP_PREFIX_MAP[m_type], ""
+                                    )
                                 if v == "-":
                                     continue
                                 if k not in label:

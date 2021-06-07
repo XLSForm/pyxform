@@ -378,7 +378,7 @@ class Survey(Section):
         def get_instance_info(element, file_id):
             # TODO: do we know for sure we are looking for a csv at this point and not an xml file?
             # if so document why.
-            prefix = constants.SANDBOXED_TYPE_EP_PREFIX_MAP['csv']
+            prefix = constants.SANDBOXED_TYPE_EP_PREFIX_MAP["csv"]
             uri = "{}{}.csv".format(prefix, file_id)
 
             return InstanceInfo(
@@ -414,7 +414,7 @@ class Survey(Section):
             file_id, ext = os.path.splitext(itemset)
             uri = "{}{}".format(
                 # Per above if, must be csv or xml.
-                constants.SANDBOXED_TYPE_EP_PREFIX_MAP.get(ext[1:], 'jr://file/'),
+                constants.SANDBOXED_TYPE_EP_PREFIX_MAP.get(ext[1:], "jr://file/"),
                 itemset,
             )
             return InstanceInfo(
@@ -830,7 +830,8 @@ class Survey(Section):
                             itext_nodes.append(
                                 node(
                                     "value",
-                                    constants.SANDBOXED_TYPE_EP_PREFIX_MAP['image'] + value,
+                                    constants.SANDBOXED_TYPE_EP_PREFIX_MAP["image"]
+                                    + value,
                                     form=media_type,
                                     toParseString=output_inserted,
                                 )
@@ -840,7 +841,10 @@ class Survey(Section):
                             itext_nodes.append(
                                 node(
                                     "value",
-                                    constants.SANDBOXED_TYPE_EP_PREFIX_MAP.get(media_type, 'jr://file/') + value,
+                                    constants.SANDBOXED_TYPE_EP_PREFIX_MAP.get(
+                                        media_type, "jr://file/"
+                                    )
+                                    + value,
                                     form=media_type,
                                     toParseString=output_inserted,
                                 )

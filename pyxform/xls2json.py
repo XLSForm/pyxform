@@ -303,11 +303,12 @@ def process_range_question_type(row):
 
     return new_dict
 
+
 def process_binary_default(file_type, default_value):
-    if 'jr://' not in default_value:
-        return '{}{}'.format(
-            constants.SANDBOXED_TYPE_EP_PREFIX_MAP.get(file_type, 'jr://file/'),
-            default_value
+    if "jr://" not in default_value:
+        return "{}{}".format(
+            constants.SANDBOXED_TYPE_EP_PREFIX_MAP.get(file_type, "jr://file/"),
+            default_value,
         )
     return default_value
 
@@ -1212,8 +1213,10 @@ def workbook_to_json(
             parent_children_array.append(new_dict)
             continue
 
-        if question_type in constants.SANDBOXED_TYPE_EP_PREFIX_MAP and row.get('default'):
-            row['default'] = process_binary_default(question_type, row['default'])
+        if question_type in constants.SANDBOXED_TYPE_EP_PREFIX_MAP and row.get(
+            "default"
+        ):
+            row["default"] = process_binary_default(question_type, row["default"])
 
         if question_type == "photo":
             new_dict = row.copy()
