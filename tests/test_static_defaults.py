@@ -1,5 +1,6 @@
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
+
 class StaticDefaultTests(PyxformTestCase):
     def test_static_defaults(self):
         self.assertPyxformXform(
@@ -29,13 +30,14 @@ class StaticDefaultTests(PyxformTestCase):
                 # image needed NS and question typing still exist
                 'xmlns:orx="http://openrosa.org/xforms"',
                 '<bind nodeset="/static_image/my_image" type="binary" orx:max-pixels="640"/>',
-
                 # image default appears
                 "<my_image>jr://images/my_default_image.jpg</my_image>",
-
                 # other defaults appear
-                "<my_descr>no description provied</my_descr>"
+                "<my_descr>no description provied</my_descr>",
             ],
-            model__excludes=["setvalue", "<my_image></my_image>", "<my_descr></my_descr>"],
-
+            model__excludes=[
+                "setvalue",
+                "<my_image></my_image>",
+                "<my_descr></my_descr>",
+            ],
         )

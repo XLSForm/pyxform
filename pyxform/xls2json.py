@@ -303,14 +303,12 @@ def process_range_question_type(row):
 
     return new_dict
 
+
 def process_image_default(default_value):
     # prepend image files with the correct prefix, if they don't have it.
-    image_jr_prefix = 'jr://images/'
+    image_jr_prefix = "jr://images/"
     if image_jr_prefix not in default_value:
-        return '{}{}'.format(
-            'jr://images/',
-            default_value
-        )
+        return "{}{}".format("jr://images/", default_value)
     return default_value
 
 
@@ -1217,8 +1215,8 @@ def workbook_to_json(
         if question_type == "photo":
             new_dict = row.copy()
 
-            if row.get('default'):
-                new_dict['default'] = process_image_default(row['default'])
+            if row.get("default"):
+                new_dict["default"] = process_image_default(row["default"])
             # Validate max-pixels
             parameters = get_parameters(row.get("parameters", ""), ["max-pixels"])
             if "max-pixels" in parameters.keys():
