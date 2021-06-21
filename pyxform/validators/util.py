@@ -32,11 +32,7 @@ class PopenResult:
     """Result data for run_popen_with_timeout"""
 
     def __init__(
-            self,
-            return_code: int,
-            timeout: bool,
-            stdout: bytes,
-            stderr: bytes
+        self, return_code: int, timeout: bool, stdout: bytes, stderr: bytes
     ) -> None:
         self.return_code: int = return_code
         self.timeout: bool = timeout
@@ -80,10 +76,7 @@ def run_popen_with_timeout(command, timeout) -> "PopenResult":
     timeout = kill_check.isSet()
     kill_check.clear()
     return PopenResult(
-        return_code=p.returncode,
-        timeout=timeout,
-        stdout=stdout,
-        stderr=stderr
+        return_code=p.returncode, timeout=timeout, stdout=stdout, stderr=stderr
     )
 
 
