@@ -8,6 +8,7 @@ from __future__ import print_function, unicode_literals
 import logging
 import os
 import sys
+import shutil
 from typing import TYPE_CHECKING
 from pyxform.validators.error_cleaner import ErrorCleaner
 from pyxform.validators.util import (
@@ -60,10 +61,9 @@ def check_java_available():
     """
     Check if 'which java' returncode is 0. If not, raise an error since java is required.
     """
-    result = run_popen_with_timeout(["which", "java"], 100)
-    if result.return_code is not None:
-        if result.return_code == 0:
-            return
+    java_path = shutil.which(cmd="java")
+    if java_path is not None:
+        return
     msg = (
         "Form validation failed because Java (8+ required) could not be found. "
         "To fix this, please either: 1) install Java, or 2) run pyxform with the "
