@@ -3,7 +3,7 @@
 Validate XForms using Enketo validator.
 """
 import os
-
+from typing import TYPE_CHECKING
 from pyxform.validators.error_cleaner import ErrorCleaner
 from pyxform.validators.util import (
     XFORM_SPEC_PATH,
@@ -11,6 +11,11 @@ from pyxform.validators.util import (
     decode_stream,
     run_popen_with_timeout,
 )
+
+
+if TYPE_CHECKING:
+    from pyxform.validators.util import PopenResult
+
 
 CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 ENKETO_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", "validate")
@@ -29,7 +34,7 @@ def install_exists():
     return os.path.exists(ENKETO_VALIDATE_PATH)
 
 
-def _call_validator(path_to_xform, bin_file_path=ENKETO_VALIDATE_PATH):
+def _call_validator(path_to_xform, bin_file_path=ENKETO_VALIDATE_PATH) -> "PopenResult":
     return run_popen_with_timeout([bin_file_path, path_to_xform], 100)
 
 
@@ -55,7 +60,6 @@ def check_xform(path_to_xform):
     - return code 0: append warning with the stdout content (possibly none).
 
     :param path_to_xform: Path to the XForm to be validated.
-    :param bin_path: Path to the Enketo-validate binary.
     :return: warnings or List[str]
     """
     if not install_exists():

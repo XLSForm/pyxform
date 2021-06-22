@@ -28,9 +28,21 @@ XFORM_SPEC_PATH = os.path.join(
 )
 
 
+class PopenResult:
+    """Result data for run_popen_with_timeout"""
+
+    def __init__(
+        self, return_code: int, timeout: bool, stdout: bytes, stderr: bytes
+    ) -> None:
+        self.return_code: int = return_code
+        self.timeout: bool = timeout
+        self.stdout: str = decode_stream(stream=stdout)
+        self.stderr: str = decode_stream(stream=stderr)
+
+
 # Adapted from:
 # http://betabug.ch/blogs/ch-athens/1093
-def run_popen_with_timeout(command, timeout):
+def run_popen_with_timeout(command, timeout) -> "PopenResult":
     """
     Run a sub-program in subprocess.Popen, pass it the input_data,
     kill it if the specified timeout has passed.
@@ -63,7 +75,9 @@ def run_popen_with_timeout(command, timeout):
     watchdog.cancel()  # if it's still waiting to run
     timeout = kill_check.isSet()
     kill_check.clear()
-    return p.returncode, timeout, stdout, stderr
+    return PopenResult(
+        return_code=p.returncode, timeout=timeout, stdout=stdout, stderr=stderr
+    )
 
 
 def decode_stream(stream):
