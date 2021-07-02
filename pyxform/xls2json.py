@@ -903,6 +903,11 @@ def workbook_to_json(
                     and question_type not in aliases.label_optional_types
                     and not row.get("bind", {}).get("calculate")
                     and not (
+                        control_type is constants.GROUP
+                        and row.get("control", {}).get("appearance")
+                        == constants.FIELD_LIST
+                    )
+                    and not (
                         row.get("default")
                         and default_is_dynamic(row.get("default"), question_type)
                     )
