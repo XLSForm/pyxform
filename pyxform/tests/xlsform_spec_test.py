@@ -99,9 +99,7 @@ class WarningsTest(unittest.TestCase):
         pyxform.xls2json.parse_file_to_json(
             path_to_excel_file, default_name="warnings", warnings=warnings
         )
-        self.assertEquals(
-            len(warnings), 22, "Found " + str(len(warnings)) + " warnings"
-        )
+        self.assertEquals(len(warnings), 5, "Found " + str(len(warnings)) + " warnings")
 
 
 class CalculateWithoutCalculationTest(unittest.TestCase):

@@ -7,6 +7,8 @@ import xml.etree.ElementTree as ETree
 
 from formencode.doctest_xml_compare import xml_compare
 from unittest2 import TestCase
+import textwrap
+from typing import TYPE_CHECKING
 
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
@@ -17,6 +19,11 @@ try:
     configparser = ConfigParser
 except ImportError:
     import configparser
+
+
+if TYPE_CHECKING:
+    from typing import Tuple
+
 
 DIR = os.path.dirname(__file__)
 
@@ -127,3 +134,9 @@ def prep_class_config(cls, test_dir="tests"):
     strings = os.path.join(root, test_dir, "fixtures", "strings.ini")
     cls.config.read(strings)
     cls.cls_name = cls.__name__
+
+
+def prep_for_xml_contains(text: str) -> "Tuple[str]":
+    """Prep string for finding an exact match to formatted XML text."""
+    # noinspection PyRedundantParentheses
+    return (textwrap.indent(textwrap.dedent(text), "    ",),)

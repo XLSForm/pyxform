@@ -3,6 +3,7 @@
 Guidance hint test module.
 """
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
+from pyxform.tests.utils import prep_for_xml_contains
 
 
 class GuidanceHintTest(PyxformTestCase):
@@ -73,28 +74,38 @@ class GuidanceHintTest(PyxformTestCase):
 
     def test_guidance_hint_only(self):
         """Test guidance_hint only."""
+        expected = """
+          <input ref="/data/name">
+            <label/>
+            <hint ref="jr:itext('/data/name:hint')"/>
+          </input>
+        """
         self.assertPyxformXform(
             name="data",
-            errored=True,
             md="""
             | survey |        |          |                              |
             |        | type   |   name   | guidance_hint                |
             |        | string |   name   | as shown on birth certificate|
             """,
-            error__contains=["The survey element named 'name' has no label or hint."],
+            xml__contains=prep_for_xml_contains(expected),
         )
 
     def test_multi_language_guidance_only(self):  # pylint:disable=C0103
         """Test guidance_hint only in multiple languages."""
+        expected = """
+          <input ref="/data/name">
+            <label/>
+            <hint ref="jr:itext('/data/name:hint')"/>
+          </input>
+        """
         self.assertPyxformXform(
             name="data",
-            errored=True,
             md="""
             | survey |        |          |                              |                                     |
             |        | type   |   name   | guidance_hint                | guidance_hint::French (fr)          |
             |        | string |   name   | as shown on birth certificate| comme sur le certificat de naissance|
             """,  # noqa
-            error__contains=["The survey element named 'name' has no label or hint."],
+            xml__contains=prep_for_xml_contains(expected),
         )
 
     def test_multi_language_hint(self):
