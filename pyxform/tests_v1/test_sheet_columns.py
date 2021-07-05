@@ -41,7 +41,7 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             error__contains=["no label or hint"],
         )
 
-    def test_label_node_added_when_only_hint_given(self):
+    def test_label_node_added_when_hint_given_but_no_label_value(self):
         """Should output a label node even if no label is specified."""
         expected = """
           <input ref="/data/a">
@@ -68,9 +68,21 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             xml__contains=prep_for_xml_contains(expected),
         )
 
-    def test_label_always_added_and_maybe_hint__e2e(self):
+    def test_label_node_added_when_hint_given_but_no_label_value__e2e(self):
+        """Should output a label node even if no label is specified."""
         here = os.path.dirname(os.path.dirname(__file__))
-        filename = "hint_with_no_label"
+        filename = "hint_with_no_label_value"
+        path_to_excel_file = os.path.join(
+            here, "tests", "example_xls", filename + ".xlsx"
+        )
+        path_to_output = os.path.join(here, "tests", "test_output", filename + ".xml")
+        warnings = xls2xform_convert(path_to_excel_file, path_to_output)
+        self.assertEquals(len(warnings), 0, warnings)
+
+    def test_label_node_added_when_hint_given_but_no_label_column__e2e(self):
+        """Should output a label node even if no label is specified."""
+        here = os.path.dirname(os.path.dirname(__file__))
+        filename = "hint_with_no_label_column"
         path_to_excel_file = os.path.join(
             here, "tests", "example_xls", filename + ".xlsx"
         )
