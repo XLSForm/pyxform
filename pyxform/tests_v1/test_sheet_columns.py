@@ -2,7 +2,10 @@
 """
 Test XLSForm sheet names.
 """
+import os
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
+from pyxform.tests.utils import prep_for_xml_contains
+from pyxform.xls2xform import xls2xform_convert
 
 
 class InvalidSurveyColumnsTests(PyxformTestCase):
@@ -37,6 +40,43 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             errored=True,
             error__contains=["no label or hint"],
         )
+
+    def test_label_node_added_when_only_hint_given(self):
+        """Should output a label node even if no label is specified."""
+        expected = """
+          <input ref="/data/a">
+            <label/>
+            <hint>a hint</hint>
+          </input>
+          <input ref="/data/b">
+            <label>a label</label>
+          </input>
+          <input ref="/data/c">
+            <label/>
+            <hint ref="jr:itext('/data/c:hint')"/>
+          </input>
+        """
+        self.assertPyxformXform(
+            name="data",
+            ss_structure={
+                "survey": (
+                    {"type": "text", "name": "a", "hint": "a hint"},
+                    {"type": "text", "name": "b", "label": "a label"},
+                    {"type": "text", "name": "c", "guidance_hint": "a guide"},
+                )
+            },
+            xml__contains=prep_for_xml_contains(expected),
+        )
+
+    def test_label_always_added_and_maybe_hint__e2e(self):
+        here = os.path.dirname(os.path.dirname(__file__))
+        filename = "hint_with_no_label"
+        path_to_excel_file = os.path.join(
+            here, "tests", "example_xls", filename + ".xlsx"
+        )
+        path_to_output = os.path.join(here, "tests", "test_output", filename + ".xml")
+        warnings = xls2xform_convert(path_to_excel_file, path_to_output)
+        self.assertEquals(len(warnings), 0, warnings)
 
     def test_column_case(self):
         """

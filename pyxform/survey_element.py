@@ -17,11 +17,17 @@ from pyxform.utils import (
     default_is_dynamic,
 )
 from pyxform.xls2json import print_pyobj_to_json
+from typing import TYPE_CHECKING
 
 try:
     from functools import lru_cache
 except ImportError:
     from functools32 import lru_cache
+
+
+if TYPE_CHECKING:
+    from pyxform.utils import DetachableElement
+    from typing import List
 
 
 def _overlay(over, under):
@@ -414,15 +420,20 @@ class SurveyElement(dict):
             )
             return node("hint", hint, toParseString=output_inserted)
 
-    def xml_label_and_hint(self):
+    def xml_label_and_hint(self) -> "List[DetachableElement]":
         """
         Return a list containing one node for the label and if there
         is a hint one node for the hint.
         """
         result = []
+        label_appended = False
         if self.label or self.media:
             result.append(self.xml_label())
+            label_appended = True
+
         if self.hint or self.guidance_hint:
+            if not label_appended:
+                result.append(self.xml_label())
             result.append(self.xml_hint())
 
         if len(result) == 0 or self.guidance_hint and len(result) == 1:

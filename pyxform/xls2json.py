@@ -878,24 +878,6 @@ def workbook_to_json(
             )
             raise PyXFormError(error_message)
 
-        if (
-            constants.LABEL not in row
-            and row.get(constants.MEDIA) is None
-            and question_type not in aliases.label_optional_types
-            and not row.get("bind", {}).get("calculate")
-            and not (
-                row.get("default")
-                and default_is_dynamic(row.get("default"), question_type)
-            )
-        ):
-            # TODO: Should there be a default label?
-            #      Not sure if we should throw warnings for groups...
-            #      Warnings can be ignored so I'm not too concerned
-            #      about false positives.
-            warnings.append(
-                row_format_string % row_number + " Question has no label: " + str(row)
-            )
-
         # Try to parse question as begin control statement
         # (i.e. begin loop/repeat/group):
         begin_control_parse = begin_control_regex.search(question_type)
