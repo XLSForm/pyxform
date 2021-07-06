@@ -3,18 +3,28 @@
 A Python script to convert excel files into JSON.
 """
 from __future__ import print_function, unicode_literals
-
+from collections import Counter
+from pyxform import aliases, constants
+from pyxform.errors import PyXFormError
+from pyxform.utils import (
+    basestring,
+    is_valid_xml_tag,
+    unicode,
+    default_is_dynamic,
+    levenshtein_distance,
+)
+from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
+from typing import TYPE_CHECKING
 import codecs
 import json
 import os
 import re
 import sys
-from collections import Counter
 
-from pyxform import aliases, constants
-from pyxform.errors import PyXFormError
-from pyxform.utils import basestring, is_valid_xml_tag, unicode, default_is_dynamic
-from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
+
+if TYPE_CHECKING:
+    from typing import Any, Dict, KeysView, List, Optional, Tuple
+
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 
@@ -298,13 +308,52 @@ def process_range_question_type(row):
     return new_dict
 
 
+def find_sheet_misspellings(
+    key: str, dict_keys: "KeysView", warnings: "List[str]"
+) -> "Tuple[List[str], Optional[str]]":
+    """
+    Find possible sheet name misspellings to warn the user about.
+
+    It's possible that this will warn about sheet names for sheets that have
+    auxilliary metadata that is not meant for processing by pyxform. For
+    example the "osm" sheet name may be similar to many other initialisms.
+
+    :param key: The sheet name to look for.
+    :param dict_keys: The workbook sheet names.
+    :param warnings: The warnings list for the current task.
+    :return: The warnings list (possibly updated), the warning message (if any).
+    """
+    if key in dict_keys:
+        return warnings, None
+    msg = (
+        "Could not find a sheet named '{k}'. "
+        "Please check the sheet names and try again."
+    ).format(k=key)
+    candidates = tuple(
+        _k  # thanks to black
+        for _k in dict_keys
+        if 2 >= levenshtein_distance(_k.lower(), key)
+        and _k not in constants.SUPPORTED_SHEET_NAMES
+        and not _k.startswith("_")
+    )
+    if 0 < len(candidates):
+        msg += (
+            " The following sheets with similar names were found: {c}. "
+            "To suppress this message, prefix these sheet names with an "
+            "underscore. For example 'setting' becomes '_setting'."
+        ).format(c=str(candidates))
+        # Avoid warning on optional sheets.
+        warnings.append(msg)
+    return warnings, msg
+
+
 def workbook_to_json(
     workbook_dict,
     form_name=None,
     fallback_form_name=None,
     default_language="default",
     warnings=None,
-):
+) -> "Dict[str, Any]":
     """
     workbook_dict -- nested dictionaries representing a spreadsheet.
                     should be similar to those returned by xls_to_dict
@@ -327,14 +376,20 @@ def workbook_to_json(
     if warnings is None:
         warnings = []
     is_valid = False
+    # Sheet names should be case-insensitive
     workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
+    warnings, msg = find_sheet_misspellings(
+        key=constants.SURVEY, dict_keys=workbook_dict.keys(), warnings=warnings
+    )
+    if msg is not None:
+        raise PyXFormError(msg)
     for row in workbook_dict.get(constants.SURVEY, []):
         is_valid = "type" in [z.lower() for z in row]
         if is_valid:
             break
     if not is_valid:
         raise PyXFormError(
-            "The survey sheet is either empty or missing important " "column headers."
+            "The survey sheet is either empty or missing important column headers."
         )
 
     row_format_string = "[row : %s]"
@@ -353,6 +408,9 @@ def workbook_to_json(
     # Break the spreadsheet dict into easier to access objects
     # (settings, choices, survey_sheet):
     # ########## Settings sheet ##########
+    warnings, _ = find_sheet_misspellings(
+        key=constants.SETTINGS, dict_keys=workbook_dict.keys(), warnings=warnings
+    )
     settings_sheet_headers = workbook_dict.get(constants.SETTINGS, [])
     try:
         if (
@@ -412,6 +470,11 @@ def workbook_to_json(
 
     # ########## External Choices sheet ##########
 
+    warnings, _ = find_sheet_misspellings(
+        key=constants.EXTERNAL_CHOICES,
+        dict_keys=workbook_dict.keys(),
+        warnings=warnings,
+    )
     external_choices_sheet = workbook_dict.get(constants.EXTERNAL_CHOICES, [])
     for choice_item in external_choices_sheet:
         replace_smart_quotes_in_dict(choice_item)
@@ -426,6 +489,11 @@ def workbook_to_json(
     # ########## Choices sheet ##########
     # Columns and "choices and columns" sheets are deprecated,
     # but we combine them with the choices sheet for backwards-compatibility.
+    warnings, _ = find_sheet_misspellings(
+        key=constants.CHOICES_AND_COLUMNS,
+        dict_keys=workbook_dict.keys(),
+        warnings=warnings,
+    )
     choices_and_columns_sheet = workbook_dict.get(constants.CHOICES_AND_COLUMNS, {})
     choices_and_columns_sheet = dealias_and_group_headers(
         choices_and_columns_sheet,
@@ -434,11 +502,17 @@ def workbook_to_json(
         default_language,
     )
 
+    warnings, _ = find_sheet_misspellings(
+        key=constants.COLUMNS, dict_keys=workbook_dict.keys(), warnings=warnings
+    )
     columns_sheet = workbook_dict.get(constants.COLUMNS, [])
     columns_sheet = dealias_and_group_headers(
         columns_sheet, aliases.list_header, use_double_colons, default_language
     )
 
+    warnings, _ = find_sheet_misspellings(
+        key=constants.CHOICES, dict_keys=workbook_dict.keys(), warnings=warnings
+    )
     choices_sheet = workbook_dict.get(constants.CHOICES, [])
     for choice_item in choices_sheet:
         replace_smart_quotes_in_dict(choice_item)
@@ -447,6 +521,11 @@ def workbook_to_json(
         choices_sheet, aliases.list_header, use_double_colons, default_language
     )
     # ########## Cascading Select sheet ###########
+    warnings, _ = find_sheet_misspellings(
+        key=constants.CASCADING_CHOICES,
+        dict_keys=workbook_dict.keys(),
+        warnings=warnings,
+    )
     cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, [])
     if len(cascading_choices):
         if "choices" in cascading_choices[0]:
@@ -540,6 +619,9 @@ def workbook_to_json(
     )
     survey_sheet = dealias_types(survey_sheet)
 
+    warnings, _ = find_sheet_misspellings(
+        key=constants.OSM, dict_keys=workbook_dict.keys(), warnings=warnings
+    )
     osm_sheet = dealias_and_group_headers(
         workbook_dict.get(constants.OSM, []), aliases.list_header, True
     )
