@@ -8,6 +8,7 @@ import logging
 import os
 import signal
 import subprocess
+import tempfile
 import threading
 import time
 from contextlib import closing
@@ -56,10 +57,11 @@ def run_popen_with_timeout(command, timeout) -> "PopenResult":
         # use SIGKILL if hard to kill...
         return
 
-    # Workarounds for pyinstaller
-    # https://github.com/pyinstaller/pyinstaller/wiki/Recipe-subprocess
     startup_info = None
+    env = None
     if os.name == "nt":
+        # Workarounds for pyinstaller
+        # https://github.com/pyinstaller/pyinstaller/wiki/Recipe-subprocess
         # disable command window when run from pyinstaller
         startup_info = subprocess.STARTUPINFO()
         # Less fancy version of bitwise-or-assignment (x |= y) shown in ref url.
@@ -68,7 +70,19 @@ def run_popen_with_timeout(command, timeout) -> "PopenResult":
         else:
             startup_info.dwFlags = 0
 
-    p = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE, startupinfo=startup_info)
+        # Workaround for Java sometimes not being able to use the temp directory.
+        # https://docs.oracle.com/javase/8/docs/api/java/io/File.html
+        # CreateTempFile refers to "java.io.tmpdir" which refers to env vars.
+        env = {
+            k: v if v is not None else tempfile.gettempdir()
+            for k, v in {
+                k: os.environ.get(k) for k in ("TEMP", "TMP", "TMPDIR")
+            }.items()
+        }
+
+    p = Popen(
+        command, env=env, stdin=PIPE, stdout=PIPE, stderr=PIPE, startupinfo=startup_info
+    )
     watchdog = threading.Timer(timeout, _kill_process_after_a_timeout, args=(p.pid,))
     watchdog.start()
     (stdout, stderr) = p.communicate()
