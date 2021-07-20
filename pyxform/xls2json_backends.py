@@ -207,6 +207,8 @@ def xls_to_dict(path_or_file):
 
     result = OrderedDict()
     for sheet in workbook.sheets():
+        # Note that the sheet exists but do no further processing here.
+        result[sheet.name] = []
         # Do not process sheets that have nothing to do with XLSForm.
         if sheet.name not in constants.SUPPORTED_SHEET_NAMES:
             if len(workbook.sheets()) == 1:
@@ -216,8 +218,6 @@ def xls_to_dict(path_or_file):
                 ) = xls_to_dict_normal_sheet(sheet)
             else:
                 continue
-        if sheet.name == constants.CASCADING_CHOICES:
-            result[sheet.name] = _xls_to_dict_cascade_sheet(sheet)
         else:
             (
                 result[sheet.name],

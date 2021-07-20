@@ -23,10 +23,15 @@ import sys
 
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, KeysView, List, Optional, Tuple
+    from typing import Any, Dict, KeysView, Optional
 
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
+_MSG_SUPPRESS_SPELLING = (
+    " If you do not mean to include a sheet, to suppress this message, "
+    "prefix the sheet name with an underscore. For example 'setting' "
+    "becomes '_setting'."
+)
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -308,9 +313,7 @@ def process_range_question_type(row):
     return new_dict
 
 
-def find_sheet_misspellings(
-    key: str, dict_keys: "KeysView", warnings: "List[str]"
-) -> "Tuple[List[str], Optional[str]]":
+def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
     """
     Find possible sheet name misspellings to warn the user about.
 
@@ -319,32 +322,23 @@ def find_sheet_misspellings(
     example the "osm" sheet name may be similar to many other initialisms.
 
     :param key: The sheet name to look for.
-    :param dict_keys: The workbook sheet names.
-    :param warnings: The warnings list for the current task.
-    :return: The warnings list (possibly updated), the warning message (if any).
+    :param keys: The workbook sheet names.
     """
-    if key in dict_keys:
-        return warnings, None
-    msg = (
-        "Could not find a sheet named '{k}'. "
-        "Please check the sheet names and try again."
-    ).format(k=key)
     candidates = tuple(
         _k  # thanks to black
-        for _k in dict_keys
+        for _k in keys
         if 2 >= levenshtein_distance(_k.lower(), key)
         and _k not in constants.SUPPORTED_SHEET_NAMES
         and not _k.startswith("_")
     )
     if 0 < len(candidates):
-        msg += (
-            " The following sheets with similar names were found: {c}. "
-            "To suppress this message, prefix these sheet names with an "
-            "underscore. For example 'setting' becomes '_setting'."
-        ).format(c=str(candidates))
-        # Avoid warning on optional sheets.
-        warnings.append(msg)
-    return warnings, msg
+        msg = (
+            "When looking for a sheet named '{k}', the following sheets with "
+            "similar names were found: {c}."
+        ).format(k=key, c=str(", ".join(("'{}'".format(c) for c in candidates))))
+        return msg
+    else:
+        return None
 
 
 def workbook_to_json(
@@ -378,10 +372,12 @@ def workbook_to_json(
     is_valid = False
     # Sheet names should be case-insensitive
     workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
-    warnings, msg = find_sheet_misspellings(
-        key=constants.SURVEY, dict_keys=workbook_dict.keys(), warnings=warnings
-    )
-    if msg is not None:
+    workbook_keys = workbook_dict.keys()
+    if constants.SURVEY not in workbook_dict:
+        msg = "You must have a sheet named '{k}'. ".format(k=constants.SURVEY)
+        similar = find_sheet_misspellings(key=constants.SURVEY, keys=workbook_keys)
+        if similar is not None:
+            msg += similar
         raise PyXFormError(msg)
     for row in workbook_dict.get(constants.SURVEY, []):
         is_valid = "type" in [z.lower() for z in row]
@@ -408,9 +404,11 @@ def workbook_to_json(
     # Break the spreadsheet dict into easier to access objects
     # (settings, choices, survey_sheet):
     # ########## Settings sheet ##########
-    warnings, _ = find_sheet_misspellings(
-        key=constants.SETTINGS, dict_keys=workbook_dict.keys(), warnings=warnings
-    )
+    k = constants.SETTINGS
+    if k not in workbook_dict:
+        similar = find_sheet_misspellings(key=k, keys=workbook_keys)
+        if similar is not None:
+            warnings.append(similar + _MSG_SUPPRESS_SPELLING)
     settings_sheet_headers = workbook_dict.get(constants.SETTINGS, [])
     try:
         if (
@@ -469,12 +467,6 @@ def workbook_to_json(
     json_dict.update(settings)
 
     # ########## External Choices sheet ##########
-
-    warnings, _ = find_sheet_misspellings(
-        key=constants.EXTERNAL_CHOICES,
-        dict_keys=workbook_dict.keys(),
-        warnings=warnings,
-    )
     external_choices_sheet = workbook_dict.get(constants.EXTERNAL_CHOICES, [])
     for choice_item in external_choices_sheet:
         replace_smart_quotes_in_dict(choice_item)
@@ -487,53 +479,13 @@ def workbook_to_json(
     )
 
     # ########## Choices sheet ##########
-    # Columns and "choices and columns" sheets are deprecated,
-    # but we combine them with the choices sheet for backwards-compatibility.
-    warnings, _ = find_sheet_misspellings(
-        key=constants.CHOICES_AND_COLUMNS,
-        dict_keys=workbook_dict.keys(),
-        warnings=warnings,
-    )
-    choices_and_columns_sheet = workbook_dict.get(constants.CHOICES_AND_COLUMNS, {})
-    choices_and_columns_sheet = dealias_and_group_headers(
-        choices_and_columns_sheet,
-        aliases.list_header,
-        use_double_colons,
-        default_language,
-    )
-
-    warnings, _ = find_sheet_misspellings(
-        key=constants.COLUMNS, dict_keys=workbook_dict.keys(), warnings=warnings
-    )
-    columns_sheet = workbook_dict.get(constants.COLUMNS, [])
-    columns_sheet = dealias_and_group_headers(
-        columns_sheet, aliases.list_header, use_double_colons, default_language
-    )
-
-    warnings, _ = find_sheet_misspellings(
-        key=constants.CHOICES, dict_keys=workbook_dict.keys(), warnings=warnings
-    )
     choices_sheet = workbook_dict.get(constants.CHOICES, [])
     for choice_item in choices_sheet:
         replace_smart_quotes_in_dict(choice_item)
-
     choices_sheet = dealias_and_group_headers(
         choices_sheet, aliases.list_header, use_double_colons, default_language
     )
-    # ########## Cascading Select sheet ###########
-    warnings, _ = find_sheet_misspellings(
-        key=constants.CASCADING_CHOICES,
-        dict_keys=workbook_dict.keys(),
-        warnings=warnings,
-    )
-    cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, [])
-    if len(cascading_choices):
-        if "choices" in cascading_choices[0]:
-            choices_sheet = choices_sheet + cascading_choices[0]["choices"]
-
-    combined_lists = group_dictionaries_by_key(
-        choices_and_columns_sheet + choices_sheet + columns_sheet, constants.LIST_NAME
-    )
+    combined_lists = group_dictionaries_by_key(choices_sheet, constants.LIST_NAME)
 
     choices = combined_lists
     # Make sure all the options have the required properties:
@@ -603,10 +555,6 @@ def workbook_to_json(
                             )  # noqa
 
     # ########## Survey sheet ###########
-    if constants.SURVEY not in workbook_dict:
-        raise PyXFormError(
-            "You must have a sheet named (case-sensitive): " + constants.SURVEY
-        )
     survey_sheet = workbook_dict[constants.SURVEY]
     # Process the headers:
     clean_text_values_enabled = aliases.yes_no.get(
@@ -619,9 +567,7 @@ def workbook_to_json(
     )
     survey_sheet = dealias_types(survey_sheet)
 
-    warnings, _ = find_sheet_misspellings(
-        key=constants.OSM, dict_keys=workbook_dict.keys(), warnings=warnings
-    )
+    # No spell check for OSM sheet (infrequently used, many spurious matches).
     osm_sheet = dealias_and_group_headers(
         workbook_dict.get(constants.OSM, []), aliases.list_header, True
     )
@@ -1146,6 +1092,19 @@ def workbook_to_json(
                     select_type == "select one external"
                     and list_name not in external_choices
                 ):
+                    if not external_choices:
+                        k = constants.EXTERNAL_CHOICES
+                        msg = (
+                            "There should be an external_choices sheet in this xlsform."
+                        )
+                        similar = find_sheet_misspellings(key=k, keys=workbook_keys)
+                        if similar is not None:
+                            msg = msg + " " + similar
+                        raise PyXFormError(
+                            msg
+                            + " Please ensure that the external_choices sheet has columns"
+                            " 'list name', and 'name'."
+                        )
                     raise PyXFormError(
                         row_format_string % row_number
                         + "List name not in external choices sheet: "
@@ -1159,11 +1118,14 @@ def workbook_to_json(
                     and not re.match(r"\$\{(.*?)\}", list_name)
                 ):
                     if not choices:
+                        k = constants.CHOICES
+                        msg = "There should be a choices sheet in this xlsform."
+                        similar = find_sheet_misspellings(key=k, keys=workbook_keys)
+                        if similar is not None:
+                            msg = msg + " " + similar
                         raise PyXFormError(
-                            "There should be a choices sheet in this xlsform."
-                            " Please ensure that the choices sheet name is "
-                            "all in small caps and has columns 'list name', "
-                            "'name', and 'label' (or aliased column names)."
+                            msg + " Please ensure that the choices sheet has columns"
+                            " 'list name', 'name', and 'label' (or aliased column names)."
                         )
                     raise PyXFormError(
                         row_format_string % row_number
