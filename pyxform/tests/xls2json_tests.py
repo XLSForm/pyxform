@@ -9,7 +9,7 @@ import os
 from unittest2 import TestCase
 
 from pyxform.tests import utils
-from pyxform.xls2json import SurveyReader, parse_file_to_json
+from pyxform.xls2json import SurveyReader
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
 
 
