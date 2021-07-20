@@ -61,25 +61,19 @@ LIST_NAME = "list name"
 CASCADING_SELECT = "cascading_select"
 TABLE_LIST = "table-list"  # hyphenated because it goes in appearance, and convention for appearance column is dashes # noqa
 
-# The following are the possible sheet names:
 SURVEY = "survey"
 SETTINGS = "settings"
 EXTERNAL_CHOICES = "external_choices"
-# These sheet names are for list sheets
-CHOICES_AND_COLUMNS = "choices and columns"
-CASCADING_CHOICES = "cascades"
 
 OSM = "osm"
 OSM_TYPE = "binary"
 
 NAMESPACES = "namespaces"
 
+# The following are the possible sheet names:
 SUPPORTED_SHEET_NAMES = [
     SURVEY,
-    CASCADING_CHOICES,
     CHOICES,
-    COLUMNS,
-    CHOICES_AND_COLUMNS,
     SETTINGS,
     EXTERNAL_CHOICES,
     OSM,
