@@ -1,0 +1,2 @@
+This file is here so that the test_output folder exists for a fresh checkout.
+The test_output folder is required for some tests to run properly.
