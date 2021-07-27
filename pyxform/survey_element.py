@@ -436,8 +436,11 @@ class SurveyElement(dict):
                 result.append(self.xml_label())
             result.append(self.xml_hint())
 
-        if len(result) == 0 or self.guidance_hint and len(result) == 1:
-            msg = "The survey element named '%s' " "has no label or hint." % self.name
+        msg = "The survey element named '%s' " "has no label or hint." % self.name
+        if len(result) == 0:
+            raise PyXFormError(msg)
+        # Guidance hint alone is not OK since they may be hidden by default.
+        if not any((self.label, self.media, self.hint)) and self.guidance_hint:
             raise PyXFormError(msg)
 
         return result

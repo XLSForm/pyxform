@@ -2,10 +2,8 @@
 """
 Test XLSForm sheet names.
 """
-import os
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 from pyxform.tests.utils import prep_for_xml_contains
-from pyxform.xls2xform import xls2xform_convert
 
 
 class InvalidSurveyColumnsTests(PyxformTestCase):
@@ -46,49 +44,26 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
         expected = """
           <input ref="/data/a">
             <label/>
-            <hint>a hint</hint>
+            <hint>h</hint>
           </input>
           <input ref="/data/b">
-            <label>a label</label>
+            <label>l</label>
           </input>
           <input ref="/data/c">
-            <label/>
-            <hint ref="jr:itext('/data/c:hint')"/>
+            <label ref="jr:itext('/data/c:label')"/>
           </input>
         """
         self.assertPyxformXform(
             name="data",
-            ss_structure={
-                "survey": (
-                    {"type": "text", "name": "a", "hint": "a hint"},
-                    {"type": "text", "name": "b", "label": "a label"},
-                    {"type": "text", "name": "c", "guidance_hint": "a guide"},
-                )
-            },
+            md="""
+            | survey |      |      |       |              |      |
+            |        | type | name | label | media::image | hint |
+            |        | text | a    |       |              | h    |
+            |        | text | b    | l     |              |      |
+            |        | text | c    |       | m.png        |      |
+            """,
             xml__contains=prep_for_xml_contains(expected),
         )
-
-    def test_label_node_added_when_hint_given_but_no_label_value__e2e(self):
-        """Should output a label node even if no label is specified."""
-        here = os.path.dirname(os.path.dirname(__file__))
-        filename = "hint_with_no_label_value"
-        path_to_excel_file = os.path.join(
-            here, "tests", "example_xls", filename + ".xlsx"
-        )
-        path_to_output = os.path.join(here, "tests", "test_output", filename + ".xml")
-        warnings = xls2xform_convert(path_to_excel_file, path_to_output)
-        self.assertEquals(len(warnings), 0, warnings)
-
-    def test_label_node_added_when_hint_given_but_no_label_column__e2e(self):
-        """Should output a label node even if no label is specified."""
-        here = os.path.dirname(os.path.dirname(__file__))
-        filename = "hint_with_no_label_column"
-        path_to_excel_file = os.path.join(
-            here, "tests", "example_xls", filename + ".xlsx"
-        )
-        path_to_output = os.path.join(here, "tests", "test_output", filename + ".xml")
-        warnings = xls2xform_convert(path_to_excel_file, path_to_output)
-        self.assertEquals(len(warnings), 0, warnings)
 
     def test_column_case(self):
         """
