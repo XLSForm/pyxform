@@ -14,6 +14,7 @@ CHOICES = """
 |          | list_name     | name      | label |
 |          | l1            | 1         | C1    |
 """
+# Doubled braces ${{}} here because it's used as a format string.
 EXTERNAL_CHOICES = """
 | survey |                        |           |       |               |
 |        | type                   | name      | label | choice_filter |
@@ -148,6 +149,25 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 ],
             )
 
+    def test_workbook_to_json__misspelled_found__choices_exists(self):
+        """Should not mention misspellings if the sheet exists."""
+        self.assertPyxformXform(
+            name="test",
+            md="""
+            | survey   |               |           |       |
+            |          | type          | name      | label |
+            |          | select_one l1 | q1        | Q1    |
+            | choices  |               |           |       |
+            |          | list_name     | name      | label |
+            |          | l1            | 1         | C1    |
+            | chioces  |               |           |       |
+            |          | list_name     | name      | label |
+            |          | l1            | 1         | C1    |
+            """,
+            errored=False,
+            warnings_count=0,
+        )
+
     def test_workbook_to_json__misspelled_found__choices_multiple(self):
         """Should mention misspellings if similar sheet names found."""
         self.assertPyxformXform(
@@ -162,9 +182,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             | chioces  |               |           |       |
             |          | list_name     | name      | label |
             |          | l1            | 1         | C1    |
-            | choics   |               |           |       |
-            |          | list_name     | name      | label |
-            |          | l1            | 1         | C1    |
             """,
             errored=True,
             error__contains=[
@@ -172,7 +189,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 self.err_similar_found,
                 "'choice'",
                 "'chioces'",
-                "'choics'",
             ],
         )
 
@@ -191,6 +207,28 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 ],
             )
 
+    def test_workbook_to_json__misspelled_found__external_choices_exists(self):
+        """Should not mention misspellings if the sheet exists."""
+        self.assertPyxformXform(
+            name="test",
+            md="""
+            | survey   |                        |           |       |               |
+            |          | type                   | name      | label | choice_filter |
+            |          | text                   | q1        | Q1    |               |
+            |          | select_one_external l1 | q2        | Q2    | q1=${q1}      |
+            | external_choices |                |           |       |               |
+            |          | list_name              | name      | q1    |               |
+            |          | l1                     | 1         | 1     |               |
+            |          | l1                     | 2         | 2     |               |
+            | extrenal_choices |                |           |       |               |
+            |          | list_name              | name      | q1    |               |
+            |          | l1                     | 1         | 1     |               |
+            |          | l1                     | 2         | 2     |               |
+            """,
+            errored=False,
+            warnings_count=0,
+        )
+
     def test_workbook_to_json__misspelled_found__external_choices_multiple(self):
         """Should mention misspellings if similar sheet names found."""
         self.assertPyxformXform(
@@ -199,16 +237,12 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             | survey   |                        |           |       |               |
             |          | type                   | name      | label | choice_filter |
             |          | text                   | q1        | Q1    |               |
-            |          | select_one_external l1 | q2        | Q2    | q1=${{q1}}    |
+            |          | select_one_external l1 | q2        | Q2    | q1=${q1}      |
             | external_choice |                 |           |       |               |
             |          | list_name              | name      | q1    |               |
             |          | l1                     | 1         | 1     |               |
             |          | l1                     | 2         | 2     |               |
             | extrenal_choices |                |           |       |               |
-            |          | list_name              | name      | q1    |               |
-            |          | l1                     | 1         | 1     |               |
-            |          | l1                     | 2         | 2     |               |
-            | externa_choics |                  |           |       |               |
             |          | list_name              | name      | q1    |               |
             |          | l1                     | 1         | 1     |               |
             |          | l1                     | 2         | 2     |               |
@@ -219,7 +253,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 self.err_similar_found,
                 "'external_choice'",
                 "'extrenal_choices'",
-                "'externa_choics'",
             ],
         )
 
@@ -233,6 +266,25 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 errored=False,
                 warnings__contains=[self.err_similar_found, "'{}'".format(n)],
             )
+
+    def test_workbook_to_json__misspelled_found__settings_exists(self):
+        """Should not mention misspellings if the sheet exists."""
+        self.assertPyxformXform(
+            name="test",
+            md="""
+            | survey   |           |           |       |
+            |          | type      | name      | label |
+            |          | text      | q1        | Q1    |
+            | settings |           |           |       |
+            |          | id_string | title     |       |
+            |          | my_id     | My Survey |       |
+            | stetings |           |           |       |
+            |          | id_string | title     |       |
+            |          | my_id     | My Survey |       |
+            """,
+            errored=False,
+            warnings_count=0,
+        )
 
     def test_workbook_to_json__misspelled_found__settings_multiple(self):
         """Should mention misspellings if similar sheet names found."""
@@ -268,6 +320,22 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 ],
             )
 
+    def test_workbook_to_json__misspelled_found__survey_exists(self):
+        """Should not mention misspellings if the sheet exists."""
+        self.assertPyxformXform(
+            name="test",
+            md="""
+            | survey  |           |           |       |
+            |         | type      | name      | label |
+            |         | text      | q1        | Q1    |
+            | surve   |           |           |       |
+            |         | type      | name      | label |
+            |         | text      | q1        | Q1    |
+            """,
+            errored=False,
+            warnings_count=0,
+        )
+
     def test_workbook_to_json__misspelled_found__survey_multiple(self):
         """Should mention misspellings if similar sheet names found."""
         self.assertPyxformXform(
@@ -276,10 +344,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             | surveys |           |           |       |
             |         | type      | name      | label |
             |         | text      | q1        | Q1    |
-            | surve   |           |           |       |
-            |         | type      | name      | label |
-            |         | text      | q1        | Q1    |
-            | Sruvey  |           |           |       |
+            | Surve   |           |           |       |
             |         | type      | name      | label |
             |         | text      | q1        | Q1    |
             """,
@@ -289,7 +354,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 self.err_similar_found,
                 "'surveys'",
                 "'surve'",
-                "'sruvey'",
             ],
         )
 
@@ -336,6 +400,160 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 errored=True,
                 error__not_contains=[self.err_similar_found],
             )
+
+    def test_workbook_to_json__multiple_misspellings__all_ok(self):
+        """Should not mention misspellings for complete example with correct spelling."""
+        self.assertPyxformXform(
+            name="test",
+            md="""
+            | survey   |                        |           |       |               |
+            |          | type                   | name      | label | choice_filter |
+            |          | select_one l1          | q1        | Q1    |               |
+            |          | select_one_external l2 | q2        | Q2    | q1=${q1}      |
+            | choices  |               |           |       |
+            |          | list_name     | name      | label |
+            |          | l1            | 1         | C1    |
+            | external_choices |               |           |       |
+            |                  | list_name     | name      | q1    |
+            |                  | l2            | 1         | 1     |
+            |                  | l2            | 2         | 2     |
+            | settings |               |           |       |
+            |          | id_string     | title     |
+            |          | my_id         | My Survey |
+            """,
+            errored=False,
+            warnings_count=0,
+        )
+
+    def test_workbook_to_json__multiple_misspellings__survey(self):
+        """Should mention misspellings in processing order (su, se, ch, ex)."""
+        self.assertPyxformXform(
+            name="test",
+            md="""
+            | surveys  |                        |           |       |               |
+            |          | type                   | name      | label | choice_filter |
+            |          | select_one l1          | q1        | Q1    |               |
+            |          | select_one_external l2 | q2        | Q2    | q1=${q1}      |
+            | chooses  |               |           |       |
+            |          | list_name     | name      | label |
+            |          | l1            | 1         | C1    |
+            | external_choyces |               |           |       |
+            |                  | list_name     | name      | q1    |
+            |                  | l2            | 1         | 1     |
+            |                  | l2            | 2         | 2     |
+            | settyngs |               |           |       |
+            |          | id_string     | title     |
+            |          | my_id         | My Survey |
+            """,
+            errored=True,
+            warnings__not_contains=[self.err_similar_found, "'settyngs'",],
+            error__contains=[
+                self.err_survey_required,
+                self.err_similar_found,
+                "'surveys'",
+            ],
+            error__not_contains=[
+                self.err_choices_required,
+                "'chooses'",
+                self.err_ext_choices_required,
+                "'external_choyces'",
+            ],
+        )
+
+    def test_workbook_to_json__multiple_misspellings__choices(self):
+        """Should mention misspellings in processing order (su, se, ch, ex)."""
+        self.assertPyxformXform(
+            name="test",
+            md="""
+            | survey   |                        |           |       |               |
+            |          | type                   | name      | label | choice_filter |
+            |          | select_one l1          | q1        | Q1    |               |
+            |          | select_one_external l2 | q2        | Q2    | q1=${q1}      |
+            | chooses  |               |           |       |
+            |          | list_name     | name      | label |
+            |          | l1            | 1         | C1    |
+            | external_choyces |               |           |       |
+            |                  | list_name     | name      | q1    |
+            |                  | l2            | 1         | 1     |
+            |                  | l2            | 2         | 2     |
+            | settings |               |           |       |
+            |          | id_string     | title     |
+            |          | my_id         | My Survey |
+            """,
+            errored=True,
+            warnings__not_contains=[self.err_similar_found, "'settyngs'",],
+            error__contains=[self.err_choices_required, "'chooses'",],
+            error__not_contains=[
+                self.err_survey_required,
+                "'survey'",
+                # Not raised because the "select_one l1, q1" is checked first.
+                self.err_ext_choices_required,
+                "'external_choyces'",
+            ],
+        )
+
+    def test_workbook_to_json__multiple_misspellings__external_choices(self):
+        """Should mention misspellings in processing order (su, se, ch, ex)."""
+        self.assertPyxformXform(
+            name="test",
+            md="""
+            | survey   |                        |           |       |               |
+            |          | type                   | name      | label | choice_filter |
+            |          | select_one l1          | q1        | Q1    |               |
+            |          | select_one_external l2 | q2        | Q2    | q1=${q1}      |
+            | choices  |               |           |       |
+            |          | list_name     | name      | label |
+            |          | l1            | 1         | C1    |
+            | external_choyces |               |           |       |
+            |                  | list_name     | name      | q1    |
+            |                  | l2            | 1         | 1     |
+            |                  | l2            | 2         | 2     |
+            | settings |               |           |       |
+            |          | id_string     | title     |
+            |          | my_id         | My Survey |
+            """,
+            errored=True,
+            warnings__not_contains=[self.err_similar_found, "'settyngs'",],
+            error__contains=[self.err_ext_choices_required, "'external_choyces'",],
+            error__not_contains=[
+                self.err_survey_required,
+                "'survey'",
+                self.err_choices_required,
+                "'chooses'",
+            ],
+        )
+
+    def test_workbook_to_json__multiple_misspellings__settings(self):
+        """Should mention misspellings in processing order (su, se, ch, ex)."""
+        self.assertPyxformXform(
+            name="test",
+            md="""
+            | survey   |                        |           |       |               |
+            |          | type                   | name      | label | choice_filter |
+            |          | select_one l1          | q1        | Q1    |               |
+            |          | select_one_external l2 | q2        | Q2    | q1=${q1}      |
+            | chooses  |               |           |       |
+            |          | list_name     | name      | label |
+            |          | l1            | 1         | C1    |
+            | external_choyces |               |           |       |
+            |                  | list_name     | name      | q1    |
+            |                  | l2            | 1         | 1     |
+            |                  | l2            | 2         | 2     |
+            | settyngs |               |           |       |
+            |          | id_string     | title     |
+            |          | my_id         | My Survey |
+            """,
+            errored=True,
+            warnings__contains=[self.err_similar_found, "'settyngs'",],
+            error__contains=[self.err_choices_required, "'chooses'",],
+            error__not_contains=[
+                self.err_survey_required,
+                "'survey'",
+                # Not raised because the "select_one l1, q1" is checked first.
+                self.err_ext_choices_required,
+                "'external_choyces",
+            ],
+        )
 
     def test_workbook_to_json__optional_sheets_ok(self):
         """Should not warn when valid optional sheet names are provided."""
