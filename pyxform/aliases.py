@@ -141,12 +141,14 @@ yes_no = {
     "false()": False,
 }
 label_optional_types = [
+    "calculate",
     "deviceid",
+    "end",
     "phonenumber",
     "simserial",
-    "calculate",
     "start",
-    "end",
+    "start-geopoint",
     "today",
+    "username",
 ]
 osm = {"osm": constants.OSM_TYPE}
