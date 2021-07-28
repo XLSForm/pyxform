@@ -153,10 +153,12 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
           * title: (str)
           * run_odk_validate: (bool) when True, runs ODK Validate process
                 Default value = False because it slows down tests
+          * warnings: (list) a list to use for storing warnings for inspection.
         """
         debug = kwargs.get("debug", False)
         expecting_invalid_survey = kwargs.get("errored", False)
         errors = []
+        warnings = kwargs.get("warnings", [])
         xml_nodes = {}
 
         run_odk_validate = kwargs.get("run_odk_validate", False)
@@ -165,7 +167,9 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         try:
             if "md" in kwargs.keys():
                 kwargs = self._autoname_inputs(kwargs)
-                survey = self.md_to_pyxform_survey(kwargs.get("md"), kwargs)
+                survey = self.md_to_pyxform_survey(
+                    kwargs.get("md"), kwargs, warnings=warnings,
+                )
             elif "ss_structure" in kwargs.keys():
                 kwargs = self._autoname_inputs(kwargs)
                 survey = self._ss_structure_to_pyxform_survey(
