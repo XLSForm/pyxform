@@ -86,24 +86,6 @@ class TestNewWidgets(XFormTestCase):
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
-class WarningsTest(unittest.TestCase):
-    """
-    Just checks that the number of warnings thrown when reading warnings.xls
-    doesn't change
-    """
-
-    def runTest(self):
-        filename = "warnings.xls"
-        path_to_excel_file = os.path.join(DIR, "example_xls", filename)
-        warnings = []
-        pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, default_name="warnings", warnings=warnings
-        )
-        self.assertEquals(
-            len(warnings), 22, "Found " + str(len(warnings)) + " warnings"
-        )
-
-
 class CalculateWithoutCalculationTest(unittest.TestCase):
     """
     Just checks that calculate field without calculation raises a PyXFormError.
