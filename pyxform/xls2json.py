@@ -878,24 +878,6 @@ def workbook_to_json(
             )
             raise PyXFormError(error_message)
 
-        if (
-            constants.LABEL not in row
-            and row.get(constants.MEDIA) is None
-            and question_type not in aliases.label_optional_types
-            and not row.get("bind", {}).get("calculate")
-            and not (
-                row.get("default")
-                and default_is_dynamic(row.get("default"), question_type)
-            )
-        ):
-            # TODO: Should there be a default label?
-            #      Not sure if we should throw warnings for groups...
-            #      Warnings can be ignored so I'm not too concerned
-            #      about false positives.
-            warnings.append(
-                row_format_string % row_number + " Question has no label: " + str(row)
-            )
-
         # Try to parse question as begin control statement
         # (i.e. begin loop/repeat/group):
         begin_control_parse = begin_control_regex.search(question_type)
@@ -909,6 +891,30 @@ def workbook_to_json(
                 # until an end command is encountered.
                 control_type = aliases.control[parse_dict["type"]]
                 control_name = question_name
+
+                # Check if the control item has a label, if applicable.
+                # This label check used to apply to all items, but no longer is
+                # relevant for questions since label nodes are added by default.
+                # There isn't an easy and neat place to put this besides here.
+                # Could potentially be simplified for control item cases.
+                if (
+                    constants.LABEL not in row
+                    and row.get(constants.MEDIA) is None
+                    and question_type not in aliases.label_optional_types
+                    and not row.get("bind", {}).get("calculate")
+                    and not (
+                        row.get("default")
+                        and default_is_dynamic(row.get("default"), question_type)
+                    )
+                ):
+                    # Row number, name, and type probably enough for user message.
+                    # Also means the error message text is stable for tests.
+                    msg_dict = {"name": row.get("name"), "type": row.get("type")}
+                    warnings.append(
+                        row_format_string % row_number
+                        + " %s has no label: " % control_type.capitalize()
+                        + str(msg_dict)
+                    )
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type

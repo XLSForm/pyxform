@@ -3,6 +3,7 @@
 Test XLSForm sheet names.
 """
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
+from pyxform.tests.utils import prep_for_xml_contains
 
 
 class InvalidSurveyColumnsTests(PyxformTestCase):
@@ -36,6 +37,32 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             ss_structure={"survey": [{"type": "text", "name": "q1"}]},
             errored=True,
             error__contains=["no label or hint"],
+        )
+
+    def test_label_node_added_when_hint_given_but_no_label_value(self):
+        """Should output a label node even if no label is specified."""
+        expected = """
+          <input ref="/data/a">
+            <label/>
+            <hint>h</hint>
+          </input>
+          <input ref="/data/b">
+            <label>l</label>
+          </input>
+          <input ref="/data/c">
+            <label ref="jr:itext('/data/c:label')"/>
+          </input>
+        """
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |      |      |       |              |      |
+            |        | type | name | label | media::image | hint |
+            |        | text | a    |       |              | h    |
+            |        | text | b    | l     |              |      |
+            |        | text | c    |       | m.png        |      |
+            """,
+            xml__contains=prep_for_xml_contains(expected),
         )
 
     def test_column_case(self):

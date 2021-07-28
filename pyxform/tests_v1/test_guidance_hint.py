@@ -75,12 +75,12 @@ class GuidanceHintTest(PyxformTestCase):
         """Test guidance_hint only."""
         self.assertPyxformXform(
             name="data",
-            errored=True,
             md="""
-            | survey |        |          |                              |
-            |        | type   |   name   | guidance_hint                |
-            |        | string |   name   | as shown on birth certificate|
+            | survey |        |      |                               |
+            |        | type   | name | guidance_hint                 |
+            |        | string | name | as shown on birth certificate |
             """,
+            errored=True,
             error__contains=["The survey element named 'name' has no label or hint."],
         )
 
@@ -88,12 +88,12 @@ class GuidanceHintTest(PyxformTestCase):
         """Test guidance_hint only in multiple languages."""
         self.assertPyxformXform(
             name="data",
-            errored=True,
             md="""
-            | survey |        |          |                              |                                     |
-            |        | type   |   name   | guidance_hint                | guidance_hint::French (fr)          |
-            |        | string |   name   | as shown on birth certificate| comme sur le certificat de naissance|
+            | survey |        |      |                              |                                      |
+            |        | type   | name | guidance_hint                | guidance_hint::French (fr)           |
+            |        | string | name | as shown on birth certificate| comme sur le certificat de naissance |
             """,  # noqa
+            errored=True,
             error__contains=["The survey element named 'name' has no label or hint."],
         )
 
