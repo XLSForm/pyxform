@@ -81,9 +81,7 @@ class TestWarnings(PyxformTestCase):
             |          | begin dancing | dancing |
             """,
             errored=True,
-            error__contains=[
-                "Unknown question type 'begin dancing'."
-            ]
+            error__contains=["Unknown question type 'begin dancing'."],
         )
 
     def test_warnings_for_unknown_control_group__no_name(self):
@@ -96,7 +94,5 @@ class TestWarnings(PyxformTestCase):
             |          | begin         | empty   |
             """,
             errored=True,
-            error__contains=[
-                "Unknown question type 'begin'."
-            ]
+            error__contains=["Unknown question type 'begin'."],
         )
