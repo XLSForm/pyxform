@@ -2,8 +2,8 @@ from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
 
 
 class TestWarnings(PyxformTestCase):
-    def test_warnings_count(self):
-        """Should raise an expected number of warnings."""
+    def test_warnings__count(self):
+        """Should raise an expected number of warnings for a diverse form."""
         # Converted from warnings.xls file for tests/xlsform_spec_test/WarningsTest
         md = """
         | survey   |                        |                         |                           |         |                    |              |       |       |
@@ -71,7 +71,7 @@ class TestWarnings(PyxformTestCase):
         ]
         self.assertListEqual(expected, warnings)
 
-    def test_warnings_for_unknown_control_group__with_name(self):
+    def test_warnings__unknown_control_group__with_name(self):
         """Should raise an error when an unknown control group is found."""
         self.assertPyxformXform(
             name="spec_test",
@@ -84,7 +84,7 @@ class TestWarnings(PyxformTestCase):
             error__contains=["Unknown question type 'begin dancing'."],
         )
 
-    def test_warnings_for_unknown_control_group__no_name(self):
+    def test_warnings__unknown_control_group__no_name(self):
         """Should raise an error when an unknown control group is found."""
         self.assertPyxformXform(
             name="spec_test",
