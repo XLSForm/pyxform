@@ -155,7 +155,7 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
             debug=False,
             errored=True,
             # some basic keywords that should be in the error:
-            error__contains=["choices", "name", "list name"],
+            error__contains=["choices", "name", "list_name"],
         )
 
     def test_clear_filename_error_message(self):

@@ -1130,8 +1130,8 @@ def workbook_to_json(
                         if similar is not None:
                             msg = msg + " " + similar
                         raise PyXFormError(
-                            msg + " Please ensure that the choices sheet has columns"
-                            " 'list name', 'name', and 'label' (or aliased column names)."
+                            msg + " Please ensure that the choices sheet has the"
+                            " mandatory columns 'list_name', 'name', and 'label'."
                         )
                     raise PyXFormError(
                         row_format_string % row_number
