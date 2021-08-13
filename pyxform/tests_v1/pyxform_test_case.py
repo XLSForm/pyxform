@@ -155,6 +155,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
           * title: (str)
           * run_odk_validate: (bool) when True, runs ODK Validate process
                 Default value = False because it slows down tests
+          * warnings: (list) a list to use for storing warnings for inspection.
         """
         debug = kwargs.get("debug", False)
         expecting_invalid_survey = kwargs.get("errored", False)

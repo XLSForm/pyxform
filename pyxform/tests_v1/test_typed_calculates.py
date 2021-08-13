@@ -76,9 +76,8 @@ class TypedCalculatesTest(PyxformTestCase):
 
         self.assertTrue(len(warnings) == 0)
 
-    def test_non_calculate_type_with_hint_and_no_calculation_warns(self):
+    def test_non_calculate_type_with_hint_and_no_calculation__no_warning(self):
         warnings = []
-
         self.md_to_pyxform_survey(
             """
             | survey |           |      |             |           |             |
@@ -89,9 +88,7 @@ class TypedCalculatesTest(PyxformTestCase):
             """,
             warnings=warnings,
         )
-
-        self.assertTrue(len(warnings) == 1)
-        self.assertTrue("Question has no label" in warnings[0])
+        self.assertTrue(len(warnings) == 0)
 
     def test_non_calculate_type_with_calculation_and_dynamic_default_warns(self):
         warnings = []
