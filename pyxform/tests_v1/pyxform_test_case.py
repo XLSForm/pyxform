@@ -10,7 +10,9 @@ import os
 import re
 import tempfile
 import xml.etree.ElementTree as ETree
+import xml.etree.ElementPath as EPath
 from unittest import TestCase
+from typing import TYPE_CHECKING
 
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
@@ -22,6 +24,11 @@ from pyxform.xls2json import workbook_to_json
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.DEBUG)
+
+
+if TYPE_CHECKING:
+    from typing import Dict
+    from xml.etree.ElementTree import Element
 
 
 class PyxformTestError(Exception):
@@ -119,6 +126,8 @@ class PyxformMarkdown(object):
 
 
 class PyxformTestCase(PyxformMarkdown, TestCase):
+    maxDiff = None
+
     def assertPyxformXform(self, **kwargs):
         """
         PyxformTestCase.assertPyxformXform() named arguments:
@@ -144,6 +153,12 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 must be set
           * xml__excludes: an array of strings which should not exist in the resulting
                xml. [xml|model|instance|itext]_excludes are also supported.
+          * [xml|model|instance|itext]__xpath_exact: A list of tuples where the
+               first tuple element is an XPath expression and the second tuple
+               element is a list of exact string match results that are expected.
+          * [xml|model|instance|itext]__xpath_count: A list of tuples where the
+               first tuple element is an XPath expression and the second tuple
+               element is the integer number of match results that are expected.
 
         optional other parameters passed to pyxform:
           * errored: (bool) if the xlsform is not supposed to compile,
@@ -163,6 +178,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
 
         run_odk_validate = kwargs.get("run_odk_validate", False)
         odk_validate_error__contains = kwargs.get("odk_validate_error__contains", [])
+        survey_valid = True
 
         try:
             if "md" in kwargs.keys():
@@ -182,8 +198,13 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             root = ETree.fromstring(xml.encode("utf-8"))
 
             # Ensure all namespaces are present, even if unused
+            survey_nsmap = survey.get_nsmap()
+            survey_nsmap_xpath = {
+                k.replace("xmlns", "").replace(":", ""): v
+                for k, v in survey_nsmap.items()
+            }
             final_nsmap = NSMAP.copy()
-            final_nsmap.update(survey.get_nsmap())
+            final_nsmap.update(survey_nsmap)
             root.attrib.update(final_nsmap)
 
             xml_nodes["xml"] = root
@@ -208,7 +229,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                     raise PyxformTestError("ODKValidateError was not raised")
 
         except PyXFormError as e:
-            survey = False
+            survey_valid = False
             errors = [unicode(e)]
             if debug:
                 logger.debug("<xml unavailable />")
@@ -225,10 +246,8 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 self.assertContains(
                     e.args[0], v_err, msg_prefix="odk_validate_error__contains"
                 )
-        else:
-            survey = True
 
-        if survey:
+        if survey_valid:
 
             def _check(keyword, verb):
                 verb_str = "%s__%s" % (keyword, verb)
@@ -245,12 +264,35 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                     )
 
                 def check_content(content):
+                    if not content:
+                        self.fail(msg="No '{}' found in document.".format(keyword))
+                    cstr = ETree.tostring(content, encoding="unicode")
                     text_arr = kwargs[verb_str]
                     for i in text_arr:
                         if verb == "contains":
-                            self.assertContains(content, i, msg_prefix=keyword)
-                        else:
-                            self.assertNotContains(content, i, msg_prefix=keyword)
+                            self.assertContains(cstr, i, msg_prefix=keyword)
+                        elif verb == "excludes":
+                            self.assertNotContains(cstr, i, msg_prefix=keyword)
+                        elif verb == "xpath_exact":
+                            observed = [
+                                stringify_xml(x, survey_nsmap_xpath)
+                                for x in EPath.iterfind(
+                                    elem=content,
+                                    path=i[0],
+                                    namespaces=survey_nsmap_xpath,
+                                )
+                            ]
+                            self.assertListEqual(i[1], observed)
+                        elif verb == "xpath_count":
+                            observed = [
+                                stringify_xml(x, survey_nsmap_xpath)
+                                for x in EPath.iterfind(
+                                    elem=content,
+                                    path=i[0],
+                                    namespaces=survey_nsmap_xpath,
+                                )
+                            ]
+                            self.assertEqual(i[1], len(observed))
 
                 return verb_str, check_content
 
@@ -263,16 +305,12 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             reorder_attributes(root)
 
             for code in ["xml", "instance", "model", "itext"]:
-                for verb in ["contains", "excludes"]:
+                for verb in ["contains", "excludes", "xpath_exact", "xpath_count"]:
                     (code__str, checker) = _check(code, verb)
                     if kwargs.get(code__str):
-                        checker(
-                            ETree.tostring(xml_nodes[code], encoding="utf-8").decode(
-                                "utf-8"
-                            )
-                        )
+                        checker(xml_nodes[code])
 
-        if survey is False and expecting_invalid_survey is False:
+        if not survey_valid and not expecting_invalid_survey:
             raise PyxformTestError(
                 "Expected valid survey but compilation failed. "
                 "Try correcting the error with 'debug=True', "
@@ -280,7 +318,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 "and or optionally 'error__contains=[...]'"
                 "\nError(s): " + "\n".join(errors)
             )
-        elif survey and expecting_invalid_survey:
+        elif survey_valid and expecting_invalid_survey:
             raise PyxformTestError("Expected survey to be invalid.")
 
         if "error__contains" in kwargs:
@@ -362,3 +400,45 @@ def reorder_attributes(root):
             attribs = sorted(attrib.items())
             attrib.clear()
             attrib.update(attribs)
+
+
+def stringify_xml(node: "Element", namespaces: "Dict[str, str]"):
+    """
+    Convert an element node to string, retaining namespace prefixes on names.
+
+    ElementTree puts namespace declarations in the output nodes. In order to
+    make an exact node fragment string comparison, the declarations need to be
+    removed but the prefixes need to remain.
+
+    For example a document has an element "x:localname" which ETree reads as
+    "{uri}localname". The output would have a namespace declaration like
+    'xmlns:x="http://etc"'. This keeps "x:localname" without the declaration.
+
+    :param node: The ETree XML Element to process.
+    :param namespaces: Namespaces known to be used by the XML document.
+    """
+
+    def swap_ns(name):
+        for ns, uri in namespaces.items():
+            if ns != "":
+                ns += ":"
+            if uri in name:
+                name = name.replace("{" + uri + "}", ns)
+        return name
+
+    def strip_ns(n):
+        if hasattr(n, "tag"):
+            n.tag = swap_ns(name=n.tag)
+        if hasattr(n, "attrib"):
+            keys = ((k, swap_ns(name=k)) for k in n.attrib.keys())
+            n.attrib = {new: n.attrib[old] for old, new in keys}
+
+    def strip_ns_recurse(_node):
+        strip_ns(_node)
+        for child in _node:
+            strip_ns_recurse(child)
+
+    strip_ns_recurse(node)
+    reorder_attributes(node)  # Required to match attribute order.
+    enc = ETree.tostring(node, encoding="unicode")
+    return enc.strip().replace(" />", "/>")
