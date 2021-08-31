@@ -42,6 +42,9 @@ except ImportError:
     from functools32 import lru_cache
 
 
+RE_PULLDATA = re.compile(r"(pulldata\s*\(\s*)(.*?),")
+
+
 def register_nsmap():
     """Function to register NSMAP namespaces with ETree"""
     for prefix, uri in NSMAP.items():
@@ -400,20 +403,19 @@ class Survey(Section):
                 instance=node("instance", id=file_id, src=uri),
             )
 
-        pulldata_calls = get_pulldata_functions(element)
-        if len(pulldata_calls) > 0:
+        pulldata_usages = get_pulldata_functions(element)
+        if len(pulldata_usages) > 0:
             pulldata_instances = []
-            for pulldata_call in pulldata_calls:
-                pulldata_arguments = re.sub(".*pulldata\s*\(\s*", "", pulldata_call)
-                parsed_pulldata_arguments = pulldata_arguments.split(",")
-                if len(parsed_pulldata_arguments) > 0:
-                    first_argument = parsed_pulldata_arguments[0]
-                    first_argument = (
-                        first_argument.replace("'", "").replace('"', "").strip()
-                    )
-                    pulldata_instances.append(
-                        get_instance_info(element, first_argument)
-                    )
+            for usage in pulldata_usages:
+                for call_match in re.finditer(RE_PULLDATA, usage):
+                    groups = call_match.groups()
+                    if len(groups) == 2:
+                        first_argument = (  # first argument to pulldata()
+                            groups[1].replace("'", "").replace('"', "").strip()
+                        )
+                        pulldata_instances.append(
+                            get_instance_info(element, first_argument)
+                        )
             return pulldata_instances
         return None
 

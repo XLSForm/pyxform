@@ -6,6 +6,7 @@ See also test_external_instances_for_selects
 """
 from pyxform.errors import PyXFormError
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase, PyxformTestError
+from textwrap import dedent
 
 
 class ExternalInstanceTests(PyxformTestCase):
@@ -406,6 +407,89 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | text   | Part_ID | Participant ID | . > pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
             """,
             xml__contains=["""<instance id="ID" src="jr://file-csv/ID.csv"/>"""],
+        )
+
+    def test_pulldata_calculate_multi_line_expression__one_call(self):
+        """Should find the pulldata instance name in a multi-line expression."""
+        qd = """\
+          if(${a}, 
+          pulldata('my_data_b', 'my_ref', 'metainstanceID', ${b}),
+          (count-selected(${c})))
+        """
+        self.assertPyxformXform(
+            # Can't use md here because of multi-line calculate expression.
+            ss_structure={
+                "survey": [
+                    {"type": "calculate", "name": "a", "label": "QA", "calculate": "1"},
+                    {"type": "calculate", "name": "b", "label": "QB", "calculate": "1"},
+                    {"type": "calculate", "name": "c", "label": "QC", "calculate": "1"},
+                    {
+                        "type": "calculate",
+                        "name": "d",
+                        "label": "QD",
+                        "calculate": dedent(qd),
+                    },
+                ]
+            },
+            xml__contains=[
+                """<instance id="my_data_b" src="jr://file-csv/my_data_b.csv"/>"""
+            ],
+            # Is Validate OK with the multi-line expression.
+            run_odk_validate=True,
+        )
+
+    def test_pulldata_calculate_multi_line_expression__multiple_calls(self):
+        """Should find the pulldata instance names in a multi-line expression."""
+        qd = """\
+          if(${a}, 
+          pulldata('my_data_b', 'my_ref', 'metainstanceID', ${b}),
+          pulldata('my_data_c', 'my_ref', 'metainstanceID', ${c}))
+        """
+        self.assertPyxformXform(
+            # Can't use md here because of multi-line calculate expression.
+            ss_structure={
+                "survey": [
+                    {"type": "calculate", "name": "a", "label": "QA", "calculate": "1"},
+                    {"type": "calculate", "name": "b", "label": "QB", "calculate": "1"},
+                    {"type": "calculate", "name": "c", "label": "QC", "calculate": "1"},
+                    {
+                        "type": "calculate",
+                        "name": "d",
+                        "label": "QD",
+                        "calculate": dedent(qd),
+                    },
+                ]
+            },
+            xml__contains=[
+                """<instance id="my_data_b" src="jr://file-csv/my_data_b.csv"/>""",
+                """<instance id="my_data_c" src="jr://file-csv/my_data_c.csv"/>""",
+            ],
+            # Is Validate OK with the multi-line expression and multiple instances.
+            run_odk_validate=True,
+        )
+
+    def test_pulldata_calculate_single_line_expression__multiple_calls(self):
+        """Should find all pulldata instance names in an expression."""
+        qd = (
+            "if(${a}, pulldata('my_data_b', 'my_ref', 'metainstanceID', ${b}), "
+            "pulldata('my_data_c', 'my_ref', 'metainstanceID', ${c}))"
+        )
+        self.assertPyxformXform(
+            # Not using md here due to very long calculate expression.
+            ss_structure={
+                "survey": [
+                    {"type": "calculate", "name": "a", "label": "QA", "calculate": "1"},
+                    {"type": "calculate", "name": "b", "label": "QB", "calculate": "1"},
+                    {"type": "calculate", "name": "c", "label": "QC", "calculate": "1"},
+                    {"type": "calculate", "name": "d", "label": "QD", "calculate": qd},
+                ]
+            },
+            xml__contains=[
+                """<instance id="my_data_b" src="jr://file-csv/my_data_b.csv"/>""",
+                """<instance id="my_data_c" src="jr://file-csv/my_data_c.csv"/>""",
+            ],
+            # Is Validate OK with the multiple instances.
+            run_odk_validate=True,
         )
 
     def test_external_instance_pulldata_readonly(self):
