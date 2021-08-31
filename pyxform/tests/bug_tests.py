@@ -151,24 +151,6 @@ class DefaultTimeTest(XFormTestCase):
                 self.assertXFormEqual(expected_file.read(), actual_file.read())
 
 
-class CascadeOldFormat(unittest.TestCase):
-    maxDiff = None
-
-    def runTest(self):
-        filename = "cascades_old.xls"
-        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
-        # Get the xform output path:
-        root_filename, ext = os.path.splitext(filename)
-        output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
-        # Do the conversion:
-        warnings = []
-        json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, default_name="cascades_old", warnings=warnings
-        )
-        survey = pyxform.create_survey_element_from_dict(json_survey)
-        survey.print_xform_to_file(output_path, warnings=warnings)
-
-
 class ValidateWrapper(unittest.TestCase):
     maxDiff = None
 
@@ -185,27 +167,6 @@ class ValidateWrapper(unittest.TestCase):
         )
         survey = pyxform.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(output_path, warnings=warnings)
-
-
-class CascadeOldFormatIndexError(unittest.TestCase):
-    maxDiff = None
-
-    def runTest(self):
-        filename = "cascades_old_with_no_cascade_sheet.xls"
-        path_to_excel_file = os.path.join(DIR, "bug_example_xls", filename)
-        # Get the xform output path:
-        root_filename, ext = os.path.splitext(filename)
-        output_path = os.path.join(DIR, "test_output", root_filename + ".xml")
-        # Do the conversion:
-        warnings = []
-        with self.assertRaises(PyXFormError):
-            json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file,
-                default_name="cascades_old_with_no_cascade_sheet",
-                warnings=warnings,
-            )
-            survey = pyxform.create_survey_element_from_dict(json_survey)
-            survey.print_xform_to_file(output_path, warnings=warnings)
 
 
 class EmptyStringOnRelevantColumnTest(unittest.TestCase):

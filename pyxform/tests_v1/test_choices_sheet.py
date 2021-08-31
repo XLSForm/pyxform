@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
-from pyxform.utils import unicode
 
 
 class ChoicesSheetTest(PyxformTestCase):

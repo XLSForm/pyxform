@@ -3,20 +3,35 @@
 A Python script to convert excel files into JSON.
 """
 from __future__ import print_function, unicode_literals
-
+from collections import Counter
+from pyxform import aliases, constants
+from pyxform.errors import PyXFormError
+from pyxform.utils import (
+    basestring,
+    is_valid_xml_tag,
+    unicode,
+    default_is_dynamic,
+    levenshtein_distance,
+)
+from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
+from typing import TYPE_CHECKING
 import codecs
 import json
 import os
 import re
 import sys
-from collections import Counter
 
-from pyxform import aliases, constants
-from pyxform.errors import PyXFormError
-from pyxform.utils import basestring, is_valid_xml_tag, unicode, default_is_dynamic
-from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
+
+if TYPE_CHECKING:
+    from typing import Any, Dict, KeysView, Optional
+
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
+_MSG_SUPPRESS_SPELLING = (
+    " If you do not mean to include a sheet, to suppress this message, "
+    "prefix the sheet name with an underscore. For example 'setting' "
+    "becomes '_setting'."
+)
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -298,13 +313,41 @@ def process_range_question_type(row):
     return new_dict
 
 
+def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
+    """
+    Find possible sheet name misspellings to warn the user about.
+
+    It's possible that this will warn about sheet names for sheets that have
+    auxilliary metadata that is not meant for processing by pyxform. For
+    example the "osm" sheet name may be similar to many other initialisms.
+
+    :param key: The sheet name to look for.
+    :param keys: The workbook sheet names.
+    """
+    candidates = tuple(
+        _k  # thanks to black
+        for _k in keys
+        if 2 >= levenshtein_distance(_k.lower(), key)
+        and _k not in constants.SUPPORTED_SHEET_NAMES
+        and not _k.startswith("_")
+    )
+    if 0 < len(candidates):
+        msg = (
+            "When looking for a sheet named '{k}', the following sheets with "
+            "similar names were found: {c}."
+        ).format(k=key, c=str(", ".join(("'{}'".format(c) for c in candidates))))
+        return msg
+    else:
+        return None
+
+
 def workbook_to_json(
     workbook_dict,
     form_name=None,
     fallback_form_name=None,
     default_language="default",
     warnings=None,
-):
+) -> "Dict[str, Any]":
     """
     workbook_dict -- nested dictionaries representing a spreadsheet.
                     should be similar to those returned by xls_to_dict
@@ -327,14 +370,22 @@ def workbook_to_json(
     if warnings is None:
         warnings = []
     is_valid = False
+    # Sheet names should be case-insensitive
     workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
+    workbook_keys = workbook_dict.keys()
+    if constants.SURVEY not in workbook_dict:
+        msg = "You must have a sheet named '{k}'. ".format(k=constants.SURVEY)
+        similar = find_sheet_misspellings(key=constants.SURVEY, keys=workbook_keys)
+        if similar is not None:
+            msg += similar
+        raise PyXFormError(msg)
     for row in workbook_dict.get(constants.SURVEY, []):
         is_valid = "type" in [z.lower() for z in row]
         if is_valid:
             break
     if not is_valid:
         raise PyXFormError(
-            "The survey sheet is either empty or missing important " "column headers."
+            "The survey sheet is either empty or missing important column headers."
         )
 
     row_format_string = "[row : %s]"
@@ -353,6 +404,11 @@ def workbook_to_json(
     # Break the spreadsheet dict into easier to access objects
     # (settings, choices, survey_sheet):
     # ########## Settings sheet ##########
+    k = constants.SETTINGS
+    if k not in workbook_dict:
+        similar = find_sheet_misspellings(key=k, keys=workbook_keys)
+        if similar is not None:
+            warnings.append(similar + _MSG_SUPPRESS_SPELLING)
     settings_sheet_headers = workbook_dict.get(constants.SETTINGS, [])
     try:
         if (
@@ -411,7 +467,6 @@ def workbook_to_json(
     json_dict.update(settings)
 
     # ########## External Choices sheet ##########
-
     external_choices_sheet = workbook_dict.get(constants.EXTERNAL_CHOICES, [])
     for choice_item in external_choices_sheet:
         replace_smart_quotes_in_dict(choice_item)
@@ -424,37 +479,13 @@ def workbook_to_json(
     )
 
     # ########## Choices sheet ##########
-    # Columns and "choices and columns" sheets are deprecated,
-    # but we combine them with the choices sheet for backwards-compatibility.
-    choices_and_columns_sheet = workbook_dict.get(constants.CHOICES_AND_COLUMNS, {})
-    choices_and_columns_sheet = dealias_and_group_headers(
-        choices_and_columns_sheet,
-        aliases.list_header,
-        use_double_colons,
-        default_language,
-    )
-
-    columns_sheet = workbook_dict.get(constants.COLUMNS, [])
-    columns_sheet = dealias_and_group_headers(
-        columns_sheet, aliases.list_header, use_double_colons, default_language
-    )
-
     choices_sheet = workbook_dict.get(constants.CHOICES, [])
     for choice_item in choices_sheet:
         replace_smart_quotes_in_dict(choice_item)
-
     choices_sheet = dealias_and_group_headers(
         choices_sheet, aliases.list_header, use_double_colons, default_language
     )
-    # ########## Cascading Select sheet ###########
-    cascading_choices = workbook_dict.get(constants.CASCADING_CHOICES, [])
-    if len(cascading_choices):
-        if "choices" in cascading_choices[0]:
-            choices_sheet = choices_sheet + cascading_choices[0]["choices"]
-
-    combined_lists = group_dictionaries_by_key(
-        choices_and_columns_sheet + choices_sheet + columns_sheet, constants.LIST_NAME
-    )
+    combined_lists = group_dictionaries_by_key(choices_sheet, constants.LIST_NAME)
 
     choices = combined_lists
     # Make sure all the options have the required properties:
@@ -524,10 +555,6 @@ def workbook_to_json(
                             )  # noqa
 
     # ########## Survey sheet ###########
-    if constants.SURVEY not in workbook_dict:
-        raise PyXFormError(
-            "You must have a sheet named (case-sensitive): " + constants.SURVEY
-        )
     survey_sheet = workbook_dict[constants.SURVEY]
     # Process the headers:
     clean_text_values_enabled = aliases.yes_no.get(
@@ -540,6 +567,7 @@ def workbook_to_json(
     )
     survey_sheet = dealias_types(survey_sheet)
 
+    # No spell check for OSM sheet (infrequently used, many spurious matches).
     osm_sheet = dealias_and_group_headers(
         workbook_dict.get(constants.OSM, []), aliases.list_header, True
     )
@@ -1070,6 +1098,19 @@ def workbook_to_json(
                     select_type == "select one external"
                     and list_name not in external_choices
                 ):
+                    if not external_choices:
+                        k = constants.EXTERNAL_CHOICES
+                        msg = (
+                            "There should be an external_choices sheet in this xlsform."
+                        )
+                        similar = find_sheet_misspellings(key=k, keys=workbook_keys)
+                        if similar is not None:
+                            msg = msg + " " + similar
+                        raise PyXFormError(
+                            msg
+                            + " Please ensure that the external_choices sheet has columns"
+                            " 'list name', and 'name'."
+                        )
                     raise PyXFormError(
                         row_format_string % row_number
                         + "List name not in external choices sheet: "
@@ -1083,11 +1124,14 @@ def workbook_to_json(
                     and not re.match(r"\$\{(.*?)\}", list_name)
                 ):
                     if not choices:
+                        k = constants.CHOICES
+                        msg = "There should be a choices sheet in this xlsform."
+                        similar = find_sheet_misspellings(key=k, keys=workbook_keys)
+                        if similar is not None:
+                            msg = msg + " " + similar
                         raise PyXFormError(
-                            "There should be a choices sheet in this xlsform."
-                            " Please ensure that the choices sheet name is "
-                            "all in small caps and has columns 'list name', "
-                            "'name', and 'label' (or aliased column names)."
+                            msg + " Please ensure that the choices sheet has the"
+                            " mandatory columns 'list_name', 'name', and 'label'."
                         )
                     raise PyXFormError(
                         row_format_string % row_number
@@ -1115,31 +1159,6 @@ def workbook_to_json(
                 specify_other_question = None
                 if parse_dict.get("specify_other") is not None:
                     select_type += " or specify other"
-                    # With this code we no longer need to handle or_other
-                    # questions in survey builder.
-                    # However, it depends on being able to use choice filters
-                    # and xpath expressions that return empty sets.
-                    # choices[list_name].append(
-                    # {
-                    #     'name': 'other',
-                    #     'label': {default_language : 'Other'},
-                    #     'orOther': 'true',
-                    # })
-                    # or_other_xpath = 'isNull(orOther)'
-                    # if 'choice_filter' in row:
-                    #   row['choice_filter'] += ' or ' + or_other_xpath
-                    # else:
-                    #   row['choice_filter'] = or_other_xpath
-
-                    # specify_other_question = \
-                    # {
-                    #       'type':'text',
-                    #       'name': row['name'] + '_specify_other',
-                    #       'label':
-                    #        'Specify Other for:\n"' + row['label'] + '"',
-                    #       'bind' : {'relevant':
-                    #                "selected(../%s, 'other')" % row['name']},
-                    #     }
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type

@@ -33,5 +33,7 @@ class MissingHeaders(PyxformTestCase):
             |         | list            | option b | b    |
             """,
             errored=True,
-            error__contains=["has columns 'list name', 'name', and 'label'"],
+            error__contains=[
+                "has the mandatory columns 'list_name', 'name', and 'label'"
+            ],
         )
