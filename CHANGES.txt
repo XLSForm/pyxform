@@ -1,5 +1,20 @@
 Pyxform Changelog
 
+# v1.6.0, 2021-09-01
+
+* #547 Fix parsing of (multiple) pulldata calls in a (multi-line) expression
+  * Lindsay Stevens @lindsay-stevens (ODK)
+* #545 Do not warn about labels when using an unlabeled groups
+  * Yaw Anokwa @yanokwa (ODK)
+* #544 Levenshtein distance warning for sheet name misspellings
+  * Lindsay Stevens @lindsay-stevens (ODK)
+* #543 Output empty label instead of omitting it
+  * Lindsay Stevens @lindsay-stevens (ODK)
+* #541 Fix windows test failures related to temp file creation by Validate
+  * Lindsay Stevens @lindsay-stevens (ODK)
+* #540 Remove Java version check
+  * Lindsay Stevens @lindsay-stevens (ODK)
+
 # v1.5.1, 2021-05-18
 
 * #535 Don't check for dynamic label if there is no label
