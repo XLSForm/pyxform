@@ -60,6 +60,7 @@ CHOICES = "choices"
 LIST_NAME = "list name"
 CASCADING_SELECT = "cascading_select"
 TABLE_LIST = "table-list"  # hyphenated because it goes in appearance, and convention for appearance column is dashes # noqa
+FIELD_LIST = "field-list"
 
 SURVEY = "survey"
 SETTINGS = "settings"
