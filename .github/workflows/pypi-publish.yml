@@ -18,8 +18,8 @@ jobs:
     - name: Install the development and release requirements
       run: |
         python -m pip install --upgrade pip
+        pip install wheel twine
         pip install -r requirements.pip
-        pip install build wheel twine
     - name: Cleanup build and dist folders
       run: rm -rf build dist pyxform.egg-info
     - name: Prepare sdist and bdist_wheel distributions
