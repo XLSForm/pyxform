@@ -1,7 +1,8 @@
 name: Publish PyPI package
-on:
-  release:
-    types: [published]
+on: push
+# on:
+#   release:
+#     types: [published]
 
 jobs:
   deploy:
@@ -23,8 +24,8 @@ jobs:
       run: rm -rf build dist pyxform.egg-info
     - name: Prepare sdist and bdist_wheel distributions
       run: python setup.py sdist bdist_wheel
-    - name: Publish release to PyPI with twine
-      run: twine upload dist/pyxform-*-py2.py3-none-any.whl dist/pyxform-*.tar.gz
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+    # - name: Publish release to PyPI with twine
+    #   run: twine upload dist/pyxform-*-py2.py3-none-any.whl dist/pyxform-*.tar.gz
+    #   env:
+    #     TWINE_USERNAME: __token__
+    #     TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
