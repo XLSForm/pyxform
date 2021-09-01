@@ -1,7 +1,11 @@
-name: Publish PyPI package
+name: PyPI
 on:
+  push:
+    branches: [ master ]
   release:
-    types: [published]
+    types: [ published ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   deploy:
@@ -24,6 +28,7 @@ jobs:
     - name: Prepare sdist and bdist_wheel distributions
       run: python setup.py sdist bdist_wheel
     - name: Publish release to PyPI with twine
+      if: github.repository == 'xlsform/pyxform' and github.event_name == 'release'
       run: twine upload dist/pyxform-*-py2.py3-none-any.whl dist/pyxform-*.tar.gz
       env:
         TWINE_USERNAME: __token__
