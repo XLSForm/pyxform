@@ -5,9 +5,11 @@ PyxformTestCase base class using markdown to define the XLSForm.
 from __future__ import print_function, unicode_literals
 
 import codecs
+from contextlib import contextmanager
 import logging
 import os
 import re
+import sys
 import tempfile
 import xml.etree.ElementTree as ETree
 import xml.etree.ElementPath as EPath
@@ -265,6 +267,17 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                         % (bad_kwarg, good_kwarg)
                     )
 
+                def process_xpath(content: "Element", xpath: str):
+                    with xpath_tokenizer_swap():
+                        return [
+                            stringify_xml(x, survey_nsmap_xpath)
+                            for x in EPath.iterfind(
+                                elem=content,
+                                path=xpath,
+                                namespaces=survey_nsmap_xpath,
+                            )
+                        ]
+
                 def check_content(content):
                     if not content:
                         self.fail(msg="No '{}' found in document.".format(keyword))
@@ -276,24 +289,10 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                         elif verb == "excludes":
                             self.assertNotContains(cstr, i, msg_prefix=keyword)
                         elif verb == "xpath_exact":
-                            observed = [
-                                stringify_xml(x, survey_nsmap_xpath)
-                                for x in EPath.iterfind(
-                                    elem=content,
-                                    path=i[0],
-                                    namespaces=survey_nsmap_xpath,
-                                )
-                            ]
+                            observed = process_xpath(content=content, xpath=i[0])
                             self.assertListEqual(i[1], observed)
                         elif verb == "xpath_count":
-                            observed = [
-                                stringify_xml(x, survey_nsmap_xpath)
-                                for x in EPath.iterfind(
-                                    elem=content,
-                                    path=i[0],
-                                    namespaces=survey_nsmap_xpath,
-                                )
-                            ]
+                            observed = process_xpath(content=content, xpath=i[0])
                             self.assertEqual(i[1], len(observed))
 
                 return verb_str, check_content
@@ -468,3 +467,50 @@ def stringify_xml(node: "Element", namespaces: "Dict[str, str]"):
     reorder_attributes(node)  # Required to match attribute order.
     enc = ETree.tostring(node, encoding="unicode")
     return enc.strip().replace(" />", "/>")
+
+
+def xpath_tokenizer__v3_8(pattern, namespaces=None):
+    """
+    Copied verbatim from CPython 3.8 source, for 3.7 backwards compatibility.
+
+    https://github.com/python/cpython/blob/5a42a49477cd601d67d81483f9589258dccb14b1/Lib/xml/etree/ElementPath.py#L73-L94
+    """
+    default_namespace = namespaces.get('') if namespaces else None
+    parsing_attribute = False
+    for token in EPath.xpath_tokenizer_re.findall(pattern):
+        ttype, tag = token
+        if tag and tag[0] != "{":
+            if ":" in tag:
+                prefix, uri = tag.split(":", 1)
+                try:
+                    if not namespaces:
+                        raise KeyError
+                    yield ttype, "{%s}%s" % (namespaces[prefix], uri)
+                except KeyError:
+                    raise SyntaxError("prefix %r not found in prefix map" % prefix) from None
+            elif default_namespace and not parsing_attribute:
+                yield ttype, "{%s}%s" % (default_namespace, tag)
+            else:
+                yield token
+            parsing_attribute = False
+        else:
+            yield token
+            parsing_attribute = ttype == '@'
+
+
+@contextmanager
+def xpath_tokenizer_swap():
+    """
+    If on Python < 3.8, swap the ElementPath xpath_tokenizer to the 3.8 one.
+
+    See https://bugs.python.org/issue28238
+    The relevant fix for pyxform is insertion of default namespace to tag name.
+    """
+    xpath_tokenizer__epath = EPath.xpath_tokenizer
+    try:
+        if sys.version_info < (3, 8, 0):
+            EPath.xpath_tokenizer = xpath_tokenizer__v3_8
+        yield
+    finally:
+        if sys.version_info < (3, 8, 0):
+            EPath.xpath_tokenizer = xpath_tokenizer__epath
