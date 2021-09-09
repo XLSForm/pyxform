@@ -16,7 +16,7 @@ class TestWarnings(PyxformTestCase):
         |          | integer                | a_integer               |                           | integer |                    |              |       |       |
         |          | decimal                | a_decimal               |                           | decimal |                    |              |       |       |
         |          | begin repeat           | repeat_test             |                           |         |                    |              |       |       |
-        |          | begin group            | group_test              |                           |         | field-list         |              |       |       |
+        |          | begin group            | group_test              |                           |         |                    |              |       |       |
         |          | text                   | required_text           | required_text             |         |                    |              |       |       |
         |          | select_multiple yes_no | select_multiple_test    | select multiple test      |         | minimal            |              |       |       |
         |          | end group              | adsaf                   |                           |         |                    |              |       |       |

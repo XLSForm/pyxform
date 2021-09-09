@@ -147,10 +147,12 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         one or many of these string "matchers":
           * xml__contains: an array of strings which exist in the
                 resulting xml. [xml|model|instance|itext]_excludes are also supported.
-          * error__contains: a list of strings which should exist in
-                the error
-          * odk_validate_error__contains: list of strings; run_odk_validate
-                must be set
+          * error__contains: a list of strings which should exist in the error
+          * error__not_contains: a list of strings which should not exist in the error
+          * odk_validate_error__contains: list of strings; run_odk_validate must be set
+          * warning__contains: a list of strings which should exist in the warnings
+          * warning__not_contains: a list of strings which should not exist in the warnings
+          * warnings_count: the number of expected warning messages
           * xml__excludes: an array of strings which should not exist in the resulting
                xml. [xml|model|instance|itext]_excludes are also supported.
           * [xml|model|instance|itext]__xpath_exact: A list of tuples where the
@@ -184,12 +186,12 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             if "md" in kwargs.keys():
                 kwargs = self._autoname_inputs(kwargs)
                 survey = self.md_to_pyxform_survey(
-                    kwargs.get("md"), kwargs, warnings=warnings,
+                    kwargs.get("md"), kwargs, warnings=warnings
                 )
             elif "ss_structure" in kwargs.keys():
                 kwargs = self._autoname_inputs(kwargs)
                 survey = self._ss_structure_to_pyxform_survey(
-                    kwargs.get("ss_structure"), kwargs
+                    kwargs.get("ss_structure"), kwargs, warnings=warnings,
                 )
             else:
                 survey = kwargs.get("survey")
@@ -321,10 +323,34 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         elif survey_valid and expecting_invalid_survey:
             raise PyxformTestError("Expected survey to be invalid.")
 
-        if "error__contains" in kwargs:
-            joined_error = "\n".join(errors)
-            for text in kwargs["error__contains"]:
-                self.assertContains(joined_error, text, msg_prefix="error__contains")
+        search_test_kwargs = (
+            "error__contains",
+            "error__not_contains",
+            "warnings__contains",
+            "warnings__not_contains",
+        )
+        for k in search_test_kwargs:
+            if k not in kwargs:
+                continue
+            if k.endswith("__contains"):
+                assertion = self.assertContains
+            elif k.endswith("__not_contains"):
+                assertion = self.assertNotContains
+            else:
+                raise PyxformTestError("Unexpected search test kwarg: {}".format(k))
+            if k.startswith("error"):
+                joined = "\n".join(errors)
+            elif k.startswith("warnings"):
+                joined = "\n".join(warnings)
+            else:
+                raise PyxformTestError("Unexpected search test kwarg: {}".format(k))
+            for text in kwargs[k]:
+                assertion(joined, text, msg_prefix=k)
+        if "warnings_count" in kwargs:
+            c = kwargs.get("warnings_count")
+            if not isinstance(c, int):
+                PyxformTestError("warnings_count must be an integer.")
+            self.assertEqual(c, len(warnings))
 
     @staticmethod
     def _assert_contains(content, text, msg_prefix):

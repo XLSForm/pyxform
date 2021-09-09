@@ -8,7 +8,6 @@ Test xls2xform module.
 
 import argparse
 import logging
-import os
 from unittest import TestCase
 
 import pyxform

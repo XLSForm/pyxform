@@ -13,7 +13,6 @@ from pyxform.utils import (
     node,
     unicode,
     default_is_dynamic,
-    BRACKETED_TAG_REGEX,
     has_dynamic_label,
 )
 

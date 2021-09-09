@@ -273,7 +273,8 @@ def default_is_dynamic(element_default, element_type=None):
     return any(s in element_default for s in dynamic_markers)
 
 
-# If the first or second choice label includes a reference, we must use itext. Check the first two choices in case first is something like "Other".
+# If the first or second choice label includes a reference, we must use itext.
+# Check the first two choices in case first is something like "Other".
 def has_dynamic_label(choice_list, multi_language):
     if not multi_language:
         for i in range(0, min(2, len(choice_list))):
@@ -284,3 +285,51 @@ def has_dynamic_label(choice_list, multi_language):
             ):
                 return True
     return False
+
+
+def levenshtein_distance(a: str, b: str) -> int:
+    """
+    Calculate Levenshtein distance between two strings.
+
+    A Python translation of the "iterative with two matrix rows" algorithm from
+    Wikipedia: https://en.wikipedia.org/wiki/Levenshtein_distance
+
+    :param a: The first string to compare.
+    :param b: The second string to compare.
+    :return:
+    """
+    m = len(a)
+    n = len(b)
+
+    # create two work vectors of integer distances
+    v1 = [0 for i in range(0, n + 1)]
+
+    # initialize v0 (the previous row of distances)
+    # this row is A[0][i]: edit distance for an empty s
+    # the distance is just the number of characters to delete from t
+    v0 = [i for i in range(0, n + 1)]
+
+    for i in range(0, m):
+        # calculate v1 (current row distances) from the previous row v0
+
+        # first element of v1 is A[i+1][0]
+        #   edit distance is delete (i+1) chars from s to match empty t
+        v1[0] = i + 1
+
+        # use formula to fill in the rest of the row
+        for j in range(0, n):
+            # calculating costs for A[i+1][j+1]
+            deletion_cost = v0[j + 1] + 1
+            insertion_cost = v1[j] + 1
+            if a[i] == b[j]:
+                substitution_cost = v0[j]
+            else:
+                substitution_cost = v0[j] + 1
+
+            v1[j + 1] = min((deletion_cost, insertion_cost, substitution_cost))
+
+        # copy v1 (current row) to v0 (previous row) for next iteration
+        # since data in v1 is always invalidated, a swap without copy could be more efficient
+        v0 = copy.copy(v1)
+    # after the last swap, the results of v1 are now in v0
+    return v0[n]
