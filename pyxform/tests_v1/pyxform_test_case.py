@@ -272,9 +272,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                         return [
                             stringify_xml(x, survey_nsmap_xpath)
                             for x in EPath.iterfind(
-                                elem=content,
-                                path=xpath,
-                                namespaces=survey_nsmap_xpath,
+                                elem=content, path=xpath, namespaces=survey_nsmap_xpath,
                             )
                         ]
 
@@ -471,11 +469,12 @@ def stringify_xml(node: "Element", namespaces: "Dict[str, str]"):
 
 def xpath_tokenizer__v3_8(pattern, namespaces=None):
     """
-    Copied verbatim from CPython 3.8 source, for 3.7 backwards compatibility.
+    Copied from CPython 3.8 source, for 3.7 backwards compatibility.
 
+    Copy is verbatim besides some Black reformatting.
     https://github.com/python/cpython/blob/5a42a49477cd601d67d81483f9589258dccb14b1/Lib/xml/etree/ElementPath.py#L73-L94
     """
-    default_namespace = namespaces.get('') if namespaces else None
+    default_namespace = namespaces.get("") if namespaces else None
     parsing_attribute = False
     for token in EPath.xpath_tokenizer_re.findall(pattern):
         ttype, tag = token
@@ -487,7 +486,9 @@ def xpath_tokenizer__v3_8(pattern, namespaces=None):
                         raise KeyError
                     yield ttype, "{%s}%s" % (namespaces[prefix], uri)
                 except KeyError:
-                    raise SyntaxError("prefix %r not found in prefix map" % prefix) from None
+                    raise SyntaxError(
+                        "prefix %r not found in prefix map" % prefix
+                    ) from None
             elif default_namespace and not parsing_attribute:
                 yield ttype, "{%s}%s" % (default_namespace, tag)
             else:
@@ -495,7 +496,7 @@ def xpath_tokenizer__v3_8(pattern, namespaces=None):
             parsing_attribute = False
         else:
             yield token
-            parsing_attribute = ttype == '@'
+            parsing_attribute = ttype == "@"
 
 
 @contextmanager
