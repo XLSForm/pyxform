@@ -27,7 +27,7 @@ class StaticDefaultTests(PyxformTestCase):
             |        | text   | my_descr | descr |                | no description provied |
             """,
             model__contains=[
-                # image needed NS and question typing still exist
+                # image needed NS and question typing still exist!
                 'xmlns:orx="http://openrosa.org/xforms"',
                 '<bind nodeset="/static_image/my_image" type="binary" orx:max-pixels="640"/>',
                 # image default appears
