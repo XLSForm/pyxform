@@ -186,7 +186,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             if "md" in kwargs.keys():
                 kwargs = self._autoname_inputs(kwargs)
                 survey = self.md_to_pyxform_survey(
-                    kwargs.get("md"), kwargs, warnings=warnings,
+                    kwargs.get("md"), kwargs, warnings=warnings
                 )
             elif "ss_structure" in kwargs.keys():
                 kwargs = self._autoname_inputs(kwargs)

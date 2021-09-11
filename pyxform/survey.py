@@ -230,7 +230,6 @@ class Survey(Section):
         """
         calls necessary preparation methods, then returns the xml.
         """
-
         self.validate()
         self._setup_xpath_dictionary()
 
@@ -252,7 +251,7 @@ class Survey(Section):
             "h:html",
             node("h:head", node("h:title", self.title), self.xml_model()),
             node("h:body", *self.xml_control(), **body_kwargs),
-            **nsmap,
+            **nsmap
         )
 
     def get_setvalues_for_question_name(self, question_name):
@@ -380,9 +379,9 @@ class Survey(Section):
             uri = "jr://file-csv/{}.csv".format(file_id)
 
             return InstanceInfo(
-                type="pulldata",
+                type=u"pulldata",
                 context="[type: {t}, name: {n}]".format(
-                    t=element["parent"]["type"], n=element["parent"]["name"]
+                    t=element[u"parent"][u"type"], n=element[u"parent"][u"name"]
                 ),
                 name=file_id,
                 src=uri,
@@ -643,10 +642,7 @@ class Survey(Section):
             # function
             parent = element.get("parent")
             if parent and not parent.get("choice_filter"):
-                translations_for_element = element.get_translations(
-                    self.default_language
-                )
-                for d in translations_for_element:
+                for d in element.get_translations(self.default_language):
                     translation_path = d["path"]
                     form = "long"
 
@@ -654,9 +650,10 @@ class Survey(Section):
                         translation_path = d["path"].replace("guidance_hint", "hint")
                         form = "guidance"
 
-                    self._translations[d["lang"]][
-                        translation_path
-                    ] = self._translations[d["lang"]].get(translation_path, {})
+                    self._translations[d["lang"]][translation_path] = self._translations[
+                        d["lang"]
+                    ].get(translation_path, {})
+
                     self._translations[d["lang"]][translation_path].update(
                         {
                             form: {
@@ -665,6 +662,7 @@ class Survey(Section):
                             }
                         }
                     )
+
         # This code sets up translations for choices in filtered selects.
         for list_name, choice_list in self.choices.items():
             multi_language = isinstance(choice_list[0].get("label"), dict)
@@ -726,7 +724,7 @@ class Survey(Section):
             # Images, media will hit this block, as well as other content_types missing translations.
             return content_type
 
-        # in the "path", the actual column that needs the translation added should appear after the ":"
+        # In the "path", the actual column that needs the translation added should appear after the ":"
         survey_column_name_ix = path.find(":")
         if survey_column_name_ix > -1:
             return path[path.find(":") + 1 :]

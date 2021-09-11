@@ -2,7 +2,7 @@
 """
 Test field-list labels
 """
-from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
+from tests.pyxform_test_case import PyxformTestCase
 
 
 class FieldListLabels(PyxformTestCase):
@@ -11,7 +11,7 @@ class FieldListLabels(PyxformTestCase):
     def test_unlabeled_group(self):
         warnings = []
 
-        survey = self.md_to_pyxform_survey(
+        self.md_to_pyxform_survey(
             """
             | survey |             |          |         |
             |        | type        | name     | label   |
@@ -28,7 +28,7 @@ class FieldListLabels(PyxformTestCase):
     def test_unlabeled_group_alternate_syntax(self):
         warnings = []
 
-        survey = self.md_to_pyxform_survey(
+        self.md_to_pyxform_survey(
             """
             | survey |             |          |                     |
             |        | type        | name     | label::English (en) |
@@ -45,7 +45,7 @@ class FieldListLabels(PyxformTestCase):
     def test_unlabeled_group_fieldlist(self):
         warnings = []
 
-        survey = self.md_to_pyxform_survey(
+        self.md_to_pyxform_survey(
             """
             | survey |              |           |         |            |
             |        | type         | name      | label   | appearance |
@@ -61,7 +61,7 @@ class FieldListLabels(PyxformTestCase):
     def test_unlabeled_group_fieldlist_alternate_syntax(self):
         warnings = []
 
-        survey = self.md_to_pyxform_survey(
+        self.md_to_pyxform_survey(
             """
             | survey |              |           |         |            |
             |        | type         | name      | label   | appearance |
@@ -77,7 +77,7 @@ class FieldListLabels(PyxformTestCase):
     def test_unlabeled_repeat(self):
         warnings = []
 
-        survey = self.md_to_pyxform_survey(
+        self.md_to_pyxform_survey(
             """
             | survey |              |           |         |
             |        | type         | name      | label   |
@@ -94,7 +94,7 @@ class FieldListLabels(PyxformTestCase):
     def test_unlabeled_repeat_fieldlist(self):
         warnings = []
 
-        survey = self.md_to_pyxform_survey(
+        self.md_to_pyxform_survey(
             """
             | survey |              |           |         |            |
             |        | type         | name      | label   | appearance |

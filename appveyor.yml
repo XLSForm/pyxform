@@ -16,6 +16,10 @@ install:
   # Check that we have the expected version and architecture for Python
   - python --version
   - python -c "import struct; print(struct.calcsize('P') * 8)"
+  
+  # double check pip is what it should be
+  - python -m pip install --upgrade pip
+  - pip --version
 
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
