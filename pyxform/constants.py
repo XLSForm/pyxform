@@ -104,7 +104,7 @@ AUDIO_QUALITY_NORMAL = "normal"
 AUDIO_QUALITY_EXTERNAL = "external"
 
 # https://getodk.github.io/xforms-spec/#file-endpoints
-# TODO - theres key repetion here to handle the diverse use cases.
+# TODO - theres values repeated under different keys to handle the diverse use cases.
 # could I be a function? or a DefaultDict?
 SANDBOXED_TYPE_EP_PREFIX_MAP = {
     "photo": "jr://images/",
@@ -113,8 +113,8 @@ SANDBOXED_TYPE_EP_PREFIX_MAP = {
     "background-audio": "jr://audio/",
     "video": "jr://video/",
     "xml": "jr://file/",
-    "csv": "jr://file-csv/",
     "file": "jr://file/",
+    "csv": "jr://file-csv/",
     "file-csv": "jr://file-csv/",
     "lastsaved": "jr://instance/last-saved",
 }
