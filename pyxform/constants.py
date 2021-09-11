@@ -105,7 +105,7 @@ AUDIO_QUALITY_EXTERNAL = "external"
 
 # https://getodk.github.io/xforms-spec/#file-endpoints
 # TODO - theres values repeated under different keys to handle the diverse use cases.
-# could I be a function? or a DefaultDict?
+# Could I be a function? or a DefaultDict?
 SANDBOXED_TYPE_EP_PREFIX_MAP = {
     "photo": "jr://images/",
     "image": "jr://images/",
