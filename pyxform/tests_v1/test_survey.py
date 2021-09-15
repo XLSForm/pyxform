@@ -16,8 +16,7 @@ class TestSurvey(PyxformTestCase):
             |        | note | n    | {n}   |          |
             |        | text | q2   | Q2    | {r}      |
             """.format(
-                n="q1 = ${q1} " * 250,
-                r=" or ".join(["${q1} = 'y'"] * 250)
+                n="q1 = ${q1} " * 250, r=" or ".join(["${q1} = 'y'"] * 250)
             ),
         )
 
