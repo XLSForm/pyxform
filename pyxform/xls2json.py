@@ -1342,7 +1342,7 @@ def workbook_to_json(
             parent_children_array.append(new_dict)
             continue
 
-        if question_type == "geopoint":
+        if question_type in ["geopoint", "geoshape", "geotrace"]:
             new_dict = row.copy()
             parameters = get_parameters(
                 row.get("parameters", ""), ["allow-mock-accuracy"]
