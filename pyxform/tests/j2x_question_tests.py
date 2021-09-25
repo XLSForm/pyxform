@@ -21,6 +21,8 @@ def ctw(control):
 
 class Json2XformQuestionValidationTests(TestCase):
     maxDiff = None
+    config = None
+    cls_name = None
 
     @classmethod
     def setUpClass(cls):

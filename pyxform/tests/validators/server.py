@@ -2,15 +2,9 @@
 import os
 import posixpath
 import threading
-
-try:
-    from http.server import SimpleHTTPRequestHandler
-    from socketserver import ThreadingTCPServer
-    from urllib.parse import unquote
-except ImportError:
-    from SimpleHTTPServer import SimpleHTTPRequestHandler
-    from SocketServer import ThreadingTCPServer
-    from urllib2 import unquote
+from http.server import SimpleHTTPRequestHandler
+from socketserver import ThreadingTCPServer
+from urllib.parse import unquote
 
 
 HERE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")

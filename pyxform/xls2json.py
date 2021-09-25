@@ -2,8 +2,14 @@
 """
 A Python script to convert excel files into JSON.
 """
-from __future__ import print_function, unicode_literals
+import codecs
+import json
+import os
+import re
+import sys
 from collections import Counter
+from typing import TYPE_CHECKING
+
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
 from pyxform.utils import (
@@ -14,12 +20,6 @@ from pyxform.utils import (
     levenshtein_distance,
 )
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
-from typing import TYPE_CHECKING
-import codecs
-import json
-import os
-import re
-import sys
 
 
 if TYPE_CHECKING:

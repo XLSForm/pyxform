@@ -13,14 +13,10 @@ import threading
 import time
 from contextlib import closing
 from subprocess import PIPE, Popen
+from urllib.error import URLError, HTTPError
+from urllib.request import urlopen, Request
 
 from pyxform.errors import PyXFormError
-
-try:
-    from urllib.request import urlopen, Request
-    from urllib.error import URLError, HTTPError
-except ImportError:
-    from urllib2 import urlopen, Request, URLError, HTTPError
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))

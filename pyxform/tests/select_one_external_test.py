@@ -6,7 +6,6 @@ import codecs
 import os
 import unittest
 import pyxform
-from pyxform.tests import utils
 from pyxform.tests.utils import XFormTestCase
 from pyxform.utils import sheet_to_csv
 from pyxform import InputQuestion, Survey

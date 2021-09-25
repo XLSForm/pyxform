@@ -12,6 +12,8 @@ from pyxform.validators.util import XFORM_SPEC_PATH, check_readable
 
 class TestValidatorUtil(TestCase):
     maxDiff = None
+    config = None
+    cls_name = None
 
     @classmethod
     def setUpClass(cls):

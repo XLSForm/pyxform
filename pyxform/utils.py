@@ -7,32 +7,16 @@ import copy
 import json
 import os
 import re
-from xml.dom.minidom import Element, Text, parseString
-
 import unicodecsv as csv
 import xlrd
+from json.decoder import JSONDecodeError
+from xml.dom.minidom import Element, Text, parseString
 
-try:
-    from json.decoder import JSONDecodeError
-except ImportError:
-    # json module raises a ValueError exception when it encounters an invalid JSON
-    JSONDecodeError = ValueError
 
-try:
-    unicode("str")
-except NameError:
-    unicode = str
-    basestring = str
-    unichr = chr
-else:
-    try:
-        unicode = unicode
-        basestring = basestring
-        unichr = unichr
-    except NameError:  # special cases where unicode is defined in python3
-        unicode = str
-        basestring = str
-        unichr = chr
+unicode = str
+basestring = str
+unichr = chr
+
 
 SEP = "_"
 
@@ -225,7 +209,6 @@ def get_languages_with_bad_tags(languages):
     """
     Returns languages with invalid or missing IANA subtags.
     """
-    iana_subtags = []
     with open(os.path.join(os.path.dirname(__file__), "iana_subtags.txt")) as f:
         iana_subtags = f.read().splitlines()
 
@@ -302,7 +285,7 @@ def levenshtein_distance(a: str, b: str) -> int:
     n = len(b)
 
     # create two work vectors of integer distances
-    v1 = [0 for i in range(0, n + 1)]
+    v1 = [0 for _ in range(0, n + 1)]
 
     # initialize v0 (the previous row of distances)
     # this row is A[0][i]: edit distance for an empty s

@@ -2,10 +2,10 @@
 """
 Test validators.
 """
-
 import sys
 from unittest import TestCase
-from pyxform.validators.odk_validate import check_java_available, _call_validator
+
+from pyxform.validators.odk_validate import check_java_available
 
 
 if sys.version_info >= (3, 3):
