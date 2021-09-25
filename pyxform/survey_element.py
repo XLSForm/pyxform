@@ -4,6 +4,8 @@ Survey Element base class for all survey elements.
 """
 import json
 import re
+from functools import lru_cache
+from typing import TYPE_CHECKING
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
@@ -17,12 +19,6 @@ from pyxform.utils import (
     default_is_dynamic,
 )
 from pyxform.xls2json import print_pyobj_to_json
-from typing import TYPE_CHECKING
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
 
 
 if TYPE_CHECKING:

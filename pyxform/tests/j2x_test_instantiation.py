@@ -10,6 +10,9 @@ from pyxform.tests.utils import prep_class_config
 
 
 class Json2XformExportingPrepTests(TestCase):
+    config = None
+    cls_name = None
+
     @classmethod
     def setUpClass(cls):
         prep_class_config(cls=cls)

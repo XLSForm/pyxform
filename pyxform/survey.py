@@ -11,6 +11,7 @@ import tempfile
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
+from functools import lru_cache
 
 from pyxform import constants
 from pyxform.utils import (
@@ -35,11 +36,6 @@ from pyxform.utils import (
     unicode,
 )
 from pyxform.validators import enketo_validate, odk_validate
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
 
 
 RE_PULLDATA = re.compile(r"(pulldata\s*\(\s*)(.*?),")
@@ -559,8 +555,7 @@ class Survey(Section):
         self._setup_media()
         self._add_empty_translations()
 
-        model_kwargs = {}
-        model_kwargs["odk:xforms-version"] = constants.CURRENT_XFORMS_VERSION
+        model_kwargs = {"odk:xforms-version": constants.CURRENT_XFORMS_VERSION}
 
         model_children = []
         if self._translations:
