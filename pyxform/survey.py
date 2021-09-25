@@ -440,9 +440,9 @@ class Survey(Section):
             if last_saved_expression:
                 return True
 
-        return re.search(
-            LAST_SAVED_REGEX, str(element["choice_filter"])
-        ) or re.search(LAST_SAVED_REGEX, str(element["default"]))
+        return re.search(LAST_SAVED_REGEX, str(element["choice_filter"])) or re.search(
+            LAST_SAVED_REGEX, str(element["default"])
+        )
 
     @staticmethod
     def _get_last_saved_instance():
@@ -1059,9 +1059,7 @@ class Survey(Section):
         # since at this point < is &lt,
         # the net effect &lt gets translated again to &amp;lt;
         if str(xml_text).find("{") != -1:
-            result = re.sub(
-                BRACKETED_TAG_REGEX, _var_repl_output_function, str(xml_text)
-            )
+            result = re.sub(BRACKETED_TAG_REGEX, _var_repl_output_function, str(xml_text))
             return result, not result == xml_text
         return text, False
 

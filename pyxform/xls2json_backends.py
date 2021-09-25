@@ -15,7 +15,7 @@ from xlrd.xldate import XLDateAmbiguous
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
-from pyxform.utils import unichr
+
 
 XL_DATE_AMBIGOUS_MSG = (
     "The xls file provided has an invalid date on the %s sheet, under"
@@ -161,7 +161,7 @@ def xls_value_to_unicode(value, value_type, datemode):
         # ensure unicode and replace nbsp spaces with normal ones
         # to avoid this issue:
         # https://github.com/modilabs/pyxform/issues/83
-        return str(value).replace(unichr(160), " ")
+        return str(value).replace(chr(160), " ")
 
 
 def get_cascading_json(sheet_list, prefix, level):
