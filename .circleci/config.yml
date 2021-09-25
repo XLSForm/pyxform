@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "requirements.pip" }}
+          key: requirements-{{ .Branch }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum "dev_requirements.pip" }}
       - run:
           # Install dependencies with --user to enable easier caching
           name: Install dependencies
