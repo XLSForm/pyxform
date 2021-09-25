@@ -15,7 +15,7 @@ from xlrd.xldate import XLDateAmbiguous
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
-from pyxform.utils import basestring, unichr
+from pyxform.utils import unichr
 
 XL_DATE_AMBIGOUS_MSG = (
     "The xls file provided has an invalid date on the %s sheet, under"
@@ -46,7 +46,7 @@ def xls_to_dict(path_or_file):
     All the keys and leaf elements are unicode text.
     """
     try:
-        if isinstance(path_or_file, basestring):
+        if isinstance(path_or_file, str):
             workbook = xlrd.open_workbook(filename=path_or_file)
         else:
             workbook = xlrd.open_workbook(file_contents=path_or_file.read())
@@ -55,7 +55,7 @@ def xls_to_dict(path_or_file):
 
     def xls_to_dict_normal_sheet(sheet):
         def iswhitespace(string):
-            return isinstance(string, basestring) and len(string.strip()) == 0
+            return isinstance(string, str) and len(string.strip()) == 0
 
         # Check for duplicate column headers
         column_header_list = list()
@@ -81,7 +81,7 @@ def xls_to_dict(path_or_file):
                 key = key.strip()
                 value = sheet.cell_value(row, column)
                 # remove whitespace at the beginning and end of value
-                if isinstance(value, basestring):
+                if isinstance(value, str):
                     value = value.strip()
                 value_type = sheet.cell_type(row, column)
                 if value is not None:
@@ -178,7 +178,7 @@ def get_cascading_json(sheet_list, prefix, level):
 
             def replace_prefix(d, prefix):
                 for k, v in d.items():
-                    if isinstance(v, basestring):
+                    if isinstance(v, str):
                         d[k] = v.replace("$PREFIX$", prefix)
                     elif isinstance(v, dict):
                         d[k] = replace_prefix(v, prefix)
@@ -197,7 +197,7 @@ def get_cascading_json(sheet_list, prefix, level):
 
 
 def csv_to_dict(path_or_file):
-    if isinstance(path_or_file, basestring):
+    if isinstance(path_or_file, str):
         csv_data = open(path_or_file, "rb")
     else:
         csv_data = path_or_file

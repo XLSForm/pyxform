@@ -30,7 +30,6 @@ from pyxform.survey_element import SurveyElement
 from pyxform.utils import (
     NSMAP,
     PatchedText,
-    basestring,
     get_languages_with_bad_tags,
     node,
 )
@@ -211,7 +210,7 @@ class Survey(Section):
         """Add additional namespaces"""
         namespaces = getattr(self, constants.NAMESPACES, None)
 
-        if namespaces and isinstance(namespaces, basestring):
+        if namespaces and isinstance(namespaces, str):
             nslist = [
                 ns.split("=")
                 for ns in namespaces.split()
@@ -291,13 +290,13 @@ class Survey(Section):
                 choice_element_list.append(node("itextId", itext_id))
 
             for name, value in sorted(choice.items()):
-                if isinstance(value, basestring) and name != "label":
+                if isinstance(value, str) and name != "label":
                     choice_element_list.append(node(name, str(value)))
                 if (
                     not multi_language
                     and not has_media
                     and not has_dynamic_label(choice_list, multi_language)
-                    and isinstance(value, basestring)
+                    and isinstance(value, str)
                     and name == "label"
                 ):
                     choice_element_list.append(node(name, str(value)))

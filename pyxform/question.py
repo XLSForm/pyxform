@@ -9,7 +9,6 @@ from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import (
-    basestring,
     node,
     default_is_dynamic,
     has_dynamic_label,
@@ -201,7 +200,7 @@ class MultipleChoiceQuestion(Question):
 
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
-        if self["itemset"] and isinstance(self["itemset"], basestring):
+        if self["itemset"] and isinstance(self["itemset"], str):
             choice_filter = self.get("choice_filter")
             itemset_value_ref = "name"
             itemset, file_extension = os.path.splitext(self["itemset"])

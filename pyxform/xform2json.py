@@ -13,7 +13,7 @@ import xml.etree.ElementTree as ETree
 from operator import itemgetter
 
 from pyxform import builder
-from pyxform.utils import NSMAP, basestring
+from pyxform.utils import NSMAP
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -152,7 +152,7 @@ def convert_xml_to_dict(root, dictclass=XmlDictObject):
     Converts an XML file or ElementTree Element to a dictionary
     """
     # If a string is passed in, try to open it as a file
-    if isinstance(root, basestring):
+    if isinstance(root, str):
         root = _try_parse(root)
     elif not isinstance(root, ETree.Element):
         raise TypeError("Expected ElementTree.Element or file path string")
@@ -177,7 +177,7 @@ def _try_parse(root, parser=None):
 
 class XFormToDict:
     def __init__(self, root):
-        if isinstance(root, basestring):
+        if isinstance(root, str):
             parser = ETree.XMLParser(encoding="UTF-8")
             self._root = _try_parse(root, parser)
             self._dict = XmlDictObject(
@@ -601,7 +601,7 @@ class XFormToDictBuilder:
                                     label[k][m_type] = {}
                                 label[k][m_type][lang] = v
                                 continue
-                            if isinstance(item, basestring):
+                            if isinstance(item, str):
                                 if item == "-":
                                     continue
                             if "label" not in label:
@@ -620,7 +620,7 @@ class XFormToDictBuilder:
         return "".join(["${", name.strip(), "}"])
 
     def _get_constraint_msg(self, constraint_msg):
-        if isinstance(constraint_msg, basestring):
+        if isinstance(constraint_msg, str):
             if constraint_msg.find(":jr:constraintMsg") != -1:
                 ref = constraint_msg.replace("jr:itext('", "").replace("')", "")
                 k, constraint_msg = self._get_text_from_translation(ref)

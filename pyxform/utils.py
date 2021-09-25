@@ -13,7 +13,6 @@ from json.decoder import JSONDecodeError
 from xml.dom.minidom import Element, Text, parseString
 
 
-basestring = str
 unichr = chr
 
 
@@ -191,7 +190,7 @@ def has_external_choices(json_struct):
         for k, v in json_struct.items():
             if (
                 k == "type"
-                and isinstance(v, basestring)
+                and isinstance(v, str)
                 and v.startswith("select one external")
             ):
                 return True
@@ -232,7 +231,7 @@ def default_is_dynamic(element_default, element_type=None):
     * Contains arithmetic operator, including 'div' and 'mod' (except '-' for 'date' type).
     * Contains brackets, parentheses or braces.
     """
-    if not isinstance(element_default, basestring):
+    if not isinstance(element_default, str):
         return False
 
     dynamic_markers = {
