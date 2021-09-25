@@ -4,8 +4,6 @@ Cleans up error messages from the validators.
 """
 import re
 
-from pyxform.utils import unicode
-
 
 class ErrorCleaner(object):
     """Cleans up raw error messages from XForm validators for end users."""
@@ -31,7 +29,7 @@ class ErrorCleaner(object):
         error_message = re.sub(
             pattern, ErrorCleaner._replace_xpath_with_tokens, error_message, flags=re.I
         )
-        lines = unicode(error_message).strip().splitlines()
+        lines = str(error_message).strip().splitlines()
         no_dupes = [
             line for i, line in enumerate(lines) if line != lines[i - 1] or i == 0
         ]

@@ -3,7 +3,6 @@
 Test setting form name to data.
 """
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
-from pyxform.utils import unicode
 
 
 class FormNameTest(PyxformTestCase):
@@ -26,7 +25,7 @@ class FormNameTest(PyxformTestCase):
 
         # We're passing autoname false when creating the survey object.
         self.assertEqual(survey.id_string, None)
-        self.assertEqual(survey.name, unicode("data"))
+        self.assertEqual(survey.name, str("data"))
         self.assertEqual(survey.title, None)
 
         # Set required fields because we need them if we want to do xml comparison.

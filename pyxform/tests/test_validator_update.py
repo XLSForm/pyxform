@@ -9,12 +9,13 @@ import tempfile
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from stat import S_IXGRP, S_IXUSR
+from typing import Optional
 from zipfile import ZipFile
 from unittest import TestCase, skipIf
+
 from pyxform.errors import PyXFormError
 from pyxform.tests import validators
 from pyxform.tests.validators.server import ThreadingServerInThread
-from pyxform.utils import unicode
 from pyxform.validators.updater import (
     EnketoValidateUpdater,
     _UpdateHandler,
@@ -102,15 +103,17 @@ class TestTempUtils(TestCase):
 
 class TestUpdateHandler(TestCase):
 
-    server = ThreadingServerInThread()
+    server: "Optional[ThreadingServerInThread]" = None
 
     @classmethod
     def setUpClass(cls):
+        cls.server = ThreadingServerInThread()
         cls.server.start()
 
     @classmethod
     def tearDownClass(cls):
-        cls.server.stop()
+        if cls.server is not None:
+            cls.server.stop()
 
     def setUp(self):
         self.update_info = get_update_info(check_ok=True)
@@ -311,7 +314,7 @@ class TestUpdateHandler(TestCase):
             self.updater._find_download_url(
                 update_info=self.update_info, json_data=json_data, file_name=file_name
             )
-        self.assertIn("No files attached", unicode(ctx.exception))
+        self.assertIn("No files attached", str(ctx.exception))
 
     def test_find_download_url__not_found(self):
         """Should raise an error if the file was not found."""
@@ -323,7 +326,7 @@ class TestUpdateHandler(TestCase):
             self.updater._find_download_url(
                 update_info=self.update_info, json_data=json_data, file_name=file_name
             )
-        self.assertIn("No files with the name", unicode(ctx.exception))
+        self.assertIn("No files with the name", str(ctx.exception))
 
     def test_find_download_url__duplicates(self):
         """Should raise an error if the file was found more than once."""
@@ -336,7 +339,7 @@ class TestUpdateHandler(TestCase):
             self.updater._find_download_url(
                 update_info=self.update_info, json_data=json_data, file_name=file_name
             )
-        self.assertIn("2 files with the name", unicode(ctx.exception))
+        self.assertIn("2 files with the name", str(ctx.exception))
 
     def test_find_download_url__ok(self):
         """Should return the url for the matching file name."""
@@ -373,7 +376,7 @@ class TestUpdateHandler(TestCase):
         file_path = self.last_check = os.path.join(TEST_PATH, "bacon.zip")
         with self.assertRaises(PyXFormError) as ctx:
             self.updater._get_bin_paths(update_info=self.update_info, file_path=file_path)
-        self.assertIn("Did not find", unicode(ctx.exception))
+        self.assertIn("Did not find", str(ctx.exception))
 
     def test_unzip_find_zip_jobs__ok_real_current(self):
         """Should return a list of zip jobs same length as search."""
@@ -425,7 +428,7 @@ class TestUpdateHandler(TestCase):
             self.updater._unzip_find_jobs(
                 open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir
             )
-        self.assertIn("1 zip job files, found: 0", unicode(ctx.exception))
+        self.assertIn("1 zip job files, found: 0", str(ctx.exception))
 
     def test_unzip_extract_file__ok(self):
         """Should extract the specified item to the target output path."""
@@ -450,7 +453,7 @@ class TestUpdateHandler(TestCase):
             self.updater._unzip_extract_file(
                 open_zip_file=zip_file, zip_item=zip_item, file_out_path=file_out_path
             )
-        self.assertIn("Bad CRC-32 for file", unicode(ctx.exception))
+        self.assertIn("Bad CRC-32 for file", str(ctx.exception))
 
     def test_unzip(self):
         """Should unzip the file to the locations in the bin_path map."""
@@ -543,7 +546,7 @@ class TestUpdateHandler(TestCase):
             self.assertFalse(os.path.exists(update_info.bin_path))
             self.assertTrue(os.path.exists(update_info.bin_new_path))
 
-        error = unicode(ctx.exception)
+        error = str(ctx.exception)
         self.assertIn("Update failed!", error)
         self.assertIn("latest release does not appear to work", error)
 
@@ -581,7 +584,7 @@ class TestUpdateHandler(TestCase):
             update_info.latest_path = self.install_fake
             self.updater.update(update_info=update_info, file_name="linux.zip")
 
-        error = unicode(ctx.exception)
+        error = str(ctx.exception)
         self.assertIn("Update failed!", error)
         self.assertIn("installed release appears to be the latest", error)
 
@@ -603,7 +606,7 @@ class TestUpdateHandler(TestCase):
             self.assertFalse(os.path.exists(update_info.bin_path))
             self.assertTrue(os.path.exists(update_info.bin_new_path))
 
-        error = unicode(ctx.exception)
+        error = str(ctx.exception)
         self.assertIn("Update failed!", error)
         self.assertIn("latest release does not appear to work", error)
 
@@ -613,7 +616,7 @@ class TestUpdateHandler(TestCase):
         with self.assertRaises(PyXFormError) as ctx:
             self.updater.check(self.update_info)
 
-        error = unicode(ctx.exception)
+        error = str(ctx.exception)
         self.assertIn("Check failed!", error)
         self.assertIn("No installed release found", error)
 
@@ -650,7 +653,7 @@ class TestUpdateHandler(TestCase):
             update_info.install_check = install_check_fail
             self.updater.check(update_info=update_info)
 
-        error = unicode(ctx.exception)
+        error = str(ctx.exception)
         self.assertIn("Check failed!", error)
         self.assertIn("installed release does not appear to work", error)
 

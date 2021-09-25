@@ -15,7 +15,6 @@ from pyxform.utils import (
     BRACKETED_TAG_REGEX,
     is_valid_xml_tag,
     node,
-    unicode,
     default_is_dynamic,
 )
 from pyxform.xls2json import print_pyobj_to_json
@@ -44,19 +43,19 @@ class SurveyElement(dict):
     # the following are important keys for the underlying dict that
     # describes this survey element
     FIELDS = {
-        "name": unicode,
-        constants.COMPACT_TAG: unicode,  # used for compact (sms) representation
-        "sms_field": unicode,
-        "sms_option": unicode,
-        "label": unicode,
-        "hint": unicode,
-        "guidance_hint": unicode,
-        "default": unicode,
-        "type": unicode,
-        "appearance": unicode,
-        "parameters": unicode,
-        "intent": unicode,
-        "jr:count": unicode,
+        "name": str,
+        constants.COMPACT_TAG: str,  # used for compact (sms) representation
+        "sms_field": str,
+        "sms_option": str,
+        "label": str,
+        "hint": str,
+        "guidance_hint": str,
+        "default": str,
+        "type": str,
+        "appearance": str,
+        "parameters": str,
+        "intent": str,
+        "jr:count": str,
         "bind": dict,
         "instance": dict,
         "control": dict,
@@ -64,14 +63,14 @@ class SurveyElement(dict):
         # this node will also have a parent and children, like a tree!
         "parent": lambda: None,
         "children": list,
-        "itemset": unicode,
-        "choice_filter": unicode,
-        "query": unicode,
-        "autoplay": unicode,
+        "itemset": str,
+        "choice_filter": str,
+        "query": str,
+        "autoplay": str,
         "flat": lambda: False,
-        "action": unicode,
-        "list_name": unicode,
-        "trigger": unicode,
+        "action": str,
+        "list_name": str,
+        "trigger": str,
     }
 
     def _default(self):
@@ -217,7 +216,7 @@ class SurveyElement(dict):
     def get_abbreviated_xpath(self):
         lineage = self.get_lineage()
         if len(lineage) >= 2:
-            return "/".join([unicode(n.name) for n in lineage[1:]])
+            return "/".join([str(n.name) for n in lineage[1:]])
         else:
             return lineage[0].name
 

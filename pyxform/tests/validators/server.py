@@ -56,7 +56,7 @@ class SimpleHTTPRequestHandlerHere(SimpleHTTPRequestHandler, object):
         pass  # be quiet
 
 
-class ThreadingServerInThread(object):
+class ThreadingServerInThread:
     """
     Context manager for running a threading http server in a thread.
 

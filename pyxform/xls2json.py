@@ -15,7 +15,6 @@ from pyxform.errors import PyXFormError
 from pyxform.utils import (
     basestring,
     is_valid_xml_tag,
-    unicode,
     default_is_dynamic,
     levenshtein_distance,
 )
@@ -235,7 +234,7 @@ def has_double_colon(workbook_dict):
     for sheet in workbook_dict.values():
         for row in sheet:
             for column_header in row.keys():
-                if type(column_header) is not unicode:
+                if type(column_header) is not str:
                     continue
                 if "::" in column_header:
                     return True
@@ -389,8 +388,8 @@ def workbook_to_json(
     row_format_string = "[row : %s]"
 
     # Make sure the passed in vars are unicode
-    form_name = unicode(form_name)
-    default_language = unicode(default_language)
+    form_name = str(form_name)
+    default_language = str(default_language)
 
     # We check for double columns to determine whether to use them
     # or single colons to delimit grouped headers.
@@ -847,7 +846,7 @@ def workbook_to_json(
         # on the survey sheet
         settings_type = aliases.settings_header.get(question_type)
         if settings_type:
-            json_dict[settings_type] = unicode(row.get(constants.NAME))
+            json_dict[settings_type] = str(row.get(constants.NAME))
             continue
 
         # Try to parse question as a end control statement
@@ -884,7 +883,7 @@ def workbook_to_json(
                 raise PyXFormError(
                     row_format_string % row_number + " Question or group with no name."
                 )
-        question_name = unicode(row[constants.NAME])
+        question_name = str(row[constants.NAME])
         if not is_valid_xml_tag(question_name):
             if isinstance(question_name, bytes):
                 question_name = question_name.encode("utf-8")
@@ -991,7 +990,7 @@ def workbook_to_json(
                         appearance_string = "field-list"
                         for w in appearance_mods_as_list:
                             if w != constants.TABLE_LIST:
-                                appearance_string += " " + unicode(w)
+                                appearance_string += " " + str(w)
                         new_json_dict["control"]["appearance"] = appearance_string
 
                         # Generate a note label element so hints and labels
@@ -1415,7 +1414,7 @@ def parse_file_to_json(
     if warnings is None:
         warnings = []
     workbook_dict = parse_file_to_workbook_dict(path, file_object)
-    fallback_form_name = unicode(get_filename(path))
+    fallback_form_name = str(get_filename(path))
     return workbook_to_json(
         workbook_dict, default_name, fallback_form_name, default_language, warnings
     )
@@ -1478,7 +1477,7 @@ class SpreadsheetReader(object):
             pass
         self._dict = parse_file_to_workbook_dict(path)
         self._path = path
-        self._id = unicode(get_filename(path))
+        self._id = str(get_filename(path))
         self._name = self._print_name = self._title = self._id
 
     def to_json_dict(self):

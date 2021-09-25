@@ -17,7 +17,6 @@ from stat import S_IXGRP, S_IXUSR
 from zipfile import ZipFile, is_zipfile
 
 from pyxform.errors import PyXFormError
-from pyxform.utils import unicode
 from pyxform.validators import enketo_validate, odk_validate
 from pyxform.validators.util import HERE, CapturingHandler, request_get
 
@@ -111,7 +110,7 @@ class _UpdateHandler(object):
         """
         with io.open(file_path, mode="w", newline="\n") as out_file:
             data = json.dumps(content, indent=2, sort_keys=True)
-            out_file.write(unicode(data))
+            out_file.write(str(data))
 
     @staticmethod
     def _read_last_check(file_path):
@@ -134,7 +133,7 @@ class _UpdateHandler(object):
         Write the .last_check file.
         """
         with io.open(file_path, mode="w", newline="\n") as out_file:
-            out_file.write(unicode(content.strftime(UTC_FMT)))
+            out_file.write(str(content.strftime(UTC_FMT)))
 
     @staticmethod
     def _check_necessary(update_info, utc_now):
@@ -393,7 +392,7 @@ class _UpdateHandler(object):
             os.chmod(new_bin_file_path, current_mode | S_IXUSR | S_IXGRP)
 
         except PyXFormError as e:
-            raise PyXFormError("\n\nUpdate failed!\n\n" + unicode(e))
+            raise PyXFormError("\n\nUpdate failed!\n\n" + str(e))
         else:
             return latest
 
@@ -642,7 +641,7 @@ def main_cli():
         del kwargs["command"]
         args.command(**kwargs)
     except PyXFormError as main_error:
-        logger.info(unicode(main_error))
+        logger.info(str(main_error))
         sys.exit(1)
     if 0 < len(capture_handler.watcher.records):
         for line in capture_handler.watcher.output["INFO"]:
