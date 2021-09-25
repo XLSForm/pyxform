@@ -20,9 +20,7 @@ from pyxform.errors import PyXFormError
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-XFORM_SPEC_PATH = os.path.join(
-    os.path.dirname(HERE), "tests", "test_expected_output", "xlsform_spec_test.xml"
-)
+XFORM_SPEC_PATH = os.path.join(HERE, "xlsform_spec_test.xml")
 
 
 class PopenResult:
