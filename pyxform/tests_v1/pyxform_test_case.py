@@ -15,7 +15,7 @@ from unittest import TestCase
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
 from pyxform.tests_v1.test_utils.md_table import md_table_to_ss_structure
-from pyxform.utils import NSMAP, unicode
+from pyxform.utils import NSMAP
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.xls2json import workbook_to_json
 
@@ -213,7 +213,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
 
         except PyXFormError as e:
             survey = False
-            errors = [unicode(e)]
+            errors = [str(e)]
             if debug:
                 logger.debug("<xml unavailable />")
                 logger.debug("ERROR: '%s'", errors[0])
@@ -223,7 +223,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                     "ODK Validate error was thrown but "
                     + "'odk_validate_error__contains'"
                     + " was empty:"
-                    + unicode(e)
+                    + str(e)
                 )
             for v_err in odk_validate_error__contains:
                 self.assertContains(

@@ -13,7 +13,6 @@ from json.decoder import JSONDecodeError
 from xml.dom.minidom import Element, Text, parseString
 
 
-unicode = str
 basestring = str
 unichr = chr
 
@@ -86,7 +85,7 @@ def node(*args, **kwargs):
     tag = args[0] if len(args) > 0 else kwargs["tag"]
     args = args[1:]
     result = DetachableElement(tag)
-    unicode_args = [u for u in args if type(u) == unicode]
+    unicode_args = [u for u in args if type(u) == str]
     assert len(unicode_args) <= 1
     parsed_string = False
 
@@ -124,9 +123,9 @@ def node(*args, **kwargs):
     for n in args:
         if type(n) == int or type(n) == float or type(n) == bytes:
             text_node = PatchedText()
-            text_node.data = unicode(n)
+            text_node.data = str(n)
             result.appendChild(text_node)
-        elif type(n) is not unicode:
+        elif type(n) is not str:
             result.appendChild(n)
     return result
 

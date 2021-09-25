@@ -15,7 +15,7 @@ from xlrd.xldate import XLDateAmbiguous
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
-from pyxform.utils import basestring, unichr, unicode
+from pyxform.utils import basestring, unichr
 
 XL_DATE_AMBIGOUS_MSG = (
     "The xls file provided has an invalid date on the %s sheet, under"
@@ -144,9 +144,9 @@ def xls_value_to_unicode(value, value_type, datemode):
         # Try to display as an int if possible.
         int_value = int(value)
         if int_value == value:
-            return unicode(int_value)
+            return str(int_value)
         else:
-            return unicode(value)
+            return str(value)
     elif value_type is xlrd.XL_CELL_DATE:
         # Warn that it is better to single quote as a string.
         # error_location = cellFormatString % (ss_row_idx, ss_col_idx)
@@ -155,13 +155,13 @@ def xls_value_to_unicode(value, value_type, datemode):
         datetime_or_time_only = xlrd.xldate_as_tuple(value, datemode)
         if datetime_or_time_only[:3] == (0, 0, 0):
             # must be time only
-            return unicode(datetime.time(*datetime_or_time_only[3:]))
-        return unicode(datetime.datetime(*datetime_or_time_only))
+            return str(datetime.time(*datetime_or_time_only[3:]))
+        return str(datetime.datetime(*datetime_or_time_only))
     else:
         # ensure unicode and replace nbsp spaces with normal ones
         # to avoid this issue:
         # https://github.com/modilabs/pyxform/issues/83
-        return unicode(value).replace(unichr(160), " ")
+        return str(value).replace(unichr(160), " ")
 
 
 def get_cascading_json(sheet_list, prefix, level):
@@ -228,7 +228,7 @@ def csv_to_dict(path_or_file):
         if survey_or_choices is not None:
             sheet_name = survey_or_choices
             if sheet_name not in _dict:
-                _dict[unicode(sheet_name)] = []
+                _dict[str(sheet_name)] = []
             current_headers = None
         if content is not None:
             if current_headers is None:
@@ -241,7 +241,7 @@ def csv_to_dict(path_or_file):
                         # Slight modification so values are striped
                         # this is because csvs often spaces following commas
                         # (but the csv reader might already handle that.)
-                        _d[unicode(key)] = unicode(val.strip())
+                        _d[str(key)] = str(val.strip())
                 _dict[sheet_name].append(_d)
     csv_data.close()
     return _dict

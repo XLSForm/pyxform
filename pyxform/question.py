@@ -11,7 +11,6 @@ from pyxform.survey_element import SurveyElement
 from pyxform.utils import (
     basestring,
     node,
-    unicode,
     default_is_dynamic,
     has_dynamic_label,
 )
@@ -34,7 +33,7 @@ class Question(SurveyElement):
             attributes[key] = survey.insert_xpaths(value, self)
 
         if self.get("default") and not default_is_dynamic(self.default, self.type):
-            return node(self.name, unicode(self.get("default")), **attributes)
+            return node(self.name, str(self.get("default")), **attributes)
         return node(self.name, **attributes)
 
     def xml_control(self):

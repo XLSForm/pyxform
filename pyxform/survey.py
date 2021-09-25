@@ -33,7 +33,6 @@ from pyxform.utils import (
     basestring,
     get_languages_with_bad_tags,
     node,
-    unicode,
 )
 from pyxform.validators import enketo_validate, odk_validate
 
@@ -156,29 +155,29 @@ class Survey(Section):
             "_xpath": dict,
             "_created": datetime.now,  # This can't be dumped to json
             "setvalues_by_triggering_ref": dict,
-            "title": unicode,
-            "id_string": unicode,
-            "sms_keyword": unicode,
-            "sms_separator": unicode,
+            "title": str,
+            "id_string": str,
+            "sms_keyword": str,
+            "sms_separator": str,
             "sms_allow_media": bool,
-            "sms_date_format": unicode,
-            "sms_datetime_format": unicode,
-            "sms_response": unicode,
-            constants.COMPACT_PREFIX: unicode,
-            constants.COMPACT_DELIMITER: unicode,
-            "file_name": unicode,
-            "default_language": unicode,
+            "sms_date_format": str,
+            "sms_datetime_format": str,
+            "sms_response": str,
+            constants.COMPACT_PREFIX: str,
+            constants.COMPACT_DELIMITER: str,
+            "file_name": str,
+            "default_language": str,
             "_translations": dict,
-            "submission_url": unicode,
-            "auto_send": unicode,
-            "auto_delete": unicode,
-            "public_key": unicode,
-            "instance_xmlns": unicode,
-            "version": unicode,
+            "submission_url": str,
+            "auto_send": str,
+            "auto_delete": str,
+            "public_key": str,
+            "instance_xmlns": str,
+            "version": str,
             "choices": dict,
-            "style": unicode,
+            "style": str,
             "attribute": dict,
-            "namespaces": unicode,
+            "namespaces": str,
         }
     )  # yapf: disable
 
@@ -293,7 +292,7 @@ class Survey(Section):
 
             for name, value in sorted(choice.items()):
                 if isinstance(value, basestring) and name != "label":
-                    choice_element_list.append(node(name, unicode(value)))
+                    choice_element_list.append(node(name, str(value)))
                 if (
                     not multi_language
                     and not has_media
@@ -301,7 +300,7 @@ class Survey(Section):
                     and isinstance(value, basestring)
                     and name == "label"
                 ):
-                    choice_element_list.append(node(name, unicode(value)))
+                    choice_element_list.append(node(name, str(value)))
 
             instance_element_list.append(node("item", *choice_element_list))
 
@@ -373,11 +372,11 @@ class Survey(Section):
             """
             functions_present = []
             for formula_name in constants.EXTERNAL_INSTANCES:
-                if "pulldata(" in unicode(element["bind"].get(formula_name)):
+                if "pulldata(" in str(element["bind"].get(formula_name)):
                     functions_present.append(element["bind"][formula_name])
-            if "pulldata(" in unicode(element["choice_filter"]):
+            if "pulldata(" in str(element["choice_filter"]):
                 functions_present.append(element["choice_filter"])
-            if "pulldata(" in unicode(element["default"]):
+            if "pulldata(" in str(element["default"]):
                 functions_present.append(element["default"])
 
             return functions_present
@@ -437,14 +436,14 @@ class Survey(Section):
     def _generate_last_saved_instance(element):
         for expression_type in constants.EXTERNAL_INSTANCES:
             last_saved_expression = re.search(
-                LAST_SAVED_REGEX, unicode(element["bind"].get(expression_type))
+                LAST_SAVED_REGEX, str(element["bind"].get(expression_type))
             )
             if last_saved_expression:
                 return True
 
         return re.search(
-            LAST_SAVED_REGEX, unicode(element["choice_filter"])
-        ) or re.search(LAST_SAVED_REGEX, unicode(element["default"]))
+            LAST_SAVED_REGEX, str(element["choice_filter"])
+        ) or re.search(LAST_SAVED_REGEX, str(element["default"]))
 
     @staticmethod
     def _get_last_saved_instance():
@@ -586,7 +585,7 @@ class Survey(Section):
 
         # set these first to prevent overwriting id and version
         for key, value in self.attribute.items():
-            result.setAttribute(unicode(key), value)
+            result.setAttribute(str(key), value)
 
         result.setAttribute("id", self.id_string)
 
@@ -1029,7 +1028,7 @@ class Survey(Section):
                 matchobj, context, use_current, reference_parent
             )
 
-        return re.sub(BRACKETED_TAG_REGEX, _var_repl_function, unicode(text))
+        return re.sub(BRACKETED_TAG_REGEX, _var_repl_function, str(text))
 
     def _var_repl_output_function(self, matchobj, context):
         """
@@ -1060,9 +1059,9 @@ class Survey(Section):
         # need to make sure we have reason to replace
         # since at this point < is &lt,
         # the net effect &lt gets translated again to &amp;lt;
-        if unicode(xml_text).find("{") != -1:
+        if str(xml_text).find("{") != -1:
             result = re.sub(
-                BRACKETED_TAG_REGEX, _var_repl_output_function, unicode(xml_text)
+                BRACKETED_TAG_REGEX, _var_repl_output_function, str(xml_text)
             )
             return result, not result == xml_text
         return text, False
