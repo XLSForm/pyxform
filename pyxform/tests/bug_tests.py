@@ -4,9 +4,7 @@ Some tests for the new (v0.9) spec is properly implemented.
 """
 import codecs
 import os
-
-import unittest2 as unittest
-
+import unittest
 import pyxform
 from pyxform.validators.odk_validate import check_xform, ODKValidateError
 from pyxform.errors import PyXFormError
@@ -14,6 +12,7 @@ from pyxform.tests.utils import XFormTestCase
 from pyxform.utils import has_external_choices
 from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
 from pyxform.xls2json_backends import xls_to_dict
+
 
 DIR = os.path.dirname(__file__)
 
@@ -194,7 +193,7 @@ class BadChoicesSheetHeaders(unittest.TestCase):
     def test_values_with_spaces_are_cleaned(self):
         """
         Test that values with leading and trailing whitespaces are processed.
-    
+
         This test checks that the submission_url provided is cleaned
         of leading and trailing whitespaces.
         """
@@ -214,9 +213,7 @@ class TestChoiceNameAsType(unittest.TestCase):
     def test_choice_name_as_type(self):
         filename = "choice_name_as_type.xls"
         path_to_excel_file = os.path.join(DIR, "example_xls", filename)
-        xls_reader = SurveyReader(
-            path_to_excel_file, default_name="choice_name_as_type"
-        )
+        xls_reader = SurveyReader(path_to_excel_file, default_name="choice_name_as_type")
         survey_dict = xls_reader.to_json_dict()
         self.assertTrue(has_external_choices(survey_dict))
 
@@ -244,8 +241,8 @@ class TestXLDateAmbigous(unittest.TestCase):
 
 class TestXLDateAmbigousWithException(unittest.TestCase):
     """Test non standard sheet date values to raise an exception.
-        This exception is raised if the date values exceed the
-        datemode value accepted by that workbook."""
+    This exception is raised if the date values exceed the
+    datemode value accepted by that workbook."""
 
     def test_xl_date_ambigous_with_exception(self):
         """Test non standard sheet with exception is processed successfully."""

@@ -673,7 +673,9 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_repeat_using_select_with_reference_path_in_predicate_uses_current(self,):
+    def test_repeat_using_select_with_reference_path_in_predicate_uses_current(
+        self,
+    ):
         """
         Test relative path expansion using current if reference path is inside a predicate in a survey with select choice list
         """
@@ -733,7 +735,9 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_repeat_and_group_with_reference_path_in_predicate_uses_current(self,):
+    def test_repeat_and_group_with_reference_path_in_predicate_uses_current(
+        self,
+    ):
         """
         Test relative path expansion using current if reference path is inside a predicate in a survey with group
         """
@@ -757,7 +761,9 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_repeat_with_reference_path_in_predicate_uses_current(self,):
+    def test_repeat_with_reference_path_in_predicate_uses_current(
+        self,
+    ):
         """
         Test relative path expansion using current if reference path is inside a predicate
         """
@@ -779,7 +785,9 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_repeat_with_reference_path_with_spaces_in_predicate_uses_current(self,):
+    def test_repeat_with_reference_path_with_spaces_in_predicate_uses_current(
+        self,
+    ):
         """
         Test relative path expansion using current if reference path (with whitespaces before/after an operator of ${name}) is inside a predicate
         """
@@ -897,7 +905,9 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_repeat_with_reference_path_in_multiple_predicate_uses_current(self,):
+    def test_repeat_with_reference_path_in_multiple_predicate_uses_current(
+        self,
+    ):
         """
         Test relative path expansion using current if reference path is in multiple predicate
         """
@@ -945,9 +955,11 @@ class TestRepeat(PyxformTestCase):
             ],
         )
 
-    def test_repeat_with_reference_path_after_instance_in_predicate_uses_current(self,):
+    def test_repeat_with_reference_path_after_instance_in_predicate_uses_current(
+        self,
+    ):
         """
-        Test relative reference path expansion uses current if reference path is in predicate 
+        Test relative reference path expansion uses current if reference path is in predicate
             even if the reference path is found after the instance() expression
         ${pos5} that is in 'index =${pos5}'' uses current because it is in a predicate
         ${pos5} that is in 'position()=${pos5}'' uses current because it is in a predicate (eventhough not in an instance)
@@ -973,7 +985,7 @@ class TestRepeat(PyxformTestCase):
         self,
     ):
         """
-        Test relative reference path expansion not using current if reference path is not in predicate 
+        Test relative reference path expansion not using current if reference path is not in predicate
             and the reference path is found after the instance() expression
         ${pos5} that is in 'index =${pos5} uses current because it is in a predicate
         ${pos5} that is in '${pos5} + 1'' not using current because it is not in a predicate (regardless in an instance or not)

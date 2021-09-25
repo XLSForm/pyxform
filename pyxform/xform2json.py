@@ -49,9 +49,7 @@ class XmlDictObject(dict):
         """
 
         if isinstance(x, dict):
-            return XmlDictObject(
-                (k, XmlDictObject.Wrap(v)) for (k, v) in iter(x.items())
-            )
+            return XmlDictObject((k, XmlDictObject.Wrap(v)) for (k, v) in iter(x.items()))
         elif isinstance(x, list):
             return [XmlDictObject.Wrap(v) for v in x]
         else:
@@ -183,11 +181,7 @@ class XFormToDict:
             parser = ETree.XMLParser(encoding="UTF-8")
             self._root = _try_parse(root, parser)
             self._dict = XmlDictObject(
-                {
-                    self._root.tag: _convert_xml_to_dict_recurse(
-                        self._root, XmlDictObject
-                    )
-                }
+                {self._root.tag: _convert_xml_to_dict_recurse(self._root, XmlDictObject)}
             )
         elif not isinstance(root, ETree.Element):
             raise TypeError("Expected ElementTree.Element or file path string")
@@ -381,9 +375,7 @@ class XFormToDictBuilder:
             try:
                 ref = obj["nodeset"]
             except KeyError:
-                raise TypeError(
-                    'cannot find "ref" or "nodeset" in {}'.format(repr(obj))
-                )
+                raise TypeError('cannot find "ref" or "nodeset" in {}'.format(repr(obj)))
         question = {
             "ref": ref,
             "__order": self._get_question_order(ref),

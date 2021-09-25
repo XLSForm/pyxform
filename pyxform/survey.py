@@ -130,9 +130,7 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
                 # we avoid refrencing the context_parent and instead reference the shared
                 # ancestor
                 reference_parent = False
-        return _get_steps_and_target_xpath(
-            context_parent, xpath_parent, reference_parent
-        )
+        return _get_steps_and_target_xpath(context_parent, xpath_parent, reference_parent)
     elif context_parent and xpath_parent:
         # Check if context_parent and xpath_parent share a common
         # repeat ancestor
@@ -316,9 +314,7 @@ class Survey(Section):
             context="survey",
             name=list_name,
             src=None,
-            instance=node(
-                "instance", node("root", *instance_element_list), id=list_name
-            ),
+            instance=node("instance", node("root", *instance_element_list), id=list_name),
         )
 
     @staticmethod
@@ -456,9 +452,7 @@ class Survey(Section):
 
     @staticmethod
     def _get_last_saved_instance():
-        name = (
-            "__last-saved"  # double underscore used to minimize risk of name conflicts
-        )
+        name = "__last-saved"  # double underscore used to minimize risk of name conflicts
         uri = "jr://instance/last-saved"
 
         return InstanceInfo(
@@ -668,9 +662,9 @@ class Survey(Section):
                         translation_path = d["path"].replace("guidance_hint", "hint")
                         form = "guidance"
 
-                    self._translations[d["lang"]][
-                        translation_path
-                    ] = self._translations[d["lang"]].get(translation_path, {})
+                    self._translations[d["lang"]][translation_path] = self._translations[
+                        d["lang"]
+                    ].get(translation_path, {})
 
                     self._translations[d["lang"]][translation_path].update(
                         {
@@ -883,9 +877,7 @@ class Survey(Section):
         xml_with_linebreaks = self.xml().toprettyxml(indent="  ")
         text_re = re.compile(r"(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)", re.DOTALL)
         output_re = re.compile(r"\n.*(<output.*>)\n(\s\s)*")
-        pretty_xml = text_re.sub(
-            lambda m: "".join(m.group(1, 2, 3)), xml_with_linebreaks
-        )
+        pretty_xml = text_re.sub(lambda m: "".join(m.group(1, 2, 3)), xml_with_linebreaks)
         inline_output = output_re.sub(r"\g<1>", pretty_xml)
         return '<?xml version="1.0"?>\n' + inline_output
 

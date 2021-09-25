@@ -4,9 +4,7 @@ Test xform2json module.
 """
 import os
 from xml.etree.ElementTree import ParseError
-
-from unittest2 import TestCase
-
+from unittest import TestCase
 from pyxform.builder import create_survey_from_path
 from pyxform.tests import utils
 from pyxform.tests_v1.pyxform_test_case import PyxformTestCase

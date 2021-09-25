@@ -4,9 +4,7 @@ Test XForm XML syntax.
 """
 import re
 from xml.dom.minidom import getDOMImplementation
-
-from unittest2 import TestCase
-
+from unittest import TestCase
 from pyxform import create_survey_from_xls
 from pyxform.tests import utils
 from pyxform.utils import node
@@ -72,9 +70,7 @@ class XMLTests(utils.XFormTestCase):
   </h:body>
 </h:html>
 """
-        xml_str = re.sub(
-            r"yes_or_no_question_2011_04_22", self.survey.id_string, xml_str
-        )
+        xml_str = re.sub(r"yes_or_no_question_2011_04_22", self.survey.id_string, xml_str)
         self.maxDiff = None
         self.assertXFormEqual(xml_str, self.survey.to_xml())
 

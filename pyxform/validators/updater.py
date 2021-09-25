@@ -91,9 +91,7 @@ class _UpdateHandler(object):
     @staticmethod
     def _check_path(file_path):
         if not os.path.exists(file_path):
-            raise PyXFormError(
-                "Expected path does not exist: {p}" "".format(p=file_path)
-            )
+            raise PyXFormError("Expected path does not exist: {p}" "".format(p=file_path))
         else:
             return True
 
@@ -168,9 +166,7 @@ class _UpdateHandler(object):
         utc_now = datetime.utcnow()
         if _UpdateHandler._check_necessary(update_info=update_info, utc_now=utc_now):
             latest = _UpdateHandler._request_latest_json(url=update_info.api_url)
-            _UpdateHandler._write_json(
-                file_path=update_info.latest_path, content=latest
-            )
+            _UpdateHandler._write_json(file_path=update_info.latest_path, content=latest)
             _UpdateHandler._write_last_check(
                 file_path=update_info.last_check_path, content=utc_now
             )
@@ -425,9 +421,7 @@ class _UpdateHandler(object):
             installed = _UpdateHandler._read_json(file_path=update_info.installed_path)
             latest = _UpdateHandler._get_latest(update_info=update_info)
             if installed["tag_name"] == latest["tag_name"] and not force:
-                installed_info = _UpdateHandler._get_release_message(
-                    json_data=installed
-                )
+                installed_info = _UpdateHandler._get_release_message(json_data=installed)
                 latest_info = _UpdateHandler._get_release_message(json_data=latest)
                 template = (
                     "\nUpdate failed!\n\n"

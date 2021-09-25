@@ -241,9 +241,7 @@ class BuilderTests(TestCase):
                 },
                 {
                     "name": "available_toilet_types_other",
-                    "bind": {
-                        "relevant": "selected(../available_toilet_types, 'other')"
-                    },
+                    "bind": {"relevant": "selected(../available_toilet_types, 'other')"},
                     "label": "Specify other.",
                     "type": "text",
                 },

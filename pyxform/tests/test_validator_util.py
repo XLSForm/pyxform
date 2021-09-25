@@ -3,8 +3,7 @@
 Test pyxform.validators.utils module.
 """
 import os
-
-from unittest2 import TestCase
+from unittest import TestCase
 
 from pyxform.tests.utils import prep_class_config
 from pyxform.validators.error_cleaner import ErrorCleaner
@@ -48,9 +47,7 @@ class TestValidatorUtil(TestCase):
 
     def test_jarfile_error_returned_asis(self):
         """Should return a jarfile error as-is, to avoid tokenising the path."""
-        test_str = self.config.get(
-            self.cls_name, "test_jarfile_error_returned_asis_test"
-        )
+        test_str = self.config.get(self.cls_name, "test_jarfile_error_returned_asis_test")
         expected_str = self.config.get(
             self.cls_name, "test_jarfile_error_returned_asis_expected"
         )

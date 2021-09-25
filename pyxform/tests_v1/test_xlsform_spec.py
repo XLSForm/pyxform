@@ -55,7 +55,9 @@ class TestWarnings(PyxformTestCase):
         """  # noqa
         warnings = []
         self.assertPyxformXform(
-            name="spec_test", md=md, warnings=warnings,
+            name="spec_test",
+            md=md,
+            warnings=warnings,
         )
         self.maxDiff = 2000
         expected = [

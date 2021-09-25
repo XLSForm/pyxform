@@ -193,7 +193,9 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             elif "ss_structure" in kwargs.keys():
                 kwargs = self._autoname_inputs(kwargs)
                 survey = self._ss_structure_to_pyxform_survey(
-                    kwargs.get("ss_structure"), kwargs, warnings=warnings,
+                    kwargs.get("ss_structure"),
+                    kwargs,
+                    warnings=warnings,
                 )
             else:
                 survey = kwargs.get("survey")
@@ -260,10 +262,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 if bad_kwarg in kwargs:
                     good_kwarg = "%s__%s" % (code, verb)
                     raise SyntaxError(
-                        (
-                            "'%s' is not a valid parameter. "
-                            "Use double underscores: '%s'"
-                        )
+                        ("'%s' is not a valid parameter. " "Use double underscores: '%s'")
                         % (bad_kwarg, good_kwarg)
                     )
 

@@ -10,9 +10,7 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from stat import S_IXGRP, S_IXUSR
 from zipfile import ZipFile
-
-from unittest2 import TestCase, skipIf
-
+from unittest import TestCase, skipIf
 from pyxform.errors import PyXFormError
 from pyxform.tests import validators
 from pyxform.tests.validators.server import ThreadingServerInThread
@@ -23,6 +21,7 @@ from pyxform.validators.updater import (
     _UpdateInfo,
     capture_handler,
 )
+
 
 try:
     from zipfile import BadZipFile
@@ -173,9 +172,7 @@ class TestUpdateHandler(TestCase):
         """Should write the supplied datetime to a file."""
         with get_temp_file() as temp_file:
             self.assertEqual(0, os.path.getsize(temp_file))
-            self.updater._write_last_check(
-                file_path=temp_file, content=datetime.utcnow()
-            )
+            self.updater._write_last_check(file_path=temp_file, content=datetime.utcnow())
             self.assertEqual(20, os.path.getsize(temp_file))
 
     def test_check_necessary__true_if_last_check_not_found(self):
@@ -360,9 +357,7 @@ class TestUpdateHandler(TestCase):
         self.update_info.api_url = "http://localhost:8000/.small_file"
         with get_temp_file() as temp_file:
             self.assertEqual(0, os.path.getsize(temp_file))
-            self.updater._download_file(
-                url=self.update_info.api_url, file_path=temp_file
-            )
+            self.updater._download_file(url=self.update_info.api_url, file_path=temp_file)
             self.assertEqual(13, os.path.getsize(temp_file))
 
     def test_get_bin_paths__ok(self):
@@ -377,9 +372,7 @@ class TestUpdateHandler(TestCase):
         """Should raise an error if a mapping for the file name isn't found."""
         file_path = self.last_check = os.path.join(TEST_PATH, "bacon.zip")
         with self.assertRaises(PyXFormError) as ctx:
-            self.updater._get_bin_paths(
-                update_info=self.update_info, file_path=file_path
-            )
+            self.updater._get_bin_paths(update_info=self.update_info, file_path=file_path)
         self.assertIn("Did not find", unicode(ctx.exception))
 
     def test_unzip_find_zip_jobs__ok_real_current(self):
@@ -465,9 +458,7 @@ class TestUpdateHandler(TestCase):
             self.updater._unzip(
                 update_info=self.update_info, file_path=self.zip_file, out_path=temp_dir
             )
-            dir_list = [
-                os.path.join(r, f) for r, _, fs in os.walk(temp_dir) for f in fs
-            ]
+            dir_list = [os.path.join(r, f) for r, _, fs in os.walk(temp_dir) for f in fs]
             self.assertEqual(3, len(dir_list))
 
     def test_install__ok(self):
@@ -482,9 +473,7 @@ class TestUpdateHandler(TestCase):
             installed = self.updater._install(
                 update_info=self.update_info, file_name="linux.zip"
             )
-            dir_list = [
-                os.path.join(r, f) for r, _, fs in os.walk(temp_dir) for f in fs
-            ]
+            dir_list = [os.path.join(r, f) for r, _, fs in os.walk(temp_dir) for f in fs]
             self.assertEqual(5, len(dir_list))
 
         latest = self.updater._read_json(file_path=self.install_fake)

@@ -46,9 +46,7 @@ class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
         cast empty strings to None values
         """
         self.assertPyxformXform(
-            ss_structure={
-                "survey": [{"type": "note", "name": "n1", "label": "Note 1"}]
-            },
+            ss_structure={"survey": [{"type": "note", "name": "n1", "label": "Note 1"}]},
             errored=False,
         )
 

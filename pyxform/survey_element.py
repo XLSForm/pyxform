@@ -415,9 +415,7 @@ class SurveyElement(dict):
             path = self._translation_path("hint")
             return node("hint", ref="jr:itext('%s')" % path)
         else:
-            hint, output_inserted = self.get_root().insert_output_values(
-                self.hint, self
-            )
+            hint, output_inserted = self.get_root().insert_output_values(self.hint, self)
             return node("hint", hint, toParseString=output_inserted)
 
     def xml_label_and_hint(self) -> "List[DetachableElement]":
