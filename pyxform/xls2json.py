@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
 from pyxform.utils import (
-    basestring,
     is_valid_xml_tag,
     default_is_dynamic,
     levenshtein_distance,
@@ -89,7 +88,7 @@ def replace_smart_quotes_in_dict(_d):
     for key, value in _d.items():
         _changed = False
         for smart_quote, dumb_quote in SMART_QUOTES.items():
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 if smart_quote in value:
                     value = value.replace(smart_quote, dumb_quote)
                     _changed = True
@@ -175,7 +174,7 @@ def clean_text_values(dict_array):
     for row in dict_array:
         replace_smart_quotes_in_dict(row)
         for key, value in row.items():
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 row[key] = re.sub(r"( )+", " ", value.strip())
     return dict_array
 
@@ -1057,7 +1056,7 @@ def workbook_to_json(
 
                     def replace_prefix(d, prefix):
                         for k, v in d.items():
-                            if isinstance(v, basestring):
+                            if isinstance(v, str):
                                 d[k] = v.replace("$PREFIX$", prefix)
                             elif isinstance(v, dict):
                                 d[k] = replace_prefix(v, prefix)
@@ -1204,7 +1203,7 @@ def workbook_to_json(
                 # (for groups of selects)
                 if table_list is not None:
                     # Then this row is the first select in a table list
-                    if not isinstance(table_list, basestring):
+                    if not isinstance(table_list, str):
                         table_list = list_name
                         table_list_header = {
                             constants.TYPE: select_type,
@@ -1498,7 +1497,7 @@ class SurveyReader(SpreadsheetReader):
     """
 
     def __init__(self, path_or_file, default_name=None):
-        if isinstance(path_or_file, basestring):
+        if isinstance(path_or_file, str):
             self._file_object = None
             path = path_or_file
         else:
