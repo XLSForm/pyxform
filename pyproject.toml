@@ -1,0 +1,3 @@
+[tool.black]
+# Make sure line length matches setup.cfg setting for pycodestyle and flake8
+line-length=90

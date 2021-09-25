@@ -127,9 +127,7 @@ class XLS2XFormTests(TestCase):
 
     def test_validator_args_logic_enketo_only(self):
         """Should activate Enketo only."""
-        raw_args = _create_parser().parse_args(
-            ["xlsform.xlsx", ".", "--enketo_validate"]
-        )
+        raw_args = _create_parser().parse_args(["xlsform.xlsx", ".", "--enketo_validate"])
         args = _validator_args_logic(args=raw_args)
         self.assertEqual(False, args.odk_validate)
         self.assertEqual(True, args.enketo_validate)
@@ -206,9 +204,7 @@ class XLS2XFormTests(TestCase):
         ),
     )
     @mock.patch("pyxform.xls2xform.xls2xform_convert")
-    def test_xls2xform_convert_params_with_flags(
-        self, converter_mock, parser_mock_args
-    ):
+    def test_xls2xform_convert_params_with_flags(self, converter_mock, parser_mock_args):
         """
         Should call xlsform_convert with the correct input for output
         path where only the xlsform input path and json flag were provided, since

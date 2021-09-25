@@ -41,9 +41,7 @@ class Question(SurveyElement):
         if self.type == "calculate" or (
             ("calculate" in self.bind or self.trigger) and not (self.label or self.hint)
         ):
-            nested_setvalues = self.get_root().get_setvalues_for_question_name(
-                self.name
-            )
+            nested_setvalues = self.get_root().get_setvalues_for_question_name(self.name)
             if nested_setvalues:
                 for setvalue in nested_setvalues:
                     msg = (

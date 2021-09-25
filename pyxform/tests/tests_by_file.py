@@ -27,9 +27,7 @@ class MainTest(TestCase):
             # Get the xform output path:
             directory, filename = os.path.split(path_to_excel_file)
             root_filename, ext = os.path.splitext(filename)
-            path_to_output_xform = os.path.join(
-                directory, root_filename + "_output.xml"
-            )
+            path_to_output_xform = os.path.join(directory, root_filename + "_output.xml")
             path_to_expected_xform = os.path.join(directory, root_filename + ".xml")
 
             # Do the conversion:

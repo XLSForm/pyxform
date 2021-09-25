@@ -285,9 +285,7 @@ def process_range_question_type(row):
     Raises PyXFormError when invalid range parameters are used.
     """
     new_dict = row.copy()
-    parameters = get_parameters(
-        new_dict.get("parameters", ""), ["start", "end", "step"]
-    )
+    parameters = get_parameters(new_dict.get("parameters", ""), ["start", "end", "step"])
     parameters_map = {"start": "start", "end": "end", "step": "step"}
     defaults = {"start": "1", "end": "10", "step": "1"}
 
@@ -647,8 +645,6 @@ def workbook_to_json(
         question_type = row.get(constants.TYPE)
         question_name = row.get(constants.NAME)
 
-        question_default = row.get("default")
-
         if not question_type:
             # if name and label are also missing,
             # then its a comment row, and we skip it with warning
@@ -701,9 +697,7 @@ def workbook_to_json(
                     new_dict["bind"].update(
                         {
                             "odk:"
-                            + constants.TRACK_CHANGES: parameters[
-                                constants.TRACK_CHANGES
-                            ]
+                            + constants.TRACK_CHANGES: parameters[constants.TRACK_CHANGES]
                         }
                     )
 
@@ -732,9 +726,7 @@ def workbook_to_json(
                     new_dict["bind"].update(
                         {
                             "odk:"
-                            + constants.IDENTIFY_USER: parameters[
-                                constants.IDENTIFY_USER
-                            ]
+                            + constants.IDENTIFY_USER: parameters[constants.IDENTIFY_USER]
                         }
                     )
 
@@ -898,9 +890,7 @@ def workbook_to_json(
                 question_name = question_name.encode("utf-8")
             error_message = row_format_string % row_number
             error_message += " Invalid question name [" + question_name + "] "
-            error_message += (
-                "Names must begin with a letter, colon," + " or underscore."
-            )
+            error_message += "Names must begin with a letter, colon," + " or underscore."
             error_message += (
                 "Subsequent characters can include numbers," + " dashes, and periods."
             )
@@ -971,9 +961,7 @@ def workbook_to_json(
 
                 # Generate a new node for the jr:count column so
                 # xpath expressions can be used.
-                repeat_count_expression = new_json_dict.get("control", {}).get(
-                    "jr:count"
-                )
+                repeat_count_expression = new_json_dict.get("control", {}).get("jr:count")
                 if repeat_count_expression:
                     generated_node_name = new_json_dict["name"] + "_count"
                     parent_children_array.append(
@@ -1015,9 +1003,9 @@ def workbook_to_json(
                                 "name": "generated_table_list_label_" + str(row_number),
                             }
                             if "label" in new_json_dict:
-                                generated_label_element[
+                                generated_label_element[constants.LABEL] = new_json_dict[
                                     constants.LABEL
-                                ] = new_json_dict[constants.LABEL]
+                                ]
                                 del new_json_dict[constants.LABEL]
                             if "hint" in new_json_dict:
                                 generated_label_element["hint"] = new_json_dict["hint"]
@@ -1046,15 +1034,11 @@ def workbook_to_json(
                 cascading_prefix = row.get(constants.NAME)
                 if not cascading_prefix:
                     raise PyXFormError(
-                        row_format_string % row_number
-                        + " Cascading select needs a name."
+                        row_format_string % row_number + " Cascading select needs a name."
                     )
                 # cascading_json = get_cascading_json(
                 # cascading_choices, cascading_prefix, cascading_level)
-                if (
-                    len(cascading_choices) <= 0
-                    or "questions" not in cascading_choices[0]
-                ):
+                if len(cascading_choices) <= 0 or "questions" not in cascading_choices[0]:
                     raise PyXFormError(
                         "Found a cascading_select "
                         + cascading_level
@@ -1105,9 +1089,7 @@ def workbook_to_json(
                 ):
                     if not external_choices:
                         k = constants.EXTERNAL_CHOICES
-                        msg = (
-                            "There should be an external_choices sheet in this xlsform."
-                        )
+                        msg = "There should be an external_choices sheet in this xlsform."
                         similar = find_sheet_misspellings(key=k, keys=workbook_keys)
                         if similar is not None:
                             msg = msg + " " + similar
@@ -1121,7 +1103,6 @@ def workbook_to_json(
                         + "List name not in external choices sheet: "
                         + list_name
                     )
-                    select_type = aliases.select["select_one"]
                 if (
                     list_name not in choices
                     and select_type != "select one external"
@@ -1208,8 +1189,7 @@ def workbook_to_json(
                             new_json_dict["list_name"] = list_name
                             new_json_dict[constants.CHOICES] = choices[list_name]
                 elif (
-                    "randomize" in parameters.keys()
-                    and parameters["randomize"] == "true"
+                    "randomize" in parameters.keys() and parameters["randomize"] == "true"
                 ):
                     new_json_dict["itemset"] = list_name
                     json_dict["choices"] = choices
@@ -1243,16 +1223,11 @@ def workbook_to_json(
                         error_message = row_format_string % row_number
                         error_message += (
                             " Badly formatted table list,"
-                            " list names don't match: "
-                            + table_list
-                            + " vs. "
-                            + list_name
+                            " list names don't match: " + table_list + " vs. " + list_name
                         )
                         raise PyXFormError(error_message)
 
-                    control = new_json_dict["control"] = new_json_dict.get(
-                        "control", {}
-                    )
+                    control = new_json_dict["control"] = new_json_dict.get("control", {})
                     control["appearance"] = "list-nolabel"
                 parent_children_array.append(new_json_dict)
                 if specify_other_question:
@@ -1291,9 +1266,7 @@ def workbook_to_json(
                 try:
                     int(parameters["max-pixels"])
                 except ValueError:
-                    raise PyXFormError(
-                        "Parameter max-pixels must have an integer value."
-                    )
+                    raise PyXFormError("Parameter max-pixels must have an integer value.")
 
                 new_dict["bind"] = new_dict.get("bind", {})
                 new_dict["bind"].update({"orx:max-pixels": parameters["max-pixels"]})
@@ -1583,9 +1556,7 @@ class VariableNameReader(SpreadsheetReader):
         assert "Dictionary" in self._dict
         for d in self._dict["Dictionary"]:
             if "Variable Name" in d:
-                assert d["Variable Name"] not in variable_names_so_far, d[
-                    "Variable Name"
-                ]
+                assert d["Variable Name"] not in variable_names_so_far, d["Variable Name"]
                 variable_names_so_far.append(d["Variable Name"])
                 new_dict[d["XPath"]] = d["Variable Name"]
             else:
@@ -1598,17 +1569,17 @@ if __name__ == "__main__":
     # convert that file to json, then print it
     if len(sys.argv) < 2:
         # print "You must supply a file argument."
-        filename = "xlsform_spec_test.xls"
-        path = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/"
-        path += filename
+        _filename = "xlsform_spec_test.xls"
+        _path = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/"
+        _path += _filename
     else:
-        path = sys.argv[1]
+        _path = sys.argv[1]
 
-    warnings = []
+    _warnings = []
 
-    json_dict = parse_file_to_json(path, warnings=warnings)
-    print_pyobj_to_json(json_dict)
+    _json_dict = parse_file_to_json(path=_path, warnings=_warnings)
+    print_pyobj_to_json(pyobj=_json_dict)
 
-    if len(warnings) > 0:
+    if len(_warnings) > 0:
         sys.stderr.write("Warnings:" + "\n")
-        sys.stderr.write("\n".join(warnings) + "\n")
+        sys.stderr.write("\n".join(_warnings) + "\n")

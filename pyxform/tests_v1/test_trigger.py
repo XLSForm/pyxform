@@ -46,7 +46,10 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=["<a/>", "<b/>",],
+            model__contains=[
+                "<a/>",
+                "<b/>",
+            ],
             xml__contains=[
                 '<bind nodeset="/trigger-column/b" type="dateTime"/>',
                 '<input ref="/trigger-column/a">',
@@ -70,7 +73,10 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=["<a/>", "<c/>",],
+            model__contains=[
+                "<a/>",
+                "<c/>",
+            ],
             xml__contains=[
                 '<bind nodeset="/trigger-column/c" type="dateTime"/>',
                 '<input ref="/trigger-column/a">',
@@ -95,7 +101,11 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=["<a/>", "<b/>", "<c/>",],
+            model__contains=[
+                "<a/>",
+                "<b/>",
+                "<c/>",
+            ],
             xml__contains=[
                 '<bind nodeset="/trigger-column/b" type="int"/>',
                 '<bind nodeset="/trigger-column/c" type="dateTime"/>',
@@ -122,7 +132,10 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=["<a/>", "<d/>",],
+            model__contains=[
+                "<a/>",
+                "<d/>",
+            ],
             xml__contains=[
                 '<bind nodeset="/trigger-column/d" type="dateTime"/>',
                 '<input ref="/trigger-column/a">',
@@ -146,7 +159,10 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=["<a/>", "<e/>",],
+            model__contains=[
+                "<a/>",
+                "<e/>",
+            ],
             xml__contains=[
                 '<bind nodeset="/trigger-column/e" type="decimal"/>',
                 '<input ref="/trigger-column/a">',
@@ -218,7 +234,11 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=["<a/>", "<grp>", "<c/>",],
+            model__contains=[
+                "<a/>",
+                "<grp>",
+                "<c/>",
+            ],
             xml__contains=[
                 '<bind nodeset="/trigger-column/grp/c" type="dateTime"/>',
                 '<input ref="/trigger-column/a">',

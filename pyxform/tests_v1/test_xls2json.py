@@ -54,7 +54,10 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
         test_names = ("choices", "Choices", "CHOICES")
         for n in test_names:
             self.assertPyxformXform(
-                name="test", md=CHOICES.format(name=n), errored=False, warnings_count=0,
+                name="test",
+                md=CHOICES.format(name=n),
+                errored=False,
+                warnings_count=0,
             )
 
     def test_workbook_to_json__case_insensitive__external_choices(self):
@@ -84,7 +87,10 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
         test_names = ("survey", "Survey", "SURVEY")
         for n in test_names:
             self.assertPyxformXform(
-                name="test", md=SURVEY.format(name=n), errored=False, warnings_count=0,
+                name="test",
+                md=SURVEY.format(name=n),
+                errored=False,
+                warnings_count=0,
             )
 
     def test_workbook_to_json__ignore_prefixed_name__choices(self):
@@ -446,7 +452,10 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | my_id         | My Survey |
             """,
             errored=True,
-            warnings__not_contains=[self.err_similar_found, "'settyngs'",],
+            warnings__not_contains=[
+                self.err_similar_found,
+                "'settyngs'",
+            ],
             error__contains=[
                 self.err_survey_required,
                 self.err_similar_found,
@@ -481,8 +490,14 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | my_id         | My Survey |
             """,
             errored=True,
-            warnings__not_contains=[self.err_similar_found, "'settyngs'",],
-            error__contains=[self.err_choices_required, "'chooses'",],
+            warnings__not_contains=[
+                self.err_similar_found,
+                "'settyngs'",
+            ],
+            error__contains=[
+                self.err_choices_required,
+                "'chooses'",
+            ],
             error__not_contains=[
                 self.err_survey_required,
                 "'survey'",
@@ -513,8 +528,14 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | my_id         | My Survey |
             """,
             errored=True,
-            warnings__not_contains=[self.err_similar_found, "'settyngs'",],
-            error__contains=[self.err_ext_choices_required, "'external_choyces'",],
+            warnings__not_contains=[
+                self.err_similar_found,
+                "'settyngs'",
+            ],
+            error__contains=[
+                self.err_ext_choices_required,
+                "'external_choyces'",
+            ],
             error__not_contains=[
                 self.err_survey_required,
                 "'survey'",
@@ -544,8 +565,14 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | my_id         | My Survey |
             """,
             errored=True,
-            warnings__contains=[self.err_similar_found, "'settyngs'",],
-            error__contains=[self.err_choices_required, "'chooses'",],
+            warnings__contains=[
+                self.err_similar_found,
+                "'settyngs'",
+            ],
+            error__contains=[
+                self.err_choices_required,
+                "'chooses'",
+            ],
             error__not_contains=[
                 self.err_survey_required,
                 "'survey'",
@@ -592,9 +619,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
 
     def test_xls_to_dict__extra_sheet_names_are_returned_by_parser(self):
         """Should return all sheet names so that later steps can do spellcheck."""
-        d = xls_to_dict(
-            os.path.join(TESTS_DIR, "example_xls", "extra_sheet_names.xlsx")
-        )
+        d = xls_to_dict(os.path.join(TESTS_DIR, "example_xls", "extra_sheet_names.xlsx"))
         self.assertIn("survey", d)
         self.assertIn("my_sheet", d)
         self.assertIn("stettings", d)

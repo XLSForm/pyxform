@@ -4,14 +4,13 @@ Test select one external syntax.
 """
 import codecs
 import os
-
-import unittest2 as unittest
-
+import unittest
 import pyxform
 from pyxform.tests import utils
 from pyxform.tests.utils import XFormTestCase
 from pyxform.utils import sheet_to_csv
 from pyxform import InputQuestion, Survey
+
 
 DIR = os.path.dirname(__file__)
 
@@ -48,9 +47,7 @@ class MainTest(XFormTestCase):
             with codecs.open(
                 expected_output_path, "rb", encoding="utf-8"
             ) as expected_file:
-                with codecs.open(
-                    self.output_path, "rb", encoding="utf-8"
-                ) as actual_file:
+                with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
                     self.assertXFormEqual(expected_file.read(), actual_file.read())
 
     def test_csv_data(self):

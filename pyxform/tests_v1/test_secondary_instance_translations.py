@@ -169,7 +169,10 @@ class TestSecondaryInstanceTest(PyxformTestCase):
                 '<text id="choices-0">',
                 '<value> One - <output value=" /data/txt "/>',
             ],
-            model__contains=["<itextId>choices-0</itextId>", "<name>one</name>",],
+            model__contains=[
+                "<itextId>choices-0</itextId>",
+                "<name>one</name>",
+            ],
             xml__contains=['<label ref="jr:itext(itextId)"/>'],
             xml__excludes=['<label ref="label"/>', "<label>One - ${txt}</label>"],
         )
@@ -225,7 +228,9 @@ class TestSecondaryInstanceTest(PyxformTestCase):
             |         | choices   | one  | One - ${txt} | baz |
             """
         self.assertPyxformXform(
-            name="data", md=xform_md, model__contains=["<foo>baz</foo>"],
+            name="data",
+            md=xform_md,
+            model__contains=["<foo>baz</foo>"],
         )
 
     def test_select_with_dynamic_option_label__and_no_choice_filter__and_no_translations__inlines_output(

@@ -5,9 +5,7 @@ Testing simple cases for Xls2Json
 import codecs
 import json
 import os
-
-from unittest2 import TestCase
-
+from unittest import TestCase
 from pyxform.tests import utils
 from pyxform.xls2json import SurveyReader
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
@@ -46,9 +44,7 @@ class BasicXls2JsonApiTests(TestCase):
                 self.assertEqual(expected_json, actual_json)
 
     def test_hidden(self):
-        x = SurveyReader(
-            utils.path_to_text_fixture("hidden.xls"), default_name="hidden"
-        )
+        x = SurveyReader(utils.path_to_text_fixture("hidden.xls"), default_name="hidden")
         x_results = x.to_json_dict()
 
         expected_dict = [

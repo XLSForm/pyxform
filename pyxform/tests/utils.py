@@ -2,23 +2,15 @@
 """
 The tests utils module functionality.
 """
+import configparser
 import os
-import xml.etree.ElementTree as ETree
-
-from formencode.doctest_xml_compare import xml_compare
-from unittest2 import TestCase
 import textwrap
-from typing import TYPE_CHECKING
-
+import xml.etree.ElementTree as ETree
+from formencode.doctest_xml_compare import xml_compare
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
-
-try:
-    import ConfigParser
-
-    configparser = ConfigParser
-except ImportError:
-    import configparser
+from typing import TYPE_CHECKING
+from unittest import TestCase
 
 
 if TYPE_CHECKING:
@@ -85,7 +77,8 @@ class XFormTestCase(TestCase):
             xml_compare(xform1, xform2, reporter), "\n\n" + "\n".join(reversed(errs))
         )
 
-    def sort_elems(self, elems, attr=None):
+    @staticmethod
+    def sort_elems(elems, attr=None):
         if attr:
 
             def elem_get_attr(elem):
@@ -139,4 +132,4 @@ def prep_class_config(cls, test_dir="tests"):
 def prep_for_xml_contains(text: str) -> "Tuple[str]":
     """Prep string for finding an exact match to formatted XML text."""
     # noinspection PyRedundantParentheses
-    return (textwrap.indent(textwrap.dedent(text), "    ",),)
+    return (textwrap.indent(textwrap.dedent(text), "    "),)

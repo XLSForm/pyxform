@@ -4,12 +4,11 @@ Some tests for the new (v0.9) spec is properly implemented.
 """
 import codecs
 import os
-
-import unittest2 as unittest
-
+import unittest as unittest
 import pyxform
 from pyxform.errors import PyXFormError
 from pyxform.tests.utils import XFormTestCase
+
 
 DIR = os.path.dirname(__file__)
 
