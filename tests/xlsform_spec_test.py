@@ -5,12 +5,11 @@ Some tests for the new (v0.9) spec is properly implemented.
 import codecs
 import os
 import unittest as unittest
+
 import pyxform
 from pyxform.errors import PyXFormError
 from tests.utils import XFormTestCase
-
-
-DIR = os.path.dirname(__file__)
+from tests import example_xls, test_expected_output
 
 
 class MainTest(XFormTestCase):
@@ -20,7 +19,7 @@ class MainTest(XFormTestCase):
         filename = "xlsform_spec_test.xlsx"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml"
+            test_expected_output.PATH, self.root_filename + ".xml"
         )
 
         # Do the conversion:
@@ -44,7 +43,7 @@ class FlatXlsformTest(XFormTestCase):
         filename = "flat_xlsform_test.xlsx"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml"
+            test_expected_output.PATH, self.root_filename + ".xml"
         )
 
         # Do the conversion:
@@ -68,7 +67,7 @@ class TestNewWidgets(XFormTestCase):
         filename = "widgets.xls"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml"
+            test_expected_output.PATH, self.root_filename + ".xml"
         )
 
         # Do the conversion:
@@ -92,7 +91,7 @@ class CalculateWithoutCalculationTest(unittest.TestCase):
 
     def runTest(self):
         filename = "calculate_without_calculation.xls"
-        path_to_excel_file = os.path.join(DIR, "example_xls", filename)
+        path_to_excel_file = os.path.join(example_xls.PATH, filename)
         self.assertRaises(
             PyXFormError, pyxform.xls2json.parse_file_to_json, path_to_excel_file
         )
@@ -105,7 +104,7 @@ class PullDataTest(XFormTestCase):
         filename = "pull_data.xlsx"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml"
+            test_expected_output.PATH, self.root_filename + ".xml"
         )
 
         # Do the conversion:
@@ -132,7 +131,7 @@ class SeachAndSelectTest(XFormTestCase):
         filename = "search_and_select.xlsx"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml"
+            test_expected_output.PATH, self.root_filename + ".xml"
         )
 
         # Do the conversion:
@@ -159,7 +158,7 @@ class DefaultSurveySheetTest(XFormTestCase):
         filename = "survey_no_name.xlsx"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml"
+            test_expected_output.PATH, self.root_filename + ".xml"
         )
 
         warnings = []

@@ -6,10 +6,8 @@ import codecs
 import os
 import unittest
 import pyxform
+from tests import test_expected_output
 from tests.utils import XFormTestCase
-
-
-DIR = os.path.dirname(__file__)
 
 
 class MainTest(XFormTestCase):
@@ -19,7 +17,7 @@ class MainTest(XFormTestCase):
         filename = "or_other.xlsx"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", self.root_filename + ".xml"
+            test_expected_output.PATH, self.root_filename + ".xml"
         )
 
         # Do the conversion:
