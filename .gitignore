@@ -7,7 +7,6 @@
 .python-version
 .DS_Store
 .noseids
-tests/how_old_are_you.json
 tests/test_output
 .idea
 .vscode
@@ -25,7 +24,6 @@ env
 
 # ignore pypi manifest
 MANIFEST
-pyxform/tests/test_output/
 
 # ignore pyxform_validator_update files
 pyxform/validators/odk_validate/.last_check

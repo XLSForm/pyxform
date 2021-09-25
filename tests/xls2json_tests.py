@@ -8,7 +8,7 @@ import os
 from unittest import TestCase
 from pyxform.xls2json import SurveyReader
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
-from tests import utils
+from tests import example_xls, test_output, test_expected_output, utils
 
 
 # Nothing calls this AFAICT
@@ -17,20 +17,17 @@ def absolute_path(f, file_name):
     return os.path.join(directory, file_name)
 
 
-DIR = os.path.dirname(__file__)
-
-
 class BasicXls2JsonApiTests(TestCase):
     maxDiff = None
 
     def test_simple_yes_or_no_question(self):
         filename = "yes_or_no_question.xls"
-        path_to_excel_file = os.path.join(DIR, "example_xls", filename)
+        path_to_excel_file = os.path.join(example_xls.PATH, filename)
         # Get the xform output path:
         root_filename, ext = os.path.splitext(filename)
-        output_path = os.path.join(DIR, "test_output", root_filename + ".json")
+        output_path = os.path.join(test_output.PATH, root_filename + ".json")
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", root_filename + ".json"
+            test_expected_output.PATH, root_filename + ".json"
         )
         x = SurveyReader(path_to_excel_file, default_name="yes_or_no_question")
         x_results = x.to_json_dict()
@@ -120,12 +117,12 @@ class BasicXls2JsonApiTests(TestCase):
 
     def test_table(self):
         filename = "simple_loop.xls"
-        path_to_excel_file = os.path.join(DIR, "example_xls", filename)
+        path_to_excel_file = os.path.join(example_xls.PATH, filename)
         # Get the xform output path:
         root_filename, ext = os.path.splitext(filename)
-        output_path = os.path.join(DIR, "test_output", root_filename + ".json")
+        output_path = os.path.join(test_output.PATH, root_filename + ".json")
         expected_output_path = os.path.join(
-            DIR, "test_expected_output", root_filename + ".json"
+            test_expected_output.PATH, root_filename + ".json"
         )
         x = SurveyReader(path_to_excel_file, default_name="simple_loop")
         x_results = x.to_json_dict()

@@ -6,23 +6,22 @@ import configparser
 import os
 import textwrap
 import xml.etree.ElementTree as ETree
-from formencode.doctest_xml_compare import xml_compare
-from pyxform import file_utils
-from pyxform.builder import create_survey, create_survey_from_path
 from typing import TYPE_CHECKING
 from unittest import TestCase
+
+from formencode.doctest_xml_compare import xml_compare
+
+from pyxform import file_utils
+from pyxform.builder import create_survey, create_survey_from_path
+from tests import example_xls, test_output
 
 
 if TYPE_CHECKING:
     from typing import Tuple
 
 
-DIR = os.path.dirname(__file__)
-
-
 def path_to_text_fixture(filename):
-    directory = os.path.dirname(__file__)
-    return os.path.join(directory, "example_xls", filename)
+    return os.path.join(example_xls.PATH, filename)
 
 
 def build_survey(filename):
@@ -53,11 +52,11 @@ class XFormTestCase(TestCase):
     """
 
     def get_file_path(self, filename):
-        self.path_to_excel_file = os.path.join(DIR, "example_xls", filename)
+        self.path_to_excel_file = os.path.join(example_xls.PATH, filename)
 
         # Get the xform output path:
         self.root_filename, self.ext = os.path.splitext(filename)
-        self.output_path = os.path.join(DIR, "test_output", self.root_filename + ".xml")
+        self.output_path = os.path.join(test_output.PATH, self.root_filename + ".xml")
 
     def assertXFormEqual(self, xform1, xform2):
         xform1 = ETree.fromstring(xform1.encode("utf-8"))
