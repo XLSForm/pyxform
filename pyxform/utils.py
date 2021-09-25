@@ -13,9 +13,6 @@ from json.decoder import JSONDecodeError
 from xml.dom.minidom import Element, Text, parseString
 
 
-unichr = chr
-
-
 SEP = "_"
 
 # http://www.w3.org/TR/REC-xml/
@@ -190,11 +187,7 @@ def has_external_choices(json_struct):
     """
     if isinstance(json_struct, dict):
         for k, v in json_struct.items():
-            if (
-                k == "type"
-                and isinstance(v, str)
-                and v.startswith("select one external")
-            ):
+            if k == "type" and isinstance(v, str) and v.startswith("select one external"):
                 return True
             elif has_external_choices(v):
                 return True
