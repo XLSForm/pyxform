@@ -12,7 +12,7 @@ jobs:
           # Install dependencies with --user to enable easier caching
           name: Install dependencies
           command: |
-            pip install -r requirements.pip --user
+            pip install -r dev_requirements.pip --user
             pip install codecov --user
             /home/circleci/.local/bin/codecov
       - run:
@@ -25,12 +25,11 @@ jobs:
           name: Test code is well formatted
           command: |
             /home/circleci/.local/bin/black --version
-            /home/circleci/.local/bin/black pyxform --check || exit;
+            /home/circleci/.local/bin/black pyxform tests --check || exit;
       - run:
           name: Run tests
           command: |
             /home/circleci/.local/bin/nosetests --with-coverage
-            /home/circleci/.local/bin/nosetests --tests pyxform/tests_v1/ --with-coverage
       - run:
           name: upload coverage report
           command: |

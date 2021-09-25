@@ -34,7 +34,7 @@ The ``xls2xform`` command can then be used::
 
     xls2xform path_to_XLSForm [output_path]
 
-``pyxform`` can be run with either Python 2 or Python 3. Continuous integration runs tests on both Python generations to ensure continued compatibility.
+The currently supported Python versions for ``pyxform`` are 3.7 and 3.8.
 
 Running pyxform from local source
 =================================
@@ -80,7 +80,7 @@ Development
 ===========
 To set up for development/contributing::
 
-    pip install -r requirements.pip
+    pip install -r dev_requirements.pip
 
     python setup.py develop
 
@@ -90,15 +90,21 @@ You can run tests with::
 
     nosetests
 
+On Windows, use::
+
+    nosetests -v -v --traverse-namespace ./tests
+
 Before committing, make sure to format your code using `black`::
 
-    black pyxform
+    black pyxform tests
 
-If you are using a copy of black outside your virtualenv, make sure it is the same version as listed in requirements.pip.
+If you are using a copy of black outside your virtualenv, make sure it is the same version as listed in requirements_dev.pip.
 
 Writing tests
 -------------
-Make sure to include tests for the changes you're working on. When writing new tests you should add them in `pyxform/test_v1` instead of in `pyxform/test` (which contains tests using an older style). Generally, the easiest way to write tests is to extend `PyxformTestCase` which will let you compile example XLSForm and make assertions on the resulting XForm.
+Make sure to include tests for the changes you're working on. When writing new tests you should add them in `tests` folder. Add to an existing test module, or create a new test module. Test modules are named after the corresponding source file, or if the tests concern many files then module name is the topic or feature under test.
+
+When creating new test cases, where possible use `PyxformTestCase` as a base class instead of `unittest.TestCase`. The `PyxformTestCase` is a toolkit for writing XLSForms as MarkDown tables, compiling example XLSForms, and making assertions on the resulting XForm. This makes code review much easier by putting the XLSForm content inline with the test, instead of in a separate file. A `unittest.TestCase` may be used if the new tests do not involve compiling an XLSForm (but most will). Do not add new tests using the old style `XFormTestCase`.
 
 Documentation
 =============
@@ -134,7 +140,7 @@ Releasing pyxform
 
 10. Install the development and release requirements::
 
-     pip install -r requirements.pip
+     pip install -r dev_requirements.pip
      pip install wheel twine
 
 11. Cleanup build and dist folders::
