@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 REQUIRES = [
     "xlrd==1.2.0",
     "unicodecsv==0.14.1",
-    "formencode==1.3.1",
+    "formencode==2.0.0",
     "unittest2==1.1.0",
     'functools32==3.2.3.post2 ; python_version < "3.2"',
 ]
