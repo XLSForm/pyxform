@@ -2,8 +2,6 @@
 """
 pyxform_validator_update - command to update XForm validators.
 """
-from __future__ import print_function
-
 import argparse
 import fnmatch
 import io
