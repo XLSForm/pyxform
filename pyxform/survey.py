@@ -893,7 +893,6 @@ class Survey(Section):
         """
 
         name = matchobj.group(2)
-        bracketed_tag_name = "${{{0}}}".format(name)
         last_saved = matchobj.group(1) is not None
         is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
         indexed_repeat_regex = re.compile(r"indexed-repeat\([^)]+\)")

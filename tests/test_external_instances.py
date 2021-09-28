@@ -413,7 +413,7 @@ class ExternalInstanceTests(PyxformTestCase):
     def test_pulldata_calculate_multi_line_expression__one_call(self):
         """Should find the pulldata instance name in a multi-line expression."""
         qd = """\
-          if(${a}, 
+          if(${a},
           pulldata('my_data_b', 'my_ref', 'metainstanceID', ${b}),
           (count-selected(${c})))
         """
@@ -442,7 +442,7 @@ class ExternalInstanceTests(PyxformTestCase):
     def test_pulldata_calculate_multi_line_expression__multiple_calls(self):
         """Should find the pulldata instance names in a multi-line expression."""
         qd = """\
-          if(${a}, 
+          if(${a},
           pulldata('my_data_b', 'my_ref', 'metainstanceID', ${b}),
           pulldata('my_data_c', 'my_ref', 'metainstanceID', ${c}))
         """
