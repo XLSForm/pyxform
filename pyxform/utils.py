@@ -129,7 +129,9 @@ def node(*args, **kwargs):
                 # Move node's children to the result Element
                 # discarding node's root
                 for child in parsed_node.childNodes:
-                    result.appendChild(copy.deepcopy(child))
+                    # No tests seem to involve moving elements with children.
+                    # Deep clone used anyway in case of unknown edge cases.
+                    result.appendChild(child.cloneNode(deep=True))
         else:
             result.setAttribute(k, v)
 
