@@ -4,7 +4,7 @@ InstanceInfo class module.
 """
 
 
-class InstanceInfo(object):
+class InstanceInfo:
     """Standardise Instance details relevant during XML generation."""
 
     def __init__(self, type, context, name, src, instance):

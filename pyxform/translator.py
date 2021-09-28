@@ -16,7 +16,7 @@ def infinite_dict():
 # translator.translate('How are you?').from('English').to('French')
 
 
-class _StringWithLanguageTranslator(object):
+class _StringWithLanguageTranslator:
     def __init__(self, dictionary):
         self._dict = dictionary
 
@@ -26,7 +26,7 @@ class _StringWithLanguageTranslator(object):
         return None
 
 
-class _StringTranslator(object):
+class _StringTranslator:
     def __init__(self, dictionary):
         self._dict = dictionary
 
@@ -35,7 +35,7 @@ class _StringTranslator(object):
         return _StringWithLanguageTranslator(dictionary)
 
 
-class Translator(object):
+class Translator:
     def __init__(self):
         """
         I'm being super lazy dictionary has to have the form:

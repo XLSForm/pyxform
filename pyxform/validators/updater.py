@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 capture_handler = CapturingHandler(logger=log)
 
 
-class _UpdateInfo(object):
+class _UpdateInfo:
     """
     Data class for Updater info.
     """
@@ -67,7 +67,7 @@ class _UpdateInfo(object):
         self.manual_msg = "Download manually from: {r}.".format(r=self.repo_url)
 
 
-class _UpdateHandler(object):
+class _UpdateHandler:
     """
     Handles tasks related to updating external XForm validators.
 
@@ -496,7 +496,7 @@ class _UpdateHandler(object):
             raise PyXFormError(message)
 
 
-class _UpdateService(object):
+class _UpdateService:
 
     update_info = None
 

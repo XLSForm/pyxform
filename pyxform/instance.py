@@ -5,7 +5,7 @@ SurveyInstance class module.
 from pyxform.xform_instance_parser import parse_xform_instance
 
 
-class SurveyInstance(object):
+class SurveyInstance:
     def __init__(self, survey_object, **kwargs):
         self._survey = survey_object
         self.kwargs = kwargs  # not sure what might be passed to this
