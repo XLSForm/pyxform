@@ -2,8 +2,6 @@
 """
 Survey module with XForm Survey objects and utility functions.
 """
-from __future__ import print_function
-
 import codecs
 import os
 import re

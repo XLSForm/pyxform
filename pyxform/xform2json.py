@@ -2,8 +2,6 @@
 """
 xform2json module - Transform an XForm to a JSON dictionary.
 """
-from __future__ import print_function
-
 import codecs
 import copy
 import json

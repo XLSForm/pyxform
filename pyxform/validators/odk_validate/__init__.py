@@ -3,8 +3,6 @@
 odk_validate.py
 A python wrapper around ODK Validate
 """
-from __future__ import print_function, unicode_literals
-
 import logging
 import os
 import sys
