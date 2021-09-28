@@ -197,7 +197,7 @@ def get_cascading_json(sheet_list, prefix, level):
 
 def csv_to_dict(path_or_file):
     if isinstance(path_or_file, str):
-        csv_data = open(path_or_file, "r")
+        csv_data = open(path_or_file, "r", encoding="utf-8", newline="")
     else:
         csv_data = path_or_file
 
@@ -278,7 +278,7 @@ def convert_file_to_csv_string(path):
         imported_sheets = csv_to_dict(path)
     else:
         imported_sheets = xls_to_dict(path)
-    foo = StringIO()
+    foo = StringIO(newline="")
     writer = csv.writer(foo, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
     for sheet_name, rows in imported_sheets.items():
         writer.writerow([sheet_name])
