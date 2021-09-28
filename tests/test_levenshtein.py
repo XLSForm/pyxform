@@ -1,6 +1,6 @@
 import unittest
-from pyxform.utils import levenshtein_distance
 
+from pyxform.utils import levenshtein_distance
 
 """ /* To test in Postgres */
 CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;

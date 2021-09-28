@@ -10,19 +10,18 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta
 from stat import S_IXGRP, S_IXUSR
 from typing import Optional
-from zipfile import ZipFile
 from unittest import TestCase, skipIf
+from zipfile import ZipFile
 
 from pyxform.errors import PyXFormError
-from tests import validators
-from tests.validators.server import ThreadingServerInThread
 from pyxform.validators.updater import (
     EnketoValidateUpdater,
     _UpdateHandler,
     _UpdateInfo,
     capture_handler,
 )
-
+from tests import validators
+from tests.validators.server import ThreadingServerInThread
 
 try:
     from zipfile import BadZipFile

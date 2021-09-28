@@ -2,20 +2,19 @@
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
+import csv
 import datetime
 import re
 from collections import OrderedDict
 from functools import reduce
 from io import BytesIO
 
-import csv
 import xlrd
 from xlrd import XLRDError
 from xlrd.xldate import XLDateAmbiguous
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
-
 
 XL_DATE_AMBIGOUS_MSG = (
     "The xls file provided has an invalid date on the %s sheet, under"

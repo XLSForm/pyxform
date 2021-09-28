@@ -6,7 +6,6 @@ from http.server import SimpleHTTPRequestHandler
 from socketserver import ThreadingTCPServer
 from urllib.parse import unquote
 
-
 HERE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 

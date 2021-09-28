@@ -5,16 +5,16 @@ A python wrapper around ODK Validate
 """
 import logging
 import os
-import sys
 import shutil
+import sys
 from typing import TYPE_CHECKING
+
 from pyxform.validators.error_cleaner import ErrorCleaner
 from pyxform.validators.util import (
     XFORM_SPEC_PATH,
     check_readable,
     run_popen_with_timeout,
 )
-
 
 if TYPE_CHECKING:
     from pyxform.validators.util import PopenResult

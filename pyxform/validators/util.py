@@ -13,11 +13,10 @@ import threading
 import time
 from contextlib import closing
 from subprocess import PIPE, Popen
-from urllib.error import URLError, HTTPError
-from urllib.request import urlopen, Request
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from pyxform.errors import PyXFormError
-
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 XFORM_SPEC_PATH = os.path.join(HERE, "xlsform_spec_test.xml")

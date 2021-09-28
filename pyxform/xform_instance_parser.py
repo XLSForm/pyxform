@@ -8,7 +8,6 @@ XFormInstanceParser class module - parses an instance XML.
 import re
 from xml.dom import minidom
 
-
 XFORM_ID_STRING = "_xform_id_string"
 
 

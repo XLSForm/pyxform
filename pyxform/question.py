@@ -8,11 +8,7 @@ import re
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import (
-    node,
-    default_is_dynamic,
-    has_dynamic_label,
-)
+from pyxform.utils import default_is_dynamic, has_dynamic_label, node
 
 
 class Question(SurveyElement):

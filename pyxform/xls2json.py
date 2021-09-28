@@ -12,13 +12,8 @@ from typing import TYPE_CHECKING
 
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
-from pyxform.utils import (
-    is_valid_xml_tag,
-    default_is_dynamic,
-    levenshtein_distance,
-)
+from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
-
 
 if TYPE_CHECKING:
     from typing import Any, Dict, KeysView, Optional

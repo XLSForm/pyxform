@@ -5,6 +5,7 @@ Some tests for the new (v0.9) spec is properly implemented.
 import codecs
 import os
 import unittest
+
 import pyxform
 from tests import test_expected_output
 from tests.xform_test_case.base import XFormTestCase
