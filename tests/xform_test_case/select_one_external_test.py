@@ -9,7 +9,7 @@ import pyxform
 from pyxform.utils import sheet_to_csv
 from pyxform import InputQuestion, Survey
 from tests import test_expected_output, test_output
-from tests.utils import XFormTestCase
+from tests.xform_test_case.base import XFormTestCase
 
 
 class MainTest(XFormTestCase):
