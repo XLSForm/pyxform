@@ -2,7 +2,7 @@
 pyxform v1.6.0
 ===============
 
-|circleci|  |appveyor| |codecov| |black|
+|circleci|  |appveyor| |codecov| |python| |black|
 
 .. |circleci| image:: https://circleci.com/gh/XLSForm/pyxform.svg?style=shield&circle-token=:circle-token
     :target: https://circleci.com/gh/XLSForm/pyxform
@@ -12,6 +12,9 @@ pyxform v1.6.0
 
 .. |codecov| image:: https://codecov.io/github/XLSForm/pyxform/branch/master/graph/badge.svg
     :target: https://codecov.io/github/XLSForm/pyxform
+
+.. |python| image:: https://img.shields.io/badge/python-3.7,3.8-blue.svg
+    :target: https://www.python.org/downloads
 
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/python/black
@@ -39,36 +42,38 @@ The currently supported Python versions for ``pyxform`` are 3.7 and 3.8.
 Running pyxform from local source
 =================================
 
-Note that you must uninstall any globally installed ``pyxform`` instance in order to use local modules.
-Please install java 8 or newer version.
+Note that you must uninstall any globally installed ``pyxform`` instance in order to use local modules. Please install java 8 or newer version.
 
-From the command line::
+From the command line, complete the following. These steps use a `virtualenv <https://docs.python.org/3.8/tutorial/venv.html>`_ to make dependency management easier, and to keep the global site-packages directory clean::
 
-    python setup.py develop
-    python pyxform/xls2xform.py path_to_XLSForm [output_path]
+    # Get a copy of the repository.
+    mkdir -P ~/repos/pyxform
+    cd ~/repos/pyxform
+    git clone https://github.com/XLSForm/pyxform.git repo
 
-Consider using a `virtualenv <http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/>`_ and `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/>`_ to make dependency management easier and keep your global site-packages directory clean::
+    # Create and activate a virtual environment for the install.
+    /usr/local/bin/python3.8 -m venv venv
+    . venv/bin/activate
 
-    pip install virtualenv
-    pip install virtualenvwrapper
-    mkvirtualenv local_pyxform                     # or whatever you want to name it
-    (local_pyxform)$ python setup.py develop       # install the local files
-    (local_pyxform)$ python pyxform/xls2xform.py --help
-    (local_pyxform)$ xls2xform --help              # same effect as previous line
-    (local_pyxform)$ which xls2xform.              # ~/.virtualenvs/local_pyxform/bin/xls2xform
+    # Install the pyxform and it's production dependencies.
+    (venv)$ cd repo
+    (venv)$ pip install -e .
+    (venv)$ python pyxform/xls2xform.py --help
+    (venv)$ xls2xform --help           # same effect as previous line
+    (venv)$ which xls2xform            # ~/repos/pyxform/venv/bin/xls2xform
 
-To leave and return to the virtual environment::
+To leave and return to the virtualenv::
 
-    (local_pyxform)$ deactivate                    # leave the virtualenv
+    (venv)$ deactivate                 # leave the venv, scripts not on $PATH
     $ xls2xform --help
     # -bash: xls2xform: command not found
-    $ workon local_pyxform                         # reactivate the virtualenv
-    (local_pyxform)$ which xls2xform               # & we can access the scripts once again
-    ~/.virtualenvs/local_pyxform/bin/xls2xform
+    $ . ~/repos/pyxform/venv/bin/activate     # reactivate the venv
+    (venv)$ which xls2xform                   # scripts available on $PATH again
+    ~/repos/pyxform/venv/bin/xls2xform
 
 Installing pyxform from remote source
 =====================================
-`pip` can install from any GitHub repository::
+`pip` can install from the GitHub repository. Only do this if you want to install from the master branch, which is likely to have pre-release code. To install the latest release, see above.::
 
     pip install git+https://github.com/XLSForm/pyxform.git@master#egg=pyxform
 
@@ -78,13 +83,9 @@ You can then run xls2xform from the commandline::
 
 Development
 ===========
-To set up for development/contributing::
+To set up for development / contributing, first complete the above steps for "Running pyxform from local source", then complete the below.::
 
     pip install -r dev_requirements.pip
-
-    python setup.py develop
-
-    cd your-virtual-env-dir/src/pyxform
 
 You can run tests with::
 
@@ -94,11 +95,13 @@ On Windows, use::
 
     nosetests -v -v --traverse-namespace ./tests
 
-Before committing, make sure to format your code using `black`::
+Before committing, make sure to format the code using `black`::
 
     black pyxform tests
 
 If you are using a copy of black outside your virtualenv, make sure it is the same version as listed in requirements_dev.pip.
+
+In case the pre-commit.sh hooks don't run, also run the code through `isort` (sorts imports) and `flake8` (misc code quality suggestions). The syntax is the same as above for `black`.
 
 Writing tests
 -------------
@@ -111,9 +114,7 @@ Documentation
 To check out the documentation for pyxform do the following::
 
     pip install Sphinx==1.0.7
-
     cd your-virtual-env-dir/src/pyxform/docs
-
     make html
 
 Change Log
@@ -136,11 +137,12 @@ Releasing pyxform
 8. In a clean new release only directory, checkout master.
 9. Create a new virtualenv in this directory to ensure a clean Python environment::
 
-     mkvirtualenv pyxform-release
+     /usr/local/bin/python3.8 -m venv pyxform-release
+     . pyxform-release/bin/activate
 
-10. Install the development and release requirements::
+10. Install the production and packaging requirements::
 
-     pip install -r dev_requirements.pip
+     pip install -e .
      pip install wheel twine
 
 11. Cleanup build and dist folders::
