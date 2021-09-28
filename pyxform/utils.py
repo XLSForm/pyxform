@@ -158,7 +158,7 @@ def sheet_to_csv(workbook_path, csv_path, sheet_name):
         return False
     if not sheet or sheet.nrows < 2:
         return False
-    with open(csv_path, "wb") as f:
+    with open(csv_path, "w") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         mask = [v and len(v.strip()) > 0 for v in sheet.row_values(0)]
         for row_idx in range(sheet.nrows):

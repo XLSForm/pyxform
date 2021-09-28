@@ -7,7 +7,7 @@ import datetime
 import re
 from collections import OrderedDict
 from functools import reduce
-from io import BytesIO
+from io import StringIO
 
 import xlrd
 from xlrd import XLRDError
@@ -197,7 +197,7 @@ def get_cascading_json(sheet_list, prefix, level):
 
 def csv_to_dict(path_or_file):
     if isinstance(path_or_file, str):
-        csv_data = open(path_or_file, "rb")
+        csv_data = open(path_or_file, "r")
     else:
         csv_data = path_or_file
 
@@ -219,7 +219,7 @@ def csv_to_dict(path_or_file):
                 content = None
             return s_or_c, content
 
-    reader = csv.reader(csv_data, encoding="utf-8")
+    reader = csv.reader(csv_data)
     sheet_name = None
     current_headers = None
     for row in reader:
@@ -278,7 +278,7 @@ def convert_file_to_csv_string(path):
         imported_sheets = csv_to_dict(path)
     else:
         imported_sheets = xls_to_dict(path)
-    foo = BytesIO()
+    foo = StringIO()
     writer = csv.writer(foo, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
     for sheet_name, rows in imported_sheets.items():
         writer.writerow([sheet_name])
@@ -295,4 +295,4 @@ def convert_file_to_csv_string(path):
         writer.writerow([None] + out_keys)
         for out_row in out_rows:
             writer.writerow([None] + out_row)
-    return foo.getvalue().decode("utf-8")
+    return foo.getvalue()
