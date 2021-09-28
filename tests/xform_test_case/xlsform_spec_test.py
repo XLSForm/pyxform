@@ -8,8 +8,8 @@ import unittest
 
 import pyxform
 from pyxform.errors import PyXFormError
-from tests.xform_test_case.base import XFormTestCase
 from tests import example_xls, test_expected_output
+from tests.xform_test_case.base import XFormTestCase
 
 
 class MainTest(XFormTestCase):

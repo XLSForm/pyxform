@@ -12,12 +12,6 @@ from datetime import datetime
 from functools import lru_cache
 
 from pyxform import constants
-from pyxform.utils import (
-    BRACKETED_TAG_REGEX,
-    LAST_SAVED_REGEX,
-    LAST_SAVED_INSTANCE_NAME,
-    has_dynamic_label,
-)
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -26,13 +20,16 @@ from pyxform.question import Question
 from pyxform.section import Section
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import (
+    BRACKETED_TAG_REGEX,
+    LAST_SAVED_INSTANCE_NAME,
+    LAST_SAVED_REGEX,
     NSMAP,
     PatchedText,
     get_languages_with_bad_tags,
+    has_dynamic_label,
     node,
 )
 from pyxform.validators import enketo_validate, odk_validate
-
 
 RE_PULLDATA = re.compile(r"(pulldata\s*\(\s*)(.*?),")
 

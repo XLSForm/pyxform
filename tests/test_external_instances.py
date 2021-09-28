@@ -4,8 +4,9 @@ Test xml-external syntax and instances generated from pulldata calls.
 
 See also test_external_instances_for_selects
 """
-from pyxform.errors import PyXFormError
 from textwrap import dedent
+
+from pyxform.errors import PyXFormError
 from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
 
 

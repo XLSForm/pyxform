@@ -17,7 +17,6 @@ from pyxform.xls2xform import (
     get_xml_path,
     main_cli,
 )
-
 from tests.utils import path_to_text_fixture
 
 try:

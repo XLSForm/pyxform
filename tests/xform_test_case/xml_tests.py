@@ -3,12 +3,13 @@
 Test XForm XML syntax.
 """
 import re
-from xml.dom.minidom import getDOMImplementation
 from unittest import TestCase
+from xml.dom.minidom import getDOMImplementation
+
 from pyxform import create_survey_from_xls
 from pyxform.utils import node
-from tests.xform_test_case.base import XFormTestCase
 from tests.utils import path_to_text_fixture
+from tests.xform_test_case.base import XFormTestCase
 
 
 class XMLTests(XFormTestCase):

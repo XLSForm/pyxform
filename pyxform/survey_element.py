@@ -11,18 +11,18 @@ from pyxform import constants
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.utils import (
-    INVALID_XFORM_TAG_REGEXP,
     BRACKETED_TAG_REGEX,
+    INVALID_XFORM_TAG_REGEXP,
+    default_is_dynamic,
     is_valid_xml_tag,
     node,
-    default_is_dynamic,
 )
 from pyxform.xls2json import print_pyobj_to_json
 
-
 if TYPE_CHECKING:
-    from pyxform.utils import DetachableElement
     from typing import List
+
+    from pyxform.utils import DetachableElement
 
 
 def _overlay(over, under):

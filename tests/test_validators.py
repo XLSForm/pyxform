@@ -7,7 +7,6 @@ from unittest import TestCase
 
 from pyxform.validators.odk_validate import check_java_available
 
-
 if sys.version_info >= (3, 3):
     from unittest.mock import patch  # pylint: disable=E0611,E0401
 else:

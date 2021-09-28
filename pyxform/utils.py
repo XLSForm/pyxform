@@ -4,14 +4,14 @@ pyxform utils module.
 """
 import codecs
 import copy
+import csv
 import json
 import os
 import re
-import csv
-import xlrd
 from json.decoder import JSONDecodeError
 from xml.dom.minidom import Element, Text, parseString
 
+import xlrd
 
 SEP = "_"
 

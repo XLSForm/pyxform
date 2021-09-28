@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ETree
 from unittest import TestCase
 
 from formencode.doctest_xml_compare import xml_compare
+
 from tests import example_xls, test_output
 
 

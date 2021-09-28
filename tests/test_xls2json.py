@@ -1,9 +1,9 @@
 import os
-from pyxform.xls2xform import xls2xform_convert
+
 from pyxform.xls2json_backends import xls_to_dict
+from pyxform.xls2xform import xls2xform_convert
 from tests import example_xls, test_output
 from tests.pyxform_test_case import PyxformTestCase
-
 
 # Common XLSForms used in below TestCases
 CHOICES = """

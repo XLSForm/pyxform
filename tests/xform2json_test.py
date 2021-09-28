@@ -3,11 +3,12 @@
 Test xform2json module.
 """
 import os
-from xml.etree.ElementTree import ParseError
 from unittest import TestCase
+from xml.etree.ElementTree import ParseError
+
 from pyxform.builder import create_survey_from_path
 from pyxform.xform2json import _try_parse, create_survey_element_from_xml
-from tests import utils, test_output
+from tests import test_output, utils
 from tests.pyxform_test_case import PyxformTestCase
 
 

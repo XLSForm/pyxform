@@ -13,7 +13,6 @@ from pyxform.errors import PyXFormError
 from pyxform.xls2json import print_pyobj_to_json
 from tests import utils
 
-
 FIXTURE_FILETYPE = "xls"
 
 
