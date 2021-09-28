@@ -212,7 +212,7 @@ class TriggerSetvalueTests(PyxformTestCase):
                 | survey |           |        |         |             |
                 |        | type      | name   | trigger | calculation |
                 |        | integer   | two    |         | 1 + 1       |
-                |        | integer   | two-ts | ${two}  | now()       | 
+                |        | integer   | two-ts | ${two}  | now()       |
                 """,
             errored=True,
             error__contains=[

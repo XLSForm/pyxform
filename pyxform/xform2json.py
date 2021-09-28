@@ -563,11 +563,11 @@ class XFormToDictBuilder:
         for translation in self.translations:
             lang = translation["lang"]
             label_list = translation["text"]
-            for l in label_list:
-                if "value" not in l or l["value"] == "-":  # skip blank label
+            for lbl in label_list:
+                if "value" not in lbl or lbl["value"] == "-":  # skip blank label
                     continue
-                if l["id"] == ref:
-                    text = value = l["value"]
+                if lbl["id"] == ref:
+                    text = value = lbl["value"]
                     if isinstance(value, dict):
                         if "output" in value:
                             text = self._get_output_text(value)

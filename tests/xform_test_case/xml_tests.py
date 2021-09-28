@@ -81,14 +81,14 @@ class MinidomTextWriterMonkeyPatchTest(TestCase):
     def test_patch_lets_node_func_escape_only_necessary(self):
         """Should only escape text chars that should be: ["<", ">", "&"]."""
         text = "' \" & < >"
-        expected = "<root>' \" &amp; &lt; &gt;</root>".format(text)
+        expected = "<root>' \" &amp; &lt; &gt;</root>"
         observed = node("root", text).toprettyxml(indent="", newl="")
         self.assertEqual(expected, observed)
 
     def test_original_escape_escapes_more_than_necessary(self):
         """Should fail if the original is updated (the patch can be removed)."""
         text = "' \" & < >"
-        expected = "<root>' &quot; &amp; &lt; &gt;</root>".format(text)
+        expected = "<root>' &quot; &amp; &lt; &gt;</root>"
         document = getDOMImplementation().createDocument(None, "root", None)
         root = document.documentElement
         text_node = document.createTextNode(text)
