@@ -35,7 +35,7 @@ class PyxformTestError(Exception):
     pass
 
 
-class PyxformMarkdown(object):
+class PyxformMarkdown:
     """Transform markdown formatted xlsform to a pyxform survey object"""
 
     def md_to_pyxform_survey(self, md_raw, kwargs=None, autoname=True, warnings=None):

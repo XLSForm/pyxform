@@ -47,7 +47,7 @@ def copy_json_dict(json_dict):
     return json_dict_copy
 
 
-class SurveyElementBuilder(object):
+class SurveyElementBuilder:
     # we use this CLASSES dict to create questions from dictionaries
     QUESTION_CLASSES = {
         "": Question,

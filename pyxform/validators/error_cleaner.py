@@ -5,7 +5,7 @@ Cleans up error messages from the validators.
 import re
 
 
-class ErrorCleaner(object):
+class ErrorCleaner:
     """Cleans up raw error messages from XForm validators for end users."""
 
     @staticmethod

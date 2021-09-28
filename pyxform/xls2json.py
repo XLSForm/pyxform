@@ -1413,7 +1413,7 @@ def get_parameters(raw_parameters, allowed_parameters):
     return params
 
 
-class SpreadsheetReader(object):
+class SpreadsheetReader:
     def __init__(self, path_or_file):
         path = path_or_file
         try:

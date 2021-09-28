@@ -79,7 +79,7 @@ def _get_all_attributes(node):
             yield pair
 
 
-class XFormInstanceParser(object):
+class XFormInstanceParser:
     def __init__(self, xml_str):
         self.parse(xml_str)
 
