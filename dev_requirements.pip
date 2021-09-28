@@ -29,7 +29,6 @@ toml==0.10.2              # via pylint
 tomli==1.2.1              # via black, pep517
 typed-ast==1.4.3          # via astroid, black
 typing-extensions==3.10.0.2  # via astroid, black, importlib-metadata, pylint
-unicodecsv==0.14.1        # via pyxform
 wheel==0.37.0             # via pip-tools
 wrapt==1.12.1             # via astroid
 xlrd==1.2.0               # via pyxform

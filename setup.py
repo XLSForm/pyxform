@@ -30,7 +30,6 @@ setup(
     long_description=open("README.rst", "rt").read(),
     install_requires=[
         "xlrd==1.2.0",
-        "unicodecsv==0.14.1",
     ],
     entry_points={
         "console_scripts": [
