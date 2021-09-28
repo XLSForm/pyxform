@@ -596,11 +596,6 @@ def workbook_to_json(
         + r")) (?P<list_name>\S+)"
         + "( (?P<specify_other>(or specify other|or_other|or other)))?$"
     )
-    cascading_regexp = re.compile(
-        r"^(?P<cascading_command>("
-        + "|".join(aliases.cascading.keys())
-        + r")) (?P<cascading_level>\S+)?$"
-    )
     osm_regexp = re.compile(
         r"(?P<osm_command>(" + "|".join(aliases.osm.keys()) + r")) (?P<list_name>\S+)"
     )
@@ -1017,50 +1012,6 @@ def workbook_to_json(
                     }
                 )
                 continue
-
-        # try to parse as a cascading select
-        cascading_parse = cascading_regexp.search(question_type)
-        if cascading_parse:
-            parse_dict = cascading_parse.groupdict()
-            if parse_dict.get("cascading_command"):
-                cascading_level = parse_dict["cascading_level"]
-                cascading_prefix = row.get(constants.NAME)
-                if not cascading_prefix:
-                    raise PyXFormError(
-                        row_format_string % row_number + " Cascading select needs a name."
-                    )
-                # cascading_json = get_cascading_json(
-                # cascading_choices, cascading_prefix, cascading_level)
-                if len(cascading_choices) <= 0 or "questions" not in cascading_choices[0]:
-                    raise PyXFormError(
-                        "Found a cascading_select "
-                        + cascading_level
-                        + ", but could not find "
-                        + cascading_level
-                        + "in cascades sheet."
-                    )
-                cascading_json = cascading_choices[0]["questions"]
-                json_dict["choices"] = choices
-                include_bindings = False
-                if "bind" in row:
-                    include_bindings = True
-                for cq in cascading_json:
-                    # include bindings
-                    if include_bindings:
-                        cq["bind"] = row["bind"]
-
-                    def replace_prefix(d, prefix):
-                        for k, v in d.items():
-                            if isinstance(v, str):
-                                d[k] = v.replace("$PREFIX$", prefix)
-                            elif isinstance(v, dict):
-                                d[k] = replace_prefix(v, prefix)
-                            elif isinstance(v, list):
-                                d[k] = map(lambda x: replace_prefix(x, prefix), v)
-                        return d
-
-                    parent_children_array.append(replace_prefix(cq, cascading_prefix))
-                continue  # so the row isn't put in as is
 
         # Try to parse question as a select:
         select_parse = select_regexp.search(question_type)
