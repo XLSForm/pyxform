@@ -8,7 +8,7 @@ from collections import OrderedDict
 from functools import reduce
 from io import BytesIO
 
-import unicodecsv as csv
+import csv
 import xlrd
 from xlrd import XLRDError
 from xlrd.xldate import XLDateAmbiguous

@@ -7,7 +7,7 @@ import copy
 import json
 import os
 import re
-import unicodecsv as csv
+import csv
 import xlrd
 from json.decoder import JSONDecodeError
 from xml.dom.minidom import Element, Text, parseString
