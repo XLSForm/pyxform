@@ -12,7 +12,7 @@ from pyxform.utils import has_external_choices
 from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
 from pyxform.xls2json_backends import xls_to_dict
 from tests import bug_example_xls, example_xls, test_expected_output, test_output
-from tests.utils import XFormTestCase
+from tests.xform_test_case.base import XFormTestCase
 
 
 class GroupNames(unittest.TestCase):

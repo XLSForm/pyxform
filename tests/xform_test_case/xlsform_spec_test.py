@@ -4,11 +4,11 @@ Some tests for the new (v0.9) spec is properly implemented.
 """
 import codecs
 import os
-import unittest as unittest
+import unittest
 
 import pyxform
 from pyxform.errors import PyXFormError
-from tests.utils import XFormTestCase
+from tests.xform_test_case.base import XFormTestCase
 from tests import example_xls, test_expected_output
 
 

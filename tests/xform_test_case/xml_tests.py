@@ -7,13 +7,14 @@ from xml.dom.minidom import getDOMImplementation
 from unittest import TestCase
 from pyxform import create_survey_from_xls
 from pyxform.utils import node
-from tests import utils
+from tests.xform_test_case.base import XFormTestCase
+from tests.utils import path_to_text_fixture
 
 
-class XMLTests(utils.XFormTestCase):
+class XMLTests(XFormTestCase):
     def setUp(self):
         self.survey = create_survey_from_xls(
-            utils.path_to_text_fixture("yes_or_no_question.xls"), "yes_or_no_question"
+            path_to_text_fixture("yes_or_no_question.xls"), "yes_or_no_question"
         )
 
     def test_to_xml(self):
