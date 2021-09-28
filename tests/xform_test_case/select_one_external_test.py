@@ -64,7 +64,7 @@ class MainTest(XFormTestCase):
         )
 
         # Compare with the expected output
-        with codecs.open(output_csv, "rb", encoding="utf-8") as expected_file:
+        with open(output_csv, "r", encoding="utf-8") as expected_file:
             rows = expected_file.read()
             # Evaluate the last line obtained from the csv file
             self.assertEqual(
