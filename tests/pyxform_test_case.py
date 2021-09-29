@@ -3,16 +3,16 @@
 PyxformTestCase base class using markdown to define the XLSForm.
 """
 import codecs
-from contextlib import contextmanager
 import logging
 import os
 import re
 import sys
 import tempfile
-import xml.etree.ElementTree as ETree
 import xml.etree.ElementPath as EPath
-from unittest import TestCase
+import xml.etree.ElementTree as ETree
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
+from unittest import TestCase
 
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
@@ -269,7 +269,9 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                         return [
                             stringify_xml(x, survey_nsmap_xpath)
                             for x in EPath.iterfind(
-                                elem=content, path=xpath, namespaces=survey_nsmap_xpath,
+                                elem=content,
+                                path=xpath,
+                                namespaces=survey_nsmap_xpath,
                             )
                         ]
 

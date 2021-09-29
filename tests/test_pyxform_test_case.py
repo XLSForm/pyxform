@@ -64,11 +64,15 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
     def test_xml__xpath_count__multiple(self):
         """Should find expected count when multiple nodes returned by XPath."""
         self.assertPyxformXform(
-            md=self.md, xml__xpath_count=[(".//bind", 2)], run_odk_validate=False,
+            md=self.md,
+            xml__xpath_count=[(".//bind", 2)],
+            run_odk_validate=False,
         )
         with self.assertRaises(self.failureException):
             self.assertPyxformXform(
-                md=self.md, xml__xpath_count=[(".//bind", 1)], run_odk_validate=False,
+                md=self.md,
+                xml__xpath_count=[(".//bind", 1)],
+                run_odk_validate=False,
             )
 
     def test_xml__xpath_exact__singular_nested(self):
