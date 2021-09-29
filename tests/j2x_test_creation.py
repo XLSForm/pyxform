@@ -4,7 +4,7 @@ Testing creation of Surveys using verbose methods
 """
 from unittest import TestCase
 
-from pyxform import InputQuestion, MultipleChoiceQuestion, Survey, create_survey_from_xls
+from pyxform import MultipleChoiceQuestion, Survey, create_survey_from_xls
 from tests import utils
 
 
@@ -58,18 +58,6 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
         }
 
         self.assertEqual(s.to_json_dict(), expected_dict)
-
-    def test_two_options_cannot_have_the_same_value(self):
-        q = MultipleChoiceQuestion(name="Favorite Color")
-        q.add_choice(name="grey", label="Gray")
-        q.add_choice(name="grey", label="Grey")
-        self.assertRaises(Exception, q, "validate")
-
-    def test_one_section_cannot_have_two_conflicting_slugs(self):
-        q1 = InputQuestion(name="YourName")
-        q2 = InputQuestion(name="YourName")
-        s = Survey(name="Roses are Red", children=[q1, q2])
-        self.assertRaises(Exception, s, "validate")
 
     def allow_surveys_with_comment_rows(self):
         """assume that a survey with rows that don't have name, type, or label
