@@ -12,7 +12,7 @@ class AllowMockAccuracyTest(PyxformTestCase):
             |        | geopoint  | geopoint    | Geopoint | allow-mock-accuracy=true |
             """,
             xml__contains=[
-                'xmlns:orx="http://openrosa.org/xforms"',
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/geopoint" type="geopoint" odk:allow-mock-accuracy="true"/>',
             ],
         )
@@ -25,7 +25,7 @@ class AllowMockAccuracyTest(PyxformTestCase):
             |        | geopoint  | geopoint    | Geopoint | allow-mock-accuracy=false |
             """,
             xml__contains=[
-                'xmlns:orx="http://openrosa.org/xforms"',
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/geopoint" type="geopoint" odk:allow-mock-accuracy="false"/>',
             ],
         )
@@ -39,7 +39,7 @@ class AllowMockAccuracyTest(PyxformTestCase):
             |        | geoshape  | geoshape    | Geoshape | allow-mock-accuracy=true |
             """,
             xml__contains=[
-                'xmlns:orx="http://openrosa.org/xforms"',
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/geoshape" type="geoshape" odk:allow-mock-accuracy="true"/>',
             ],
         )
@@ -52,7 +52,7 @@ class AllowMockAccuracyTest(PyxformTestCase):
             |        | geoshape  | geoshape    | Geoshape | allow-mock-accuracy=false |
             """,
             xml__contains=[
-                'xmlns:orx="http://openrosa.org/xforms"',
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/geoshape" type="geoshape" odk:allow-mock-accuracy="false"/>',
             ],
         )
@@ -66,7 +66,7 @@ class AllowMockAccuracyTest(PyxformTestCase):
             |        | geotrace  | geotrace    | Geotrace | allow-mock-accuracy=true |
             """,
             xml__contains=[
-                'xmlns:orx="http://openrosa.org/xforms"',
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/geotrace" type="geotrace" odk:allow-mock-accuracy="true"/>',
             ],
         )
@@ -79,7 +79,7 @@ class AllowMockAccuracyTest(PyxformTestCase):
             |        | geotrace  | geotrace    | Geotrace | allow-mock-accuracy=false |
             """,
             xml__contains=[
-                'xmlns:orx="http://openrosa.org/xforms"',
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/geotrace" type="geotrace" odk:allow-mock-accuracy="false"/>',
             ],
         )
