@@ -12,7 +12,7 @@ class AudioQualityTest(PyxformTestCase):
             |        | audio  | audio    | Audio | quality=voice-only |
             """,
             xml__contains=[
-                'xmlns:orx="http://openrosa.org/xforms"',
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/audio" type="binary" odk:quality="voice-only"/>',
             ],
         )
@@ -26,7 +26,7 @@ class AudioQualityTest(PyxformTestCase):
             |        | audio  | audio    | Audio | quality=low |
             """,
             xml__contains=[
-                'xmlns:orx="http://openrosa.org/xforms"',
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/audio" type="binary" odk:quality="low"/>',
             ],
         )
@@ -40,7 +40,7 @@ class AudioQualityTest(PyxformTestCase):
             |        | audio  | audio    | Audio | quality=normal |
             """,
             xml__contains=[
-                'xmlns:orx="http://openrosa.org/xforms"',
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/audio" type="binary" odk:quality="normal"/>',
             ],
         )
@@ -54,7 +54,7 @@ class AudioQualityTest(PyxformTestCase):
             |        | audio  | audio    | Audio | quality=external |
             """,
             xml__contains=[
-                'xmlns:orx="http://openrosa.org/xforms"',
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/audio" type="binary" odk:quality="external"/>',
             ],
         )
