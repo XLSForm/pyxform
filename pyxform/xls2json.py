@@ -1259,6 +1259,24 @@ def workbook_to_json(
             parent_children_array.append(new_dict)
             continue
 
+        if question_type in ["geopoint", "geoshape", "geotrace"]:
+            new_dict = row.copy()
+            parameters = get_parameters(
+                row.get("parameters", ""), ["allow-mock-accuracy"]
+            )
+
+            if "allow-mock-accuracy" in parameters.keys():
+                if parameters["allow-mock-accuracy"] not in ["true", "false"]:
+                    raise PyXFormError("Invalid value for allow-mock-accuracy.")
+
+                new_dict["bind"] = new_dict.get("bind", {})
+                new_dict["bind"].update(
+                    {"odk:allow-mock-accuracy": parameters["allow-mock-accuracy"]}
+                )
+
+            parent_children_array.append(new_dict)
+            continue
+
         # TODO: Consider adding some question_type validation here.
 
         # Put the row in the json dict as is:
