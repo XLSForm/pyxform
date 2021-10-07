@@ -2,8 +2,6 @@
 """
 pyxform_validator_update - command to update XForm validators.
 """
-from __future__ import print_function
-
 import argparse
 import fnmatch
 import io
@@ -17,7 +15,6 @@ from stat import S_IXGRP, S_IXUSR
 from zipfile import ZipFile, is_zipfile
 
 from pyxform.errors import PyXFormError
-from pyxform.utils import unicode
 from pyxform.validators import enketo_validate, odk_validate
 from pyxform.validators.util import HERE, CapturingHandler, request_get
 
@@ -26,7 +23,7 @@ log = logging.getLogger(__name__)
 capture_handler = CapturingHandler(logger=log)
 
 
-class _UpdateInfo(object):
+class _UpdateInfo:
     """
     Data class for Updater info.
     """
@@ -70,7 +67,7 @@ class _UpdateInfo(object):
         self.manual_msg = "Download manually from: {r}.".format(r=self.repo_url)
 
 
-class _UpdateHandler(object):
+class _UpdateHandler:
     """
     Handles tasks related to updating external XForm validators.
 
@@ -91,9 +88,7 @@ class _UpdateHandler(object):
     @staticmethod
     def _check_path(file_path):
         if not os.path.exists(file_path):
-            raise PyXFormError(
-                "Expected path does not exist: {p}" "".format(p=file_path)
-            )
+            raise PyXFormError("Expected path does not exist: {p}" "".format(p=file_path))
         else:
             return True
 
@@ -113,7 +108,7 @@ class _UpdateHandler(object):
         """
         with io.open(file_path, mode="w", newline="\n") as out_file:
             data = json.dumps(content, indent=2, sort_keys=True)
-            out_file.write(unicode(data))
+            out_file.write(str(data))
 
     @staticmethod
     def _read_last_check(file_path):
@@ -136,7 +131,7 @@ class _UpdateHandler(object):
         Write the .last_check file.
         """
         with io.open(file_path, mode="w", newline="\n") as out_file:
-            out_file.write(unicode(content.strftime(UTC_FMT)))
+            out_file.write(str(content.strftime(UTC_FMT)))
 
     @staticmethod
     def _check_necessary(update_info, utc_now):
@@ -168,9 +163,7 @@ class _UpdateHandler(object):
         utc_now = datetime.utcnow()
         if _UpdateHandler._check_necessary(update_info=update_info, utc_now=utc_now):
             latest = _UpdateHandler._request_latest_json(url=update_info.api_url)
-            _UpdateHandler._write_json(
-                file_path=update_info.latest_path, content=latest
-            )
+            _UpdateHandler._write_json(file_path=update_info.latest_path, content=latest)
             _UpdateHandler._write_last_check(
                 file_path=update_info.last_check_path, content=utc_now
             )
@@ -397,7 +390,7 @@ class _UpdateHandler(object):
             os.chmod(new_bin_file_path, current_mode | S_IXUSR | S_IXGRP)
 
         except PyXFormError as e:
-            raise PyXFormError("\n\nUpdate failed!\n\n" + unicode(e))
+            raise PyXFormError("\n\nUpdate failed!\n\n" + str(e))
         else:
             return latest
 
@@ -425,9 +418,7 @@ class _UpdateHandler(object):
             installed = _UpdateHandler._read_json(file_path=update_info.installed_path)
             latest = _UpdateHandler._get_latest(update_info=update_info)
             if installed["tag_name"] == latest["tag_name"] and not force:
-                installed_info = _UpdateHandler._get_release_message(
-                    json_data=installed
-                )
+                installed_info = _UpdateHandler._get_release_message(json_data=installed)
                 latest_info = _UpdateHandler._get_release_message(json_data=latest)
                 template = (
                     "\nUpdate failed!\n\n"
@@ -505,7 +496,7 @@ class _UpdateHandler(object):
             raise PyXFormError(message)
 
 
-class _UpdateService(object):
+class _UpdateService:
 
     update_info = None
 
@@ -648,7 +639,7 @@ def main_cli():
         del kwargs["command"]
         args.command(**kwargs)
     except PyXFormError as main_error:
-        logger.info(unicode(main_error))
+        logger.info(str(main_error))
         sys.exit(1)
     if 0 < len(capture_handler.watcher.records):
         for line in capture_handler.watcher.output["INFO"]:

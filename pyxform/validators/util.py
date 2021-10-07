@@ -13,20 +13,13 @@ import threading
 import time
 from contextlib import closing
 from subprocess import PIPE, Popen
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from pyxform.errors import PyXFormError
 
-try:
-    from urllib.request import urlopen, Request
-    from urllib.error import URLError, HTTPError
-except ImportError:
-    from urllib2 import urlopen, Request, URLError, HTTPError
-
-
 HERE = os.path.abspath(os.path.dirname(__file__))
-XFORM_SPEC_PATH = os.path.join(
-    os.path.dirname(HERE), "tests", "test_expected_output", "xlsform_spec_test.xml"
-)
+XFORM_SPEC_PATH = os.path.join(HERE, "xlsform_spec_test.xml")
 
 
 class PopenResult:
@@ -75,9 +68,7 @@ def run_popen_with_timeout(command, timeout) -> "PopenResult":
         # CreateTempFile refers to "java.io.tmpdir" which refers to env vars.
         env = {
             k: v if v is not None else tempfile.gettempdir()
-            for k, v in {
-                k: os.environ.get(k) for k in ("TEMP", "TMP", "TMPDIR")
-            }.items()
+            for k, v in {k: os.environ.get(k) for k in ("TEMP", "TMP", "TMPDIR")}.items()
         }
 
     p = Popen(
@@ -134,8 +125,7 @@ def request_get(url):
         )
     except URLError as e:
         raise PyXFormError(
-            "Unable to reach a server. Reason: {r}. "
-            "URL: {u}".format(r=e.reason, u=url)
+            "Unable to reach a server. Reason: {r}. " "URL: {u}".format(r=e.reason, u=url)
         )
 
 
@@ -176,9 +166,7 @@ class CapturingHandler(logging.Handler):
 
     @staticmethod
     def _get_watcher():
-        _LoggingWatcher = collections.namedtuple(
-            "_LoggingWatcher", ["records", "output"]
-        )
+        _LoggingWatcher = collections.namedtuple("_LoggingWatcher", ["records", "output"])
         levels = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
         return _LoggingWatcher([], {x: [] for x in levels})
 

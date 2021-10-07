@@ -136,9 +136,7 @@ class RepeatingSection(Section):
     def _dynamic_defaults_helper(self, current, nodes):
         for e in current.children:
             if e.type != "repeat":  # let nested repeats handle their own defaults
-                dynamic_default = e.get_setvalue_node_for_dynamic_default(
-                    in_repeat=True
-                )
+                dynamic_default = e.get_setvalue_node_for_dynamic_default(in_repeat=True)
                 if dynamic_default:
                     nodes.append(dynamic_default)
                 self._dynamic_defaults_helper(e, nodes)

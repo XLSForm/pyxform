@@ -1,0 +1,11 @@
+[tool.black]
+# Make sure line length matches setup.cfg setting for pycodestyle and flake8
+line-length = 90
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 90
+default_section = "THIRDPARTY"
+known_first_party = "pyxform"
+sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']

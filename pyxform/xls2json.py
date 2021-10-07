@@ -2,25 +2,18 @@
 """
 A Python script to convert excel files into JSON.
 """
-from __future__ import print_function, unicode_literals
-from collections import Counter
-from pyxform import aliases, constants
-from pyxform.errors import PyXFormError
-from pyxform.utils import (
-    basestring,
-    is_valid_xml_tag,
-    unicode,
-    default_is_dynamic,
-    levenshtein_distance,
-)
-from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
-from typing import TYPE_CHECKING
 import codecs
 import json
 import os
 import re
 import sys
+from collections import Counter
+from typing import TYPE_CHECKING
 
+from pyxform import aliases, constants
+from pyxform.errors import PyXFormError
+from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
+from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
 
 if TYPE_CHECKING:
     from typing import Any, Dict, KeysView, Optional
@@ -90,7 +83,7 @@ def replace_smart_quotes_in_dict(_d):
     for key, value in _d.items():
         _changed = False
         for smart_quote, dumb_quote in SMART_QUOTES.items():
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 if smart_quote in value:
                     value = value.replace(smart_quote, dumb_quote)
                     _changed = True
@@ -176,7 +169,7 @@ def clean_text_values(dict_array):
     for row in dict_array:
         replace_smart_quotes_in_dict(row)
         for key, value in row.items():
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 row[key] = re.sub(r"( )+", " ", value.strip())
     return dict_array
 
@@ -235,7 +228,7 @@ def has_double_colon(workbook_dict):
     for sheet in workbook_dict.values():
         for row in sheet:
             for column_header in row.keys():
-                if type(column_header) is not unicode:
+                if type(column_header) is not str:
                     continue
                 if "::" in column_header:
                     return True
@@ -285,9 +278,7 @@ def process_range_question_type(row):
     Raises PyXFormError when invalid range parameters are used.
     """
     new_dict = row.copy()
-    parameters = get_parameters(
-        new_dict.get("parameters", ""), ["start", "end", "step"]
-    )
+    parameters = get_parameters(new_dict.get("parameters", ""), ["start", "end", "step"])
     parameters_map = {"start": "start", "end": "end", "step": "step"}
     defaults = {"start": "1", "end": "10", "step": "1"}
 
@@ -391,8 +382,8 @@ def workbook_to_json(
     row_format_string = "[row : %s]"
 
     # Make sure the passed in vars are unicode
-    form_name = unicode(form_name)
-    default_language = unicode(default_language)
+    form_name = str(form_name)
+    default_language = str(default_language)
 
     # We check for double columns to determine whether to use them
     # or single colons to delimit grouped headers.
@@ -605,11 +596,6 @@ def workbook_to_json(
         + r")) (?P<list_name>\S+)"
         + "( (?P<specify_other>(or specify other|or_other|or other)))?$"
     )
-    cascading_regexp = re.compile(
-        r"^(?P<cascading_command>("
-        + "|".join(aliases.cascading.keys())
-        + r")) (?P<cascading_level>\S+)?$"
-    )
     osm_regexp = re.compile(
         r"(?P<osm_command>(" + "|".join(aliases.osm.keys()) + r")) (?P<list_name>\S+)"
     )
@@ -646,8 +632,6 @@ def workbook_to_json(
         # Get question type
         question_type = row.get(constants.TYPE)
         question_name = row.get(constants.NAME)
-
-        question_default = row.get("default")
 
         if not question_type:
             # if name and label are also missing,
@@ -701,9 +685,7 @@ def workbook_to_json(
                     new_dict["bind"].update(
                         {
                             "odk:"
-                            + constants.TRACK_CHANGES: parameters[
-                                constants.TRACK_CHANGES
-                            ]
+                            + constants.TRACK_CHANGES: parameters[constants.TRACK_CHANGES]
                         }
                     )
 
@@ -732,9 +714,7 @@ def workbook_to_json(
                     new_dict["bind"].update(
                         {
                             "odk:"
-                            + constants.IDENTIFY_USER: parameters[
-                                constants.IDENTIFY_USER
-                            ]
+                            + constants.IDENTIFY_USER: parameters[constants.IDENTIFY_USER]
                         }
                     )
 
@@ -855,7 +835,7 @@ def workbook_to_json(
         # on the survey sheet
         settings_type = aliases.settings_header.get(question_type)
         if settings_type:
-            json_dict[settings_type] = unicode(row.get(constants.NAME))
+            json_dict[settings_type] = str(row.get(constants.NAME))
             continue
 
         # Try to parse question as a end control statement
@@ -892,15 +872,13 @@ def workbook_to_json(
                 raise PyXFormError(
                     row_format_string % row_number + " Question or group with no name."
                 )
-        question_name = unicode(row[constants.NAME])
+        question_name = str(row[constants.NAME])
         if not is_valid_xml_tag(question_name):
             if isinstance(question_name, bytes):
                 question_name = question_name.encode("utf-8")
             error_message = row_format_string % row_number
             error_message += " Invalid question name [" + question_name + "] "
-            error_message += (
-                "Names must begin with a letter, colon," + " or underscore."
-            )
+            error_message += "Names must begin with a letter, colon," + " or underscore."
             error_message += (
                 "Subsequent characters can include numbers," + " dashes, and periods."
             )
@@ -971,9 +949,7 @@ def workbook_to_json(
 
                 # Generate a new node for the jr:count column so
                 # xpath expressions can be used.
-                repeat_count_expression = new_json_dict.get("control", {}).get(
-                    "jr:count"
-                )
+                repeat_count_expression = new_json_dict.get("control", {}).get("jr:count")
                 if repeat_count_expression:
                     generated_node_name = new_json_dict["name"] + "_count"
                     parent_children_array.append(
@@ -1003,7 +979,7 @@ def workbook_to_json(
                         appearance_string = "field-list"
                         for w in appearance_mods_as_list:
                             if w != constants.TABLE_LIST:
-                                appearance_string += " " + unicode(w)
+                                appearance_string += " " + str(w)
                         new_json_dict["control"]["appearance"] = appearance_string
 
                         # Generate a note label element so hints and labels
@@ -1015,9 +991,9 @@ def workbook_to_json(
                                 "name": "generated_table_list_label_" + str(row_number),
                             }
                             if "label" in new_json_dict:
-                                generated_label_element[
+                                generated_label_element[constants.LABEL] = new_json_dict[
                                     constants.LABEL
-                                ] = new_json_dict[constants.LABEL]
+                                ]
                                 del new_json_dict[constants.LABEL]
                             if "hint" in new_json_dict:
                                 generated_label_element["hint"] = new_json_dict["hint"]
@@ -1036,54 +1012,6 @@ def workbook_to_json(
                     }
                 )
                 continue
-
-        # try to parse as a cascading select
-        cascading_parse = cascading_regexp.search(question_type)
-        if cascading_parse:
-            parse_dict = cascading_parse.groupdict()
-            if parse_dict.get("cascading_command"):
-                cascading_level = parse_dict["cascading_level"]
-                cascading_prefix = row.get(constants.NAME)
-                if not cascading_prefix:
-                    raise PyXFormError(
-                        row_format_string % row_number
-                        + " Cascading select needs a name."
-                    )
-                # cascading_json = get_cascading_json(
-                # cascading_choices, cascading_prefix, cascading_level)
-                if (
-                    len(cascading_choices) <= 0
-                    or "questions" not in cascading_choices[0]
-                ):
-                    raise PyXFormError(
-                        "Found a cascading_select "
-                        + cascading_level
-                        + ", but could not find "
-                        + cascading_level
-                        + "in cascades sheet."
-                    )
-                cascading_json = cascading_choices[0]["questions"]
-                json_dict["choices"] = choices
-                include_bindings = False
-                if "bind" in row:
-                    include_bindings = True
-                for cq in cascading_json:
-                    # include bindings
-                    if include_bindings:
-                        cq["bind"] = row["bind"]
-
-                    def replace_prefix(d, prefix):
-                        for k, v in d.items():
-                            if isinstance(v, basestring):
-                                d[k] = v.replace("$PREFIX$", prefix)
-                            elif isinstance(v, dict):
-                                d[k] = replace_prefix(v, prefix)
-                            elif isinstance(v, list):
-                                d[k] = map(lambda x: replace_prefix(x, prefix), v)
-                        return d
-
-                    parent_children_array.append(replace_prefix(cq, cascading_prefix))
-                continue  # so the row isn't put in as is
 
         # Try to parse question as a select:
         select_parse = select_regexp.search(question_type)
@@ -1105,9 +1033,7 @@ def workbook_to_json(
                 ):
                     if not external_choices:
                         k = constants.EXTERNAL_CHOICES
-                        msg = (
-                            "There should be an external_choices sheet in this xlsform."
-                        )
+                        msg = "There should be an external_choices sheet in this xlsform."
                         similar = find_sheet_misspellings(key=k, keys=workbook_keys)
                         if similar is not None:
                             msg = msg + " " + similar
@@ -1121,7 +1047,6 @@ def workbook_to_json(
                         + "List name not in external choices sheet: "
                         + list_name
                     )
-                    select_type = aliases.select["select_one"]
                 if (
                     list_name not in choices
                     and select_type != "select one external"
@@ -1208,8 +1133,7 @@ def workbook_to_json(
                             new_json_dict["list_name"] = list_name
                             new_json_dict[constants.CHOICES] = choices[list_name]
                 elif (
-                    "randomize" in parameters.keys()
-                    and parameters["randomize"] == "true"
+                    "randomize" in parameters.keys() and parameters["randomize"] == "true"
                 ):
                     new_json_dict["itemset"] = list_name
                     json_dict["choices"] = choices
@@ -1225,7 +1149,7 @@ def workbook_to_json(
                 # (for groups of selects)
                 if table_list is not None:
                     # Then this row is the first select in a table list
-                    if not isinstance(table_list, basestring):
+                    if not isinstance(table_list, str):
                         table_list = list_name
                         table_list_header = {
                             constants.TYPE: select_type,
@@ -1243,16 +1167,11 @@ def workbook_to_json(
                         error_message = row_format_string % row_number
                         error_message += (
                             " Badly formatted table list,"
-                            " list names don't match: "
-                            + table_list
-                            + " vs. "
-                            + list_name
+                            " list names don't match: " + table_list + " vs. " + list_name
                         )
                         raise PyXFormError(error_message)
 
-                    control = new_json_dict["control"] = new_json_dict.get(
-                        "control", {}
-                    )
+                    control = new_json_dict["control"] = new_json_dict.get("control", {})
                     control["appearance"] = "list-nolabel"
                 parent_children_array.append(new_json_dict)
                 if specify_other_question:
@@ -1291,9 +1210,7 @@ def workbook_to_json(
                 try:
                     int(parameters["max-pixels"])
                 except ValueError:
-                    raise PyXFormError(
-                        "Parameter max-pixels must have an integer value."
-                    )
+                    raise PyXFormError("Parameter max-pixels must have an integer value.")
 
                 new_dict["bind"] = new_dict.get("bind", {})
                 new_dict["bind"].update({"orx:max-pixels": parameters["max-pixels"]})
@@ -1460,7 +1377,7 @@ def parse_file_to_json(
     if warnings is None:
         warnings = []
     workbook_dict = parse_file_to_workbook_dict(path, file_object)
-    fallback_form_name = unicode(get_filename(path))
+    fallback_form_name = str(get_filename(path))
     return workbook_to_json(
         workbook_dict, default_name, fallback_form_name, default_language, warnings
     )
@@ -1514,7 +1431,7 @@ def get_parameters(raw_parameters, allowed_parameters):
     return params
 
 
-class SpreadsheetReader(object):
+class SpreadsheetReader:
     def __init__(self, path_or_file):
         path = path_or_file
         try:
@@ -1523,7 +1440,7 @@ class SpreadsheetReader(object):
             pass
         self._dict = parse_file_to_workbook_dict(path)
         self._path = path
-        self._id = unicode(get_filename(path))
+        self._id = str(get_filename(path))
         self._name = self._print_name = self._title = self._id
 
     def to_json_dict(self):
@@ -1544,7 +1461,7 @@ class SurveyReader(SpreadsheetReader):
     """
 
     def __init__(self, path_or_file, default_name=None):
-        if isinstance(path_or_file, basestring):
+        if isinstance(path_or_file, str):
             self._file_object = None
             path = path_or_file
         else:
@@ -1601,9 +1518,7 @@ class VariableNameReader(SpreadsheetReader):
         assert "Dictionary" in self._dict
         for d in self._dict["Dictionary"]:
             if "Variable Name" in d:
-                assert d["Variable Name"] not in variable_names_so_far, d[
-                    "Variable Name"
-                ]
+                assert d["Variable Name"] not in variable_names_so_far, d["Variable Name"]
                 variable_names_so_far.append(d["Variable Name"])
                 new_dict[d["XPath"]] = d["Variable Name"]
             else:
@@ -1616,17 +1531,17 @@ if __name__ == "__main__":
     # convert that file to json, then print it
     if len(sys.argv) < 2:
         # print "You must supply a file argument."
-        filename = "xlsform_spec_test.xls"
-        path = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/"
-        path += filename
+        _filename = "xlsform_spec_test.xls"
+        _path = "/home/user/python-dev/xlsform/pyxform/tests/example_xls/"
+        _path += _filename
     else:
-        path = sys.argv[1]
+        _path = sys.argv[1]
 
-    warnings = []
+    _warnings = []
 
-    json_dict = parse_file_to_json(path, warnings=warnings)
-    print_pyobj_to_json(json_dict)
+    _json_dict = parse_file_to_json(path=_path, warnings=_warnings)
+    print_pyobj_to_json(pyobj=_json_dict)
 
-    if len(warnings) > 0:
+    if len(_warnings) > 0:
         sys.stderr.write("Warnings:" + "\n")
-        sys.stderr.write("\n".join(warnings) + "\n")
+        sys.stderr.write("\n".join(_warnings) + "\n")

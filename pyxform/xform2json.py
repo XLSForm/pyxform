@@ -2,8 +2,6 @@
 """
 xform2json module - Transform an XForm to a JSON dictionary.
 """
-from __future__ import print_function
-
 import codecs
 import copy
 import json
@@ -13,7 +11,7 @@ import xml.etree.ElementTree as ETree
 from operator import itemgetter
 
 from pyxform import builder
-from pyxform.utils import NSMAP, basestring
+from pyxform.utils import NSMAP
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -49,9 +47,7 @@ class XmlDictObject(dict):
         """
 
         if isinstance(x, dict):
-            return XmlDictObject(
-                (k, XmlDictObject.Wrap(v)) for (k, v) in iter(x.items())
-            )
+            return XmlDictObject((k, XmlDictObject.Wrap(v)) for (k, v) in iter(x.items()))
         elif isinstance(x, list):
             return [XmlDictObject.Wrap(v) for v in x]
         else:
@@ -154,7 +150,7 @@ def convert_xml_to_dict(root, dictclass=XmlDictObject):
     Converts an XML file or ElementTree Element to a dictionary
     """
     # If a string is passed in, try to open it as a file
-    if isinstance(root, basestring):
+    if isinstance(root, str):
         root = _try_parse(root)
     elif not isinstance(root, ETree.Element):
         raise TypeError("Expected ElementTree.Element or file path string")
@@ -179,15 +175,11 @@ def _try_parse(root, parser=None):
 
 class XFormToDict:
     def __init__(self, root):
-        if isinstance(root, basestring):
+        if isinstance(root, str):
             parser = ETree.XMLParser(encoding="UTF-8")
             self._root = _try_parse(root, parser)
             self._dict = XmlDictObject(
-                {
-                    self._root.tag: _convert_xml_to_dict_recurse(
-                        self._root, XmlDictObject
-                    )
-                }
+                {self._root.tag: _convert_xml_to_dict_recurse(self._root, XmlDictObject)}
             )
         elif not isinstance(root, ETree.Element):
             raise TypeError("Expected ElementTree.Element or file path string")
@@ -381,9 +373,7 @@ class XFormToDictBuilder:
             try:
                 ref = obj["nodeset"]
             except KeyError:
-                raise TypeError(
-                    'cannot find "ref" or "nodeset" in {}'.format(repr(obj))
-                )
+                raise TypeError('cannot find "ref" or "nodeset" in {}'.format(repr(obj)))
         question = {
             "ref": ref,
             "__order": self._get_question_order(ref),
@@ -573,11 +563,11 @@ class XFormToDictBuilder:
         for translation in self.translations:
             lang = translation["lang"]
             label_list = translation["text"]
-            for l in label_list:
-                if "value" not in l or l["value"] == "-":  # skip blank label
+            for lbl in label_list:
+                if "value" not in lbl or lbl["value"] == "-":  # skip blank label
                     continue
-                if l["id"] == ref:
-                    text = value = l["value"]
+                if lbl["id"] == ref:
+                    text = value = lbl["value"]
                     if isinstance(value, dict):
                         if "output" in value:
                             text = self._get_output_text(value)
@@ -609,7 +599,7 @@ class XFormToDictBuilder:
                                     label[k][m_type] = {}
                                 label[k][m_type][lang] = v
                                 continue
-                            if isinstance(item, basestring):
+                            if isinstance(item, str):
                                 if item == "-":
                                     continue
                             if "label" not in label:
@@ -628,7 +618,7 @@ class XFormToDictBuilder:
         return "".join(["${", name.strip(), "}"])
 
     def _get_constraint_msg(self, constraint_msg):
-        if isinstance(constraint_msg, basestring):
+        if isinstance(constraint_msg, str):
             if constraint_msg.find(":jr:constraintMsg") != -1:
                 ref = constraint_msg.replace("jr:itext('", "").replace("')", "")
                 k, constraint_msg = self._get_text_from_translation(ref)

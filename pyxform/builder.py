@@ -21,7 +21,6 @@ from pyxform.question import (
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.section import GroupedSection, RepeatingSection
 from pyxform.survey import Survey
-from pyxform.utils import unicode
 from pyxform.xls2json import SurveyReader
 
 
@@ -48,7 +47,7 @@ def copy_json_dict(json_dict):
     return json_dict_copy
 
 
-class SurveyElementBuilder(object):
+class SurveyElementBuilder:
     # we use this CLASSES dict to create questions from dictionaries
     QUESTION_CLASSES = {
         "": Question,
@@ -293,7 +292,7 @@ class SurveyElementBuilder(object):
 
         result = question_template.copy()
         for key in result.keys():
-            if type(result[key]) == unicode:
+            if type(result[key]) == str:
                 result[key] %= column_headers
             elif type(result[key]) == dict:
                 result[key] = result[key].copy()

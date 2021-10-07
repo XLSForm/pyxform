@@ -2,20 +2,19 @@
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
+import csv
 import datetime
 import re
 from collections import OrderedDict
 from functools import reduce
-from io import BytesIO
+from io import StringIO
 
-import unicodecsv as csv
 import xlrd
 from xlrd import XLRDError
 from xlrd.xldate import XLDateAmbiguous
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
-from pyxform.utils import basestring, unichr, unicode
 
 XL_DATE_AMBIGOUS_MSG = (
     "The xls file provided has an invalid date on the %s sheet, under"
@@ -46,7 +45,7 @@ def xls_to_dict(path_or_file):
     All the keys and leaf elements are unicode text.
     """
     try:
-        if isinstance(path_or_file, basestring):
+        if isinstance(path_or_file, str):
             workbook = xlrd.open_workbook(filename=path_or_file)
         else:
             workbook = xlrd.open_workbook(file_contents=path_or_file.read())
@@ -55,7 +54,7 @@ def xls_to_dict(path_or_file):
 
     def xls_to_dict_normal_sheet(sheet):
         def iswhitespace(string):
-            return isinstance(string, basestring) and len(string.strip()) == 0
+            return isinstance(string, str) and len(string.strip()) == 0
 
         # Check for duplicate column headers
         column_header_list = list()
@@ -81,7 +80,7 @@ def xls_to_dict(path_or_file):
                 key = key.strip()
                 value = sheet.cell_value(row, column)
                 # remove whitespace at the beginning and end of value
-                if isinstance(value, basestring):
+                if isinstance(value, str):
                     value = value.strip()
                 value_type = sheet.cell_type(row, column)
                 if value is not None:
@@ -144,9 +143,9 @@ def xls_value_to_unicode(value, value_type, datemode):
         # Try to display as an int if possible.
         int_value = int(value)
         if int_value == value:
-            return unicode(int_value)
+            return str(int_value)
         else:
-            return unicode(value)
+            return str(value)
     elif value_type is xlrd.XL_CELL_DATE:
         # Warn that it is better to single quote as a string.
         # error_location = cellFormatString % (ss_row_idx, ss_col_idx)
@@ -155,13 +154,13 @@ def xls_value_to_unicode(value, value_type, datemode):
         datetime_or_time_only = xlrd.xldate_as_tuple(value, datemode)
         if datetime_or_time_only[:3] == (0, 0, 0):
             # must be time only
-            return unicode(datetime.time(*datetime_or_time_only[3:]))
-        return unicode(datetime.datetime(*datetime_or_time_only))
+            return str(datetime.time(*datetime_or_time_only[3:]))
+        return str(datetime.datetime(*datetime_or_time_only))
     else:
         # ensure unicode and replace nbsp spaces with normal ones
         # to avoid this issue:
         # https://github.com/modilabs/pyxform/issues/83
-        return unicode(value).replace(unichr(160), " ")
+        return str(value).replace(chr(160), " ")
 
 
 def get_cascading_json(sheet_list, prefix, level):
@@ -178,7 +177,7 @@ def get_cascading_json(sheet_list, prefix, level):
 
             def replace_prefix(d, prefix):
                 for k, v in d.items():
-                    if isinstance(v, basestring):
+                    if isinstance(v, str):
                         d[k] = v.replace("$PREFIX$", prefix)
                     elif isinstance(v, dict):
                         d[k] = replace_prefix(v, prefix)
@@ -197,8 +196,8 @@ def get_cascading_json(sheet_list, prefix, level):
 
 
 def csv_to_dict(path_or_file):
-    if isinstance(path_or_file, basestring):
-        csv_data = open(path_or_file, "rb")
+    if isinstance(path_or_file, str):
+        csv_data = open(path_or_file, "r", encoding="utf-8", newline="")
     else:
         csv_data = path_or_file
 
@@ -220,7 +219,7 @@ def csv_to_dict(path_or_file):
                 content = None
             return s_or_c, content
 
-    reader = csv.reader(csv_data, encoding="utf-8")
+    reader = csv.reader(csv_data)
     sheet_name = None
     current_headers = None
     for row in reader:
@@ -228,7 +227,7 @@ def csv_to_dict(path_or_file):
         if survey_or_choices is not None:
             sheet_name = survey_or_choices
             if sheet_name not in _dict:
-                _dict[unicode(sheet_name)] = []
+                _dict[str(sheet_name)] = []
             current_headers = None
         if content is not None:
             if current_headers is None:
@@ -241,7 +240,7 @@ def csv_to_dict(path_or_file):
                         # Slight modification so values are striped
                         # this is because csvs often spaces following commas
                         # (but the csv reader might already handle that.)
-                        _d[unicode(key)] = unicode(val.strip())
+                        _d[str(key)] = str(val.strip())
                 _dict[sheet_name].append(_d)
     csv_data.close()
     return _dict
@@ -279,7 +278,7 @@ def convert_file_to_csv_string(path):
         imported_sheets = csv_to_dict(path)
     else:
         imported_sheets = xls_to_dict(path)
-    foo = BytesIO()
+    foo = StringIO(newline="")
     writer = csv.writer(foo, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
     for sheet_name, rows in imported_sheets.items():
         writer.writerow([sheet_name])
@@ -296,4 +295,4 @@ def convert_file_to_csv_string(path):
         writer.writerow([None] + out_keys)
         for out_row in out_rows:
             writer.writerow([None] + out_row)
-    return foo.getvalue().decode("utf-8")
+    return foo.getvalue()

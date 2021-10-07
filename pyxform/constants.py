@@ -39,7 +39,9 @@ STYLE = "style"
 ATTRIBUTE = "attribute"
 ALLOW_CHOICE_DUPLICATES = "allow_choice_duplicates"
 
-BIND = "bind"  # TODO: What should I do with the nested types? (readonly and relevant) # noqa
+BIND = (
+    "bind"  # TODO: What should I do with the nested types? (readonly and relevant) # noqa
+)
 MEDIA = "media"
 CONTROL = "control"
 APPEARANCE = "appearance"

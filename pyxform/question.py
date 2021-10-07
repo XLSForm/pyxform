@@ -8,13 +8,7 @@ import re
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import (
-    basestring,
-    node,
-    unicode,
-    default_is_dynamic,
-    has_dynamic_label,
-)
+from pyxform.utils import default_is_dynamic, has_dynamic_label, node
 
 
 class Question(SurveyElement):
@@ -34,16 +28,14 @@ class Question(SurveyElement):
             attributes[key] = survey.insert_xpaths(value, self)
 
         if self.get("default") and not default_is_dynamic(self.default, self.type):
-            return node(self.name, unicode(self.get("default")), **attributes)
+            return node(self.name, str(self.get("default")), **attributes)
         return node(self.name, **attributes)
 
     def xml_control(self):
         if self.type == "calculate" or (
             ("calculate" in self.bind or self.trigger) and not (self.label or self.hint)
         ):
-            nested_setvalues = self.get_root().get_setvalues_for_question_name(
-                self.name
-            )
+            nested_setvalues = self.get_root().get_setvalues_for_question_name(self.name)
             if nested_setvalues:
                 for setvalue in nested_setvalues:
                     msg = (
@@ -204,7 +196,7 @@ class MultipleChoiceQuestion(Question):
 
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
-        if self["itemset"] and isinstance(self["itemset"], basestring):
+        if self["itemset"] and isinstance(self["itemset"], str):
             choice_filter = self.get("choice_filter")
             itemset_value_ref = "name"
             itemset, file_extension = os.path.splitext(self["itemset"])

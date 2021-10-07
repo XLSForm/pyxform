@@ -3,8 +3,6 @@
 xls2xform converts properly formatted Excel documents into XForms for
 use with ODK Collect.
 """
-from __future__ import print_function
-
 import argparse
 import json
 import logging

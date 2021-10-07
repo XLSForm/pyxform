@@ -4,35 +4,14 @@ pyxform utils module.
 """
 import codecs
 import copy
+import csv
 import json
 import os
 import re
+from json.decoder import JSONDecodeError
 from xml.dom.minidom import Element, Text, parseString
 
-import unicodecsv as csv
 import xlrd
-
-try:
-    from json.decoder import JSONDecodeError
-except ImportError:
-    # json module raises a ValueError exception when it encounters an invalid JSON
-    JSONDecodeError = ValueError
-
-try:
-    unicode("str")
-except NameError:
-    unicode = str
-    basestring = str
-    unichr = chr
-else:
-    try:
-        unicode = unicode
-        basestring = basestring
-        unichr = unichr
-    except NameError:  # special cases where unicode is defined in python3
-        unicode = str
-        basestring = str
-        unichr = chr
 
 SEP = "_"
 
@@ -102,7 +81,7 @@ def node(*args, **kwargs):
     tag = args[0] if len(args) > 0 else kwargs["tag"]
     args = args[1:]
     result = DetachableElement(tag)
-    unicode_args = [u for u in args if type(u) == unicode]
+    unicode_args = [u for u in args if type(u) == str]
     assert len(unicode_args) <= 1
     parsed_string = False
 
@@ -142,9 +121,9 @@ def node(*args, **kwargs):
     for n in args:
         if type(n) == int or type(n) == float or type(n) == bytes:
             text_node = PatchedText()
-            text_node.data = unicode(n)
+            text_node.data = str(n)
             result.appendChild(text_node)
-        elif type(n) is not unicode:
+        elif type(n) is not str:
             result.appendChild(n)
     return result
 
@@ -181,7 +160,7 @@ def sheet_to_csv(workbook_path, csv_path, sheet_name):
         return False
     if not sheet or sheet.nrows < 2:
         return False
-    with open(csv_path, "wb") as f:
+    with open(csv_path, "w", newline="") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         mask = [v and len(v.strip()) > 0 for v in sheet.row_values(0)]
         for row_idx in range(sheet.nrows):
@@ -208,11 +187,7 @@ def has_external_choices(json_struct):
     """
     if isinstance(json_struct, dict):
         for k, v in json_struct.items():
-            if (
-                k == "type"
-                and isinstance(v, basestring)
-                and v.startswith("select one external")
-            ):
+            if k == "type" and isinstance(v, str) and v.startswith("select one external"):
                 return True
             elif has_external_choices(v):
                 return True
@@ -227,7 +202,6 @@ def get_languages_with_bad_tags(languages):
     """
     Returns languages with invalid or missing IANA subtags.
     """
-    iana_subtags = []
     with open(os.path.join(os.path.dirname(__file__), "iana_subtags.txt")) as f:
         iana_subtags = f.read().splitlines()
 
@@ -252,7 +226,7 @@ def default_is_dynamic(element_default, element_type=None):
     * Contains arithmetic operator, including 'div' and 'mod' (except '-' for 'date' type).
     * Contains brackets, parentheses or braces.
     """
-    if not isinstance(element_default, basestring):
+    if not isinstance(element_default, str):
         return False
 
     dynamic_markers = {
@@ -304,7 +278,7 @@ def levenshtein_distance(a: str, b: str) -> int:
     n = len(b)
 
     # create two work vectors of integer distances
-    v1 = [0 for i in range(0, n + 1)]
+    v1 = [0 for _ in range(0, n + 1)]
 
     # initialize v0 (the previous row of distances)
     # this row is A[0][i]: edit distance for an empty s

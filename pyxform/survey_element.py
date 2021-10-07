@@ -4,30 +4,25 @@ Survey Element base class for all survey elements.
 """
 import json
 import re
+from functools import lru_cache
+from typing import TYPE_CHECKING
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.utils import (
-    INVALID_XFORM_TAG_REGEXP,
     BRACKETED_TAG_REGEX,
+    INVALID_XFORM_TAG_REGEXP,
+    default_is_dynamic,
     is_valid_xml_tag,
     node,
-    unicode,
-    default_is_dynamic,
 )
 from pyxform.xls2json import print_pyobj_to_json
-from typing import TYPE_CHECKING
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
-
 
 if TYPE_CHECKING:
-    from pyxform.utils import DetachableElement
     from typing import List
+
+    from pyxform.utils import DetachableElement
 
 
 def _overlay(over, under):
@@ -48,19 +43,19 @@ class SurveyElement(dict):
     # the following are important keys for the underlying dict that
     # describes this survey element
     FIELDS = {
-        "name": unicode,
-        constants.COMPACT_TAG: unicode,  # used for compact (sms) representation
-        "sms_field": unicode,
-        "sms_option": unicode,
-        "label": unicode,
-        "hint": unicode,
-        "guidance_hint": unicode,
-        "default": unicode,
-        "type": unicode,
-        "appearance": unicode,
-        "parameters": unicode,
-        "intent": unicode,
-        "jr:count": unicode,
+        "name": str,
+        constants.COMPACT_TAG: str,  # used for compact (sms) representation
+        "sms_field": str,
+        "sms_option": str,
+        "label": str,
+        "hint": str,
+        "guidance_hint": str,
+        "default": str,
+        "type": str,
+        "appearance": str,
+        "parameters": str,
+        "intent": str,
+        "jr:count": str,
         "bind": dict,
         "instance": dict,
         "control": dict,
@@ -68,14 +63,14 @@ class SurveyElement(dict):
         # this node will also have a parent and children, like a tree!
         "parent": lambda: None,
         "children": list,
-        "itemset": unicode,
-        "choice_filter": unicode,
-        "query": unicode,
-        "autoplay": unicode,
+        "itemset": str,
+        "choice_filter": str,
+        "query": str,
+        "autoplay": str,
         "flat": lambda: False,
-        "action": unicode,
-        "list_name": unicode,
-        "trigger": unicode,
+        "action": str,
+        "list_name": str,
+        "trigger": str,
     }
 
     def _default(self):
@@ -221,7 +216,7 @@ class SurveyElement(dict):
     def get_abbreviated_xpath(self):
         lineage = self.get_lineage()
         if len(lineage) >= 2:
-            return "/".join([unicode(n.name) for n in lineage[1:]])
+            return "/".join([str(n.name) for n in lineage[1:]])
         else:
             return lineage[0].name
 
@@ -415,9 +410,7 @@ class SurveyElement(dict):
             path = self._translation_path("hint")
             return node("hint", ref="jr:itext('%s')" % path)
         else:
-            hint, output_inserted = self.get_root().insert_output_values(
-                self.hint, self
-            )
+            hint, output_inserted = self.get_root().insert_output_values(self.hint, self)
             return node("hint", hint, toParseString=output_inserted)
 
     def xml_label_and_hint(self) -> "List[DetachableElement]":

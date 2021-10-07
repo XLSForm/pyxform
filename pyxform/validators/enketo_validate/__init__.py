@@ -4,6 +4,7 @@ Validate XForms using Enketo validator.
 """
 import os
 from typing import TYPE_CHECKING
+
 from pyxform.validators.error_cleaner import ErrorCleaner
 from pyxform.validators.util import (
     XFORM_SPEC_PATH,
@@ -11,7 +12,6 @@ from pyxform.validators.util import (
     decode_stream,
     run_popen_with_timeout,
 )
-
 
 if TYPE_CHECKING:
     from pyxform.validators.util import PopenResult

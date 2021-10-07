@@ -2,8 +2,6 @@
 """
 Survey module with XForm Survey objects and utility functions.
 """
-from __future__ import print_function
-
 import codecs
 import os
 import re
@@ -11,14 +9,9 @@ import tempfile
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
+from functools import lru_cache
 
 from pyxform import constants
-from pyxform.utils import (
-    BRACKETED_TAG_REGEX,
-    LAST_SAVED_REGEX,
-    LAST_SAVED_INSTANCE_NAME,
-    has_dynamic_label,
-)
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -27,20 +20,16 @@ from pyxform.question import Question
 from pyxform.section import Section
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import (
+    BRACKETED_TAG_REGEX,
+    LAST_SAVED_INSTANCE_NAME,
+    LAST_SAVED_REGEX,
     NSMAP,
     PatchedText,
-    basestring,
     get_languages_with_bad_tags,
+    has_dynamic_label,
     node,
-    unicode,
 )
 from pyxform.validators import enketo_validate, odk_validate
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
-
 
 RE_PULLDATA = re.compile(r"(pulldata\s*\(\s*)(.*?),")
 
@@ -130,9 +119,7 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
                 # we avoid refrencing the context_parent and instead reference the shared
                 # ancestor
                 reference_parent = False
-        return _get_steps_and_target_xpath(
-            context_parent, xpath_parent, reference_parent
-        )
+        return _get_steps_and_target_xpath(context_parent, xpath_parent, reference_parent)
     elif context_parent and xpath_parent:
         # Check if context_parent and xpath_parent share a common
         # repeat ancestor
@@ -162,29 +149,29 @@ class Survey(Section):
             "_xpath": dict,
             "_created": datetime.now,  # This can't be dumped to json
             "setvalues_by_triggering_ref": dict,
-            "title": unicode,
-            "id_string": unicode,
-            "sms_keyword": unicode,
-            "sms_separator": unicode,
+            "title": str,
+            "id_string": str,
+            "sms_keyword": str,
+            "sms_separator": str,
             "sms_allow_media": bool,
-            "sms_date_format": unicode,
-            "sms_datetime_format": unicode,
-            "sms_response": unicode,
-            constants.COMPACT_PREFIX: unicode,
-            constants.COMPACT_DELIMITER: unicode,
-            "file_name": unicode,
-            "default_language": unicode,
+            "sms_date_format": str,
+            "sms_datetime_format": str,
+            "sms_response": str,
+            constants.COMPACT_PREFIX: str,
+            constants.COMPACT_DELIMITER: str,
+            "file_name": str,
+            "default_language": str,
             "_translations": dict,
-            "submission_url": unicode,
-            "auto_send": unicode,
-            "auto_delete": unicode,
-            "public_key": unicode,
-            "instance_xmlns": unicode,
-            "version": unicode,
+            "submission_url": str,
+            "auto_send": str,
+            "auto_delete": str,
+            "public_key": str,
+            "instance_xmlns": str,
+            "version": str,
             "choices": dict,
-            "style": unicode,
+            "style": str,
             "attribute": dict,
-            "namespaces": unicode,
+            "namespaces": str,
         }
     )  # yapf: disable
 
@@ -218,7 +205,7 @@ class Survey(Section):
         """Add additional namespaces"""
         namespaces = getattr(self, constants.NAMESPACES, None)
 
-        if namespaces and isinstance(namespaces, basestring):
+        if namespaces and isinstance(namespaces, str):
             nslist = [
                 ns.split("=")
                 for ns in namespaces.split()
@@ -298,16 +285,16 @@ class Survey(Section):
                 choice_element_list.append(node("itextId", itext_id))
 
             for name, value in sorted(choice.items()):
-                if isinstance(value, basestring) and name != "label":
-                    choice_element_list.append(node(name, unicode(value)))
+                if isinstance(value, str) and name != "label":
+                    choice_element_list.append(node(name, str(value)))
                 if (
                     not multi_language
                     and not has_media
                     and not has_dynamic_label(choice_list, multi_language)
-                    and isinstance(value, basestring)
+                    and isinstance(value, str)
                     and name == "label"
                 ):
-                    choice_element_list.append(node(name, unicode(value)))
+                    choice_element_list.append(node(name, str(value)))
 
             instance_element_list.append(node("item", *choice_element_list))
 
@@ -316,9 +303,7 @@ class Survey(Section):
             context="survey",
             name=list_name,
             src=None,
-            instance=node(
-                "instance", node("root", *instance_element_list), id=list_name
-            ),
+            instance=node("instance", node("root", *instance_element_list), id=list_name),
         )
 
     @staticmethod
@@ -381,11 +366,11 @@ class Survey(Section):
             """
             functions_present = []
             for formula_name in constants.EXTERNAL_INSTANCES:
-                if "pulldata(" in unicode(element["bind"].get(formula_name)):
+                if "pulldata(" in str(element["bind"].get(formula_name)):
                     functions_present.append(element["bind"][formula_name])
-            if "pulldata(" in unicode(element["choice_filter"]):
+            if "pulldata(" in str(element["choice_filter"]):
                 functions_present.append(element["choice_filter"])
-            if "pulldata(" in unicode(element["default"]):
+            if "pulldata(" in str(element["default"]):
                 functions_present.append(element["default"])
 
             return functions_present
@@ -445,20 +430,18 @@ class Survey(Section):
     def _generate_last_saved_instance(element):
         for expression_type in constants.EXTERNAL_INSTANCES:
             last_saved_expression = re.search(
-                LAST_SAVED_REGEX, unicode(element["bind"].get(expression_type))
+                LAST_SAVED_REGEX, str(element["bind"].get(expression_type))
             )
             if last_saved_expression:
                 return True
 
-        return re.search(
-            LAST_SAVED_REGEX, unicode(element["choice_filter"])
-        ) or re.search(LAST_SAVED_REGEX, unicode(element["default"]))
+        return re.search(LAST_SAVED_REGEX, str(element["choice_filter"])) or re.search(
+            LAST_SAVED_REGEX, str(element["default"])
+        )
 
     @staticmethod
     def _get_last_saved_instance():
-        name = (
-            "__last-saved"  # double underscore used to minimize risk of name conflicts
-        )
+        name = "__last-saved"  # double underscore used to minimize risk of name conflicts
         uri = "jr://instance/last-saved"
 
         return InstanceInfo(
@@ -565,8 +548,7 @@ class Survey(Section):
         self._setup_media()
         self._add_empty_translations()
 
-        model_kwargs = {}
-        model_kwargs["odk:xforms-version"] = constants.CURRENT_XFORMS_VERSION
+        model_kwargs = {"odk:xforms-version": constants.CURRENT_XFORMS_VERSION}
 
         model_children = []
         if self._translations:
@@ -597,7 +579,7 @@ class Survey(Section):
 
         # set these first to prevent overwriting id and version
         for key, value in self.attribute.items():
-            result.setAttribute(unicode(key), value)
+            result.setAttribute(str(key), value)
 
         result.setAttribute("id", self.id_string)
 
@@ -668,9 +650,9 @@ class Survey(Section):
                         translation_path = d["path"].replace("guidance_hint", "hint")
                         form = "guidance"
 
-                    self._translations[d["lang"]][
-                        translation_path
-                    ] = self._translations[d["lang"]].get(translation_path, {})
+                    self._translations[d["lang"]][translation_path] = self._translations[
+                        d["lang"]
+                    ].get(translation_path, {})
 
                     self._translations[d["lang"]][translation_path].update(
                         {
@@ -883,9 +865,7 @@ class Survey(Section):
         xml_with_linebreaks = self.xml().toprettyxml(indent="  ")
         text_re = re.compile(r"(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)", re.DOTALL)
         output_re = re.compile(r"\n.*(<output.*>)\n(\s\s)*")
-        pretty_xml = text_re.sub(
-            lambda m: "".join(m.group(1, 2, 3)), xml_with_linebreaks
-        )
+        pretty_xml = text_re.sub(lambda m: "".join(m.group(1, 2, 3)), xml_with_linebreaks)
         inline_output = output_re.sub(r"\g<1>", pretty_xml)
         return '<?xml version="1.0"?>\n' + inline_output
 
@@ -913,7 +893,6 @@ class Survey(Section):
         """
 
         name = matchobj.group(2)
-        bracketed_tag_name = "${{{0}}}".format(name)
         last_saved = matchobj.group(1) is not None
         is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
         indexed_repeat_regex = re.compile(r"indexed-repeat\([^)]+\)")
@@ -1042,7 +1021,7 @@ class Survey(Section):
                 matchobj, context, use_current, reference_parent
             )
 
-        return re.sub(BRACKETED_TAG_REGEX, _var_repl_function, unicode(text))
+        return re.sub(BRACKETED_TAG_REGEX, _var_repl_function, str(text))
 
     def _var_repl_output_function(self, matchobj, context):
         """
@@ -1073,10 +1052,8 @@ class Survey(Section):
         # need to make sure we have reason to replace
         # since at this point < is &lt,
         # the net effect &lt gets translated again to &amp;lt;
-        if unicode(xml_text).find("{") != -1:
-            result = re.sub(
-                BRACKETED_TAG_REGEX, _var_repl_output_function, unicode(xml_text)
-            )
+        if str(xml_text).find("{") != -1:
+            result = re.sub(BRACKETED_TAG_REGEX, _var_repl_output_function, str(xml_text))
             return result, not result == xml_text
         return text, False
 

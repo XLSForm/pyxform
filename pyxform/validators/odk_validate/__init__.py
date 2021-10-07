@@ -3,20 +3,18 @@
 odk_validate.py
 A python wrapper around ODK Validate
 """
-from __future__ import print_function, unicode_literals
-
 import logging
 import os
-import sys
 import shutil
+import sys
 from typing import TYPE_CHECKING
+
 from pyxform.validators.error_cleaner import ErrorCleaner
 from pyxform.validators.util import (
     XFORM_SPEC_PATH,
     check_readable,
     run_popen_with_timeout,
 )
-
 
 if TYPE_CHECKING:
     from pyxform.validators.util import PopenResult
@@ -49,7 +47,8 @@ def install_ok(bin_file_path=ODK_VALIDATE_PATH):
     """
     check_readable(file_path=XFORM_SPEC_PATH)
     result = _call_validator(
-        path_to_xform=XFORM_SPEC_PATH, bin_file_path=bin_file_path,
+        path_to_xform=XFORM_SPEC_PATH,
+        bin_file_path=bin_file_path,
     )
     if result.return_code == 1:
         return False

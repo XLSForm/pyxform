@@ -8,8 +8,6 @@ XFormInstanceParser class module - parses an instance XML.
 import re
 from xml.dom import minidom
 
-from pyxform.utils import unicode
-
 XFORM_ID_STRING = "_xform_id_string"
 
 
@@ -59,7 +57,7 @@ def _flatten_dict(d, prefix):
                 # implemented that [0] should be the first node, but
                 # according to the W3C standard it should have been
                 # [1]. I'm adding 1 to i to start at 1.
-                item_prefix[-1] += "[%s]" % unicode(i + 1)
+                item_prefix[-1] += "[%s]" % str(i + 1)
                 if type(item) == dict:
                     for pair in _flatten_dict(item, item_prefix):
                         yield pair
@@ -81,13 +79,13 @@ def _get_all_attributes(node):
             yield pair
 
 
-class XFormInstanceParser(object):
+class XFormInstanceParser:
     def __init__(self, xml_str):
         self.parse(xml_str)
 
     def parse(self, xml_str):
         clean_xml_str = xml_str.strip()
-        clean_xml_str = re.sub(unicode(r">\s+<"), unicode("><"), clean_xml_str)
+        clean_xml_str = re.sub(str(r">\s+<"), str("><"), clean_xml_str)
         self._xml_obj = minidom.parseString(clean_xml_str)
         self._root_node = self._xml_obj.documentElement
         self._dict = _xml_node_to_dict(self._root_node)
