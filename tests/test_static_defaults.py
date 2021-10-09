@@ -1,5 +1,4 @@
-from pyxform.tests_v1.pyxform_test_case import PyxformTestCase
-
+from tests.pyxform_test_case import PyxformTestCase
 
 class StaticDefaultTests(PyxformTestCase):
     def test_static_defaults(self):
