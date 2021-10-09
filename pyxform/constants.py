@@ -102,3 +102,19 @@ AUDIO_QUALITY_VOICE_ONLY = "voice-only"
 AUDIO_QUALITY_LOW = "low"
 AUDIO_QUALITY_NORMAL = "normal"
 AUDIO_QUALITY_EXTERNAL = "external"
+
+# https://getodk.github.io/xforms-spec/#file-endpoints
+# TODO - theres values repeated under different keys to handle the diverse use cases.
+# Could I be a function? or a DefaultDict?
+SANDBOXED_TYPE_EP_PREFIX_MAP = {
+    "photo": "jr://images/",
+    "image": "jr://images/",
+    "audio": "jr://audio/",
+    "background-audio": "jr://audio/",
+    "video": "jr://video/",
+    "xml": "jr://file/",
+    "file": "jr://file/",
+    "csv": "jr://file-csv/",
+    "file-csv": "jr://file-csv/",
+    "lastsaved": "jr://instance/last-saved",
+}

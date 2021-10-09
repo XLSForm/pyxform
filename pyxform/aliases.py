@@ -115,7 +115,7 @@ list_header = {
     "video": "media::video",
 }
 # Note that most of the type aliasing happens in all.xls
-_type = {
+_type_alias_map = {
     "imei": "deviceid",
     "image": "photo",
     "add image prompt": "photo",
