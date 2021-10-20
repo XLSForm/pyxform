@@ -1,5 +1,20 @@
 Pyxform Changelog
 
+# v1.7.0, 2021-10-20
+
+* #545 Add allow-mock-accuracy parameter
+  * Callum Sott @seadowg (ODK)
+* #560 Add default value support for image questions #405
+  * Vincent Buscarello @KeynesYouDigIt
+* #559 Avoid recursion depth error for label with many references
+  * Lindsay Stevens @lindsay-stevens (ODK)
+* #548 Add test methods to check xml hierarchy
+  * Lindsay Stevens @lindsay-stevens (ODK)
+* #559 Avoid recursion depth error for label with many references
+  * Lindsay Stevens @lindsay-stevens (ODK)
+* #562 Clean up dependencies, py2 code, etc
+  * Lindsay Stevens @lindsay-stevens (ODK)
+
 # v1.6.0, 2021-09-01
 
 * #547 Fix parsing of (multiple) pulldata calls in a (multi-line) expression
