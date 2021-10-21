@@ -155,6 +155,6 @@ Releasing pyxform
 
 13. Publish release to PyPI with ``twine``::
 
-     twine upload dist/pyxform-*-py2.py3-none-any.whl dist/pyxform-*.tar.gz
+     twine upload dist/pyxform-*-py3-none-any.whl dist/pyxform-*.tar.gz
 
 14. Tag the GitHub release and publish it.
