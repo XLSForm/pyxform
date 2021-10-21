@@ -4,15 +4,13 @@ Pyxform Changelog
 
 * #545 Add allow-mock-accuracy parameter
   * Callum Sott @seadowg (ODK)
-* #560 Add default value support for image questions #405
+* #560 Add default value support for image questions
   * Vincent Buscarello @KeynesYouDigIt
 * #559 Avoid recursion depth error for label with many references
   * Lindsay Stevens @lindsay-stevens (ODK)
 * #548 Add test methods to check xml hierarchy
   * Lindsay Stevens @lindsay-stevens (ODK)
-* #559 Avoid recursion depth error for label with many references
-  * Lindsay Stevens @lindsay-stevens (ODK)
-* #562 Clean up dependencies, py2 code, etc
+* #562 Clean up dependencies, remove py2 code, remove py3.6 support
   * Lindsay Stevens @lindsay-stevens (ODK)
 
 # v1.6.0, 2021-09-01
