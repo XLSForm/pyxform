@@ -108,7 +108,6 @@ class SurveyElement(dict):
         self[key] = value
 
     def __init__(self, **kwargs):
-        # a set of strings to pass up to the user as warnings.
         for key, default in self.FIELDS.items():
             self[key] = kwargs.get(key, default())
         self._link_children()
