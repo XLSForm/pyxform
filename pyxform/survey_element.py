@@ -247,7 +247,6 @@ class SurveyElement(dict):
         """
         self.validate()
 
-        # cast warnings for json serializability
         result = self.copy()
         to_delete = ["parent", "question_type_dictionary", "_created"]
         # Delete all keys that may cause a "Circular Reference"
