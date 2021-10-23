@@ -339,11 +339,7 @@ QUESTION_TYPE_DICT = {
         }
     },
     "email": {
-        "bind": {
-            "jr:preload": "property",
-            "type": "string",
-            "jr:preloadParams": "email",
-        }
+        "bind": {"jr:preload": "property", "type": "string", "jr:preloadParams": "email",}
     },
     "uri:email": {
         "bind": {

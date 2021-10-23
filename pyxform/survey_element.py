@@ -71,9 +71,8 @@ class SurveyElement(dict):
         "action": str,
         "list_name": str,
         "trigger": str,
-
         # This is a simple data store allowing internal logic to generate and hold warning messages.
-        "__internal_warnings__": set
+        "__internal_warnings__": set,
     }
 
     def _add_warning(self, message):
@@ -263,7 +262,7 @@ class SurveyElement(dict):
         return result
 
     def to_json(self):
-        return json.dumps(self.to_json_dict(), default=lambda x:list(x))
+        return json.dumps(self.to_json_dict(), default=lambda x: list(x))
 
     def json_dump(self, path=""):
         if not path:

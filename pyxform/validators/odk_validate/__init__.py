@@ -46,10 +46,7 @@ def install_ok(bin_file_path=ODK_VALIDATE_PATH):
     Check if ODK Validate functions as expected.
     """
     check_readable(file_path=XFORM_SPEC_PATH)
-    result = _call_validator(
-        path_to_xform=XFORM_SPEC_PATH,
-        bin_file_path=bin_file_path,
-    )
+    result = _call_validator(path_to_xform=XFORM_SPEC_PATH, bin_file_path=bin_file_path,)
     if result.return_code == 1:
         return False
 

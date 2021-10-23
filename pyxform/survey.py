@@ -251,7 +251,7 @@ class Survey(Section):
             "h:html",
             node("h:head", node("h:title", self.title), self.xml_model()),
             node("h:body", *self.xml_control(), **body_kwargs),
-            **nsmap
+            **nsmap,
         )
 
     def get_setvalues_for_question_name(self, question_name):
@@ -379,9 +379,9 @@ class Survey(Section):
             uri = "jr://file-csv/{}.csv".format(file_id)
 
             return InstanceInfo(
-                type=u"pulldata",
+                type="pulldata",
                 context="[type: {t}, name: {n}]".format(
-                    t=element[u"parent"][u"type"], n=element[u"parent"][u"name"]
+                    t=element["parent"]["type"], n=element["parent"]["name"]
                 ),
                 name=file_id,
                 src=uri,
@@ -732,7 +732,7 @@ class Survey(Section):
         # if the ":" is not present, there may be a choice label present.
         # First check for a "-"
         if path.find("-") > -1:
-            
+
             # If a "-" is present, its a choice label.
             choice_list_name = {
                 cl for cl in self.choices.keys() if cl == path[: path.find("-")]
@@ -742,8 +742,8 @@ class Survey(Section):
 
         # if this return is hit, we dont really know exactly what column path represents.
         # return the full path.
-        # TODO 
-        # - improve this function 
+        # TODO
+        # - improve this function
         # or consider a reworking of _add_empty_translations to better reflect needs
         # or consider simply returning "path" every time, if it is more user friendly.
         return path
@@ -1139,7 +1139,7 @@ class Survey(Section):
                     + ". "
                     + "Learn more: http://xlsform.org#multiple-language-support"
                 )
-        
+
         # Take the internal warnings (things found during form creation logic) and add them as well.
         warnings.extend(self["__internal_warnings__"])
 
