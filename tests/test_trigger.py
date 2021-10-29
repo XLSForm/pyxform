@@ -278,8 +278,8 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | choices            | a    | A           |
             |        | choices            | aa   | AA          |
             """,
-            xml__contains=[
-                '<setvalue event="xforms-value-changed" ref="/trigger-select_trigger/b" value="string-length( /trigger-select_trigger/a )"/>\n    </select1>'
+            xml__xpath_match=[
+                './/x:select1[@ref="/trigger-select_trigger/a"]/x:setvalue[@ref="/trigger-select_trigger/b"]'
             ],
         )
 

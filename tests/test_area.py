@@ -11,10 +11,6 @@ MD = """
 |        | calculate | result    |                         | enclosed-area(${geoshape1}) |                                                                                                                                                                                           |
 """  # nopep8
 
-XML_CONTAINS = """
-<bind calculate="enclosed-area( /area/geoshape1 )" nodeset="/area/result" type="string"/>
-""".strip()  # nopep8
-
 
 class AreaTest(PyxformTestCase):
     """
@@ -23,5 +19,10 @@ class AreaTest(PyxformTestCase):
 
     def test_area(self):
         self.assertPyxformXform(
-            name="area", md=MD, xml__contains=[XML_CONTAINS], debug=False
+            name="area",
+            md=MD,
+            xml__xpath_match=[
+                """.//x:bind[@calculate='enclosed-area( /area/geoshape1 )' 
+                             and @nodeset='/area/result' and @type='string']"""
+            ],
         )

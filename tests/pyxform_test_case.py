@@ -9,10 +9,13 @@ import re
 import sys
 import tempfile
 import xml.etree.ElementPath as EPath
-import xml.etree.ElementTree as ETree
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 from unittest import TestCase
+
+from lxml import etree
+# noinspection PyProtectedMember
+from lxml.etree import _Element
 
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
@@ -27,8 +30,7 @@ logger.setLevel(logging.DEBUG)
 
 
 if TYPE_CHECKING:
-    from typing import Dict
-    from xml.etree.ElementTree import Element
+    from typing import Set, Union
 
 
 class PyxformTestError(Exception):
@@ -161,6 +163,13 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
           * [xml|model|instance|itext]__xpath_count: A list of tuples where the
                first tuple element is an XPath expression and the second tuple
                element is the integer number of match results that are expected.
+          * [xml|model|instance|itext]__xpath_match: A list of XPath expression
+               strings for which exactly one match result each is expected.
+
+        For each of the xpath_* matchers above, if the XPath expression is looking for an
+        element in the 'default' namespace (xforms) then use an 'x' namespace prefix for
+        the element. For example to find input nodes in the body: ".//h:body/x:input".
+        This 'x' prefix is not required for attributes.
 
         optional other parameters passed to pyxform:
           * errored: (bool) if the xlsform is not supposed to compile,
@@ -171,6 +180,8 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
           * run_odk_validate: (bool) when True, runs ODK Validate process
                 Default value = False because it slows down tests
           * warnings: (list) a list to use for storing warnings for inspection.
+          * debug: (bool) when True, log details of the test to stdout. Details include
+                the input survey markdown, the XML document, XPath match strings.
         """
         debug = kwargs.get("debug", False)
         expecting_invalid_survey = kwargs.get("errored", False)
@@ -199,17 +210,20 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 survey = kwargs.get("survey")
 
             xml = survey._to_pretty_xml()
-            root = ETree.fromstring(xml.encode("utf-8"))
+            root = etree.fromstring(xml.encode("utf-8"))
 
             # Ensure all namespaces are present, even if unused
             survey_nsmap = survey.get_nsmap()
-            survey_nsmap_xpath = {
-                k.replace("xmlns", "").replace(":", ""): v
-                for k, v in survey_nsmap.items()
-            }
             final_nsmap = NSMAP.copy()
             final_nsmap.update(survey_nsmap)
-            root.attrib.update(final_nsmap)
+            root.nsmap.update(final_nsmap)
+            final_nsmap_xpath = {
+                "x": final_nsmap["xmlns"],
+                **{k.split(":")[1]: v for k, v in final_nsmap.items() if k != "xmlns"},
+            }
+            # guarantee that strings contain alphanumerically sorted attributes across
+            # Python versions
+            reorder_attributes(root)
 
             xml_nodes["xml"] = root
 
@@ -264,21 +278,37 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                         % (bad_kwarg, good_kwarg)
                     )
 
-                def process_xpath(content: "Element", xpath: str):
-                    with xpath_tokenizer_swap():
-                        return [
-                            stringify_xml(x, survey_nsmap_xpath)
-                            for x in EPath.iterfind(
-                                elem=content,
-                                path=xpath,
-                                namespaces=survey_nsmap_xpath,
-                            )
-                        ]
+                def clean_result_strings(results: "Set[_Element]") -> "Set[str]":
+                    xmlns = [(f' {k}="{v}"', "") for k, v in final_nsmap.items()]
+                    xmlex = [(" >", ">"), (" />", "/>")]
+                    subs = xmlns + xmlex
+                    observed = set()
+                    for x in results:
+                        if isinstance(x, _Element):
+                            reorder_attributes(x)
+                            x = etree.tostring(x, encoding=str, pretty_print=True)
+                            x = x.strip()
+                            for s in subs:
+                                x = x.replace(*s)
+                        observed.add(x)
+                    return observed
+
+                def process_xpath(
+                    content: "_Element", xpath: str, for_exact=False
+                ) -> "Union[Set[_Element], Set[str]]":
+                    results = set(content.xpath(xpath, namespaces=final_nsmap_xpath))
+                    if debug and 0 < len(results):
+                        cleaned = clean_result_strings(results=results)
+                        logger.debug("XPath results:\n" + "\n".join(cleaned))
+                    if for_exact:
+                        return clean_result_strings(results=results)
+                    else:
+                        return results
 
                 def check_content(content):
-                    if not content:
+                    if content is None:
                         self.fail(msg="No '{}' found in document.".format(keyword))
-                    cstr = ETree.tostring(content, encoding="unicode")
+                    cstr = etree.tostring(content, encoding=str, pretty_print=True)
                     text_arr = kwargs[verb_str]
                     for i in text_arr:
                         if verb == "contains":
@@ -286,11 +316,26 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                         elif verb == "excludes":
                             self.assertNotContains(cstr, i, msg_prefix=keyword)
                         elif verb == "xpath_exact":
-                            observed = process_xpath(content=content, xpath=i[0])
-                            self.assertListEqual(i[1], observed)
+                            if not 2 == len(i):
+                                msg = "Each xpath_exact requires: tuple(xpath, [str])."
+                                raise SyntaxError(msg)
+                            # Compares result strings since expected strings may contain
+                            # xml namespace prefixes. To allow parsing to compare as
+                            # ETrees would require injecting namespace declarations.
+                            observed = process_xpath(content, i[0], True)
+                            self.assertSetEqual(set(i[1]), observed, cstr)
                         elif verb == "xpath_count":
-                            observed = process_xpath(content=content, xpath=i[0])
-                            self.assertEqual(i[1], len(observed))
+                            if not 2 == len(i):
+                                msg = "Each xpath_count requires: tuple(xpath, int)"
+                                raise SyntaxError(msg)
+                            observed = process_xpath(content, i[0])
+                            self.assertEqual(i[1], len(observed), cstr)
+                        elif verb == "xpath_match":
+                            if not isinstance(i, str):
+                                msg = "Each xpath_match requires: xpath"
+                                raise SyntaxError(msg)
+                            observed = process_xpath(content, i)
+                            self.assertEqual(1, len(observed), cstr)
 
                 return verb_str, check_content
 
@@ -299,11 +344,14 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                     "Invalid parameter: 'body__contains'." "Use 'xml__contains' instead"
                 )
 
-            # guarantee that strings contain alphanumerically sorted attributes across Python versions
-            reorder_attributes(root)
-
             for code in ["xml", "instance", "model", "itext"]:
-                for verb in ["contains", "excludes", "xpath_exact", "xpath_count"]:
+                for verb in [
+                    "contains",
+                    "excludes",
+                    "xpath_exact",
+                    "xpath_count",
+                    "xpath_match",
+                ]:
                     (code__str, checker) = _check(code, verb)
                     if kwargs.get(code__str):
                         checker(xml_nodes[code])
@@ -422,48 +470,6 @@ def reorder_attributes(root):
             attribs = sorted(attrib.items())
             attrib.clear()
             attrib.update(attribs)
-
-
-def stringify_xml(node: "Element", namespaces: "Dict[str, str]"):
-    """
-    Convert an element node to string, retaining namespace prefixes on names.
-
-    ElementTree puts namespace declarations in the output nodes. In order to
-    make an exact node fragment string comparison, the declarations need to be
-    removed but the prefixes need to remain.
-
-    For example a document has an element "x:localname" which ETree reads as
-    "{uri}localname". The output would have a namespace declaration like
-    'xmlns:x="http://etc"'. This keeps "x:localname" without the declaration.
-
-    :param node: The ETree XML Element to process.
-    :param namespaces: Namespaces known to be used by the XML document.
-    """
-
-    def swap_ns(name):
-        for ns, uri in namespaces.items():
-            if ns != "":
-                ns += ":"
-            if uri in name:
-                name = name.replace("{" + uri + "}", ns)
-        return name
-
-    def strip_ns(n):
-        if hasattr(n, "tag"):
-            n.tag = swap_ns(name=n.tag)
-        if hasattr(n, "attrib"):
-            keys = ((k, swap_ns(name=k)) for k in n.attrib.keys())
-            n.attrib = {new: n.attrib[old] for old, new in keys}
-
-    def strip_ns_recurse(_node):
-        strip_ns(_node)
-        for child in _node:
-            strip_ns_recurse(child)
-
-    strip_ns_recurse(node)
-    reorder_attributes(node)  # Required to match attribute order.
-    enc = ETree.tostring(node, encoding="unicode")
-    return enc.strip().replace(" />", "/>")
 
 
 def xpath_tokenizer__v3_8(pattern, namespaces=None):
