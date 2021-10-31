@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 from unittest import TestCase
 
 from lxml import etree
+
 # noinspection PyProtectedMember
 from lxml.etree import _Element
 
@@ -299,7 +300,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                     results = set(content.xpath(xpath, namespaces=final_nsmap_xpath))
                     if debug and 0 < len(results):
                         cleaned = clean_result_strings(results=results)
-                        logger.debug("XPath results:\n" + "\n".join(cleaned))
+                        logger.debug(f"Results for XPath: {xpath}\n" + "\n".join(cleaned))
                     if for_exact:
                         return clean_result_strings(results=results)
                     else:
@@ -316,16 +317,25 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                         elif verb == "excludes":
                             self.assertNotContains(cstr, i, msg_prefix=keyword)
                         elif verb == "xpath_exact":
-                            if not 2 == len(i):
+                            if not (
+                                2 == len(i)
+                                and isinstance(i[0], str)
+                                and isinstance(i[1], list)
+                            ):
                                 msg = "Each xpath_exact requires: tuple(xpath, [str])."
                                 raise SyntaxError(msg)
                             # Compares result strings since expected strings may contain
-                            # xml namespace prefixes. To allow parsing to compare as
-                            # ETrees would require injecting namespace declarations.
+                            # xml namespace prefixes. To allow parsing required to compare
+                            # as ETrees would require injecting namespace declarations
+                            # into the expected match strings.
                             observed = process_xpath(content, i[0], True)
                             self.assertSetEqual(set(i[1]), observed, cstr)
                         elif verb == "xpath_count":
-                            if not 2 == len(i):
+                            if not (
+                                2 == len(i)
+                                and isinstance(i[0], str)
+                                and isinstance(i[1], str)
+                            ):
                                 msg = "Each xpath_count requires: tuple(xpath, int)"
                                 raise SyntaxError(msg)
                             observed = process_xpath(content, i[0])
