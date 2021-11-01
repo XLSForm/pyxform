@@ -1,18 +1,17 @@
 import unittest
-
-from tests.pyxform_test_case import PyxformTestCase
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from tests.pyxform_test_case import PyxformTestCase
 
 if TYPE_CHECKING:
-    from typing import List
+    from typing import Set
 
 
 @dataclass
 class CaseData:
     xpath: str
-    exact: "List[str]"
+    exact: "Set[str]"
     count: int
 
     @property
@@ -36,19 +35,19 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
     # s1c1: element in default namespace.
     s1c1 = CaseData(
         xpath=".//x:instance[@id='ID']",
-        exact=['<instance id="ID" src="jr://file-csv/ID.csv"/>'],
+        exact={'<instance id="ID" src="jr://file-csv/ID.csv"/>'},
         count=1,
     )
     # s1c2: mix of namespaces
     s1c2 = CaseData(
         xpath=".//h:body/x:input[@ref='/pyxform_autotestname/Part_ID']/x:label",
-        exact=["<label>Participant ID</label>"],
+        exact={"<label>Participant ID</label>"},
         count=1,
     )
     # s1c3: multi-element match result.
     s1c3 = CaseData(
         xpath=".//h:body",
-        exact=[
+        exact={
             (
                 """<h:body>\n"""
                 """    <input ref="/pyxform_autotestname/Part_ID">\n"""
@@ -59,24 +58,24 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
                 """    </input>\n"""
                 """  </h:body>"""
             )
-        ],
+        },
         count=1,
     )
     # s1c4: attribute selector with compound expression (not available in elementree).
     s1c4 = CaseData(
         xpath=".//x:bind[@type='string' and @jr:preload='uid']",
-        exact=[
+        exact={
             (
                 """<bind nodeset="/pyxform_autotestname/meta/instanceID" """
                 """readonly="true()" type="string" jr:preload="uid"/>"""
             )
-        ],
+        },
         count=1,
     )
     # s1c5: namespaced attribute selector.
     s1c5 = CaseData(
         xpath=".//x:bind[@type='string' and @jr:preload='uid']/@nodeset",
-        exact=["/pyxform_autotestname/meta/instanceID"],
+        exact={"/pyxform_autotestname/meta/instanceID"},
         count=1,
     )
     # Convenience combinations of the above data for Suite 1 tests.
@@ -89,7 +88,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
     # s2c1: element in default namespace.
     s2c1 = CaseData(
         xpath=".//x:bind",
-        exact=[
+        exact={
             (
                 """<bind nodeset="/pyxform_autotestname/Part_ID" """
                 """required="pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.)" """
@@ -100,13 +99,13 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
                 """readonly="true()" type="string" jr:preload="uid"/>"""
             ),
             ("""<bind nodeset="/pyxform_autotestname/Initial" type="string"/>"""),
-        ],
+        },
         count=3,
     )
     # s2c2: results with nesting and mix of namespaces.
     s2c2 = CaseData(
         xpath=".//x:instance",
-        exact=[
+        exact={
             (
                 """<instance>\n"""
                 """        <pyxform_autotestname id="pyxform_autotest_id_string">\n"""
@@ -119,16 +118,16 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
                 """      </instance>"""
             ),
             ("""<instance id="ID" src="jr://file-csv/ID.csv"/>"""),
-        ],
+        },
         count=2,
     )
     # s2c3: nested element.
     s2c3 = CaseData(
         xpath=".//x:input/x:label",
-        exact=[
+        exact={
             ("""<label>Participant ID</label>"""),
             ("""<label>Initials</label>"""),
-        ],
+        },
         count=2,
     )
     # Convenience combinations of the above data for Suite 2 tests.
@@ -139,7 +138,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
 
     # Suite 3: other misc cases.
     # s3c1: XPath with no expected matches.
-    s3c1 = CaseData(xpath=".//x:unknown_element", exact=[], count=0)
+    s3c1 = CaseData(xpath=".//x:unknown_element", exact=set(), count=0)
 
     def test_xml__1_xpath_1_match_pass__xpath_exact(self):
         """Should pass when exact match found for one XPath."""
@@ -170,7 +169,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         with self.assertRaises(self.failureException):
             self.assertPyxformXform(
                 md=self.md,
-                xml__xpath_exact=[(self.s1c1.xpath, ["bananas"])],
+                xml__xpath_exact=[(self.s1c1.xpath, {"bananas"})],
                 run_odk_validate=False,
             )
 
@@ -221,7 +220,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         with self.assertRaises(self.failureException):
             self.assertPyxformXform(
                 md=self.md,
-                xml__xpath_exact=self.suite1_exacts + [(self.s1c1.xpath, ["bananas"])],
+                xml__xpath_exact=self.suite1_exacts + [(self.s1c1.xpath, {"bananas"})],
                 run_odk_validate=False,
             )
 
@@ -268,7 +267,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         with self.assertRaises(self.failureException):
             self.assertPyxformXform(
                 md=self.md,
-                xml__xpath_exact=[(self.s2c3.xpath, ["bananas", "eggs"])],
+                xml__xpath_exact=[(self.s2c3.xpath, {"bananas", "eggs"})],
                 run_odk_validate=False,
             )
 
@@ -316,7 +315,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
             self.assertPyxformXform(
                 md=self.md,
                 xml__xpath_exact=self.suite2_exacts
-                + [(self.s2c3.xpath, ["bananas", "eggs"])],
+                + [(self.s2c3.xpath, {"bananas", "eggs"})],
                 run_odk_validate=False,
             )
 

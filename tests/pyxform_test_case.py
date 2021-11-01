@@ -6,10 +6,8 @@ import codecs
 import logging
 import os
 import re
-import sys
 import tempfile
-import xml.etree.ElementPath as EPath
-from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from unittest import TestCase
 
@@ -31,11 +29,21 @@ logger.setLevel(logging.DEBUG)
 
 
 if TYPE_CHECKING:
-    from typing import Set, Union
+    from typing import Dict, List, Set, Tuple, Union
+
+    NSMAPSubs: "List[Tuple[str, str]]"
 
 
 class PyxformTestError(Exception):
     pass
+
+
+@dataclass
+class MatcherContext:
+    debug: bool
+    nsmap_xpath: "Dict[str, str]"
+    nsmap_subs: "NSMAPSubs"
+    content_str: str
 
 
 class PyxformMarkdown:
@@ -158,19 +166,21 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
           * warnings_count: the number of expected warning messages
           * xml__excludes: an array of strings which should not exist in the resulting
                xml. [xml|model|instance|itext]_excludes are also supported.
-          * [xml|model|instance|itext]__xpath_exact: A list of tuples where the
-               first tuple element is an XPath expression and the second tuple
-               element is a list of exact string match results that are expected.
-          * [xml|model|instance|itext]__xpath_count: A list of tuples where the
-               first tuple element is an XPath expression and the second tuple
-               element is the integer number of match results that are expected.
-          * [xml|model|instance|itext]__xpath_match: A list of XPath expression
-               strings for which exactly one match result each is expected.
+          * xml__xpath_exact: A list of tuples where the first tuple element is an XPath
+               expression and the second tuple element is a set of exact string match
+               results that are expected.
+          * xml__xpath_count: A list of tuples where the first tuple element is an XPath
+               expression and the second tuple element is the integer number of match
+               results that are expected.
+          * xml__xpath_match: A list of XPath expression strings for which exactly one
+               match result each is expected. Effectively a shortcut for
+               xml__xpath_count with a count of 1.
 
         For each of the xpath_* matchers above, if the XPath expression is looking for an
         element in the 'default' namespace (xforms) then use an 'x' namespace prefix for
         the element. For example to find input nodes in the body: ".//h:body/x:input".
-        This 'x' prefix is not required for attributes.
+        This 'x' prefix is not required for attributes. When writing a xpath_* test, use
+        debug=True to show the XPath match results.
 
         optional other parameters passed to pyxform:
           * errored: (bool) if the xlsform is not supposed to compile,
@@ -222,6 +232,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 "x": final_nsmap["xmlns"],
                 **{k.split(":")[1]: v for k, v in final_nsmap.items() if k != "xmlns"},
             }
+            final_nsmap_subs = [(f' {k}="{v}"', "") for k, v in final_nsmap.items()]
             # guarantee that strings contain alphanumerically sorted attributes across
             # Python versions
             reorder_attributes(root)
@@ -279,73 +290,42 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                         % (bad_kwarg, good_kwarg)
                     )
 
-                def clean_result_strings(results: "Set[_Element]") -> "Set[str]":
-                    xmlns = [(f' {k}="{v}"', "") for k, v in final_nsmap.items()]
-                    xmlex = [(" >", ">"), (" />", "/>")]
-                    subs = xmlns + xmlex
-                    observed = set()
-                    for x in results:
-                        if isinstance(x, _Element):
-                            reorder_attributes(x)
-                            x = etree.tostring(x, encoding=str, pretty_print=True)
-                            x = x.strip()
-                            for s in subs:
-                                x = x.replace(*s)
-                        observed.add(x)
-                    return observed
-
-                def process_xpath(
-                    content: "_Element", xpath: str, for_exact=False
-                ) -> "Union[Set[_Element], Set[str]]":
-                    results = set(content.xpath(xpath, namespaces=final_nsmap_xpath))
-                    if debug and 0 < len(results):
-                        cleaned = clean_result_strings(results=results)
-                        logger.debug(f"Results for XPath: {xpath}\n" + "\n".join(cleaned))
-                    if for_exact:
-                        return clean_result_strings(results=results)
-                    else:
-                        return results
-
-                def check_content(content):
+                def check_content(content, expected):
                     if content is None:
                         self.fail(msg="No '{}' found in document.".format(keyword))
                     cstr = etree.tostring(content, encoding=str, pretty_print=True)
-                    text_arr = kwargs[verb_str]
-                    for i in text_arr:
+                    matcher_context = MatcherContext(
+                        debug=debug,
+                        nsmap_xpath=final_nsmap_xpath,
+                        nsmap_subs=final_nsmap_subs,
+                        content_str=cstr,
+                    )
+                    for i in expected:
                         if verb == "contains":
                             self.assertContains(cstr, i, msg_prefix=keyword)
                         elif verb == "excludes":
                             self.assertNotContains(cstr, i, msg_prefix=keyword)
                         elif verb == "xpath_exact":
-                            if not (
-                                2 == len(i)
-                                and isinstance(i[0], str)
-                                and isinstance(i[1], list)
-                            ):
-                                msg = "Each xpath_exact requires: tuple(xpath, [str])."
-                                raise SyntaxError(msg)
-                            # Compares result strings since expected strings may contain
-                            # xml namespace prefixes. To allow parsing required to compare
-                            # as ETrees would require injecting namespace declarations
-                            # into the expected match strings.
-                            observed = process_xpath(content, i[0], True)
-                            self.assertSetEqual(set(i[1]), observed, cstr)
+                            self.assert_xpath_exact(
+                                matcher_context=matcher_context,
+                                content=content,
+                                xpath=i[0],
+                                expected=i[1],
+                            )
                         elif verb == "xpath_count":
-                            if not (
-                                2 == len(i)
-                                and isinstance(i[0], str)
-                                and isinstance(i[1], str)
-                            ):
-                                msg = "Each xpath_count requires: tuple(xpath, int)"
-                                raise SyntaxError(msg)
-                            observed = process_xpath(content, i[0])
-                            self.assertEqual(i[1], len(observed), cstr)
+                            self.assert_xpath_count(
+                                matcher_context=matcher_context,
+                                content=content,
+                                xpath=i[0],
+                                expected=i[1],
+                            )
                         elif verb == "xpath_match":
-                            if not isinstance(i, str):
-                                msg = "Each xpath_match requires: xpath"
-                                raise SyntaxError(msg)
-                            observed = process_xpath(content, i)
-                            self.assertEqual(1, len(observed), cstr)
+                            self.assert_xpath_count(
+                                matcher_context=matcher_context,
+                                content=content,
+                                xpath=i,
+                                expected=1,
+                            )
 
                 return verb_str, check_content
 
@@ -355,16 +335,15 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 )
 
             for code in ["xml", "instance", "model", "itext"]:
-                for verb in [
-                    "contains",
-                    "excludes",
-                    "xpath_exact",
-                    "xpath_count",
-                    "xpath_match",
-                ]:
-                    (code__str, checker) = _check(code, verb)
+                for _verb in ["contains", "excludes"]:
+                    (code__str, checker) = _check(code, _verb)
                     if kwargs.get(code__str):
-                        checker(xml_nodes[code])
+                        checker(xml_nodes[code], kwargs[code__str])
+
+            for xpath_verb in ("xpath_exact", "xpath_count", "xpath_match"):
+                code__str, checker = _check("xml", xpath_verb)
+                if kwargs.get(code__str) is not None:
+                    checker(xml_nodes["xml"], kwargs[code__str])
 
         if not survey_valid and not expecting_invalid_survey:
             raise PyxformTestError(
@@ -457,6 +436,61 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             real_count, 0, msg_prefix + "Response should not contain %s" % text_repr
         )
 
+    def assert_xpath_exact(
+        self,
+        matcher_context: "MatcherContext",
+        content: "_Element",
+        xpath: str,
+        expected: "Set[str]",
+    ) -> None:
+        """
+        Process an assertion for xml__xpath_exact.
+
+        Compares result strings since expected strings may contain xml namespace prefixes.
+        To allow parsing required to compare as ETrees would require injecting namespace
+        declarations into the expected match strings.
+
+        :param matcher_context: A MatcherContext dataclass.
+        :param content: XML to be examined.
+        :param xpath: XPath to execute.
+        :param expected: Expected XPath matches, as XML fragments.
+        """
+        if not (isinstance(xpath, str) and isinstance(expected, set)):
+            msg = "Each xpath_exact requires: tuple(xpath: str, expected: Set[str])."
+            raise SyntaxError(msg)
+        observed = xpath_evaluate(
+            matcher_context=matcher_context,
+            content=content,
+            xpath=xpath,
+            for_exact=True,
+        )
+        self.assertSetEqual(set(expected), observed, matcher_context.content_str)
+
+    def assert_xpath_count(
+        self,
+        matcher_context: "MatcherContext",
+        content: "_Element",
+        xpath: str,
+        expected: int,
+    ):
+        """
+        Process an assertion for xml__xpath_count.
+
+        :param matcher_context: A MatcherContext dataclass.
+        :param content: XML to be examined.
+        :param xpath: XPath to execute.
+        :param expected: Expected count of XPath matches.
+        """
+        if not (isinstance(xpath, str) and isinstance(expected, int)):
+            msg = "Each xpath_count requires: tuple(xpath: str, count: int)"
+            raise SyntaxError(msg)
+        observed = xpath_evaluate(
+            matcher_context=matcher_context,
+            content=content,
+            xpath=xpath,
+        )
+        self.assertEqual(expected, len(observed), matcher_context.content_str)
+
 
 def reorder_attributes(root):
     """
@@ -482,51 +516,58 @@ def reorder_attributes(root):
             attrib.update(attribs)
 
 
-def xpath_tokenizer__v3_8(pattern, namespaces=None):
+def xpath_clean_result_strings(
+    nsmap_subs: "NSMAPSubs", results: "Set[_Element]"
+) -> "Set[str]":
     """
-    Copied from CPython 3.8 source, for 3.7 backwards compatibility.
+    Clean XPath results: stringify, remove namespace declarations, clean up whitespace.
 
-    Copy is verbatim besides some Black reformatting.
-    https://github.com/python/cpython/blob/5a42a49477cd601d67d81483f9589258dccb14b1/Lib/xml/etree/ElementPath.py#L73-L94
+    :param nsmap_subs: namespace replacements e.g. [('x="http://www.w3.org/2002/xforms", "")]
+    :param results: XPath results to clean.
     """
-    default_namespace = namespaces.get("") if namespaces else None
-    parsing_attribute = False
-    for token in EPath.xpath_tokenizer_re.findall(pattern):
-        ttype, tag = token
-        if tag and tag[0] != "{":
-            if ":" in tag:
-                prefix, uri = tag.split(":", 1)
-                try:
-                    if not namespaces:
-                        raise KeyError
-                    yield ttype, "{%s}%s" % (namespaces[prefix], uri)
-                except KeyError:
-                    raise SyntaxError(
-                        "prefix %r not found in prefix map" % prefix
-                    ) from None
-            elif default_namespace and not parsing_attribute:
-                yield ttype, "{%s}%s" % (default_namespace, tag)
-            else:
-                yield token
-            parsing_attribute = False
-        else:
-            yield token
-            parsing_attribute = ttype == "@"
+    xmlex = [(" >", ">"), (" />", "/>")]
+    subs = nsmap_subs + xmlex
+    cleaned = set()
+    for x in results:
+        if isinstance(x, _Element):
+            reorder_attributes(x)
+            x = etree.tostring(x, encoding=str, pretty_print=True)
+            x = x.strip()
+            for s in subs:
+                x = x.replace(*s)
+        cleaned.add(x)
+    return cleaned
 
 
-@contextmanager
-def xpath_tokenizer_swap():
+def xpath_evaluate(
+    matcher_context: "MatcherContext", content: "_Element", xpath: str, for_exact=False
+) -> "Union[Set[_Element], Set[str]]":
     """
-    If on Python < 3.8, swap the ElementPath xpath_tokenizer to the 3.8 one.
+    Evaluate an XPath and return the results.
 
-    See https://bugs.python.org/issue28238
-    The relevant fix for pyxform is insertion of default namespace to tag name.
+    :param matcher_context: A MatcherContext dataclass.
+    :param content: XML to be examined.
+    :param xpath: XPath to execute.
+    :param for_exact: If True, convert the results to strings and perform clean-up. If
+      False, return the set of Element (or attribute string) matches as-is.
+    :return:
     """
-    xpath_tokenizer__epath = EPath.xpath_tokenizer
     try:
-        if sys.version_info < (3, 8, 0):
-            EPath.xpath_tokenizer = xpath_tokenizer__v3_8
-        yield
-    finally:
-        if sys.version_info < (3, 8, 0):
-            EPath.xpath_tokenizer = xpath_tokenizer__epath
+        results = content.xpath(xpath, namespaces=matcher_context.nsmap_xpath)
+    except etree.XPathEvalError as e:
+        msg = f"Error processing XPath: {xpath}\n" + "\n".join(e.args)
+        raise PyxformTestError(msg) from e
+    if matcher_context.debug:
+        if 0 == len(results):
+            logger.debug(f"Results for XPath: {xpath}\n" + "(No matches)" + "\n")
+        else:
+            cleaned = xpath_clean_result_strings(
+                nsmap_subs=matcher_context.nsmap_subs, results=results
+            )
+            logger.debug(f"Results for XPath: {xpath}\n" + "\n".join(cleaned) + "\n")
+    if for_exact:
+        return xpath_clean_result_strings(
+            nsmap_subs=matcher_context.nsmap_subs, results=results
+        )
+    else:
+        return set(results)
