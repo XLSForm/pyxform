@@ -12,6 +12,7 @@ formencode==2.0.0         # via -r requirements.in
 importlib-metadata==4.8.1  # via click, flake8, pep517
 isort==5.9.3              # via -r requirements.in, pylint
 lazy-object-proxy==1.6.0  # via astroid
+lxml==4.6.3               # via -r dev_requirements.in
 mccabe==0.6.1             # via flake8, pylint
 mock==4.0.3               # via -r requirements.in
 mypy-extensions==0.4.3    # via black

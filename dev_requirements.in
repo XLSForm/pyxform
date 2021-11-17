@@ -9,3 +9,4 @@ isort
 yapf
 black
 formencode
+lxml

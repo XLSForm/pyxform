@@ -17,7 +17,8 @@ class TriggerSetvalueTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "There has been a problem trying to replace ${a} with the XPath to the survey element named 'a'. There is no survey element with this name."
+                "There has been a problem trying to replace ${a} with the XPath to the "
+                + "survey element named 'a'. There is no survey element with this name."
             ],
         )
 
@@ -46,18 +47,17 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=[
-                "<a/>",
-                "<b/>",
-            ],
-            xml__contains=[
-                '<bind nodeset="/trigger-column/b" type="dateTime"/>',
-                '<input ref="/trigger-column/a">',
-                '<setvalue event="xforms-value-changed" ref="/trigger-column/b" value="now()"/>',
-            ],
-            xml__excludes=[
-                '<bind nodeset="/trigger-column/b" type="dateTime" calculate="now()"/>'
-                '<input ref="/trigger-column/b">',
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:b",
+                "/h:html/h:head/x:model/x:bind[@nodeset='/trigger-column/b' and @type='dateTime']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']"
+                + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-column/b'"
+                "  and @value='now()']",
+                "/h:html[not(descendant::x:bind[@nodeset='/trigger-column/b'"
+                + "  and @type='dateTime' and @calculate='now()'])]",
+                "/h:html[not(descendant::x:input[@ref='/trigger-column/b'])]",
             ],
         )
 
@@ -73,18 +73,17 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=[
-                "<a/>",
-                "<c/>",
-            ],
-            xml__contains=[
-                '<bind nodeset="/trigger-column/c" type="dateTime"/>',
-                '<input ref="/trigger-column/a">',
-                '<input ref="/trigger-column/c">',
-                '<setvalue event="xforms-value-changed" ref="/trigger-column/c" value="now()"/>',
-            ],
-            xml__excludes=[
-                '<bind nodeset="/trigger-column/c" type="dateTime" calculate="now()"/>'
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:c",
+                "/h:html/h:head/x:model/x:bind[@nodeset='/trigger-column/c' and @type='dateTime']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/c']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']"
+                + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-column/c'"
+                + "  and @value='now()']",
+                "/h:html[not(descendant::x:bind[@nodeset='/trigger-column/c'"
+                + "  and @type='dateTime' and @calculate='now()'])]",
             ],
         )
 
@@ -101,22 +100,24 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=[
-                "<a/>",
-                "<b/>",
-                "<c/>",
-            ],
-            xml__contains=[
-                '<bind nodeset="/trigger-column/b" type="int"/>',
-                '<bind nodeset="/trigger-column/c" type="dateTime"/>',
-                '<input ref="/trigger-column/a">',
-                '<input ref="/trigger-column/c">',
-                '<setvalue event="xforms-value-changed" ref="/trigger-column/b" value="1+1"/>',
-                '<setvalue event="xforms-value-changed" ref="/trigger-column/c" value="now()"/>',
-            ],
-            xml__excludes=[
-                '<bind nodeset="/trigger-column/b" type="int" calculate="1+1"/>',
-                '<bind nodeset="/trigger-column/c" type="dateTime" calculate="now()"/>',
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:b",
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:c",
+                "/h:html/h:head/x:model/x:bind[@nodeset='/trigger-column/b' and @type='int']",
+                "/h:html/h:head/x:model/x:bind[@nodeset='/trigger-column/c' and @type='dateTime']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/c']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']"
+                + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-column/b'"
+                + "  and @value='1+1']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']"
+                + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-column/c'"
+                + "  and @value='now()']",
+                "/h:html[not(descendant::x:bind[@nodeset='/trigger-column/b'"
+                + "  and @type='int' and @calculate='1+1'])]",
+                "/h:html[not(descendant::x:bind[@nodeset='/trigger-column/c'"
+                + "  and @type='dateTime' and @calculate='now()'])]",
             ],
         )
 
@@ -132,19 +133,19 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=[
-                "<a/>",
-                "<d/>",
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:d",
+                "/h:html/h:head/x:model/x:bind[@nodeset='/trigger-column/d' and @type='dateTime']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/d']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']"
+                + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-column/d'"
+                + "  and not(@value)]",
+                "/h:html[not(descendant::x:bind[@nodeset='/trigger-column/d'"
+                + "  and @type='dateTime' and @calculate=''])]",
             ],
-            xml__contains=[
-                '<bind nodeset="/trigger-column/d" type="dateTime"/>',
-                '<input ref="/trigger-column/a">',
-                '<input ref="/trigger-column/d">',
-                '<setvalue event="xforms-value-changed" ref="/trigger-column/d"/>',
-            ],
-            xml__excludes=[
-                '<bind nodeset="/trigger-column/d" type="dateTime" calculate=""/>'
-            ],
+            debug=True,
         )
 
     def test_handling_trigger_column_with_no_calculation_no_label_no_hint(self):
@@ -159,18 +160,17 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=[
-                "<a/>",
-                "<e/>",
-            ],
-            xml__contains=[
-                '<bind nodeset="/trigger-column/e" type="decimal"/>',
-                '<input ref="/trigger-column/a">',
-                '<setvalue event="xforms-value-changed" ref="/trigger-column/e"/>',
-            ],
-            xml__excludes=[
-                '<bind nodeset="/trigger-column/e" type="decimal" calculate=""/>',
-                '<input ref="/trigger-column/e">',
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:e",
+                "/h:html/h:head/x:model/x:bind[@nodeset='/trigger-column/e' and @type='decimal']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']"
+                + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-column/e'"
+                + "  and not(@value)]",
+                "/h:html[not(descendant::x:bind[@nodeset='/trigger-column/e'"
+                + "  and @type='decimal' and @calculate=''])]",
+                "/h:html[not(descendant::x:input[@ref='/trigger-column/e'])]",
             ],
         )
 
@@ -186,7 +186,8 @@ class TriggerSetvalueTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "The question ${one} is not user-visible so it can't be used as a calculation trigger for question ${one-ts}.",
+                "The question ${one} is not user-visible so it can't be used as a"
+                + " calculation trigger for question ${one-ts}.",
             ],
         )
 
@@ -201,7 +202,8 @@ class TriggerSetvalueTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "The question ${one} is not user-visible so it can't be used as a calculation trigger for question ${one-ts}.",
+                "The question ${one} is not user-visible so it can't be used as a"
+                + " calculation trigger for question ${one-ts}.",
             ],
         )
 
@@ -216,7 +218,8 @@ class TriggerSetvalueTests(PyxformTestCase):
                 """,
             errored=True,
             error__contains=[
-                "The question ${two} is not user-visible so it can't be used as a calculation trigger for question ${two-ts}."
+                "The question ${two} is not user-visible so it can't be used as a"
+                + " calculation trigger for question ${two-ts}."
             ],
         )
 
@@ -234,20 +237,20 @@ class TriggerSetvalueTests(PyxformTestCase):
             md=md,
             name="trigger-column",
             id_string="id",
-            model__contains=[
-                "<a/>",
-                "<grp>",
-                "<c/>",
-            ],
-            xml__contains=[
-                '<bind nodeset="/trigger-column/grp/c" type="dateTime"/>',
-                '<input ref="/trigger-column/a">',
-                '<group ref="/trigger-column/grp">',
-                '<input ref="/trigger-column/grp/c">',
-                '<setvalue event="xforms-value-changed" ref="/trigger-column/grp/c" value="now()"/>',
-            ],
-            xml__excludes=[
-                '<bind nodeset="/trigger-column/c" type="dateTime" calculate="now()"/>',
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:grp",
+                "/h:html/h:head/x:model/x:instance/x:trigger-column/x:grp/x:c",
+                "/h:html/h:head/x:model/x:bind[@nodeset='/trigger-column/grp/c'"
+                + "  and @type='dateTime']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']",
+                "/h:html/h:body/x:group[@ref='/trigger-column/grp']",
+                "/h:html/h:body/x:group/x:input[@ref='/trigger-column/grp/c']",
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']"
+                + "/x:setvalue[@event='xforms-value-changed'"
+                + "  and @ref='/trigger-column/grp/c' and @value='now()']",
+                "/h:html[not(descendant::x:bind[@nodeset='/trigger-column/c'"
+                + "  and @type='dateTime' and @calculate='now()'])]",
             ],
         )
 
@@ -260,8 +263,10 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | dateTime | a    | A date      |                         |         |
             |        | integer  | b    |             | decimal-date-time(${a}) | ${a}    |
             """,
-            xml__contains=[
-                '<setvalue event="xforms-value-changed" ref="/trigger-column/b" value="decimal-date-time( /trigger-column/a )"/>'
+            xml__xpath_match=[
+                "/h:html/h:body/x:input[@ref='/trigger-column/a']"
+                + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-column/b'"
+                + "  and @value='decimal-date-time( /trigger-column/a )']",
             ],
         )
 
@@ -278,8 +283,10 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | choices            | a    | A           |
             |        | choices            | aa   | AA          |
             """,
-            xml__contains=[
-                '<setvalue event="xforms-value-changed" ref="/trigger-select_trigger/b" value="string-length( /trigger-select_trigger/a )"/>\n    </select1>'
+            xml__xpath_match=[
+                "/h:html/h:body/x:select1[@ref='/trigger-select_trigger/a']"
+                + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-select_trigger/b'"
+                + "  and @value='string-length( /trigger-select_trigger/a )']",
             ],
         )
 
@@ -294,8 +301,11 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | dateTime     | three | Enter text (triggered) | now()        | ${one}  |
             |        | end repeat   |       |                        |              |         |
             """,
-            xml__contains=[
-                '<setvalue event="xforms-value-changed" ref="/trigger-column/rep/three" value="now()"/>'
+            xml__xpath_match=[
+                "/h:html/h:body/x:group[@ref='/trigger-column/rep']"
+                + "/x:repeat[@nodeset='/trigger-column/rep']/x:input[@ref='/trigger-column/rep/one']"
+                + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-column/rep/three'"
+                + "  and @value='now()']",
             ],
         )
 
@@ -310,7 +320,10 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | dateTime     | three | Enter text (triggered) | string-length(${one})  | ${one}  |
             |        | end repeat   |       |                        |                        |         |
             """,
-            xml__contains=[
-                '<setvalue event="xforms-value-changed" ref="/trigger-column/rep/three" value="string-length( ../one )"/>'
+            xml__xpath_match=[
+                "/h:html/h:body/x:group[@ref='/trigger-column/rep']"
+                + "/x:repeat[@nodeset='/trigger-column/rep']/x:input[@ref='/trigger-column/rep/one']"
+                + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-column/rep/three'"
+                + "  and @value='string-length( ../one )']",
             ],
         )

@@ -73,7 +73,7 @@ To leave and return to the virtualenv::
 
 Installing pyxform from remote source
 =====================================
-`pip` can install from the GitHub repository. Only do this if you want to install from the master branch, which is likely to have pre-release code. To install the latest release, see above.::
+``pip`` can install from the GitHub repository. Only do this if you want to install from the master branch, which is likely to have pre-release code. To install the latest release, see above.::
 
     pip install git+https://github.com/XLSForm/pyxform.git@master#egg=pyxform
 
@@ -95,19 +95,21 @@ On Windows, use::
 
     nosetests -v -v --traverse-namespace ./tests
 
-Before committing, make sure to format the code using `black`::
+Before committing, make sure to format the code using ``black``::
 
     black pyxform tests
 
 If you are using a copy of black outside your virtualenv, make sure it is the same version as listed in requirements_dev.pip.
 
-In case the pre-commit.sh hooks don't run, also run the code through `isort` (sorts imports) and `flake8` (misc code quality suggestions). The syntax is the same as above for `black`.
+In case the pre-commit.sh hooks don't run, also run the code through ``isort`` (sorts imports) and ``flake8`` (misc code quality suggestions). The syntax is the same as above for ``black``.
 
 Writing tests
 -------------
-Make sure to include tests for the changes you're working on. When writing new tests you should add them in `tests` folder. Add to an existing test module, or create a new test module. Test modules are named after the corresponding source file, or if the tests concern many files then module name is the topic or feature under test.
+Make sure to include tests for the changes you're working on. When writing new tests you should add them in ``tests`` folder. Add to an existing test module, or create a new test module. Test modules are named after the corresponding source file, or if the tests concern many files then module name is the topic or feature under test.
 
-When creating new test cases, where possible use `PyxformTestCase` as a base class instead of `unittest.TestCase`. The `PyxformTestCase` is a toolkit for writing XLSForms as MarkDown tables, compiling example XLSForms, and making assertions on the resulting XForm. This makes code review much easier by putting the XLSForm content inline with the test, instead of in a separate file. A `unittest.TestCase` may be used if the new tests do not involve compiling an XLSForm (but most will). Do not add new tests using the old style `XFormTestCase`.
+When creating new test cases, where possible use ``PyxformTestCase`` as a base class instead of ``unittest.TestCase``. The ``PyxformTestCase`` is a toolkit for writing XLSForms as MarkDown tables, compiling example XLSForms, and making assertions on the resulting XForm. This makes code review much easier by putting the XLSForm content inline with the test, instead of in a separate file. A ``unittest.TestCase`` may be used if the new tests do not involve compiling an XLSForm (but most will). Do not add new tests using the old style ``XFormTestCase``.
+
+When writing new ``PyxformTestCase`` tests that make content assertions, it is strongly recommended that the ``xml__xpath*`` matchers are used, in particular ``xml__xpath_match``. Most older tests use matchers like ``xml__contains`` and ``xml__excludes``, which are simple string matches of XML snippets against the result XForm. The ``xml__xpath_match`` kwarg accepts an XPath expression and expects 1 match. The main benefits of using XPath are 1) it allows specifying a document location, and 2) it does not require a particular document order for elements or attributes or whitespace output. To take full advantage of 1), the XPath expressions should specify the full document path (e.g. ``/h:html/h:head/x:model``) rather than a search (e.g. ``.//x:model``). To take full advantage of 2), the expression should include element predicates that specify the expected attribute values, e.g. ``/h:html/h:body/x:input[@ref='/trigger-column/a']``. To specify the absence of an element, an expression like the following may be used with ``xml__xpath_match``: ``/h:html[not(descendant::x:input)]``, or alternatively ``xml__xpath_count``: ``.//x:input`` with an expected count of 0 (zero).
 
 Documentation
 =============
