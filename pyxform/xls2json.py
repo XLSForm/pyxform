@@ -7,7 +7,7 @@ import json
 import os
 import re
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from typing import TYPE_CHECKING
 
 from pyxform import aliases, constants
@@ -16,7 +16,7 @@ from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_dist
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, KeysView, Optional
+    from typing import Any, Dict, KeysView, List, Optional, Sequence, Tuple, Union
 
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
@@ -92,11 +92,11 @@ def replace_smart_quotes_in_dict(_d):
 
 
 def dealias_and_group_headers(
-    dict_array,
-    header_aliases,
-    use_double_colons,
-    default_language="default",
-    ignore_case=False,
+    dict_array: "List[Dict]",
+    header_aliases: "Dict",
+    use_double_colons: bool,
+    default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
+    ignore_case: bool = False,
 ):
     """
     For each row in the worksheet, group all keys that contain a double colon.
@@ -220,7 +220,7 @@ def group_dictionaries_by_key(list_of_dicts, key, remove_key=True):
     return dict_of_lists
 
 
-def has_double_colon(workbook_dict):
+def has_double_colon(workbook_dict) -> bool:
     """
     Look for a column header with a doublecolon (::) and
     return true if one is found.
@@ -340,11 +340,61 @@ def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
         return None
 
 
+def format_missing_translations_survey_msg(_in: "Dict[str, Sequence]") -> str:
+    return (
+        "Missing translation(s): there is no default_language set, and a translation "
+        "was not found for the survey column(s) and language(s): {m}. "
+        "To avoid unexpected form behaviour, specify a default_language in the "
+        "settings sheet, or add the missing translation(s) to the survey sheet."
+    ).format(m="; ".join([f"'{k}': '" + "', '".join(v) + "'" for k, v in _in.items()]))
+
+
+def find_missing_translations_survey(
+    survey_sheet: "List[Dict[str, Union[str, Dict]]]",
+) -> "Tuple[Dict[str, List[str]], Tuple[str, ...]]":
+    """
+    Find missing translation columns in the survey sheet data.
+
+    For each translatable column used in the sheet, there should be a translation for
+    each language (including the default / unspecified language) that is used for any
+    other translatable column.
+
+    This could be more efficient by not looking at every row, but that's how the data is
+    arranged by the time it comes to this module. On the bright side it means this
+    function could be adapted to warn about specific items lacking translations, even
+    when there are no missing translation columns.
+
+    :param survey_sheet: The Survey sheet data.
+    :return: Dict[column_name, List[languages]], Tuple[languages_seen]
+    """
+    languages_seen = defaultdict(list)
+    translatables_seen = dict()  # Unique but retain order.
+    for row in survey_sheet:
+        for t in constants.TRANSLATABLE_SURVEY_COLUMNS:
+            column = row.get(t)
+            if column is not None:
+                if isinstance(column, str):
+                    languages_seen[constants.DEFAULT_LANGUAGE_VALUE].append(t)
+                    translatables_seen[t] = None
+                elif isinstance(column, dict):
+                    for k in column:
+                        languages_seen[k].append(t)
+                        translatables_seen[t] = None
+
+    missing = defaultdict(list)
+    for lang, lang_trans in languages_seen.items():
+        for seen_tran in translatables_seen:
+            if seen_tran not in lang_trans:
+                missing[seen_tran].append(lang)
+
+    return missing, tuple(languages_seen.keys())
+
+
 def workbook_to_json(
     workbook_dict,
     form_name=None,
     fallback_form_name=None,
-    default_language="default",
+    default_language=constants.DEFAULT_LANGUAGE_VALUE,
     warnings=None,
 ) -> "Dict[str, Any]":
     """
@@ -438,7 +488,7 @@ def workbook_to_json(
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
     replace_smart_quotes_in_dict(settings)
 
-    default_language = settings.get(constants.DEFAULT_LANGUAGE, default_language)
+    default_language = settings.get(constants.DEFAULT_LANGUAGE_KEY, default_language)
 
     # add_none_option is a boolean that when true,
     # indicates a none option should automatically be added to selects.
@@ -457,7 +507,7 @@ def workbook_to_json(
         constants.TITLE: id_string,
         constants.ID_STRING: id_string,
         constants.SMS_KEYWORD: sms_keyword,
-        constants.DEFAULT_LANGUAGE: default_language,
+        constants.DEFAULT_LANGUAGE_KEY: default_language,
         # By default the version is based on the date and time yyyymmddhh
         # Leaving default version out for now since it might cause
         # problems for formhub.
@@ -567,6 +617,16 @@ def workbook_to_json(
         survey_sheet, aliases.survey_header, use_double_colons, default_language
     )
     survey_sheet = dealias_types(survey_sheet)
+
+    # Look for / warn on missing translations.
+    missing, langs = find_missing_translations_survey(survey_sheet=survey_sheet)
+    no_default = (
+        "default_language" not in settings
+        or default_language == constants.DEFAULT_LANGUAGE_VALUE
+    )
+    not_default = "default" not in langs
+    if (no_default or not_default) and 0 < len(missing):
+        warnings.append(format_missing_translations_survey_msg(_in=missing))
 
     # No spell check for OSM sheet (infrequently used, many spurious matches).
     osm_sheet = dealias_and_group_headers(
@@ -1380,7 +1440,7 @@ def get_filename(path):
 def parse_file_to_json(
     path,
     default_name="data",
-    default_language="default",
+    default_language=constants.DEFAULT_LANGUAGE_VALUE,
     warnings=None,
     file_object=None,
 ):
@@ -1512,7 +1572,10 @@ class QuestionTypesReader(SpreadsheetReader):
         types_sheet = "question types"
         self._dict = self._dict[types_sheet]
         self._dict = dealias_and_group_headers(
-            self._dict, {}, use_double_colons, "default"
+            dict_array=self._dict,
+            header_aliases={},
+            use_double_colons=use_double_colons,
+            default_language=constants.DEFAULT_LANGUAGE_VALUE,
         )
         self._dict = organize_by_values(self._dict, "name")
 

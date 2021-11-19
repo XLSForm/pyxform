@@ -32,7 +32,8 @@ PUBLIC_KEY = "public_key"
 SUBMISSION_URL = "submission_url"
 AUTO_SEND = "auto_send"
 AUTO_DELETE = "auto_delete"
-DEFAULT_LANGUAGE = "default_language"
+DEFAULT_LANGUAGE_KEY = "default_language"
+DEFAULT_LANGUAGE_VALUE = "default"
 LABEL = "label"
 HINT = "hint"
 STYLE = "style"
@@ -102,3 +103,11 @@ AUDIO_QUALITY_VOICE_ONLY = "voice-only"
 AUDIO_QUALITY_LOW = "low"
 AUDIO_QUALITY_NORMAL = "normal"
 AUDIO_QUALITY_EXTERNAL = "external"
+
+TRANSLATABLE_SURVEY_COLUMNS = (
+    "label",
+    "hint",
+    "media::image",
+    "media::video",
+    "media::audio",
+)
