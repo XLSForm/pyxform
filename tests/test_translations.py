@@ -6,7 +6,7 @@ from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
 from pyxform.xls2json import format_missing_translations_survey_msg
 from tests.pyxform_test_case import PyxformTestCase
 
-# Label assertions
+# Label assertions.
 LABEL_BODY_VALUE_XPATH = """
 /h:html/h:body/x:input[@ref='/test/n1']/x:label[text()='{value}']
 """
@@ -33,7 +33,7 @@ LABEL_NOT_TRANSLATED_XPATH = """
 """
 
 
-# Hint assertions
+# Hint assertions.
 HINT_BODY_ITEXT_REF_XPATH = """
 /h:html/h:body/x:input[@ref='/test/n1']/x:hint[@ref="jr:itext('/test/n1:hint')" and not(text())]
 """
@@ -46,41 +46,45 @@ HINT_ITEXT_VALUE_XPATH = """
 HINT_NO_ITEXT_XPATH = """
 /h:html/h:head/x:model[not(x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[text()='{value}'])]
 """
+# Shortcut of HINT_ITEXT_VALUE_XPATH + HINT_BODY_ITEXT_REF_XPATH
 HINT_TRANSLATED_XPATH = """
 /h:html
   [h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[text()='salutation']]
   /h:body/x:input[@ref='/test/n1']/x:hint[@ref="jr:itext('/test/n1:hint')" and not(text())]
 """
+# Shortcut of HINT_NO_ITEXT_XPATH + HINT_BODY_VALUE_XPATH
 HINT_NOT_TRANSLATED_XPATH = """
 /h:html
   [not(h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[text()='salutation'])]
   /h:body/x:input[@ref='/test/n1']/x:hint[text()='salutation']
 """
 
-# Other misc
-GUIDANCE_TRANSLATED_XPATH = """
+# Other misc assertions.
+GUIDANCE_ITEXT_XPATH = """
 /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']
   /x:value[@form='guidance' and text()='greeting']
 """
-IMAGE_TRANSLATED_XPATH = """
+IMAGE_ITEXT_XPATH = """
 /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']
   /x:value[@form='image' and text()='jr://images/default.jpg']
 """
-VIDEO_TRANSLATED_XPATH = """
+VIDEO_ITEXT_XPATH = """
 /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']
   /x:value[@form='video' and text()='jr://video/default.mkv']
 """
-AUDIO_TRANSLATED_XPATH = """
+AUDIO_ITEXT_XPATH = """
 /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']
   /x:value[@form='audio' and text()='jr://audio/default.mp3']
 """
-LANG_MARKED_DEFAULT_XPATH = (
-    "/h:html/h:head/x:model/x:itext/x:translation[@default='true()' and @lang='{lang}']"
-)
-LANG_NOT_MARKED_DEFAULT_XPATH = "/h:html/h:head/x:model/x:itext/x:translation[not(@default='true()') and @lang='{lang}']"
-LANG_NO_ITEXT_XPATH = (
-    "/h:html/h:head/x:model/x:itext[not(descendant::x:translation[@lang='{lang}'])]"
-)
+LANG_MARKED_DEFAULT_XPATH = """
+/h:html/h:head/x:model/x:itext/x:translation[@default='true()' and @lang='{lang}']
+"""
+LANG_NOT_MARKED_DEFAULT_XPATH = """
+/h:html/h:head/x:model/x:itext/x:translation[not(@default='true()') and @lang='{lang}']
+"""
+LANG_NO_ITEXT_XPATH = """
+/h:html/h:head/x:model/x:itext[not(descendant::x:translation[@lang='{lang}'])]
+"""
 
 
 class TestTranslations(PyxformTestCase):
@@ -143,7 +147,7 @@ class TestTranslations(PyxformTestCase):
                 LABEL_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
                 # TODO: is this a bug? Why itext for label/image but not hint?
                 HINT_NOT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                IMAGE_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
+                IMAGE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
                 LANG_MARKED_DEFAULT_XPATH.format(lang=DEFAULT_LANG),
             ],
             warnings_count=0,
@@ -164,7 +168,7 @@ class TestTranslations(PyxformTestCase):
                 # TODO: is this a bug? Why itext for hint/guidance but not label?
                 LABEL_NOT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
                 HINT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                GUIDANCE_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
+                GUIDANCE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
                 LANG_MARKED_DEFAULT_XPATH.format(lang=DEFAULT_LANG),
             ],
             warnings_count=0,
@@ -184,10 +188,10 @@ class TestTranslations(PyxformTestCase):
             xml__xpath_match=[
                 LABEL_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
                 HINT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                GUIDANCE_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                IMAGE_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                VIDEO_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                AUDIO_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
+                GUIDANCE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                IMAGE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                VIDEO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                AUDIO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
                 LANG_MARKED_DEFAULT_XPATH.format(lang=DEFAULT_LANG),
             ],
             warnings_count=0,
@@ -228,7 +232,7 @@ class TestTranslations(PyxformTestCase):
             xml__xpath_match=[
                 LABEL_TRANSLATED_XPATH.format(lang="eng"),
                 HINT_TRANSLATED_XPATH.format(lang="eng"),
-                IMAGE_TRANSLATED_XPATH.format(lang="eng"),
+                IMAGE_ITEXT_XPATH.format(lang="eng"),
                 # TODO: is this a bug? Only one language but not marked default.
                 LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="eng"),
                 LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
@@ -250,7 +254,7 @@ class TestTranslations(PyxformTestCase):
             xml__xpath_match=[
                 LABEL_TRANSLATED_XPATH.format(lang="eng"),
                 HINT_TRANSLATED_XPATH.format(lang="eng"),
-                GUIDANCE_TRANSLATED_XPATH.format(lang="eng"),
+                GUIDANCE_ITEXT_XPATH.format(lang="eng"),
                 # TODO: is this a bug? Only one language but not marked default.
                 LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="eng"),
                 LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
@@ -272,10 +276,10 @@ class TestTranslations(PyxformTestCase):
             xml__xpath_match=[
                 LABEL_TRANSLATED_XPATH.format(lang="eng"),
                 HINT_TRANSLATED_XPATH.format(lang="eng"),
-                GUIDANCE_TRANSLATED_XPATH.format(lang="eng"),
-                IMAGE_TRANSLATED_XPATH.format(lang="eng"),
-                VIDEO_TRANSLATED_XPATH.format(lang="eng"),
-                AUDIO_TRANSLATED_XPATH.format(lang="eng"),
+                GUIDANCE_ITEXT_XPATH.format(lang="eng"),
+                IMAGE_ITEXT_XPATH.format(lang="eng"),
+                VIDEO_ITEXT_XPATH.format(lang="eng"),
+                AUDIO_ITEXT_XPATH.format(lang="eng"),
                 # TODO: is this a bug? Only one language but not marked default.
                 LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="eng"),
                 LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
