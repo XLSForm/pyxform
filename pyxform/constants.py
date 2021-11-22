@@ -107,6 +107,7 @@ AUDIO_QUALITY_EXTERNAL = "external"
 TRANSLATABLE_SURVEY_COLUMNS = (
     "label",
     "hint",
+    "guidance_hint",
     "media::image",
     "media::video",
     "media::audio",
