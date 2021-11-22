@@ -6,7 +6,6 @@ from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
 from pyxform.xls2json import format_missing_translations_survey_msg
 from tests.pyxform_test_case import PyxformTestCase
 
-
 # Label assertions
 LABEL_BODY_VALUE_XPATH = """
 /h:html/h:body/x:input[@ref='/test/n1']/x:label[text()='{value}']
