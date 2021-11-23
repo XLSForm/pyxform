@@ -341,17 +341,18 @@ def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
 
 
 def format_missing_translations_survey_msg(_in: "Dict[str, Sequence]") -> str:
+    in_keys = sorted(_in.keys())
     return (
         "Missing translation(s): there is no default_language set, and a translation "
         "was not found for the survey column(s) and language(s): {m}. "
         "To avoid unexpected form behaviour, specify a default_language in the "
-        "settings sheet, or add the missing translation(s) to the survey sheet."
-    ).format(m="; ".join([f"'{k}': '" + "', '".join(v) + "'" for k, v in _in.items()]))
+        "settings sheet, or add the missing translation(s) to the survey sheet. "
+    ).format(m="; ".join((f"'{k}': '" + "', '".join(_in[k]) + "'" for k in in_keys)))
 
 
 def find_missing_translations_survey(
     survey_sheet: "List[Dict[str, Union[str, Dict]]]",
-) -> "Tuple[Dict[str, List[str]], Tuple[str, ...]]":
+) -> "Dict[str, List[str]]":
     """
     Find missing translation columns in the survey sheet data.
 
@@ -365,29 +366,37 @@ def find_missing_translations_survey(
     when there are no missing translation columns.
 
     :param survey_sheet: The Survey sheet data.
-    :return: Dict[column_name, List[languages]], Tuple[languages_seen]
+    :return: Dict[column_name, List[languages]]
     """
-    languages_seen = defaultdict(list)
-    translatables_seen = dict()  # Unique but retain order.
+    translations_seen = defaultdict(list)
+    translation_columns_seen = set()
+
+    def process_cell(typ, cell):
+        if cell is not None:
+            if typ in constants.TRANSLATABLE_SURVEY_COLUMNS:
+                if isinstance(cell, str):
+                    translations_seen[constants.DEFAULT_LANGUAGE_VALUE].append(typ)
+                    translation_columns_seen.add(typ)
+                elif isinstance(cell, dict):
+                    for lng in cell:
+                        translations_seen[lng].append(typ)
+                        translation_columns_seen.add(typ)
+
     for row in survey_sheet:
-        for t in constants.TRANSLATABLE_SURVEY_COLUMNS:
-            column = row.get(t)
-            if column is not None:
-                if isinstance(column, str):
-                    languages_seen[constants.DEFAULT_LANGUAGE_VALUE].append(t)
-                    translatables_seen[t] = None
-                elif isinstance(column, dict):
-                    for k in column:
-                        languages_seen[k].append(t)
-                        translatables_seen[t] = None
+        for column_type, cell_content in row.items():
+            if column_type == constants.MEDIA:
+                for media_type, media_cell in cell_content.items():
+                    process_cell(typ=media_type, cell=media_cell)
+            else:
+                process_cell(typ=column_type, cell=cell_content)
 
     missing = defaultdict(list)
-    for lang, lang_trans in languages_seen.items():
-        for seen_tran in translatables_seen:
+    for lang, lang_trans in translations_seen.items():
+        for seen_tran in translation_columns_seen:
             if seen_tran not in lang_trans:
                 missing[seen_tran].append(lang)
 
-    return missing, tuple(languages_seen.keys())
+    return missing
 
 
 def workbook_to_json(
@@ -619,13 +628,11 @@ def workbook_to_json(
     survey_sheet = dealias_types(survey_sheet)
 
     # Look for / warn on missing translations.
-    missing, langs = find_missing_translations_survey(survey_sheet=survey_sheet)
-    no_default = (
+    missing = find_missing_translations_survey(survey_sheet=survey_sheet)
+    if 0 < len(missing) and (
         "default_language" not in settings
         or default_language == constants.DEFAULT_LANGUAGE_VALUE
-    )
-    not_default = "default" not in langs
-    if (no_default or not_default) and 0 < len(missing):
+    ):
         warnings.append(format_missing_translations_survey_msg(_in=missing))
 
     # No spell check for OSM sheet (infrequently used, many spurious matches).

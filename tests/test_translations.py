@@ -6,80 +6,58 @@ from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
 from pyxform.xls2json import format_missing_translations_survey_msg
 from tests.pyxform_test_case import PyxformTestCase
 
-# Label assertions.
 LABEL_BODY_VALUE_XPATH = """
-/h:html/h:body/x:input[@ref='/test/n1']/x:label[text()='{value}']
+/h:html/h:body/x:input[@ref='/test/n1']/x:label[not(@ref) and text()='{value}']
 """
 LABEL_BODY_ITEXT_REF_XPATH = """
 /h:html/h:body/x:input[@ref='/test/n1']/x:label[@ref="jr:itext('/test/n1:label')" and not(text())]
 """
 LABEL_ITEXT_VALUE_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']/x:value[text()='{value}']
+/h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']/x:value[not(@form) and text()='{value}']
 """
 LABEL_NO_ITEXT_XPATH = """
-/h:html/h:head/x:model[not(x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']/x:value[text()='{value}'])]
-"""
-# Shortcut of LABEL_ITEXT_VALUE_XPATH + LABEL_BODY_ITEXT_REF_XPATH
-LABEL_TRANSLATED_XPATH = """
-/h:html
-  [h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']/x:value[text()='hello']]
-  /h:body/x:input[@ref='/test/n1']/x:label[@ref="jr:itext('/test/n1:label')" and not(text())]
-"""
-# Shortcut of LABEL_NO_ITEXT_XPATH + LABEL_BODY_VALUE_XPATH
-LABEL_NOT_TRANSLATED_XPATH = """
-/h:html
-  [not(h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']/x:value[text()='hello'])]
-  /h:body/x:input[@ref='/test/n1']/x:label[text()='hello']
+/h:html/h:head/x:model[not(x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']/x:value[not(@form) and text()='{value}'])]
 """
 
-
-# Hint assertions.
 HINT_BODY_ITEXT_REF_XPATH = """
 /h:html/h:body/x:input[@ref='/test/n1']/x:hint[@ref="jr:itext('/test/n1:hint')" and not(text())]
 """
 HINT_BODY_VALUE_XPATH = """
-/h:html/h:body/x:input[@ref='/test/n1']/x:hint[text()='{value}']
+/h:html/h:body/x:input[@ref='/test/n1']/x:hint[not(@ref) and text()='{value}']
 """
 HINT_ITEXT_VALUE_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[text()='{value}']
+/h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[not(@form) and text()='{value}']
 """
 HINT_NO_ITEXT_XPATH = """
-/h:html/h:head/x:model[not(x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[text()='{value}'])]
-"""
-# Shortcut of HINT_ITEXT_VALUE_XPATH + HINT_BODY_ITEXT_REF_XPATH
-HINT_TRANSLATED_XPATH = """
-/h:html
-  [h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[text()='salutation']]
-  /h:body/x:input[@ref='/test/n1']/x:hint[@ref="jr:itext('/test/n1:hint')" and not(text())]
-"""
-# Shortcut of HINT_NO_ITEXT_XPATH + HINT_BODY_VALUE_XPATH
-HINT_NOT_TRANSLATED_XPATH = """
-/h:html
-  [not(h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[text()='salutation'])]
-  /h:body/x:input[@ref='/test/n1']/x:hint[text()='salutation']
+/h:html/h:head/x:model[not(x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[not(@form) and text()='{value}'])]
 """
 
-# Other misc assertions.
-GUIDANCE_ITEXT_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']
-  /x:value[@form='guidance' and text()='greeting']
+_GUIDANCE_KWARGS = {"type": "hint", "form": "guidance", "value": "{value}"}
+_AUDIO_KWARGS = {"type": "label", "form": "audio", "value": "jr://audio/greeting.mp3"}
+_IMAGE_KWARGS = {"type": "label", "form": "image", "value": "jr://images/greeting.jpg"}
+_VIDEO_KWARGS = {"type": "label", "form": "video", "value": "jr://video/greeting.mkv"}
+_FORM_ITEXT_XPATH = """
+/h:html/h:head/x:model/x:itext/x:translation[@lang='{{lang}}']/x:text[@id='/test/n1:{type}']
+  /x:value[@form='{form}' and text()='{value}']
 """
-IMAGE_ITEXT_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']
-  /x:value[@form='image' and text()='jr://images/default.jpg']
+GUIDANCE_ITEXT_XPATH = _FORM_ITEXT_XPATH.format(**_GUIDANCE_KWARGS)
+AUDIO_ITEXT_XPATH = _FORM_ITEXT_XPATH.format(**_AUDIO_KWARGS)
+IMAGE_ITEXT_XPATH = _FORM_ITEXT_XPATH.format(**_IMAGE_KWARGS)
+VIDEO_ITEXT_XPATH = _FORM_ITEXT_XPATH.format(**_VIDEO_KWARGS)
+
+_NO_FORM_ITEXT_XPATH = """
+/h:html/h:head/x:model/x:itext/x:translation[@lang='{{lang}}']
+  /x:text[@id='/test/n1:{type}' and not(descendant::x:value[@form='{form}' and text()='{value}'])]
 """
-VIDEO_ITEXT_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']
-  /x:value[@form='video' and text()='jr://video/default.mkv']
-"""
-AUDIO_ITEXT_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']
-  /x:value[@form='audio' and text()='jr://audio/default.mp3']
-"""
-LANG_MARKED_DEFAULT_XPATH = """
+GUIDANCE_NO_ITEXT_XPATH = _NO_FORM_ITEXT_XPATH.format(**_GUIDANCE_KWARGS)
+AUDIO_NO_ITEXT_XPATH = _NO_FORM_ITEXT_XPATH.format(**_AUDIO_KWARGS)
+IMAGE_NO_ITEXT_XPATH = _NO_FORM_ITEXT_XPATH.format(**_IMAGE_KWARGS)
+VIDEO_NO_ITEXT_XPATH = _NO_FORM_ITEXT_XPATH.format(**_VIDEO_KWARGS)
+
+LANG_DEFAULT_TRUE_XPATH = """
 /h:html/h:head/x:model/x:itext/x:translation[@default='true()' and @lang='{lang}']
 """
-LANG_NOT_MARKED_DEFAULT_XPATH = """
+LANG_DEFAULT_FALSE_XPATH = """
 /h:html/h:head/x:model/x:itext/x:translation[not(@default='true()') and @lang='{lang}']
 """
 LANG_NO_ITEXT_XPATH = """
@@ -102,15 +80,16 @@ class TestTranslations(PyxformTestCase):
                 LABEL_BODY_ITEXT_REF_XPATH,
                 LABEL_ITEXT_VALUE_XPATH.format(lang="english", value="hello"),
                 LABEL_ITEXT_VALUE_XPATH.format(lang="french", value="bonjour"),
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="english"),
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="french"),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="english"),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="french"),
+                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
                 # Expected model binding found.
                 """/h:html/h:head/x:model
                      /x:bind[@nodeset='/test/n1' and @readonly='true()' and @type='string']
                 """,
             ],
-            errored=False,
             warnings_count=0,
+            debug=True,
         )
 
     def test_no_default__no_translation__label_and_hint(self):
@@ -124,13 +103,14 @@ class TestTranslations(PyxformTestCase):
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_NOT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                HINT_NOT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
+                LABEL_BODY_VALUE_XPATH.format(value="hello"),
+                LABEL_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="hello"),
+                HINT_BODY_VALUE_XPATH.format(value="salutation"),
+                HINT_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
                 # No translations.
                 "/h:html/h:head/x:model[not(descendant::x:itext)]",
             ],
             warnings_count=0,
-            errored=False,
         )
 
     def test_no_default__no_translation__label_and_hint_with_image(self):
@@ -138,20 +118,21 @@ class TestTranslations(PyxformTestCase):
         md = """
         | survey |      |      |       |            |              |
         |        | type | name | label | hint       | media::image |
-        |        | note | n1   | hello | salutation | default.jpg  |
+        |        | note | n1   | hello | salutation | greeting.jpg |
         """
         self.assertPyxformXform(
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="hello"),
                 # TODO: is this a bug? Why itext for label/image but not hint?
-                HINT_NOT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
+                HINT_BODY_VALUE_XPATH.format(value="salutation"),
+                HINT_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
                 IMAGE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                LANG_MARKED_DEFAULT_XPATH.format(lang=DEFAULT_LANG),
+                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
             ],
             warnings_count=0,
-            errored=False,
         )
 
     def test_no_default__no_translation__label_and_hint_with_guidance(self):
@@ -166,36 +147,38 @@ class TestTranslations(PyxformTestCase):
             md=md,
             xml__xpath_match=[
                 # TODO: is this a bug? Why itext for hint/guidance but not label?
-                LABEL_NOT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                HINT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                GUIDANCE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                LANG_MARKED_DEFAULT_XPATH.format(lang=DEFAULT_LANG),
+                LABEL_BODY_VALUE_XPATH.format(value="hello"),
+                LABEL_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="hello"),
+                HINT_BODY_ITEXT_REF_XPATH,
+                HINT_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
+                GUIDANCE_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="greeting"),
+                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
             ],
             warnings_count=0,
-            errored=False,
         )
 
-    def test_no_default__no_translation__label_and_hint_with_media(self):
+    def test_no_default__no_translation__label_and_hint_all_cols(self):
         """Should find default language translations for all translatables."""
         md = """
         | survey |      |      |       |            |               |              |              |              |
         |        | type | name | label | hint       | guidance_hint | media::image | media::video | media::audio |
-        |        | note | n1   | hello | salutation | greeting      | default.jpg  | default.mkv  | default.mp3  |
+        |        | note | n1   | hello | salutation | greeting      | greeting.jpg | greeting.mkv | greeting.mp3 |
         """
         self.assertPyxformXform(
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                HINT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                GUIDANCE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="hello"),
+                HINT_BODY_ITEXT_REF_XPATH,
+                HINT_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
+                GUIDANCE_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="greeting"),
                 IMAGE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
                 VIDEO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
                 AUDIO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                LANG_MARKED_DEFAULT_XPATH.format(lang=DEFAULT_LANG),
+                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
             ],
             warnings_count=0,
-            errored=False,
         )
 
     def test_no_default__one_translation__label_and_hint(self):
@@ -209,14 +192,15 @@ class TestTranslations(PyxformTestCase):
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_TRANSLATED_XPATH.format(lang="eng"),
-                HINT_TRANSLATED_XPATH.format(lang="eng"),
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
+                HINT_BODY_ITEXT_REF_XPATH,
+                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
                 # TODO: is this a bug? Only one language but not marked default.
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="eng"),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
                 LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
             ],
             warnings_count=0,
-            errored=False,
         )
 
     def test_no_default__one_translation__label_and_hint_with_image(self):
@@ -224,21 +208,21 @@ class TestTranslations(PyxformTestCase):
         md = """
         | survey |      |      |            |            |                   |
         |        | type | name | label::eng | hint::eng  | media::image::eng |
-        |        | note | n1   | hello      | salutation | default.jpg       |
+        |        | note | n1   | hello      | salutation | greeting.jpg      |
         """
         self.assertPyxformXform(
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_TRANSLATED_XPATH.format(lang="eng"),
-                HINT_TRANSLATED_XPATH.format(lang="eng"),
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
+                HINT_BODY_ITEXT_REF_XPATH,
+                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
                 IMAGE_ITEXT_XPATH.format(lang="eng"),
-                # TODO: is this a bug? Only one language but not marked default.
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="eng"),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
                 LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
             ],
             warnings_count=0,
-            errored=False,
         )
 
     def test_no_default__one_translation__label_and_hint_with_guidance(self):
@@ -252,43 +236,43 @@ class TestTranslations(PyxformTestCase):
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_TRANSLATED_XPATH.format(lang="eng"),
-                HINT_TRANSLATED_XPATH.format(lang="eng"),
-                GUIDANCE_ITEXT_XPATH.format(lang="eng"),
-                # TODO: is this a bug? Only one language but not marked default.
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="eng"),
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
+                HINT_BODY_ITEXT_REF_XPATH,
+                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
+                GUIDANCE_ITEXT_XPATH.format(lang="eng", value="greeting"),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
                 LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
             ],
             warnings_count=0,
-            errored=False,
         )
 
-    def test_no_default__one_translation__label_and_hint_with_media(self):
-        """Should find language translation for label, hint, and all media."""
+    def test_no_default__one_translation__label_and_hint_all_cols(self):
+        """Should find language translation for label, hint, and all translatables."""
         md = """
         | survey |      |      |            |            |                    |                   |                   |                   |
         |        | type | name | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng |
-        |        | note | n1   | hello      | salutation | greeting           | default.jpg       | default.mkv       | default.mp3       |
+        |        | note | n1   | hello      | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      |
         """
         self.assertPyxformXform(
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_TRANSLATED_XPATH.format(lang="eng"),
-                HINT_TRANSLATED_XPATH.format(lang="eng"),
-                GUIDANCE_ITEXT_XPATH.format(lang="eng"),
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
+                HINT_BODY_ITEXT_REF_XPATH,
+                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
+                GUIDANCE_ITEXT_XPATH.format(lang="eng", value="greeting"),
                 IMAGE_ITEXT_XPATH.format(lang="eng"),
                 VIDEO_ITEXT_XPATH.format(lang="eng"),
                 AUDIO_ITEXT_XPATH.format(lang="eng"),
-                # TODO: is this a bug? Only one language but not marked default.
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="eng"),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
                 LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
             ],
             warnings_count=0,
-            errored=False,
         )
 
-    def test_missing_translation_survey__warn__no_default_one_lang(self):
+    def test_missing_translation_survey__one_lang_simple__warn__no_default(self):
         """Should warn if there's a missing translation and no default_language."""
         md = """
         | survey |      |      |       |            |            |
@@ -301,17 +285,120 @@ class TestTranslations(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="hello"),
                 LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hi there"),
-                HINT_NOT_TRANSLATED_XPATH.format(lang=DEFAULT_LANG),
-                LANG_MARKED_DEFAULT_XPATH.format(lang=DEFAULT_LANG),
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="eng"),
+                HINT_BODY_VALUE_XPATH.format(value="salutation"),
+                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
             ],
         )
         expected = format_missing_translations_survey_msg(_in={"hint": ["eng"]})
         self.assertIn(expected, observed)
 
-    def test_missing_translation_survey__warn__no_default_two_way(self):
+    def test_missing_translation_survey__one_lang_simple__no_warn__default(self):
+        """Should not warn if there's a missing translation with a default_language."""
+        md = """
+        | settings |                  |
+        |          | default_language |
+        |          | eng              |
+        | survey |      |      |       |            |            |
+        |        | type | name | label | label::eng | hint       |
+        |        | note | n1   | hello | hi there   | salutation |
+        """
+        observed = []
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings=observed,
+            xml__xpath_match=[
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hi there"),
+                HINT_BODY_VALUE_XPATH.format(value="salutation"),
+                HINT_NO_ITEXT_XPATH.format(lang="eng", value="salutation"),
+                LANG_DEFAULT_TRUE_XPATH.format(lang="eng"),
+                # TODO: is this a bug? No default lang itext (missing label).
+                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+            ],
+        )
+        expected = format_missing_translations_survey_msg(_in={"hint": ["eng"]})
+        self.assertNotIn(expected, observed)
+
+    def test_missing_translation_survey__one_lang_all_cols__warn__no_default(self):
+        """Should warn if there's multiple missing translations and no default_language."""
+        md = """
+        | survey |      |      |       |            |            |                    |                   |                   |                   |
+        |        | type | name | label | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng |
+        |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      |
+        """
+        observed = []
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings=observed,
+            xml__xpath_match=[
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="hello"),
+                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hi there"),
+                HINT_BODY_ITEXT_REF_XPATH,
+                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
+                HINT_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="-"),
+                GUIDANCE_ITEXT_XPATH.format(lang="eng", value="greeting"),
+                GUIDANCE_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="-"),
+                IMAGE_ITEXT_XPATH.format(lang="eng"),
+                IMAGE_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                VIDEO_ITEXT_XPATH.format(lang="eng"),
+                VIDEO_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                AUDIO_ITEXT_XPATH.format(lang="eng"),
+                AUDIO_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
+            ],
+        )
+        cols = {
+            c: [DEFAULT_LANG]
+            for c in ("hint", "guidance_hint", "image", "video", "audio")
+        }
+        expected = format_missing_translations_survey_msg(_in=cols)
+        self.assertIn(expected, observed)
+
+    def test_missing_translation_survey__one_lang_all_cols__no_warn__default(self):
+        """Should not warn if there's missing translations with a default_language."""
+        md = """
+        | settings |                  |
+        |          | default_language |
+        |          | eng              |
+        | survey |      |      |       |            |            |                    |                   |                   |                   |
+        |        | type | name | label | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng |
+        |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      |
+        """
+        observed = []
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings=observed,
+            xml__xpath_match=[
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hi there"),
+                HINT_BODY_ITEXT_REF_XPATH,
+                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
+                GUIDANCE_ITEXT_XPATH.format(lang="eng", value="greeting"),
+                IMAGE_ITEXT_XPATH.format(lang="eng"),
+                VIDEO_ITEXT_XPATH.format(lang="eng"),
+                AUDIO_ITEXT_XPATH.format(lang="eng"),
+                LANG_DEFAULT_TRUE_XPATH.format(lang="eng"),
+                # TODO: is this a bug? No default lang itext (missing label, hint).
+                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+            ],
+        )
+        cols = {
+            c: [DEFAULT_LANG]
+            for c in ("hint", "guidance_hint", "image", "video", "audio")
+        }
+        expected = format_missing_translations_survey_msg(_in=cols)
+        self.assertNotIn(expected, observed)
+
+    def test_missing_translation_survey__one_lang_overlap__warn__no_default(self):
         """Should warn if there's a missing translation and no default_language."""
         md = """
         | survey |      |      |            |            |
@@ -327,8 +414,9 @@ class TestTranslations(PyxformTestCase):
                 LABEL_BODY_ITEXT_REF_XPATH,
                 LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
                 HINT_BODY_VALUE_XPATH.format(value="salutation"),
+                HINT_NO_ITEXT_XPATH.format(lang="eng", value="salutation"),
                 HINT_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="eng"),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
                 LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
             ],
         )
@@ -337,7 +425,35 @@ class TestTranslations(PyxformTestCase):
         )
         self.assertIn(expected, observed)
 
-    def test_missing_translation_survey__warn__no_default_with_other_lang(self):
+    def test_missing_translation_survey__one_lang_overlap__no_warn__default(self):
+        """Should not warn if there's a missing translation with a default_language."""
+        md = """
+        | settings |                  |
+        |          | default_language |
+        |          | eng              |
+        | survey |      |      |            |            |
+        |        | type | name | label::eng | hint       |
+        |        | note | n1   | hello      | salutation |
+        """
+        observed = []
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings=observed,
+            xml__xpath_match=[
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
+                HINT_BODY_VALUE_XPATH.format(value="salutation"),
+                HINT_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
+                HINT_NO_ITEXT_XPATH.format(lang="eng", value="salutation"),
+                LANG_DEFAULT_TRUE_XPATH.format(lang="eng"),
+                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+            ],
+        )
+        expected = format_missing_translations_survey_msg(_in={"hint": ["eng"]})
+        self.assertNotIn(expected, observed)
+
+    def test_missing_translation_survey__two_lang__warn__no_default(self):
         """Should warn if there's a missing translation and no default_language."""
         md = """
         | survey |      |      |            |               |            |
@@ -357,15 +473,15 @@ class TestTranslations(PyxformTestCase):
                 HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
                 # TODO: is this a bug? French hint has a dash instead of something meaningful.
                 HINT_ITEXT_VALUE_XPATH.format(lang="french", value="-"),
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="eng"),
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="french"),
-                LANG_NO_ITEXT_XPATH.format(lang="default"),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="french"),
+                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
             ],
         )
         expected = format_missing_translations_survey_msg(_in={"hint": ["french"]})
         self.assertIn(expected, observed)
 
-    def test_missing_translation_survey__warn__default_with_two_lang(self):
+    def test_missing_translation_survey__two_lang__no_warn__default(self):
         """Should not warn if there's a missing translation with a default_language."""
         md = """
         | settings |                  |
@@ -382,28 +498,25 @@ class TestTranslations(PyxformTestCase):
             warnings=observed,
             xml__xpath_match=[
                 LABEL_BODY_ITEXT_REF_XPATH,
-                HINT_BODY_ITEXT_REF_XPATH,
                 LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
                 LABEL_ITEXT_VALUE_XPATH.format(lang="french", value="bonjour"),
+                HINT_BODY_ITEXT_REF_XPATH,
                 HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
-                # TODO: is this a bug? French hint has a dash instead of something meaningful.
                 HINT_ITEXT_VALUE_XPATH.format(lang="french", value="-"),
-                LANG_MARKED_DEFAULT_XPATH.format(lang="eng"),
-                LANG_NOT_MARKED_DEFAULT_XPATH.format(lang="french"),
+                LANG_DEFAULT_TRUE_XPATH.format(lang="eng"),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="french"),
+                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
             ],
         )
         expected = format_missing_translations_survey_msg(_in={"hint": ["french"]})
-        self.assertIn(expected, observed)
+        self.assertNotIn(expected, observed)
 
-    def test_missing_translation_survey__no_warn__default_no_other_lang(self):
-        """Should not warn if there's a missing translation with a default_language."""
+    def test_missing_translation_survey__issue_157__warn__no_default(self):
+        """Should warn if there's a missing translation and no default_language."""
         md = """
-        | settings |                  |
-        |          | default_language |
-        |          | french           |
-        | survey |      |      |                |               |            |
-        |        | type | name | label          | label::french | hint       |
-        |        | note | n1   | hello          | bonjour       | salutation |
+        | survey |      |      |               |              |              |
+        |        | type | name | label::french | hint::french | media::image |
+        |        | note | n1   | bonjour       | salutation   | greeting.jpg |
         """
         observed = []
         self.assertPyxformXform(
@@ -412,18 +525,52 @@ class TestTranslations(PyxformTestCase):
             warnings=observed,
             xml__xpath_match=[
                 LABEL_BODY_ITEXT_REF_XPATH,
-                # TODO: is this a bug? Default label not in translations (i.e. nowhere).
-                LABEL_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="hello"),
                 LABEL_ITEXT_VALUE_XPATH.format(lang="french", value="bonjour"),
-                HINT_BODY_VALUE_XPATH.format(value="salutation"),
-                HINT_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
-                HINT_NO_ITEXT_XPATH.format(lang="french", value="salutation"),
-                LANG_MARKED_DEFAULT_XPATH.format(lang="french"),
-                # TODO: is this a bug? No default translations.
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                LABEL_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="-"),
+                HINT_BODY_ITEXT_REF_XPATH,
+                HINT_ITEXT_VALUE_XPATH.format(lang="french", value="salutation"),
+                HINT_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="-"),
+                IMAGE_NO_ITEXT_XPATH.format(lang="french"),
+                IMAGE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                LANG_DEFAULT_FALSE_XPATH.format(lang="french"),
+                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
             ],
         )
-        expected = format_missing_translations_survey_msg(_in={"hint": ["french"]})
+        expected = format_missing_translations_survey_msg(
+            _in={"hint": ["default"], "image": ["french"], "label": ["default"]}
+        )
+        self.assertIn(expected, observed)
+
+    def test_missing_translation_survey__issue_157__no_warn__default(self):
+        """Should not warn if there's missing translations with a default_language."""
+        md = """
+        | settings |                  |
+        |          | default_language |
+        |          | french           |
+        | survey |      |      |               |              |              |
+        |        | type | name | label::french | hint::french | media::image |
+        |        | note | n1   | bonjour       | salutation   | greeting.jpg |
+        """
+        observed = []
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings=observed,
+            xml__xpath_match=[
+                LABEL_BODY_ITEXT_REF_XPATH,
+                LABEL_ITEXT_VALUE_XPATH.format(lang="french", value="bonjour"),
+                HINT_BODY_ITEXT_REF_XPATH,
+                HINT_ITEXT_VALUE_XPATH.format(lang="french", value="salutation"),
+                IMAGE_ITEXT_XPATH.format(lang="french"),
+                LANG_DEFAULT_TRUE_XPATH.format(lang="french"),
+                # TODO: is this a bug? No default lang itext (missing image).
+                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+            ],
+            debug=True,
+        )
+        expected = format_missing_translations_survey_msg(
+            _in={"hint": ["default"], "image": ["french"], "label": ["default"]}
+        )
         self.assertNotIn(expected, observed)
 
 
@@ -448,7 +595,6 @@ class TranslationsTest(PyxformTestCase):
             name="multi_language_form",
             id_string="multi_language_form",
             md=xform_md,
-            errored=False,
             debug=False,
             itext__contains=[
                 '<translation default="true()" lang="default">',

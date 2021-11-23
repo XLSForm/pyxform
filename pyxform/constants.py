@@ -106,9 +106,11 @@ AUDIO_QUALITY_EXTERNAL = "external"
 
 TRANSLATABLE_SURVEY_COLUMNS = (
     "label",
+    # Per ODK Spec, could include "short" once pyxform supports it.
     "hint",
     "guidance_hint",
-    "media::image",
-    "media::video",
-    "media::audio",
+    "image",
+    # Per ODK Spec, could include "big-image" once pyxform supports it.
+    "video",
+    "audio",
 )
