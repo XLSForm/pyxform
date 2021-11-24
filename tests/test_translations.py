@@ -2,6 +2,8 @@
 """
 Test translations syntax.
 """
+from dataclasses import dataclass
+
 from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
 from pyxform.xls2json import format_missing_translations_survey_msg
 from tests.pyxform_test_case import PyxformTestCase
@@ -66,6 +68,8 @@ LANG_NO_ITEXT_XPATH = """
 
 
 class TestTranslations(PyxformTestCase):
+    """Miscellaneous translations behaviour or cases."""
+
     def test_double_colon_translations(self):
         """Should find translations for a simple form with a label in two languages."""
         md = """
@@ -91,6 +95,43 @@ class TestTranslations(PyxformTestCase):
             warnings_count=0,
             debug=True,
         )
+
+    def test_missing_media_itext(self):
+        """Test missing media itext translation
+
+        Fix for https://github.com/XLSForm/pyxform/issues/32
+        """
+        xform_md = """
+        | survey |                                |                    |                                                              |                                               |                 |          |                      |                       |
+        |        | name                           | type               | label                                                        | label::Russian                                | label::Kyrgyz   | required | media::audio::Kyrgyz | media::audio::Russian |
+        |        | Have_you_received_informed_con | select_one bt7nj36 | A.01 Have you received informed consent from the respondent? | Получили ли вы форму согласия от респондента? | This is Kyrgyz. | true     | something.mp3        | test.mp3              |
+        | choices |           |      |       |                |               |
+        |         | list name | name | label | label::Russian | label::Kyrgyz |
+        |         | bt7nj36   | 0    | No    | Нет            | Нет (ky)      |
+        |         | bt7nj36   | 1    | Yes   | Да             | Да (ky)       |
+        """
+        self.assertPyxformXform(
+            name="multi_language_form",
+            id_string="multi_language_form",
+            md=xform_md,
+            debug=False,
+            itext__contains=[
+                '<translation default="true()" lang="default">',
+                '<text id="/multi_language_form/Have_you_received_informed_con:label">',
+                "A.01 Have you received informed consent from the respondent?",
+                '<translation lang="Russian">',
+                "<value>Получили ли вы форму согласия от респондента?</value>",
+                '<value form="audio">jr://audio/test.mp3</value>',
+                '<translation lang="Kyrgyz">',
+                "<value>This is Kyrgyz.</value>",
+                '<value form="audio">jr://audio/something.mp3</value>',
+            ],
+            itext__excludes=['<value form="audio">jr://audio/-</value>'],
+        )
+
+
+class TestTranslationsSurvey(PyxformTestCase):
+    """Translations behaviour of columns in the Survey sheet."""
 
     def test_no_default__no_translation__label_and_hint(self):
         """Should not find default language translations for only label/hint."""
@@ -574,38 +615,224 @@ class TestTranslations(PyxformTestCase):
         self.assertNotIn(expected, observed)
 
 
-class TranslationsTest(PyxformTestCase):
-    """Test XLSForm translations."""
+@dataclass()
+class XPathHelper:
+    question_type: str
+    question_name: str
 
-    def test_missing_media_itext(self):
-        """Test missing media itext translation
+    def question_label_in_body(self, label):
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+          /x:label[not(@ref) and text()='{label}']
+        """
 
-        Fix for https://github.com/XLSForm/pyxform/issues/32
+    def question_label_references_itext(self):
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+          /x:label[@ref="jr:itext('/test/{self.question_name}:label')" and not(text())]
         """
-        xform_md = """
-        | survey |                                |                    |                                                              |                                               |                 |          |                      |                       |
-        |        | name                           | type               | label                                                        | label::Russian                                | label::Kyrgyz   | required | media::audio::Kyrgyz | media::audio::Russian |
-        |        | Have_you_received_informed_con | select_one bt7nj36 | A.01 Have you received informed consent from the respondent? | Получили ли вы форму согласия от респондента? | This is Kyrgyz. | true     | something.mp3        | test.mp3              |
-        | choices |           |      |       |                |               |
-        |         | list name | name | label | label::Russian | label::Kyrgyz |
-        |         | bt7nj36   | 0    | No    | Нет            | Нет (ky)      |
-        |         | bt7nj36   | 1    | Yes   | Да             | Да (ky)       |
+
+    def choice_value_in_body(self, cname):
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']/x:item
+          /x:value[not(@ref) and text()='{cname}']
         """
+
+    def choice_label_references_itext(self, cname):
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']/x:item
+          /x:label[@ref="jr:itext('/test/{self.question_name}/{cname}:label')" and not(text())]
+        """
+
+    def choice_label_itext_label(self, lang, cname, label):
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}/{cname}:label']
+          /x:value[not(@form) and text()='{label}']
+        """
+
+    def choice_label_itext_form(self, lang, cname, form, fname):
+        prefix = {
+            "audio": "jr://audio/",
+            "image": "jr://images/",
+            "video": "jr://video/",
+        }
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}/{cname}:label']
+          /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
+        """
+
+    def choice_list_references_itext(self, lname):
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+          /x:itemset[@nodeset="instance('{lname}')/root/item[{self.question_name} != '']"
+            and child::x:label[@ref='jr:itext(itextId)'] and child::x:value[@ref='name']]
+        """
+
+    @staticmethod
+    def choice_value_in_instance(lname, cname, index):
+        return f"""
+        /h:html/h:head/x:model/x:instance[@id='{lname}']/x:root
+          /x:item[child::x:itextId/text()='{lname}-{index}'
+            and child::x:name='{cname}' and position()={index}+1]
+        """
+
+    @staticmethod
+    def choice_label_itext_label_instance(lang, lname, label, index):
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='{lname}-{index}']
+          /x:value[not(@form) and text()='{label}']
+        """
+
+    @staticmethod
+    def choice_label_itext_form_instance(lang, lname, form, fname, index):
+        prefix = {
+            "audio": "jr://audio/",
+            "image": "jr://images/",
+            "video": "jr://video/",
+        }
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='{lname}-{index}']
+          /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
+        """
+
+
+class TestTranslationsChoices(PyxformTestCase):
+    """Translations behaviour of columns in the Choices sheet."""
+
+    def test_select1__non_dynamic_choices__no_lang__all_columns(self):
+        """Should find that when all translatable choices columns are used they appear in itext."""
+        md = """
+        | survey  |               |       |            |
+        |         | type          | name  | label      |
+        |         | select_one c1 | q1    | Question 1 |
+        | choices |           |      |       |              |              |              |
+        |         | list name | name | label | media::audio | media::image | media::video |
+        |         | c1        | na   | la    | a.mp3        | a.jpg        | a.mkv        |
+        |         | c1        | nb   | lb    | b.mp3        | b.jpg        | b.mkv        |
+        """
+        xp = XPathHelper(question_type="select1", question_name="q1")
+        lang = DEFAULT_LANG
+        xpath_match = [
+            xp.question_label_in_body("Question 1"),
+            xp.choice_value_in_body("na"),
+            xp.choice_value_in_body("nb"),
+            xp.choice_label_references_itext("na"),
+            xp.choice_label_references_itext("nb"),
+            xp.choice_label_itext_label(lang, "na", "la"),
+            xp.choice_label_itext_form(lang, "na", "audio", "a.mp3"),
+            xp.choice_label_itext_form(lang, "na", "image", "a.jpg"),
+            xp.choice_label_itext_form(lang, "na", "video", "a.mkv"),
+            xp.choice_label_itext_label(lang, "nb", "lb"),
+            xp.choice_label_itext_form(lang, "nb", "audio", "b.mp3"),
+            xp.choice_label_itext_form(lang, "nb", "image", "b.jpg"),
+            xp.choice_label_itext_form(lang, "nb", "video", "b.mkv"),
+        ]
         self.assertPyxformXform(
-            name="multi_language_form",
-            id_string="multi_language_form",
-            md=xform_md,
-            debug=False,
-            itext__contains=[
-                '<translation default="true()" lang="default">',
-                '<text id="/multi_language_form/Have_you_received_informed_con:label">',
-                "A.01 Have you received informed consent from the respondent?",
-                '<translation lang="Russian">',
-                "<value>Получили ли вы форму согласия от респондента?</value>",
-                '<value form="audio">jr://audio/test.mp3</value>',
-                '<translation lang="Kyrgyz">',
-                "<value>This is Kyrgyz.</value>",
-                '<value form="audio">jr://audio/something.mp3</value>',
-            ],
-            itext__excludes=['<value form="audio">jr://audio/-</value>'],
+            md=md,
+            name="test",
+            xml__xpath_match=xpath_match,
+        )
+
+    def test_select1__non_dynamic_choices__one_lang__all_columns(self):
+        """Should find that when all translatable choices columns are used they appear in itext."""
+        md = """
+        | survey  |               |       |            |
+        |         | type          | name  | label      |
+        |         | select_one c1 | q1    | Question 1 |
+        | choices |           |      |                 |                        |                        |                        |
+        |         | list name | name | label::Eng (en) | media::audio::Eng (en) | media::image::Eng (en) | media::video::Eng (en) |
+        |         | c1        | na   | la              | a.mp3                  | a.jpg                  | a.mkv                  |
+        |         | c1        | nb   | lb              | b.mp3                  | b.jpg                  | b.mkv                  |
+        """
+        xp = XPathHelper(question_type="select1", question_name="q1")
+        lang = "Eng (en)"
+        xpath_match = [
+            xp.question_label_in_body("Question 1"),
+            xp.choice_value_in_body("na"),
+            xp.choice_value_in_body("nb"),
+            xp.choice_label_references_itext("na"),
+            xp.choice_label_references_itext("nb"),
+            xp.choice_label_itext_label(lang, "na", "la"),
+            xp.choice_label_itext_form(lang, "na", "audio", "a.mp3"),
+            xp.choice_label_itext_form(lang, "na", "image", "a.jpg"),
+            xp.choice_label_itext_form(lang, "na", "video", "a.mkv"),
+            xp.choice_label_itext_label(lang, "nb", "lb"),
+            xp.choice_label_itext_form(lang, "nb", "audio", "b.mp3"),
+            xp.choice_label_itext_form(lang, "nb", "image", "b.jpg"),
+            xp.choice_label_itext_form(lang, "nb", "video", "b.mkv"),
+        ]
+        self.assertPyxformXform(
+            md=md,
+            name="test",
+            xml__xpath_match=xpath_match,
+        )
+
+    def test_select1__dynamic_choices__no_lang__all_columns(self):
+        """Should find that when all translatable choices columns are used they appear in itext."""
+        md = """
+        | survey  |               |       |            |               |
+        |         | type          | name  | label      | choice_filter |
+        |         | select_one c1 | q1    | Question 1 | q1 != ''      |
+        | choices |           |      |       |              |              |              |
+        |         | list name | name | label | media::audio | media::image | media::video |
+        |         | c1        | na   | la    | a.mp3        | a.jpg        | a.mkv        |
+        |         | c1        | nb   | lb    | b.mp3        | b.jpg        | b.mkv        |
+        """
+        xp = XPathHelper(question_type="select1", question_name="q1")
+        lang = DEFAULT_LANG
+        xpath_match = [
+            xp.question_label_in_body("Question 1"),
+            xp.choice_list_references_itext("c1"),
+            xp.choice_value_in_instance("c1", "na", 0),
+            xp.choice_value_in_instance("c1", "nb", 1),
+            xp.choice_label_itext_label_instance(lang, "c1", "la", 0),
+            xp.choice_label_itext_form_instance(lang, "c1", "audio", "a.mp3", 0),
+            xp.choice_label_itext_form_instance(lang, "c1", "image", "a.jpg", 0),
+            xp.choice_label_itext_form_instance(lang, "c1", "video", "a.mkv", 0),
+            xp.choice_label_itext_label_instance(lang, "c1", "lb", 1),
+            xp.choice_label_itext_form_instance(lang, "c1", "audio", "b.mp3", 1),
+            xp.choice_label_itext_form_instance(lang, "c1", "image", "b.jpg", 1),
+            xp.choice_label_itext_form_instance(lang, "c1", "video", "b.mkv", 1),
+        ]
+        self.assertPyxformXform(
+            md=md,
+            name="test",
+            xml__xpath_match=xpath_match,
+        )
+
+    def test_select1__dynamic_choices__one_lang__all_columns(self):
+        """ "Should find that when all translatable choices columns are used they appear in itext."""
+        md = """
+        | survey  |               |       |            |               |
+        |         | type          | name  | label      | choice_filter |
+        |         | select_one c1 | q1    | Question 1 | q1 != ''      |
+        | choices |           |      |                 |                        |                        |                        |
+        |         | list name | name | label::Eng (en) | media::audio::Eng (en) | media::image::Eng (en) | media::video::Eng (en) |
+        |         | c1        | na   | la              | a.mp3                  | a.jpg                  | a.mkv                  |
+        |         | c1        | nb   | lb              | b.mp3                  | b.jpg                  | b.mkv                  |
+        """
+        xp = XPathHelper(question_type="select1", question_name="q1")
+        lang = "Eng (en)"
+        xpath_match = [
+            xp.question_label_in_body("Question 1"),
+            xp.choice_list_references_itext("c1"),
+            xp.choice_value_in_instance("c1", "na", "0"),
+            xp.choice_value_in_instance("c1", "nb", "1"),
+            xp.choice_label_itext_label_instance(lang, "c1", "la", 0),
+            xp.choice_label_itext_form_instance(lang, "c1", "audio", "a.mp3", 0),
+            xp.choice_label_itext_form_instance(lang, "c1", "image", "a.jpg", 0),
+            xp.choice_label_itext_form_instance(lang, "c1", "video", "a.mkv", 0),
+            xp.choice_label_itext_label_instance(lang, "c1", "lb", 1),
+            xp.choice_label_itext_form_instance(lang, "c1", "audio", "b.mp3", 1),
+            xp.choice_label_itext_form_instance(lang, "c1", "image", "b.jpg", 1),
+            xp.choice_label_itext_form_instance(lang, "c1", "video", "b.mkv", 1),
+        ]
+        self.assertPyxformXform(
+            md=md,
+            name="test",
+            xml__xpath_match=xpath_match,
         )
