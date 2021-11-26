@@ -8,63 +8,203 @@ from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
 from pyxform.xls2json import format_missing_translations_survey_msg
 from tests.pyxform_test_case import PyxformTestCase
 
-LABEL_BODY_VALUE_XPATH = """
-/h:html/h:body/x:input[@ref='/test/n1']/x:label[not(@ref) and text()='{value}']
-"""
-LABEL_BODY_ITEXT_REF_XPATH = """
-/h:html/h:body/x:input[@ref='/test/n1']/x:label[@ref="jr:itext('/test/n1:label')" and not(text())]
-"""
-LABEL_ITEXT_VALUE_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']/x:value[not(@form) and text()='{value}']
-"""
-LABEL_NO_ITEXT_XPATH = """
-/h:html/h:head/x:model[not(x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:label']/x:value[not(@form) and text()='{value}'])]
-"""
 
-HINT_BODY_ITEXT_REF_XPATH = """
-/h:html/h:body/x:input[@ref='/test/n1']/x:hint[@ref="jr:itext('/test/n1:hint')" and not(text())]
-"""
-HINT_BODY_VALUE_XPATH = """
-/h:html/h:body/x:input[@ref='/test/n1']/x:hint[not(@ref) and text()='{value}']
-"""
-HINT_ITEXT_VALUE_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[not(@form) and text()='{value}']
-"""
-HINT_NO_ITEXT_XPATH = """
-/h:html/h:head/x:model[not(x:itext/x:translation[@lang='{lang}']/x:text[@id='/test/n1:hint']/x:value[not(@form) and text()='{value}'])]
-"""
+@dataclass()
+class XPathHelper:
+    """
+    XPath expressions for translations-related assertions.
+    """
 
-_GUIDANCE_KWARGS = {"type": "hint", "form": "guidance", "value": "{value}"}
-_AUDIO_KWARGS = {"type": "label", "form": "audio", "value": "jr://audio/greeting.mp3"}
-_IMAGE_KWARGS = {"type": "label", "form": "image", "value": "jr://images/greeting.jpg"}
-_VIDEO_KWARGS = {"type": "label", "form": "video", "value": "jr://video/greeting.mkv"}
-_FORM_ITEXT_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@lang='{{lang}}']/x:text[@id='/test/n1:{type}']
-  /x:value[@form='{form}' and text()='{value}']
-"""
-GUIDANCE_ITEXT_XPATH = _FORM_ITEXT_XPATH.format(**_GUIDANCE_KWARGS)
-AUDIO_ITEXT_XPATH = _FORM_ITEXT_XPATH.format(**_AUDIO_KWARGS)
-IMAGE_ITEXT_XPATH = _FORM_ITEXT_XPATH.format(**_IMAGE_KWARGS)
-VIDEO_ITEXT_XPATH = _FORM_ITEXT_XPATH.format(**_VIDEO_KWARGS)
+    question_type: str
+    question_name: str
 
-_NO_FORM_ITEXT_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@lang='{{lang}}']
-  /x:text[@id='/test/n1:{type}' and not(descendant::x:value[@form='{form}' and text()='{value}'])]
-"""
-GUIDANCE_NO_ITEXT_XPATH = _NO_FORM_ITEXT_XPATH.format(**_GUIDANCE_KWARGS)
-AUDIO_NO_ITEXT_XPATH = _NO_FORM_ITEXT_XPATH.format(**_AUDIO_KWARGS)
-IMAGE_NO_ITEXT_XPATH = _NO_FORM_ITEXT_XPATH.format(**_IMAGE_KWARGS)
-VIDEO_NO_ITEXT_XPATH = _NO_FORM_ITEXT_XPATH.format(**_VIDEO_KWARGS)
+    @staticmethod
+    def language_is_default(lang):
+        """The language translation has itext and is marked as the default."""
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@default='true()' and @lang='{lang}']
+        """
 
-LANG_DEFAULT_TRUE_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[@default='true()' and @lang='{lang}']
-"""
-LANG_DEFAULT_FALSE_XPATH = """
-/h:html/h:head/x:model/x:itext/x:translation[not(@default='true()') and @lang='{lang}']
-"""
-LANG_NO_ITEXT_XPATH = """
-/h:html/h:head/x:model/x:itext[not(descendant::x:translation[@lang='{lang}'])]
-"""
+    @staticmethod
+    def language_is_not_default(lang):
+        """The language translation has itext and is not marked as the default."""
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[not(@default='true()') and @lang='{lang}']
+        """
+
+    @staticmethod
+    def language_no_itext(lang):
+        """The language translation has no itext."""
+        return f"""
+        /h:html/h:head/x:model/x:itext[not(descendant::x:translation[@lang='{lang}'])]
+        """
+
+    def question_label_in_body(self, label):
+        """The Question label value is in the body."""
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+          /x:label[not(@ref) and text()='{label}']
+        """
+
+    def question_hint_in_body(self, hint):
+        """The Question hint value is in the body."""
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+          /x:hint[not(@ref) and text()='{hint}']
+        """
+
+    def question_label_references_itext(self):
+        """The Question label references an itext entry."""
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+          /x:label[@ref="jr:itext('/test/{self.question_name}:label')" and not(text())]
+        """
+
+    def question_hint_references_itext(self):
+        """The Question hint references an itext entry."""
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+          /x:hint[@ref="jr:itext('/test/{self.question_name}:hint')" and not(text())]
+        """
+
+    def question_itext_label(self, lang, label):
+        """The Question label value is in the itext."""
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}:label']
+          /x:value[not(@form) and text()='{label}']
+        """
+
+    def question_itext_hint(self, lang, hint):
+        """The Question hint value is in the itext."""
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}:hint']
+          /x:value[not(@form) and text()='{hint}']
+        """
+
+    def question_itext_form(self, lang, form, fname):
+        """There is an alternate form itext for the Question label or hint."""
+        prefix = {
+            "audio": ("label", "jr://audio/"),
+            "image": ("label", "jr://images/"),
+            "video": ("label", "jr://video/"),
+            "guidance": ("hint", ""),
+        }
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}:{prefix[form][0]}']
+          /x:value[@form='{form}' and text()='{prefix[form][1]}{fname}']
+        """
+
+    def question_no_itext_label(self, lang, label):
+        """There is no itext for the Question label."""
+        return f"""
+        /h:html/h:head/x:model[not(
+          x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}:label']
+          /x:value[not(@form) and text()='{label}']
+        )]
+        """
+
+    def question_no_itext_hint(self, lang, hint):
+        """There is no itext for the Question hint."""
+        return f"""
+        /h:html/h:head/x:model[not(
+          x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}:hint']
+          /x:value[not(@form) and text()='{hint}']
+        )]
+        """
+
+    def question_no_itext_form(self, lang, form, fname):
+        """There is no alternate form itext for the Question label or hint."""
+        prefix = {
+            "audio": ("label", "jr://audio/"),
+            "image": ("label", "jr://images/"),
+            "video": ("label", "jr://video/"),
+            "guidance": ("hint", ""),
+        }
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}:{prefix[form][0]}'
+            and not(descendant::x:value[@form='{form}' and text()='{prefix[form][1]}{fname}'])]
+        """
+
+    def choice_value_in_body(self, cname):
+        """The Choice label value is in the body."""
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']/x:item
+          /x:value[not(@ref) and text()='{cname}']
+        """
+
+    def choice_label_references_itext(self, cname):
+        """The Choice label references an itext entry."""
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']/x:item
+          /x:label[@ref="jr:itext('/test/{self.question_name}/{cname}:label')" and not(text())]
+        """
+
+    def choice_itext_label(self, lang, cname, label):
+        """The Choice label value is in the itext, referenced from the body."""
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}/{cname}:label']
+          /x:value[not(@form) and text()='{label}']
+        """
+
+    def choice_itext_form(self, lang, cname, form, fname):
+        """There is an alternate form itext for the Choice label, referenced from the body."""
+        prefix = {
+            "audio": "jr://audio/",
+            "image": "jr://images/",
+            "video": "jr://video/",
+        }
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}/{cname}:label']
+          /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
+        """
+
+    def choice_list_references_itext(self, lname):
+        """The Choice list (itemset) references an itext entry and internal instance."""
+        return f"""
+        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+          /x:itemset[@nodeset="instance('{lname}')/root/item[{self.question_name} != '']"
+            and child::x:label[@ref='jr:itext(itextId)'] and child::x:value[@ref='name']]
+        """
+
+    @staticmethod
+    def choice_value_in_instance(lname, cname, index):
+        """The Choice value is in an internal instance."""
+        return f"""
+        /h:html/h:head/x:model/x:instance[@id='{lname}']/x:root
+          /x:item[child::x:itextId/text()='{lname}-{index}'
+            and child::x:name='{cname}' and position()={index}+1]
+        """
+
+    @staticmethod
+    def choice_instance_itext_label(lang, lname, label, index):
+        """The Choice label value is in the itext, referenced from an internal instance."""
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='{lname}-{index}']
+          /x:value[not(@form) and text()='{label}']
+        """
+
+    @staticmethod
+    def choice_instance_itext_form(lang, lname, form, fname, index):
+        """There is an alternate form itext for the Choice label, referenced from an internal instance."""
+        prefix = {
+            "audio": "jr://audio/",
+            "image": "jr://images/",
+            "video": "jr://video/",
+        }
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='{lname}-{index}']
+          /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
+        """
 
 
 class TestTranslations(PyxformTestCase):
@@ -77,23 +217,23 @@ class TestTranslations(PyxformTestCase):
         |        | type | name | label::english | label::french |
         |        | note | n1   | hello          | bonjour       |
         """
+        xp = XPathHelper(question_type="input", question_name="n1")
         self.assertPyxformXform(
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="english", value="hello"),
-                LABEL_ITEXT_VALUE_XPATH.format(lang="french", value="bonjour"),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="english"),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="french"),
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                xp.question_label_references_itext(),
+                xp.question_itext_label("english", "hello"),
+                xp.question_itext_label("french", "bonjour"),
+                xp.language_is_not_default("english"),
+                xp.language_is_not_default("french"),
+                xp.language_no_itext(DEFAULT_LANG),
                 # Expected model binding found.
                 """/h:html/h:head/x:model
                      /x:bind[@nodeset='/test/n1' and @readonly='true()' and @type='string']
                 """,
             ],
             warnings_count=0,
-            debug=True,
         )
 
     def test_missing_media_itext(self):
@@ -101,37 +241,51 @@ class TestTranslations(PyxformTestCase):
 
         Fix for https://github.com/XLSForm/pyxform/issues/32
         """
-        xform_md = """
-        | survey |                                |                    |                                                              |                                               |                 |          |                      |                       |
-        |        | name                           | type               | label                                                        | label::Russian                                | label::Kyrgyz   | required | media::audio::Kyrgyz | media::audio::Russian |
-        |        | Have_you_received_informed_con | select_one bt7nj36 | A.01 Have you received informed consent from the respondent? | Получили ли вы форму согласия от респондента? | This is Kyrgyz. | true     | something.mp3        | test.mp3              |
+        q1_default = "A.01 Have you received informed consent from the respondent?"
+        q1_russian = "Получили ли вы форму согласия от респондента?"
+        md = f"""
+        | survey |       |               |              |                |                 |          |                      |                       |
+        |        | name  | type          | label        | label::Russian | label::Kyrgyz   | required | media::audio::Kyrgyz | media::audio::Russian |
+        |        | q1    | select_one yn | {q1_default} | {q1_russian}   | This is Kyrgyz. | true     | something.mp3        | test.mp3              |
         | choices |           |      |       |                |               |
         |         | list name | name | label | label::Russian | label::Kyrgyz |
-        |         | bt7nj36   | 0    | No    | Нет            | Нет (ky)      |
-        |         | bt7nj36   | 1    | Yes   | Да             | Да (ky)       |
+        |         | yn        | 0    | No    | Нет            | Нет (ky)      |
+        |         | yn        | 1    | Yes   | Да             | Да (ky)       |
         """
+        xp = XPathHelper(question_type="select1", question_name="q1")
         self.assertPyxformXform(
-            name="multi_language_form",
-            id_string="multi_language_form",
-            md=xform_md,
-            debug=False,
-            itext__contains=[
-                '<translation default="true()" lang="default">',
-                '<text id="/multi_language_form/Have_you_received_informed_con:label">',
-                "A.01 Have you received informed consent from the respondent?",
-                '<translation lang="Russian">',
-                "<value>Получили ли вы форму согласия от респондента?</value>",
-                '<value form="audio">jr://audio/test.mp3</value>',
-                '<translation lang="Kyrgyz">',
-                "<value>This is Kyrgyz.</value>",
-                '<value form="audio">jr://audio/something.mp3</value>',
+            name="test",
+            md=md,
+            xml__xpath_match=[
+                xp.question_label_references_itext(),
+                xp.question_itext_label(DEFAULT_LANG, q1_default),
+                xp.question_itext_label("Russian", q1_russian),
+                xp.question_itext_label("Kyrgyz", "This is Kyrgyz."),
+                xp.question_no_itext_form(DEFAULT_LANG, "audio", "-"),
+                xp.question_itext_form("Russian", "audio", "test.mp3"),
+                xp.question_itext_form("Kyrgyz", "audio", "something.mp3"),
+                xp.choice_value_in_body("0"),
+                xp.choice_label_references_itext("0"),
+                xp.choice_itext_label(DEFAULT_LANG, "0", "No"),
+                xp.choice_itext_label("Russian", "0", "Нет"),
+                xp.choice_itext_label("Kyrgyz", "0", "Нет (ky)"),
+                xp.choice_value_in_body("1"),
+                xp.choice_label_references_itext("1"),
+                xp.choice_itext_label(DEFAULT_LANG, "1", "Yes"),
+                xp.choice_itext_label("Russian", "1", "Да"),
+                xp.choice_itext_label("Kyrgyz", "1", "Да (ky)"),
+                xp.language_is_default(DEFAULT_LANG),
+                xp.language_is_not_default("Russian"),
+                xp.language_is_not_default("Kyrgyz"),
             ],
-            itext__excludes=['<value form="audio">jr://audio/-</value>'],
         )
 
 
 class TestTranslationsSurvey(PyxformTestCase):
     """Translations behaviour of columns in the Survey sheet."""
+
+    def setUp(self) -> None:
+        self.xp = XPathHelper(question_type="input", question_name="n1")
 
     def test_no_default__no_translation__label_and_hint(self):
         """Should not find default language translations for only label/hint."""
@@ -144,10 +298,10 @@ class TestTranslationsSurvey(PyxformTestCase):
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_BODY_VALUE_XPATH.format(value="hello"),
-                LABEL_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="hello"),
-                HINT_BODY_VALUE_XPATH.format(value="salutation"),
-                HINT_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
+                self.xp.question_label_in_body("hello"),
+                self.xp.question_no_itext_label(DEFAULT_LANG, "hello"),
+                self.xp.question_hint_in_body("salutation"),
+                self.xp.question_no_itext_hint(DEFAULT_LANG, "salutation"),
                 # No translations.
                 "/h:html/h:head/x:model[not(descendant::x:itext)]",
             ],
@@ -165,13 +319,13 @@ class TestTranslationsSurvey(PyxformTestCase):
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="hello"),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label(DEFAULT_LANG, "hello"),
                 # TODO: is this a bug? Why itext for label/image but not hint?
-                HINT_BODY_VALUE_XPATH.format(value="salutation"),
-                HINT_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
-                IMAGE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_hint_in_body("salutation"),
+                self.xp.question_no_itext_hint(DEFAULT_LANG, "salutation"),
+                self.xp.question_itext_form(DEFAULT_LANG, "image", "greeting.jpg"),
+                self.xp.language_is_default(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -188,12 +342,12 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             xml__xpath_match=[
                 # TODO: is this a bug? Why itext for hint/guidance but not label?
-                LABEL_BODY_VALUE_XPATH.format(value="hello"),
-                LABEL_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="hello"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
-                GUIDANCE_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="greeting"),
-                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_label_in_body("hello"),
+                self.xp.question_no_itext_label(DEFAULT_LANG, "hello"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint(DEFAULT_LANG, "salutation"),
+                self.xp.question_itext_form(DEFAULT_LANG, "guidance", "greeting"),
+                self.xp.language_is_default(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -209,15 +363,15 @@ class TestTranslationsSurvey(PyxformTestCase):
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="hello"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
-                GUIDANCE_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="greeting"),
-                IMAGE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                VIDEO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                AUDIO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label(DEFAULT_LANG, "hello"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint(DEFAULT_LANG, "salutation"),
+                self.xp.question_itext_form(DEFAULT_LANG, "guidance", "greeting"),
+                self.xp.question_itext_form(DEFAULT_LANG, "image", "greeting.jpg"),
+                self.xp.question_itext_form(DEFAULT_LANG, "video", "greeting.mkv"),
+                self.xp.question_itext_form(DEFAULT_LANG, "audio", "greeting.mp3"),
+                self.xp.language_is_default(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -233,13 +387,13 @@ class TestTranslationsSurvey(PyxformTestCase):
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint("eng", "salutation"),
                 # TODO: is this a bug? Only one language but not marked default.
-                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.language_is_not_default("eng"),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -255,13 +409,13 @@ class TestTranslationsSurvey(PyxformTestCase):
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
-                IMAGE_ITEXT_XPATH.format(lang="eng"),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint("eng", "salutation"),
+                self.xp.question_itext_form("eng", "image", "greeting.jpg"),
+                self.xp.language_is_not_default("eng"),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -277,13 +431,13 @@ class TestTranslationsSurvey(PyxformTestCase):
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
-                GUIDANCE_ITEXT_XPATH.format(lang="eng", value="greeting"),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint("eng", "salutation"),
+                self.xp.question_itext_form("eng", "guidance", "greeting"),
+                self.xp.language_is_not_default("eng"),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -299,16 +453,16 @@ class TestTranslationsSurvey(PyxformTestCase):
             name="test",
             md=md,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
-                GUIDANCE_ITEXT_XPATH.format(lang="eng", value="greeting"),
-                IMAGE_ITEXT_XPATH.format(lang="eng"),
-                VIDEO_ITEXT_XPATH.format(lang="eng"),
-                AUDIO_ITEXT_XPATH.format(lang="eng"),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint("eng", "salutation"),
+                self.xp.question_itext_form("eng", "guidance", "greeting"),
+                self.xp.question_itext_form("eng", "image", "greeting.jpg"),
+                self.xp.question_itext_form("eng", "video", "greeting.mkv"),
+                self.xp.question_itext_form("eng", "audio", "greeting.mp3"),
+                self.xp.language_is_not_default("eng"),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -326,12 +480,12 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="hello"),
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hi there"),
-                HINT_BODY_VALUE_XPATH.format(value="salutation"),
-                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label(DEFAULT_LANG, "hello"),
+                self.xp.question_itext_label("eng", "hi there"),
+                self.xp.question_hint_in_body("salutation"),
+                self.xp.language_is_default(DEFAULT_LANG),
+                self.xp.language_is_not_default("eng"),
             ],
         )
         expected = format_missing_translations_survey_msg(_in={"hint": ["eng"]})
@@ -353,13 +507,13 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hi there"),
-                HINT_BODY_VALUE_XPATH.format(value="salutation"),
-                HINT_NO_ITEXT_XPATH.format(lang="eng", value="salutation"),
-                LANG_DEFAULT_TRUE_XPATH.format(lang="eng"),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("eng", "hi there"),
+                self.xp.question_hint_in_body("salutation"),
+                self.xp.question_no_itext_hint("eng", "salutation"),
+                self.xp.language_is_default("eng"),
                 # TODO: is this a bug? No default lang itext (missing label).
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
         expected = format_missing_translations_survey_msg(_in={"hint": ["eng"]})
@@ -378,22 +532,22 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="hello"),
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hi there"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
-                HINT_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="-"),
-                GUIDANCE_ITEXT_XPATH.format(lang="eng", value="greeting"),
-                GUIDANCE_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="-"),
-                IMAGE_ITEXT_XPATH.format(lang="eng"),
-                IMAGE_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                VIDEO_ITEXT_XPATH.format(lang="eng"),
-                VIDEO_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                AUDIO_ITEXT_XPATH.format(lang="eng"),
-                AUDIO_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label(DEFAULT_LANG, "hello"),
+                self.xp.question_itext_label("eng", "hi there"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint("eng", "salutation"),
+                self.xp.question_itext_hint(DEFAULT_LANG, "-"),
+                self.xp.question_itext_form("eng", "guidance", "greeting"),
+                self.xp.question_itext_form(DEFAULT_LANG, "guidance", "-"),
+                self.xp.question_itext_form("eng", "image", "greeting.jpg"),
+                self.xp.question_no_itext_form(DEFAULT_LANG, "image", "greeting.jpg"),
+                self.xp.question_itext_form("eng", "video", "greeting.mkv"),
+                self.xp.question_no_itext_form(DEFAULT_LANG, "video", "greeting.mkv"),
+                self.xp.question_itext_form("eng", "audio", "greeting.mp3"),
+                self.xp.question_no_itext_form(DEFAULT_LANG, "audio", "greeting.mp3"),
+                self.xp.language_is_default(DEFAULT_LANG),
+                self.xp.language_is_not_default("eng"),
             ],
         )
         cols = {
@@ -419,17 +573,17 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hi there"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
-                GUIDANCE_ITEXT_XPATH.format(lang="eng", value="greeting"),
-                IMAGE_ITEXT_XPATH.format(lang="eng"),
-                VIDEO_ITEXT_XPATH.format(lang="eng"),
-                AUDIO_ITEXT_XPATH.format(lang="eng"),
-                LANG_DEFAULT_TRUE_XPATH.format(lang="eng"),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("eng", "hi there"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint("eng", "salutation"),
+                self.xp.question_itext_form("eng", "guidance", "greeting"),
+                self.xp.question_itext_form("eng", "image", "greeting.jpg"),
+                self.xp.question_itext_form("eng", "video", "greeting.mkv"),
+                self.xp.question_itext_form("eng", "audio", "greeting.mp3"),
+                self.xp.language_is_default("eng"),
                 # TODO: is this a bug? No default lang itext (missing label, hint).
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
         cols = {
@@ -452,13 +606,13 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
-                HINT_BODY_VALUE_XPATH.format(value="salutation"),
-                HINT_NO_ITEXT_XPATH.format(lang="eng", value="salutation"),
-                HINT_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_hint_in_body("salutation"),
+                self.xp.question_no_itext_hint("eng", "salutation"),
+                self.xp.question_no_itext_hint(DEFAULT_LANG, "salutation"),
+                self.xp.language_is_not_default("eng"),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
         expected = format_missing_translations_survey_msg(
@@ -482,13 +636,13 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
-                HINT_BODY_VALUE_XPATH.format(value="salutation"),
-                HINT_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG, value="salutation"),
-                HINT_NO_ITEXT_XPATH.format(lang="eng", value="salutation"),
-                LANG_DEFAULT_TRUE_XPATH.format(lang="eng"),
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_hint_in_body("salutation"),
+                self.xp.question_no_itext_hint(DEFAULT_LANG, "salutation"),
+                self.xp.question_no_itext_hint("eng", "salutation"),
+                self.xp.language_is_default("eng"),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
         expected = format_missing_translations_survey_msg(_in={"hint": ["eng"]})
@@ -507,16 +661,16 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
-                LABEL_ITEXT_VALUE_XPATH.format(lang="french", value="bonjour"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_itext_label("french", "bonjour"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint("eng", "salutation"),
                 # TODO: is this a bug? French hint has a dash instead of something meaningful.
-                HINT_ITEXT_VALUE_XPATH.format(lang="french", value="-"),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="eng"),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="french"),
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_itext_hint("french", "-"),
+                self.xp.language_is_not_default("eng"),
+                self.xp.language_is_not_default("french"),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
         expected = format_missing_translations_survey_msg(_in={"hint": ["french"]})
@@ -538,15 +692,15 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="eng", value="hello"),
-                LABEL_ITEXT_VALUE_XPATH.format(lang="french", value="bonjour"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang="eng", value="salutation"),
-                HINT_ITEXT_VALUE_XPATH.format(lang="french", value="-"),
-                LANG_DEFAULT_TRUE_XPATH.format(lang="eng"),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="french"),
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_itext_label("french", "bonjour"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint("eng", "salutation"),
+                self.xp.question_itext_hint("french", "-"),
+                self.xp.language_is_default("eng"),
+                self.xp.language_is_not_default("french"),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
         expected = format_missing_translations_survey_msg(_in={"hint": ["french"]})
@@ -565,16 +719,16 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="french", value="bonjour"),
-                LABEL_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="-"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang="french", value="salutation"),
-                HINT_ITEXT_VALUE_XPATH.format(lang=DEFAULT_LANG, value="-"),
-                IMAGE_NO_ITEXT_XPATH.format(lang="french"),
-                IMAGE_ITEXT_XPATH.format(lang=DEFAULT_LANG),
-                LANG_DEFAULT_FALSE_XPATH.format(lang="french"),
-                LANG_DEFAULT_TRUE_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("french", "bonjour"),
+                self.xp.question_itext_label(DEFAULT_LANG, "-"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint("french", "salutation"),
+                self.xp.question_itext_hint(DEFAULT_LANG, "-"),
+                self.xp.question_no_itext_form("french", "audio", "greeting.mp3"),
+                self.xp.question_itext_form(DEFAULT_LANG, "image", "greeting.jpg"),
+                self.xp.language_is_not_default("french"),
+                self.xp.language_is_default(DEFAULT_LANG),
             ],
         )
         expected = format_missing_translations_survey_msg(
@@ -598,16 +752,15 @@ class TestTranslationsSurvey(PyxformTestCase):
             md=md,
             warnings=observed,
             xml__xpath_match=[
-                LABEL_BODY_ITEXT_REF_XPATH,
-                LABEL_ITEXT_VALUE_XPATH.format(lang="french", value="bonjour"),
-                HINT_BODY_ITEXT_REF_XPATH,
-                HINT_ITEXT_VALUE_XPATH.format(lang="french", value="salutation"),
-                IMAGE_ITEXT_XPATH.format(lang="french"),
-                LANG_DEFAULT_TRUE_XPATH.format(lang="french"),
+                self.xp.question_label_references_itext(),
+                self.xp.question_itext_label("french", "bonjour"),
+                self.xp.question_hint_references_itext(),
+                self.xp.question_itext_hint("french", "salutation"),
+                self.xp.question_itext_form("french", "image", "greeting.jpg"),
+                self.xp.language_is_default("french"),
                 # TODO: is this a bug? No default lang itext (missing image).
-                LANG_NO_ITEXT_XPATH.format(lang=DEFAULT_LANG),
+                self.xp.language_no_itext(DEFAULT_LANG),
             ],
-            debug=True,
         )
         expected = format_missing_translations_survey_msg(
             _in={"hint": ["default"], "image": ["french"], "label": ["default"]}
@@ -615,93 +768,11 @@ class TestTranslationsSurvey(PyxformTestCase):
         self.assertNotIn(expected, observed)
 
 
-@dataclass()
-class XPathHelper:
-    question_type: str
-    question_name: str
-
-    def question_label_in_body(self, label):
-        return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
-          /x:label[not(@ref) and text()='{label}']
-        """
-
-    def question_label_references_itext(self):
-        return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
-          /x:label[@ref="jr:itext('/test/{self.question_name}:label')" and not(text())]
-        """
-
-    def choice_value_in_body(self, cname):
-        return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']/x:item
-          /x:value[not(@ref) and text()='{cname}']
-        """
-
-    def choice_label_references_itext(self, cname):
-        return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']/x:item
-          /x:label[@ref="jr:itext('/test/{self.question_name}/{cname}:label')" and not(text())]
-        """
-
-    def choice_label_itext_label(self, lang, cname, label):
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}/{cname}:label']
-          /x:value[not(@form) and text()='{label}']
-        """
-
-    def choice_label_itext_form(self, lang, cname, form, fname):
-        prefix = {
-            "audio": "jr://audio/",
-            "image": "jr://images/",
-            "video": "jr://video/",
-        }
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}/{cname}:label']
-          /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
-        """
-
-    def choice_list_references_itext(self, lname):
-        return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
-          /x:itemset[@nodeset="instance('{lname}')/root/item[{self.question_name} != '']"
-            and child::x:label[@ref='jr:itext(itextId)'] and child::x:value[@ref='name']]
-        """
-
-    @staticmethod
-    def choice_value_in_instance(lname, cname, index):
-        return f"""
-        /h:html/h:head/x:model/x:instance[@id='{lname}']/x:root
-          /x:item[child::x:itextId/text()='{lname}-{index}'
-            and child::x:name='{cname}' and position()={index}+1]
-        """
-
-    @staticmethod
-    def choice_label_itext_label_instance(lang, lname, label, index):
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='{lname}-{index}']
-          /x:value[not(@form) and text()='{label}']
-        """
-
-    @staticmethod
-    def choice_label_itext_form_instance(lang, lname, form, fname, index):
-        prefix = {
-            "audio": "jr://audio/",
-            "image": "jr://images/",
-            "video": "jr://video/",
-        }
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='{lname}-{index}']
-          /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
-        """
-
-
 class TestTranslationsChoices(PyxformTestCase):
     """Translations behaviour of columns in the Choices sheet."""
+
+    def setUp(self) -> None:
+        self.xp = XPathHelper(question_type="select1", question_name="q1")
 
     def test_select1__non_dynamic_choices__no_lang__all_columns(self):
         """Should find that when all translatable choices columns are used they appear in itext."""
@@ -714,22 +785,20 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la    | a.mp3        | a.jpg        | a.mkv        |
         |         | c1        | nb   | lb    | b.mp3        | b.jpg        | b.mkv        |
         """
-        xp = XPathHelper(question_type="select1", question_name="q1")
-        lang = DEFAULT_LANG
         xpath_match = [
-            xp.question_label_in_body("Question 1"),
-            xp.choice_value_in_body("na"),
-            xp.choice_value_in_body("nb"),
-            xp.choice_label_references_itext("na"),
-            xp.choice_label_references_itext("nb"),
-            xp.choice_label_itext_label(lang, "na", "la"),
-            xp.choice_label_itext_form(lang, "na", "audio", "a.mp3"),
-            xp.choice_label_itext_form(lang, "na", "image", "a.jpg"),
-            xp.choice_label_itext_form(lang, "na", "video", "a.mkv"),
-            xp.choice_label_itext_label(lang, "nb", "lb"),
-            xp.choice_label_itext_form(lang, "nb", "audio", "b.mp3"),
-            xp.choice_label_itext_form(lang, "nb", "image", "b.jpg"),
-            xp.choice_label_itext_form(lang, "nb", "video", "b.mkv"),
+            self.xp.question_label_in_body("Question 1"),
+            self.xp.choice_value_in_body("na"),
+            self.xp.choice_value_in_body("nb"),
+            self.xp.choice_label_references_itext("na"),
+            self.xp.choice_label_references_itext("nb"),
+            self.xp.choice_itext_label(DEFAULT_LANG, "na", "la"),
+            self.xp.choice_itext_form(DEFAULT_LANG, "na", "audio", "a.mp3"),
+            self.xp.choice_itext_form(DEFAULT_LANG, "na", "image", "a.jpg"),
+            self.xp.choice_itext_form(DEFAULT_LANG, "na", "video", "a.mkv"),
+            self.xp.choice_itext_label(DEFAULT_LANG, "nb", "lb"),
+            self.xp.choice_itext_form(DEFAULT_LANG, "nb", "audio", "b.mp3"),
+            self.xp.choice_itext_form(DEFAULT_LANG, "nb", "image", "b.jpg"),
+            self.xp.choice_itext_form(DEFAULT_LANG, "nb", "video", "b.mkv"),
         ]
         self.assertPyxformXform(
             md=md,
@@ -748,22 +817,20 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la              | a.mp3                  | a.jpg                  | a.mkv                  |
         |         | c1        | nb   | lb              | b.mp3                  | b.jpg                  | b.mkv                  |
         """
-        xp = XPathHelper(question_type="select1", question_name="q1")
-        lang = "Eng (en)"
         xpath_match = [
-            xp.question_label_in_body("Question 1"),
-            xp.choice_value_in_body("na"),
-            xp.choice_value_in_body("nb"),
-            xp.choice_label_references_itext("na"),
-            xp.choice_label_references_itext("nb"),
-            xp.choice_label_itext_label(lang, "na", "la"),
-            xp.choice_label_itext_form(lang, "na", "audio", "a.mp3"),
-            xp.choice_label_itext_form(lang, "na", "image", "a.jpg"),
-            xp.choice_label_itext_form(lang, "na", "video", "a.mkv"),
-            xp.choice_label_itext_label(lang, "nb", "lb"),
-            xp.choice_label_itext_form(lang, "nb", "audio", "b.mp3"),
-            xp.choice_label_itext_form(lang, "nb", "image", "b.jpg"),
-            xp.choice_label_itext_form(lang, "nb", "video", "b.mkv"),
+            self.xp.question_label_in_body("Question 1"),
+            self.xp.choice_value_in_body("na"),
+            self.xp.choice_value_in_body("nb"),
+            self.xp.choice_label_references_itext("na"),
+            self.xp.choice_label_references_itext("nb"),
+            self.xp.choice_itext_label("Eng (en)", "na", "la"),
+            self.xp.choice_itext_form("Eng (en)", "na", "audio", "a.mp3"),
+            self.xp.choice_itext_form("Eng (en)", "na", "image", "a.jpg"),
+            self.xp.choice_itext_form("Eng (en)", "na", "video", "a.mkv"),
+            self.xp.choice_itext_label("Eng (en)", "nb", "lb"),
+            self.xp.choice_itext_form("Eng (en)", "nb", "audio", "b.mp3"),
+            self.xp.choice_itext_form("Eng (en)", "nb", "image", "b.jpg"),
+            self.xp.choice_itext_form("Eng (en)", "nb", "video", "b.mkv"),
         ]
         self.assertPyxformXform(
             md=md,
@@ -782,21 +849,19 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la    | a.mp3        | a.jpg        | a.mkv        |
         |         | c1        | nb   | lb    | b.mp3        | b.jpg        | b.mkv        |
         """
-        xp = XPathHelper(question_type="select1", question_name="q1")
-        lang = DEFAULT_LANG
         xpath_match = [
-            xp.question_label_in_body("Question 1"),
-            xp.choice_list_references_itext("c1"),
-            xp.choice_value_in_instance("c1", "na", 0),
-            xp.choice_value_in_instance("c1", "nb", 1),
-            xp.choice_label_itext_label_instance(lang, "c1", "la", 0),
-            xp.choice_label_itext_form_instance(lang, "c1", "audio", "a.mp3", 0),
-            xp.choice_label_itext_form_instance(lang, "c1", "image", "a.jpg", 0),
-            xp.choice_label_itext_form_instance(lang, "c1", "video", "a.mkv", 0),
-            xp.choice_label_itext_label_instance(lang, "c1", "lb", 1),
-            xp.choice_label_itext_form_instance(lang, "c1", "audio", "b.mp3", 1),
-            xp.choice_label_itext_form_instance(lang, "c1", "image", "b.jpg", 1),
-            xp.choice_label_itext_form_instance(lang, "c1", "video", "b.mkv", 1),
+            self.xp.question_label_in_body("Question 1"),
+            self.xp.choice_list_references_itext("c1"),
+            self.xp.choice_value_in_instance("c1", "na", 0),
+            self.xp.choice_value_in_instance("c1", "nb", 1),
+            self.xp.choice_instance_itext_label(DEFAULT_LANG, "c1", "la", 0),
+            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "audio", "a.mp3", 0),
+            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "image", "a.jpg", 0),
+            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "video", "a.mkv", 0),
+            self.xp.choice_instance_itext_label(DEFAULT_LANG, "c1", "lb", 1),
+            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "audio", "b.mp3", 1),
+            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "image", "b.jpg", 1),
+            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "video", "b.mkv", 1),
         ]
         self.assertPyxformXform(
             md=md,
@@ -815,21 +880,19 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la              | a.mp3                  | a.jpg                  | a.mkv                  |
         |         | c1        | nb   | lb              | b.mp3                  | b.jpg                  | b.mkv                  |
         """
-        xp = XPathHelper(question_type="select1", question_name="q1")
-        lang = "Eng (en)"
         xpath_match = [
-            xp.question_label_in_body("Question 1"),
-            xp.choice_list_references_itext("c1"),
-            xp.choice_value_in_instance("c1", "na", "0"),
-            xp.choice_value_in_instance("c1", "nb", "1"),
-            xp.choice_label_itext_label_instance(lang, "c1", "la", 0),
-            xp.choice_label_itext_form_instance(lang, "c1", "audio", "a.mp3", 0),
-            xp.choice_label_itext_form_instance(lang, "c1", "image", "a.jpg", 0),
-            xp.choice_label_itext_form_instance(lang, "c1", "video", "a.mkv", 0),
-            xp.choice_label_itext_label_instance(lang, "c1", "lb", 1),
-            xp.choice_label_itext_form_instance(lang, "c1", "audio", "b.mp3", 1),
-            xp.choice_label_itext_form_instance(lang, "c1", "image", "b.jpg", 1),
-            xp.choice_label_itext_form_instance(lang, "c1", "video", "b.mkv", 1),
+            self.xp.question_label_in_body("Question 1"),
+            self.xp.choice_list_references_itext("c1"),
+            self.xp.choice_value_in_instance("c1", "na", "0"),
+            self.xp.choice_value_in_instance("c1", "nb", "1"),
+            self.xp.choice_instance_itext_label("Eng (en)", "c1", "la", 0),
+            self.xp.choice_instance_itext_form("Eng (en)", "c1", "audio", "a.mp3", 0),
+            self.xp.choice_instance_itext_form("Eng (en)", "c1", "image", "a.jpg", 0),
+            self.xp.choice_instance_itext_form("Eng (en)", "c1", "video", "a.mkv", 0),
+            self.xp.choice_instance_itext_label("Eng (en)", "c1", "lb", 1),
+            self.xp.choice_instance_itext_form("Eng (en)", "c1", "audio", "b.mp3", 1),
+            self.xp.choice_instance_itext_form("Eng (en)", "c1", "image", "b.jpg", 1),
+            self.xp.choice_instance_itext_form("Eng (en)", "c1", "video", "b.mkv", 1),
         ]
         self.assertPyxformXform(
             md=md,
