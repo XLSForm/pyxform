@@ -16,7 +16,7 @@ from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_dist
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, KeysView, List, Optional, Sequence, Tuple, Union
+    from typing import Any, Dict, KeysView, List, Optional, Sequence, Union
 
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
@@ -373,20 +373,24 @@ def find_missing_translations_survey(
 
     def process_cell(typ, cell):
         if cell is not None:
-            if typ in constants.TRANSLATABLE_SURVEY_COLUMNS:
+            if typ in aliases.TRANSLATABLE_SURVEY_COLUMNS.keys():
+                name = aliases.TRANSLATABLE_SURVEY_COLUMNS[typ]
                 if isinstance(cell, str):
-                    translations_seen[constants.DEFAULT_LANGUAGE_VALUE].append(typ)
-                    translation_columns_seen.add(typ)
+                    translations_seen[constants.DEFAULT_LANGUAGE_VALUE].append(name)
+                    translation_columns_seen.add(name)
                 elif isinstance(cell, dict):
                     for lng in cell:
-                        translations_seen[lng].append(typ)
-                        translation_columns_seen.add(typ)
+                        translations_seen[lng].append(name)
+                        translation_columns_seen.add(name)
 
     for row in survey_sheet:
         for column_type, cell_content in row.items():
             if column_type == constants.MEDIA:
                 for media_type, media_cell in cell_content.items():
                     process_cell(typ=media_type, cell=media_cell)
+            if column_type == constants.BIND:
+                for bind_type, bind_cell in cell_content.items():
+                    process_cell(typ=bind_type, cell=bind_cell)
             else:
                 process_cell(typ=column_type, cell=cell_content)
 

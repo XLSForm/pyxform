@@ -106,6 +106,19 @@ survey_header = {
     "body": "control",
     "parameters": "parameters",
 }
+# Key is the pyxform internal name, Value is the name used in error/warning messages.
+TRANSLATABLE_SURVEY_COLUMNS = {
+    constants.LABEL: constants.LABEL,
+    # Per ODK Spec, could include "short" once pyxform supports it.
+    constants.HINT: constants.HINT,
+    "guidance_hint": "guidance_hint",
+    "image": survey_header["image"],
+    # Per ODK Spec, could include "big-image" once pyxform supports it.
+    "audio": survey_header["audio"],
+    "video": survey_header["video"],
+    "jr:constraintMsg": "constraint_message",
+    "jr:requiredMsg": "required_message",
+}
 list_header = {
     "caption": constants.LABEL,
     "list_name": constants.LIST_NAME,

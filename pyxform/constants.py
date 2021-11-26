@@ -103,14 +103,3 @@ AUDIO_QUALITY_VOICE_ONLY = "voice-only"
 AUDIO_QUALITY_LOW = "low"
 AUDIO_QUALITY_NORMAL = "normal"
 AUDIO_QUALITY_EXTERNAL = "external"
-
-TRANSLATABLE_SURVEY_COLUMNS = (
-    "label",
-    # Per ODK Spec, could include "short" once pyxform supports it.
-    "hint",
-    "guidance_hint",
-    "image",
-    # Per ODK Spec, could include "big-image" once pyxform supports it.
-    "video",
-    "audio",
-)

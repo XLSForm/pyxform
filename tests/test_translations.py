@@ -206,6 +206,50 @@ class XPathHelper:
           /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
         """
 
+    def constraint_msg_in_bind(self, msg):
+        """The Constraint Message is in the model binding."""
+        return f"""
+        /h:html/h:head/x:model/x:bind[@nodeset='/test/{self.question_name}'
+          and @jr:constraintMsg='{msg}']
+        """
+
+    def constraint_msg_references_itext(self):
+        """The Constraint Message references an itext entry."""
+        return f"""
+        /h:html/h:head/x:model/x:bind[@nodeset='/test/{self.question_name}'
+          and @jr:constraintMsg="jr:itext('/test/{self.question_name}:jr:constraintMsg')"]
+        """
+
+    def constraint_msg_itext(self, lang, msg):
+        """The Constraint Message is in the itext."""
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}:jr:constraintMsg']
+          /x:value[not(@form) and text()='{msg}']
+        """
+
+    def required_msg_in_bind(self, msg):
+        """The Required Message is in the model binding."""
+        return f"""
+        /h:html/h:head/x:model/x:bind[@nodeset='/test/{self.question_name}'
+          and @jr:requiredMsg='{msg}']
+        """
+
+    def required_msg_references_itext(self):
+        """The Required Message references an itext entry."""
+        return f"""
+        /h:html/h:head/x:model/x:bind[@nodeset='/test/{self.question_name}'
+          and @jr:requiredMsg="jr:itext('/test/{self.question_name}:jr:requiredMsg')"]
+        """
+
+    def required_msg_itext(self, lang, msg):
+        """The Required Message is in the itext."""
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}:jr:requiredMsg']
+          /x:value[not(@form) and text()='{msg}']
+        """
+
 
 class TestTranslations(PyxformTestCase):
     """Miscellaneous translations behaviour or cases."""
@@ -355,9 +399,9 @@ class TestTranslationsSurvey(PyxformTestCase):
     def test_no_default__no_translation__label_and_hint_all_cols(self):
         """Should find default language translations for all translatables."""
         md = """
-        | survey |      |      |       |            |               |              |              |              |
-        |        | type | name | label | hint       | guidance_hint | media::image | media::video | media::audio |
-        |        | note | n1   | hello | salutation | greeting      | greeting.jpg | greeting.mkv | greeting.mp3 |
+        | survey |      |      |       |            |               |              |              |              |                    |                  |
+        |        | type | name | label | hint       | guidance_hint | media::image | media::video | media::audio | constraint_message | required_message |
+        |        | note | n1   | hello | salutation | greeting      | greeting.jpg | greeting.mkv | greeting.mp3 | check me           | mandatory        |
         """
         self.assertPyxformXform(
             name="test",
@@ -371,6 +415,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_itext_form(DEFAULT_LANG, "image", "greeting.jpg"),
                 self.xp.question_itext_form(DEFAULT_LANG, "video", "greeting.mkv"),
                 self.xp.question_itext_form(DEFAULT_LANG, "audio", "greeting.mp3"),
+                self.xp.constraint_msg_in_bind("check me"),
+                self.xp.required_msg_in_bind("mandatory"),
                 self.xp.language_is_default(DEFAULT_LANG),
             ],
             warnings_count=0,
@@ -445,9 +491,9 @@ class TestTranslationsSurvey(PyxformTestCase):
     def test_no_default__one_translation__label_and_hint_all_cols(self):
         """Should find language translation for label, hint, and all translatables."""
         md = """
-        | survey |      |      |            |            |                    |                   |                   |                   |
-        |        | type | name | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng |
-        |        | note | n1   | hello      | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      |
+        | survey |      |      |            |            |                    |                   |                   |                   |                         |                       |
+        |        | type | name | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng | constraint_message::eng | required_message::eng |
+        |        | note | n1   | hello      | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
         """
         self.assertPyxformXform(
             name="test",
@@ -461,6 +507,10 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_itext_form("eng", "image", "greeting.jpg"),
                 self.xp.question_itext_form("eng", "video", "greeting.mkv"),
                 self.xp.question_itext_form("eng", "audio", "greeting.mp3"),
+                self.xp.constraint_msg_references_itext(),
+                self.xp.constraint_msg_itext("eng", "check me"),
+                self.xp.required_msg_references_itext(),
+                self.xp.required_msg_itext("eng", "mandatory"),
                 self.xp.language_is_not_default("eng"),
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
@@ -522,9 +572,9 @@ class TestTranslationsSurvey(PyxformTestCase):
     def test_missing_translation_survey__one_lang_all_cols__warn__no_default(self):
         """Should warn if there's multiple missing translations and no default_language."""
         md = """
-        | survey |      |      |       |            |            |                    |                   |                   |                   |
-        |        | type | name | label | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng |
-        |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      |
+        | survey |      |      |       |            |            |                    |                   |                   |                   |                         |                       |
+        |        | type | name | label | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng | constraint_message::eng | required_message::eng |
+        |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
         """
         observed = []
         self.assertPyxformXform(
@@ -546,13 +596,27 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_no_itext_form(DEFAULT_LANG, "video", "greeting.mkv"),
                 self.xp.question_itext_form("eng", "audio", "greeting.mp3"),
                 self.xp.question_no_itext_form(DEFAULT_LANG, "audio", "greeting.mp3"),
+                self.xp.constraint_msg_references_itext(),
+                self.xp.constraint_msg_itext("eng", "check me"),
+                self.xp.constraint_msg_itext(DEFAULT_LANG, "-"),
+                self.xp.required_msg_references_itext(),
+                self.xp.required_msg_itext("eng", "mandatory"),
+                self.xp.required_msg_itext(DEFAULT_LANG, "-"),
                 self.xp.language_is_default(DEFAULT_LANG),
                 self.xp.language_is_not_default("eng"),
             ],
         )
         cols = {
             c: [DEFAULT_LANG]
-            for c in ("hint", "guidance_hint", "image", "video", "audio")
+            for c in (
+                "hint",
+                "guidance_hint",
+                "media::image",
+                "media::video",
+                "media::audio",
+                "constraint_message",
+                "required_message",
+            )
         }
         expected = format_missing_translations_survey_msg(_in=cols)
         self.assertIn(expected, observed)
@@ -563,9 +627,9 @@ class TestTranslationsSurvey(PyxformTestCase):
         | settings |                  |
         |          | default_language |
         |          | eng              |
-        | survey |      |      |       |            |            |                    |                   |                   |                   |
-        |        | type | name | label | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng |
-        |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      |
+        | survey |      |      |       |            |            |                    |                   |                   |                   |                         |                       |
+        |        | type | name | label | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng | constraint_message::eng | required_message::eng |
+        |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
         """
         observed = []
         self.assertPyxformXform(
@@ -582,13 +646,25 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_itext_form("eng", "video", "greeting.mkv"),
                 self.xp.question_itext_form("eng", "audio", "greeting.mp3"),
                 self.xp.language_is_default("eng"),
+                self.xp.constraint_msg_references_itext(),
+                self.xp.constraint_msg_itext("eng", "check me"),
+                self.xp.required_msg_references_itext(),
+                self.xp.required_msg_itext("eng", "mandatory"),
                 # TODO: is this a bug? No default lang itext (missing label, hint).
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
         cols = {
             c: [DEFAULT_LANG]
-            for c in ("hint", "guidance_hint", "image", "video", "audio")
+            for c in (
+                "hint",
+                "guidance_hint",
+                "media::image",
+                "media::video",
+                "media::audio",
+                "constraint_message",
+                "required_message",
+            )
         }
         expected = format_missing_translations_survey_msg(_in=cols)
         self.assertNotIn(expected, observed)
@@ -732,7 +808,7 @@ class TestTranslationsSurvey(PyxformTestCase):
             ],
         )
         expected = format_missing_translations_survey_msg(
-            _in={"hint": ["default"], "image": ["french"], "label": ["default"]}
+            _in={"hint": ["default"], "media::image": ["french"], "label": ["default"]}
         )
         self.assertIn(expected, observed)
 
