@@ -489,7 +489,8 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             content=content,
             xpath=xpath,
         )
-        self.assertEqual(expected, len(observed), matcher_context.content_str)
+        msg = f"XPath found no matches:\n{xpath}\n\nXForm content:\n{matcher_context.content_str}"
+        self.assertEqual(expected, len(observed), msg=msg)
 
 
 def reorder_attributes(root):
