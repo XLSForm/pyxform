@@ -1250,6 +1250,11 @@ def workbook_to_json(
 
                 new_dict["bind"] = new_dict.get("bind", {})
                 new_dict["bind"].update({"odk:quality": parameters["quality"]})
+            else:
+                warnings.append(
+                    (row_format_string % row_number)
+                    + " No quality parameter specified for audio. This will soon use an internal recorder in Collect. If you need to use a specific recording app, specifiy quality=external."
+                )
 
             parent_children_array.append(new_dict)
             continue
