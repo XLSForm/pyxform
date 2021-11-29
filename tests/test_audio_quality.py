@@ -70,3 +70,26 @@ class AudioQualityTest(PyxformTestCase):
             errored=True,
             error__contains=["Invalid value for quality."],
         )
+
+    def test_missing(self):
+        actual = []
+
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |       |                |
+            |        | type   | name     | label | parameters     |
+            |        | audio  | audio    | Audio |                |
+            """,
+            xml__contains=[
+                'xmlns:odk="http://www.opendatakit.org/xforms"',
+                '<bind nodeset="/data/audio" type="binary"/>',
+            ],
+            warnings=actual,
+        )
+
+        expected = [
+            "[row : 2] No quality parameter specified for audio. This will soon use an internal recorder in Collect. If you need to use a specific recording app, specifiy quality=external."
+        ]
+
+        self.assertListEqual(expected, actual)
