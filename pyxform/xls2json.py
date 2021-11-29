@@ -1253,7 +1253,7 @@ def workbook_to_json(
             else:
                 warnings.append(
                     (row_format_string % row_number)
-                    + " No quality parameter specified for audio. This will soon use an internal recorder in Collect. If you need to use a specific recording app, specifiy quality=external."
+                    + " No quality parameter specified for audio. This will soon use an internal recorder in Collect. If you need to use a specific recording app, specify quality=external."
                 )
 
             parent_children_array.append(new_dict)

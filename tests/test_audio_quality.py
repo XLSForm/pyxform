@@ -89,7 +89,7 @@ class AudioQualityTest(PyxformTestCase):
         )
 
         expected = [
-            "[row : 2] No quality parameter specified for audio. This will soon use an internal recorder in Collect. If you need to use a specific recording app, specifiy quality=external."
+            "[row : 2] No quality parameter specified for audio. This will soon use an internal recorder in Collect. If you need to use a specific recording app, specify quality=external."
         ]
 
         self.assertListEqual(expected, actual)
