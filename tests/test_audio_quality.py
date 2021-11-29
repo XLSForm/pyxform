@@ -83,5 +83,7 @@ class AudioQualityTest(PyxformTestCase):
                 'xmlns:odk="http://www.opendatakit.org/xforms"',
                 '<bind nodeset="/data/audio" type="binary"/>',
             ],
-            warnings__contains=["[row : 2] No quality parameter specified for audio. This will soon use an internal recorder in Collect. If you need to use a specific recording app, specify quality=external."]
+            warnings__contains=[
+                "[row : 2] No quality parameter specified for audio. This will soon use an internal recorder in Collect. If you need to use a specific recording app, specify quality=external."
+            ],
         )

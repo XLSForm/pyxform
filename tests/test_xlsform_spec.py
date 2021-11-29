@@ -70,6 +70,9 @@ class TestWarnings(PyxformTestCase):
             "[row : 16] Group has no label: {'name': 'name', 'type': 'begin group'}",
             "[row : 27] Use the max-pixels parameter to speed up submission "
             + "sending and save storage space. Learn more: https://xlsform.org/#image",
+            "[row : 28] No quality parameter specified for audio. This will soon"
+            + " use an internal recorder in Collect. If you need to use a specific"
+            + " recording app, specify quality=external.",
         ]
         self.assertListEqual(expected, warnings)
 
