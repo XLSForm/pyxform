@@ -161,8 +161,8 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
           * error__contains: a list of strings which should exist in the error
           * error__not_contains: a list of strings which should not exist in the error
           * odk_validate_error__contains: list of strings; run_odk_validate must be set
-          * warning__contains: a list of strings which should exist in the warnings
-          * warning__not_contains: a list of strings which should not exist in the warnings
+          * warnings__contains: a list of strings which should exist in the warnings
+          * warnings__not_contains: a list of strings which should not exist in the warnings
           * warnings_count: the number of expected warning messages
           * xml__excludes: an array of strings which should not exist in the resulting
                xml. [xml|model|instance|itext]_excludes are also supported.

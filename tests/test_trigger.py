@@ -145,7 +145,6 @@ class TriggerSetvalueTests(PyxformTestCase):
                 "/h:html[not(descendant::x:bind[@nodeset='/trigger-column/d'"
                 + "  and @type='dateTime' and @calculate=''])]",
             ],
-            debug=True,
         )
 
     def test_handling_trigger_column_with_no_calculation_no_label_no_hint(self):
