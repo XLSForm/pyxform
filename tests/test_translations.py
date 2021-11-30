@@ -4,8 +4,11 @@ Test translations syntax.
 """
 from dataclasses import dataclass
 
-from pyxform.constants import CHOICES, DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
-from pyxform.xls2json import format_missing_translations_msg
+from pyxform.constants import CHOICES
+from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
+from pyxform.validators.pyxform.missing_translations_check import (
+    format_missing_translations_msg,
+)
 from tests.pyxform_test_case import PyxformTestCase
 
 

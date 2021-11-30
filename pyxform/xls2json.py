@@ -7,16 +7,19 @@ import json
 import os
 import re
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from typing import TYPE_CHECKING
 
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
 from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
+from pyxform.validators.pyxform.missing_translations_check import (
+    missing_translations_check,
+)
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, KeysView, List, Optional, Sequence, Union
+    from typing import Any, Dict, KeysView, List, Optional
 
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
@@ -340,88 +343,6 @@ def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
         return None
 
 
-def format_missing_translations_msg(
-    _in: "Dict[str, Dict[str, Sequence]]",
-) -> "Optional[str]":
-    def get_sheet_msg(name, sheet):
-        prefix = "{s} column(s) and language(s): {c}"
-        if sheet is not None:
-            _keys = sorted(sheet.keys())
-            if 0 < len(_keys):
-                c = "; ".join((f"'{k}': '" + "', '".join(sheet[k]) + "'" for k in _keys))
-                return prefix.format(s=name, c=c)
-        return ""
-
-    survey = get_sheet_msg(name=constants.SURVEY, sheet=_in.get(constants.SURVEY))
-    choices = get_sheet_msg(name=constants.CHOICES, sheet=_in.get(constants.CHOICES))
-
-    messages = tuple(i for i in (survey, choices) if i != "")
-    if 0 == len(messages):
-        return None
-    return (
-        "Missing translation column(s): there is no default_language set, and a "
-        "translation column was not found for the {cols_msg}. "
-        "To avoid unexpected form behaviour, specify a default_language in the "
-        "settings sheet, or add the missing translation columns."
-    ).format(cols_msg=" and ".join(messages))
-
-
-def find_missing_translations(
-    sheet_data: "List[Dict[str, Union[str, Dict]]]",
-    translatable_columns: "Dict[str, str]",
-) -> "Dict[str, List[str]]":
-    """
-    Find missing translation columns in the survey sheet data.
-
-    For each translatable column used in the sheet, there should be a translation for
-    each language (including the default / unspecified language) that is used for any
-    other translatable column.
-
-    This could be more efficient by not looking at every row, but that's how the data is
-    arranged by the time it comes to this module. On the bright side it means this
-    function could be adapted to warn about specific items lacking translations, even
-    when there are no missing translation columns.
-
-    :param sheet_data: The Survey sheet data.
-    :param translatable_columns: The translatable columns for a sheet. The structure
-      should be Dict[internal_name, external_name]. See the aliases module.
-    :return: Dict[column_name, List[languages]]
-    """
-    translations_seen = defaultdict(list)
-    translation_columns_seen = set()
-
-    def process_cell(typ, cell):
-        if cell is not None:
-            if typ in translatable_columns.keys():
-                name = translatable_columns[typ]
-                if isinstance(cell, str):
-                    translations_seen[constants.DEFAULT_LANGUAGE_VALUE].append(name)
-                    translation_columns_seen.add(name)
-                elif isinstance(cell, dict):
-                    for lng in cell:
-                        translations_seen[lng].append(name)
-                        translation_columns_seen.add(name)
-
-    for row in sheet_data:
-        for column_type, cell_content in row.items():
-            if column_type == constants.MEDIA:
-                for media_type, media_cell in cell_content.items():
-                    process_cell(typ=media_type, cell=media_cell)
-            if column_type == constants.BIND:
-                for bind_type, bind_cell in cell_content.items():
-                    process_cell(typ=bind_type, cell=bind_cell)
-            else:
-                process_cell(typ=column_type, cell=cell_content)
-
-    missing = defaultdict(list)
-    for lang, lang_trans in translations_seen.items():
-        for seen_tran in translation_columns_seen:
-            if seen_tran not in lang_trans:
-                missing[seen_tran].append(lang)
-
-    return missing
-
-
 def workbook_to_json(
     workbook_dict,
     form_name=None,
@@ -654,23 +575,13 @@ def workbook_to_json(
 
     # Check for missing translations. The choices sheet is checked here so that the
     # warning can be combined into one message.
-    survey_missing_trans = find_missing_translations(
-        sheet_data=survey_sheet,
-        translatable_columns=aliases.TRANSLATABLE_SURVEY_COLUMNS,
+    warnings = missing_translations_check(
+        settings=settings,
+        default_language=default_language,
+        survey_sheet=survey_sheet,
+        choices_sheet=choices_sheet,
+        warnings=warnings,
     )
-    choices_missing_trans = find_missing_translations(
-        sheet_data=choices_sheet,
-        translatable_columns=aliases.TRANSLATABLE_CHOICES_COLUMNS,
-    )
-    if (0 < len(survey_missing_trans) or 0 < len(choices_missing_trans)) and (
-            "default_language" not in settings
-            or default_language == constants.DEFAULT_LANGUAGE_VALUE
-    ):
-        msg = format_missing_translations_msg(
-            _in={"survey": survey_missing_trans, "choices": choices_missing_trans}
-        )
-        if msg is not None:
-            warnings.append(msg)
 
     # No spell check for OSM sheet (infrequently used, many spurious matches).
     osm_sheet = dealias_and_group_headers(
