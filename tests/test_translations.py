@@ -4,8 +4,9 @@ Test translations syntax.
 """
 from dataclasses import dataclass
 
-from pyxform.constants import CHOICES, SURVEY
+from pyxform.constants import CHOICES
 from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
+from pyxform.constants import SURVEY
 from pyxform.validators.pyxform.missing_translations_check import (
     format_missing_translations_msg,
 )
