@@ -944,9 +944,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | bonjour       | salutation   | greeting.jpg |
         """
         warning = format_missing_translations_msg(
-            _in={
-                SURVEY: {"hint": ["default"], "image": ["french"], "label": ["default"]}
-            }
+            _in={SURVEY: {"hint": ["default"], "image": ["french"], "label": ["default"]}}
         )
         self.assertPyxformXform(
             name="test",
