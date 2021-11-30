@@ -119,6 +119,12 @@ TRANSLATABLE_SURVEY_COLUMNS = {
     "jr:constraintMsg": "constraint_message",
     "jr:requiredMsg": "required_message",
 }
+TRANSLATABLE_CHOICES_COLUMNS = {
+    "label": constants.LABEL,
+    "image": "media::image",
+    "audio": "media::audio",
+    "video": "media::video",
+}
 list_header = {
     "caption": constants.LABEL,
     "list_name": constants.LIST_NAME,

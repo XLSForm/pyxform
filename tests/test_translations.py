@@ -4,8 +4,8 @@ Test translations syntax.
 """
 from dataclasses import dataclass
 
-from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
-from pyxform.xls2json import format_missing_translations_survey_msg
+from pyxform.constants import CHOICES, DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
+from pyxform.xls2json import format_missing_translations_msg
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -164,6 +164,29 @@ class XPathHelper:
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
           /x:text[@id='/test/{self.question_name}/{cname}:label']
           /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
+        """
+
+    def choice_no_itext_label(self, lang, cname, label):
+        """There is no itext for the Choice label."""
+        return f"""
+        /h:html/h:head/x:model[not(
+          x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}/{cname}:label']
+          /x:value[not(@form) and text()='{label}']
+        )]
+        """
+
+    def choice_no_itext_form(self, lang, cname, form, fname):
+        """There is no alternate form itext for the Choice label, referenced from the body."""
+        prefix = {
+            "audio": "jr://audio/",
+            "image": "jr://images/",
+            "video": "jr://video/",
+        }
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test/{self.question_name}/{cname}:label'
+            and not(descendant::x:value[@form='{form}' and text()='{prefix[form]}{fname}'])]
         """
 
     def choice_list_references_itext(self, lname):
@@ -517,18 +540,18 @@ class TestTranslationsSurvey(PyxformTestCase):
             warnings_count=0,
         )
 
-    def test_missing_translation_survey__one_lang_simple__warn__no_default(self):
+    def test_missing_translation__one_lang_simple__warn__no_default(self):
         """Should warn if there's a missing translation and no default_language."""
         md = """
         | survey |      |      |       |            |            |
         |        | type | name | label | label::eng | hint       |
         |        | note | n1   | hello | hi there   | salutation |
         """
-        observed = []
+        warning = format_missing_translations_msg(_in={"survey": {"hint": ["eng"]}})
         self.assertPyxformXform(
             name="test",
             md=md,
-            warnings=observed,
+            warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label(DEFAULT_LANG, "hello"),
@@ -538,10 +561,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.language_is_not_default("eng"),
             ],
         )
-        expected = format_missing_translations_survey_msg(_in={"hint": ["eng"]})
-        self.assertIn(expected, observed)
 
-    def test_missing_translation_survey__one_lang_simple__no_warn__default(self):
+    def test_missing_translation__one_lang_simple__no_warn__default(self):
         """Should not warn if there's a missing translation with a default_language."""
         md = """
         | settings |                  |
@@ -551,11 +572,11 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label | label::eng | hint       |
         |        | note | n1   | hello | hi there   | salutation |
         """
-        observed = []
+        warning = format_missing_translations_msg(_in={"survey": {"hint": ["eng"]}})
         self.assertPyxformXform(
             name="test",
             md=md,
-            warnings=observed,
+            warnings__not_contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label("eng", "hi there"),
@@ -566,21 +587,33 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
-        expected = format_missing_translations_survey_msg(_in={"hint": ["eng"]})
-        self.assertNotIn(expected, observed)
 
-    def test_missing_translation_survey__one_lang_all_cols__warn__no_default(self):
+    def test_missing_translation__one_lang_all_cols__warn__no_default(self):
         """Should warn if there's multiple missing translations and no default_language."""
         md = """
         | survey |      |      |       |            |            |                    |                   |                   |                   |                         |                       |
         |        | type | name | label | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng | constraint_message::eng | required_message::eng |
         |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
         """
-        observed = []
+        cols = {
+            "survey": {
+                c: [DEFAULT_LANG]
+                for c in (
+                    "hint",
+                    "guidance_hint",
+                    "media::image",
+                    "media::video",
+                    "media::audio",
+                    "constraint_message",
+                    "required_message",
+                )
+            }
+        }
+        warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
             name="test",
             md=md,
-            warnings=observed,
+            warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label(DEFAULT_LANG, "hello"),
@@ -606,22 +639,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.language_is_not_default("eng"),
             ],
         )
-        cols = {
-            c: [DEFAULT_LANG]
-            for c in (
-                "hint",
-                "guidance_hint",
-                "media::image",
-                "media::video",
-                "media::audio",
-                "constraint_message",
-                "required_message",
-            )
-        }
-        expected = format_missing_translations_survey_msg(_in=cols)
-        self.assertIn(expected, observed)
 
-    def test_missing_translation_survey__one_lang_all_cols__no_warn__default(self):
+    def test_missing_translation__one_lang_all_cols__no_warn__default(self):
         """Should not warn if there's missing translations with a default_language."""
         md = """
         | settings |                  |
@@ -631,11 +650,25 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng | constraint_message::eng | required_message::eng |
         |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
         """
-        observed = []
+        cols = {
+            "survey": {
+                c: [DEFAULT_LANG]
+                for c in (
+                    "hint",
+                    "guidance_hint",
+                    "media::image",
+                    "media::video",
+                    "media::audio",
+                    "constraint_message",
+                    "required_message",
+                )
+            }
+        }
+        warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
             name="test",
             md=md,
-            warnings=observed,
+            warnings__not_contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label("eng", "hi there"),
@@ -654,33 +687,21 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
-        cols = {
-            c: [DEFAULT_LANG]
-            for c in (
-                "hint",
-                "guidance_hint",
-                "media::image",
-                "media::video",
-                "media::audio",
-                "constraint_message",
-                "required_message",
-            )
-        }
-        expected = format_missing_translations_survey_msg(_in=cols)
-        self.assertNotIn(expected, observed)
 
-    def test_missing_translation_survey__one_lang_overlap__warn__no_default(self):
+    def test_missing_translation__one_lang_overlap__warn__no_default(self):
         """Should warn if there's a missing translation and no default_language."""
         md = """
         | survey |      |      |            |            |
         |        | type | name | label::eng | hint       |
         |        | note | n1   | hello      | salutation |
         """
-        observed = []
+        warning = format_missing_translations_msg(
+            _in={"survey": {"hint": ["eng"], "label": ["default"]}}
+        )
         self.assertPyxformXform(
             name="test",
             md=md,
-            warnings=observed,
+            warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label("eng", "hello"),
@@ -691,12 +712,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
-        expected = format_missing_translations_survey_msg(
-            _in={"hint": ["eng"], "label": ["default"]}
-        )
-        self.assertIn(expected, observed)
 
-    def test_missing_translation_survey__one_lang_overlap__no_warn__default(self):
+    def test_missing_translation__one_lang_overlap__no_warn__default(self):
         """Should not warn if there's a missing translation with a default_language."""
         md = """
         | settings |                  |
@@ -706,14 +723,15 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label::eng | hint       |
         |        | note | n1   | hello      | salutation |
         """
-        observed = []
+        warning = format_missing_translations_msg(_in={"survey": {"hint": ["eng"]}})
         self.assertPyxformXform(
             name="test",
             md=md,
-            warnings=observed,
+            warnings__not_contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label("eng", "hello"),
+                # TODO: is this a bug? Default hint gets merged into eng hint.
                 self.xp.question_hint_in_body("salutation"),
                 self.xp.question_no_itext_hint(DEFAULT_LANG, "salutation"),
                 self.xp.question_no_itext_hint("eng", "salutation"),
@@ -721,21 +739,19 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
-        expected = format_missing_translations_survey_msg(_in={"hint": ["eng"]})
-        self.assertNotIn(expected, observed)
 
-    def test_missing_translation_survey__two_lang__warn__no_default(self):
+    def test_missing_translation__two_lang__warn__no_default(self):
         """Should warn if there's a missing translation and no default_language."""
         md = """
         | survey |      |      |            |               |            |
         |        | type | name | label::eng | label::french | hint::eng  |
         |        | note | n1   | hello      | bonjour       | salutation |
         """
-        observed = []
+        warning = format_missing_translations_msg(_in={"survey": {"hint": ["french"]}})
         self.assertPyxformXform(
             name="test",
             md=md,
-            warnings=observed,
+            warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label("eng", "hello"),
@@ -749,10 +765,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
-        expected = format_missing_translations_survey_msg(_in={"hint": ["french"]})
-        self.assertIn(expected, observed)
 
-    def test_missing_translation_survey__two_lang__no_warn__default(self):
+    def test_missing_translation__two_lang__no_warn__default(self):
         """Should not warn if there's a missing translation with a default_language."""
         md = """
         | settings |                  |
@@ -762,11 +776,11 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label::eng | label::french | hint::eng  |
         |        | note | n1   | hello      | bonjour       | salutation |
         """
-        observed = []
+        warning = format_missing_translations_msg(_in={"survey": {"hint": ["french"]}})
         self.assertPyxformXform(
             name="test",
             md=md,
-            warnings=observed,
+            warnings__not_contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label("eng", "hello"),
@@ -779,21 +793,27 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
-        expected = format_missing_translations_survey_msg(_in={"hint": ["french"]})
-        self.assertNotIn(expected, observed)
 
-    def test_missing_translation_survey__issue_157__warn__no_default(self):
+    def test_missing_translation__issue_157__warn__no_default(self):
         """Should warn if there's a missing translation and no default_language."""
         md = """
         | survey |      |      |               |              |              |
         |        | type | name | label::french | hint::french | media::image |
         |        | note | n1   | bonjour       | salutation   | greeting.jpg |
         """
-        observed = []
+        warning = format_missing_translations_msg(
+            _in={
+                "survey": {
+                    "hint": ["default"],
+                    "media::image": ["french"],
+                    "label": ["default"],
+                }
+            }
+        )
         self.assertPyxformXform(
             name="test",
             md=md,
-            warnings=observed,
+            warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label("french", "bonjour"),
@@ -807,12 +827,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.language_is_default(DEFAULT_LANG),
             ],
         )
-        expected = format_missing_translations_survey_msg(
-            _in={"hint": ["default"], "media::image": ["french"], "label": ["default"]}
-        )
-        self.assertIn(expected, observed)
 
-    def test_missing_translation_survey__issue_157__no_warn__default(self):
+    def test_missing_translation__issue_157__no_warn__default(self):
         """Should not warn if there's missing translations with a default_language."""
         md = """
         | settings |                  |
@@ -822,11 +838,15 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label::french | hint::french | media::image |
         |        | note | n1   | bonjour       | salutation   | greeting.jpg |
         """
-        observed = []
+        warning = format_missing_translations_msg(
+            _in={
+                "survey": {"hint": ["default"], "image": ["french"], "label": ["default"]}
+            }
+        )
         self.assertPyxformXform(
             name="test",
             md=md,
-            warnings=observed,
+            warnings__not_contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label("french", "bonjour"),
@@ -838,10 +858,6 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
         )
-        expected = format_missing_translations_survey_msg(
-            _in={"hint": ["default"], "image": ["french"], "label": ["default"]}
-        )
-        self.assertNotIn(expected, observed)
 
 
 class TestTranslationsChoices(PyxformTestCase):
@@ -974,4 +990,330 @@ class TestTranslationsChoices(PyxformTestCase):
             md=md,
             name="test",
             xml__xpath_match=xpath_match,
+        )
+
+    def test_missing_translation__one_lang_simple__warn__no_default(self):
+        """Should warn if there's a missing translation and no default_language."""
+        md = """
+        | survey  |               |       |            |
+        |         | type          | name  | label      |
+        |         | select_one c1 | q1    | Question 1 |
+        | choices |           |      |                 |
+        |         | list name | name | label | label::eng | media::audio |
+        |         | c1        | na   | la-d  | la-e       | la-d.mp3     |
+        |         | c1        | nb   | lb-d  | lb-e       | lb-d.mp3     |
+        """
+        warning = format_missing_translations_msg(
+            _in={CHOICES: {"media::audio": ["eng"]}}
+        )
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings__contains=[warning],
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                self.xp.choice_value_in_body("na"),
+                self.xp.choice_value_in_body("nb"),
+                self.xp.choice_label_references_itext("na"),
+                self.xp.choice_label_references_itext("nb"),
+                self.xp.choice_itext_label(DEFAULT_LANG, "na", "la-d"),
+                self.xp.choice_itext_label("eng", "na", "la-e"),
+                self.xp.choice_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
+                self.xp.choice_no_itext_form("eng", "na", "audio", "la-d.mp3"),
+                self.xp.choice_itext_label(DEFAULT_LANG, "nb", "lb-d"),
+                self.xp.choice_itext_label("eng", "nb", "lb-e"),
+                self.xp.choice_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
+                self.xp.choice_no_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                self.xp.language_is_default(DEFAULT_LANG),
+                self.xp.language_is_not_default("eng"),
+            ],
+        )
+
+    def test_missing_translation__one_lang_simple__no_warn__default(self):
+        """Should not warn if there's a missing translation with a default_language."""
+        md = """
+        | settings |                  |
+        |          | default_language |
+        |          | eng              |
+        | survey  |               |       |            |
+        |         | type          | name  | label      |
+        |         | select_one c1 | q1    | Question 1 |
+        | choices |           |      |                 |
+        |         | list name | name | label | label::eng | media::audio |
+        |         | c1        | na   | la-d  | la-e       | la-d.mp3     |
+        |         | c1        | nb   | lb-d  | lb-e       | lb-d.mp3     |
+        """
+        warning = format_missing_translations_msg(_in={CHOICES: {"hint": ["eng"]}})
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings__not_contains=[warning],
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                self.xp.choice_value_in_body("na"),
+                self.xp.choice_value_in_body("nb"),
+                self.xp.choice_label_references_itext("na"),
+                self.xp.choice_label_references_itext("nb"),
+                self.xp.choice_itext_label("eng", "na", "la-e"),
+                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
+                self.xp.choice_itext_label("eng", "nb", "lb-e"),
+                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                self.xp.language_is_default("eng"),
+                # TODO: is this a bug? No default lang itext (missing label).
+                self.xp.language_no_itext(DEFAULT_LANG),
+            ],
+        )
+
+    def test_missing_translation__one_lang_all_cols__warn__no_default(self):
+        """Should warn if there's multiple missing translations and no default_language."""
+        md = """
+        | survey  |               |       |            |
+        |         | type          | name  | label      |
+        |         | select_one c1 | q1    | Question 1 |
+        | choices |           |      |                 |
+        |         | list name | name | label | label::eng | media::audio::eng | media::image::eng | media::video::eng |
+        |         | c1        | na   | la-d  | la-e       | la-d.mp3          | la-d.jpg          | la-d.mkv          |
+        |         | c1        | nb   | lb-d  | lb-e       | lb-d.mp3          | lb-d.jpg          | lb-d.mkv          |
+        """
+        cols = {
+            CHOICES: {
+                c: [DEFAULT_LANG]
+                for c in (
+                    "media::image",
+                    "media::video",
+                    "media::audio",
+                )
+            }
+        }
+        warning = format_missing_translations_msg(_in=cols)
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings__contains=[warning],
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                self.xp.choice_value_in_body("na"),
+                self.xp.choice_value_in_body("nb"),
+                self.xp.choice_label_references_itext("na"),
+                self.xp.choice_label_references_itext("nb"),
+                self.xp.choice_itext_label(DEFAULT_LANG, "na", "la-d"),
+                self.xp.choice_itext_label("eng", "na", "la-e"),
+                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
+                self.xp.choice_itext_form("eng", "na", "image", "la-d.jpg"),
+                self.xp.choice_itext_form("eng", "na", "video", "la-d.mkv"),
+                self.xp.choice_no_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
+                self.xp.choice_no_itext_form(DEFAULT_LANG, "na", "image", "la-d.jpg"),
+                self.xp.choice_no_itext_form(DEFAULT_LANG, "na", "video", "la-d.mkv"),
+                self.xp.choice_itext_label(DEFAULT_LANG, "nb", "lb-d"),
+                self.xp.choice_itext_label("eng", "nb", "lb-e"),
+                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                self.xp.choice_itext_form("eng", "nb", "image", "lb-d.jpg"),
+                self.xp.choice_itext_form("eng", "nb", "video", "lb-d.mkv"),
+                self.xp.choice_no_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
+                self.xp.choice_no_itext_form(DEFAULT_LANG, "nb", "image", "lb-d.jpg"),
+                self.xp.choice_no_itext_form(DEFAULT_LANG, "nb", "video", "lb-d.mkv"),
+                self.xp.language_is_default(DEFAULT_LANG),
+                self.xp.language_is_not_default("eng"),
+            ],
+        )
+
+    def test_missing_translation__one_lang_all_cols__no_warn__default(self):
+        """Should not warn if there's missing translations with a default_language."""
+        md = """
+        | settings |                  |
+        |          | default_language |
+        |          | eng              |
+        | survey  |               |       |            |
+        |         | type          | name  | label      |
+        |         | select_one c1 | q1    | Question 1 |
+        | choices |           |      |                 |
+        |         | list name | name | label | label::eng | media::audio::eng | media::image::eng | media::video::eng |
+        |         | c1        | na   | la-d  | la-e       | la-d.mp3          | la-d.jpg          | la-d.mkv          |
+        |         | c1        | nb   | lb-d  | lb-e       | lb-d.mp3          | lb-d.jpg          | lb-d.mkv          |        """
+        cols = {
+            CHOICES: {
+                c: [DEFAULT_LANG]
+                for c in (
+                    "media::image",
+                    "media::video",
+                    "media::audio",
+                )
+            }
+        }
+        warning = format_missing_translations_msg(_in=cols)
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings__not_contains=[warning],
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                self.xp.choice_value_in_body("na"),
+                self.xp.choice_value_in_body("nb"),
+                self.xp.choice_label_references_itext("na"),
+                self.xp.choice_label_references_itext("nb"),
+                self.xp.choice_itext_label("eng", "na", "la-e"),
+                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
+                self.xp.choice_itext_form("eng", "na", "image", "la-d.jpg"),
+                self.xp.choice_itext_form("eng", "na", "video", "la-d.mkv"),
+                self.xp.choice_itext_label("eng", "nb", "lb-e"),
+                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                self.xp.choice_itext_form("eng", "nb", "image", "lb-d.jpg"),
+                self.xp.choice_itext_form("eng", "nb", "video", "lb-d.mkv"),
+                self.xp.language_is_default("eng"),
+                self.xp.language_no_itext(DEFAULT_LANG),
+            ],
+        )
+
+    def test_missing_translation__one_lang_overlap__warn__no_default(self):
+        """Should warn if there's a missing translation and no default_language."""
+        md = """
+        | survey  |               |       |            |
+        |         | type          | name  | label      |
+        |         | select_one c1 | q1    | Question 1 |
+        | choices |           |      |                 |
+        |         | list name | name | label::eng | media::audio |
+        |         | c1        | na   | la-e       | la-d.mp3     |
+        |         | c1        | nb   | lb-e       | lb-d.mp3     |
+        """
+        warning = format_missing_translations_msg(
+            _in={CHOICES: {"media::audio": ["eng"], "label": ["default"]}}
+        )
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings__contains=[warning],
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                self.xp.choice_value_in_body("na"),
+                self.xp.choice_value_in_body("nb"),
+                self.xp.choice_label_references_itext("na"),
+                self.xp.choice_label_references_itext("nb"),
+                # TODO: is this a bug? Default label has a dash instead of something meaningful.
+                self.xp.choice_itext_label(DEFAULT_LANG, "na", "-"),
+                self.xp.choice_itext_label("eng", "na", "la-e"),
+                self.xp.choice_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
+                self.xp.choice_no_itext_form("eng", "na", "audio", "la-d.mp3"),
+                self.xp.choice_itext_label(DEFAULT_LANG, "nb", "-"),
+                self.xp.choice_itext_label("eng", "nb", "lb-e"),
+                self.xp.choice_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
+                self.xp.choice_no_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                self.xp.language_is_default(DEFAULT_LANG),
+                self.xp.language_is_not_default("eng"),
+            ],
+        )
+
+    def test_missing_translation__one_lang_overlap__no_warn__default(self):
+        """Should not warn if there's a missing translation with a default_language."""
+        md = """
+        | settings |                  |
+        |          | default_language |
+        |          | eng              |
+        | survey  |               |       |            |
+        |         | type          | name  | label      |
+        |         | select_one c1 | q1    | Question 1 |
+        | choices |           |      |                 |
+        |         | list name | name | label::eng | media::audio |
+        |         | c1        | na   | la-e       | la-d.mp3     |
+        |         | c1        | nb   | lb-e       | lb-d.mp3     |
+        """
+        warning = format_missing_translations_msg(
+            _in={CHOICES: {"media::audio": ["eng"], "label": ["default"]}}
+        )
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings__not_contains=[warning],
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                self.xp.choice_value_in_body("na"),
+                self.xp.choice_value_in_body("nb"),
+                self.xp.choice_label_references_itext("na"),
+                self.xp.choice_label_references_itext("nb"),
+                self.xp.choice_itext_label("eng", "na", "la-e"),
+                # TODO: is this a bug? Default audio gets merged into eng hint.
+                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
+                self.xp.choice_itext_label("eng", "nb", "lb-e"),
+                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                self.xp.language_is_default("eng"),
+                self.xp.language_no_itext(DEFAULT_LANG),
+            ],
+        )
+
+    def test_missing_translation__two_lang__warn__no_default(self):
+        """Should warn if there's a missing translation and no default_language."""
+        md = """
+        | survey  |               |       |            |
+        |         | type          | name  | label      |
+        |         | select_one c1 | q1    | Question 1 |
+        | choices |           |      |                 |
+        |         | list name | name | label::eng | label::french | media::audio::eng |
+        |         | c1        | na   | la-e       | la-f          | la-d.mp3          |
+        |         | c1        | nb   | lb-e       | lb-f          | lb-d.mp3          |
+        """
+        warning = format_missing_translations_msg(
+            _in={CHOICES: {"media::audio": ["french"]}}
+        )
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings__contains=[warning],
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                self.xp.choice_value_in_body("na"),
+                self.xp.choice_value_in_body("nb"),
+                self.xp.choice_label_references_itext("na"),
+                self.xp.choice_label_references_itext("nb"),
+                self.xp.choice_itext_label("eng", "na", "la-e"),
+                self.xp.choice_itext_label("french", "na", "la-f"),
+                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
+                self.xp.choice_no_itext_form("french", "na", "audio", "la-d.mp3"),
+                self.xp.choice_itext_label("eng", "nb", "lb-e"),
+                self.xp.choice_itext_label("french", "nb", "lb-f"),
+                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                self.xp.choice_no_itext_form("french", "na", "audio", "lb-d.mp3"),
+                self.xp.language_is_not_default("eng"),
+                self.xp.language_is_not_default("french"),
+                self.xp.language_no_itext(DEFAULT_LANG),
+            ],
+        )
+
+    def test_missing_translation__two_lang__no_warn__default(self):
+        """Should not warn if there's a missing translation with a default_language."""
+        md = """
+        | settings |                  |
+        |          | default_language |
+        |          | eng              |
+        | survey  |               |       |            |
+        |         | type          | name  | label      |
+        |         | select_one c1 | q1    | Question 1 |
+        | choices |           |      |                 |
+        |         | list name | name | label::eng | label::french | media::audio::eng |
+        |         | c1        | na   | la-e       | la-f          | la-d.mp3          |
+        |         | c1        | nb   | lb-e       | lb-f          | lb-d.mp3          |
+        """
+        warning = format_missing_translations_msg(
+            _in={CHOICES: {"media::audio": ["french"]}}
+        )
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings__not_contains=[warning],
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                self.xp.choice_value_in_body("na"),
+                self.xp.choice_value_in_body("nb"),
+                self.xp.choice_label_references_itext("na"),
+                self.xp.choice_label_references_itext("nb"),
+                self.xp.choice_itext_label("eng", "na", "la-e"),
+                self.xp.choice_itext_label("french", "na", "la-f"),
+                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
+                self.xp.choice_no_itext_form("french", "na", "audio", "la-d.mp3"),
+                self.xp.choice_itext_label("eng", "nb", "lb-e"),
+                self.xp.choice_itext_label("french", "nb", "lb-f"),
+                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                self.xp.choice_no_itext_form("french", "na", "audio", "lb-d.mp3"),
+                self.xp.language_is_default("eng"),
+                self.xp.language_is_not_default("french"),
+                self.xp.language_no_itext(DEFAULT_LANG),
+            ],
         )
