@@ -386,7 +386,7 @@ class TestTranslations(PyxformTestCase):
                     "media::video",
                     "media::audio",
                 )
-            }
+            },
         }
         warning = format_missing_translations_msg(_in=cols)
         xp = XPathHelper(question_type="select1", question_name="q1")
@@ -421,7 +421,8 @@ class TestTranslations(PyxformTestCase):
             name="test",
             md=md,
             warnings__contains=[warning],
-            xml__xpath_match=common_xpaths + [
+            xml__xpath_match=common_xpaths
+            + [
                 xp.question_itext_label(DEFAULT_LANG, "hello"),
                 xp.question_itext_hint(DEFAULT_LANG, "-"),
                 xp.question_itext_form(DEFAULT_LANG, "guidance", "-"),
@@ -439,7 +440,7 @@ class TestTranslations(PyxformTestCase):
                 xp.choice_no_itext_form(DEFAULT_LANG, "nb", "image", "lb-d.jpg"),
                 xp.choice_no_itext_form(DEFAULT_LANG, "nb", "video", "lb-d.mkv"),
                 xp.language_is_default(DEFAULT_LANG),
-                xp.language_is_not_default("eng")
+                xp.language_is_not_default("eng"),
             ],
             debug=True,
         )
@@ -448,10 +449,8 @@ class TestTranslations(PyxformTestCase):
             name="test",
             md=settings + md,
             warnings__not_contains=[warning],
-            xml__xpath_match=common_xpaths + [
-                xp.language_is_default("eng"),
-                xp.language_no_itext(DEFAULT_LANG)
-            ],
+            xml__xpath_match=common_xpaths
+            + [xp.language_is_default("eng"), xp.language_no_itext(DEFAULT_LANG)],
         )
 
 
