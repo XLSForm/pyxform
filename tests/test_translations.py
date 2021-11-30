@@ -350,6 +350,110 @@ class TestTranslations(PyxformTestCase):
             ],
         )
 
+    def test_missing_translation__one_lang_all_cols(self):
+        """Should warn if there's multiple missing translations and no default_language."""
+        settings = """
+        | settings |                  |
+        |          | default_language |
+        |          | eng              |
+        """
+        md = """
+        | survey |               |      |       |            |            |                    |                   |                   |                   |                         |                       |
+        |        | type          | name | label | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng | constraint_message::eng | required_message::eng |
+        |        | select_one c1 | q1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
+        | choices |           |      |                 |
+        |         | list name | name | label | label::eng | media::audio::eng | media::image::eng | media::video::eng |
+        |         | c1        | na   | la-d  | la-e       | la-d.mp3          | la-d.jpg          | la-d.mkv          |
+        |         | c1        | nb   | lb-d  | lb-e       | lb-d.mp3          | lb-d.jpg          | lb-d.mkv          |
+        """
+        cols = {
+            "survey": {
+                c: [DEFAULT_LANG]
+                for c in (
+                    "hint",
+                    "guidance_hint",
+                    "media::image",
+                    "media::video",
+                    "media::audio",
+                    "constraint_message",
+                    "required_message",
+                )
+            },
+            CHOICES: {
+                c: [DEFAULT_LANG]
+                for c in (
+                    "media::image",
+                    "media::video",
+                    "media::audio",
+                )
+            }
+        }
+        warning = format_missing_translations_msg(_in=cols)
+        xp = XPathHelper(question_type="select1", question_name="q1")
+        common_xpaths = [
+            xp.question_label_references_itext(),
+            xp.question_itext_label("eng", "hi there"),
+            xp.question_hint_references_itext(),
+            xp.question_itext_hint("eng", "salutation"),
+            xp.question_itext_form("eng", "guidance", "greeting"),
+            xp.question_itext_form("eng", "image", "greeting.jpg"),
+            xp.question_itext_form("eng", "video", "greeting.mkv"),
+            xp.question_itext_form("eng", "audio", "greeting.mp3"),
+            xp.constraint_msg_references_itext(),
+            xp.constraint_msg_itext("eng", "check me"),
+            xp.required_msg_references_itext(),
+            xp.required_msg_itext("eng", "mandatory"),
+            xp.choice_value_in_body("na"),
+            xp.choice_value_in_body("nb"),
+            xp.choice_label_references_itext("na"),
+            xp.choice_label_references_itext("nb"),
+            xp.choice_itext_label("eng", "na", "la-e"),
+            xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
+            xp.choice_itext_form("eng", "na", "image", "la-d.jpg"),
+            xp.choice_itext_form("eng", "na", "video", "la-d.mkv"),
+            xp.choice_itext_label("eng", "nb", "lb-e"),
+            xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+            xp.choice_itext_form("eng", "nb", "image", "lb-d.jpg"),
+            xp.choice_itext_form("eng", "nb", "video", "lb-d.mkv"),
+        ]
+        # Warning case
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            warnings__contains=[warning],
+            xml__xpath_match=common_xpaths + [
+                xp.question_itext_label(DEFAULT_LANG, "hello"),
+                xp.question_itext_hint(DEFAULT_LANG, "-"),
+                xp.question_itext_form(DEFAULT_LANG, "guidance", "-"),
+                xp.question_no_itext_form(DEFAULT_LANG, "image", "greeting.jpg"),
+                xp.question_no_itext_form(DEFAULT_LANG, "video", "greeting.mkv"),
+                xp.question_no_itext_form(DEFAULT_LANG, "audio", "greeting.mp3"),
+                xp.constraint_msg_itext(DEFAULT_LANG, "-"),
+                xp.required_msg_itext(DEFAULT_LANG, "-"),
+                xp.choice_itext_label(DEFAULT_LANG, "na", "la-d"),
+                xp.choice_no_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
+                xp.choice_no_itext_form(DEFAULT_LANG, "na", "image", "la-d.jpg"),
+                xp.choice_no_itext_form(DEFAULT_LANG, "na", "video", "la-d.mkv"),
+                xp.choice_itext_label(DEFAULT_LANG, "nb", "lb-d"),
+                xp.choice_no_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
+                xp.choice_no_itext_form(DEFAULT_LANG, "nb", "image", "lb-d.jpg"),
+                xp.choice_no_itext_form(DEFAULT_LANG, "nb", "video", "lb-d.mkv"),
+                xp.language_is_default(DEFAULT_LANG),
+                xp.language_is_not_default("eng")
+            ],
+            debug=True,
+        )
+        # No warning case
+        self.assertPyxformXform(
+            name="test",
+            md=settings + md,
+            warnings__not_contains=[warning],
+            xml__xpath_match=common_xpaths + [
+                xp.language_is_default("eng"),
+                xp.language_no_itext(DEFAULT_LANG)
+            ],
+        )
+
 
 class TestTranslationsSurvey(PyxformTestCase):
     """Translations behaviour of columns in the Survey sheet."""
