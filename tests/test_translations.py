@@ -4,7 +4,7 @@ Test translations syntax.
 """
 from dataclasses import dataclass
 
-from pyxform.constants import CHOICES
+from pyxform.constants import CHOICES, SURVEY
 from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
 from pyxform.validators.pyxform.missing_translations_check import (
     format_missing_translations_msg,
@@ -367,7 +367,7 @@ class TestTranslations(PyxformTestCase):
         |         | c1        | nb   | lb-d  | lb-e       | lb-d.mp3          | lb-d.jpg          | lb-d.mkv          |
         """
         cols = {
-            "survey": {
+            SURVEY: {
                 c: [DEFAULT_LANG]
                 for c in (
                     "hint",
@@ -442,7 +442,6 @@ class TestTranslations(PyxformTestCase):
                 xp.language_is_default(DEFAULT_LANG),
                 xp.language_is_not_default("eng"),
             ],
-            debug=True,
         )
         # No warning case
         self.assertPyxformXform(
@@ -653,7 +652,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label | label::eng | hint       |
         |        | note | n1   | hello | hi there   | salutation |
         """
-        warning = format_missing_translations_msg(_in={"survey": {"hint": ["eng"]}})
+        warning = format_missing_translations_msg(_in={SURVEY: {"hint": ["eng"]}})
         self.assertPyxformXform(
             name="test",
             md=md,
@@ -678,7 +677,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label | label::eng | hint       |
         |        | note | n1   | hello | hi there   | salutation |
         """
-        warning = format_missing_translations_msg(_in={"survey": {"hint": ["eng"]}})
+        warning = format_missing_translations_msg(_in={SURVEY: {"hint": ["eng"]}})
         self.assertPyxformXform(
             name="test",
             md=md,
@@ -702,7 +701,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
         """
         cols = {
-            "survey": {
+            SURVEY: {
                 c: [DEFAULT_LANG]
                 for c in (
                     "hint",
@@ -757,7 +756,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
         """
         cols = {
-            "survey": {
+            SURVEY: {
                 c: [DEFAULT_LANG]
                 for c in (
                     "hint",
@@ -802,7 +801,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello      | salutation |
         """
         warning = format_missing_translations_msg(
-            _in={"survey": {"hint": ["eng"], "label": ["default"]}}
+            _in={SURVEY: {"hint": ["eng"], "label": ["default"]}}
         )
         self.assertPyxformXform(
             name="test",
@@ -829,7 +828,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label::eng | hint       |
         |        | note | n1   | hello      | salutation |
         """
-        warning = format_missing_translations_msg(_in={"survey": {"hint": ["eng"]}})
+        warning = format_missing_translations_msg(_in={SURVEY: {"hint": ["eng"]}})
         self.assertPyxformXform(
             name="test",
             md=md,
@@ -853,7 +852,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label::eng | label::french | hint::eng  |
         |        | note | n1   | hello      | bonjour       | salutation |
         """
-        warning = format_missing_translations_msg(_in={"survey": {"hint": ["french"]}})
+        warning = format_missing_translations_msg(_in={SURVEY: {"hint": ["french"]}})
         self.assertPyxformXform(
             name="test",
             md=md,
@@ -882,7 +881,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label::eng | label::french | hint::eng  |
         |        | note | n1   | hello      | bonjour       | salutation |
         """
-        warning = format_missing_translations_msg(_in={"survey": {"hint": ["french"]}})
+        warning = format_missing_translations_msg(_in={SURVEY: {"hint": ["french"]}})
         self.assertPyxformXform(
             name="test",
             md=md,
@@ -909,7 +908,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         """
         warning = format_missing_translations_msg(
             _in={
-                "survey": {
+                SURVEY: {
                     "hint": ["default"],
                     "media::image": ["french"],
                     "label": ["default"],
@@ -946,7 +945,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         """
         warning = format_missing_translations_msg(
             _in={
-                "survey": {"hint": ["default"], "image": ["french"], "label": ["default"]}
+                SURVEY: {"hint": ["default"], "image": ["french"], "label": ["default"]}
             }
         )
         self.assertPyxformXform(
