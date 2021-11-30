@@ -20,7 +20,8 @@ setup(
     long_description=open("README.rst", "rt").read(),
     python_requires=">=3.7",
     install_requires=[
-        "xlrd==1.2.0",
+        "xlrd",
+        "openpyxl",
     ],
     entry_points={
         "console_scripts": [

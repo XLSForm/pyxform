@@ -8,7 +8,9 @@ import re
 from collections import OrderedDict
 from functools import reduce
 from io import StringIO
+from zipfile import BadZipFile
 
+import openpyxl
 import xlrd
 from xlrd import XLRDError
 from xlrd.xldate import XLDateAmbiguous
@@ -161,6 +163,119 @@ def xls_value_to_unicode(value, value_type, datemode):
         # to avoid this issue:
         # https://github.com/modilabs/pyxform/issues/83
         return str(value).replace(chr(160), " ")
+
+
+def xlsx_to_dict(path_or_file):
+    """
+    Return a Python dictionary with a key for each worksheet
+    name. For each sheet there is a list of dictionaries, each
+    dictionary corresponds to a single row in the worksheet. A
+    dictionary has keys taken from the column headers and values
+    equal to the cell value for that row and column.
+    All the keys and leaf elements are strings.
+    """
+    try:
+        workbook = openpyxl.open(filename=path_or_file, data_only=True)
+    except (OSError, BadZipFile, KeyError) as error:
+        raise PyXFormError("Error reading .xlsx file: %s" % error)
+
+    def xlsx_to_dict_normal_sheet(sheet):
+
+        # Check for duplicate column headers
+        column_header_list = list()
+        for cell in sheet[1]:
+            column_header = cell.value
+            # xls file with 3 columns mostly have a 3 more columns that are
+            # blank by default or something, skip during check
+            if is_empty(column_header):
+                # Preserve column order (will filter later)
+                column_header_list.append(None)
+            else:
+                if column_header in column_header_list:
+                    raise PyXFormError("Duplicate column header: %s" % column_header)
+                # strip whitespaces from the header
+                clean_header = re.sub(r"( )+", " ", column_header.strip())
+                column_header_list.append(clean_header)
+
+        result = []
+        for row in sheet.iter_rows(min_row=2):
+            row_dict = OrderedDict()
+            for column, key in enumerate(column_header_list):
+                if key is None:
+                    continue
+
+                value = row[column].value
+                if isinstance(value, str):
+                    value = value.strip()
+
+                if not is_empty(value):
+                    row_dict[key] = xlsx_value_to_str(value)
+
+            result.append(row_dict)
+
+        column_header_list = [key for key in column_header_list if key is not None]
+        return result, _list_to_dict_list(column_header_list)
+
+    result = OrderedDict()
+    for sheetname in workbook.sheetnames:
+        sheet = workbook[sheetname]
+        # Note that the sheet exists but do no further processing here.
+        result[sheetname] = []
+        # Do not process sheets that have nothing to do with XLSForm.
+        if sheetname not in constants.SUPPORTED_SHEET_NAMES:
+            if len(workbook.sheetnames) == 1:
+                (
+                    result[constants.SURVEY],
+                    result[f"{constants.SURVEY}_header"],
+                ) = xlsx_to_dict_normal_sheet(sheet)
+            else:
+                continue
+        else:
+            (
+                result[sheetname],
+                result[f"{sheetname}_header"],
+            ) = xlsx_to_dict_normal_sheet(sheet)
+
+    return result
+
+
+def xlsx_value_to_str(value):
+    """
+    Take a xls formatted value and try to make a string representation.
+    """
+    if value is True:
+        return "TRUE"
+    elif value is False:
+        return "FALSE"
+    elif isinstance(value, int):
+        return str(value)
+    elif isinstance(value, float):
+        # Try to display as an int if possible.
+        int_value = int(value)
+        if int_value == value:
+            return str(int_value)
+        else:
+            return str(value)
+    elif isinstance(value, datetime.datetime):
+        return str(value)
+    elif isinstance(value, datetime.date):
+        return str(value)
+    elif isinstance(value, datetime.time):
+        return str(value)
+    else:
+        # ensure unicode and replace nbsp spaces with normal ones
+        # to avoid this issue:
+        # https://github.com/modilabs/pyxform/issues/83
+        return str(value).replace(chr(160), " ")
+
+
+def is_empty(value):
+    if value is None:
+        return True
+    elif isinstance(value, str) and value.strip() == "":
+        return True
+    else:
+        return False
 
 
 def get_cascading_json(sheet_list, prefix, level):

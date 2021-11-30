@@ -11,8 +11,6 @@ import re
 from json.decoder import JSONDecodeError
 from xml.dom.minidom import Element, Text, parseString
 
-import xlrd
-
 SEP = "_"
 
 # http://www.w3.org/TR/REC-xml/
@@ -151,6 +149,15 @@ def flatten(li):
 
 
 def sheet_to_csv(workbook_path, csv_path, sheet_name):
+    if workbook_path.endswith(".xls"):
+        return xls_sheet_to_csv(workbook_path, csv_path, sheet_name)
+    else:
+        return xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name)
+
+
+def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
+    import xlrd
+
     from pyxform.xls2json_backends import xls_value_to_unicode
 
     wb = xlrd.open_workbook(workbook_path)
@@ -171,6 +178,37 @@ def sheet_to_csv(workbook_path, csv_path, sheet_name):
                         value = v.value
                         value_type = v.ctype
                         data = xls_value_to_unicode(value, value_type, wb.datemode)
+                        # clean the values of leading and trailing whitespaces
+                        data = data.strip()
+                        csv_data.append(data)
+            except TypeError:
+                continue
+            writer.writerow(csv_data)
+
+    return True
+
+
+def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
+    import openpyxl
+
+    from pyxform.xls2json_backends import is_empty, xlsx_value_to_str
+
+    wb = openpyxl.open(workbook_path)
+    try:
+        sheet = wb.get_sheet_by_name(sheet_name)
+    except KeyError:
+        return False
+    if sheet.max_row < 2:
+        return False
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        mask = [not is_empty(cell.value) for cell in sheet[1]]
+        for row in sheet.rows:
+            csv_data = []
+            try:
+                for v, m in zip(row, mask):
+                    if m:
+                        data = xlsx_value_to_str(v.value)
                         # clean the values of leading and trailing whitespaces
                         data = data.strip()
                         csv_data.append(data)

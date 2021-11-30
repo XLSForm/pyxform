@@ -1,6 +1,6 @@
 import os
 
-from pyxform.xls2json_backends import xls_to_dict
+from pyxform.xls2json_backends import xlsx_to_dict
 from pyxform.xls2xform import xls2xform_convert
 from tests import example_xls, test_output
 from tests.pyxform_test_case import PyxformTestCase
@@ -617,9 +617,9 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
         )
         self.assertIn(expected, "\n".join(warnings))
 
-    def test_xls_to_dict__extra_sheet_names_are_returned_by_parser(self):
+    def test_xlsx_to_dict__extra_sheet_names_are_returned_by_parser(self):
         """Should return all sheet names so that later steps can do spellcheck."""
-        d = xls_to_dict(os.path.join(example_xls.PATH, "extra_sheet_names.xlsx"))
+        d = xlsx_to_dict(os.path.join(example_xls.PATH, "extra_sheet_names.xlsx"))
         self.assertIn("survey", d)
         self.assertIn("my_sheet", d)
         self.assertIn("stettings", d)
