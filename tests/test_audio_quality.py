@@ -11,9 +11,8 @@ class AudioQualityTest(PyxformTestCase):
             |        | type   | name     | label | parameters     |
             |        | audio  | audio    | Audio | quality=voice-only |
             """,
-            xml__contains=[
-                'xmlns:odk="http://www.opendatakit.org/xforms"',
-                '<bind nodeset="/data/audio" type="binary" odk:quality="voice-only"/>',
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:bind[@nodeset='/data/audio' and @type='binary' and @odk:quality='voice-only']",
             ],
         )
 
@@ -25,9 +24,8 @@ class AudioQualityTest(PyxformTestCase):
             |        | type   | name     | label | parameters     |
             |        | audio  | audio    | Audio | quality=low |
             """,
-            xml__contains=[
-                'xmlns:odk="http://www.opendatakit.org/xforms"',
-                '<bind nodeset="/data/audio" type="binary" odk:quality="low"/>',
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:bind[@nodeset='/data/audio' and @type='binary' and @odk:quality='low']",
             ],
         )
 
@@ -39,9 +37,8 @@ class AudioQualityTest(PyxformTestCase):
             |        | type   | name     | label | parameters     |
             |        | audio  | audio    | Audio | quality=normal |
             """,
-            xml__contains=[
-                'xmlns:odk="http://www.opendatakit.org/xforms"',
-                '<bind nodeset="/data/audio" type="binary" odk:quality="normal"/>',
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:bind[@nodeset='/data/audio' and @type='binary' and @odk:quality='normal']",
             ],
         )
 
@@ -53,9 +50,8 @@ class AudioQualityTest(PyxformTestCase):
             |        | type   | name     | label | parameters     |
             |        | audio  | audio    | Audio | quality=external |
             """,
-            xml__contains=[
-                'xmlns:odk="http://www.opendatakit.org/xforms"',
-                '<bind nodeset="/data/audio" type="binary" odk:quality="external"/>',
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:bind[@nodeset='/data/audio' and @type='binary' and @odk:quality='external']",
             ],
         )
 
@@ -79,9 +75,8 @@ class AudioQualityTest(PyxformTestCase):
             |        | type   | name     | label | parameters     |
             |        | audio  | audio    | Audio |                |
             """,
-            xml__contains=[
-                'xmlns:odk="http://www.opendatakit.org/xforms"',
-                '<bind nodeset="/data/audio" type="binary"/>',
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:bind[@nodeset='/data/audio' and @type='binary']",
             ],
             warnings__contains=[
                 "[row : 2] No quality parameter specified for audio. This will soon use an internal recorder in Collect. If you need to use a specific recording app, specify quality=external."
