@@ -11,6 +11,11 @@ import re
 from json.decoder import JSONDecodeError
 from xml.dom.minidom import Element, Text, parseString
 
+import openpyxl
+import xlrd
+
+from pyxform.xls2json_backends import is_empty, xls_value_to_unicode, xlsx_value_to_str
+
 SEP = "_"
 
 # http://www.w3.org/TR/REC-xml/
@@ -156,10 +161,6 @@ def sheet_to_csv(workbook_path, csv_path, sheet_name):
 
 
 def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
-    import xlrd
-
-    from pyxform.xls2json_backends import xls_value_to_unicode
-
     wb = xlrd.open_workbook(workbook_path)
     try:
         sheet = wb.sheet_by_name(sheet_name)
@@ -189,10 +190,6 @@ def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
 
 
 def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
-    import openpyxl
-
-    from pyxform.xls2json_backends import is_empty, xlsx_value_to_str
-
     wb = openpyxl.open(workbook_path)
     try:
         sheet = wb.get_sheet_by_name(sheet_name)

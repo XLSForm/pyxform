@@ -7,6 +7,7 @@
 astroid==2.8.0            # via pylint
 black==21.9b0             # via -r dev_requirements.in
 click==8.0.1              # via black, pip-tools
+defusedxml==0.7.1         # via pyxform
 et-xmlfile==1.1.0         # via openpyxl
 flake8==3.9.2             # via -r dev_requirements.in
 formencode==2.0.0         # via -r dev_requirements.in

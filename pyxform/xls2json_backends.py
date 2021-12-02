@@ -247,20 +247,10 @@ def xlsx_value_to_str(value):
         return "TRUE"
     elif value is False:
         return "FALSE"
-    elif isinstance(value, int):
-        return str(value)
-    elif isinstance(value, float):
+    elif isinstance(value, float) and value.is_integer():
         # Try to display as an int if possible.
-        int_value = int(value)
-        if int_value == value:
-            return str(int_value)
-        else:
-            return str(value)
-    elif isinstance(value, datetime.datetime):
-        return str(value)
-    elif isinstance(value, datetime.date):
-        return str(value)
-    elif isinstance(value, datetime.time):
+        return str(int(value))
+    elif isinstance(value, (int, datetime.datetime, datetime.time)):
         return str(value)
     else:
         # ensure unicode and replace nbsp spaces with normal ones
