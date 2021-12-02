@@ -7,11 +7,10 @@ import os
 import unittest
 
 import pyxform
-from pyxform.errors import PyXFormError
 from pyxform.utils import has_external_choices
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
-from pyxform.xls2json_backends import xls_to_dict
+from pyxform.xls2json_backends import xlsx_to_dict
 from tests import bug_example_xls, example_xls, test_expected_output, test_output
 from tests.xform_test_case.base import XFormTestCase
 
@@ -238,23 +237,16 @@ class TestXLDateAmbigous(unittest.TestCase):
         self.assertTrue(len(survey_dict) > 0)
 
 
-class TestXLDateAmbigousWithException(unittest.TestCase):
-    """Test non standard sheet date values to raise an exception.
-    This exception is raised if the date values exceed the
-    datemode value accepted by that workbook."""
+class TestXLDateAmbigousNoException(unittest.TestCase):
+    """Test date values that exceed the workbook datemode value.
+    (This would cause an exception with xlrd, but openpyxl handles it)."""
 
-    def test_xl_date_ambigous_with_exception(self):
-        """Test non standard sheet with exception is processed successfully."""
+    def test_xl_date_ambigous_no_exception(self):
+        """Test standard sheet is processed successfully."""
         filename = "xl_date_ambiguous_v1.xlsx"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
-        with self.assertRaises(PyXFormError) as e:
-            xls_to_dict(path_to_excel_file)
-        msg = (
-            "The xls file provided has an invalid date on the"
-            " survey sheet, under the default column on row number 5"
-        )
-
-        self.assertEqual(msg, str(e.exception))
+        survey_dict = xlsx_to_dict(path_to_excel_file)
+        self.assertEqual(survey_dict["survey"][4]["default"], "1900-01-01 00:00:00")
 
 
 class TestSpreadSheetFilesWithMacrosAreAllowed(unittest.TestCase):

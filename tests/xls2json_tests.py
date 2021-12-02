@@ -8,7 +8,7 @@ import os
 from unittest import TestCase
 
 from pyxform.xls2json import SurveyReader
-from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
+from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
 from tests import example_xls, test_expected_output, test_output, utils
 
 
@@ -241,7 +241,7 @@ class UnicodeCsvTest(TestCase):
 class DefaultToSurveyTest(TestCase):
     def test_default_sheet_name_to_survey(self):
         xls_path = utils.path_to_text_fixture("survey_no_name.xlsx")
-        dict_value = xls_to_dict(xls_path)
+        dict_value = xlsx_to_dict(xls_path)
         self.assertTrue("survey" in json.dumps(dict_value))
         self.assertTrue("state" in json.dumps(dict_value))
         self.assertTrue("The State" in json.dumps(dict_value))
