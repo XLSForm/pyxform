@@ -16,7 +16,7 @@ from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_dist
 from pyxform.validators.pyxform.missing_translations_check import (
     missing_translations_check,
 )
-from pyxform.xls2json_backends import csv_to_dict, xls_to_dict
+from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
 
 if TYPE_CHECKING:
     from typing import Any, Dict, KeysView, List, Optional
@@ -1377,8 +1377,10 @@ def parse_file_to_workbook_dict(path, file_object=None):
     if not extension:
         raise PyXFormError("No extension.")
 
-    if extension in constants.SUPPORTED_FILE_EXTENSIONS:
+    if extension in constants.XLS_EXTENSIONS:
         return xls_to_dict(file_object if file_object is not None else path)
+    elif extension in constants.XLSX_EXTENSIONS:
+        return xlsx_to_dict(file_object if file_object is not None else path)
     elif extension == ".csv":
         return csv_to_dict(file_object if file_object is not None else path)
     else:
