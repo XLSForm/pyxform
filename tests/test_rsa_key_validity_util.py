@@ -86,8 +86,8 @@ dAOAYmQUGlKEwbBv3owsTXDPMtbaJ1JKeq1wdkdNM2AZQD/Dyj17BI6BZ1wIt52l
 
     def test_checking_valid_rsa_fails_when_given_in_xls(self):
         """
-            will result in a warning during evaluating validity of key.
-            """
+        will result in a warning during evaluating validity of key.
+        """
         md = """
                     | survey |        |         |                |                                                         |
                     |        | type   | name    | label          | constraint                                              |
