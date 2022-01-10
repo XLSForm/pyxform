@@ -12,7 +12,12 @@ from typing import TYPE_CHECKING
 
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
-from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
+from pyxform.utils import (
+    default_is_dynamic,
+    is_valid_xml_tag,
+    levenshtein_distance,
+    is_rsa_public_key_valid,
+)
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
 
 if TYPE_CHECKING:
@@ -436,6 +441,11 @@ def workbook_to_json(
         settings_sheet_headers, aliases.settings_header, use_double_colons
     )
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
+
+    public_key = settings.get("public_key")
+    if public_key is not None and not is_rsa_public_key_valid(public_key):
+        warnings.append("The public_key %s is possibly invalid" % public_key)
+
     replace_smart_quotes_in_dict(settings)
 
     default_language = settings.get(constants.DEFAULT_LANGUAGE, default_language)

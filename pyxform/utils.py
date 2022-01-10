@@ -2,6 +2,7 @@
 """
 pyxform utils module.
 """
+
 import codecs
 import copy
 import csv
@@ -10,6 +11,7 @@ import os
 import re
 from json.decoder import JSONDecodeError
 from xml.dom.minidom import Element, Text, parseString
+from Crypto.PublicKey import RSA
 
 import openpyxl
 import xlrd
@@ -344,3 +346,18 @@ def levenshtein_distance(a: str, b: str) -> int:
         v0 = copy.copy(v1)
     # after the last swap, the results of v1 are now in v0
     return v0[n]
+
+
+def is_rsa_public_key_valid(key: str):
+    """
+    Checks that the given key can be parsed as a RSA public key.
+    key (string) -- the public key string from the settings sheet
+    returns True if RSA is parseable else False.
+    """
+    # try and see if this can be parsed into RSA components
+    try:
+        RSA.importKey(key)  # RSA_obj
+        # the exponent and modulus can be got from RSA_obj
+    except:
+        return False
+    return True
