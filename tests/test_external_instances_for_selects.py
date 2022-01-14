@@ -29,6 +29,39 @@ class ExternalCSVInstancesTest(PyxformTestCase):
             run_odk_validate=True,
         )
 
+    def test_external_csv_instances_with_parameters_for_value_and_label(self):
+        """Should find that parameters value/label override the default name/label."""
+        md = """
+        | survey |                                       |                      |         |         |
+        |        | type                                  | parameters           | name    | label   |
+        |        | select_one_from_file cities.csv       | value=val, label=lbl | city    | City    |
+        |        | select_multiple_from_file suburbs.csv | value=val, label=lbl | suburbs | Suburbs |
+        """
+        body_xpath = (
+            "/h:html/h:body"
+            "  /x:{type}[@ref='/test/{question}']"
+            "  /x:itemset["
+            "    @nodeset=\"instance('{file}')/root/item\""
+            "    and ./x:value[@ref='val']"
+            "    and ./x:label[@ref='lbl']"
+            "  ]"
+        )
+        instance_xpath = (
+            "/h:html/h:head/x:model"
+            "/x:instance[@id='{file}' and @src='jr://file-csv/{file}.csv']"
+        )
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            xml__xpath_match=[
+                instance_xpath.format(file="cities"),
+                instance_xpath.format(file="suburbs"),
+                body_xpath.format(type="select1", question="city", file="cities"),
+                body_xpath.format(type="select", question="suburbs", file="suburbs"),
+            ],
+            # TODO: ODK Validate 1.16.0 does not accept custom names for value/label @ref
+        )
+
     def test_external_csv_instances_w_choice_filter(self):
         # re: https://github.com/XLSForm/pyxform/issues/30
         self.assertPyxformXform(

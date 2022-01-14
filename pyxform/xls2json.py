@@ -1115,9 +1115,16 @@ def workbook_to_json(
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
 
-                # Look at parameters column for randomization parameters
+                select_params_allowed = ["randomize", "seed"]
+                if parse_dict["select_command"] in (
+                    "select_one_from_file",
+                    "select_multiple_from_file",
+                ):
+                    select_params_allowed += ["value", "label"]
+
+                # Look at parameters column for select parameters
                 parameters = get_parameters(
-                    row.get("parameters", ""), ["randomize", "seed"]
+                    row.get("parameters", ""), select_params_allowed
                 )
 
                 if "randomize" in parameters.keys():
