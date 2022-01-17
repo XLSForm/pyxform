@@ -3,31 +3,126 @@ name: PyPI
 on: [push, pull_request, release]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  release:
+    if: github.event_name == 'release' && github.event.action == 'created'
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python: [ '3.7', '3.8' ]
+        python: ['3.8']
+        os: [ubuntu-latest]
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python }}
-    - name: Install the development and release requirements
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r dev_requirements.pip
-        pip install wheel twine
-    - name: Run tests
-      run: nosetests
-    - name: Cleanup build and dist folders
-      run: rm -rf build dist pyxform.egg-info
-    - name: Prepare sdist and bdist_wheel distributions
-      run: python setup.py sdist bdist_wheel
-    - name: Publish release to PyPI with twine
-      if: github.event_name == 'release' && github.event.action == 'created' && matrix.python == '3.8'
-      run: twine upload dist/pyxform-*-py3-none-any.whl dist/pyxform-*.tar.gz
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      # Install dependencies.
+      - uses: actions/cache@v2
+        name: Python cache with dependencies.
+        id: python-cache
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.pip') }}
+      - name: Install dependencies.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r dev_requirements.pip
+          pip list
+
+      # Build.
+      - name: Build sdist and wheel.
+        run: |
+          pip install wheel
+          python clean_for_build.py
+          python setup.py sdist bdist_wheel
+
+      # Publish.
+      - name: Publish release to PyPI with twine
+        if: success()
+        run: |
+          pip install twine
+          twine upload dist/pyxform-*-py3-none-any.whl dist/pyxform-*.tar.gz
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+
+  lint:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python: ['3.8']
+        os: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      # Install dependencies.
+      - uses: actions/cache@v2
+        name: Python cache with dependencies.
+        id: python-cache
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.pip') }}
+      - name: Install dependencies.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r dev_requirements.pip
+          pip list
+
+      # Linters.
+      - run: black pyxform tests
+      - run: isort pyxform tests
+      - run: flake8 pyxform tests
+      - run: pycodestyle pyxform tests
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Run all matrix jobs even if one of them fails.
+      fail-fast: false
+      matrix:
+        python: ['3.7', '3.8', '3.9']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: windows-latest
+            windows_nose_args: --traverse-namespace ./tests
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      # Install dependencies.
+      - uses: actions/cache@v2
+        name: Python cache with dependencies.
+        id: python-cache
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.pip') }}
+      - name: Install dependencies.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r dev_requirements.pip
+          pip list
+
+      # Tests.
+      - name: Run tests
+        run: nosetests -v -v ${{ matrix.windows_nose_args }}
+
+      # Build and Upload.
+      - name: Build sdist and wheel.
+        run: |
+          pip install wheel
+          python clean_for_build.py
+          python setup.py sdist bdist_wheel
+      - name: Upload sdist and wheel.
+        if: success()
+        uses: actions/upload-artifact@v2
+        with:
+          name: pyxform--on-${{ matrix.os }}--py${{ matrix.python }}
+          path: ${{ github.workspace }}/dist/pyxform*
