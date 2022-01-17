@@ -337,3 +337,37 @@ class DynamicDefaultTests(PyxformTestCase):
                 """<setvalue event="odk-instance-first-load" ref="/dynamic/one" value="if( /dynamic/r  &lt; 1,'A','B')"/>""",
             ],
         )
+
+    def test_dynamic_default_select_choice_name_with_dash(self):
+        # Repro for https://github.com/XLSForm/pyxform/issues/495
+        md = """
+        | survey  |               |      |         |         |
+        |         | type          | name | label   | default |
+        |         | select_one c1 | s1   | Select1 | a-2     |
+        |         | select_one c2 | s2   | Select2 | 1-1     |
+        | choices |           |      |            |
+        |         | list_name | name | label      |
+        |         | c1        | a-1  | Choice A-1 |
+        |         | c1        | a-2  | Choice A-2 |
+        |         | c2        | 1-1  | Choice 1-1 |
+        |         | c2        | 2-2  | Choice 1-2 |
+        """
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            run_odk_validate=True,
+        )
+
+    def test_dynamic_default_text_value_with_dash(self):
+        # Repro for https://github.com/XLSForm/pyxform/issues/533
+        md = """
+        | survey  |               |      |         |                     |
+        |         | type          | name | label   | default             |
+        |         | text          | t3   | Text3   | https://my-site.com |
+        |         | text          | t4   | Text4   | https://mysite.com  |
+        """
+        self.assertPyxformXform(
+            name="test",
+            md=md,
+            run_odk_validate=True,
+        )
