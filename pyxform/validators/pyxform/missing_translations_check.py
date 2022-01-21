@@ -55,10 +55,8 @@ def find_missing_translations(
     each language (including the default / unspecified language) that is used for any
     other translatable column.
 
-    This could be more efficient by not looking at every row, but that's how the data is
-    arranged by the time it passes through workbook_to_json(). On the bright side it
-    means this function could be adapted to warn about specific items lacking
-    translations, even when there are no missing translation columns.
+    This checks the first row only since it is concerned with the presence of columns, not
+    individual cells. It therefore assumes that each row object has the same structure.
 
     :param sheet_data: The survey or choices sheet data.
     :param translatable_columns: The translatable columns for a sheet. The structure
@@ -80,12 +78,15 @@ def find_missing_translations(
                         translations_seen[lng].append(name)
                         translation_columns_seen.add(name)
 
-    for row in sheet_data:
-        for column_type, cell_content in row.items():
+    if 0 < len(sheet_data):
+        # e.g. ("name", "q1"), ("label", {"en": "Hello", "fr": "Bonjour"})
+        for column_type, cell_content in sheet_data[0].items():
             if column_type == constants.MEDIA:
+                # e.g. ("audio", {"eng": "my.mp3"})
                 for media_type, media_cell in cell_content.items():
                     process_cell(typ=media_type, cell=media_cell)
             if column_type == constants.BIND:
+                # e.g. ("jr:constraintMsg", "Try again")
                 for bind_type, bind_cell in cell_content.items():
                     process_cell(typ=bind_type, cell=bind_cell)
             else:

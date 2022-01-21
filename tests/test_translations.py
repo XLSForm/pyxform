@@ -458,12 +458,16 @@ class TestTranslations(PyxformTestCase):
 
     @unittest.skip("Slow performance test. Un-skip to run as needed.")
     def test_missing_translations_check_performance(self):
-        """Should find the translations check costs a fraction of a second for a giant form.
+        """
+        Should find the translations check costs a fraction of a second for large forms.
 
-        Results with Python 3.8.9 on VM with 4CPU 8GB RAM, 500 questions with 2 choices
-        each, average of 20 runs (diff = 0.059s):
-        - with check (seconds):    1.351347613078542
-        - without check (seconds): 1.292487204639474
+        Results with Python 3.8.9 on VM with 4CPU 8GB RAM, x questions with 2 choices
+        each, average of 10 runs (seconds), with and without the check:
+        | num  | with   | without |
+        |  500 | 1.0192 |  0.9950 |
+        | 1000 | 2.0054 |  2.1026 |
+        | 2000 | 4.0714 |  4.0926 |
+        | 3000 | 6.0266 |  6.2476 |
         """
         survey_header = """
         | survey |                 |        |                |               |
@@ -480,24 +484,25 @@ class TestTranslations(PyxformTestCase):
         |         | c{i}        | na   | la-d  | la-e       |
         |         | c{i}        | nb   | lb-d  | lb-e       |
         """
-        questions = "\n".join((question.format(i=i) for i in range(1, 500)))
-        choice_lists = "\n".join((choice_list.format(i=i) for i in range(1, 500)))
-        md = "".join((survey_header, questions, choices_header, choice_lists))
+        for count in (500, 1000, 2000):
+            questions = "\n".join((question.format(i=i) for i in range(1, count)))
+            choice_lists = "\n".join((choice_list.format(i=i) for i in range(1, count)))
+            md = "".join((survey_header, questions, choices_header, choice_lists))
 
-        def run(name):
-            runs = 0
-            results = []
-            while runs < 20:
-                start = perf_counter()
-                self.assertPyxformXform(md=md)
-                results.append(perf_counter() - start)
-                runs += 1
-            print(name, sum(results) / len(results))
+            def run(name):
+                runs = 0
+                results = []
+                while runs < 10:
+                    start = perf_counter()
+                    self.assertPyxformXform(md=md)
+                    results.append(perf_counter() - start)
+                    runs += 1
+                print(name, sum(results) / len(results))
 
-        run(name="with check (seconds):")
+            run(name=f"questions={count}, with check (seconds):")
 
-        with patch("pyxform.xls2json.missing_translations_check", return_value=[]):
-            run(name="without check (seconds):")
+            with patch("pyxform.xls2json.missing_translations_check", return_value=[]):
+                run(name=f"questions={count}, without check (seconds):")
 
 
 class TestTranslationsSurvey(PyxformTestCase):
