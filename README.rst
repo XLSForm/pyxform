@@ -2,18 +2,9 @@
 pyxform v1.7.0
 ===============
 
-|circleci|  |appveyor| |codecov| |python| |black|
+|python| |black|
 
-.. |circleci| image:: https://circleci.com/gh/XLSForm/pyxform.svg?style=shield&circle-token=:circle-token
-    :target: https://circleci.com/gh/XLSForm/pyxform
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/XLSForm/pyxform?branch=master&svg=true
-    :target: https://ci.appveyor.com/project/ukanga/pyxform
-
-.. |codecov| image:: https://codecov.io/github/XLSForm/pyxform/branch/master/graph/badge.svg
-    :target: https://codecov.io/github/XLSForm/pyxform
-
-.. |python| image:: https://img.shields.io/badge/python-3.7,3.8-blue.svg
+.. |python| image:: https://img.shields.io/badge/python-3.7,3.8,3.9-blue.svg
     :target: https://www.python.org/downloads
 
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
