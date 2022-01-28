@@ -498,7 +498,7 @@ class BuilderTests(TestCase):
         body_elms = list(
             filter(
                 lambda e: self.STRIP_NS_FROM_TAG_RE.sub("", e.tag) == "body",
-                [c for c in root_elm.getchildren()],
+                [c for c in root_elm],
             )
         )
         self.assertEqual(len(body_elms), 1)
@@ -514,7 +514,7 @@ class BuilderTests(TestCase):
         body_elms = list(
             filter(
                 lambda e: self.STRIP_NS_FROM_TAG_RE.sub("", e.tag) == "body",
-                [c for c in root_elm.getchildren()],
+                [c for c in root_elm],
             )
         )
         self.assertEqual(len(body_elms), 1)
