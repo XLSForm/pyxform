@@ -576,8 +576,6 @@ def workbook_to_json(
     # Check for missing translations. The choices sheet is checked here so that the
     # warning can be combined into one message.
     warnings = missing_translations_check(
-        settings=settings,
-        default_language=default_language,
         survey_sheet=survey_sheet,
         choices_sheet=choices_sheet,
         warnings=warnings,
