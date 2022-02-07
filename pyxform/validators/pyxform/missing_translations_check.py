@@ -129,7 +129,7 @@ def missing_translations_check(
         sheet_data=choices_sheet,
         translatable_columns=aliases.TRANSLATABLE_CHOICES_COLUMNS,
     )
-    if (0 < len(survey_missing_trans) or 0 < len(choices_missing_trans)):
+    if 0 < len(survey_missing_trans) or 0 < len(choices_missing_trans):
         msg = format_missing_translations_msg(
             _in={"survey": survey_missing_trans, "choices": choices_missing_trans}
         )

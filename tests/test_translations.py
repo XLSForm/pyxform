@@ -805,20 +805,20 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | type | name | label | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::video::eng | media::audio::eng | constraint_message::eng | required_message::eng |
         |        | note | n1   | hello | hi there   | salutation | greeting           | greeting.jpg      | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
         """
-        cols = {
-            SURVEY: {
-                DEFAULT_LANG: (
-                    "hint",
-                    "guidance_hint",
-                    "media::image",
-                    "media::video",
-                    "media::audio",
-                    "constraint_message",
-                    "required_message",
-                )
-            }
-        }
-        warning = format_missing_translations_msg(_in=cols)
+        # cols = {
+        #     SURVEY: {
+        #         DEFAULT_LANG: (
+        #             "hint",
+        #             "guidance_hint",
+        #             "media::image",
+        #             "media::video",
+        #             "media::audio",
+        #             "constraint_message",
+        #             "required_message",
+        #         )
+        #     }
+        # }
+        # warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
             name="test",
             md=md,
@@ -1284,16 +1284,16 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la-d  | la-e       | la-d.mp3          | la-d.jpg          | la-d.mkv          |
         |         | c1        | nb   | lb-d  | lb-e       | lb-d.mp3          | lb-d.jpg          | lb-d.mkv          |
         """
-        cols = {
-            CHOICES: {
-                DEFAULT_LANG: (
-                    "media::image",
-                    "media::video",
-                    "media::audio",
-                )
-            }
-        }
-        warning = format_missing_translations_msg(_in=cols)
+        # cols = {
+        #     CHOICES: {
+        #         DEFAULT_LANG: (
+        #             "media::image",
+        #             "media::video",
+        #             "media::audio",
+        #         )
+        #     }
+        # }
+        # warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
             name="test",
             md=md,
