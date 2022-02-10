@@ -2,8 +2,8 @@
 from tests.pyxform_test_case import PyxformTestCase
 
 
-class AllowMockAccuracyTest(PyxformTestCase):
-    def test_geopoint(self):
+class GeoParameterTest(PyxformTestCase):
+    def test_geopoint_allow_mock_accuracy(self):
         self.assertPyxformXform(
             name="data",
             md="""
@@ -30,7 +30,7 @@ class AllowMockAccuracyTest(PyxformTestCase):
             ],
         )
 
-    def test_geoshape(self):
+    def test_geoshape_allow_mock_accuracy(self):
         self.assertPyxformXform(
             name="data",
             md="""
@@ -57,7 +57,7 @@ class AllowMockAccuracyTest(PyxformTestCase):
             ],
         )
 
-    def test_geotrace(self):
+    def test_geotrace_allow_mock_accuracy(self):
         self.assertPyxformXform(
             name="data",
             md="""
@@ -84,7 +84,7 @@ class AllowMockAccuracyTest(PyxformTestCase):
             ],
         )
 
-    def test_foo_fails(self):
+    def test_foo_allow_mock_accuracy_value_fails(self):
         self.assertPyxformXform(
             name="data",
             md="""
@@ -116,4 +116,92 @@ class AllowMockAccuracyTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=["Invalid value for allow-mock-accuracy."],
+        )
+
+    def test_numeric_geopoint_capture_accuracy_is_passed_through(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |           |             |          |                          |
+            |        | type      | name        | label    | parameters               |
+            |        | geopoint  | geopoint    | Geopoint | capture-accuracy=2.5     |
+            """,
+            xml__xpath_match=[
+                "/h:html/h:body/x:input[@accuracyThreshold='2.5' and @ref='/data/geopoint']"
+            ],
+        )
+
+    def test_string_geopoint_capture_accuracy_errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |           |             |          |                          |
+            |        | type      | name        | label    | parameters               |
+            |        | geopoint  | geopoint    | Geopoint | capture-accuracy=foo     |
+            """,
+            errored=True,
+            error__contains=["Parameter capture-accuracy must have a numeric value"],
+        )
+
+    def test_geopoint_warning_accuracy_is_passed_through(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+        | survey |           |             |          |                          |
+        |        | type      | name        | label    | parameters               |
+        |        | geopoint  | geopoint    | Geopoint | warning-accuracy=5       |
+        """,
+            xml__xpath_match=[
+                "/h:html/h:body/x:input[@unacceptableAccuracyThreshold='5' and @ref='/data/geopoint']"
+            ],
+        )
+
+    def test_string_geopoint_warning_accuracy_errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |           |             |          |                          |
+            |        | type      | name        | label    | parameters               |
+            |        | geopoint  | geopoint    | Geopoint | warning-accuracy=foo     |
+            """,
+            errored=True,
+            error__contains=["Parameter warning-accuracy must have a numeric value"],
+        )
+
+    def test_geopoint_parameters_combine(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |           |             |          |                                                             |
+            |        | type      | name        | label    | parameters                                                  |
+            |        | geopoint  | geopoint    | Geopoint | warning-accuracy=5.5 capture-accuracy=2 allow-mock-accuracy=true |
+            """,
+            xml__xpath_match=[
+                "/h:html/h:body/x:input[@unacceptableAccuracyThreshold='5.5' and @accuracyThreshold='2' and @ref='/data/geopoint']",
+                "/h:html/h:head/x:model/x:bind[@nodeset='/data/geopoint' and @odk:allow-mock-accuracy='true']",
+            ],
+        )
+
+    def test_geoshape_with_accuracy_parameters_errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |           |             |          |                          |
+            |        | type      | name        | label    | parameters               |
+            |        | geoshape  | geoshape    | Geoshape | warning-accuracy=5       |
+            """,
+            errored=True,
+            error__contains=["'warning-accuracy' is an invalid parameter"],
+        )
+
+    def test_geotrace_with_accuracy_parameters_errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |           |             |          |                          |
+            |        | type      | name        | label    | parameters               |
+            |        | geotrace  | geotrace    | Geotrace | warning-accuracy=5       |
+            """,
+            errored=True,
+            error__contains=["'warning-accuracy' is an invalid parameter"],
         )

@@ -21,7 +21,6 @@ from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
 if TYPE_CHECKING:
     from typing import Any, Dict, KeysView, List, Optional
 
-
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 _MSG_SUPPRESS_SPELLING = (
     " If you do not mean to include a sheet, to suppress this message, "
@@ -1287,9 +1286,16 @@ def workbook_to_json(
 
         if question_type in ["geopoint", "geoshape", "geotrace"]:
             new_dict = row.copy()
-            parameters = get_parameters(
-                row.get("parameters", ""), ["allow-mock-accuracy"]
-            )
+
+            if question_type == "geopoint":
+                parameters = get_parameters(
+                    row.get("parameters", ""),
+                    ["allow-mock-accuracy", "capture-accuracy", "warning-accuracy"],
+                )
+            else:
+                parameters = get_parameters(
+                    row.get("parameters", ""), ["allow-mock-accuracy"]
+                )
 
             if "allow-mock-accuracy" in parameters.keys():
                 if parameters["allow-mock-accuracy"] not in ["true", "false"]:
@@ -1299,6 +1305,29 @@ def workbook_to_json(
                 new_dict["bind"].update(
                     {"odk:allow-mock-accuracy": parameters["allow-mock-accuracy"]}
                 )
+
+            new_dict["control"] = new_dict.get("control", {})
+            if "capture-accuracy" in parameters.keys():
+                try:
+                    float(parameters["capture-accuracy"])
+                    new_dict["control"].update(
+                        {"accuracyThreshold": parameters["capture-accuracy"]}
+                    )
+                except ValueError:
+                    raise PyXFormError(
+                        "Parameter capture-accuracy must have a numeric value"
+                    )
+
+            if "warning-accuracy" in parameters.keys():
+                try:
+                    float(parameters["warning-accuracy"])
+                    new_dict["control"].update(
+                        {"unacceptableAccuracyThreshold": parameters["warning-accuracy"]}
+                    )
+                except ValueError:
+                    raise PyXFormError(
+                        "Parameter warning-accuracy must have a numeric value"
+                    )
 
             parent_children_array.append(new_dict)
             continue
