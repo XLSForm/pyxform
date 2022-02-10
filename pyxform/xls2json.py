@@ -13,10 +13,13 @@ from typing import TYPE_CHECKING
 from pyxform import aliases, constants
 from pyxform.errors import PyXFormError
 from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
+from pyxform.validators.pyxform.missing_translations_check import (
+    missing_translations_check,
+)
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, KeysView, Optional
+    from typing import Any, Dict, KeysView, List, Optional
 
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
@@ -92,11 +95,11 @@ def replace_smart_quotes_in_dict(_d):
 
 
 def dealias_and_group_headers(
-    dict_array,
-    header_aliases,
-    use_double_colons,
-    default_language="default",
-    ignore_case=False,
+    dict_array: "List[Dict]",
+    header_aliases: "Dict",
+    use_double_colons: bool,
+    default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
+    ignore_case: bool = False,
 ):
     """
     For each row in the worksheet, group all keys that contain a double colon.
@@ -220,7 +223,7 @@ def group_dictionaries_by_key(list_of_dicts, key, remove_key=True):
     return dict_of_lists
 
 
-def has_double_colon(workbook_dict):
+def has_double_colon(workbook_dict) -> bool:
     """
     Look for a column header with a doublecolon (::) and
     return true if one is found.
@@ -344,7 +347,7 @@ def workbook_to_json(
     workbook_dict,
     form_name=None,
     fallback_form_name=None,
-    default_language="default",
+    default_language=constants.DEFAULT_LANGUAGE_VALUE,
     warnings=None,
 ) -> "Dict[str, Any]":
     """
@@ -438,7 +441,7 @@ def workbook_to_json(
     settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
     replace_smart_quotes_in_dict(settings)
 
-    default_language = settings.get(constants.DEFAULT_LANGUAGE, default_language)
+    default_language = settings.get(constants.DEFAULT_LANGUAGE_KEY, default_language)
 
     # add_none_option is a boolean that when true,
     # indicates a none option should automatically be added to selects.
@@ -457,7 +460,7 @@ def workbook_to_json(
         constants.TITLE: id_string,
         constants.ID_STRING: id_string,
         constants.SMS_KEYWORD: sms_keyword,
-        constants.DEFAULT_LANGUAGE: default_language,
+        constants.DEFAULT_LANGUAGE_KEY: default_language,
         # By default the version is based on the date and time yyyymmddhh
         # Leaving default version out for now since it might cause
         # problems for formhub.
@@ -487,6 +490,8 @@ def workbook_to_json(
         choices_sheet, aliases.list_header, use_double_colons, default_language
     )
     combined_lists = group_dictionaries_by_key(choices_sheet, constants.LIST_NAME)
+    # To combine the warning into one message, the check for missing choices translation
+    # columns is run with Survey sheet below.
 
     choices = combined_lists
     # Make sure all the options have the required properties:
@@ -567,6 +572,14 @@ def workbook_to_json(
         survey_sheet, aliases.survey_header, use_double_colons, default_language
     )
     survey_sheet = dealias_types(survey_sheet)
+
+    # Check for missing translations. The choices sheet is checked here so that the
+    # warning can be combined into one message.
+    warnings = missing_translations_check(
+        survey_sheet=survey_sheet,
+        choices_sheet=choices_sheet,
+        warnings=warnings,
+    )
 
     # No spell check for OSM sheet (infrequently used, many spurious matches).
     osm_sheet = dealias_and_group_headers(
@@ -1382,7 +1395,7 @@ def get_filename(path):
 def parse_file_to_json(
     path,
     default_name="data",
-    default_language="default",
+    default_language=constants.DEFAULT_LANGUAGE_VALUE,
     warnings=None,
     file_object=None,
 ):
@@ -1514,7 +1527,10 @@ class QuestionTypesReader(SpreadsheetReader):
         types_sheet = "question types"
         self._dict = self._dict[types_sheet]
         self._dict = dealias_and_group_headers(
-            self._dict, {}, use_double_colons, "default"
+            dict_array=self._dict,
+            header_aliases={},
+            use_double_colons=use_double_colons,
+            default_language=constants.DEFAULT_LANGUAGE_VALUE,
         )
         self._dict = organize_by_values(self._dict, "name")
 

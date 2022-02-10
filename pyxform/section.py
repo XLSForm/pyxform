@@ -18,15 +18,16 @@ class Section(SurveyElement):
     # there's a stronger test of this when creating the xpath
     # dictionary for a survey.
     def _validate_uniqueness_of_element_names(self):
-        element_slugs = []
+        element_slugs = set()
         for element in self.children:
-            if any(element.name.lower() == s.lower() for s in element_slugs):
+            elem_lower = element.name.lower()
+            if elem_lower in element_slugs:
                 raise PyXFormError(
                     "There are more than one survey elements named '%s' "
                     "(case-insensitive) in the section named '%s'."
-                    % (element.name.lower(), self.name)
+                    % (elem_lower, self.name)
                 )
-            element_slugs.append(element.name)
+            element_slugs.add(elem_lower)
 
     def xml_instance(self, **kwargs):
         """
