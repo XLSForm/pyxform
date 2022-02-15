@@ -1009,7 +1009,6 @@ class TestTranslationsSurvey(PyxformTestCase):
                 # TODO: bug - missing default lang translatable/itext values.
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
-            debug=True,
         )
 
 
