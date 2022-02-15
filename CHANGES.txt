@@ -1,5 +1,13 @@
 Pyxform Changelog
 
+# v1.8.0, 2022-02-15
+
+* Improve xml hierarchy test methods, refactor test_trigger.py tests to use them by @lindsay-stevens in #570
+* Use openpyxl for XLSX files; upgrade xlrd to v2 by @sheppard in #575
+* Add support for Python 3.9 by @lindsay-stevens in #580
+* Warn when languages are missing translations by @lindsay-stevens in #571
+* Add accuracy parameters for geopoint by @lognaturel in #586
+
 # v1.7.0, 2021-10-20
 
 * #545 Add allow-mock-accuracy parameter

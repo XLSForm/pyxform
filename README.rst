@@ -1,5 +1,5 @@
 ===============
-pyxform v1.7.0
+pyxform v1.8.0
 ===============
 
 |python| |black|
@@ -27,7 +27,7 @@ The ``xls2xform`` command can then be used::
 
     xls2xform path_to_XLSForm [output_path]
 
-The currently supported Python versions for ``pyxform`` are 3.7 and 3.8.
+The currently supported Python versions for ``pyxform`` are 3.7, 3.8 and 3.9.
 
 Running pyxform from local source
 =================================
