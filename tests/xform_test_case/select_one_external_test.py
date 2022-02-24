@@ -7,7 +7,6 @@ import os
 import unittest
 
 import pyxform
-from pyxform import InputQuestion, Survey
 from pyxform.utils import sheet_to_csv
 from tests import test_expected_output, test_output
 from tests.xform_test_case.base import XFormTestCase
@@ -75,20 +74,6 @@ class MainTest(XFormTestCase):
             self.assertEqual(
                 rows.splitlines()[0], '"list_name","name","label","state","county"'
             )
-
-    def test_output_node_for_select_one_question_type(self):
-
-        self.this_directory = os.path.dirname(__file__)
-        survey_out = Survey(name="geopgraphy", sms_keyword="geography", type="survey")
-        question = InputQuestion(name="counties")
-        question.type = "select one external"
-        question.label = "county"
-        survey_out.add_child(question)
-
-        expected = '<input ref="/geopgraphy/counties">'
-
-        xml = survey_out.to_xml()
-        self.assertEqual(1, xml.count(expected))
 
 
 if __name__ == "__main__":
