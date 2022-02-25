@@ -7,7 +7,11 @@ See also test_external_instances
 import os
 from dataclasses import dataclass, field
 
+from test_validator_update import get_temp_dir
+
+from pyxform.xls2xform import get_xml_path, xls2xform_convert
 from tests.pyxform_test_case import PyxformTestCase
+from tests.test_utils.md_table import md_table_to_workbook
 
 
 @dataclass()
@@ -226,11 +230,11 @@ class TestSelectOneExternal(PyxformTestCase):
     def test_no_params_with_filters(self):
         """Should find that choice_filter generates input()s with refs to external itemsets"""
         md = """
-        | survey |                            |        |        |                |
-        |        | type                       | name   | label  | choice_filter  |
-        |        | select_one state           | state  | State  |                |
-        |        | select_one_external city   | city   | City   | state=${state} |
-        |        | select_one_external suburb | suburb | Suburb | city=${city}   |
+        | survey |                            |        |        |                                 |
+        |        | type                       | name   | label  | choice_filter                   |
+        |        | select_one state           | state  | State  |                                 |
+        |        | select_one_external city   | city   | City   | state=${state}                  |
+        |        | select_one_external suburb | suburb | Suburb | state=${state} and city=${city} |
         """
         self.assertPyxformXform(
             name="test",
@@ -266,7 +270,7 @@ class TestSelectOneExternal(PyxformTestCase):
                   ]
                   and ./x:input[
                     @ref='/test/suburb'
-                    and @query="instance('suburb')/root/item[city= /test/city ]"
+                    and @query="instance('suburb')/root/item[state= /test/state  and city= /test/city ]"
                     and ./x:label[text()='Suburb']
                   ]
                 ]
@@ -278,11 +282,11 @@ class TestSelectOneExternal(PyxformTestCase):
     def test_with_params_with_filters(self):
         """Should find that an error is returned since 'value' not a supported param."""
         md = """
-        | survey |                            |        |        |                |                      |
-        |        | type                       | name   | label  | choice_filter  | parameters           |
-        |        | select_one state           | state  | State  |                |                      |
-        |        | select_one_external city   | city   | City   | state=${state} | value=val, label=lbl |
-        |        | select_one_external suburb | suburb | Suburb | city=${city}   | value=val, label=lbl |
+        | survey |                            |        |        |                                 |                      |
+        |        | type                       | name   | label  | choice_filter                   | parameters           |
+        |        | select_one state           | state  | State  |                                 |                      |
+        |        | select_one_external city   | city   | City   | state=${state}                  | value=val, label=lbl |
+        |        | select_one_external suburb | suburb | Suburb | state=${state} and city=${city} | value=val, label=lbl |
         """
         err = (
             "Accepted parameters are 'randomize, seed': 'value' is an invalid parameter."
@@ -292,18 +296,64 @@ class TestSelectOneExternal(PyxformTestCase):
         )
 
     def test_list_name_not_in_external_choices_sheet_raises_error(self):
+        """Should find a warning when external_choices is missing a referenced list name."""
         md = """
-        | survey |                             |        |        |                |
-        |        | type                        | name   | label  | choice_filter  |
-        |        | select_one state            | state  | State  |                |
-        |        | select_one_external city    | city   | City   | state=${state} |
-        |        | select_one_external suburby | suburb | Suburb | city=${city}   |
+        | survey |                             |        |        |                                 |
+        |        | type                        | name   | label  | choice_filter                   |
+        |        | select_one state            | state  | State  |                                 |
+        |        | select_one_external city    | city   | City   | state=${state}                  |
+        |        | select_one_external suburby | suburb | Suburb | state=${state} and city=${city} |
         """
         self.assertPyxformXform(
             md=md + self.all_choices,
             errored=True,
             error__contains=["List name not in external choices sheet: suburby"],
         )
+
+    def test_itemset_csv_generated_from_external_choices(self):
+        """Should find that XLSForm conversion produces itemsets.csv from external_choices."""
+        md = """
+        | survey |                            |        |        |                                 |
+        |        | type                       | name   | label  | choice_filter                   |
+        |        | select_one state           | state  | State  |                                 |
+        |        | select_one_external city   | city   | City   | state=${state}                  |
+        |        | select_one_external suburb | suburb | Suburb | state=${state} and city=${city} |
+        | choices |           |      |       |
+        |         | list_name | name | label |
+        |         | state     | nsw  | NSW   |
+        |         | state     | vic  | VIC   |
+        | external_choices |           |           |       |              |           |
+        |                  | list_name | name      | state |              | city      |
+        |                  | city      | Sydney    | nsw   |              |           |
+        |                  | city      | Melbourne | vic   |              |           |
+        |                  | suburb    | Balmain   | nsw   |              | sydney    |
+        |                  | suburb    | Footscray | vic   | empty header | melbourne |
+        """
+        wb = md_table_to_workbook(md)
+        with get_temp_dir() as tmp:
+            wb_path = os.path.join(tmp, "select_one_external.xlsx")
+            wb.save(wb_path)
+            with self.assertLogs("pyxform") as log:
+                xls2xform_convert(
+                    xlsform_path=wb_path,
+                    xform_path=get_xml_path(wb_path),
+                    validate=True,
+                    pretty_print=False,
+                    enketo=False,
+                )
+
+            # Should have written the itemsets.csv file as part of XLSForm conversion.
+            itemsets_path = os.path.join(tmp, "itemsets.csv")
+            log_msg = f"External choices csv is located at: {itemsets_path}"
+            self.assertIn(log_msg, [r.message for r in log.records])
+            self.assertTrue(os.path.exists(itemsets_path))
+
+            with open(itemsets_path, "r") as csv:
+                rows = csv.readlines()
+            # Should have the non-empty headers in the first row.
+            self.assertEqual('"list_name","name","state","city"\n', rows[0])
+            # Should have excluded column with "empty header" in the last row.
+            self.assertEqual('"suburb","Footscray","vic","melbourne"\n', rows[-1])
 
 
 class TestInvalidExternalFileInstances(PyxformTestCase):
