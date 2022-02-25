@@ -4,9 +4,6 @@ Test validator update cli command.
 """
 import os
 import platform
-import shutil
-import tempfile
-from contextlib import contextmanager
 from datetime import datetime, timedelta
 from stat import S_IXGRP, S_IXUSR
 from typing import Optional
@@ -21,6 +18,7 @@ from pyxform.validators.updater import (
     capture_handler,
 )
 from tests import validators
+from tests.utils import get_temp_dir, get_temp_file
 from tests.validators.server import ThreadingServerInThread
 
 try:
@@ -60,28 +58,6 @@ def get_update_info(check_ok, mod_root=None):
         validator_basename="validate",
         mod_root=mod_root,
     )
-
-
-@contextmanager
-def get_temp_file():
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
-    temp_file.close()
-    try:
-        yield temp_file.name
-    finally:
-        temp_file.close()
-        if os.path.exists(temp_file.name):
-            os.remove(temp_file.name)
-
-
-@contextmanager
-def get_temp_dir():
-    temp_dir = tempfile.mkdtemp()
-    try:
-        yield temp_dir
-    finally:
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
 
 
 class TestTempUtils(TestCase):

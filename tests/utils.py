@@ -4,7 +4,10 @@ The tests utils module functionality.
 """
 import configparser
 import os
+import shutil
+import tempfile
 import textwrap
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 from pyxform import file_utils
@@ -47,3 +50,25 @@ def prep_for_xml_contains(text: str) -> "Tuple[str]":
     """Prep string for finding an exact match to formatted XML text."""
     # noinspection PyRedundantParentheses
     return (textwrap.indent(textwrap.dedent(text), "    "),)
+
+
+@contextmanager
+def get_temp_file():
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    temp_file.close()
+    try:
+        yield temp_file.name
+    finally:
+        temp_file.close()
+        if os.path.exists(temp_file.name):
+            os.remove(temp_file.name)
+
+
+@contextmanager
+def get_temp_dir():
+    temp_dir = tempfile.mkdtemp()
+    try:
+        yield temp_dir
+    finally:
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)

@@ -7,11 +7,10 @@ See also test_external_instances
 import os
 from dataclasses import dataclass, field
 
-from test_validator_update import get_temp_dir
-
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
 from tests.pyxform_test_case import PyxformTestCase
 from tests.test_utils.md_table import md_table_to_workbook
+from tests.utils import get_temp_dir
 
 
 @dataclass()
