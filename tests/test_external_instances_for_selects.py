@@ -174,6 +174,58 @@ class TestSelectFromFile(PyxformTestCase):
                     run_odk_validate=True,
                 )
 
+    def test_param_value_and_label_validation(self):
+        """Should find that the accepted characters are consistent with the warning."""
+        md = """
+        | survey |               |         |         |            |
+        |        | type          | name    | label   | parameters |
+        |        | {q} cities{e} | city    | City    | {p}        |
+        """
+        from pyxform.validators.pyxform import select_from_file_params
+
+        q_types = ("select_one_from_file", "select_multiple_from_file")
+        file_exts = (".csv", ".xml")
+        good_params = (
+            "value=val",
+            "value=VAL",
+            "value=_val",
+            "value=val3",
+            "label=lb-l",
+            "value=val_",
+            "label=lbl..",
+        )
+        bad_params = (
+            "value=7val",
+            "value=-VAL",
+            "value=.val",
+            "value=*val3",
+            "label=lb-l%",
+            "value=val_#",
+            "label=lbl.()",
+        )
+        for q_type in q_types:
+            for file_ext in file_exts:
+                for param in good_params:
+                    with self.subTest(msg=f"{q_type}, {file_ext}, {param}"):
+                        self.assertPyxformXform(
+                            md=md.format(q=q_type, e=file_ext, p=param),
+                            run_odk_validate=True,
+                        )
+                for param in bad_params:
+                    with self.subTest(msg=f"{q_type}, {file_ext}, {param}"):
+                        name = "value"
+                        if "label" in param:
+                            name = "label"
+                        msg = select_from_file_params.value_or_label_format_msg(
+                            name=name, row_number=2
+                        )
+                        self.assertPyxformXform(
+                            md=md.format(q=q_type, e=file_ext, p=param),
+                            errored=True,
+                            error__contains=[msg],
+                            run_odk_validate=True,
+                        )
+
 
 class TestSelectOneExternal(PyxformTestCase):
     """
