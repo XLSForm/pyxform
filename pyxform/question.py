@@ -5,6 +5,10 @@ XForm Survey element classes for different question types.
 import os.path
 import re
 
+from pyxform.constants import (
+    EXTERNAL_CHOICES_ITEMSET_REF_LABEL,
+    EXTERNAL_CHOICES_ITEMSET_REF_VALUE,
+)
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
@@ -198,7 +202,12 @@ class MultipleChoiceQuestion(Question):
         # check to prevent the rare dicts that show up
         if self["itemset"] and isinstance(self["itemset"], str):
             choice_filter = self.get("choice_filter")
-            itemset_value_ref = "name"
+            itemset_value_ref = self.parameters.get(
+                "value", EXTERNAL_CHOICES_ITEMSET_REF_VALUE
+            )
+            itemset_label_ref = self.parameters.get(
+                "label", EXTERNAL_CHOICES_ITEMSET_REF_LABEL
+            )
             itemset, file_extension = os.path.splitext(self["itemset"])
             has_media = False
             has_dyn_label = False
@@ -210,11 +219,9 @@ class MultipleChoiceQuestion(Question):
 
             if file_extension in [".csv", ".xml"]:
                 itemset = itemset
-                itemset_label_ref = "label"
             else:
                 if not multi_language and not has_media and not has_dyn_label:
                     itemset = self["itemset"]
-                    itemset_label_ref = "label"
                 else:
                     itemset = self["itemset"]
                     itemset_label_ref = "jr:itext(itextId)"

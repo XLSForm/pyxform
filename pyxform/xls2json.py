@@ -11,8 +11,10 @@ from collections import Counter
 from typing import TYPE_CHECKING
 
 from pyxform import aliases, constants
+from pyxform.constants import ROW_FORMAT_STRING
 from pyxform.errors import PyXFormError
 from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
+from pyxform.validators.pyxform import select_from_file_params
 from pyxform.validators.pyxform.missing_translations_check import (
     missing_translations_check,
 )
@@ -391,8 +393,6 @@ def workbook_to_json(
             "The survey sheet is either empty or missing important column headers."
         )
 
-    row_format_string = "[row : %s]"
-
     # Make sure the passed in vars are unicode
     form_name = str(form_name)
     default_language = str(default_language)
@@ -639,7 +639,7 @@ def workbook_to_json(
         # so the attributes below can be disabled.
         if "disabled" in row:
             warnings.append(
-                row_format_string % row_number
+                ROW_FORMAT_STRING % row_number
                 + " The 'disabled' column header is not part of the current"
                 + " spec. We recommend using relevant instead."
             )
@@ -660,13 +660,13 @@ def workbook_to_json(
             # then its a comment row, and we skip it with warning
             if not ((constants.NAME in row) or (constants.LABEL in row)):
                 warnings.append(
-                    row_format_string % row_number
+                    ROW_FORMAT_STRING % row_number
                     + " Row without name, text, or label is being skipped:\n"
                     + str(row)
                 )
                 continue
             raise PyXFormError(
-                row_format_string % row_number + " Question with no type.\n" + str(row)
+                ROW_FORMAT_STRING % row_number + " Question with no type.\n" + str(row)
             )
 
         # Pull out questions that will go in meta block
@@ -674,7 +674,7 @@ def workbook_to_json(
             # Force audit name to always be "audit" to follow XForms spec
             if "name" in row and row["name"] not in [None, "", "audit"]:
                 raise PyXFormError(
-                    row_format_string % row_number
+                    ROW_FORMAT_STRING % row_number
                     + " Audits must always be named 'audit.'"
                     + " The name column should be left blank."
                 )
@@ -843,11 +843,11 @@ def workbook_to_json(
                 question_default and default_is_dynamic(question_default, question_type)
             ):
                 raise PyXFormError(
-                    row_format_string % row_number + " Missing calculation."
+                    ROW_FORMAT_STRING % row_number + " Missing calculation."
                 )
         if question_type in constants.DEPRECATED_DEVICE_ID_METADATA_FIELDS:
             warnings.append(
-                (row_format_string % row_number)
+                (ROW_FORMAT_STRING % row_number)
                 + " "
                 + question_type
                 + " is no longer supported on most devices. "
@@ -870,7 +870,7 @@ def workbook_to_json(
                 control_name = question_name
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
-                        row_format_string % row_number
+                        ROW_FORMAT_STRING % row_number
                         + " Unmatched end statement. Previous control type: "
                         + str(prev_control_type)
                         + ", Control type: "
@@ -892,13 +892,13 @@ def workbook_to_json(
             #     row['name'] = "generated_group_name_" + str(row_number)
             else:
                 raise PyXFormError(
-                    row_format_string % row_number + " Question or group with no name."
+                    ROW_FORMAT_STRING % row_number + " Question or group with no name."
                 )
         question_name = str(row[constants.NAME])
         if not is_valid_xml_tag(question_name):
             if isinstance(question_name, bytes):
                 question_name = question_name.encode("utf-8")
-            error_message = row_format_string % row_number
+            error_message = ROW_FORMAT_STRING % row_number
             error_message += " Invalid question name [" + question_name + "] "
             error_message += "Names must begin with a letter, colon," + " or underscore."
             error_message += (
@@ -944,7 +944,7 @@ def workbook_to_json(
                     # Also means the error message text is stable for tests.
                     msg_dict = {"name": row.get("name"), "type": row.get("type")}
                     warnings.append(
-                        row_format_string % row_number
+                        ROW_FORMAT_STRING % row_number
                         + " %s has no label: " % control_type.capitalize()
                         + str(msg_dict)
                     )
@@ -957,13 +957,13 @@ def workbook_to_json(
                     if not parse_dict.get("list_name"):
                         # TODO: Perhaps warn and make repeat into a group?
                         raise PyXFormError(
-                            row_format_string % row_number
+                            ROW_FORMAT_STRING % row_number
                             + " Repeat loop without list name."
                         )
                     list_name = parse_dict["list_name"]
                     if list_name not in choices:
                         raise PyXFormError(
-                            row_format_string % row_number
+                            ROW_FORMAT_STRING % row_number
                             + " List name not in columns sheet: "
                             + list_name
                         )
@@ -1043,7 +1043,7 @@ def workbook_to_json(
                 select_type = aliases.select[parse_dict["select_command"]]
                 if select_type == "select one external" and "choice_filter" not in row:
                     warnings.append(
-                        row_format_string % row_number
+                        ROW_FORMAT_STRING % row_number
                         + " select one external is only meant for"
                         " filtered selects."
                     )
@@ -1065,7 +1065,7 @@ def workbook_to_json(
                             " 'list name', and 'name'."
                         )
                     raise PyXFormError(
-                        row_format_string % row_number
+                        ROW_FORMAT_STRING % row_number
                         + "List name not in external choices sheet: "
                         + list_name
                     )
@@ -1086,7 +1086,7 @@ def workbook_to_json(
                             " mandatory columns 'list_name', 'name', and 'label'."
                         )
                     raise PyXFormError(
-                        row_format_string % row_number
+                        ROW_FORMAT_STRING % row_number
                         + " List name not in choices sheet: "
                         + list_name
                     )
@@ -1115,9 +1115,16 @@ def workbook_to_json(
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
 
-                # Look at parameters column for randomization parameters
+                select_params_allowed = ["randomize", "seed"]
+                if parse_dict["select_command"] in (
+                    "select_one_from_file",
+                    "select_multiple_from_file",
+                ):
+                    select_params_allowed += ["value", "label"]
+
+                # Look at parameters column for select parameters
                 parameters = get_parameters(
-                    row.get("parameters", ""), ["randomize", "seed"]
+                    row.get("parameters", ""), select_params_allowed
                 )
 
                 if "randomize" in parameters.keys():
@@ -1141,6 +1148,19 @@ def workbook_to_json(
                 elif "seed" in parameters.keys():
                     raise PyXFormError(
                         "Parameters must include randomize=true to use a seed."
+                    )
+
+                if "value" in parameters.keys():
+                    select_from_file_params.value_or_label_check(
+                        name="value",
+                        value=parameters["value"],
+                        row_number=row_number,
+                    )
+                if "label" in parameters.keys():
+                    select_from_file_params.value_or_label_check(
+                        name="label",
+                        value=parameters["label"],
+                        row_number=row_number,
                     )
 
                 new_json_dict["parameters"] = parameters
@@ -1186,7 +1206,7 @@ def workbook_to_json(
                         parent_children_array.append(table_list_header)
 
                     if table_list != list_name:
-                        error_message = row_format_string % row_number
+                        error_message = ROW_FORMAT_STRING % row_number
                         error_message += (
                             " Badly formatted table list,"
                             " list names don't match: " + table_list + " vs. " + list_name
@@ -1241,7 +1261,7 @@ def workbook_to_json(
                 new_dict["bind"].update({"orx:max-pixels": parameters["max-pixels"]})
             else:
                 warnings.append(
-                    (row_format_string % row_number)
+                    (ROW_FORMAT_STRING % row_number)
                     + " Use the max-pixels parameter to speed up submission sending and save storage space. Learn more: https://xlsform.org/#image"
                 )
             parent_children_array.append(new_dict)

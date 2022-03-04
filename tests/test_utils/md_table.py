@@ -3,6 +3,9 @@
 Markdown table utility functions.
 """
 import re
+from typing import List, Tuple
+
+from openpyxl import Workbook
 
 
 def _strp_cell(cell):
@@ -33,7 +36,7 @@ def _is_null_row(r_arr):
     return True
 
 
-def md_table_to_ss_structure(mdstr):
+def md_table_to_ss_structure(mdstr: str) -> List[Tuple[str, List[List[str]]]]:
     ss_arr = []
     for item in mdstr.split("\n"):
         arr = _extract_array(item)
@@ -54,3 +57,16 @@ def md_table_to_ss_structure(mdstr):
     sheets.append((sheet_name, sheet_arr))
 
     return sheets
+
+
+def md_table_to_workbook(mdstr: str) -> Workbook:
+    """
+    Convert Markdown table string to an openpyxl.Workbook. Call wb.save() to persist.
+    """
+    md_data = md_table_to_ss_structure(mdstr=mdstr)
+    wb = Workbook(write_only=True)
+    for key, rows in md_data:
+        sheet = wb.create_sheet(title=key)
+        for r in rows:
+            sheet.append(r)
+    return wb
