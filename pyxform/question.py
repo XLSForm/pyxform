@@ -6,8 +6,11 @@ import os.path
 import re
 
 from pyxform.constants import (
+    EXTERNAL_INSTANCE_EXTENSIONS,
     EXTERNAL_CHOICES_ITEMSET_REF_LABEL,
     EXTERNAL_CHOICES_ITEMSET_REF_VALUE,
+    EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON,
+    EXTERNAL_CHOICES_ITEMSET_REF_LABEL_GEOJSON,
 )
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
@@ -202,13 +205,21 @@ class MultipleChoiceQuestion(Question):
         # check to prevent the rare dicts that show up
         if self["itemset"] and isinstance(self["itemset"], str):
             choice_filter = self.get("choice_filter")
+
+            itemset, file_extension = os.path.splitext(self["itemset"])
             itemset_value_ref = self.parameters.get(
-                "value", EXTERNAL_CHOICES_ITEMSET_REF_VALUE
+                "value",
+                EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON
+                if file_extension == ".geojson"
+                else EXTERNAL_CHOICES_ITEMSET_REF_VALUE,
             )
             itemset_label_ref = self.parameters.get(
-                "label", EXTERNAL_CHOICES_ITEMSET_REF_LABEL
+                "label",
+                EXTERNAL_CHOICES_ITEMSET_REF_LABEL_GEOJSON
+                if file_extension == ".geojson"
+                else EXTERNAL_CHOICES_ITEMSET_REF_LABEL,
             )
-            itemset, file_extension = os.path.splitext(self["itemset"])
+
             has_media = False
             has_dyn_label = False
             is_previous_question = bool(re.match(r"^\${.*}$", self.get("itemset")))
@@ -217,7 +228,7 @@ class MultipleChoiceQuestion(Question):
                 has_media = bool(choices[itemset][0].get("media"))
                 has_dyn_label = has_dynamic_label(choices[itemset], multi_language)
 
-            if file_extension in [".csv", ".xml"]:
+            if file_extension in EXTERNAL_INSTANCE_EXTENSIONS:
                 itemset = itemset
             else:
                 if not multi_language and not has_media and not has_dyn_label:

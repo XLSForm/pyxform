@@ -12,6 +12,7 @@ from datetime import datetime
 from functools import lru_cache
 
 from pyxform import constants
+from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -407,10 +408,10 @@ class Survey(Section):
     @staticmethod
     def _generate_from_file_instances(element):
         itemset = element.get("itemset")
-        if itemset and (itemset.endswith(".csv") or itemset.endswith(".xml")):
-            file_id, ext = os.path.splitext(itemset)
+        file_id, ext = os.path.splitext(itemset)
+        if itemset and ext in EXTERNAL_INSTANCE_EXTENSIONS:
             uri = "jr://%s/%s" % (
-                "file" if ext == ".xml" else "file-%s" % ext[1:],
+                "file" if ext == ".xml" or ext == ".geojson" else "file-%s" % ext[1:],
                 itemset,
             )
             return InstanceInfo(
