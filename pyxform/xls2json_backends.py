@@ -175,7 +175,7 @@ def xlsx_to_dict(path_or_file):
     All the keys and leaf elements are strings.
     """
     try:
-        workbook = openpyxl.open(filename=path_or_file, data_only=True)
+        workbook = openpyxl.open(filename=path_or_file, read_only=True, data_only=True)
     except (OSError, BadZipFile, KeyError) as error:
         raise PyXFormError("Error reading .xlsx file: %s" % error)
 
@@ -183,19 +183,22 @@ def xlsx_to_dict(path_or_file):
 
         # Check for duplicate column headers
         column_header_list = list()
-        for cell in sheet[1]:
-            column_header = cell.value
-            # xls file with 3 columns mostly have a 3 more columns that are
-            # blank by default or something, skip during check
-            if is_empty(column_header):
-                # Preserve column order (will filter later)
-                column_header_list.append(None)
-            else:
-                if column_header in column_header_list:
-                    raise PyXFormError("Duplicate column header: %s" % column_header)
-                # strip whitespaces from the header
-                clean_header = re.sub(r"( )+", " ", column_header.strip())
-                column_header_list.append(clean_header)
+        try:
+            for cell in sheet[1]:
+                column_header = cell.value
+                # xls file with 3 columns mostly have a 3 more columns that are
+                # blank by default or something, skip during check
+                if is_empty(column_header):
+                    # Preserve column order (will filter later)
+                    column_header_list.append(None)
+                else:
+                    if column_header in column_header_list:
+                        raise PyXFormError("Duplicate column header: %s" % column_header)
+                    # strip whitespaces from the header
+                    clean_header = re.sub(r"( )+", " ", column_header.strip())
+                    column_header_list.append(clean_header)
+        except IndexError:
+            pass  # skip empty sheet
 
         result = []
         for row in sheet.iter_rows(min_row=2):
@@ -204,12 +207,15 @@ def xlsx_to_dict(path_or_file):
                 if key is None:
                     continue
 
-                value = row[column].value
-                if isinstance(value, str):
-                    value = value.strip()
+                try:
+                    value = row[column].value
+                    if isinstance(value, str):
+                        value = value.strip()
 
-                if not is_empty(value):
-                    row_dict[key] = xlsx_value_to_str(value)
+                    if not is_empty(value):
+                        row_dict[key] = xlsx_value_to_str(value)
+                except IndexError:
+                    pass  # rows may not have values for every column
 
             result.append(row_dict)
 

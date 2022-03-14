@@ -41,7 +41,6 @@ SURVEY = """
 
 
 class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
-
     err_similar_found = "the following sheets with similar names were found"
     err_survey_required = "You must have a sheet named 'survey'."
     err_choices_required = "There should be a choices sheet in this xlsform."
@@ -616,6 +615,14 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             "with similar names were found: 'stettings'"
         )
         self.assertIn(expected, "\n".join(warnings))
+
+    def test_xls2xform_convert__e2e_empty_sheets_are_ignored(self):
+        file_name = "empty_sheets"
+        warnings = xls2xform_convert(
+            xlsform_path=os.path.join(example_xls.PATH, file_name + ".xlsx"),
+            xform_path=os.path.join(test_output.PATH, file_name + ".xml"),
+        )
+        self.assertEquals(len(warnings), 0)
 
     def test_xlsx_to_dict__extra_sheet_names_are_returned_by_parser(self):
         """Should return all sheet names so that later steps can do spellcheck."""
