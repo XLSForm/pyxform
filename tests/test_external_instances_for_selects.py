@@ -7,6 +7,7 @@ See also test_external_instances
 import os
 from dataclasses import dataclass, field
 
+from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
 from tests.pyxform_test_case import PyxformTestCase
 from tests.test_utils.md_table import md_table_to_workbook
@@ -44,7 +45,7 @@ class XPathHelperSelectFromFile:
         ]
         """
 
-    def body_itemset_nodeset_and_refs(self, value="name", label="label", nodeset_pred=""):
+    def body_itemset_nodeset_and_refs(self, value, label, nodeset_pred=""):
         """The body has an itemset node with expected nodeset and child ref attributes."""
         return rf"""
         /h:html/h:body/x:{self.q_type}[@ref='/test/{self.q_name}']
@@ -76,13 +77,20 @@ class TestSelectFromFile(PyxformTestCase):
         self.xp_subs_xml = XPathHelperSelectFromFile(
             q_type="select", q_name="suburbs", q_file="suburbs.xml"
         )
+        self.xp_city_geojson = XPathHelperSelectFromFile(
+            q_type="select1", q_name="city", q_file="cities.geojson"
+        )
+        self.xp_subs_geojson = XPathHelperSelectFromFile(
+            q_type="select", q_name="suburbs", q_file="suburbs.geojson"
+        )
         self.xp_test_args = (
             (".csv", self.xp_city_csv, self.xp_subs_csv),
             (".xml", self.xp_city_xml, self.xp_subs_xml),
+            (".geojson", self.xp_city_geojson, self.xp_subs_geojson),
         )
 
     def test_no_params_no_filters(self):
-        """Should find internal instace referencing the file, and itemset in the select."""
+        """Should find internal instance referencing the file, and itemset in the select."""
         # re: https://github.com/XLSForm/pyxform/issues/80
         md = """
         | survey |                                        |         |         |
@@ -91,6 +99,9 @@ class TestSelectFromFile(PyxformTestCase):
         |        | select_multiple_from_file suburbs{ext} | suburbs | Suburbs |
         """
         for ext, xp_city, xp_subs in self.xp_test_args:
+            expected_value_ref = "id" if ext == ".geojson" else "name"
+            expected_label_ref = "title" if ext == ".geojson" else "label"
+
             with self.subTest(msg=ext):
                 self.assertPyxformXform(
                     name="test",
@@ -98,10 +109,13 @@ class TestSelectFromFile(PyxformTestCase):
                     xml__xpath_match=[
                         xp_city.model_external_instance_and_bind(),
                         xp_subs.model_external_instance_and_bind(),
-                        xp_city.body_itemset_nodeset_and_refs(),
-                        xp_subs.body_itemset_nodeset_and_refs(),
+                        xp_city.body_itemset_nodeset_and_refs(
+                            value=expected_value_ref, label=expected_label_ref
+                        ),
+                        xp_subs.body_itemset_nodeset_and_refs(
+                            value=expected_value_ref, label=expected_label_ref
+                        ),
                     ],
-                    run_odk_validate=True,
                 )
 
     def test_with_params_no_filters(self):
@@ -123,7 +137,6 @@ class TestSelectFromFile(PyxformTestCase):
                         xp_city.body_itemset_nodeset_and_refs(value="val", label="lbl"),
                         xp_subs.body_itemset_nodeset_and_refs(value="val", label="lbl"),
                     ],
-                    run_odk_validate=True,
                 )
 
     def test_no_params_with_filters(self):
@@ -135,6 +148,9 @@ class TestSelectFromFile(PyxformTestCase):
         |        | select_multiple_from_file suburbs{ext} | suburbs | Suburbs | city=${{city}} |
         """
         for ext, xp_city, xp_subs in self.xp_test_args:
+            expected_value_ref = "id" if ext == ".geojson" else "name"
+            expected_label_ref = "title" if ext == ".geojson" else "label"
+
             with self.subTest(msg=ext):
                 self.assertPyxformXform(
                     name="test",
@@ -142,12 +158,15 @@ class TestSelectFromFile(PyxformTestCase):
                     xml__xpath_match=[
                         xp_city.model_external_instance_and_bind(),
                         xp_subs.model_external_instance_and_bind(),
-                        xp_city.body_itemset_nodeset_and_refs(),
+                        xp_city.body_itemset_nodeset_and_refs(
+                            value=expected_value_ref, label=expected_label_ref
+                        ),
                         xp_subs.body_itemset_nodeset_and_refs(
-                            nodeset_pred="[city= /test/city ]"
+                            value=expected_value_ref,
+                            label=expected_label_ref,
+                            nodeset_pred="[city= /test/city ]",
                         ),
                     ],
-                    run_odk_validate=True,
                 )
 
     def test_with_params_with_filters(self):
@@ -171,7 +190,6 @@ class TestSelectFromFile(PyxformTestCase):
                             value="val", label="lbl", nodeset_pred="[city= /test/city ]"
                         ),
                     ],
-                    run_odk_validate=True,
                 )
 
     def test_param_value_and_label_validation(self):
@@ -184,7 +202,6 @@ class TestSelectFromFile(PyxformTestCase):
         from pyxform.validators.pyxform import select_from_file_params
 
         q_types = ("select_one_from_file", "select_multiple_from_file")
-        file_exts = (".csv", ".xml")
         good_params = (
             "value=val",
             "value=VAL",
@@ -204,12 +221,11 @@ class TestSelectFromFile(PyxformTestCase):
             "label=lbl.()",
         )
         for q_type in q_types:
-            for file_ext in file_exts:
+            for file_ext in EXTERNAL_INSTANCE_EXTENSIONS:
                 for param in good_params:
                     with self.subTest(msg=f"{q_type}, {file_ext}, {param}"):
                         self.assertPyxformXform(
-                            md=md.format(q=q_type, e=file_ext, p=param),
-                            run_odk_validate=True,
+                            md=md.format(q=q_type, e=file_ext, p=param)
                         )
                 for param in bad_params:
                     with self.subTest(msg=f"{q_type}, {file_ext}, {param}"):
@@ -223,7 +239,6 @@ class TestSelectFromFile(PyxformTestCase):
                             md=md.format(q=q_type, e=file_ext, p=param),
                             errored=True,
                             error__contains=[msg],
-                            run_odk_validate=True,
                         )
 
 
@@ -327,7 +342,6 @@ class TestSelectOneExternal(PyxformTestCase):
                 ]
                 """,
             ],
-            run_odk_validate=True,
         )
 
     def test_with_params_with_filters(self):

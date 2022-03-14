@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from pyxform import aliases, constants
 from pyxform.constants import ROW_FORMAT_STRING
+from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
 from pyxform.errors import PyXFormError
 from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
 from pyxform.validators.pyxform import select_from_file_params
@@ -1072,7 +1073,7 @@ def workbook_to_json(
                 if (
                     list_name not in choices
                     and select_type != "select one external"
-                    and file_extension not in [".csv", ".xml"]
+                    and file_extension not in EXTERNAL_INSTANCE_EXTENSIONS
                     and not re.match(r"\$\{(.*?)\}", list_name)
                 ):
                     if not choices:
@@ -1095,7 +1096,7 @@ def workbook_to_json(
                 # they have no spaces (will cause errors in exports).
                 if (
                     select_type == constants.SELECT_ALL_THAT_APPLY
-                    and file_extension not in [".csv", ".xml"]
+                    and file_extension not in EXTERNAL_INSTANCE_EXTENSIONS
                 ):
                     for choice in choices[list_name]:
                         if " " in choice[constants.NAME]:
@@ -1179,7 +1180,7 @@ def workbook_to_json(
                 ):
                     new_json_dict["itemset"] = list_name
                     json_dict["choices"] = choices
-                elif file_extension in [".csv", ".xml"] or re.match(
+                elif file_extension in EXTERNAL_INSTANCE_EXTENSIONS or re.match(
                     r"\$\{(.*?)\}", list_name
                 ):
                     new_json_dict["itemset"] = list_name
