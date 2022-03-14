@@ -402,9 +402,6 @@ class TestSelectOneExternal(PyxformTestCase):
                 xls2xform_convert(
                     xlsform_path=wb_path,
                     xform_path=get_xml_path(wb_path),
-                    validate=True,
-                    pretty_print=False,
-                    enketo=False,
                 )
 
             # Should have written the itemsets.csv file as part of XLSForm conversion.
@@ -420,6 +417,24 @@ class TestSelectOneExternal(PyxformTestCase):
             # Should have excluded column with "empty header" in the last row.
             self.assertEqual('"suburb","Footscray","vic","melbourne"\n', rows[-1])
 
+    def test_external_choices_with_only_header__errors(self):
+        self.assertPyxformXform(
+            md="""
+            | survey           |                          |       |       |               |
+            |                  | type                     | name  | label |choice_filter  |
+            |                  | select_one state         | state | State |               |
+            |                  | select_one_external city | city  | City  |state=${state} |
+            | choices          |                          |       |       |
+            |                  | list_name                | name  | label |
+            |                  | state                    | nsw   | NSW   |
+            |                  | state                    | vic   | VIC   |
+            | external_choices |                          |       |       |
+            |                  | list_name                | name  | state | city          |
+            """,
+            errored=True,
+            error__contains=["should be an external_choices sheet"],
+        )
+
 
 class TestInvalidExternalFileInstances(PyxformTestCase):
     def test_external_other_extension_instances(self):
@@ -433,7 +448,7 @@ class TestInvalidExternalFileInstances(PyxformTestCase):
             |        | select_multiple_from_file neighbourhoods.pdf | neighbourhoods | Neighbourhoods |
             """,  # noqa
             errored=True,
-            error_contains=["should be a choices sheet in this xlsform"],
+            error__contains=["should be a choices sheet in this xlsform"],
         )
 
     def test_external_choices_sheet_included_instances(self):
