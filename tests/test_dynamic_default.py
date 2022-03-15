@@ -2,7 +2,9 @@
 """
 Test handling dynamic default in forms
 """
+from collections import namedtuple
 
+from pyxform import utils
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -338,19 +340,21 @@ class DynamicDefaultTests(PyxformTestCase):
             ],
         )
 
-    def test_dynamic_default_select_choice_name_with_dash(self):
+    def test_dynamic_default_select_choice_name_with_hyphen(self):
         # Repro for https://github.com/XLSForm/pyxform/issues/495
         md = """
         | survey  |               |      |         |         |
         |         | type          | name | label   | default |
         |         | select_one c1 | s1   | Select1 | a-2     |
         |         | select_one c2 | s2   | Select2 | 1-1     |
+        |         | select_one c3 | s3   | Select3 | a-b     |
         | choices |           |      |            |
         |         | list_name | name | label      |
         |         | c1        | a-1  | Choice A-1 |
         |         | c1        | a-2  | Choice A-2 |
         |         | c2        | 1-1  | Choice 1-1 |
         |         | c2        | 2-2  | Choice 1-2 |
+        |         | c3        | a-b  | Choice A-B |
         """
         self.assertPyxformXform(
             name="test",
@@ -358,16 +362,180 @@ class DynamicDefaultTests(PyxformTestCase):
             run_odk_validate=True,
         )
 
-    def test_dynamic_default_text_value_with_dash(self):
-        # Repro for https://github.com/XLSForm/pyxform/issues/533
-        md = """
-        | survey  |               |      |         |                     |
-        |         | type          | name | label   | default             |
-        |         | text          | t3   | Text3   | https://my-site.com |
-        |         | text          | t4   | Text4   | https://mysite.com  |
+
+class DynamicDefaultUnitTests(PyxformTestCase):
+    """
+    Similar scope to DynamicDefaultTests but separated cases for testing parse step.
+    """
+
+    Case = namedtuple("Case", ["is_dynamic", "q_type", "q_default", "q_label_fr"])
+
+    def setUp(self) -> None:
+        self.case_data = (
+            # TEXT
+            # Literal text containing URI; https://github.com/XLSForm/pyxform/issues/533
+            self.Case(False, "text", """https://my-site.com""", ""),
+            # Literal text containing brackets.
+            # French translation "Oui" here to satisfy Validate for jr:itext call below.
+            self.Case(False, "text", """(https://mysite.com)""", "Oui"),
+            # Literal text containing URI.
+            self.Case(False, "text", """go to https://mysite.com""", ""),
+            # Literal text containing various non-operator symbols.
+            self.Case(False, "text", """Repeat after me: ~!@#$%^&()_""", ""),
+            # DATE(TIME)
+            # Literal date.
+            self.Case(False, "date", """2022-03-14""", ""),
+            # Literal date, BCE.
+            self.Case(False, "date", """-2022-03-14""", ""),
+            # Literal time.
+            self.Case(False, "time", """01:02:55""", ""),
+            # Literal time, UTC.
+            self.Case(False, "time", """01:02:55Z""", ""),
+            # Literal time, UTC + 0.
+            self.Case(False, "time", """01:02:55+00:00""", ""),
+            # Literal time, UTC + 10.
+            self.Case(False, "time", """01:02:55+10:00""", ""),
+            # Literal time, UTC - 7.
+            self.Case(False, "time", """01:02:55-07:00""", ""),
+            # Literal datetime.
+            self.Case(False, "date", """2022-03-14T01:02:55""", ""),
+            # Literal datetime, UTC.
+            self.Case(False, "dateTime", """2022-03-14T01:02:55Z""", ""),
+            # Literal datetime, UTC + 0.
+            self.Case(False, "dateTime", """2022-03-14T01:02:55+00:00""", ""),
+            # Literal datetime, UTC + 10.
+            self.Case(False, "dateTime", """2022-03-14T01:02:55+10:00""", ""),
+            # Literal datetime, UTC - 7.
+            self.Case(False, "dateTime", """2022-03-14T01:02:55-07:00""", ""),
+            # GEO*
+            # Literal geopoint.
+            self.Case(False, "geopoint", """32.7377112 -117.1288399 14 5.01""", ""),
+            # Literal geotrace.
+            self.Case(
+                False,
+                "geotrace",
+                "32.7377112 -117.1288399 14 5.01;" + "32.7897897 -117.9876543 14 5.01",
+                "",
+            ),
+            # Literal geoshape.
+            self.Case(
+                False,
+                "geoshape",
+                "32.7377112 -117.1288399 14 5.01;"
+                + "32.7897897 -117.9876543 14 5.01;"
+                + "32.1231231 -117.1145877 14 5.01",
+                "",
+            ),
+            # DYNAMIC
+            # Function with mixture of quotes.
+            self.Case(True, "text", """ends-with('mystr', "str")""", ""),
+            # Function with node paths.
+            self.Case(True, "text", """ends-with(../t2, ./t4)""", ""),
+            # Namespaced function. Although jr:itext probably not valid in a default.
+            self.Case(True, "text", """jr:itext('/test/q1:label')""", ""),
+            # Compound expression with functions, operators, numeric/string literals.
+            self.Case(True, "text", """if(../t2 = 'test', 1, 2) + 15 - int(1.2)""", ""),
+            # Compound expression with a literal first.
+            self.Case(True, "text", """1 + decimal-date-time(now())""", ""),
+            # Nested function calls.
+            self.Case(
+                True,
+                "text",
+                """concat(if(../t1 = "this", 'go', "to"), "https://mysite.com")""",
+                "",
+            ),
+            # Node paths with operator.
+            self.Case(True, "text", """../t2 - ./t4""", ""),
+            # Math expression.
+            self.Case(True, "text", """1 + 2 - 3 * 4 div 5 mod 6""", ""),
+        )
+        # Additional cases needing different approach for markdown / xpath assertions.
+        self.case_data_extras = (
+            # TODO: pyxform references appear in result as resolved XPaths
+            # Pyxform reference.
+            self.Case(True, "text", """${q0}""", ""),
+            # Pyxform reference, with last-saved.
+            self.Case(True, "text", """${last-saved#q0}""", ""),
+            # TODO: Pipe character is interpreted as column delimiter
+            # Union expression.
+            self.Case(True, "text", """../t2 | ./t4""", ""),
+        )
+
+    def test_default_is_dynamic_return_value(self):
+        """Should find expected return value for each case passed to default_is_dynamic."""
+        for c in (*self.case_data, *self.case_data_extras):
+            with self.subTest(msg=repr(c)):
+                self.assertEqual(
+                    c.is_dynamic,
+                    utils.default_is_dynamic(
+                        element_default=c.q_default, element_type=c.q_type
+                    ),
+                )
+
+    def test_dynamic_default_xform_structure(self):
+        """Should find non-dynamic values in instance, and dynamic values in setvalue."""
+        cases_enum = list(enumerate(self.case_data))
+        md_head = """
+        | survey |            |          |          |               |                    |
+        |        | type       | name     | label    | default       | label::French (fr) |
         """
+        md_row = """
+        |        | {c.q_type} | q{q_num} | Q{q_num} | {c.q_default} | {c.q_label_fr}     |
+        """
+        md = md_head + "".join(
+            md_row.strip("\n").format(q_num=q_num, c=c) for q_num, c in cases_enum
+        )
+
+        def xp_model(qnum, case):
+            """Non-dynamic values in instance, and dynamic values in setvalue."""
+            q_default = case.q_default.replace('"', "&quot;")
+            if case.is_dynamic:
+                # Comparison to attribute string containing single-quote doesn't work but
+                # can at least check the original default string length is a match.
+                if "'" in q_default:
+                    value_cmp = f""" string-length(@value)={len(case.q_default)} """
+                else:
+                    value_cmp = f""" @value="{q_default}" """
+                return fr"""
+                /h:html/h:head/x:model
+                  /x:instance/x:test[@id="test"]/x:q{qnum}[
+                    not(text())
+                    and ancestor::x:model/x:setvalue[
+                      @ref="/test/q{qnum}"
+                      and {value_cmp}
+                    ]
+                  ]
+                """
+            else:
+                return fr"""
+                /h:html/h:head/x:model
+                  /x:instance/x:test[@id="test"]/x:q{qnum}[
+                    text()="{q_default}"
+                    and not(ancestor::x:model/x:setvalue[@ref="/test/q{qnum}"])
+                  ]
+                """
+
+        def xp_body(qnum, case):
+            """All items are 'input' type, translations refer to itext."""
+            if case.q_label_fr == "":
+                label_cmp = f""" ./x:label[text()="Q{qnum}"] """
+            else:
+                label_cmp = f""" ./x:label[@ref="jr:itext('/test/q{qnum}:label')"] """
+            return f"""
+              /h:html/h:body/x:input[
+                @ref="/test/q{qnum}"
+                and {label_cmp}
+              ]
+            """
+
         self.assertPyxformXform(
             name="test",
+            id_string="test",
             md=md,
             run_odk_validate=True,
+            xml__xpath_match=[
+                xp  # Get both XPath types for each Case.
+                for q_num, c in cases_enum
+                for xp in (xp_model(q_num, c), xp_body(q_num, c))
+            ],
         )
