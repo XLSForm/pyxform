@@ -66,9 +66,50 @@ def get_temp_file():
 
 @contextmanager
 def get_temp_dir():
-    temp_dir = tempfile.mkdtemp()
+    temp_dir_prefix = "pyxform_tmp_"
+    if os.name == "nt":
+        cleanup_pyxform_temp_files(prefix=temp_dir_prefix)
+
+    temp_dir = tempfile.mkdtemp(prefix=temp_dir_prefix)
     try:
         yield temp_dir
     finally:
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
+        try:
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+        except PermissionError:
+            truncate_temp_files(temp_dir=temp_dir)
+
+
+def truncate_temp_files(temp_dir):
+    """
+    Truncate files in a folder, recursing into directories.
+    """
+    # If we can't delete, at least the files can be truncated,
+    # so that they don't take up disk space until next cleanup.
+    # Seems to be a Windows-specific error for newly-created files.
+    temp_root = tempfile.gettempdir()
+    if os.path.exists(temp_dir):
+        for f in os.scandir(temp_dir):
+            if os.path.isdir(f.path):
+                truncate_temp_files(f.path)
+            else:
+                # Check still in temp directory
+                if f.path.startswith(temp_root):
+                    with open(f.path, mode="w") as _:
+                        pass
+
+
+def cleanup_pyxform_temp_files(prefix: str):
+    """
+    Try to clean up temp pyxform files from previous test runs.
+    """
+    temp_root = tempfile.gettempdir()
+    if os.path.exists(temp_root):
+        for f in os.scandir(temp_root):
+            if os.path.isdir(f.path):
+                if f.name.startswith(prefix) and f.path.startswith(temp_root):
+                    try:
+                        shutil.rmtree(f.path)
+                    except PermissionError:
+                        pass
