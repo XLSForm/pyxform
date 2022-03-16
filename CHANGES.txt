@@ -1,5 +1,14 @@
 Pyxform Changelog
 
+# v1.9.0, 2022-03-16
+
+* https://github.com/XLSForm/pyxform/pull/577 Add value and label params to select_.._from_file
+  * Lindsay Stevens @lindsay-stevens (ODK)
+* https://github.com/XLSForm/pyxform/pull/594 Add support for geojson external files
+  * Hélène Martin @lognaturel (ODK)
+* https://github.com/XLSForm/pyxform/pull/596 Use read-only openpyxl representation to reduce memory usage
+  * Hélène Martin @lognaturel (ODK)
+
 # v1.8.0, 2022-02-15
 
 * Improve xml hierarchy test methods, refactor test_trigger.py tests to use them by @lindsay-stevens in #570

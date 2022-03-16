@@ -1,5 +1,5 @@
 ===============
-pyxform v1.8.0
+pyxform v1.9.0
 ===============
 
 |python| |black|
@@ -126,27 +126,33 @@ Releasing pyxform
 5. Update ``CHANGES.txt`` with the text of the draft release.
 6. Update ``README.rst``, ``setup.py``, ``pyxform/__init__.py`` with the new release version number.
 7. Commit, push the branch, and initiate a pull request. Wait for tests to pass, then merge the PR.
-8. In a clean new release only directory, checkout master.
-9. Create a new virtualenv in this directory to ensure a clean Python environment::
+8. Tag the release and it will automatically be published
+
+Manually releasing
+===================
+Releases are now automatic. These instructions are provided for forks or for a future change in process.
+
+1. In a clean new release only directory, check out master.
+2. Create a new virtualenv in this directory to ensure a clean Python environment::
 
      /usr/local/bin/python3.8 -m venv pyxform-release
      . pyxform-release/bin/activate
 
-10. Install the production and packaging requirements::
+3. Install the production and packaging requirements::
 
      pip install -e .
      pip install wheel twine
 
-11. Cleanup build and dist folders::
+4. Clean up build and dist folders::
 
      rm -rf build dist pyxform.egg-info
 
-12. Prepare ``sdist`` and ``bdist_wheel`` distributions::
+5. Prepare ``sdist`` and ``bdist_wheel`` distributions::
 
      python setup.py sdist bdist_wheel
 
-13. Publish release to PyPI with ``twine``::
+6. Publish release to PyPI with ``twine``::
 
      twine upload dist/pyxform-*-py3-none-any.whl dist/pyxform-*.tar.gz
 
-14. Tag the GitHub release and publish it.
+7. Tag the GitHub release and publish it.
