@@ -1,11 +1,14 @@
 import os
 
 from pyxform.xls2json_backends import xlsx_to_dict
-from pyxform.xls2xform import xls2xform_convert
+from pyxform.xls2xform import xls2xform_convert, get_xml_path
 from tests import example_xls, test_output
 from tests.pyxform_test_case import PyxformTestCase
 
 # Common XLSForms used in below TestCases
+from tests.test_utils.md_table import md_table_to_workbook
+from tests.utils import get_temp_dir
+
 CHOICES = """
 | survey   |               |           |       |
 |          | type          | name      | label |
@@ -600,6 +603,27 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             warnings_count=0,
         )
 
+    def test_xls2xform_convert__e2e_row_with_no_column_value(self):
+        """Programmatically-created XLSX files may have rows without column values"""
+        md = """
+        | survey |        |        |        |         |
+        |        | type   | name   | label  | hint    |
+        |        | text   | state  | State  |         |
+        |        | text   | city   | City   | A hint  |
+        """
+        wb = md_table_to_workbook(md)
+        with get_temp_dir() as tmp:
+            wb_path = os.path.join(tmp, "empty_cell.xlsx")
+            wb.save(wb_path)
+            wb.close()
+            xls2xform_convert(
+                xlsform_path=wb_path,
+                xform_path=get_xml_path(wb_path),
+            )
+
+            xform_path = os.path.join(tmp, "empty_cell.xml")
+            self.assertTrue(os.path.exists(xform_path))
+
     def test_xls2xform_convert__e2e_with_settings_misspelling(self):
         """Should warn about settings misspelling when running full pipeline."""
         file_name = "extra_sheet_names"
@@ -615,14 +639,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             "with similar names were found: 'stettings'"
         )
         self.assertIn(expected, "\n".join(warnings))
-
-    def test_xls2xform_convert__e2e_empty_sheets_are_ignored(self):
-        file_name = "empty_sheets"
-        warnings = xls2xform_convert(
-            xlsform_path=os.path.join(example_xls.PATH, file_name + ".xlsx"),
-            xform_path=os.path.join(test_output.PATH, file_name + ".xml"),
-        )
-        self.assertEquals(len(warnings), 0)
 
     def test_xlsx_to_dict__extra_sheet_names_are_returned_by_parser(self):
         """Should return all sheet names so that later steps can do spellcheck."""

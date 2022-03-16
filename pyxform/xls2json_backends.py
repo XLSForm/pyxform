@@ -183,22 +183,21 @@ def xlsx_to_dict(path_or_file):
 
         # Check for duplicate column headers
         column_header_list = list()
-        try:
-            for cell in sheet[1]:
-                column_header = cell.value
-                # xls file with 3 columns mostly have a 3 more columns that are
-                # blank by default or something, skip during check
-                if is_empty(column_header):
-                    # Preserve column order (will filter later)
-                    column_header_list.append(None)
-                else:
-                    if column_header in column_header_list:
-                        raise PyXFormError("Duplicate column header: %s" % column_header)
-                    # strip whitespaces from the header
-                    clean_header = re.sub(r"( )+", " ", column_header.strip())
-                    column_header_list.append(clean_header)
-        except IndexError:
-            pass  # skip empty sheet
+
+        first_row = next(sheet.rows, [])
+        for cell in first_row:
+            column_header = cell.value
+            # xls file with 3 columns mostly have a 3 more columns that are
+            # blank by default or something, skip during check
+            if is_empty(column_header):
+                # Preserve column order (will filter later)
+                column_header_list.append(None)
+            else:
+                if column_header in column_header_list:
+                    raise PyXFormError("Duplicate column header: %s" % column_header)
+                # strip whitespaces from the header
+                clean_header = re.sub(r"( )+", " ", column_header.strip())
+                column_header_list.append(clean_header)
 
         result = []
         for row in sheet.iter_rows(min_row=2):
@@ -220,6 +219,7 @@ def xlsx_to_dict(path_or_file):
             result.append(row_dict)
 
         column_header_list = [key for key in column_header_list if key is not None]
+
         return result, _list_to_dict_list(column_header_list)
 
     result = OrderedDict()
@@ -242,6 +242,7 @@ def xlsx_to_dict(path_or_file):
                 result[f"{sheetname}_header"],
             ) = xlsx_to_dict_normal_sheet(sheet)
 
+    workbook.close()
     return result
 
 

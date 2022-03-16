@@ -8,6 +8,7 @@ import os
 from dataclasses import dataclass, field
 
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
+from pyxform.errors import PyXFormError
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
 from tests.pyxform_test_case import PyxformTestCase
 from tests.test_utils.md_table import md_table_to_workbook
@@ -383,21 +384,12 @@ class TestSelectOneExternal(PyxformTestCase):
         |        | select_one state           | state  | State  |                                 |
         |        | select_one_external city   | city   | City   | state=${state}                  |
         |        | select_one_external suburb | suburb | Suburb | state=${state} and city=${city} |
-        | choices |           |      |       |
-        |         | list_name | name | label |
-        |         | state     | nsw  | NSW   |
-        |         | state     | vic  | VIC   |
-        | external_choices |           |           |       |              |           |
-        |                  | list_name | name      | state |              | city      |
-        |                  | city      | Sydney    | nsw   |              |           |
-        |                  | city      | Melbourne | vic   |              |           |
-        |                  | suburb    | Balmain   | nsw   |              | sydney    |
-        |                  | suburb    | Footscray | vic   | empty header | melbourne |
         """
-        wb = md_table_to_workbook(md)
+        wb = md_table_to_workbook(md + self.all_choices)
         with get_temp_dir() as tmp:
             wb_path = os.path.join(tmp, "select_one_external.xlsx")
             wb.save(wb_path)
+            wb.close()
             with self.assertLogs("pyxform") as log:
                 xls2xform_convert(
                     xlsform_path=wb_path,
@@ -417,23 +409,58 @@ class TestSelectOneExternal(PyxformTestCase):
             # Should have excluded column with "empty header" in the last row.
             self.assertEqual('"suburb","Footscray","vic","melbourne"\n', rows[-1])
 
+    def test_empty_external_choices__errors(self):
+        md = """
+        | survey           |                          |       |       |               |
+        |                  | type                     | name  | label |choice_filter  |
+        |                  | select_one state         | state | State |               |
+        |                  | select_one_external city | city  | City  |state=${state} |
+        | choices          |                          |       |       |
+        |                  | list_name                | name  | label |
+        |                  | state                    | nsw   | NSW   |
+        | external_choices |                          |       |       |
+        """
+        wb = md_table_to_workbook(md)
+        with get_temp_dir() as tmp:
+            wb_path = os.path.join(tmp, "empty_sheet.xlsx")
+            wb.save(wb_path)
+            wb.close()
+            try:
+                xls2xform_convert(
+                    xlsform_path=wb_path,
+                    xform_path=get_xml_path(wb_path),
+                )
+            except PyXFormError as e:
+                self.assertContains(
+                    str(e), "should be an external_choices sheet in this xlsform"
+                )
+
     def test_external_choices_with_only_header__errors(self):
-        self.assertPyxformXform(
-            md="""
-            | survey           |                          |       |       |               |
-            |                  | type                     | name  | label |choice_filter  |
-            |                  | select_one state         | state | State |               |
-            |                  | select_one_external city | city  | City  |state=${state} |
-            | choices          |                          |       |       |
-            |                  | list_name                | name  | label |
-            |                  | state                    | nsw   | NSW   |
-            |                  | state                    | vic   | VIC   |
-            | external_choices |                          |       |       |
-            |                  | list_name                | name  | state | city          |
-            """,
-            errored=True,
-            error__contains=["should be an external_choices sheet"],
-        )
+        md = """
+        | survey           |                          |       |       |               |
+        |                  | type                     | name  | label |choice_filter  |
+        |                  | select_one state         | state | State |               |
+        |                  | select_one_external city | city  | City  |state=${state} |
+        | choices          |                          |       |       |
+        |                  | list_name                | name  | label |
+        |                  | state                    | nsw   | NSW   |
+        | external_choices |                          |       |       |
+        |                  | list_name                | name  | state | city          |
+        """
+        wb = md_table_to_workbook(md)
+        with get_temp_dir() as tmp:
+            wb_path = os.path.join(tmp, "empty_sheet.xlsx")
+            wb.save(wb_path)
+            wb.close()
+            try:
+                xls2xform_convert(
+                    xlsform_path=wb_path,
+                    xform_path=get_xml_path(wb_path),
+                )
+            except PyXFormError as e:
+                self.assertContains(
+                    str(e), "should be an external_choices sheet in this xlsform"
+                )
 
 
 class TestInvalidExternalFileInstances(PyxformTestCase):

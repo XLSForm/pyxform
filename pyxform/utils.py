@@ -211,7 +211,7 @@ def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
             except TypeError:
                 continue
             writer.writerow(csv_data)
-
+    wb.close()
     return True
 
 
