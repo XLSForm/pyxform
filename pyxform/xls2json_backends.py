@@ -175,7 +175,7 @@ def xlsx_to_dict(path_or_file):
     All the keys and leaf elements are strings.
     """
     try:
-        workbook = openpyxl.open(filename=path_or_file, data_only=True)
+        workbook = openpyxl.open(filename=path_or_file, read_only=True, data_only=True)
     except (OSError, BadZipFile, KeyError) as error:
         raise PyXFormError("Error reading .xlsx file: %s" % error)
 
@@ -183,7 +183,9 @@ def xlsx_to_dict(path_or_file):
 
         # Check for duplicate column headers
         column_header_list = list()
-        for cell in sheet[1]:
+
+        first_row = next(sheet.rows, [])
+        for cell in first_row:
             column_header = cell.value
             # xls file with 3 columns mostly have a 3 more columns that are
             # blank by default or something, skip during check
@@ -204,16 +206,20 @@ def xlsx_to_dict(path_or_file):
                 if key is None:
                     continue
 
-                value = row[column].value
-                if isinstance(value, str):
-                    value = value.strip()
+                try:
+                    value = row[column].value
+                    if isinstance(value, str):
+                        value = value.strip()
 
-                if not is_empty(value):
-                    row_dict[key] = xlsx_value_to_str(value)
+                    if not is_empty(value):
+                        row_dict[key] = xlsx_value_to_str(value)
+                except IndexError:
+                    pass  # rows may not have values for every column
 
             result.append(row_dict)
 
         column_header_list = [key for key in column_header_list if key is not None]
+
         return result, _list_to_dict_list(column_header_list)
 
     result = OrderedDict()
@@ -236,6 +242,7 @@ def xlsx_to_dict(path_or_file):
                 result[f"{sheetname}_header"],
             ) = xlsx_to_dict_normal_sheet(sheet)
 
+    workbook.close()
     return result
 
 

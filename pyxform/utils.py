@@ -190,13 +190,12 @@ def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
 
 
 def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
-    wb = openpyxl.open(workbook_path)
+    wb = openpyxl.open(workbook_path, read_only=True, data_only=True)
     try:
         sheet = wb.get_sheet_by_name(sheet_name)
     except KeyError:
         return False
-    if sheet.max_row < 2:
-        return False
+
     with open(csv_path, "w", newline="") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         mask = [not is_empty(cell.value) for cell in sheet[1]]
@@ -212,7 +211,7 @@ def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
             except TypeError:
                 continue
             writer.writerow(csv_data)
-
+    wb.close()
     return True
 
 

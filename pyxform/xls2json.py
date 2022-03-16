@@ -11,8 +11,7 @@ from collections import Counter
 from typing import TYPE_CHECKING
 
 from pyxform import aliases, constants
-from pyxform.constants import ROW_FORMAT_STRING
-from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
+from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, ROW_FORMAT_STRING
 from pyxform.errors import PyXFormError
 from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
 from pyxform.validators.pyxform import select_from_file_params

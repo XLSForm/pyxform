@@ -1,9 +1,13 @@
 import os
 
+import psutil
+
 from pyxform.xls2json_backends import xlsx_to_dict
-from pyxform.xls2xform import xls2xform_convert
+from pyxform.xls2xform import get_xml_path, xls2xform_convert
 from tests import example_xls, test_output
 from tests.pyxform_test_case import PyxformTestCase
+from tests.test_utils.md_table import md_table_to_workbook
+from tests.utils import get_temp_dir
 
 # Common XLSForms used in below TestCases
 CHOICES = """
@@ -41,7 +45,6 @@ SURVEY = """
 
 
 class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
-
     err_similar_found = "the following sheets with similar names were found"
     err_survey_required = "You must have a sheet named 'survey'."
     err_choices_required = "There should be a choices sheet in this xlsform."
@@ -601,6 +604,27 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             warnings_count=0,
         )
 
+    def test_xls2xform_convert__e2e_row_with_no_column_value(self):
+        """Programmatically-created XLSX files may have rows without column values"""
+        md = """
+        | survey |        |        |        |         |
+        |        | type   | name   | label  | hint    |
+        |        | text   | state  | State  |         |
+        |        | text   | city   | City   | A hint  |
+        """
+        wb = md_table_to_workbook(md)
+        with get_temp_dir() as tmp:
+            wb_path = os.path.join(tmp, "empty_cell.xlsx")
+            wb.save(wb_path)
+            wb.close()
+            xls2xform_convert(
+                xlsform_path=wb_path,
+                xform_path=get_xml_path(wb_path),
+            )
+
+            xform_path = os.path.join(tmp, "empty_cell.xml")
+            self.assertTrue(os.path.exists(xform_path))
+
     def test_xls2xform_convert__e2e_with_settings_misspelling(self):
         """Should warn about settings misspelling when running full pipeline."""
         file_name = "extra_sheet_names"
@@ -616,6 +640,20 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             "with similar names were found: 'stettings'"
         )
         self.assertIn(expected, "\n".join(warnings))
+
+    def test_xls2xform_convert__e2e_with_extra_columns__does_not_use_excessive_memory(
+        self,
+    ):
+        """Degenerate form with many blank columns"""
+        process = psutil.Process(os.getpid())
+        pre_mem = process.memory_info().rss
+        xls2xform_convert(
+            xlsform_path=os.path.join(example_xls.PATH, "extra_columns.xlsx"),
+            xform_path=os.path.join(test_output.PATH, "extra_columns.xml"),
+        )
+        post_mem = process.memory_info().rss
+        # in v1.8.0, memory usage grew by over 16x
+        self.assertLess(post_mem, pre_mem * 2)
 
     def test_xlsx_to_dict__extra_sheet_names_are_returned_by_parser(self):
         """Should return all sheet names so that later steps can do spellcheck."""
