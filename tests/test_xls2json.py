@@ -1,14 +1,16 @@
 import os
+import psutil
 
 from pyxform.xls2json_backends import xlsx_to_dict
 from pyxform.xls2xform import xls2xform_convert, get_xml_path
 from tests import example_xls, test_output
 from tests.pyxform_test_case import PyxformTestCase
 
-# Common XLSForms used in below TestCases
 from tests.test_utils.md_table import md_table_to_workbook
 from tests.utils import get_temp_dir
 
+
+# Common XLSForms used in below TestCases
 CHOICES = """
 | survey   |               |           |       |
 |          | type          | name      | label |
@@ -639,6 +641,20 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             "with similar names were found: 'stettings'"
         )
         self.assertIn(expected, "\n".join(warnings))
+
+    def test_xls2xform_convert__e2e_with_extra_columns__does_not_use_excessive_memory(
+        self,
+    ):
+        """Degenerate form with many blank columns"""
+        process = psutil.Process(os.getpid())
+        pre_mem = process.memory_info().rss
+        xls2xform_convert(
+            xlsform_path=os.path.join(example_xls.PATH, "extra_columns.xlsx"),
+            xform_path=os.path.join(test_output.PATH, "extra_columns.xml"),
+        )
+        post_mem = process.memory_info().rss
+        # in v1.8.0, memory usage grew by over 16x
+        self.assertLess(post_mem, pre_mem * 2)
 
     def test_xlsx_to_dict__extra_sheet_names_are_returned_by_parser(self):
         """Should return all sheet names so that later steps can do spellcheck."""
