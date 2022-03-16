@@ -1,14 +1,13 @@
 import os
+
 import psutil
 
 from pyxform.xls2json_backends import xlsx_to_dict
-from pyxform.xls2xform import xls2xform_convert, get_xml_path
+from pyxform.xls2xform import get_xml_path, xls2xform_convert
 from tests import example_xls, test_output
 from tests.pyxform_test_case import PyxformTestCase
-
 from tests.test_utils.md_table import md_table_to_workbook
 from tests.utils import get_temp_dir
-
 
 # Common XLSForms used in below TestCases
 CHOICES = """
