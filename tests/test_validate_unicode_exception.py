@@ -3,7 +3,7 @@
 Test unicode characters in validate error messages.
 """
 
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 
 class ValidateUnicodeException(PyxformTestCase):

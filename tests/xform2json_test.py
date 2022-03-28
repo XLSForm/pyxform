@@ -9,7 +9,7 @@ from xml.etree.ElementTree import ParseError
 from pyxform.builder import create_survey_from_path
 from pyxform.xform2json import _try_parse, create_survey_element_from_xml
 from tests import test_output, utils
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 from tests.xform_test_case.base import XFormTestCase
 
 

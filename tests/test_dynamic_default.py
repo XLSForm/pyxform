@@ -3,7 +3,7 @@
 Test handling dynamic default in forms
 """
 
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 
 class DynamicDefaultTests(PyxformTestCase):

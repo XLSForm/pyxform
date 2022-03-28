@@ -2,7 +2,7 @@
 """
 Test setting form name to data.
 """
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 
 class FormNameTest(PyxformTestCase):

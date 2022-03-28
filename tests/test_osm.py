@@ -2,7 +2,7 @@
 """
 Test OSM widgets.
 """
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 expected_xml_output = """
     <upload mediatype="osm/*" ref="/osm/osm_building">

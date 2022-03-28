@@ -13,7 +13,7 @@ from pyxform.constants import SURVEY
 from pyxform.validators.pyxform.missing_translations_check import (
     format_missing_translations_msg,
 )
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 
 @dataclass()

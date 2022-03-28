@@ -2,7 +2,7 @@
 """
 Test unicode rtl in XLSForms.
 """
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 
 class UnicodeStrings(PyxformTestCase):

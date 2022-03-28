@@ -2,7 +2,7 @@
 """
 Test missing headers in XLSForm.
 """
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 
 class MissingHeaders(PyxformTestCase):

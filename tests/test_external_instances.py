@@ -7,7 +7,7 @@ See also test_external_instances_for_selects
 from textwrap import dedent
 
 from pyxform.errors import PyXFormError
-from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase, PyxformTestError
 
 
 class ExternalInstanceTests(PyxformTestCase):

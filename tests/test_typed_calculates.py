@@ -4,7 +4,7 @@ Test that any row with a calculation becomes a calculate of the row's type or of
 error should only be thrown for a row without a calculation.
 """
 
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 
 class TypedCalculatesTest(PyxformTestCase):

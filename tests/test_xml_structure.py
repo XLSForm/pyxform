@@ -2,7 +2,7 @@
 """
 Test XForm structure.
 """
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 
 class XmlStructureTest(PyxformTestCase):

@@ -2,7 +2,7 @@ import unittest
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 if TYPE_CHECKING:
     from typing import Set

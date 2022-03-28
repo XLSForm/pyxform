@@ -13,7 +13,7 @@ setup(
     packages=find_packages(exclude=["tests", "tests.*"]),
     package_data={
         "pyxform.validators.odk_validate": ["bin/*.*"],
-        "pyxform": ["iana_subtags.txt"],
+        "pyxform": ["iana_subtags.txt", "test_utils"],
     },
     url="http://pypi.python.org/pypi/pyxform/",
     description="A Python package to create XForms for ODK Collect.",

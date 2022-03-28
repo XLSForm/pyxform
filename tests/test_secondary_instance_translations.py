@@ -2,7 +2,7 @@
 """
 Testing inlining translation when no translation is specified.
 """
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 
 class TestSecondaryInstanceTest(PyxformTestCase):

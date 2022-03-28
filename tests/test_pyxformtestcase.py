@@ -3,7 +3,7 @@
 Ensuring that the pyxform_test_case.PyxformTestCase class does some
 internal conversions correctly.
 """
-from tests.pyxform_test_case import PyxformTestCase
+from pyxform.test_utils.pyxform_test_case import PyxformTestCase
 
 
 class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
