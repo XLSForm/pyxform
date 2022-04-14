@@ -12,7 +12,7 @@ def _strp_cell(cell):
     val = cell.strip()
     if val == "":
         return None
-
+    val = val.replace(r"\|", "|")
     return val
 
 
@@ -23,7 +23,7 @@ def _extract_array(mdtablerow):
         if re.match(r"^[\|-]+$", mtchstr):
             return False
         else:
-            return [_strp_cell(c) for c in mtchstr.split("|")]
+            return [_strp_cell(c) for c in re.split(r"(?<!\\)\|", mtchstr)]
 
     return False
 

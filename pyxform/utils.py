@@ -390,6 +390,7 @@ def get_expression_lexer() -> re.Scanner:  # noqa
         "CLOSE_PAREN": r"\)",
         "BRACKET": r"\[\]\{\}",
         "PARENT_REF": r"\.\.",
+        "SELF_REF": r"\.",
         "PATH_SEP": r"\/",  # javarosa.xpath says "//" is an "unsupported construct".
         "SYSTEM_LITERAL": r""""[^"]*"|'[^']*'""",
         "COMMA": r",",
@@ -428,3 +429,7 @@ def parse_expression(text: str) -> Tuple[List[ExpLexerToken], str]:
     """
     tokens, remainder = EXPRESSION_LEXER.scan(text)
     return tokens, remainder
+
+
+def coalesce(*args):
+    return next((a for a in args if a is not None), None)
