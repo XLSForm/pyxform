@@ -2,338 +2,846 @@
 """
 Test handling dynamic default in forms
 """
+import os
+import unittest
+from dataclasses import dataclass
+from time import perf_counter
+from typing import Optional, Tuple
+from unittest.mock import patch
 
+import psutil
+
+from pyxform import utils
 from tests.pyxform_test_case import PyxformTestCase
 
 
-class DynamicDefaultTests(PyxformTestCase):
+@dataclass()
+class Case:
     """
-    Handling dynamic defaults
+    A test case spec for dynamic default scenarios.
+
+    - is_dynamic: If true, the default should result in treatment as a dynamic default.
+    - q_type: The question type, e.g. text, integer, select_one, etc.
+    - q_default: The default value.
+    - q_value: The rendered default value. Can be different to the input default, for
+        example Pyxform references are input as ${q1} but rendered as "/instance/q1".
+    - q_label_fr: For itext cases, a French question label.
     """
 
-    def test_handling_dynamic_default(self):
+    is_dynamic: bool
+    q_type: str
+    q_default: str = ""
+    q_value: Optional[str] = None
+    q_label_fr: str = ""
+
+
+class XPathHelper:
+    """
+    XPath expressions for dynamic defaults assertions.
+    """
+
+    @staticmethod
+    def model_setvalue(q_num: int):
+        """Get the setvalue element's value attribute."""
+        return fr"""
+        /h:html/h:head/x:model/x:setvalue[
+          @ref="/test/q{q_num}"
+          and @event='odk-instance-first-load'
+        ]/@value
         """
-        Should use set-value for dynamic default form
+
+    @staticmethod
+    def model(q_num: int, case: Case):
         """
+        Expected structure for model elements.
+
+        Expect non-dynamic values in the instance, and dynamic values in a setvalue.
+
+        For default values that include a single quote, it's not really possible to use
+        a XPath expression with xpath_match. Testing for the same string length is
+        problematic as well due to substitution of &quot; for single quote. Instead,
+        use the model_setvalue XPath with xml__xpath_exact, which compares the value
+        containing single quotes outside of a XPath context.
+        """
+        q_default_final = utils.coalesce(case.q_value, case.q_default)
+
+        if case.q_type in ("calculate", "select_one", "text"):
+            q_bind = "string"
+        elif case.q_type == "integer":
+            q_bind = "int"
+        else:
+            q_bind = case.q_type
+
+        if case.is_dynamic:
+            if "'" in q_default_final:
+                value_cmp = ""
+            else:
+                value_cmp = f"""and @value="{q_default_final}" """
+            return fr"""
+            /h:html/h:head/x:model
+              /x:instance/x:test[@id="test"]/x:q{q_num}[
+                not(text())
+                and ancestor::x:model/x:bind[
+                  @nodeset='/test/q{q_num}'
+                  and @type='{q_bind}'
+                ]
+                and ancestor::x:model/x:setvalue[
+                  @ref="/test/q{q_num}"
+                  and @event='odk-instance-first-load'
+                  {value_cmp}
+                ]
+              ]
+            """
+        else:
+            if 0 == len(q_default_final):
+                q_default_cmp = """and not(text()) """
+            else:
+                if "'" in q_default_final:
+                    q_default_cmp = ""
+                else:
+                    q_default_cmp = f"""and text()='{q_default_final}' """
+            return fr"""
+            /h:html/h:head/x:model
+              /x:instance/x:test[@id="test"]/x:q{q_num}[
+                ancestor::x:model/x:bind[
+                  @nodeset='/test/q{q_num}'
+                  and @type='{q_bind}'
+                ]
+                and not(ancestor::x:model/x:setvalue[@ref="/test/q{q_num}"])
+                {q_default_cmp}
+              ]
+            """
+
+    @staticmethod
+    def body_input(qnum: int, case: Case):
+        """Expected structure for body elements for input types."""
+        if case.q_label_fr == "":
+            label_cmp = f""" ./x:label[text()="Q{qnum}"] """
+        else:
+            label_cmp = f""" ./x:label[@ref="jr:itext('/test/q{qnum}:label')"] """
+        return f"""
+          /h:html/h:body/x:input[
+            @ref="/test/q{qnum}"
+            and {label_cmp}
+          ]
+        """
+
+    @staticmethod
+    def body_select1(q_num: int, choices: Tuple[Tuple[str, str], ...]):
+        """Expected structure for body elements for select1 types."""
+        choices_xp = "\n              and ".join(
+            (
+                f"./x:item/x:value/text() = '{cv}' and ./x:item/x:label/text() = '{cl}'"
+                for cv, cl in choices
+            )
+        )
+        return fr"""
+        /h:html/h:body/x:select1[
+          @ref = '/test/q{q_num}'
+          and ./x:label/text() = 'Select{q_num}'
+          and {choices_xp}
+        ]
+        """
+
+
+xp = XPathHelper()
+
+
+class TestDynamicDefault(PyxformTestCase):
+    """
+    Handling dynamic defaults.
+    """
+
+    def test_static_default_in_repeat(self):
+        """Should use instance repeat template and first row for static default inside a repeat."""
         md = """
-        | survey |         |            |            |                   |
-        |        | type    | name       | label      | default           |
-        |        | text    | last_name  | Last name  | not_func$         |
-        |        | integer | age        | Your age   | random() |
+        | survey |              |      |       |         |
+        |        | type         | name | label | default |
+        |        | integer      | q0   | Foo   | foo     |
+        |        | begin repeat | r1   |       |         |
+        |        | integer      | q1   | Bar   | 12      |
+        |        | end repeat   | r1   |       |         |
         """
-
         self.assertPyxformXform(
+            name="test",
+            id_string="test",
             md=md,
-            name="dynamic",
-            id_string="id",
-            model__contains=[
-                "<last_name>not_func$</last_name>",
-                "<age/>",
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="random()"/>',
+            xml__xpath_match=[
+                xp.model(0, Case(False, "integer", "foo")),
+                # Repeat template and first row.
+                """
+                /h:html/h:head/x:model/x:instance/x:test[
+                  @id="test"
+                  and ./x:r1[@jr:template='']
+                  and ./x:r1[not(@jr:template)]
+                ]
+                """,
+                # q1 static default value in repeat template.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q1[text()='12']
+                """,
+                # q1 static default value in repeat row.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q1[text()='12']
+                """,
             ],
         )
 
-        survey = self.md_to_pyxform_survey(
-            md_raw=md,
-            kwargs={"id_string": "id", "name": "dynamic", "title": "some-title"},
-            autoname=False,
-        )
-        survey_xml = survey._to_pretty_xml()
-
-        self.assertContains(survey_xml, "<last_name>not_func$</last_name>", 1)
-        self.assertContains(survey_xml, "<age/>", 1)
-        self.assertContains(
-            survey_xml,
-            '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="random()"/>',
-            1,
-        )
-        self.assertNotContains(
-            survey_xml,
-            '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/age" value="random()"/>',
-        )
-
-    def test_static_defaults(self):
-        self.assertPyxformXform(
-            name="dynamic",
-            md="""
-            | survey |              |          |       |                   |
-            |        | type         | name     | label | default           |
-            |        | integer      | foo      | Foo   | foo               |
-            |        | begin repeat | repeat   |       |                   |
-            |        | integer      | bar      | Bar   | 12                |
-            |        | end repeat   | repeat   |       |                   |
-            """,
-            model__contains=["<foo>foo</foo>", "<bar>12</bar>"],
-            model__excludes=["setvalue"],
-        )
-
-    def test_handling_dynamic_default_in_repeat(self):
-        """
-        Should use set-value for dynamic default form inside repeat
-        """
+    def test_dynamic_default_in_repeat(self):
+        """Should use body setvalue for dynamic default form inside a repeat."""
         md = """
-        | survey |              |            |              |                   |
-        |        | type         | name       | label        | default           |
-        |        | begin repeat | household  | Households   |                   |
-        |        | integer      | age        | Your age     | random() |
-        |        | text         | feeling    | Your feeling | not_func$         |
-        |        | end repeat   | household  |              |                   |
+        | survey |              |      |              |           |
+        |        | type         | name | label        | default   |
+        |        | begin repeat | r1   | Households   |           |
+        |        | integer      | q0   | Your age     | random()  |
+        |        | text         | q1   | Your feeling | not_func$ |
+        |        | end repeat   | r1   |              |           |
         """
-
         self.assertPyxformXform(
+            name="test",
+            id_string="test",
             md=md,
-            name="dynamic",
-            id_string="id",
-            model__contains=["<age/>", "<feeling>not_func$</feeling>"],
-            model__excludes=[
-                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="random()"/>'
+            xml__xpath_match=[
+                # Repeat template and first row.
+                """
+                /h:html/h:head/x:model/x:instance/x:test[
+                  @id="test"
+                  and ./x:r1[@jr:template='']
+                  and ./x:r1[not(@jr:template)]
+                ]
+                """,
+                # q0 dynamic default value not in repeat template.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q0' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q0[not(text())]
+                """,
+                # q0 dynamic default value not in repeat row.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q0' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q0[not(text())]
+                """,
+                # q0 dynamic default value not in model setvalue.
+                """
+                /h:html/h:head/x:model[not(./x:setvalue[@ref='test/r1/q0'])]
+                """,
+                # q0 dynamic default value in body group setvalue, with 2 events.
+                """
+                /h:html/h:body/x:group[@ref='/test/r1']/x:repeat[@nodeset='/test/r1']
+                  /x:setvalue[
+                    @event='odk-instance-first-load odk-new-repeat'
+                    and @ref='/test/r1/q0'
+                    and @value='random()'
+                  ]
+                """,
+                # q1 static default value in repeat template.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q1' and @type='string']
+                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q1[text()='not_func$']
+                """,
+                # q1 static default value in repeat row.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q1' and @type='string']
+                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q1[text()='not_func$']
+                """,
             ],
-            xml__contains=[
-                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="random()"/>'
-            ],
-        )
-
-        survey = self.md_to_pyxform_survey(
-            md_raw=md,
-            kwargs={"id_string": "id", "name": "dynamic", "title": "some-title"},
-            autoname=False,
-        )
-        survey_xml = survey._to_pretty_xml()
-
-        self.assertContains(survey_xml, "<feeling>not_func$</feeling>", 2)
-        self.assertContains(survey_xml, "<age/>", 2)
-        self.assertContains(
-            survey_xml,
-            '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/household/age" value="random()"/>',
-            1,
-        )
-        self.assertNotContains(
-            survey_xml,
-            '<setvalue event="odk-instance-first-load" ref="/dynamic/age" value="random()"/>',
         )
 
     def test_dynamic_default_in_group(self):
+        """Should use model setvalue for dynamic default form inside a group."""
+        md = """
+        | survey |             |      |       |         |
+        |        | type        | name | label | default |
+        |        | integer     | q0   | Foo   |         |
+        |        | begin group | g1   |       |         |
+        |        | integer     | q1   | Bar   | ${q0}   |
+        |        | end group   | g1   |       |         |
+        """
         self.assertPyxformXform(
-            name="dynamic",
-            md="""
-            | survey |            |          |       |                   |
-            |        | type       | name     | label | default           |
-            |        | integer    | foo      | Foo   |                   |
-            |        | begin group| group    |       |                   |
-            |        | integer    | bar      | Bar   | ${foo}            |
-            |        | end group  | group    |       |                   |
-            """,
-            model__contains=[
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/group/bar" value=" /dynamic/foo "/>'
+            name="test",
+            id_string="test",
+            md=md,
+            xml__xpath_match=[
+                # q0 element in instance.
+                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:q0""",
+                # Group element in instance.
+                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:g1""",
+                # q1 dynamic default not in instance.
+                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:g1/x:q1[not(text())]""",
+                # q1 dynamic default value in model setvalue, with 1 event.
+                """
+                /h:html/h:head/x:model/x:setvalue[
+                  @event="odk-instance-first-load"
+                  and @ref='/test/g1/q1'
+                  and @value=' /test/q0 '
+                ]
+                """,
+                # q1 dynamic default value not in body group setvalue.
+                """
+                /h:html/h:body/x:group[
+                  @ref='/test/g1'
+                  and not(child::setvalue[@ref='/test/g1/q1'])
+                ]
+                """,
             ],
         )
 
     def test_sibling_dynamic_default_in_group(self):
+        """Should use model setvalue for dynamic default form inside a group."""
+        md = """
+        | survey |              |      |       |         |
+        |        | type         | name | label | default |
+        |        | begin group  | g1   |       |         |
+        |        | integer      | q0   | Foo   |         |
+        |        | integer      | q1   | Bar   | ${q0}   |
+        |        | end group    | g1   |       |         |
+        """
         self.assertPyxformXform(
-            name="dynamic",
-            md="""
-            | survey |              |          |       |                   |
-            |        | type         | name     | label | default           |
-            |        | begin group  | group    |       |                   |
-            |        | integer      | foo      | Foo   |                   |
-            |        | integer      | bar      | Bar   | ${foo}            |
-            |        | end group    | group    |       |                   |
-            """,
-            model__contains=[
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/group/bar" value=" /dynamic/group/foo "/>'
+            name="test",
+            id_string="test",
+            md=md,
+            xml__xpath_match=[
+                # Group element in instance.
+                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:g1""",
+                # q0 element in group.
+                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:g1/x:q0""",
+                # q1 dynamic default not in instance.
+                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:g1/x:q1[not(text())]""",
+                # q1 dynamic default value in model setvalue, with 1 event.
+                """
+                /h:html/h:head/x:model/x:setvalue[
+                  @event="odk-instance-first-load"
+                  and @ref='/test/g1/q1'
+                  and @value=' /test/g1/q0 '
+                ]
+                """,
+                # q1 dynamic default value not in body group setvalue.
+                """
+                /h:html/h:body/x:group[
+                  @ref='/test/g1'
+                  and not(child::setvalue[@ref='/test/g1/q1'])
+                ]
+                """,
             ],
         )
 
     def test_sibling_dynamic_default_in_repeat(self):
+        """Should use body setvalue for dynamic default form inside a repeat."""
+        md = """
+        | survey |              |      |       |         |
+        |        | type         | name | label | default |
+        |        | begin repeat | r1   |       |         |
+        |        | integer      | q0   | Foo   |         |
+        |        | integer      | q1   | Bar   | ${q0}   |
+        |        | end repeat   | r1   |       |         |
+        """
         self.assertPyxformXform(
-            name="dynamic",
-            md="""
-            | survey |              |          |       |                   |
-            |        | type         | name     | label | default           |
-            |        | begin repeat | repeat   |       |                   |
-            |        | integer      | foo      | Foo   |                   |
-            |        | integer      | bar      | Bar   | ${foo}            |
-            |        | end repeat   | repeat   |       |                   |
-            """,
-            xml__contains=[
-                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/bar" value=" ../foo "/>'
-            ],
-            model__excludes=[
-                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/bar" value=" ../foo "/>'
+            name="test",
+            id_string="test",
+            md=md,
+            xml__xpath_match=[
+                # Repeat template and first row.
+                """
+                /h:html/h:head/x:model/x:instance/x:test[
+                  @id="test"
+                  and ./x:r1[@jr:template='']
+                  and ./x:r1[not(@jr:template)]
+                ]
+                """,
+                # q0 element in repeat template.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q0' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q0
+                """,
+                # q0 element in repeat row.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q0' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q0
+                """,
+                # q1 dynamic default value not in model setvalue.
+                """
+                /h:html/h:head/x:model[not(./x:setvalue[@ref='test/r1/q1'])]
+                """,
+                # q1 dynamic default value in body group setvalue, with 2 events.
+                """
+                /h:html/h:body/x:group[@ref='/test/r1']/x:repeat[@nodeset='/test/r1']
+                  /x:setvalue[
+                    @event='odk-instance-first-load odk-new-repeat'
+                    and @ref='/test/r1/q1'
+                    and @value=' ../q0 '
+                  ]
+                """,
             ],
         )
 
     def test_dynamic_default_in_group_nested_in_repeat(self):
-        self.assertPyxformXform(
-            name="dynamic",
-            md="""
-            | survey |              |          |       |                   |
-            |        | type         | name     | label | default           |
-            |        | begin repeat | repeat   |       |                   |
-            |        | begin group  | group    |       |                   |
-            |        | integer      | foo      | Foo   |                   |
-            |        | integer      | bar      | Bar   | ${foo}            |
-            |        | end group    | group    |       |                   |
-            |        | end repeat   | repeat   |       |                   |
-            """,
-            xml__contains=[
-                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/repeat/group/bar" value=" ../foo "/>'
-            ],
-            model__excludes=['<setvalue event="odk-instance-first-load'],
-        )
-
-    def test_dynamic_defaults_in_nested_repeat(self):
+        """Should use body setvalue for dynamic default form inside a group and repeat."""
         md = """
-            | survey |              |          |       |                   |
-            |        | type         | name     | label | default           |
-            |        | begin repeat | outer    |       |                   |
-            |        | date         | date     | Date  | now()             |
-            |        | integer      | foo      | Foo   |                   |
-            |        | begin repeat | inner    |       |                   |
-            |        | integer      | bar      | Bar   | ${foo}            |
-            |        | end repeat   | inner    |       |                   |
-            |        | end repeat   | outer    |       |                   |
-            """
-
+        | survey |              |      |       |         |
+        |        | type         | name | label | default |
+        |        | begin repeat | r1   |       |         |
+        |        | begin group  | g1   |       |         |
+        |        | integer      | q0   | Foo   |         |
+        |        | integer      | q1   | Bar   | ${q0}   |
+        |        | end group    | g1   |       |         |
+        |        | end repeat   | r1   |       |         |
+        """
         self.assertPyxformXform(
-            name="dynamic",
+            name="test",
+            id_string="test",
             md=md,
-            xml__contains=[
-                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/outer/inner/bar" value=" ../../foo "/>',
-                '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/outer/date" value="now()"/>',
+            xml__xpath_match=[
+                # Repeat template and first row contains the group.
+                """
+                /h:html/h:head/x:model/x:instance/x:test[
+                  @id="test"
+                  and ./x:r1[@jr:template='']/x:g1
+                  and ./x:r1[not(@jr:template)]/x:g1
+                ]
+                """,
+                # q0 element in repeat template.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/g1/q0' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:g1/x:q0
+                """,
+                # q0 element in repeat row.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/g1/q0' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:g1/x:q0
+                """,
+                # q1 dynamic default value not in model setvalue.
+                """
+                /h:html/h:head/x:model[not(./x:setvalue[@ref='test/r1/g1/q1'])]
+                """,
+                # q1 dynamic default value in body group setvalue, with 2 events.
+                """
+                /h:html/h:body/x:group[@ref='/test/r1']/x:repeat[@nodeset='/test/r1']
+                  /x:setvalue[
+                    @event='odk-instance-first-load odk-new-repeat'
+                    and @ref='/test/r1/g1/q1'
+                    and @value=' ../q0 '
+                  ]
+                """,
             ],
-            model__excludes=['<setvalue event="odk-instance-first-load'],
         )
 
-        survey = self.md_to_pyxform_survey(
-            md_raw=md,
-            kwargs={"id_string": "id", "name": "dynamic", "title": "some-title"},
-            autoname=False,
-        )
-        survey_xml = survey._to_pretty_xml()
-
-        self.assertContains(
-            survey_xml,
-            '<setvalue event="odk-instance-first-load odk-new-repeat" ref="/dynamic/outer/inner/bar" value=" ../../foo "/>',
-            1,
-        )
-
-    def test_handling_arithmetic_expression(self):
-        """
-        Should use set-value for dynamic default form
-        """
+    def test_dynamic_default_in_repeat_nested_in_repeat(self):
+        """Should use body setvalue for dynamic default form inside 2 levels of repeat."""
         md = """
-        | survey |         |            |             |                   |
-        |        | type    | name       | label       | default           |
-        |        | text    | expr_1     | First expr  | 2 + 3 * 4         |
-        |        | text    | expr_2     | Second expr | 5 div 5 - 5       |
-        |        | integer | expr_3     | Third expr  | random() + 2 * 5    |
+        | survey |              |      |       |         |
+        |        | type         | name | label | default |
+        |        | begin repeat | r1   |       |         |
+        |        | date         | q0   | Date  | now()   |
+        |        | integer      | q1   | Foo   |         |
+        |        | begin repeat | r2   |       |         |
+        |        | integer      | q2   | Bar   | ${q1}   |
+        |        | end repeat   | r2   |       |         |
+        |        | end repeat   | r1   |       |         |
         """
-
         self.assertPyxformXform(
+            name="test",
+            id_string="test",
             md=md,
-            name="dynamic",
-            id_string="id",
-            model__contains=[
-                "<expr_1/>",
-                "<expr_2/>",
-                "<expr_3/>",
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_1" value="2 + 3 * 4"/>',
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_2" value="5 div 5 - 5"/>',
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_3" value="random() + 2 * 5"/>',
+            xml__xpath_match=[
+                # Repeat templates and first rows.
+                """
+                /h:html/h:head/x:model/x:instance/x:test[
+                  @id="test"
+                  and ./x:r1[@jr:template='']/x:r2[@jr:template='']
+                  and ./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]
+                ]
+                """,
+                # q0 element in repeat template.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q0' and @type='date']
+                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q0
+                """,
+                # q0 element in repeat row.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q0' and @type='date']
+                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q0
+                """,
+                # q0 dynamic default value not in model setvalue.
+                """
+                /h:html/h:head/x:model[not(./x:setvalue[@ref='test/r1/q0'])]
+                """,
+                # q0 dynamic default value in body group setvalue, with 2 events.
+                """
+                /h:html/h:body/x:group[@ref='/test/r1']/x:repeat[@nodeset='/test/r1']
+                  /x:setvalue[
+                    @event='odk-instance-first-load odk-new-repeat'
+                    and @ref='/test/r1/q0'
+                    and @value='now()'
+                  ]
+                """,
+                # q1 element in repeat template.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q1
+                """,
+                # q1 element in repeat row.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q1
+                """,
+                # q2 element in repeat template.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:r2[@jr:template='']/x:q2
+                """,
+                # q2 element in repeat row.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
+                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:r2[not(@jr:template)]/x:q2
+                """,
+                # q2 dynamic default value not in model setvalue.
+                """
+                /h:html/h:head/x:model[not(./x:setvalue[@ref='test/r1/r2/q2'])]
+                """,
+                # q2 dynamic default value in body group setvalue, with 2 events.
+                """
+                /h:html/h:body/x:group[@ref='/test/r1']/x:repeat[@nodeset='/test/r1']
+                  /x:group[@ref='/test/r1/r2']/x:repeat[@nodeset='/test/r1/r2']
+                    /x:setvalue[
+                      @event='odk-instance-first-load odk-new-repeat'
+                      and @ref='/test/r1/r2/q2'
+                      and @value=' ../../q1 '
+                    ]
+                """,
             ],
         )
 
-    def test_handling_arithmetic_text(self):
-        """
-        Should use set-value for dynamic default form with arithmetic text
-        """
-        md = """
-        | survey |         |            |             |         |
-        |        | type    | name       | label       | default |
-        |        | text    | expr_1     | First expr  | 3 mod 3 |
-        |        | text    | expr_2     | Second expr | 5 div 5 |
-        """
-
+    def test_dynamic_default_does_not_warn(self):
+        """Pyxform used to warn about client compatibility, but now it shouldn't."""
         self.assertPyxformXform(
-            md=md,
-            name="dynamic",
-            id_string="id",
-            model__contains=[
-                "<expr_1/>",
-                "<expr_2/>",
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_1" value="3 mod 3"/>',
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/expr_2" value="5 div 5"/>',
-            ],
-        )
-
-    def test_dynamic_default_with_nested_expression(self):
-        self.assertPyxformXform(
-            name="dynamic",
             md="""
-            | survey |         |               |               |                   |
-            |        | type    | name          | label         | default           |
-            |        | integer | patient_count | Patient count | if(${last-saved#patient_count} = '', 0, ${last-saved#patient_count} + 1) |
-            """,
-            xml__contains=[
-                '<instance id="__last-saved" src="jr://instance/last-saved"/>',
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/patient_count" '
-                "value=\"if( instance('__last-saved')/dynamic/patient_count  = '', 0,  "
-                "instance('__last-saved')/dynamic/patient_count  + 1)\"/>",
-            ],
-        )
-
-    def test_dynamic_default_with_reference(self):
-        self.assertPyxformXform(
-            name="dynamic",
-            md="""
-            | survey |            |          |       |                   |
-            |        | type       | name     | label | default           |
-            |        | integer    | foo      | Foo   |                   |
-            |        | integer    | bar      | Bar   | ${foo}            |
-            """,
-            xml__contains=[
-                '<setvalue event="odk-instance-first-load" ref="/dynamic/bar" value=" /dynamic/foo "/>'
-            ],
-        )
-
-    def test_dynamic_default_warns(self):
-        warnings = []
-
-        self.md_to_pyxform_survey(
-            """
             | survey |      |         |       |         |
             |        | type | name    | label | default |
             |        | text | foo     | Foo   |         |
             |        | text | bar     | Bar   | ${foo}  |
             """,
-            warnings=warnings,
-        )
-
-        self.assertTrue(len(warnings) == 0)
-
-    def test_default_date_not_considered_dynamic(self):
-        self.assertPyxformXform(
-            name="dynamic",
-            md="""
-            | survey |            |          |       |                   |
-            |        | type       | name     | label | default           |
-            |        | date       | foo      | Foo   | 2020-01-01        |
-            """,
-            xml__contains=["<foo>2020-01-01</foo>"],
+            warnings_count=0,
         )
 
     def test_dynamic_default_on_calculate(self):
         self.assertPyxformXform(
-            name="dynamic",
+            name="test",
+            id_string="test",
             md="""
-            | survey |            |          |       |             |                      |
-            |        | type       | name     | label | calculation | default              |
-            |        | calculate  | r        |       |             | random() + 0.5       |
-            |        | calculate  | one      |       |             | if(${r} < 1,'A','B') |
+            | survey |            |      |       |             |                      |
+            |        | type       | name | label | calculation | default              |
+            |        | calculate  | q1   |       |             | random() + 0.5       |
+            |        | calculate  | q2   |       |             | if(${q1} < 1,'A','B') |
             """,
-            xml__contains=[
-                """<setvalue event="odk-instance-first-load" ref="/dynamic/r" value="random() + 0.5"/>""",
-                """<setvalue event="odk-instance-first-load" ref="/dynamic/one" value="if( /dynamic/r  &lt; 1,'A','B')"/>""",
+            xml__xpath_match=[
+                xp.model(1, Case(True, "calculate", "random() + 0.5")),
+                xp.model(2, Case(True, "calculate", "if( /test/q1  < 1,'A','B')")),
+                # Nothing in body since both questions are calculations.
+                "/h:html/h:body[not(text) and count(./*) = 0]",
             ],
         )
+
+    def test_dynamic_default_select_choice_name_with_hyphen(self):
+        # Repro for https://github.com/XLSForm/pyxform/issues/495
+        md = """
+        | survey  |               |      |         |         |
+        |         | type          | name | label   | default |
+        |         | select_one c1 | q1   | Select1 | a-2     |
+        |         | select_one c2 | q2   | Select2 | 1-1     |
+        |         | select_one c3 | q3   | Select3 | a-b     |
+        | choices |           |      |       |
+        |         | list_name | name | label |
+        |         | c1        | a-1  | C A-1 |
+        |         | c1        | a-2  | C A-2 |
+        |         | c2        | 1-1  | C 1-1 |
+        |         | c2        | 2-2  | C 1-2 |
+        |         | c3        | a-b  | C A-B |
+        """
+        self.assertPyxformXform(
+            name="test",
+            id_string="test",
+            md=md,
+            xml__xpath_match=[
+                xp.model(1, Case(False, "select_one", "a-2")),
+                xp.model(2, Case(False, "select_one", "1-1")),
+                xp.model(3, Case(False, "select_one", "a-b")),
+                xp.body_select1(q_num=1, choices=(("a-1", "C A-1"), ("a-2", "C A-2"))),
+                xp.body_select1(q_num=2, choices=(("1-1", "C 1-1"), ("2-2", "C 1-2"))),
+                xp.body_select1(q_num=3, choices=(("a-b", "C A-B"),)),
+            ],
+        )
+
+
+class TestDynamicDefaultSimpleInput(PyxformTestCase):
+    """
+    Dynamic default test cases using simple input-bound question types, i.e. not using
+    selects, groups, or repeats.
+    """
+
+    def setUp(self) -> None:
+        self.case_data = (
+            # --------
+            # TEXT
+            # --------
+            # Literal with just alpha characters.
+            Case(False, "integer", """foo"""),
+            # Literal with numeric characters.
+            Case(False, "integer", """123"""),
+            # Literal with alphanumeric characters.
+            Case(False, "text", """bar123"""),
+            # Literal text containing URI; https://github.com/XLSForm/pyxform/issues/533
+            Case(False, "text", """https://my-site.com"""),
+            # Literal text containing brackets.
+            Case(False, "text", """(https://mysite.com)"""),
+            # Literal text containing URI.
+            Case(False, "text", """go to https://mysite.com"""),
+            # Literal text containing various non-operator symbols.
+            Case(False, "text", """Repeat after me: '~!@#$%^&()_"""),
+            Case(False, "text", """not_func$"""),
+            # Names that look like a math expression.
+            Case(False, "text", """f-g"""),
+            Case(False, "text", """f-4"""),
+            # Name that looks like a math expression, in a node ref.
+            Case(False, "text", """./f-4"""),
+            # --------
+            # INTEGER
+            # --------
+            # Names that look like a math expression.
+            Case(False, "integer", """f-g"""),
+            Case(False, "integer", """f-4"""),
+            # --------
+            # DATE(TIME)
+            # --------
+            # Literal date.
+            Case(False, "date", """2022-03-14"""),
+            # Literal date, BCE.
+            Case(False, "date", """-2022-03-14"""),
+            # Literal time.
+            Case(False, "time", """01:02:55"""),
+            # Literal time, UTC.
+            Case(False, "time", """01:02:55Z"""),
+            # Literal time, UTC + 0.
+            Case(False, "time", """01:02:55+00:00"""),
+            # Literal time, UTC + 10.
+            Case(False, "time", """01:02:55+10:00"""),
+            # Literal time, UTC - 7.
+            Case(False, "time", """01:02:55-07:00"""),
+            # Literal datetime.
+            Case(False, "date", """2022-03-14T01:02:55"""),
+            # Literal datetime, UTC.
+            Case(False, "dateTime", """2022-03-14T01:02:55Z"""),
+            # Literal datetime, UTC + 0.
+            Case(False, "dateTime", """2022-03-14T01:02:55+00:00"""),
+            # Literal datetime, UTC + 10.
+            Case(False, "dateTime", """2022-03-14T01:02:55+10:00"""),
+            # Literal datetime, UTC - 7.
+            Case(False, "dateTime", """2022-03-14T01:02:55-07:00"""),
+            # --------
+            # GEO*
+            # --------
+            # Literal geopoint.
+            Case(False, "geopoint", """32.7377112 -117.1288399 14 5.01"""),
+            # Literal geotrace.
+            Case(
+                False,
+                "geotrace",
+                "32.7377112 -117.1288399 14 5.01;" + "32.7897897 -117.9876543 14 5.01",
+            ),
+            # Literal geoshape.
+            Case(
+                False,
+                "geoshape",
+                "32.7377112 -117.1288399 14 5.01;"
+                + "32.7897897 -117.9876543 14 5.01;"
+                + "32.1231231 -117.1145877 14 5.01",
+            ),
+            # --------
+            # DYNAMIC
+            # --------
+            # Function call with no args.
+            Case(True, "integer", """random()"""),
+            # Function with mixture of quotes.
+            Case(True, "text", """ends-with('mystr', "str")"""),
+            # Function with node paths.
+            Case(True, "text", """ends-with(../t2, ./t4)"""),
+            # Namespaced function. Although jr:itext probably does nothing?
+            Case(True, "text", """jr:itext('/test/ref_text:label')"""),
+            # Compound expression with functions, operators, numeric/string literals.
+            Case(True, "text", """if(../t2 = 'test', 1, 2) + 15 - int(1.2)"""),
+            # Compound expression with a literal first.
+            Case(True, "text", """1 + decimal-date-time(now())"""),
+            # Nested function calls.
+            Case(
+                True,
+                "text",
+                """concat(if(../t1 = "this", 'go', "to"), "https://mysite.com")""",
+            ),
+            # Two constants in a math expression.
+            Case(True, "integer", """7 - 4"""),
+            Case(True, "text", """3 mod 3"""),
+            Case(True, "text", """5 div 5"""),
+            # 3 or more constants in a math expression.
+            Case(True, "text", """2 + 3 * 4"""),
+            Case(True, "text", """5 div 5 - 5"""),
+            # Two constants, with a function call.
+            Case(True, "integer", """random() + 2 * 5"""),
+            # Node path with operator and constant.
+            Case(True, "text", """./f - 4"""),
+            # Two node paths with operator.
+            Case(True, "text", """../t2 - ./t4"""),
+            # Math expression.
+            Case(True, "text", """1 + 2 - 3 * 4 div 5 mod 6"""),
+            # Function with date type result.
+            Case(True, "date", """concat('2022-03', '-14')"""),
+            # Pyxform reference.
+            Case(True, "text", "${ref_text}", q_value=" /test/ref_text "),
+            Case(True, "integer", "${ref_int}", q_value=" /test/ref_int "),
+            # Pyxform reference, with last-saved.
+            Case(
+                True,
+                "text",
+                "${last-saved#ref_text}",
+                q_value=" instance('__last-saved')/test/ref_text ",
+            ),
+            # Pyxform reference, with last-saved, inside a function.
+            Case(
+                True,
+                "integer",
+                "if(${last-saved#ref_int} = '', 0, ${last-saved#ref_int} + 1)",
+                q_value="if( instance('__last-saved')/test/ref_int  = '', 0,"
+                "  instance('__last-saved')/test/ref_int  + 1)",
+            ),
+        )
+        # Additional cases passed through default_is_dynamic only, not markdown->xform test.
+        self.case_data_extras = (
+            # Union expression.
+            # Rejected by ODK Validate: https://github.com/getodk/xforms-spec/issues/293
+            Case(True, "text", r"""../t2 \| ./t4"""),
+        )
+
+    def test_default_is_dynamic_return_value(self):
+        """Should find expected return value for each case passed to default_is_dynamic."""
+        for c in (*self.case_data, *self.case_data_extras):
+            with self.subTest(msg=repr(c)):
+                self.assertEqual(
+                    c.is_dynamic,
+                    utils.default_is_dynamic(
+                        element_default=c.q_default, element_type=c.q_type
+                    ),
+                )
+
+    def test_dynamic_default_xform_structure(self):
+        """Should find non-dynamic values in instance, and dynamic values in setvalue."""
+        cases_enum = list(enumerate(self.case_data))
+        # Ref_* items here for the above Cases to use in Pyxform ${references}.
+        md_head = """
+        | survey |            |          |          |               |                    |
+        |        | type       | name     | label    | default       | label::French (fr) |
+        |        | text       | ref_text | RefText  |               | Oui                |
+        |        | integer    | ref_int  | RefInt   |               |                    |
+        """
+        md_row = """
+        |        | {c.q_type} | q{q_num} | Q{q_num} | {c.q_default} | {c.q_label_fr}     |
+        """
+        md = md_head + "".join(
+            md_row.strip("\n").format(q_num=q_num, c=c) for q_num, c in cases_enum
+        )
+        self.assertPyxformXform(
+            name="test",
+            id_string="test",
+            md=md,
+            run_odk_validate=True,
+            # Exclude if single quote in value, to avoid comparison and escaping issues.
+            xml__xpath_match=[
+                xpaths
+                for q_num, c in cases_enum
+                for xpaths in (xp.model(q_num, c), xp.body_input(q_num, c))
+                if "'" not in utils.coalesce(c.q_value, "")
+            ],
+            # For values with single quote, use comparison outside of XPath context.
+            xml__xpath_exact=[
+                (xp.model_setvalue(q_num), {c.q_value})
+                for q_num, c in cases_enum
+                if "'" in utils.coalesce(c.q_value, "")
+            ],
+        )
+
+    @unittest.skip("Slow performance test. Un-skip to run as needed.")
+    def test_dynamic_default_performance__time(self):
+        """
+        Should find the dynamic default check costs little extra relative time large forms.
+
+        Results with Python 3.9.10 on VM with 4CPU 8GB RAM, x questions each, average of
+        10 runs (seconds), with and without the check, per question:
+        | num  | with   | without |
+        |  500 | 0.4599 |  0.4535 |
+        | 1000 | 0.9234 |  0.9195 |
+        | 2000 | 2.1118 |  1.9917 |
+        | 5000 | 4.9563 |  4.8714 |
+        """
+        survey_header = """
+        | survey |            |          |          |               |
+        |        | type       | name     | label    | default       |
+        """
+        question = """
+        |        | text       | q{i}     | Q{i}     | if(../t2 = 'test', 1, 2) + 15 - int(1.2) |
+        """
+        for count in (500, 1000, 2000):
+            questions = "\n".join((question.format(i=i) for i in range(1, count)))
+            md = "".join((survey_header, questions))
+
+            def run(name):
+                runs = 0
+                results = []
+                while runs < 10:
+                    start = perf_counter()
+                    self.assertPyxformXform(md=md)
+                    results.append(perf_counter() - start)
+                    runs += 1
+                print(name, round(sum(results) / len(results), 4))
+
+            run(name=f"questions={count}, with check (seconds):")
+
+            with patch("pyxform.utils.default_is_dynamic", return_value=True):
+                run(name=f"questions={count}, without check (seconds):")
+
+    def test_dynamic_default_performance__memory(self):
+        """
+        Should find the dynamic default check costs little extra RAM for large forms.
+
+        Not very accurate since assertPyxformXform does lots of other things that add to
+        memory usage, and the test measures the current process usage which is atypical of
+        actual usage. If at some stage Pyxform can write XLSX or process markdown, a more
+        accurate test could call subprocess and compare memory usage from repeat runs.
+        """
+        survey_header = """
+        | survey |            |          |          |               |
+        |        | type       | name     | label    | default       |
+        """
+        question = """
+        |        | text       | q{i}     | Q{i}     | if(../t2 = 'test', 1, 2) + 15 - int(1.2) |
+        """
+        questions = "\n".join((question.format(i=i) for i in range(1, 2000)))
+        md = "".join((survey_header, questions))
+        process = psutil.Process(os.getpid())
+        pre_mem = process.memory_info().rss
+        self.assertPyxformXform(md=md)
+        post_mem = process.memory_info().rss
+        self.assertLess(post_mem, pre_mem * 2)

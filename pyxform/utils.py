@@ -8,7 +8,9 @@ import csv
 import json
 import os
 import re
+from collections import namedtuple
 from json.decoder import JSONDecodeError
+from typing import List, Tuple
 from xml.dom.minidom import Element, Text, parseString
 
 import openpyxl
@@ -263,24 +265,26 @@ def default_is_dynamic(element_default, element_type=None):
     if not isinstance(element_default, str):
         return False
 
-    dynamic_markers = {
-        " mod ",
-        " div ",
-        "*",
-        "|",
-        "+",
-        "-",
-        "[",
-        "]",
-        "{",
-        "}",
-        "(",
-        ")",
-    }
-    if element_type is not None and element_type == "date":
-        dynamic_markers.remove("-")
+    tokens, _ = parse_expression(element_default)
+    for t in tokens:
+        # Data types which are likely to have non-dynamic defaults containing a hyphen.
+        if element_type in ("date", "dateTime", "geopoint", "geotrace", "geoshape"):
+            # Nested to avoid extra string comparisons if not a relevant data type.
+            if t.name == "OPS_MATH" and t.value == "-":
+                return False
 
-    return any(s in element_default for s in dynamic_markers)
+        # A match on these lexer rules indicates a dynamic default.
+        if t.name in {
+            "OPS_MATH",
+            "OPS_UNION",
+            "XPATH_PRED",
+            "PYXFORM_REF",
+            "FUNC_CALL",
+        }:
+            return True
+
+    # Otherwise assume not dynamic.
+    return False
 
 
 # If the first or second choice label includes a reference, we must use itext.
@@ -343,3 +347,89 @@ def levenshtein_distance(a: str, b: str) -> int:
         v0 = copy.copy(v1)
     # after the last swap, the results of v1 are now in v0
     return v0[n]
+
+
+def get_expression_lexer() -> re.Scanner:  # noqa
+    """
+    Get a expression lexer (scanner) for parsing.
+    """
+    # ncname regex adapted from eulxml https://github.com/emory-libraries/eulxml/blob/2e1a9f71ffd1fd455bd8326ec82125e333b352e0/eulxml/xpath/lexrules.py
+    # (C) 2010,2011 Emory University Libraries [Apache v2.0 License]
+    # They in turn adapted it from https://www.w3.org/TR/REC-xml/#NT-NameStartChar
+    # and https://www.w3.org/TR/REC-xml-names/#NT-NCName
+    namestartchar = (
+        r"([A-Z]|_|[a-z]|\xc0-\xd6]|[\xd8-\xf6]|[\xf8-\u02ff]|"
+        + r"[\u0370-\u037d]|[\u037f-\u1fff]|[\u200c-\u200d]|[\u2070-\u218f]|"
+        + r"[\u2c00-\u2fef]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]"
+        + r"|[\U00010000-\U000EFFFF])"
+    )
+    # additional characters allowed in NCNames after the first character
+    namechar_extra = r"[-.0-9\xb7\u0300-\u036f\u203f-\u2040]"
+    ncname_regex = (
+        r"(" + namestartchar + r")(" + namestartchar + r"|" + namechar_extra + r")*"
+    )
+    ncname_regex = ncname_regex + r"(:" + ncname_regex + r")?"
+
+    date_regex = r"-?\d{4}-\d{2}-\d{2}"
+    time_regex = r"\d{2}:\d{2}:\d{2}(\.\s+)?(((\+|\-)\d{2}:\d{2})|Z)?"
+    date_time_regex = date_regex + "T" + time_regex
+
+    # Rule order is significant - match priority runs top to bottom.
+    lexer_rules = {
+        # https://www.w3.org/TR/xmlschema-2/#dateTime
+        "DATETIME": date_time_regex,
+        "DATE": date_regex,
+        "TIME": time_regex,
+        "NUMBER": r"-?\d+\.\d*|-?\.\d+|-?\d+",
+        # https://www.w3.org/TR/1999/REC-xpath-19991116/#exprlex
+        "OPS_MATH": r"[\*\+\-]|mod|div",
+        "OPS_COMP": r"\=|\!\=|\<|\>|\<=|>=",
+        "OPS_BOOL": r"and|or",
+        "OPS_UNION": r"\|",
+        "OPEN_PAREN": r"\(",
+        "CLOSE_PAREN": r"\)",
+        "BRACKET": r"\[\]\{\}",
+        "PARENT_REF": r"\.\.",
+        "SELF_REF": r"\.",
+        "PATH_SEP": r"\/",  # javarosa.xpath says "//" is an "unsupported construct".
+        "SYSTEM_LITERAL": r""""[^"]*"|'[^']*'""",
+        "COMMA": r",",
+        "WHITESPACE": r"\s+",
+        "PYXFORM_REF": r"\$\{" + ncname_regex + r"(#" + ncname_regex + r")?" + r"\}",
+        "FUNC_CALL": ncname_regex + r"\(",
+        "XPATH_PRED": ncname_regex + r"\[",
+        "URI_SCHEME": ncname_regex + r"://",
+        "NAME": ncname_regex,  # Must be after rules containing ncname_regex.
+        "OTHER": r".+?",  # Catch any other character so that parsing doesn't stop.
+    }
+
+    def get_tokenizer(name):
+        def tokenizer(scan, value):
+            return ExpLexerToken(name, value, scan.match.start(), scan.match.end())
+
+        return tokenizer
+
+    lexicon = [(v, get_tokenizer(k)) for k, v in lexer_rules.items()]
+    # re.Scanner is undocumented but has been around since at least 2003
+    # https://mail.python.org/pipermail/python-dev/2003-April/035075.html
+    return re.Scanner(lexicon)  # noqa
+
+
+# Scanner takes a few 100ms to compile so use this shared instance.
+ExpLexerToken = namedtuple("ExpLexerToken", ["name", "value", "start", "end"])
+EXPRESSION_LEXER = get_expression_lexer()
+
+
+def parse_expression(text: str) -> Tuple[List[ExpLexerToken], str]:
+    """
+    Parse a "default" expression, well enough to identify dynamic defaults vs. not.
+
+    :param text: The expression.
+    :return: The parsed tokens, and any remaining unparsed text.
+    """
+    tokens, remainder = EXPRESSION_LEXER.scan(text)
+    return tokens, remainder
+
+
+def coalesce(*args):
+    return next((a for a in args if a is not None), None)

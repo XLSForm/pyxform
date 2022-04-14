@@ -147,7 +147,8 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         one of these possible survey input types
           * md: (str) a markdown formatted xlsform (easy to read in code)
                 [consider a plugin to help with formatting md tables,
-                 e.g. https://github.com/vkocubinsky/SublimeTableEditor]
+                 e.g. https://github.com/vkocubinsky/SublimeTableEditor].
+                Escape a literal pipe value with a single back-slash.
           * ss_structure: (dict) a python dictionary with sheets and their
                 contents. best used in cases where testing whitespace and
                 cells' type is important

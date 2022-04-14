@@ -461,7 +461,7 @@ class TestTranslations(PyxformTestCase):
         Should find the translations check costs a fraction of a second for large forms.
 
         Results with Python 3.8.9 on VM with 4CPU 8GB RAM, x questions with 2 choices
-        each, average of 10 runs (seconds), with and without the check:
+        each, average of 10 runs (seconds), with and without the check, per question:
         | num  | with   | without |
         |  500 | 1.0192 |  0.9950 |
         | 1000 | 2.0054 |  2.1026 |

@@ -384,7 +384,7 @@ class SurveyElement(dict):
 
         triggering_events = "odk-instance-first-load"
         if in_repeat:
-            triggering_events = triggering_events + " odk-new-repeat"
+            triggering_events += " odk-new-repeat"
 
         return node(
             "setvalue",
