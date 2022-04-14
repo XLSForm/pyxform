@@ -53,7 +53,7 @@ class SurveyElement(dict):
         "default": str,
         "type": str,
         "appearance": str,
-        "parameters": str,
+        "parameters": dict,
         "intent": str,
         "jr:count": str,
         "bind": dict,

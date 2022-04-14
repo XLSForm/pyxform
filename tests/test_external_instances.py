@@ -387,6 +387,11 @@ class ExternalInstanceTests(PyxformTestCase):
         xml = survey._to_pretty_xml()
         self.assertEqual(1, xml.count(expected))
 
+        # additional test you can recreate the survey from the survey JSON
+        from pyxform import SurveyElementBuilder
+
+        SurveyElementBuilder().create_survey_element_from_json(survey.to_json()).to_xml()
+
     def test_external_instance_pulldata_constraint(self):
         """
         Checks if instance node for pulldata function is added
