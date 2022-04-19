@@ -144,7 +144,8 @@ class RandomizeItemsetsTest(PyxformTestCase):
 
             """,
             error__contains=[
-                "Accepted parameters are 'randomize, seed': 'step' is an invalid parameter."
+                "Accepted parameters are 'randomize, seed'. "
+                "The following are invalid parameter(s): 'step'."
             ],
         )
 

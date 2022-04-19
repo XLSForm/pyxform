@@ -288,7 +288,8 @@ class TestSelectOneExternal(PyxformTestCase):
         |        | select_one_external suburb | suburb | Suburb | value=val, label=lbl |
         """
         err = (
-            "Accepted parameters are 'randomize, seed': 'value' is an invalid parameter."
+            "Accepted parameters are 'randomize, seed'. "
+            "The following are invalid parameter(s): 'label, value'."
         )
         self.assertPyxformXform(
             name="test", md=md + self.all_choices, errored=True, error__contains=[err]
@@ -355,7 +356,8 @@ class TestSelectOneExternal(PyxformTestCase):
         |        | select_one_external suburb | suburb | Suburb | state=${state} and city=${city} | value=val, label=lbl |
         """
         err = (
-            "Accepted parameters are 'randomize, seed': 'value' is an invalid parameter."
+            "Accepted parameters are 'randomize, seed'. "
+            "The following are invalid parameter(s): 'label, value'."
         )
         self.assertPyxformXform(
             name="test", md=md + self.all_choices, errored=True, error__contains=[err]

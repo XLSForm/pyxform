@@ -53,7 +53,7 @@ class SurveyElement(dict):
         "default": str,
         "type": str,
         "appearance": str,
-        "parameters": str,
+        "parameters": dict,
         "intent": str,
         "jr:count": str,
         "bind": dict,
@@ -128,7 +128,7 @@ class SurveyElement(dict):
         else:
             self.add_child(children)
 
-    binding_conversions = {
+    BINDING_CONVERSIONS = {
         "yes": "true()",
         "Yes": "true()",
         "YES": "true()",
@@ -143,16 +143,16 @@ class SurveyElement(dict):
         "FALSE": "false()",
     }
 
-    CONVERTIBLE_BIND_ATTRIBUTES = [
+    CONVERTIBLE_BIND_ATTRIBUTES = (
         "readonly",
         "required",
         "relevant",
         "constraint",
         "calculate",
-    ]
+    )
 
     # Supported media types for attaching to questions
-    SUPPORTED_MEDIA = ["image", "audio", "video"]
+    SUPPORTED_MEDIA = ("image", "audio", "video")
 
     def validate(self):
         if not is_valid_xml_tag(self.name):
@@ -457,10 +457,10 @@ class SurveyElement(dict):
                 # the xls2json side.
                 if (
                     hashable(v)
-                    and v in self.binding_conversions
+                    and v in self.BINDING_CONVERSIONS
                     and k in self.CONVERTIBLE_BIND_ATTRIBUTES
                 ):
-                    v = self.binding_conversions[v]
+                    v = self.BINDING_CONVERSIONS[v]
                 if k == "jr:constraintMsg" and (
                     type(v) is dict or re.search(BRACKETED_TAG_REGEX, v)
                 ):
