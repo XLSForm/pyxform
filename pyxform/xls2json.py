@@ -8,20 +8,17 @@ import os
 import re
 import sys
 from collections import Counter
-from typing import TYPE_CHECKING
+from typing import Any, Dict, KeysView, List, Optional
 
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, ROW_FORMAT_STRING
 from pyxform.errors import PyXFormError
 from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
-from pyxform.validators.pyxform import select_from_file_params
+from pyxform.validators.pyxform import parameters_generic, select_from_file_params
 from pyxform.validators.pyxform.missing_translations_check import (
     missing_translations_check,
 )
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
-
-if TYPE_CHECKING:
-    from typing import Any, Dict, KeysView, List, Optional
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 _MSG_SUPPRESS_SPELLING = (
@@ -275,14 +272,18 @@ def add_flat_annotations(prompt_list, parent_relevant="", name_prefix=""):
                 #    prompt['name'] = name_prefix + prompt['name']
 
 
-def process_range_question_type(row):
-    """Returns a new row that includes the Range parameters start, end and
-    step.
+def process_range_question_type(
+    row: Dict[str, Any], parameters: parameters_generic.PARAMETERS_TYPE
+) -> Dict[str, Any]:
+    """
+    Returns a new row that includes the Range parameters start, end and step.
 
     Raises PyXFormError when invalid range parameters are used.
     """
     new_dict = row.copy()
-    parameters = get_parameters(new_dict.get("parameters", ""), ["start", "end", "step"])
+    parameters = parameters_generic.validate(
+        parameters=parameters, allowed=("start", "end", "step")
+    )
     parameters_map = {"start": "start", "end": "end", "step": "step"}
     defaults = {"start": "1", "end": "10", "step": "1"}
 
@@ -669,6 +670,8 @@ def workbook_to_json(
                 ROW_FORMAT_STRING % row_number + " Question with no type.\n" + str(row)
             )
 
+        parameters = parameters_generic.parse(raw_parameters=row.get("parameters", ""))
+
         # Pull out questions that will go in meta block
         if question_type == "audit":
             # Force audit name to always be "audit" to follow XForms spec
@@ -681,16 +684,16 @@ def workbook_to_json(
             row["name"] = "audit"
 
             new_dict = row.copy()
-            parameters = get_parameters(
-                new_dict.get("parameters", ""),
-                [
+            parameters_generic.validate(
+                parameters=parameters,
+                allowed=(
                     constants.LOCATION_PRIORITY,
                     constants.LOCATION_MIN_INTERVAL,
                     constants.LOCATION_MAX_AGE,
                     constants.TRACK_CHANGES,
                     constants.IDENTIFY_USER,
                     constants.TRACK_CHANGES_REASONS,
-                ],
+                ),
             )
 
             if constants.TRACK_CHANGES in parameters.keys():
@@ -1123,8 +1126,8 @@ def workbook_to_json(
                     select_params_allowed += ["value", "label"]
 
                 # Look at parameters column for select parameters
-                parameters = get_parameters(
-                    row.get("parameters", ""), select_params_allowed
+                parameters_generic.validate(
+                    parameters=parameters, allowed=select_params_allowed
                 )
 
                 if "randomize" in parameters.keys():
@@ -1240,7 +1243,7 @@ def workbook_to_json(
 
         # range question_type
         if question_type == "range":
-            new_dict = process_range_question_type(row)
+            new_dict = process_range_question_type(row=row, parameters=parameters)
             parent_children_array.append(new_dict)
             continue
 
@@ -1249,8 +1252,7 @@ def workbook_to_json(
 
             if row.get("default"):
                 new_dict["default"] = process_image_default(row["default"])
-            # Validate max-pixels
-            parameters = get_parameters(row.get("parameters", ""), ["max-pixels"])
+            parameters_generic.validate(parameters=parameters, allowed=("max-pixels",))
             if "max-pixels" in parameters.keys():
                 try:
                     int(parameters["max-pixels"])
@@ -1269,7 +1271,7 @@ def workbook_to_json(
 
         if question_type == "audio":
             new_dict = row.copy()
-            parameters = get_parameters(row.get("parameters", ""), ["quality"])
+            parameters_generic.validate(parameters=parameters, allowed=("quality",))
 
             if "quality" in parameters.keys():
                 if parameters["quality"] not in [
@@ -1288,7 +1290,7 @@ def workbook_to_json(
 
         if question_type == "background-audio":
             new_dict = row.copy()
-            parameters = get_parameters(row.get("parameters", ""), ["quality"])
+            parameters_generic.validate(parameters=parameters, allowed=("quality",))
 
             if "quality" in parameters.keys():
                 if parameters["quality"] not in [
@@ -1308,13 +1310,17 @@ def workbook_to_json(
             new_dict = row.copy()
 
             if question_type == "geopoint":
-                parameters = get_parameters(
-                    row.get("parameters", ""),
-                    ["allow-mock-accuracy", "capture-accuracy", "warning-accuracy"],
+                parameters_generic.validate(
+                    parameters=parameters,
+                    allowed=(
+                        "allow-mock-accuracy",
+                        "capture-accuracy",
+                        "warning-accuracy",
+                    ),
                 )
             else:
-                parameters = get_parameters(
-                    row.get("parameters", ""), ["allow-mock-accuracy"]
+                parameters_generic.validate(
+                    parameters=parameters, allowed=("allow-mock-accuracy",)
                 )
 
             if "allow-mock-accuracy" in parameters.keys():
@@ -1478,34 +1484,6 @@ def organize_by_values(dict_list, key):
                 raise Exception("Duplicate key: " + val)
             result[val] = dicty_copy
     return result
-
-
-def get_parameters(raw_parameters, allowed_parameters):
-    parts = raw_parameters.split(";")
-    if len(parts) == 1:
-        parts = raw_parameters.split(",")
-    if len(parts) == 1:
-        parts = raw_parameters.split()
-
-    params = {}
-    for param in parts:
-        if "=" not in param:
-            raise PyXFormError(
-                "Expecting parameters to be in the form of "
-                "'parameter1=value parameter2=value'."
-            )
-        k, v = param.split("=")[:2]
-        key = k.lower().strip()
-        if key in allowed_parameters:
-            params[key] = v.lower().strip()
-        else:
-            raise PyXFormError(
-                "Accepted parameters are "
-                "'%s': '%s' is an invalid parameter."
-                % (", ".join(allowed_parameters), key)
-            )
-
-    return params
 
 
 class SpreadsheetReader:

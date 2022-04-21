@@ -46,7 +46,7 @@ class MaxPixelsTest(PyxformTestCase):
             |        | image  | my_image | Image | max-pixels=640 foo=bar |
             """,
             error__contains=[
-                "Accepted parameters are 'max-pixels': 'foo' is an invalid parameter."
+                "Accepted parameters are 'max-pixels'. The following are invalid parameter(s): 'foo'."
             ],
         )
 

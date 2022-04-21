@@ -191,7 +191,7 @@ class GeoParameterTest(PyxformTestCase):
             |        | geoshape  | geoshape    | Geoshape | warning-accuracy=5       |
             """,
             errored=True,
-            error__contains=["'warning-accuracy' is an invalid parameter"],
+            error__contains=["invalid parameter(s): 'warning-accuracy'"],
         )
 
     def test_geotrace_with_accuracy_parameters_errors(self):
@@ -203,5 +203,5 @@ class GeoParameterTest(PyxformTestCase):
             |        | geotrace  | geotrace    | Geotrace | warning-accuracy=5       |
             """,
             errored=True,
-            error__contains=["'warning-accuracy' is an invalid parameter"],
+            error__contains=["invalid parameter(s): 'warning-accuracy'"],
         )
