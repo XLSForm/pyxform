@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+# v1.10.0, 2022-04-25
+
+* https://github.com/XLSForm/pyxform/pull/578 Add a lexer to identify dynamic defaults in expressions vs. strings
+* https://github.com/XLSForm/pyxform/pull/607 Fix survey json->xml round trip not working for some question types
+
 # v1.9.0, 2022-03-16
 
 * https://github.com/XLSForm/pyxform/pull/577 Add value and label params to select_.._from_file
@@ -80,7 +85,7 @@ Pyxform Changelog
   * Agus Hilman @gushil (OpenClinica)
 * #507 Fixed KeyError that occurs with some dynamic default expressions
   * Agus Hilman @gushil (OpenClinica)
-* #484 Use absolute path for first argument in indexed-repeat() output 
+* #484 Use absolute path for first argument in indexed-repeat() output
   * Agus Hilman @gushil (OpenClinica)
 
 # v1.3.3, 2020-12-17
@@ -121,7 +126,7 @@ Pyxform Changelog
 # v1.2.0, 2020-09-10
 
 * #436 support another java version string for 9-internal
-  * @kenhorn 
+  * @kenhorn
 * #438 Add "trigger" column to use value changes as triggers for calculations
   * Agus Hilman @gushil (OpenClinica) and Hélène Martin @lognaturel (Nafundi)
 * #70 Add non-string calculation types
