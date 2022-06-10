@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
 from functools import lru_cache
+from typing import List, Iterator, Optional
 
 from pyxform import constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
@@ -25,6 +26,7 @@ from pyxform.utils import (
     LAST_SAVED_INSTANCE_NAME,
     LAST_SAVED_REGEX,
     NSMAP,
+    DetachableElement,
     PatchedText,
     get_languages_with_bad_tags,
     has_dynamic_label,
@@ -262,7 +264,7 @@ class Survey(Section):
         return self.setvalues_by_triggering_ref.get("${%s}" % question_name)
 
     @staticmethod
-    def _generate_static_instances(list_name, choice_list):
+    def _generate_static_instances(list_name, choice_list) -> InstanceInfo:
         """
         Generates <instance> elements for static data
         (e.g. choices for select type questions)
@@ -275,16 +277,12 @@ class Survey(Section):
         instance_element_list = []
         multi_language = isinstance(choice_list[0].get("label"), dict)
         has_media = bool(choice_list[0].get("media"))
+        has_dyn_label = has_dynamic_label(choice_list, multi_language)
 
         for idx, choice in enumerate(choice_list):
             choice_element_list = []
-            # Add a unique id to the choice element in case there is itext
-            # it references
-            if (
-                multi_language
-                or has_media
-                or has_dynamic_label(choice_list, multi_language)
-            ):
+            # Add a unique id to the choice element in case there are itext references
+            if multi_language or has_media or has_dyn_label:
                 itext_id = "-".join([list_name, str(idx)])
                 choice_element_list.append(node("itextId", itext_id))
 
@@ -311,7 +309,7 @@ class Survey(Section):
         )
 
     @staticmethod
-    def _generate_external_instances(element):
+    def _generate_external_instances(element) -> Optional[InstanceInfo]:
         if isinstance(element, ExternalInstance):
             name = element["name"]
             extension = element["type"].split("-")[0]
@@ -330,7 +328,7 @@ class Survey(Section):
         return None
 
     @staticmethod
-    def _validate_external_instances(instances):
+    def _validate_external_instances(instances) -> None:
         """
         Must have unique names.
 
@@ -359,7 +357,7 @@ class Survey(Section):
             raise ValidationError("\n".join(errors))
 
     @staticmethod
-    def _generate_pulldata_instances(element):
+    def _generate_pulldata_instances(element) -> Optional[List[InstanceInfo]]:
         def get_pulldata_functions(element):
             """
             Returns a list of different pulldata(... function strings if
@@ -409,7 +407,7 @@ class Survey(Section):
         return None
 
     @staticmethod
-    def _generate_from_file_instances(element):
+    def _generate_from_file_instances(element) -> Optional[InstanceInfo]:
         itemset = element.get("itemset")
         file_id, ext = os.path.splitext(itemset)
         if itemset and ext in EXTERNAL_INSTANCE_EXTENSIONS:
@@ -429,9 +427,11 @@ class Survey(Section):
 
         return None
 
-    # True if a last-saved instance should be generated, false otherwise
     @staticmethod
-    def _generate_last_saved_instance(element):
+    def _generate_last_saved_instance(element) -> bool:
+        """
+        True if a last-saved instance should be generated, false otherwise.
+        """
         for expression_type in constants.EXTERNAL_INSTANCES:
             last_saved_expression = re.search(
                 LAST_SAVED_REGEX, str(element["bind"].get(expression_type))
@@ -439,12 +439,13 @@ class Survey(Section):
             if last_saved_expression:
                 return True
 
-        return re.search(LAST_SAVED_REGEX, str(element["choice_filter"])) or re.search(
-            LAST_SAVED_REGEX, str(element["default"])
+        return bool(
+            re.search(LAST_SAVED_REGEX, str(element["choice_filter"]))
+            or re.search(LAST_SAVED_REGEX, str(element["default"]))
         )
 
     @staticmethod
-    def _get_last_saved_instance():
+    def _get_last_saved_instance() -> InstanceInfo:
         name = "__last-saved"  # double underscore used to minimize risk of name conflicts
         uri = "jr://instance/last-saved"
 
@@ -456,7 +457,7 @@ class Survey(Section):
             instance=node("instance", id=name, src=uri),
         )
 
-    def _generate_instances(self):
+    def _generate_instances(self) -> Iterator[DetachableElement]:
         """
         Get instances from all the different ways that they may be generated.
 

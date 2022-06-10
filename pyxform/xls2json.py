@@ -1148,25 +1148,32 @@ def workbook_to_json(
 
                 new_json_dict["parameters"] = parameters
 
+                # Always generate secondary instance for selects.
+                new_json_dict["itemset"] = list_name
+                json_dict["choices"] = choices
+
                 if row.get("choice_filter"):
+                    # External selects e.g. type = "select_one_external city".
                     if select_type == "select one external":
                         new_json_dict["query"] = list_name
-                    else:
-                        new_json_dict["itemset"] = list_name
-                        json_dict["choices"] = choices
-                        if choices.get(list_name):
-                            new_json_dict["list_name"] = list_name
-                            new_json_dict[constants.CHOICES] = choices[list_name]
-                elif (
-                    "randomize" in parameters.keys() and parameters["randomize"] == "true"
+                    elif choices.get(list_name):
+                        # Reference to list name for data dictionary tools (ilri/odktools).
+                        new_json_dict["list_name"] = list_name
+                        # Copy choices for data export tools (onaio/onadata).
+                        # TODO: could onadata use the list_name to look up the list for
+                        #  export, instead of pyxform internally duplicating choices data?
+                        new_json_dict[constants.CHOICES] = choices[list_name]
+                elif not (
+                    # Select with randomized choices.
+                    (
+                        "randomize" in parameters.keys()
+                        and parameters["randomize"] == "true"
+                    )
+                    # Select from file e.g. type = "select_one_from_file cities.xml".
+                    or file_extension in EXTERNAL_INSTANCE_EXTENSIONS
+                    # Select from previous answers e.g. type = "select_one ${q1}".
+                    or bool(re.match(r"\$\{(.*?)\}", list_name))
                 ):
-                    new_json_dict["itemset"] = list_name
-                    json_dict["choices"] = choices
-                elif file_extension in EXTERNAL_INSTANCE_EXTENSIONS or re.match(
-                    r"\$\{(.*?)\}", list_name
-                ):
-                    new_json_dict["itemset"] = list_name
-                else:
                     new_json_dict["list_name"] = list_name
                     new_json_dict[constants.CHOICES] = choices[list_name]
 

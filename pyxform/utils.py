@@ -62,7 +62,7 @@ class PatchedText(Text):
         writer.write(data)
 
 
-def node(*args, **kwargs):
+def node(*args, **kwargs) -> DetachableElement:
     """
     args[0] -- a XML tag
     args[1:] -- an array of children to append to the newly created node

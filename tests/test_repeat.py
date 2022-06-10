@@ -252,7 +252,7 @@ class TestRepeat(PyxformTestCase):
         )
 
     def test_hints_are_not_present_within_repeats(self):
-        """Hints are not present within repeats"""
+        """Hints specified for repeats are not present."""
         md = """
             | survey |                   |                |                   |                      |
             |        | type              | name           | label             | hint                 |
@@ -268,44 +268,22 @@ class TestRepeat(PyxformTestCase):
             |        | pet               | bird           | Bird              |                      |
             |        | pet               | fish           | Fish              |                      |
             """  # noqa
-
-        expected = """
-    <group ref="/pyxform_autotestname/pets">
-      <label>Pets</label>
-      <repeat nodeset="/pyxform_autotestname/pets">
-        <input ref="/pyxform_autotestname/pets/pets_name">
-          <label>Pet's name</label>
-          <hint>Pet's name hint</hint>
-        </input>
-        <select1 ref="/pyxform_autotestname/pets/pet_type">
-          <label>Type of pet</label>
-          <hint>Type of pet hint</hint>
-          <item>
-            <label>Dog</label>
-            <value>dog</value>
-          </item>
-          <item>
-            <label>Cat</label>
-            <value>cat</value>
-          </item>
-          <item>
-            <label>Bird</label>
-            <value>bird</value>
-          </item>
-          <item>
-            <label>Fish</label>
-            <value>fish</value>
-          </item>
-        </select1>
-        <upload mediatype="image/*" ref="/pyxform_autotestname/pets/pet_picture">
-          <label>Picture of pet</label>
-          <hint>Take a nice photo</hint>
-        </upload>
-      </repeat>
-    </group>
-"""
-
-        self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                # Hint not present for the repeat's group, but present for the questions.
+                """
+                /h:html/h:body
+                  /x:group[@ref='/test_name/pets' and not(./x:hint)]
+                    /x:repeat[
+                      @nodeset='/test_name/pets'
+                      and ./x:input[@ref='/test_name/pets/pets_name' and ./x:hint]
+                      and ./x:select1[@ref='/test_name/pets/pet_type' and ./x:hint]
+                      and ./x:upload[@ref='/test_name/pets/pet_picture' and ./x:hint]
+                    ]
+                """
+            ],
+        )
 
     def test_hints_are_present_within_groups(self):
         """Tests that hints are present within groups."""
@@ -317,13 +295,13 @@ class TestRepeat(PyxformTestCase):
             |        | decimal           | birthweight            | Child birthweight (in kgs)?                             | Should be a decimal          |
             |        | end group         |                        |                                                         |                              |
             """  # noqa
-        expected = """<group ref="/pyxform_autotestname/child_group">
+        expected = """<group ref="/test_name/child_group">
       <label>Please enter birth information for each child born.</label>
-      <input ref="/pyxform_autotestname/child_group/child_name">
+      <input ref="/test_name/child_group/child_name">
         <label>Name of child?</label>
         <hint>Should be a text</hint>
       </input>
-      <input ref="/pyxform_autotestname/child_group/birthweight">
+      <input ref="/test_name/child_group/birthweight">
         <label>Child birthweight (in kgs)?</label>
         <hint>Should be a decimal</hint>
       </input>

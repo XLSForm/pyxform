@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.choices import xp
 
 
 class ChoicesSheetTest(PyxformTestCase):
@@ -17,7 +18,10 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 1    | One   |
             |          | choices            | 2    | Two   |
             """,
-            xml__contains=["<value>1</value>"],
+            xml__xpath_match=[
+                xp.model_instance_choices("choices", (("1", "One"), ("2", "Two"))),
+                xp.body_select1_itemset("a"),
+            ],
         )
 
     def test_numeric_choice_names__for_dynamic_selects__allowed(self):
@@ -34,7 +38,10 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 1    | One   |
             |          | choices            | 2    | Two   |
             """,
-            xml__contains=['<instance id="choices">', "<item>", "<name>1</name>"],
+            xml__xpath_match=[
+                xp.model_instance_choices("choices", (("1", "One"), ("2", "Two"))),
+                xp.body_select1_itemset("a"),
+            ],
         )
 
     def test_choices_without_labels__for_static_selects__allowed(self):
@@ -51,7 +58,10 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 1    |       |
             |          | choices            | 2    |       |
             """,
-            xml__contains=["<value>1</value>"],
+            xml__xpath_match=[
+                xp.model_instance_choices_nl("choices", (("1", ""), ("2", ""))),
+                xp.body_select1_itemset("a"),
+            ],
         )
 
     def test_choices_without_labels__for_dynamic_selects__allowed_by_pyxform(self):
@@ -69,5 +79,8 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 2    |       |
             """,
             run_odk_validate=False,
-            xml__contains=['<instance id="choices">', "<item>", "<name>1</name>"],
+            xml__xpath_match=[
+                xp.model_instance_choices_nl("choices", (("1", ""), ("2", ""))),
+                xp.body_select1_itemset("a"),
+            ],
         )

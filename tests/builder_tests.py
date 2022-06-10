@@ -125,12 +125,19 @@ class BuilderTests(TestCase):
             "default_language": "default",
             "id_string": "specify_other",
             "sms_keyword": "specify_other",
+            "choices": {
+                "sexes": [
+                    {"label": {"English": "Male"}, "name": "male"},
+                    {"label": {"English": "Female"}, "name": "female"},
+                ]
+            },
             "children": [
                 {
                     "name": "sex",
                     "label": {"English": "What sex are you?"},
                     "type": "select one",
                     "list_name": "sexes",
+                    "itemset": "sexes",
                     "children": [
                         # TODO Change to choices (there is stuff in the
                         # json2xform half that will need to change)
@@ -177,6 +184,7 @@ class BuilderTests(TestCase):
             "default_language": "default",
             "id_string": "choice_name_same_as_select_name",
             "type": "survey",
+            "choices": {"zone": [{"label": "Zone", "name": "zone"}]},
             "children": [
                 {
                     "children": [{"name": "zone", "label": "Zone"}],
@@ -184,6 +192,7 @@ class BuilderTests(TestCase):
                     "name": "zone",
                     "label": "Zone",
                     "list_name": "zone",
+                    "itemset": "zone",
                 },
                 {
                     "children": [
@@ -211,10 +220,24 @@ class BuilderTests(TestCase):
             "title": "loop",
             "type": "survey",
             "default_language": "default",
+            "choices": {
+                "toilet_type": [
+                    {
+                        "label": {"english": "Pit latrine with slab"},
+                        "name": "pit_latrine_with_slab",
+                    },
+                    {
+                        "label": {"english": "Pit latrine without " "slab/open pit"},
+                        "name": "open_pit_latrine",
+                    },
+                    {"label": {"english": "Bucket system"}, "name": "bucket_system"},
+                ]
+            },
             "children": [
                 {
                     "name": "available_toilet_types",
                     "list_name": "toilet_type",
+                    "itemset": "toilet_type",
                     "label": {"english": "What type of toilets are on the premises?"},
                     "type": "select all that apply",
                     "children": [
@@ -332,6 +355,7 @@ class BuilderTests(TestCase):
                             ],
                             "label": "Do you have any children?",
                             "list_name": "yes_no",
+                            "itemset": "yes_no",
                             "name": "has_children",
                             "sms_field": "q2",
                             "type": "select one",
@@ -397,6 +421,7 @@ class BuilderTests(TestCase):
                             ],
                             "label": "What web browsers do you use?",
                             "list_name": "browsers",
+                            "itemset": "browsers",
                             "name": "web_browsers",
                             "sms_field": "q5",
                             "type": "select all that apply",
@@ -446,6 +471,18 @@ class BuilderTests(TestCase):
             "sms_separator": "+",
             "title": "SMS Example",
             "type": "survey",
+            "choices": {
+                "browsers": [
+                    {"label": "Mozilla Firefox", "name": "firefox", "sms_option": "ff"},
+                    {"label": "Google Chrome", "name": "chrome", "sms_option": "gc"},
+                    {"label": "Internet Explorer", "name": "ie", "sms_option": "ie"},
+                    {"label": "Safari", "name": "safari", "sms_option": "saf"},
+                ],
+                "yes_no": [
+                    {"label": "no", "name": "0", "sms_option": "n"},
+                    {"label": "yes", "name": "1", "sms_option": "y"},
+                ],
+            },
         }
         self.assertEqual(survey.to_json_dict(), expected_dict)
 

@@ -154,6 +154,7 @@ class BasicXls2JsonApiTests(TestCase):
                 "type": "select one",
                 "name": "state",
                 "list_name": "states",
+                "itemset": "states",
                 "parameters": {},
                 "label": "state",
             },

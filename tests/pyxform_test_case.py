@@ -125,13 +125,12 @@ class PyxformMarkdown:
         include in test cases, so this will pull a default value
         from the stack trace.
         """
-        test_name_root = "pyxform"
         if "name" not in kwargs.keys():
-            kwargs["name"] = test_name_root + "_autotestname"
+            kwargs["name"] = "test_name"
         if "title" not in kwargs.keys():
-            kwargs["title"] = test_name_root + "_autotesttitle"
+            kwargs["title"] = "test_title"
         if "id_string" not in kwargs.keys():
-            kwargs["id_string"] = test_name_root + "_autotest_id_string"
+            kwargs["id_string"] = "test_id"
 
         return kwargs
 
