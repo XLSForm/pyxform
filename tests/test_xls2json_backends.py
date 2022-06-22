@@ -2,6 +2,7 @@
 """
 Test xls2json_backends module functionality.
 """
+import os
 from datetime import datetime
 from unittest import TestCase
 
@@ -14,9 +15,7 @@ from pyxform.xls2json_backends import (
     xlsx_to_dict,
     xlsx_value_to_str,
 )
-from tests import utils
-from tests import bug_example_xls
-import os
+from tests import bug_example_xls, utils
 
 
 class TestXLS2JSONBackends(TestCase):
@@ -94,7 +93,8 @@ class TestXLS2JSONBackends(TestCase):
             "label",
         ]
         self.assertEqual(survey_headers, list(xls_data["survey_header"][0].keys()))
-        self.assertEqual(2, len(xls_data["survey"]))
+        self.assertEqual(3, len(xls_data["survey"]))
+        self.assertEqual("b", xls_data["survey"][2]["name"])
         survey = wb["survey"]
         self.assertTupleEqual((19999, 256), (survey.nrows, survey.ncols))
 
@@ -129,8 +129,10 @@ class TestXLS2JSONBackends(TestCase):
             "repeat_count",
             "parameters",
         ]
+        # Expected headers, rows, and last row contains expected data.
         self.assertEqual(survey_headers, list(xlsx_data["survey_header"][0].keys()))
-        self.assertEqual(81, len(xlsx_data["survey"]))
+        self.assertEqual(90, len(xlsx_data["survey"]))
+        self.assertEqual("deviceid", xlsx_data["survey"][89]["type"])
         survey = wb["survey"]
         self.assertTupleEqual((1048576, 1024), (survey.max_row, survey.max_column))
 
@@ -142,6 +144,7 @@ class TestXLS2JSONBackends(TestCase):
         ]
         self.assertEqual(choices_headers, list(xlsx_data["choices_header"][0].keys()))
         self.assertEqual(27, len(xlsx_data["choices"]))
+        self.assertEqual("Mwingine", xlsx_data["choices"][26]["label::Swahili (sw)"])
         choices = wb["choices"]
         self.assertTupleEqual((1048576, 4), (choices.max_row, choices.max_column))
 
@@ -151,6 +154,7 @@ class TestXLS2JSONBackends(TestCase):
         ]
         self.assertEqual(settings_headers, list(xlsx_data["settings_header"][0].keys()))
         self.assertEqual(1, len(xlsx_data["settings"]))
+        self.assertEqual("Swahili (sw)", xlsx_data["settings"][0]["default_language"])
         settings = wb["settings"]
         self.assertTupleEqual((2, 2), (settings.max_row, settings.max_column))
 

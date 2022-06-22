@@ -74,10 +74,11 @@ def get_excel_rows(
     cell_func: Callable[[aCell, int, str], Any],
 ) -> List[Dict[str, Any]]:
     """Get rows of cleaned data; stop if there's a run of empty rows."""
+    max_adjacent_empty = 20
     col_header_enum = list(enumerate(headers))
     adjacent_empty_rows = 0
-    last_row_empty = False
     result_rows = []
+    trim_trailing_empty_rows = False
     for row_n, row in enumerate(rows):
         row_dict = OrderedDict()
         for col_n, key in col_header_enum:
@@ -90,18 +91,21 @@ def get_excel_rows(
             except IndexError:
                 pass  # rows may not have values for every column
 
-        if 0 < len(row_dict):  # Only append non-empty rows.
-            result_rows.append(row_dict)
+        if 0 == len(row_dict):
+            adjacent_empty_rows += 1
+            # After a run of empty rows, assume we've reached the end of the data.
+            if max_adjacent_empty < adjacent_empty_rows:
+                trim_trailing_empty_rows = True
+                break
         else:
-            if last_row_empty:
-                adjacent_empty_rows += 1
-                # After a run of empty rows, assume we've reached the end of the data.
-                if 20 < adjacent_empty_rows:
-                    break
-            else:
-                last_row_empty = True
-                adjacent_empty_rows = 0
+            adjacent_empty_rows = 0
 
+        # There may be some empty rows amongst the XLSForm data. These are included
+        # so that any warning messages that mention row numbers are accurate.
+        result_rows.append(row_dict)
+
+    if trim_trailing_empty_rows:
+        result_rows = result_rows[:-max_adjacent_empty]
     return result_rows
 
 
