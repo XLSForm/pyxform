@@ -40,24 +40,31 @@ def _list_to_dict_list(list_items):
     return []
 
 
+def trim_trailing_empty(a_list: list, n_empty: int) -> list:
+    """
+    Trim trailing empty columns or rows. Avoids `[:-0] == []`, and unnecessary list copy.
+    """
+    if 0 < n_empty:
+        offset = len(a_list) - n_empty
+        a_list = a_list[:offset]
+    return a_list
+
+
 def get_excel_column_headers(first_row: Iterator[Optional[str]]) -> List[Optional[str]]:
     """Get column headers from the first row; stop if there's a run of empty columns."""
+    max_adjacent_empty = 20
     column_header_list = list()
     adjacent_empty_cols = 0
-    last_col_empty = False
     for column_header in first_row:
         if is_empty(column_header):
             # Preserve column order (will filter later)
             column_header_list.append(None)
-            if last_col_empty:
-                adjacent_empty_cols += 1
-                # After a run of empty cols, assume we've reached the end of the data.
-                if 20 <= adjacent_empty_cols:
-                    break
-            else:
-                last_col_empty = True
-                adjacent_empty_cols = 0
+            # After a run of empty cols, assume we've reached the end of the data.
+            if max_adjacent_empty < adjacent_empty_cols:
+                break
+            adjacent_empty_cols += 1
         else:
+            adjacent_empty_cols = 0
             # Check for duplicate column headers.
             if column_header in column_header_list:
                 raise PyXFormError("Duplicate column header: %s" % column_header)
@@ -65,7 +72,7 @@ def get_excel_column_headers(first_row: Iterator[Optional[str]]) -> List[Optiona
             clean_header = re.sub(r"( )+", " ", column_header.strip())
             column_header_list.append(clean_header)
 
-    return column_header_list
+    return trim_trailing_empty(column_header_list, adjacent_empty_cols)
 
 
 def get_excel_rows(
@@ -78,7 +85,6 @@ def get_excel_rows(
     col_header_enum = list(enumerate(headers))
     adjacent_empty_rows = 0
     result_rows = []
-    trim_trailing_empty_rows = False
     for row_n, row in enumerate(rows):
         row_dict = OrderedDict()
         for col_n, key in col_header_enum:
@@ -92,11 +98,10 @@ def get_excel_rows(
                 pass  # rows may not have values for every column
 
         if 0 == len(row_dict):
-            adjacent_empty_rows += 1
             # After a run of empty rows, assume we've reached the end of the data.
             if max_adjacent_empty < adjacent_empty_rows:
-                trim_trailing_empty_rows = True
                 break
+            adjacent_empty_rows += 1
         else:
             adjacent_empty_rows = 0
 
@@ -104,9 +109,7 @@ def get_excel_rows(
         # so that any warning messages that mention row numbers are accurate.
         result_rows.append(row_dict)
 
-    if trim_trailing_empty_rows:
-        result_rows = result_rows[:-max_adjacent_empty]
-    return result_rows
+    return trim_trailing_empty(result_rows, adjacent_empty_rows)
 
 
 def xls_to_dict(path_or_file):
