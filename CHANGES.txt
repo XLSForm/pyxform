@@ -1,5 +1,8 @@
 Pyxform Changelog
 
+# v1.10.1, 2022-06-24
+* avoid processing vast empty areas of buggy / strange workbooks by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/612
+
 # v1.10.0, 2022-04-25
 
 * https://github.com/XLSForm/pyxform/pull/578 Add a lexer to identify dynamic defaults in expressions vs. strings
