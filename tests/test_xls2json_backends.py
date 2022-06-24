@@ -2,6 +2,8 @@
 """
 Test xls2json_backends module functionality.
 """
+import os
+from datetime import datetime
 from unittest import TestCase
 
 import openpyxl
@@ -13,7 +15,7 @@ from pyxform.xls2json_backends import (
     xlsx_to_dict,
     xlsx_value_to_str,
 )
-from tests import utils
+from tests import bug_example_xls, utils
 
 
 class TestXLS2JSONBackends(TestCase):
@@ -73,3 +75,87 @@ class TestXLS2JSONBackends(TestCase):
             xlsx_inp = xlsx_to_dict(xlsx_path)
             self.maxDiff = None
             self.assertEqual(xls_inp, xlsx_inp)
+
+    def test_xls_with_many_empty_cells(self):
+        """Should quickly produce expected data, and find large input sheet dimensions."""
+        self.maxDiff = None
+        # Test fixture produced by adding data at cells IV1 and A19999.
+        xls_path = os.path.join(bug_example_xls.PATH, "extra_columns.xls")
+        before = datetime.utcnow()
+        xls_data = xls_to_dict(xls_path)
+        after = datetime.utcnow()
+        self.assertLess((after - before).total_seconds(), 5)
+        wb = xlrd.open_workbook(filename=xls_path)
+
+        survey_headers = [
+            "type",
+            "name",
+            "label",
+        ]
+        self.assertEqual(survey_headers, list(xls_data["survey_header"][0].keys()))
+        self.assertEqual(3, len(xls_data["survey"]))
+        self.assertEqual("b", xls_data["survey"][2]["name"])
+        survey = wb["survey"]
+        self.assertTupleEqual((19999, 256), (survey.nrows, survey.ncols))
+
+        wb.release_resources()
+
+    def test_xlsx_with_many_empty_cells(self):
+        """Should quickly produce expected data, and find large input sheet dimensions."""
+        self.maxDiff = None
+        # Test fixture produced (presumably) by a LibreOffice serialisation bug.
+        xlsx_path = os.path.join(bug_example_xls.PATH, "UCL_Biomass_Plot_Form.xlsx")
+        before = datetime.utcnow()
+        xlsx_data = xlsx_to_dict(xlsx_path)
+        after = datetime.utcnow()
+        self.assertLess((after - before).total_seconds(), 5)
+        wb = openpyxl.open(filename=xlsx_path, read_only=True, data_only=True)
+
+        survey_headers = [
+            "type",
+            "name",
+            "label::Swahili (sw)",
+            "label::English (en)",
+            "hint::Swahili (sw)",
+            "hint::English (en)",
+            "required",
+            "relevant",
+            "constraint",
+            "constraint_message::Swahili (sw)",
+            "constraint_message::English (en)",
+            "choice_filter",
+            "appearance",
+            "calculation",
+            "repeat_count",
+            "parameters",
+        ]
+        # Expected headers, rows, and last row contains expected data.
+        self.assertEqual(survey_headers, list(xlsx_data["survey_header"][0].keys()))
+        self.assertEqual(90, len(xlsx_data["survey"]))
+        self.assertEqual("deviceid", xlsx_data["survey"][89]["type"])
+        survey = wb["survey"]
+        self.assertTupleEqual((1048576, 1024), (survey.max_row, survey.max_column))
+
+        choices_headers = [
+            "list_name",
+            "name",
+            "label::Swahili (sw)",
+            "label::English (en)",
+        ]
+        self.assertEqual(choices_headers, list(xlsx_data["choices_header"][0].keys()))
+        self.assertEqual(27, len(xlsx_data["choices"]))
+        self.assertEqual("Mwingine", xlsx_data["choices"][26]["label::Swahili (sw)"])
+        choices = wb["choices"]
+        self.assertTupleEqual((1048576, 4), (choices.max_row, choices.max_column))
+
+        settings_headers = [
+            "default_language",
+            "version",
+        ]
+        self.assertEqual(settings_headers, list(xlsx_data["settings_header"][0].keys()))
+        self.assertEqual(1, len(xlsx_data["settings"]))
+        self.assertEqual("Swahili (sw)", xlsx_data["settings"][0]["default_language"])
+        settings = wb["settings"]
+        self.assertTupleEqual((2, 2), (settings.max_row, settings.max_column))
+
+        wb.close()

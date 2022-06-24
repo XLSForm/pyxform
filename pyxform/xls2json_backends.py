@@ -8,16 +8,19 @@ import re
 from collections import OrderedDict
 from functools import reduce
 from io import StringIO
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 from zipfile import BadZipFile
 
 import openpyxl
 import xlrd
-from xlrd import XLRDError
+from openpyxl.cell import Cell as pyxlCell
+from xlrd.sheet import Cell as xlrdCell
 from xlrd.xldate import XLDateAmbiguous
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
 
+aCell = Union[xlrdCell, pyxlCell]
 XL_DATE_AMBIGOUS_MSG = (
     "The xls file provided has an invalid date on the %s sheet, under"
     " the %s column on row number %s"
@@ -37,6 +40,78 @@ def _list_to_dict_list(list_items):
     return []
 
 
+def trim_trailing_empty(a_list: list, n_empty: int) -> list:
+    """
+    Trim trailing empty columns or rows. Avoids `[:-0] == []`, and unnecessary list copy.
+    """
+    if 0 < n_empty:
+        offset = len(a_list) - n_empty
+        a_list = a_list[:offset]
+    return a_list
+
+
+def get_excel_column_headers(first_row: Iterator[Optional[str]]) -> List[Optional[str]]:
+    """Get column headers from the first row; stop if there's a run of empty columns."""
+    max_adjacent_empty = 20
+    column_header_list = list()
+    adjacent_empty_cols = 0
+    for column_header in first_row:
+        if is_empty(column_header):
+            # Preserve column order (will filter later)
+            column_header_list.append(None)
+            # After a run of empty cols, assume we've reached the end of the data.
+            if max_adjacent_empty < adjacent_empty_cols:
+                break
+            adjacent_empty_cols += 1
+        else:
+            adjacent_empty_cols = 0
+            # Check for duplicate column headers.
+            if column_header in column_header_list:
+                raise PyXFormError("Duplicate column header: %s" % column_header)
+            # Strip whitespaces from the header.
+            clean_header = re.sub(r"( )+", " ", column_header.strip())
+            column_header_list.append(clean_header)
+
+    return trim_trailing_empty(column_header_list, adjacent_empty_cols)
+
+
+def get_excel_rows(
+    headers: Iterator[Optional[str]],
+    rows: Iterator[Tuple[aCell, ...]],
+    cell_func: Callable[[aCell, int, str], Any],
+) -> List[Dict[str, Any]]:
+    """Get rows of cleaned data; stop if there's a run of empty rows."""
+    max_adjacent_empty = 20
+    col_header_enum = list(enumerate(headers))
+    adjacent_empty_rows = 0
+    result_rows = []
+    for row_n, row in enumerate(rows):
+        row_dict = OrderedDict()
+        for col_n, key in col_header_enum:
+            if key is None:
+                continue
+            try:
+                cell = row[col_n]
+                if not is_empty(cell.value):
+                    row_dict[key] = cell_func(cell, row_n, key)
+            except IndexError:
+                pass  # rows may not have values for every column
+
+        if 0 == len(row_dict):
+            # After a run of empty rows, assume we've reached the end of the data.
+            if max_adjacent_empty < adjacent_empty_rows:
+                break
+            adjacent_empty_rows += 1
+        else:
+            adjacent_empty_rows = 0
+
+        # There may be some empty rows amongst the XLSForm data. These are included
+        # so that any warning messages that mention row numbers are accurate.
+        result_rows.append(row_dict)
+
+    return trim_trailing_empty(result_rows, adjacent_empty_rows)
+
+
 def xls_to_dict(path_or_file):
     """
     Return a Python dictionary with a key for each worksheet
@@ -51,93 +126,59 @@ def xls_to_dict(path_or_file):
             workbook = xlrd.open_workbook(filename=path_or_file)
         else:
             workbook = xlrd.open_workbook(file_contents=path_or_file.read())
-    except XLRDError as error:
+    except xlrd.XLRDError as error:
         raise PyXFormError("Error reading .xls file: %s" % error)
 
-    def xls_to_dict_normal_sheet(sheet):
-        def iswhitespace(string):
-            return isinstance(string, str) and len(string.strip()) == 0
-
-        # Check for duplicate column headers
-        column_header_list = list()
-        for column in range(0, sheet.ncols):
-            column_header = sheet.cell_value(0, column)
-            if column_header in column_header_list:
-                raise PyXFormError("Duplicate column header: %s" % column_header)
-            # xls file with 3 columns mostly have a 3 more columns that are
-            # blank by default or something, skip during check
-            if column_header is not None:
-                if not iswhitespace(column_header):
-                    # strip whitespaces from the header
-                    clean_header = re.sub(r"( )+", " ", column_header.strip())
-                    column_header_list.append(clean_header)
-
-        result = []
-        for row in range(1, sheet.nrows):
-            row_dict = OrderedDict()
-            for column in range(0, sheet.ncols):
-                # Changing to cell_value function
-                # convert to string, in case it is not string
-                key = "%s" % sheet.cell_value(0, column)
-                key = key.strip()
-                value = sheet.cell_value(row, column)
-                # remove whitespace at the beginning and end of value
-                if isinstance(value, str):
-                    value = value.strip()
-                value_type = sheet.cell_type(row, column)
-                if value is not None:
-                    if not iswhitespace(value):
-                        try:
-                            row_dict[key] = xls_value_to_unicode(
-                                value, value_type, workbook.datemode
-                            )
-                        except XLDateAmbiguous:
-                            raise PyXFormError(
-                                XL_DATE_AMBIGOUS_MSG % (sheet.name, column_header, row)
-                            )
-                # Taking this condition out so I can get accurate row numbers.
-                # TODO: Do the same for csvs
-                # if row_dict != {}:
-            result.append(row_dict)
-        return result, _list_to_dict_list(column_header_list)
-
-    def xls_value_from_sheet(sheet, row, column):
-        value = sheet.cell_value(row, column)
-        value_type = sheet.cell_type(row, column)
-        if value is not None and value != "":
+    def xls_clean_cell(cell: xlrdCell, row_n: int, col_key: str) -> Optional[str]:
+        value = cell.value
+        if isinstance(value, str):
+            value = value.strip()
+        if not is_empty(value):
             try:
-                return xls_value_to_unicode(value, value_type, workbook.datemode)
+                return xls_value_to_unicode(value, cell.ctype, workbook.datemode)
             except XLDateAmbiguous:
-                raise PyXFormError(XL_DATE_AMBIGOUS_MSG % (sheet.name, column, row))
-        else:
-            raise PyXFormError("Empty Value")
+                raise PyXFormError(XL_DATE_AMBIGOUS_MSG % (wb_sheet.name, col_key, row_n))
 
-    result = OrderedDict()
-    for sheet in workbook.sheets():
+        return None
+
+    def xls_to_dict_normal_sheet(sheet):
+        # XLS format: max cols 256, max rows 65536
+        first_row = (c.value for c in next(sheet.get_rows(), []))
+        headers = get_excel_column_headers(first_row=first_row)
+        row_iter = (
+            tuple(sheet.cell(r, c) for c in range(0, len(headers)))
+            for r in range(1, sheet.nrows)
+        )
+        rows = get_excel_rows(headers=headers, rows=row_iter, cell_func=xls_clean_cell)
+        column_header_list = [key for key in headers if key is not None]
+        return rows, _list_to_dict_list(column_header_list)
+
+    result_book = OrderedDict()
+    for wb_sheet in workbook.sheets():
         # Note that the sheet exists but do no further processing here.
-        result[sheet.name] = []
+        result_book[wb_sheet.name] = []
         # Do not process sheets that have nothing to do with XLSForm.
-        if sheet.name not in constants.SUPPORTED_SHEET_NAMES:
+        if wb_sheet.name not in constants.SUPPORTED_SHEET_NAMES:
             if len(workbook.sheets()) == 1:
                 (
-                    result[constants.SURVEY],
-                    result["%s_header" % constants.SURVEY],
-                ) = xls_to_dict_normal_sheet(sheet)
+                    result_book[constants.SURVEY],
+                    result_book["%s_header" % constants.SURVEY],
+                ) = xls_to_dict_normal_sheet(wb_sheet)
             else:
                 continue
         else:
             (
-                result[sheet.name],
-                result["%s_header" % sheet.name],
-            ) = xls_to_dict_normal_sheet(sheet)
+                result_book[wb_sheet.name],
+                result_book["%s_header" % wb_sheet.name],
+            ) = xls_to_dict_normal_sheet(wb_sheet)
 
-    return result
+    workbook.release_resources()
+    return result_book
 
 
-def xls_value_to_unicode(value, value_type, datemode):
+def xls_value_to_unicode(value, value_type, datemode) -> str:
     """
-    Take a xls formatted value and try to make a unicode string
-    representation.
+    Take a xls formatted value and try to make a unicode string representation.
     """
     if value_type == xlrd.XL_CELL_BOOLEAN:
         return "TRUE" if value else "FALSE"
@@ -179,74 +220,49 @@ def xlsx_to_dict(path_or_file):
     except (OSError, BadZipFile, KeyError) as error:
         raise PyXFormError("Error reading .xlsx file: %s" % error)
 
+    def xlsx_clean_cell(cell: pyxlCell, row_n: int, col_key: str) -> Optional[str]:
+        value = cell.value
+        if isinstance(value, str):
+            value = value.strip()
+        if not is_empty(value):
+            return xlsx_value_to_str(value)
+
+        return None
+
     def xlsx_to_dict_normal_sheet(sheet):
+        # XLSX format: max cols 16384, max rows 1048576
+        first_row = (c.value for c in next(sheet.rows, []))
+        headers = get_excel_column_headers(first_row=first_row)
+        row_iter = sheet.iter_rows(min_row=2, max_col=len(headers))
+        rows = get_excel_rows(headers=headers, rows=row_iter, cell_func=xlsx_clean_cell)
+        column_header_list = [key for key in headers if key is not None]
+        return rows, _list_to_dict_list(column_header_list)
 
-        # Check for duplicate column headers
-        column_header_list = list()
-
-        first_row = next(sheet.rows, [])
-        for cell in first_row:
-            column_header = cell.value
-            # xls file with 3 columns mostly have a 3 more columns that are
-            # blank by default or something, skip during check
-            if is_empty(column_header):
-                # Preserve column order (will filter later)
-                column_header_list.append(None)
-            else:
-                if column_header in column_header_list:
-                    raise PyXFormError("Duplicate column header: %s" % column_header)
-                # strip whitespaces from the header
-                clean_header = re.sub(r"( )+", " ", column_header.strip())
-                column_header_list.append(clean_header)
-
-        result = []
-        for row in sheet.iter_rows(min_row=2):
-            row_dict = OrderedDict()
-            for column, key in enumerate(column_header_list):
-                if key is None:
-                    continue
-
-                try:
-                    value = row[column].value
-                    if isinstance(value, str):
-                        value = value.strip()
-
-                    if not is_empty(value):
-                        row_dict[key] = xlsx_value_to_str(value)
-                except IndexError:
-                    pass  # rows may not have values for every column
-
-            result.append(row_dict)
-
-        column_header_list = [key for key in column_header_list if key is not None]
-
-        return result, _list_to_dict_list(column_header_list)
-
-    result = OrderedDict()
+    result_book = OrderedDict()
     for sheetname in workbook.sheetnames:
-        sheet = workbook[sheetname]
+        wb_sheet = workbook[sheetname]
         # Note that the sheet exists but do no further processing here.
-        result[sheetname] = []
+        result_book[sheetname] = []
         # Do not process sheets that have nothing to do with XLSForm.
         if sheetname not in constants.SUPPORTED_SHEET_NAMES:
             if len(workbook.sheetnames) == 1:
                 (
-                    result[constants.SURVEY],
-                    result[f"{constants.SURVEY}_header"],
-                ) = xlsx_to_dict_normal_sheet(sheet)
+                    result_book[constants.SURVEY],
+                    result_book[f"{constants.SURVEY}_header"],
+                ) = xlsx_to_dict_normal_sheet(wb_sheet)
             else:
                 continue
         else:
             (
-                result[sheetname],
-                result[f"{sheetname}_header"],
-            ) = xlsx_to_dict_normal_sheet(sheet)
+                result_book[sheetname],
+                result_book[f"{sheetname}_header"],
+            ) = xlsx_to_dict_normal_sheet(wb_sheet)
 
     workbook.close()
-    return result
+    return result_book
 
 
-def xlsx_value_to_str(value):
+def xlsx_value_to_str(value) -> str:
     """
     Take a xls formatted value and try to make a string representation.
     """
@@ -269,10 +285,11 @@ def xlsx_value_to_str(value):
 def is_empty(value):
     if value is None:
         return True
-    elif isinstance(value, str) and value.strip() == "":
-        return True
-    else:
-        return False
+    elif isinstance(value, str):
+        if value.strip() == "":
+            return True
+
+    return False
 
 
 def get_cascading_json(sheet_list, prefix, level):
