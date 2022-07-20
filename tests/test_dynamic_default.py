@@ -8,12 +8,13 @@ from dataclasses import dataclass
 from time import perf_counter
 from typing import Optional, Tuple
 from unittest.mock import patch
-from tests.xpath_helpers.choices import xp as xpc
 
 import psutil
 
 from pyxform import utils
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 @dataclass()
@@ -577,12 +578,16 @@ class TestDynamicDefault(PyxformTestCase):
                 xp.model(1, Case(False, "select_one", "a-2")),
                 xp.model(2, Case(False, "select_one", "1-1")),
                 xp.model(3, Case(False, "select_one", "a-b")),
-                xpc.model_instance_choices("c1", (("a-1", "C A-1"), ("a-2", "C A-2"))),
-                xpc.model_instance_choices("c2", (("1-1", "C 1-1"), ("2-2", "C 1-2"))),
-                xpc.model_instance_choices("c3", (("a-b", "C A-B"),)),
-                xpc.body_select1_itemset("q1"),
-                xpc.body_select1_itemset("q2"),
-                xpc.body_select1_itemset("q3"),
+                xpc.model_instance_choices_label(
+                    "c1", (("a-1", "C A-1"), ("a-2", "C A-2"))
+                ),
+                xpc.model_instance_choices_label(
+                    "c2", (("1-1", "C 1-1"), ("2-2", "C 1-2"))
+                ),
+                xpc.model_instance_choices_label("c3", (("a-b", "C A-B"),)),
+                xpq.body_select1_itemset("q1"),
+                xpq.body_select1_itemset("q2"),
+                xpq.body_select1_itemset("q3"),
             ],
         )
 

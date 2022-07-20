@@ -10,7 +10,9 @@ import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Iterator, Optional
+from typing import Iterator, List, Optional
+
+import aliases
 
 from pyxform import constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
@@ -643,12 +645,13 @@ class Survey(Section):
                         )
 
         self._translations = defaultdict(dict)  # pylint: disable=W0201
+        select_types = set(aliases.select.keys())
         for element in self.iter_descendants():
             # Skip creation of translations for choices in filtered selects
             # The creation of these translations is done futher below in this
             # function
             parent = element.get("parent")
-            if parent and not parent.get("choice_filter"):
+            if parent is not None and parent[constants.TYPE] not in select_types:
                 for d in element.get_translations(self.default_language):
                     translation_path = d["path"]
                     form = "long"
@@ -680,7 +683,7 @@ class Survey(Section):
                 and not has_dynamic_label(choice_list, multi_language)
             ):
                 continue
-            for idx, choice in zip(range(len(choice_list)), choice_list):
+            for idx, choice in enumerate(choice_list):
                 for name, choice_value in choice.items():
                     itext_id = "-".join([list_name, str(idx)])
                     if isinstance(choice_value, dict):

@@ -3,7 +3,8 @@
 Test duplicate survey question field name.
 """
 from tests.pyxform_test_case import PyxformTestCase
-from tests.xpath_helpers.choices import xp as xpc
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 class FieldsTests(PyxformTestCase):
@@ -118,8 +119,10 @@ class FieldsTests(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpc.model_instance_choices("list", (("a", "A"), ("b", "B"), ("b", "C"))),
-                xpc.body_select1_itemset("S1"),
+                xpc.model_instance_choices_label(
+                    "list", (("a", "A"), ("b", "B"), ("b", "C"))
+                ),
+                xpq.body_select1_itemset("S1"),
             ],
         )
 
@@ -139,8 +142,8 @@ class FieldsTests(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpc.model_instance_choices("list", (("a", "A"), ("b", "B"))),
-                xpc.body_select1_itemset("S1"),
+                xpc.model_instance_choices_label("list", (("a", "A"), ("b", "B"))),
+                xpq.body_select1_itemset("S1"),
             ],
         )
 

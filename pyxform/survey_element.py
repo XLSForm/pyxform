@@ -244,6 +244,13 @@ class SurveyElement(dict):
         result["children"] = []
         for child in children:
             result["children"].append(child.to_json_dict())
+        # Translation items with "output_context" have circular references.
+        if "_translations" in result:
+            for lang in result["_translations"].values():
+                for item in lang.values():
+                    for form in item.values():
+                        if callable(getattr(form, "pop", None)):
+                            form.pop("output_context", None)
         # remove any keys with empty values
         for k, v in list(result.items()):
             if not v:

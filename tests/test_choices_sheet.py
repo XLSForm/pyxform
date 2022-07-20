@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from tests.pyxform_test_case import PyxformTestCase
-from tests.xpath_helpers.choices import xp
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 class ChoicesSheetTest(PyxformTestCase):
@@ -19,8 +20,8 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 2    | Two   |
             """,
             xml__xpath_match=[
-                xp.model_instance_choices("choices", (("1", "One"), ("2", "Two"))),
-                xp.body_select1_itemset("a"),
+                xpc.model_instance_choices_label("choices", (("1", "One"), ("2", "Two"))),
+                xpq.body_select1_itemset("a"),
             ],
         )
 
@@ -39,8 +40,8 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 2    | Two   |
             """,
             xml__xpath_match=[
-                xp.model_instance_choices("choices", (("1", "One"), ("2", "Two"))),
-                xp.body_select1_itemset("a"),
+                xpc.model_instance_choices_label("choices", (("1", "One"), ("2", "Two"))),
+                xpq.body_select1_itemset("a"),
             ],
         )
 
@@ -59,8 +60,18 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 2    |       |
             """,
             xml__xpath_match=[
-                xp.model_instance_choices_nl("choices", (("1", ""), ("2", ""))),
-                xp.body_select1_itemset("a"),
+                xpq.body_select1_itemset("a"),
+                """
+                /h:html/h:head/x:model/x:instance[@id='choices']/x:root[
+                  ./x:item/x:name/text() = '1'
+                    and not(./x:item/x:label)
+                    and not(./x:item/x:itextId)
+                  and 
+                  ./x:item/x:name/text() = '2'
+                    and not(./x:item/x:label)
+                    and not(./x:item/x:itextId)
+                ]
+                """
             ],
         )
 
@@ -80,7 +91,17 @@ class ChoicesSheetTest(PyxformTestCase):
             """,
             run_odk_validate=False,
             xml__xpath_match=[
-                xp.model_instance_choices_nl("choices", (("1", ""), ("2", ""))),
-                xp.body_select1_itemset("a"),
+                xpq.body_select1_itemset("a"),
+                """
+                /h:html/h:head/x:model/x:instance[@id='choices']/x:root[
+                  ./x:item/x:name/text() = '1'
+                    and not(./x:item/x:label)
+                    and not(./x:item/x:itextId)
+                  and 
+                  ./x:item/x:name/text() = '2'
+                    and not(./x:item/x:label)
+                    and not(./x:item/x:itextId)
+                ]
+                """
             ],
         )

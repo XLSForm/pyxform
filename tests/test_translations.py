@@ -14,6 +14,8 @@ from pyxform.validators.pyxform.missing_translations_check import (
     format_missing_translations_msg,
 )
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 @dataclass()
@@ -49,36 +51,36 @@ class XPathHelper:
     def question_label_in_body(self, label):
         """The Question label value is in the body."""
         return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+        /h:html/h:body/x:{self.question_type}[@ref='/test_name/{self.question_name}']
           /x:label[not(@ref) and text()='{label}']
         """
 
     def question_hint_in_body(self, hint):
         """The Question hint value is in the body."""
         return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+        /h:html/h:body/x:{self.question_type}[@ref='/test_name/{self.question_name}']
           /x:hint[not(@ref) and text()='{hint}']
         """
 
     def question_label_references_itext(self):
         """The Question label references an itext entry."""
         return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
-          /x:label[@ref="jr:itext('/test/{self.question_name}:label')" and not(text())]
+        /h:html/h:body/x:{self.question_type}[@ref='/test_name/{self.question_name}']
+          /x:label[@ref="jr:itext('/test_name/{self.question_name}:label')" and not(text())]
         """
 
     def question_hint_references_itext(self):
         """The Question hint references an itext entry."""
         return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
-          /x:hint[@ref="jr:itext('/test/{self.question_name}:hint')" and not(text())]
+        /h:html/h:body/x:{self.question_type}[@ref='/test_name/{self.question_name}']
+          /x:hint[@ref="jr:itext('/test_name/{self.question_name}:hint')" and not(text())]
         """
 
     def question_itext_label(self, lang, label):
         """The Question label value is in the itext."""
         return f"""
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}:label']
+          /x:text[@id='/test_name/{self.question_name}:label']
           /x:value[not(@form) and text()='{label}']
         """
 
@@ -86,7 +88,7 @@ class XPathHelper:
         """The Question hint value is in the itext."""
         return f"""
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}:hint']
+          /x:text[@id='/test_name/{self.question_name}:hint']
           /x:value[not(@form) and text()='{hint}']
         """
 
@@ -101,7 +103,7 @@ class XPathHelper:
         }
         return f"""
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}:{prefix[form][0]}']
+          /x:text[@id='/test_name/{self.question_name}:{prefix[form][0]}']
           /x:value[@form='{form}' and text()='{prefix[form][1]}{fname}']
         """
 
@@ -110,7 +112,7 @@ class XPathHelper:
         return f"""
         /h:html/h:head/x:model[not(
           x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}:label']
+          /x:text[@id='/test_name/{self.question_name}:label']
           /x:value[not(@form) and text()='{label}']
         )]
         """
@@ -120,7 +122,7 @@ class XPathHelper:
         return f"""
         /h:html/h:head/x:model[not(
           x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}:hint']
+          /x:text[@id='/test_name/{self.question_name}:hint']
           /x:value[not(@form) and text()='{hint}']
         )]
         """
@@ -136,29 +138,29 @@ class XPathHelper:
         }
         return f"""
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}:{prefix[form][0]}'
+          /x:text[@id='/test_name/{self.question_name}:{prefix[form][0]}'
             and not(descendant::x:value[@form='{form}' and text()='{prefix[form][1]}{fname}'])]
         """
 
     def choice_value_in_body(self, cname):
         """The Choice label value is in the body."""
         return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']/x:item
+        /h:html/h:body/x:{self.question_type}[@ref='/test_name/{self.question_name}']/x:item
           /x:value[not(@ref) and text()='{cname}']
         """
 
     def choice_label_references_itext(self, cname):
         """The Choice label references an itext entry."""
         return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']/x:item
-          /x:label[@ref="jr:itext('/test/{self.question_name}/{cname}:label')" and not(text())]
+        /h:html/h:body/x:{self.question_type}[@ref='/test_name/{self.question_name}']/x:item
+          /x:label[@ref="jr:itext('/test_name/{self.question_name}/{cname}:label')" and not(text())]
         """
 
     def choice_itext_label(self, lang, cname, label):
         """The Choice label value is in the itext, referenced from the body."""
         return f"""
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}/{cname}:label']
+          /x:text[@id='/test_name/{self.question_name}/{cname}:label']
           /x:value[not(@form) and text()='{label}']
         """
 
@@ -172,7 +174,7 @@ class XPathHelper:
         }
         return f"""
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}/{cname}:label']
+          /x:text[@id='/test_name/{self.question_name}/{cname}:label']
           /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
         """
 
@@ -181,7 +183,7 @@ class XPathHelper:
         return f"""
         /h:html/h:head/x:model[not(
           x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}/{cname}:label']
+          /x:text[@id='/test_name/{self.question_name}/{cname}:label']
           /x:value[not(@form) and text()='{label}']
         )]
         """
@@ -196,14 +198,14 @@ class XPathHelper:
         }
         return f"""
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}/{cname}:label'
+          /x:text[@id='/test_name/{self.question_name}/{cname}:label'
             and not(descendant::x:value[@form='{form}' and text()='{prefix[form]}{fname}'])]
         """
 
     def choice_list_references_itext(self, lname):
         """The Choice list (itemset) references an itext entry and internal instance."""
         return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test/{self.question_name}']
+        /h:html/h:body/x:{self.question_type}[@ref='/test_name/{self.question_name}']
           /x:itemset[@nodeset="instance('{lname}')/root/item[{self.question_name} != '']"
             and child::x:label[@ref='jr:itext(itextId)'] and child::x:value[@ref='name']]
         """
@@ -244,44 +246,44 @@ class XPathHelper:
     def constraint_msg_in_bind(self, msg):
         """The Constraint Message is in the model binding."""
         return f"""
-        /h:html/h:head/x:model/x:bind[@nodeset='/test/{self.question_name}'
+        /h:html/h:head/x:model/x:bind[@nodeset='/test_name/{self.question_name}'
           and @jr:constraintMsg='{msg}']
         """
 
     def constraint_msg_references_itext(self):
         """The Constraint Message references an itext entry."""
         return f"""
-        /h:html/h:head/x:model/x:bind[@nodeset='/test/{self.question_name}'
-          and @jr:constraintMsg="jr:itext('/test/{self.question_name}:jr:constraintMsg')"]
+        /h:html/h:head/x:model/x:bind[@nodeset='/test_name/{self.question_name}'
+          and @jr:constraintMsg="jr:itext('/test_name/{self.question_name}:jr:constraintMsg')"]
         """
 
     def constraint_msg_itext(self, lang, msg):
         """The Constraint Message is in the itext."""
         return f"""
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}:jr:constraintMsg']
+          /x:text[@id='/test_name/{self.question_name}:jr:constraintMsg']
           /x:value[not(@form) and text()='{msg}']
         """
 
     def required_msg_in_bind(self, msg):
         """The Required Message is in the model binding."""
         return f"""
-        /h:html/h:head/x:model/x:bind[@nodeset='/test/{self.question_name}'
+        /h:html/h:head/x:model/x:bind[@nodeset='/test_name/{self.question_name}'
           and @jr:requiredMsg='{msg}']
         """
 
     def required_msg_references_itext(self):
         """The Required Message references an itext entry."""
         return f"""
-        /h:html/h:head/x:model/x:bind[@nodeset='/test/{self.question_name}'
-          and @jr:requiredMsg="jr:itext('/test/{self.question_name}:jr:requiredMsg')"]
+        /h:html/h:head/x:model/x:bind[@nodeset='/test_name/{self.question_name}'
+          and @jr:requiredMsg="jr:itext('/test_name/{self.question_name}:jr:requiredMsg')"]
         """
 
     def required_msg_itext(self, lang, msg):
         """The Required Message is in the itext."""
         return f"""
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test/{self.question_name}:jr:requiredMsg']
+          /x:text[@id='/test_name/{self.question_name}:jr:requiredMsg']
           /x:value[not(@form) and text()='{msg}']
         """
 
@@ -298,7 +300,6 @@ class TestTranslations(PyxformTestCase):
         """
         xp = XPathHelper(question_type="input", question_name="n1")
         self.assertPyxformXform(
-            name="test",
             md=md,
             xml__xpath_match=[
                 xp.question_label_references_itext(),
@@ -309,7 +310,7 @@ class TestTranslations(PyxformTestCase):
                 xp.language_no_itext(DEFAULT_LANG),
                 # Expected model binding found.
                 """/h:html/h:head/x:model
-                     /x:bind[@nodeset='/test/n1' and @readonly='true()' and @type='string']
+                     /x:bind[@nodeset='/test_name/n1' and @readonly='true()' and @type='string']
                 """,
             ],
             warnings_count=0,
@@ -333,7 +334,6 @@ class TestTranslations(PyxformTestCase):
         """
         xp = XPathHelper(question_type="select1", question_name="q1")
         self.assertPyxformXform(
-            name="test",
             md=md,
             xml__xpath_match=[
                 xp.question_label_references_itext(),
@@ -343,20 +343,18 @@ class TestTranslations(PyxformTestCase):
                 xp.question_no_itext_form(DEFAULT_LANG, "audio", "-"),
                 xp.question_itext_form("Russian", "audio", "test.mp3"),
                 xp.question_itext_form("Kyrgyz", "audio", "something.mp3"),
-                xp.choice_value_in_body("0"),
-                xp.choice_label_references_itext("0"),
-                xp.choice_itext_label(DEFAULT_LANG, "0", "No"),
-                xp.choice_itext_label("Russian", "0", "Нет"),
-                xp.choice_itext_label("Kyrgyz", "0", "Нет (ky)"),
-                xp.choice_value_in_body("1"),
-                xp.choice_label_references_itext("1"),
-                xp.choice_itext_label(DEFAULT_LANG, "1", "Yes"),
-                xp.choice_itext_label("Russian", "1", "Да"),
-                xp.choice_itext_label("Kyrgyz", "1", "Да (ky)"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("yn", ("0", "1")),
+                xpc.model_itext_choice_text_label_by_pos("default", "yn", ("No", "Yes")),
+                xpc.model_itext_choice_text_label_by_pos("Russian", "yn", ("Нет", "Да")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "Kyrgyz", "yn", ("Нет (ky)", "Да (ky)")
+                ),
                 xp.language_is_default(DEFAULT_LANG),
                 xp.language_is_not_default("Russian"),
                 xp.language_is_not_default("Kyrgyz"),
             ],
+            debug=True,
         )
 
     def test_missing_translation__one_lang_all_cols(self):
@@ -410,22 +408,18 @@ class TestTranslations(PyxformTestCase):
             xp.constraint_msg_itext("eng", "check me"),
             xp.required_msg_references_itext(),
             xp.required_msg_itext("eng", "mandatory"),
-            xp.choice_value_in_body("na"),
-            xp.choice_value_in_body("nb"),
-            xp.choice_label_references_itext("na"),
-            xp.choice_label_references_itext("nb"),
-            xp.choice_itext_label("eng", "na", "la-e"),
+            xpq.body_select1_itemset("q1"),
+            xpc.model_instance_choices_itext("c1", ("na", "nb")),
+            xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
             xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
             xp.choice_itext_form("eng", "na", "image", "la-d.jpg"),
             xp.choice_itext_form("eng", "na", "video", "la-d.mkv"),
-            xp.choice_itext_label("eng", "nb", "lb-e"),
             xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
             xp.choice_itext_form("eng", "nb", "image", "lb-d.jpg"),
             xp.choice_itext_form("eng", "nb", "video", "lb-d.mkv"),
         ]
         # Warning case
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=common_xpaths
@@ -438,11 +432,12 @@ class TestTranslations(PyxformTestCase):
                 xp.question_no_itext_form(DEFAULT_LANG, "audio", "greeting.mp3"),
                 xp.constraint_msg_itext(DEFAULT_LANG, "-"),
                 xp.required_msg_itext(DEFAULT_LANG, "-"),
-                xp.choice_itext_label(DEFAULT_LANG, "na", "la-d"),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "default", "c1", ("la-d", "lb-d")
+                ),
                 xp.choice_no_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
                 xp.choice_no_itext_form(DEFAULT_LANG, "na", "image", "la-d.jpg"),
                 xp.choice_no_itext_form(DEFAULT_LANG, "na", "video", "la-d.mkv"),
-                xp.choice_itext_label(DEFAULT_LANG, "nb", "lb-d"),
                 xp.choice_no_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
                 xp.choice_no_itext_form(DEFAULT_LANG, "nb", "image", "lb-d.jpg"),
                 xp.choice_no_itext_form(DEFAULT_LANG, "nb", "video", "lb-d.mkv"),
@@ -452,7 +447,6 @@ class TestTranslations(PyxformTestCase):
         )
         # default_language set case
         self.assertPyxformXform(
-            name="test",
             md=settings + md,
             # TODO: bug - missing default lang translatable/itext values.
             # warnings__contains=[warning],
@@ -523,7 +517,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello | salutation |
         """
         self.assertPyxformXform(
-            name="test",
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_in_body("hello"),
@@ -544,7 +537,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello | salutation | greeting.jpg |
         """
         self.assertPyxformXform(
-            name="test",
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
@@ -566,7 +558,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello | salutation | greeting      |
         """
         self.assertPyxformXform(
-            name="test",
             md=md,
             xml__xpath_match=[
                 # TODO: is this a bug? Why itext for hint/guidance but not label?
@@ -588,7 +579,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello | salutation | greeting      | greeting.jpg | greeting.mkv | greeting.mp3 | check me           | mandatory        |
         """
         self.assertPyxformXform(
-            name="test",
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
@@ -632,7 +622,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello      | salutation |
         """
         self.assertPyxformXform(
-            name="test",
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
@@ -654,7 +643,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello      | salutation | greeting.jpg      |
         """
         self.assertPyxformXform(
-            name="test",
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
@@ -676,7 +664,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello      | salutation | greeting           |
         """
         self.assertPyxformXform(
-            name="test",
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
@@ -698,7 +685,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | hello      | salutation | greeting           | greeting.jpg      | greeting.jpg          | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
         """
         self.assertPyxformXform(
-            name="test",
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
@@ -729,7 +715,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         """
         warning = format_missing_translations_msg(_in={SURVEY: {"eng": ["hint"]}})
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
@@ -754,7 +739,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         """
         warning = format_missing_translations_msg(_in={SURVEY: {"eng": ["hint"]}})
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
@@ -791,7 +775,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         }
         warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
@@ -847,7 +830,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         # }
         # warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
-            name="test",
             md=md,
             # TODO: bug - missing default lang translatable/itext values.
             # warnings__contains=[warning],
@@ -880,7 +862,6 @@ class TestTranslationsSurvey(PyxformTestCase):
             _in={SURVEY: {"eng": ["hint"], "default": ["label"]}}
         )
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
@@ -906,7 +887,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         """
         warning = format_missing_translations_msg(_in={SURVEY: {"eng": ["hint"]}})
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
@@ -930,7 +910,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         """
         warning = format_missing_translations_msg(_in={SURVEY: {"french": ["hint"]}})
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
@@ -960,7 +939,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         """
         warning = format_missing_translations_msg(_in={SURVEY: {"french": ["hint"]}})
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
@@ -992,7 +970,6 @@ class TestTranslationsSurvey(PyxformTestCase):
             }
         )
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
@@ -1023,7 +1000,6 @@ class TestTranslationsSurvey(PyxformTestCase):
             _in={SURVEY: {"default": ("hint", "label"), "french": ("media::image",)}}
         )
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
@@ -1058,16 +1034,13 @@ class TestTranslationsChoices(PyxformTestCase):
         """
         xpath_match = [
             self.xp.question_label_in_body("Question 1"),
-            self.xp.choice_value_in_body("na"),
-            self.xp.choice_value_in_body("nb"),
-            self.xp.choice_label_references_itext("na"),
-            self.xp.choice_label_references_itext("nb"),
-            self.xp.choice_itext_label(DEFAULT_LANG, "na", "la"),
+            xpq.body_select1_itemset("q1"),
+            xpc.model_instance_choices_itext("c1", ("na", "nb")),
+            xpc.model_itext_choice_text_label_by_pos(DEFAULT_LANG, "c1", ("la", "lb")),
             self.xp.choice_itext_form(DEFAULT_LANG, "na", "audio", "a.mp3"),
             self.xp.choice_itext_form(DEFAULT_LANG, "na", "image", "a.jpg"),
             self.xp.choice_itext_form(DEFAULT_LANG, "na", "big-image", "a.jpg"),
             self.xp.choice_itext_form(DEFAULT_LANG, "na", "video", "a.mkv"),
-            self.xp.choice_itext_label(DEFAULT_LANG, "nb", "lb"),
             self.xp.choice_itext_form(DEFAULT_LANG, "nb", "audio", "b.mp3"),
             self.xp.choice_itext_form(DEFAULT_LANG, "nb", "image", "b.jpg"),
             self.xp.choice_itext_form(DEFAULT_LANG, "nb", "big-image", "b.jpg"),
@@ -1075,7 +1048,6 @@ class TestTranslationsChoices(PyxformTestCase):
         ]
         self.assertPyxformXform(
             md=md,
-            name="test",
             xml__xpath_match=xpath_match,
         )
 
@@ -1092,16 +1064,13 @@ class TestTranslationsChoices(PyxformTestCase):
         """
         xpath_match = [
             self.xp.question_label_in_body("Question 1"),
-            self.xp.choice_value_in_body("na"),
-            self.xp.choice_value_in_body("nb"),
-            self.xp.choice_label_references_itext("na"),
-            self.xp.choice_label_references_itext("nb"),
-            self.xp.choice_itext_label("Eng (en)", "na", "la"),
+            xpq.body_select1_itemset("q1"),
+            xpc.model_instance_choices_itext("c1", ("na", "nb")),
+            xpc.model_itext_choice_text_label_by_pos("Eng (en)", "c1", ("la", "lb")),
             self.xp.choice_itext_form("Eng (en)", "na", "audio", "a.mp3"),
             self.xp.choice_itext_form("Eng (en)", "na", "image", "a.jpg"),
             self.xp.choice_itext_form("Eng (en)", "na", "big-image", "a.jpg"),
             self.xp.choice_itext_form("Eng (en)", "na", "video", "a.mkv"),
-            self.xp.choice_itext_label("Eng (en)", "nb", "lb"),
             self.xp.choice_itext_form("Eng (en)", "nb", "audio", "b.mp3"),
             self.xp.choice_itext_form("Eng (en)", "nb", "image", "b.jpg"),
             self.xp.choice_itext_form("Eng (en)", "nb", "big-image", "b.jpg"),
@@ -1109,7 +1078,6 @@ class TestTranslationsChoices(PyxformTestCase):
         ]
         self.assertPyxformXform(
             md=md,
-            name="test",
             xml__xpath_match=xpath_match,
         )
 
@@ -1146,7 +1114,6 @@ class TestTranslationsChoices(PyxformTestCase):
         ]
         self.assertPyxformXform(
             md=md,
-            name="test",
             xml__xpath_match=xpath_match,
         )
 
@@ -1179,7 +1146,6 @@ class TestTranslationsChoices(PyxformTestCase):
         ]
         self.assertPyxformXform(
             md=md,
-            name="test",
             xml__xpath_match=xpath_match,
         )
 
@@ -1198,21 +1164,18 @@ class TestTranslationsChoices(PyxformTestCase):
             _in={CHOICES: {"eng": ("media::audio",)}}
         )
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_in_body("Question 1"),
-                self.xp.choice_value_in_body("na"),
-                self.xp.choice_value_in_body("nb"),
-                self.xp.choice_label_references_itext("na"),
-                self.xp.choice_label_references_itext("nb"),
-                self.xp.choice_itext_label(DEFAULT_LANG, "na", "la-d"),
-                self.xp.choice_itext_label("eng", "na", "la-e"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    DEFAULT_LANG, "c1", ("la-d", "lb-d")
+                ),
+                xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
                 self.xp.choice_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
                 self.xp.choice_no_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_label(DEFAULT_LANG, "nb", "lb-d"),
-                self.xp.choice_itext_label("eng", "nb", "lb-e"),
                 self.xp.choice_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
                 self.xp.choice_no_itext_form("eng", "nb", "audio", "lb-d.mp3"),
                 self.xp.language_is_default(DEFAULT_LANG),
@@ -1237,18 +1200,14 @@ class TestTranslationsChoices(PyxformTestCase):
         cols = {CHOICES: {"default": ("label",), "eng": ("media::audio",)}}
         warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_in_body("Question 1"),
-                self.xp.choice_value_in_body("na"),
-                self.xp.choice_value_in_body("nb"),
-                self.xp.choice_label_references_itext("na"),
-                self.xp.choice_label_references_itext("nb"),
-                self.xp.choice_itext_label("eng", "na", "la-e"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
                 self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_label("eng", "nb", "lb-e"),
                 self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
                 self.xp.language_is_default("eng"),
                 # TODO: bug - missing default lang translatable/itext values.
@@ -1279,17 +1238,16 @@ class TestTranslationsChoices(PyxformTestCase):
         }
         warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_in_body("Question 1"),
-                self.xp.choice_value_in_body("na"),
-                self.xp.choice_value_in_body("nb"),
-                self.xp.choice_label_references_itext("na"),
-                self.xp.choice_label_references_itext("nb"),
-                self.xp.choice_itext_label(DEFAULT_LANG, "na", "la-d"),
-                self.xp.choice_itext_label("eng", "na", "la-e"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    DEFAULT_LANG, "c1", ("la-d", "lb-d")
+                ),
+                xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
                 self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
                 self.xp.choice_itext_form("eng", "na", "image", "la-d.jpg"),
                 self.xp.choice_itext_form("eng", "na", "big-image", "la-d.jpg"),
@@ -1298,8 +1256,6 @@ class TestTranslationsChoices(PyxformTestCase):
                 self.xp.choice_no_itext_form(DEFAULT_LANG, "na", "image", "la-d.jpg"),
                 self.xp.choice_no_itext_form(DEFAULT_LANG, "na", "big-image", "la-d.jpg"),
                 self.xp.choice_no_itext_form(DEFAULT_LANG, "na", "video", "la-d.mkv"),
-                self.xp.choice_itext_label(DEFAULT_LANG, "nb", "lb-d"),
-                self.xp.choice_itext_label("eng", "nb", "lb-e"),
                 self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
                 self.xp.choice_itext_form("eng", "nb", "image", "lb-d.jpg"),
                 self.xp.choice_itext_form("eng", "nb", "big-image", "lb-d.jpg"),
@@ -1338,22 +1294,18 @@ class TestTranslationsChoices(PyxformTestCase):
         # }
         # warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
-            name="test",
             md=md,
             # TODO: bug - missing default lang translatable/itext values.
             # warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_in_body("Question 1"),
-                self.xp.choice_value_in_body("na"),
-                self.xp.choice_value_in_body("nb"),
-                self.xp.choice_label_references_itext("na"),
-                self.xp.choice_label_references_itext("nb"),
-                self.xp.choice_itext_label("eng", "na", "la-e"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
                 self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
                 self.xp.choice_itext_form("eng", "na", "image", "la-d.jpg"),
                 self.xp.choice_itext_form("eng", "na", "big-image", "la-d.jpg"),
                 self.xp.choice_itext_form("eng", "na", "video", "la-d.mkv"),
-                self.xp.choice_itext_label("eng", "nb", "lb-e"),
                 self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
                 self.xp.choice_itext_form("eng", "nb", "image", "lb-d.jpg"),
                 self.xp.choice_itext_form("eng", "nb", "big-image", "lb-d.jpg"),
@@ -1378,23 +1330,18 @@ class TestTranslationsChoices(PyxformTestCase):
             _in={CHOICES: {"eng": ("media::audio",), "default": ("label",)}}
         )
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_in_body("Question 1"),
-                self.xp.choice_value_in_body("na"),
-                self.xp.choice_value_in_body("nb"),
-                self.xp.choice_label_references_itext("na"),
-                self.xp.choice_label_references_itext("nb"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
                 # Output of a dash for empty translation is not a bug, it's a reminder /
                 # placeholder since XForms spec requires a value for every translation.
-                self.xp.choice_itext_label(DEFAULT_LANG, "na", "-"),
-                self.xp.choice_itext_label("eng", "na", "la-e"),
+                xpc.model_itext_choice_text_label_by_pos(DEFAULT_LANG, "c1", ("-", "-")),
+                xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
                 self.xp.choice_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
                 self.xp.choice_no_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_label(DEFAULT_LANG, "nb", "-"),
-                self.xp.choice_itext_label("eng", "nb", "lb-e"),
                 self.xp.choice_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
                 self.xp.choice_no_itext_form("eng", "nb", "audio", "lb-d.mp3"),
                 self.xp.language_is_default(DEFAULT_LANG),
@@ -1420,19 +1367,15 @@ class TestTranslationsChoices(PyxformTestCase):
             _in={CHOICES: {"eng": ("media::audio",), "default": ("label",)}}
         )
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_in_body("Question 1"),
-                self.xp.choice_value_in_body("na"),
-                self.xp.choice_value_in_body("nb"),
-                self.xp.choice_label_references_itext("na"),
-                self.xp.choice_label_references_itext("nb"),
-                self.xp.choice_itext_label("eng", "na", "la-e"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
                 # TODO: is this a bug? Default audio gets merged into eng hint.
                 self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_label("eng", "nb", "lb-e"),
                 self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
                 self.xp.language_is_default("eng"),
                 self.xp.language_no_itext(DEFAULT_LANG),
@@ -1454,21 +1397,18 @@ class TestTranslationsChoices(PyxformTestCase):
             _in={CHOICES: {"french": ("media::audio",)}}
         )
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_in_body("Question 1"),
-                self.xp.choice_value_in_body("na"),
-                self.xp.choice_value_in_body("nb"),
-                self.xp.choice_label_references_itext("na"),
-                self.xp.choice_label_references_itext("nb"),
-                self.xp.choice_itext_label("eng", "na", "la-e"),
-                self.xp.choice_itext_label("french", "na", "la-f"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "french", "c1", ("la-f", "lb-f")
+                ),
                 self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
                 self.xp.choice_no_itext_form("french", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_label("eng", "nb", "lb-e"),
-                self.xp.choice_itext_label("french", "nb", "lb-f"),
                 self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
                 self.xp.choice_no_itext_form("french", "na", "audio", "lb-d.mp3"),
                 self.xp.language_is_not_default("eng"),
@@ -1495,21 +1435,18 @@ class TestTranslationsChoices(PyxformTestCase):
             _in={CHOICES: {"french": ("media::audio",)}}
         )
         self.assertPyxformXform(
-            name="test",
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_in_body("Question 1"),
-                self.xp.choice_value_in_body("na"),
-                self.xp.choice_value_in_body("nb"),
-                self.xp.choice_label_references_itext("na"),
-                self.xp.choice_label_references_itext("nb"),
-                self.xp.choice_itext_label("eng", "na", "la-e"),
-                self.xp.choice_itext_label("french", "na", "la-f"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "french", "c1", ("la-f", "lb-f")
+                ),
                 self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
                 self.xp.choice_no_itext_form("french", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_label("eng", "nb", "lb-e"),
-                self.xp.choice_itext_label("french", "nb", "lb-f"),
                 self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
                 self.xp.choice_no_itext_form("french", "na", "audio", "lb-d.mp3"),
                 self.xp.language_is_default("eng"),

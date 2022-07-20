@@ -4,6 +4,8 @@ Test XLSForm sheet names.
 """
 from tests.pyxform_test_case import PyxformTestCase
 from tests.utils import prep_for_xml_contains
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 class InvalidSurveyColumnsTests(PyxformTestCase):
@@ -204,26 +206,25 @@ class AliasesTests(PyxformTestCase):
         """
         confirm that both 'name' and 'value' columns of choice list work
         """
-        for name_alias in ["name", "value"]:
+        md = """
+        | survey  |               |                |            |
+        |         | type          | name           | label      |
+        |         | select_one yn | q1             | Question 1 |
+        | choices |               |                |            |
+        |         | list name     | {name_alias}   | label      |
+        |         | yn            | yes            | Yes        |
+        |         | yn            | no             | No         |
+        """
+        for name_alias in ("name", "value"):
             self.assertPyxformXform(
-                name="aliases",
-                md="""
-                | survey  |               |                |            |
-                |         | type          | name           | label      |
-                |         | select_one yn | q1             | Question 1 |
-                | choices |               |                |            |
-                |         | list name     | %(name_alias)s | label      |
-                |         | yn            | yes            | Yes        |
-                |         | yn            | no             | No         |
-                """
-                % ({"name_alias": name_alias}),
-                instance__contains=["<q1/>"],
-                model__contains=['<bind nodeset="/aliases/q1" type="string"/>'],
-                xml__contains=[
-                    '<select1 ref="/aliases/q1">',
-                    "<value>yes</value>",
-                    "<value>no</value>",
-                    "</select1>",
+                md=md.format(name_alias=name_alias),
+                xml__xpath_match=[
+                    xpq.model_instance_item("q1"),
+                    xpq.model_instance_bind("q1", "string"),
+                    xpq.body_select1_itemset("q1"),
+                    xpc.model_instance_choices_label(
+                        "yn", (("yes", "Yes"), ("no", "No"))
+                    ),
                 ],
             )
 

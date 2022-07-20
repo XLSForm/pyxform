@@ -13,7 +13,8 @@ from pyxform.xls2xform import get_xml_path, xls2xform_convert
 from tests.pyxform_test_case import PyxformTestCase
 from tests.test_utils.md_table import md_table_to_workbook
 from tests.utils import get_temp_dir
-from tests.xpath_helpers.choices import xp as xpc
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 @dataclass()
@@ -319,8 +320,10 @@ class TestSelectOneExternal(PyxformTestCase):
                 ]
                 """,
                 # select_one generates internal select.
-                xpc.model_instance_choices("state", (("nsw", "NSW"), ("vic", "VIC"))),
-                xpc.body_select1_itemset("state"),
+                xpc.model_instance_choices_label(
+                    "state", (("nsw", "NSW"), ("vic", "VIC"))
+                ),
+                xpq.body_select1_itemset("state"),
                 # select_one_external generates input referencing itemsets.csv
                 """
                 /h:html/h:body[.
