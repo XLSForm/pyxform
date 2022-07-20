@@ -66,12 +66,12 @@ class ChoicesSheetTest(PyxformTestCase):
                   ./x:item/x:name/text() = '1'
                     and not(./x:item/x:label)
                     and not(./x:item/x:itextId)
-                  and 
+                  and
                   ./x:item/x:name/text() = '2'
                     and not(./x:item/x:label)
                     and not(./x:item/x:itextId)
                 ]
-                """
+                """,
             ],
         )
 
@@ -97,11 +97,11 @@ class ChoicesSheetTest(PyxformTestCase):
                   ./x:item/x:name/text() = '1'
                     and not(./x:item/x:label)
                     and not(./x:item/x:itextId)
-                  and 
+                  and
                   ./x:item/x:name/text() = '2'
                     and not(./x:item/x:label)
                     and not(./x:item/x:itextId)
                 ]
-                """
+                """,
             ],
         )

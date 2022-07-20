@@ -27,7 +27,7 @@ class XPathHelper:
         choices_xp = "\n              and ".join(
             (
                 f"""
-                ./x:item/x:name/text() = '{cv}' 
+                ./x:item/x:name/text() = '{cv}'
                   and not(./x:item/x:label)
                   and ./x:item/x:itextId = '{cname}-{idx}'
                 """
