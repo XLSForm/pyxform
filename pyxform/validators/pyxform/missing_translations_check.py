@@ -31,7 +31,7 @@ def format_missing_translations_msg(
                     cols = sheet[lang]
                     if isinstance(cols, str):
                         msg = f"Expected a sequence of columns, got a string for {lang}."
-                        PyXFormError(msg)
+                        raise PyXFormError(msg)
                     if 1 == len(cols):
                         msg = f"Language '{lang}' is missing the {name} {cols[0]} column."
                         lang_msgs.append(msg)
