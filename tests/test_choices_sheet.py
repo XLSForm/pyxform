@@ -79,6 +79,7 @@ class ChoicesSheetTest(PyxformTestCase):
         """
         Test choices without labels for dynamic selects. Validate will fail.
         """
+        # TODO: validate doesn't fail
         self.assertPyxformXform(
             md="""
             | survey   |                    |      |       |               |

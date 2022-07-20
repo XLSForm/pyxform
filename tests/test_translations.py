@@ -142,28 +142,6 @@ class XPathHelper:
             and not(descendant::x:value[@form='{form}' and text()='{prefix[form][1]}{fname}'])]
         """
 
-    def choice_value_in_body(self, cname):
-        """The Choice label value is in the body."""
-        return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test_name/{self.question_name}']/x:item
-          /x:value[not(@ref) and text()='{cname}']
-        """
-
-    def choice_label_references_itext(self, cname):
-        """The Choice label references an itext entry."""
-        return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test_name/{self.question_name}']/x:item
-          /x:label[@ref="jr:itext('/test_name/{self.question_name}/{cname}:label')" and not(text())]
-        """
-
-    def choice_itext_label(self, lang, cname, label):
-        """The Choice label value is in the itext, referenced from the body."""
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test_name/{self.question_name}/{cname}:label']
-          /x:value[not(@form) and text()='{label}']
-        """
-
     def choice_itext_form(self, lang, cname, form, fname):
         """There is an alternate form itext for the Choice label, referenced from the body."""
         prefix = {
@@ -176,16 +154,6 @@ class XPathHelper:
         /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
           /x:text[@id='/test_name/{self.question_name}/{cname}:label']
           /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
-        """
-
-    def choice_no_itext_label(self, lang, cname, label):
-        """There is no itext for the Choice label."""
-        return f"""
-        /h:html/h:head/x:model[not(
-          x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test_name/{self.question_name}/{cname}:label']
-          /x:value[not(@form) and text()='{label}']
-        )]
         """
 
     def choice_no_itext_form(self, lang, cname, form, fname):
