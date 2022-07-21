@@ -2,13 +2,12 @@ from tests.pyxform_test_case import PyxformTestCase
 
 
 class TestSettings(PyxformTestCase):
-
     def test_instance_xmlns__is_set__custom_xmlns(self):
         """Should find the instance_xmlns value in the instance xmlns attribute."""
         md = """
         | settings |
-        |          | instance_xmlns             |
-        |          | 1234 |
+        |          | instance_xmlns |
+        |          | 1234           |
         | survey |       |      |       |
         |        | type  | name | label |
         |        | text  | q1   | hello |
@@ -23,7 +22,7 @@ class TestSettings(PyxformTestCase):
                   and namespace-uri()='1234'
                 ]
                 """
-            ]
+            ],
         )
 
     def test_instance_xmlns__not_set__default_xmlns(self):
