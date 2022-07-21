@@ -12,9 +12,7 @@ from datetime import datetime
 from functools import lru_cache
 from typing import Iterator, List, Optional
 
-import aliases
-
-from pyxform import constants
+from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
