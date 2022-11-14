@@ -68,6 +68,7 @@ FIELD_LIST = "field-list"
 SURVEY = "survey"
 SETTINGS = "settings"
 EXTERNAL_CHOICES = "external_choices"
+ENTITIES = "entities"
 
 OSM = "osm"
 OSM_TYPE = "binary"
@@ -81,6 +82,7 @@ SUPPORTED_SHEET_NAMES = [
     SETTINGS,
     EXTERNAL_CHOICES,
     OSM,
+    ENTITIES,
 ]
 XLS_EXTENSIONS = [".xls"]
 XLSX_EXTENSIONS = [".xlsx", ".xlsm"]
