@@ -66,3 +66,20 @@ class EntitiesTest(PyxformTestCase):
                 '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@create = "1"]'
             ],
         )
+
+    def test_create_if_in_entities_sheet__puts_expression_on_bind(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |                      |       |
+            |          | type    | name                 | label |
+            |          | text    | a                    | A     |
+            | entities |         |                      |       |
+            |          | dataset | create_if            |       |
+            |          | trees   | string-length(a) > 3 |       |
+            """,
+            xml__xpath_match=[
+                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@create" and @calculate = "string-length(a) > 3"]',
+                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@create = "1"]'
+            ],
+        )
