@@ -354,7 +354,11 @@ def get_entity_declaration(workbook_dict: Dict) -> Dict:
             "This version of pyxform only supports declaring a single entity per form. Please make sure your entities sheet only declares one entity."
         )
 
-    return {"name": "entity", "type": "calculate"}
+    return {
+        "name": "entity",
+        "type": "entity",
+        "parameters": {"dataset": entities_sheet[0]["dataset"]},
+    }
 
 
 def workbook_to_json(

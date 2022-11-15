@@ -34,3 +34,19 @@ class EntitiesTest(PyxformTestCase):
                 "This version of pyxform only supports declaring a single entity per form. Please make sure your entities sheet only declares one entity."
             ],
         )
+
+    def test_dataset_in_entities_sheet__adds_dataset_attribute_to_entity(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |      |       |
+            |          | type    | name | label |
+            |          | text    | a    | A     |
+            | entities |         |      |       |
+            |          | dataset |      |       |
+            |          | trees   |      |       |
+            """,
+            xml__xpath_match=[
+                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@dataset = "trees"]'
+            ],
+        )
