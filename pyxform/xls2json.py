@@ -355,8 +355,10 @@ def get_entity_declaration(workbook_dict: Dict) -> Dict:
         )
     entity = entities_sheet[0]
 
+    if not ("label" in entity):
+        raise PyXFormError("The entities sheet is missing the required label column.")
+
     creation_condition = entity["create_if"] if "create_if" in entity else "1"
-    label = entity["label"] if "label" in entity else ""
 
     return {
         "name": "entity",
@@ -364,7 +366,7 @@ def get_entity_declaration(workbook_dict: Dict) -> Dict:
         "parameters": {
             "dataset": entities_sheet[0]["dataset"],
             "create": creation_condition,
-            "label": label,
+            "label": entity["label"],
         },
     }
 

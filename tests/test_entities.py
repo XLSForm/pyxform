@@ -7,12 +7,12 @@ class EntitiesTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |         |      |       |
-            |          | type    | name | label |
-            |          | text    | a    | A     |
-            | entities |         |      |       |
-            |          | dataset |      |       |
-            |          | trees   |      |       |
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset | label |       |
+            |          | trees   | a     |       |
             """,
             xml__xpath_match=["/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity"],
         )
@@ -39,12 +39,12 @@ class EntitiesTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |         |      |       |
-            |          | type    | name | label |
-            |          | text    | a    | A     |
-            | entities |         |      |       |
-            |          | dataset |      |       |
-            |          | trees   |      |       |
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset | label |       |
+            |          | trees   | a     |       |
             """,
             xml__xpath_match=[
                 '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@dataset = "trees"]'
@@ -55,12 +55,12 @@ class EntitiesTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |         |      |       |
-            |          | type    | name | label |
-            |          | text    | a    | A     |
-            | entities |         |      |       |
-            |          | dataset |      |       |
-            |          | trees   |      |       |
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset | label |       |
+            |          | trees   | a     |       |
             """,
             xml__xpath_match=[
                 '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@create = "1"]'
@@ -75,8 +75,8 @@ class EntitiesTest(PyxformTestCase):
             |          | type    | name                 | label |
             |          | text    | a                    | A     |
             | entities |         |                      |       |
-            |          | dataset | create_if            |       |
-            |          | trees   | string-length(a) > 3 |       |
+            |          | dataset | create_if            | label |
+            |          | trees   | string-length(a) > 3 | a     |
             """,
             xml__xpath_match=[
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@create" and @calculate = "string-length(a) > 3"]',
@@ -88,12 +88,12 @@ class EntitiesTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |         |      |       |
-            |          | type    | name | label |
-            |          | text    | a    | A     |
-            | entities |         |      |       |
-            |          | dataset |      |       |
-            |          | trees   |      |       |
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset | label |       |
+            |          | trees   | a     |       |
             """,
             xml__xpath_match=[
                 '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@id = ""]',
@@ -123,15 +123,30 @@ class EntitiesTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |         |       |                      |
-            |          | type    | name  | label                |
-            |          | text    | a     | A                    |
-            | entities |         |       |                      |
-            |          | dataset | label | create_if            |
+            | survey   |         |       |                         |
+            |          | type    | name  | label                   |
+            |          | text    | a     | A                       |
+            | entities |         |       |                         |
+            |          | dataset | label | create_if               |
             |          | trees   | ${a}  | string-length(${a}) > 3 |
             """,
             xml__xpath_match=[
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@create" and @calculate = "string-length( /data/a ) > 3"]',
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/label" and @type = "string" and @readonly = "true()" and @calculate = " /data/a "]',
             ],
+        )
+
+    def test_entity_label__required(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset |       |       |
+            |          | trees   |       |       |
+            """,
+            errored=True,
+            error__contains=["The entities sheet is missing the required label column."],
         )
