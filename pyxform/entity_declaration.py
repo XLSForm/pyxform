@@ -15,8 +15,13 @@ class EntityDeclaration(SurveyElement):
         return node("entity", label_node, **attributes)
 
     def xml_bindings(self):
+        survey = self.get_root()
+
+        create_expr = survey.insert_xpaths(
+            self.get("parameters", {}).get("create", "true()"), context=self
+        )
         create_bind = {
-            "calculate": self.get("parameters", {}).get("create", "true()"),
+            "calculate": create_expr,
             "type": "string",
             "readonly": "true()",
         }
@@ -33,8 +38,11 @@ class EntityDeclaration(SurveyElement):
         }
         id_setvalue = node("setvalue", ref=self.get_xpath() + "/@id", **id_setvalue_attrs)
 
+        label_expr = survey.insert_xpaths(
+            self.get("parameters", {}).get("label", ""), context=self
+        )
         label_bind = {
-            "calculate": self.get("parameters", {}).get("label", ""),
+            "calculate": label_expr,
             "type": "string",
             "readonly": "true()",
         }

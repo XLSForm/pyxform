@@ -114,7 +114,24 @@ class EntitiesTest(PyxformTestCase):
             |          | trees   | a     |       |
             """,
             xml__xpath_match=[
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label',
+                "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label",
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/label" and @type = "string" and @readonly = "true()" and @calculate = "a"]',
+            ],
+        )
+
+    def test_label_and_create_if_in_entities_sheet__expand_node_selectors_to_xpath(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |                      |
+            |          | type    | name  | label                |
+            |          | text    | a     | A                    |
+            | entities |         |       |                      |
+            |          | dataset | label | create_if            |
+            |          | trees   | ${a}  | string-length(${a}) > 3 |
+            """,
+            xml__xpath_match=[
+                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@create" and @calculate = "string-length( /data/a ) > 3"]',
+                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/label" and @type = "string" and @readonly = "true()" and @calculate = " /data/a "]',
             ],
         )
