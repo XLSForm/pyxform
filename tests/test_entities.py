@@ -80,6 +80,24 @@ class EntitiesTest(PyxformTestCase):
             """,
             xml__xpath_match=[
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@create" and @calculate = "string-length(a) > 3"]',
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@create = "1"]'
+                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@create = "1"]',
+            ],
+        )
+
+    def test_dataset_in_entities_sheet__adds_id_attribute_and_model_nodes_to_entity(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |      |       |
+            |          | type    | name | label |
+            |          | text    | a    | A     |
+            | entities |         |      |       |
+            |          | dataset |      |       |
+            |          | trees   |      |       |
+            """,
+            xml__xpath_match=[
+                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@id = ""]',
+                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@id" and @type = "string" and @readonly = "true()"]',
+                '/h:html/h:head/x:model/x:setvalue[@event = "odk-instance-first-load" and @type = "string" and @ref = "/data/meta/entity/@id" and @value = "uuid()"]',
             ],
         )

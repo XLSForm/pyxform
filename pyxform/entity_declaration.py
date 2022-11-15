@@ -9,9 +9,26 @@ class EntityDeclaration(SurveyElement):
         attributes = {}
         attributes["dataset"] = self.get("parameters", {}).get("dataset", "")
         attributes["create"] = "1"
+        attributes["id"] = ""
 
         return node("entity", **attributes)
 
     def xml_bindings(self):
-        bind_dict = {"calculate": self.get("parameters", {}).get("create", "true()")}
-        return [node("bind", nodeset=self.get_xpath() + "/@create", **bind_dict)]
+        create_bind = {
+            "calculate": self.get("parameters", {}).get("create", "true()"),
+            "type": "string",
+            "readonly": "true()",
+        }
+        create_node = node("bind", nodeset=self.get_xpath() + "/@create", **create_bind)
+
+        id_bind = {"type": "string", "readonly": "true()"}
+        id_node = node("bind", nodeset=self.get_xpath() + "/@id", **id_bind)
+
+        id_setvalue_attrs = {
+            "event": "odk-instance-first-load",
+            "type": "string",
+            "readonly": "true()",
+            "value": "uuid()",
+        }
+        id_setvalue = node("setvalue", ref=self.get_xpath() + "/@id", **id_setvalue_attrs)
+        return [create_node, id_node, id_setvalue]
