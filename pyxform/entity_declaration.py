@@ -8,13 +8,6 @@ class EntityDeclaration(SurveyElement):
     def xml_instance(self, **kwargs):
         attributes = {}
         attributes["dataset"] = self.get("parameters", {}).get("dataset", "")
+        attributes["create"] = self.get("parameters", {}).get("create", "1")
 
         return node("entity", **attributes)
-
-    def xml_control(self):
-        """
-        No-op since there is no associated form control to place under <body/>.
-
-        Exists here because there's a soft abstractmethod in SurveyElement.
-        """
-        pass

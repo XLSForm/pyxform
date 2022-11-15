@@ -353,11 +353,17 @@ def get_entity_declaration(workbook_dict: Dict) -> Dict:
         raise PyXFormError(
             "This version of pyxform only supports declaring a single entity per form. Please make sure your entities sheet only declares one entity."
         )
+    entity = entities_sheet[0]
+
+    creation_condition = entities_sheet[0]["create_if"] if "create_if" in entity else "1"
 
     return {
         "name": "entity",
         "type": "entity",
-        "parameters": {"dataset": entities_sheet[0]["dataset"]},
+        "parameters": {
+            "dataset": entities_sheet[0]["dataset"],
+            "create": creation_condition,
+        },
     }
 
 

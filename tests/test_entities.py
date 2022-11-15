@@ -50,3 +50,19 @@ class EntitiesTest(PyxformTestCase):
                 '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@dataset = "trees"]'
             ],
         )
+
+    def test_dataset_in_entities_sheet__defaults_to_always_creating(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |      |       |
+            |          | type    | name | label |
+            |          | text    | a    | A     |
+            | entities |         |      |       |
+            |          | dataset |      |       |
+            |          | trees   |      |       |
+            """,
+            xml__xpath_match=[
+                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@create = "1"]'
+            ],
+        )
