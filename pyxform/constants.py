@@ -101,6 +101,10 @@ EXTERNAL_INSTANCES = ["calculate", "constraint", "readonly", "required", "releva
 # The ODK XForms version that generated forms comply to
 CURRENT_XFORMS_VERSION = "1.0.0"
 
+# The ODK entities spec version that generated forms comply to
+CURRENT_ENTITIES_VERSION = "2022.1.0"
+ENTITY_RELATED = "entity-related"
+
 DEPRECATED_DEVICE_ID_METADATA_FIELDS = ["subscriberid", "simserial"]
 
 AUDIO_QUALITY_VOICE_ONLY = "voice-only"

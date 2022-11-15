@@ -1429,6 +1429,7 @@ def workbook_to_json(
 
     entity_declaration = get_entity_declaration(workbook_dict)
     if len(entity_declaration) > 0:
+        json_dict[constants.ENTITY_RELATED] = "true"
         meta_children.append(entity_declaration)
 
     if len(meta_children) > 0:

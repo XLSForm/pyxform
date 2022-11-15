@@ -150,3 +150,53 @@ class EntitiesTest(PyxformTestCase):
             errored=True,
             error__contains=["The entities sheet is missing the required label column."],
         )
+
+    def test_dataset_in_entities_sheet__adds_entities_namespace(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset | label |       |
+            |          | trees   | a     |       |
+            """,
+            xml__contains=["xmlns:entities=\"http://www.opendatakit.org/xforms/entities\""],
+        )
+
+    def test_entities_namespace__omitted_if_no_entities_sheet(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            """,
+            xml__excludes=["xmlns:entities=\"http://www.opendatakit.org/xforms/entities\""],
+        )
+
+    def test_dataset_in_entities_sheet__adds_entities_version(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset | label |       |
+            |          | trees   | a     |       |
+            """,
+            xml__xpath_match=['/h:html/h:head/x:model[@entities:entities-version = "2022.1.0"]']
+        )
+
+    def test_entities_version__omitted_if_no_entities_sheet(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            """,
+            xml__excludes=["entities:entities-version = \"2022.1.0\""],
+        )
