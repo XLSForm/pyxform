@@ -101,3 +101,20 @@ class EntitiesTest(PyxformTestCase):
                 '/h:html/h:head/x:model/x:setvalue[@event = "odk-instance-first-load" and @type = "string" and @ref = "/data/meta/entity/@id" and @value = "uuid()"]',
             ],
         )
+
+    def test_label_in_entities_sheet__adds_label_and_bind_to_entity(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset | label |       |
+            |          | trees   | a     |       |
+            """,
+            xml__xpath_match=[
+                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label',
+                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/label" and @type = "string" and @readonly = "true()" and @calculate = "a"]',
+            ],
+        )

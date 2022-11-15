@@ -11,7 +11,8 @@ class EntityDeclaration(SurveyElement):
         attributes["create"] = "1"
         attributes["id"] = ""
 
-        return node("entity", **attributes)
+        label_node = node("label")
+        return node("entity", label_node, **attributes)
 
     def xml_bindings(self):
         create_bind = {
@@ -31,4 +32,11 @@ class EntityDeclaration(SurveyElement):
             "value": "uuid()",
         }
         id_setvalue = node("setvalue", ref=self.get_xpath() + "/@id", **id_setvalue_attrs)
-        return [create_node, id_node, id_setvalue]
+
+        label_bind = {
+            "calculate": self.get("parameters", {}).get("label", ""),
+            "type": "string",
+            "readonly": "true()",
+        }
+        label_node = node("bind", nodeset=self.get_xpath() + "/label", **label_bind)
+        return [create_node, id_node, id_setvalue, label_node]
