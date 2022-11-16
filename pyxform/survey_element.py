@@ -448,14 +448,6 @@ class SurveyElement(dict):
             if self.trigger and "calculate" in self.bind:
                 del bind_dict["calculate"]
 
-            if (
-                "entities:saveto" in bind_dict
-                and getattr(survey, constants.ENTITY_RELATED, "false") != "true"
-            ):
-                raise PyXFormError(
-                    "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
-                )
-
             for k, v in bind_dict.items():
                 # I think all the binding conversions should be happening on
                 # the xls2json side.

@@ -354,7 +354,7 @@ def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
 def get_entity_declaration(workbook_dict: Dict) -> Dict:
     entities_sheet = workbook_dict.get(constants.ENTITIES, [])
     if len(entities_sheet) == 0:
-        return []
+        return {}
     elif len(entities_sheet) > 1:
         raise PyXFormError(
             "This version of pyxform only supports declaring a single entity per form. Please make sure your entities sheet only declares one entity."
@@ -377,10 +377,15 @@ def get_entity_declaration(workbook_dict: Dict) -> Dict:
     }
 
 
-def validate_entity_saveto(row: dict, row_number: int):
+def validate_entity_saveto(row: Dict, row_number: int, entity_declaration: Dict):
     save_to = row.get("bind", {}).get("entities:saveto", "")
     if not save_to:
         return
+
+    if len(entity_declaration) == 0:
+        raise PyXFormError(
+            "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
+        )
 
     if constants.GROUP in row.get(TYPE) or constants.REPEAT in row.get(TYPE):
         raise PyXFormError(
@@ -622,6 +627,9 @@ def workbook_to_json(
                                     ),
                                 )
                             )  # noqa
+
+    # ########## Entities sheet ###########
+    entity_declaration = get_entity_declaration(workbook_dict)
 
     # ########## Survey sheet ###########
     survey_sheet = workbook_dict[constants.SURVEY]
@@ -969,7 +977,7 @@ def workbook_to_json(
                 f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
             )
 
-        validate_entity_saveto(row, row_number)
+        validate_entity_saveto(row, row_number, entity_declaration)
 
         # Try to parse question as begin control statement
         # (i.e. begin loop/repeat/group):
@@ -1462,7 +1470,6 @@ def workbook_to_json(
             }
         )
 
-    entity_declaration = get_entity_declaration(workbook_dict)
     if len(entity_declaration) > 0:
         json_dict[constants.ENTITY_RELATED] = "true"
         meta_children.append(entity_declaration)
