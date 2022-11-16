@@ -351,14 +351,19 @@ def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
         return None
 
 
-def get_entity_declaration(workbook_dict: Dict) -> Dict:
+def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
     entities_sheet = workbook_dict.get(constants.ENTITIES, [])
+
     if len(entities_sheet) == 0:
+        similar = find_sheet_misspellings(key=constants.ENTITIES, keys=workbook_dict.keys())
+        if similar is not None:
+            warnings.append(similar + _MSG_SUPPRESS_SPELLING)
         return {}
     elif len(entities_sheet) > 1:
         raise PyXFormError(
             "This version of pyxform only supports declaring a single entity per form. Please make sure your entities sheet only declares one entity."
         )
+
     entity = entities_sheet[0]
 
     if not ("label" in entity):
@@ -629,7 +634,7 @@ def workbook_to_json(
                             )  # noqa
 
     # ########## Entities sheet ###########
-    entity_declaration = get_entity_declaration(workbook_dict)
+    entity_declaration = get_entity_declaration(workbook_dict, warnings)
 
     # ########## Survey sheet ###########
     survey_sheet = workbook_dict[constants.SURVEY]
