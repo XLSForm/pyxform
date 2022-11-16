@@ -14,10 +14,10 @@ from pyxform.utils import (
     BRACKETED_TAG_REGEX,
     INVALID_XFORM_TAG_REGEXP,
     default_is_dynamic,
-    is_valid_xml_tag,
     node,
 )
 from pyxform.xls2json import print_pyobj_to_json
+from pyxform.xlsparseutils import is_valid_xml_tag
 
 if TYPE_CHECKING:
     from typing import List

@@ -7,7 +7,7 @@ import os
 import re
 
 from pyxform import file_utils, utils
-from pyxform.entity_declaration import EntityDeclaration
+from pyxform.entities.entity_declaration import EntityDeclaration
 from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.question import (

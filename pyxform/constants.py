@@ -124,3 +124,8 @@ EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON = "id"
 
 ROW_FORMAT_STRING: str = "[row : %s]"
 XML_IDENTIFIER_ERROR_MESSAGE = "must begin with a letter, colon, or underscore. Other characters can include numbers, dashes, and periods."
+_MSG_SUPPRESS_SPELLING = (
+    " If you do not mean to include a sheet, to suppress this message, "
+    "prefix the sheet name with an underscore. For example 'setting' "
+    "becomes '_setting'."
+)

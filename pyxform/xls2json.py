@@ -8,30 +8,29 @@ import os
 import re
 import sys
 from collections import Counter
-from typing import Any, Dict, KeysView, List, Optional
+from typing import Any, Dict, List
 
 from pyxform import aliases, constants
 from pyxform.constants import (
-    ENTITIES_RESERVED_PREFIX,
+    _MSG_SUPPRESS_SPELLING,
     EXTERNAL_INSTANCE_EXTENSIONS,
     ROW_FORMAT_STRING,
-    TYPE,
     XML_IDENTIFIER_ERROR_MESSAGE,
 )
+from pyxform.entities.entities_parsing import (
+    get_entity_declaration,
+    validate_entity_saveto,
+)
 from pyxform.errors import PyXFormError
-from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
+from pyxform.utils import default_is_dynamic
 from pyxform.validators.pyxform import parameters_generic, select_from_file_params
 from pyxform.validators.pyxform.missing_translations_check import (
     missing_translations_check,
 )
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
+from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
-_MSG_SUPPRESS_SPELLING = (
-    " If you do not mean to include a sheet, to suppress this message, "
-    "prefix the sheet name with an underscore. For example 'setting' "
-    "becomes '_setting'."
-)
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -321,117 +320,6 @@ def process_image_default(default_value):
     if image_jr_prefix not in default_value:
         return "{}{}".format("jr://images/", default_value)
     return default_value
-
-
-def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
-    """
-    Find possible sheet name misspellings to warn the user about.
-
-    It's possible that this will warn about sheet names for sheets that have
-    auxilliary metadata that is not meant for processing by pyxform. For
-    example the "osm" sheet name may be similar to many other initialisms.
-
-    :param key: The sheet name to look for.
-    :param keys: The workbook sheet names.
-    """
-    candidates = tuple(
-        _k  # thanks to black
-        for _k in keys
-        if 2 >= levenshtein_distance(_k.lower(), key)
-        and _k not in constants.SUPPORTED_SHEET_NAMES
-        and not _k.startswith("_")
-    )
-    if 0 < len(candidates):
-        msg = (
-            "When looking for a sheet named '{k}', the following sheets with "
-            "similar names were found: {c}."
-        ).format(k=key, c=str(", ".join(("'{}'".format(c) for c in candidates))))
-        return msg
-    else:
-        return None
-
-
-def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
-    entities_sheet = workbook_dict.get(constants.ENTITIES, [])
-
-    if len(entities_sheet) == 0:
-        similar = find_sheet_misspellings(
-            key=constants.ENTITIES, keys=workbook_dict.keys()
-        )
-        if similar is not None:
-            warnings.append(similar + _MSG_SUPPRESS_SPELLING)
-        return {}
-    elif len(entities_sheet) > 1:
-        raise PyXFormError(
-            "This version of pyxform only supports declaring a single entity per form. Please make sure your entities sheet only declares one entity."
-        )
-
-    entity = entities_sheet[0]
-    dataset = entity["dataset"]
-
-    if dataset.startswith(ENTITIES_RESERVED_PREFIX):
-        raise PyXFormError(
-            f"Invalid dataset name: '{dataset}' starts with reserved prefix {ENTITIES_RESERVED_PREFIX}."
-        )
-
-    if not is_valid_xml_tag(dataset):
-        if isinstance(dataset, bytes):
-            dataset = dataset.encode("utf-8")
-
-        raise PyXFormError(
-            f"Invalid dataset name: '{dataset}'. Dataset names {XML_IDENTIFIER_ERROR_MESSAGE}"
-        )
-
-    if not ("label" in entity):
-        raise PyXFormError("The entities sheet is missing the required label column.")
-
-    creation_condition = entity["create_if"] if "create_if" in entity else "1"
-
-    return {
-        "name": "entity",
-        "type": "entity",
-        "parameters": {
-            "dataset": dataset,
-            "create": creation_condition,
-            "label": entity["label"],
-        },
-    }
-
-
-def validate_entity_saveto(row: Dict, row_number: int, entity_declaration: Dict):
-    save_to = row.get("bind", {}).get("entities:saveto", "")
-    if not save_to:
-        return
-
-    if len(entity_declaration) == 0:
-        raise PyXFormError(
-            "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
-        )
-
-    if constants.GROUP in row.get(TYPE) or constants.REPEAT in row.get(TYPE):
-        raise PyXFormError(
-            f"{ROW_FORMAT_STRING % row_number} Groups and repeats can't be saved as entity properties."
-        )
-
-    error_start = f"{ROW_FORMAT_STRING % row_number} Invalid save_to name:"
-
-    if save_to == "name" or save_to == "label":
-        raise PyXFormError(
-            f"{error_start} the entity property name '{save_to}' is reserved."
-        )
-
-    if save_to.startswith(ENTITIES_RESERVED_PREFIX):
-        raise PyXFormError(
-            f"{error_start} the entity property name '{save_to}' starts with reserved prefix {ENTITIES_RESERVED_PREFIX}."
-        )
-
-    if not is_valid_xml_tag(save_to):
-        if isinstance(save_to, bytes):
-            save_to = save_to.encode("utf-8")
-
-        raise PyXFormError(
-            f"{error_start} '{save_to}'. Entity property names {XML_IDENTIFIER_ERROR_MESSAGE}"
-        )
 
 
 def workbook_to_json(
