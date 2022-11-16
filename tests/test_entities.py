@@ -51,6 +51,40 @@ class EntitiesTest(PyxformTestCase):
             ],
         )
 
+    def test_dataset_with_reserved_prefix__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset | label |       |
+            |          | __sweet | a     |       |
+            """,
+            errored=True,
+            error__contains=[
+                "Invalid dataset name: '__sweet' starts with reserved prefix __."
+            ],
+        )
+
+    def test_dataset_with_invalid_xml_name__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset | label |       |
+            |          | $sweet  | a     |       |
+            """,
+            errored=True,
+            error__contains=[
+                "Invalid dataset name: '$sweet'. Dataset names must begin with a letter, colon, or underscore. Other characters can include numbers, dashes, and periods."
+            ],
+        )
+
     def test_worksheet_name_close_to_entities__produces_warning(self):
         self.assertPyxformXform(
             name="data",
@@ -62,7 +96,9 @@ class EntitiesTest(PyxformTestCase):
             |          | dataset | label |       |
             |          | trees   | a     |       |
             """,
-            warnings__contains=["When looking for a sheet named 'entities', the following sheets with similar names were found: 'entitoes'."]
+            warnings__contains=[
+                "When looking for a sheet named 'entities', the following sheets with similar names were found: 'entitoes'."
+            ],
         )
 
     def test_dataset_in_entities_sheet__defaults_to_always_creating(self):

@@ -355,7 +355,9 @@ def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
     entities_sheet = workbook_dict.get(constants.ENTITIES, [])
 
     if len(entities_sheet) == 0:
-        similar = find_sheet_misspellings(key=constants.ENTITIES, keys=workbook_dict.keys())
+        similar = find_sheet_misspellings(
+            key=constants.ENTITIES, keys=workbook_dict.keys()
+        )
         if similar is not None:
             warnings.append(similar + _MSG_SUPPRESS_SPELLING)
         return {}
@@ -365,6 +367,20 @@ def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
         )
 
     entity = entities_sheet[0]
+    dataset = entity["dataset"]
+
+    if dataset.startswith(ENTITIES_RESERVED_PREFIX):
+        raise PyXFormError(
+            f"Invalid dataset name: '{dataset}' starts with reserved prefix {ENTITIES_RESERVED_PREFIX}."
+        )
+
+    if not is_valid_xml_tag(dataset):
+        if isinstance(dataset, bytes):
+            dataset = dataset.encode("utf-8")
+
+        raise PyXFormError(
+            f"Invalid dataset name: '{dataset}'. Dataset names {XML_IDENTIFIER_ERROR_MESSAGE}"
+        )
 
     if not ("label" in entity):
         raise PyXFormError("The entities sheet is missing the required label column.")
@@ -375,7 +391,7 @@ def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
         "name": "entity",
         "type": "entity",
         "parameters": {
-            "dataset": entities_sheet[0]["dataset"],
+            "dataset": dataset,
             "create": creation_condition,
             "label": entity["label"],
         },
