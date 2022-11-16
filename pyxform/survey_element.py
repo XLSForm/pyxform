@@ -157,13 +157,9 @@ class SurveyElement(dict):
     def validate(self):
         if not is_valid_xml_tag(self.name):
             invalid_char = re.search(INVALID_XFORM_TAG_REGEXP, self.name)
-            msg = (
-                "The name '{}' is an invalid XML tag, it contains an "
-                "invalid character '{}'. Names must begin with a letter, "
-                "colon, or underscore, subsequent characters can include "
-                "numbers, dashes, and periods".format(self.name, invalid_char.group(0))
+            raise PyXFormError(
+                f"The name '{self.name}' contains an invalid character '{invalid_char.group(0)}'. Names {constants.XML_IDENTIFIER_ERROR_MESSAGE}"
             )
-            raise PyXFormError(msg)
 
     # TODO: Make sure renaming this doesn't cause any problems
     def iter_descendants(self):
@@ -451,6 +447,14 @@ class SurveyElement(dict):
             # the expression goes in a setvalue action
             if self.trigger and "calculate" in self.bind:
                 del bind_dict["calculate"]
+
+            if (
+                "entities:saveto" in bind_dict
+                and getattr(survey, constants.ENTITY_RELATED, "false") != "true"
+            ):
+                raise PyXFormError(
+                    "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
+                )
 
             for k, v in bind_dict.items():
                 # I think all the binding conversions should be happening on

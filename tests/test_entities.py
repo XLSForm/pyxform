@@ -162,7 +162,7 @@ class EntitiesTest(PyxformTestCase):
             |          | dataset | label |       |
             |          | trees   | a     |       |
             """,
-            xml__contains=["xmlns:entities=\"http://www.opendatakit.org/xforms/entities\""],
+            xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
 
     def test_entities_namespace__omitted_if_no_entities_sheet(self):
@@ -173,7 +173,7 @@ class EntitiesTest(PyxformTestCase):
             |          | type    | name  | label |
             |          | text    | a     | A     |
             """,
-            xml__excludes=["xmlns:entities=\"http://www.opendatakit.org/xforms/entities\""],
+            xml__excludes=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
 
     def test_dataset_in_entities_sheet__adds_entities_version(self):
@@ -187,7 +187,9 @@ class EntitiesTest(PyxformTestCase):
             |          | dataset | label |       |
             |          | trees   | a     |       |
             """,
-            xml__xpath_match=['/h:html/h:head/x:model[@entities:entities-version = "2022.1.0"]']
+            xml__xpath_match=[
+                '/h:html/h:head/x:model[@entities:entities-version = "2022.1.0"]'
+            ],
         )
 
     def test_entities_version__omitted_if_no_entities_sheet(self):
@@ -198,5 +200,121 @@ class EntitiesTest(PyxformTestCase):
             |          | type    | name  | label |
             |          | text    | a     | A     |
             """,
-            xml__excludes=["entities:entities-version = \"2022.1.0\""],
+            xml__excludes=['entities:entities-version = "2022.1.0"'],
+        )
+
+    def test_saveto_column__added_to_xml(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |         |
+            |          | type    | name  | label | save_to |
+            |          | text    | a     | A     | foo     |
+            | entities |         |       |       |         |
+            |          | dataset | label |       |         |
+            |          | trees   | a     |       |         |
+            """,
+            xml__xpath_match=[
+                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/a" and @entities:saveto = "foo"]'
+            ],
+        )
+
+    def test_saveto_without_entities_sheet__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |         |
+            |          | type    | name  | label | save_to |
+            |          | text    | a     | A     | foo     |
+            """,
+            errored=True,
+            error__contains=[
+                "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
+            ],
+        )
+
+    def test_name_in_saveto_column__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |         |
+            |          | type    | name  | label | save_to |
+            |          | text    | a     | A     | name    |
+            | entities |         |       |       |         |
+            |          | dataset | label |       |         |
+            |          | trees   | a     |       |         |
+            """,
+            errored=True,
+            error__contains=[
+                "[row : 2] Invalid save_to name: the entity property name 'name' is reserved."
+            ],
+        )
+
+    def test_label_in_saveto_column__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |         |
+            |          | type    | name  | label | save_to |
+            |          | text    | a     | A     | label   |
+            | entities |         |       |       |         |
+            |          | dataset | label |       |         |
+            |          | trees   | a     |       |         |
+            """,
+            errored=True,
+            error__contains=[
+                "[row : 2] Invalid save_to name: the entity property name 'label' is reserved."
+            ],
+        )
+
+    def test_system_prefix_in_saveto_column__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |         |
+            |          | type    | name  | label | save_to |
+            |          | text    | a     | A     | __a     |
+            | entities |         |       |       |         |
+            |          | dataset | label |       |         |
+            |          | trees   | a     |       |         |
+            """,
+            errored=True,
+            error__contains=[
+                "[row : 2] Invalid save_to name: the entity property name '__a' starts with reserved prefix __."
+            ],
+        )
+
+    def test_invalid_xml_identifier_in_saveto_column__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |         |
+            |          | type    | name  | label | save_to |
+            |          | text    | a     | A     | $a      |
+            | entities |         |       |       |         |
+            |          | dataset | label |       |         |
+            |          | trees   | a     |       |         |
+            """,
+            errored=True,
+            error__contains=[
+                "[row : 2] Invalid save_to name: '$a'. Entity property names must begin with a letter, colon, or underscore. Other characters can include numbers, dashes, and periods."
+            ],
+        )
+
+    def test_saveto_on_group__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |             |       |       |         |
+            |          | type        | name  | label | save_to |
+            |          | begin_group | a     | A     | a       |
+            |          | end_group   |       |       |         |
+            | entities |             |       |       |         |
+            |          | dataset     | label |       |         |
+            |          | trees       | a     |       |         |
+            """,
+            errored=True,
+            error__contains=[
+                "[row : 2] Groups and repeats can't be saved as entity properties."
+            ],
         )

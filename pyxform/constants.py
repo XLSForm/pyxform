@@ -12,6 +12,7 @@ are easier to find.
 TYPE = "type"
 TITLE = "title"
 NAME = "name"
+ENTITIES_SAVETO = "save_to"
 ID_STRING = "id_string"
 SMS_KEYWORD = "sms_keyword"
 SMS_FIELD = "sms_field"
@@ -103,7 +104,8 @@ CURRENT_XFORMS_VERSION = "1.0.0"
 
 # The ODK entities spec version that generated forms comply to
 CURRENT_ENTITIES_VERSION = "2022.1.0"
-ENTITY_RELATED = "entity-related"
+ENTITY_RELATED = "entityrelated"
+ENTITIES_RESERVED_PREFIX = "__"
 
 DEPRECATED_DEVICE_ID_METADATA_FIELDS = ["subscriberid", "simserial"]
 
@@ -121,3 +123,4 @@ EXTERNAL_CHOICES_ITEMSET_REF_LABEL_GEOJSON = "title"
 EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON = "id"
 
 ROW_FORMAT_STRING: str = "[row : %s]"
+XML_IDENTIFIER_ERROR_MESSAGE = "must begin with a letter, colon, or underscore. Other characters can include numbers, dashes, and periods."

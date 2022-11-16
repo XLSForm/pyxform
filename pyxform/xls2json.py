@@ -11,7 +11,13 @@ from collections import Counter
 from typing import Any, Dict, KeysView, List, Optional
 
 from pyxform import aliases, constants
-from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, ROW_FORMAT_STRING
+from pyxform.constants import (
+    ENTITIES_RESERVED_PREFIX,
+    EXTERNAL_INSTANCE_EXTENSIONS,
+    ROW_FORMAT_STRING,
+    TYPE,
+    XML_IDENTIFIER_ERROR_MESSAGE,
+)
 from pyxform.errors import PyXFormError
 from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
 from pyxform.validators.pyxform import parameters_generic, select_from_file_params
@@ -369,6 +375,37 @@ def get_entity_declaration(workbook_dict: Dict) -> Dict:
             "label": entity["label"],
         },
     }
+
+
+def validate_entity_saveto(row: dict, row_number: int):
+    save_to = row.get("bind", {}).get("entities:saveto", "")
+    if not save_to:
+        return
+
+    if constants.GROUP in row.get(TYPE) or constants.REPEAT in row.get(TYPE):
+        raise PyXFormError(
+            f"{ROW_FORMAT_STRING % row_number} Groups and repeats can't be saved as entity properties."
+        )
+
+    error_start = f"{ROW_FORMAT_STRING % row_number} Invalid save_to name:"
+
+    if save_to == "name" or save_to == "label":
+        raise PyXFormError(
+            f"{error_start} the entity property name '{save_to}' is reserved."
+        )
+
+    if save_to.startswith(ENTITIES_RESERVED_PREFIX):
+        raise PyXFormError(
+            f"{error_start} the entity property name '{save_to}' starts with reserved prefix {ENTITIES_RESERVED_PREFIX}."
+        )
+
+    if not is_valid_xml_tag(save_to):
+        if isinstance(save_to, bytes):
+            save_to = save_to.encode("utf-8")
+
+        raise PyXFormError(
+            f"{error_start} '{save_to}'. Entity property names {XML_IDENTIFIER_ERROR_MESSAGE}"
+        )
 
 
 def workbook_to_json(
@@ -927,13 +964,12 @@ def workbook_to_json(
         if not is_valid_xml_tag(question_name):
             if isinstance(question_name, bytes):
                 question_name = question_name.encode("utf-8")
-            error_message = ROW_FORMAT_STRING % row_number
-            error_message += " Invalid question name [" + question_name + "] "
-            error_message += "Names must begin with a letter, colon," + " or underscore."
-            error_message += (
-                "Subsequent characters can include numbers," + " dashes, and periods."
+
+            raise PyXFormError(
+                f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
             )
-            raise PyXFormError(error_message)
+
+        validate_entity_saveto(row, row_number)
 
         # Try to parse question as begin control statement
         # (i.e. begin loop/repeat/group):
@@ -1383,7 +1419,6 @@ def workbook_to_json(
 
             parent_children_array.append(new_dict)
             continue
-
         # TODO: Consider adding some question_type validation here.
 
         # Put the row in the json dict as is:
