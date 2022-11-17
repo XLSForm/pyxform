@@ -81,7 +81,24 @@ class EntitiesTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid dataset name: '$sweet'. Dataset names must begin with a letter, colon, or underscore. Other characters can include numbers, dashes, and periods."
+                "Invalid dataset name: '$sweet'. Dataset names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
+            ],
+        )
+
+    def test_dataset_with_period_in_name__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |
+            |          | type    | name  | label |
+            |          | text    | a     | A     |
+            | entities |         |       |       |
+            |          | dataset | label |       |
+            |          | s.w.eet | a     |       |
+            """,
+            errored=True,
+            error__contains=[
+                "Invalid dataset name: 's.w.eet'. Dataset names may not include periods."
             ],
         )
 

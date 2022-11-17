@@ -28,12 +28,17 @@ def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
             f"Invalid dataset name: '{dataset}' starts with reserved prefix {constants.ENTITIES_RESERVED_PREFIX}."
         )
 
+    if "." in dataset:
+        raise PyXFormError(
+            f"Invalid dataset name: '{dataset}'. Dataset names may not include periods."
+        )
+
     if not is_valid_xml_tag(dataset):
         if isinstance(dataset, bytes):
             dataset = dataset.encode("utf-8")
 
         raise PyXFormError(
-            f"Invalid dataset name: '{dataset}'. Dataset names {constants.XML_IDENTIFIER_ERROR_MESSAGE}"
+            f"Invalid dataset name: '{dataset}'. Dataset names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
         )
 
     if not ("label" in entity):
