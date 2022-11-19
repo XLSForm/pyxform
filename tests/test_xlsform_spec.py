@@ -21,6 +21,7 @@ class TestWarnings(PyxformTestCase):
         |          | select_multiple yes_no | select_multiple_test    | select multiple test      |         | minimal            |              |       |       |
         |          | end group              | adsaf                   |                           |         |                    |              |       |       |
         |          | begin group            | labeled_select_group    | labeled select group test |         | field-list         |              |       |       |
+        |          | text                   | inside                  | Inside                    |         |
         |          | end group              |                         |                           |         |                    |              |       |       |
         |          | begin group            | name                    |                           |         | table-list         |              |       |       |
         |          | select_one yes_no      | table_list_question     | table list question       | hint    |                    |              |       |       |
@@ -67,8 +68,8 @@ class TestWarnings(PyxformTestCase):
             "On the choices sheet there is a option with no label. [list_name : animals]",
             "[row : 9] Repeat has no label: {'name': 'repeat_test', 'type': 'begin repeat'}",
             "[row : 10] Group has no label: {'name': 'group_test', 'type': 'begin group'}",
-            "[row : 16] Group has no label: {'name': 'name', 'type': 'begin group'}",
-            "[row : 27] Use the max-pixels parameter to speed up submission "
+            "[row : 17] Group has no label: {'name': 'name', 'type': 'begin group'}",
+            "[row : 28] Use the max-pixels parameter to speed up submission "
             + "sending and save storage space. Learn more: https://xlsform.org/#image",
         ]
         self.assertListEqual(expected, warnings)
