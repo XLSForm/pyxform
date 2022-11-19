@@ -14,10 +14,10 @@ from pyxform.utils import (
     BRACKETED_TAG_REGEX,
     INVALID_XFORM_TAG_REGEXP,
     default_is_dynamic,
-    is_valid_xml_tag,
     node,
 )
 from pyxform.xls2json import print_pyobj_to_json
+from pyxform.xlsparseutils import is_valid_xml_tag
 
 if TYPE_CHECKING:
     from typing import List
@@ -157,13 +157,9 @@ class SurveyElement(dict):
     def validate(self):
         if not is_valid_xml_tag(self.name):
             invalid_char = re.search(INVALID_XFORM_TAG_REGEXP, self.name)
-            msg = (
-                "The name '{}' is an invalid XML tag, it contains an "
-                "invalid character '{}'. Names must begin with a letter, "
-                "colon, or underscore, subsequent characters can include "
-                "numbers, dashes, and periods".format(self.name, invalid_char.group(0))
+            raise PyXFormError(
+                f"The name '{self.name}' contains an invalid character '{invalid_char.group(0)}'. Names {constants.XML_IDENTIFIER_ERROR_MESSAGE}"
             )
-            raise PyXFormError(msg)
 
     # TODO: Make sure renaming this doesn't cause any problems
     def iter_descendants(self):
@@ -438,9 +434,9 @@ class SurveyElement(dict):
 
         return result
 
-    def xml_binding(self):
+    def xml_bindings(self):
         """
-        Return the binding for this survey element.
+        Return the binding(s) for this survey element.
         """
         survey = self.get_root()
         bind_dict = self.bind.copy()
@@ -472,18 +468,18 @@ class SurveyElement(dict):
                 if k == "jr:noAppErrorString" and type(v) is dict:
                     v = "jr:itext('%s')" % self._translation_path("jr:noAppErrorString")
                 bind_dict[k] = survey.insert_xpaths(v, context=self)
-            return node("bind", nodeset=self.get_xpath(), **bind_dict)
+            return [node("bind", nodeset=self.get_xpath(), **bind_dict)]
         return None
 
-    def xml_bindings(self):
+    def xml_descendent_bindings(self):
         """
         Return a list of bindings for this node and all its descendants.
         """
         result = []
         for e in self.iter_descendants():
-            xml_binding = e.xml_binding()
-            if xml_binding is not None:
-                result.append(xml_binding)
+            xml_bindings = e.xml_bindings()
+            if xml_bindings is not None:
+                result.extend(xml_bindings)
 
             # dynamic defaults for repeats go in the body. All other dynamic defaults (setvalue actions) go in the model
             if (

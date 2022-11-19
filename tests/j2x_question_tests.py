@@ -16,6 +16,8 @@ def ctw(control):
     ctw stands for control_test_wrap, but ctw is shorter and easier. using
     begin_str and end_str to take out the wrap that xml gives us
     """
+    if isinstance(control, list) and len(control) == 1:
+        control = control[0]
     return control.toxml()
 
 
@@ -55,7 +57,7 @@ class Json2XformQuestionValidationTests(TestCase):
         self.assertEqual(ctw(q.xml_control()), expected_string_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_binding()), expected_string_binding_xml)
+            self.assertEqual(ctw(q.xml_bindings()), expected_string_binding_xml)
 
     def test_select_one_question_multilingual(self):
         """
@@ -86,7 +88,7 @@ class Json2XformQuestionValidationTests(TestCase):
         self.assertEqual(ctw(q.xml_control()), expected_select_one_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_binding()), expected_select_one_binding_xml)
+            self.assertEqual(ctw(q.xml_bindings()), expected_select_one_binding_xml)
 
     def test_simple_integer_question_type_multilingual(self):
         """
@@ -114,7 +116,7 @@ class Json2XformQuestionValidationTests(TestCase):
         self.assertEqual(ctw(q.xml_control()), expected_integer_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_binding()), expected_integer_binding_xml)
+            self.assertEqual(ctw(q.xml_bindings()), expected_integer_binding_xml)
 
     def test_simple_date_question_type_multilingual(self):
         """
@@ -140,7 +142,7 @@ class Json2XformQuestionValidationTests(TestCase):
         self.assertEqual(ctw(q.xml_control()), expected_date_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_binding()), expected_date_binding_xml)
+            self.assertEqual(ctw(q.xml_bindings()), expected_date_binding_xml)
 
     def test_simple_phone_number_question_type_multilingual(self):
         """
@@ -165,7 +167,7 @@ class Json2XformQuestionValidationTests(TestCase):
         self.assertEqual(ctw(q.xml_control()), expected_phone_number_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_binding()), expected_phone_number_binding_xml)
+            self.assertEqual(ctw(q.xml_bindings()), expected_phone_number_binding_xml)
 
     def test_simple_select_all_question_multilingual(self):
         """
@@ -195,7 +197,7 @@ class Json2XformQuestionValidationTests(TestCase):
         self.assertEqual(ctw(q.xml_control()), expected_select_all_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_binding()), expected_select_all_binding_xml)
+            self.assertEqual(ctw(q.xml_bindings()), expected_select_all_binding_xml)
 
     def test_simple_decimal_question_multilingual(self):
         """
@@ -221,4 +223,4 @@ class Json2XformQuestionValidationTests(TestCase):
         self.assertEqual(ctw(q.xml_control()), expected_decimal_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_binding()), expected_decimal_binding_xml)
+            self.assertEqual(ctw(q.xml_bindings()), expected_decimal_binding_xml)

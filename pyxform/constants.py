@@ -12,6 +12,7 @@ are easier to find.
 TYPE = "type"
 TITLE = "title"
 NAME = "name"
+ENTITIES_SAVETO = "save_to"
 ID_STRING = "id_string"
 SMS_KEYWORD = "sms_keyword"
 SMS_FIELD = "sms_field"
@@ -68,6 +69,7 @@ FIELD_LIST = "field-list"
 SURVEY = "survey"
 SETTINGS = "settings"
 EXTERNAL_CHOICES = "external_choices"
+ENTITIES = "entities"
 
 OSM = "osm"
 OSM_TYPE = "binary"
@@ -81,6 +83,7 @@ SUPPORTED_SHEET_NAMES = [
     SETTINGS,
     EXTERNAL_CHOICES,
     OSM,
+    ENTITIES,
 ]
 XLS_EXTENSIONS = [".xls"]
 XLSX_EXTENSIONS = [".xlsx", ".xlsm"]
@@ -99,6 +102,11 @@ EXTERNAL_INSTANCES = ["calculate", "constraint", "readonly", "required", "releva
 # The ODK XForms version that generated forms comply to
 CURRENT_XFORMS_VERSION = "1.0.0"
 
+# The ODK entities spec version that generated forms comply to
+CURRENT_ENTITIES_VERSION = "2022.1.0"
+ENTITY_RELATED = "entity_related"
+ENTITIES_RESERVED_PREFIX = "__"
+
 DEPRECATED_DEVICE_ID_METADATA_FIELDS = ["subscriberid", "simserial"]
 
 AUDIO_QUALITY_VOICE_ONLY = "voice-only"
@@ -115,3 +123,9 @@ EXTERNAL_CHOICES_ITEMSET_REF_LABEL_GEOJSON = "title"
 EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON = "id"
 
 ROW_FORMAT_STRING: str = "[row : %s]"
+XML_IDENTIFIER_ERROR_MESSAGE = "must begin with a letter, colon, or underscore. Other characters can include numbers, dashes, and periods."
+_MSG_SUPPRESS_SPELLING = (
+    " If you do not mean to include a sheet, to suppress this message, "
+    "prefix the sheet name with an underscore. For example 'setting' "
+    "becomes '_setting'."
+)

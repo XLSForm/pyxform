@@ -7,6 +7,7 @@ import os
 import re
 
 from pyxform import file_utils, utils
+from pyxform.entities.entity_declaration import EntityDeclaration
 from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.question import (
@@ -94,6 +95,7 @@ class SurveyElementBuilder:
         """
         if "add_none_option" in d:
             self._add_none_option = d["add_none_option"]
+
         if d["type"] in self.SECTION_CLASSES:
             section = self._create_section_from_dict(d)
 
@@ -116,6 +118,8 @@ class SurveyElementBuilder:
             return full_survey.children
         elif d["type"] in ["xml-external", "csv-external"]:
             return ExternalInstance(**d)
+        elif d["type"] == "entity":
+            return EntityDeclaration(**d)
         else:
             self._save_trigger_as_setvalue_and_remove_calculate(d)
 

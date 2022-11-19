@@ -20,11 +20,6 @@ from pyxform.xls2json_backends import is_empty, xls_value_to_unicode, xlsx_value
 
 SEP = "_"
 
-# http://www.w3.org/TR/REC-xml/
-TAG_START_CHAR = r"[a-zA-Z:_]"
-TAG_CHAR = r"[a-zA-Z:_0-9\-.]"
-XFORM_TAG_REGEXP = "%(start)s%(char)s*" % {"start": TAG_START_CHAR, "char": TAG_CHAR}
-
 INVALID_XFORM_TAG_REGEXP = r"[^a-zA-Z:_][^a-zA-Z:_0-9\-.]*"
 
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
@@ -65,13 +60,6 @@ class PatchedText(Text):
         if data:
             data = data.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         writer.write(data)
-
-
-def is_valid_xml_tag(tag):
-    """
-    Use a regex to see if there are any invalid characters (i.e. spaces).
-    """
-    return re.search(r"^" + XFORM_TAG_REGEXP + r"$", tag)
 
 
 def node(*args, **kwargs):

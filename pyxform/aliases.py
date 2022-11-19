@@ -105,6 +105,7 @@ survey_header = {
     "required message": "bind::jr:requiredMsg",
     "body": "control",
     "parameters": "parameters",
+    constants.ENTITIES_SAVETO: "bind::entities:saveto",
 }
 # Key is the pyxform internal name, Value is the name used in error/warning messages.
 TRANSLATABLE_SURVEY_COLUMNS = {

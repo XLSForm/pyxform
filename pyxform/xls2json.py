@@ -8,24 +8,29 @@ import os
 import re
 import sys
 from collections import Counter
-from typing import Any, Dict, KeysView, List, Optional
+from typing import Any, Dict, List
 
 from pyxform import aliases, constants
-from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, ROW_FORMAT_STRING
+from pyxform.constants import (
+    _MSG_SUPPRESS_SPELLING,
+    EXTERNAL_INSTANCE_EXTENSIONS,
+    ROW_FORMAT_STRING,
+    XML_IDENTIFIER_ERROR_MESSAGE,
+)
+from pyxform.entities.entities_parsing import (
+    get_entity_declaration,
+    validate_entity_saveto,
+)
 from pyxform.errors import PyXFormError
-from pyxform.utils import default_is_dynamic, is_valid_xml_tag, levenshtein_distance
+from pyxform.utils import default_is_dynamic
 from pyxform.validators.pyxform import parameters_generic, select_from_file_params
 from pyxform.validators.pyxform.missing_translations_check import (
     missing_translations_check,
 )
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
+from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
-_MSG_SUPPRESS_SPELLING = (
-    " If you do not mean to include a sheet, to suppress this message, "
-    "prefix the sheet name with an underscore. For example 'setting' "
-    "becomes '_setting'."
-)
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -317,34 +322,6 @@ def process_image_default(default_value):
     return default_value
 
 
-def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
-    """
-    Find possible sheet name misspellings to warn the user about.
-
-    It's possible that this will warn about sheet names for sheets that have
-    auxilliary metadata that is not meant for processing by pyxform. For
-    example the "osm" sheet name may be similar to many other initialisms.
-
-    :param key: The sheet name to look for.
-    :param keys: The workbook sheet names.
-    """
-    candidates = tuple(
-        _k  # thanks to black
-        for _k in keys
-        if 2 >= levenshtein_distance(_k.lower(), key)
-        and _k not in constants.SUPPORTED_SHEET_NAMES
-        and not _k.startswith("_")
-    )
-    if 0 < len(candidates):
-        msg = (
-            "When looking for a sheet named '{k}', the following sheets with "
-            "similar names were found: {c}."
-        ).format(k=key, c=str(", ".join(("'{}'".format(c) for c in candidates))))
-        return msg
-    else:
-        return None
-
-
 def workbook_to_json(
     workbook_dict,
     form_name=None,
@@ -559,6 +536,9 @@ def workbook_to_json(
                                     ),
                                 )
                             )  # noqa
+
+    # ########## Entities sheet ###########
+    entity_declaration = get_entity_declaration(workbook_dict, warnings)
 
     # ########## Survey sheet ###########
     survey_sheet = workbook_dict[constants.SURVEY]
@@ -901,13 +881,12 @@ def workbook_to_json(
         if not is_valid_xml_tag(question_name):
             if isinstance(question_name, bytes):
                 question_name = question_name.encode("utf-8")
-            error_message = ROW_FORMAT_STRING % row_number
-            error_message += " Invalid question name [" + question_name + "] "
-            error_message += "Names must begin with a letter, colon," + " or underscore."
-            error_message += (
-                "Subsequent characters can include numbers," + " dashes, and periods."
+
+            raise PyXFormError(
+                f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
             )
-            raise PyXFormError(error_message)
+
+        validate_entity_saveto(row, row_number, entity_declaration)
 
         # Try to parse question as begin control statement
         # (i.e. begin loop/repeat/group):
@@ -1357,7 +1336,6 @@ def workbook_to_json(
 
             parent_children_array.append(new_dict)
             continue
-
         # TODO: Consider adding some question_type validation here.
 
         # Put the row in the json dict as is:
@@ -1401,6 +1379,10 @@ def workbook_to_json(
             }
         )
 
+    if len(entity_declaration) > 0:
+        json_dict[constants.ENTITY_RELATED] = "true"
+        meta_children.append(entity_declaration)
+
     if len(meta_children) > 0:
         meta_element = {
             "name": "meta",
@@ -1411,7 +1393,7 @@ def workbook_to_json(
         survey_children_array = stack[0]["parent_children"]
         survey_children_array.append(meta_element)
 
-    # print_pyobj_to_json(json_dict)
+    print_pyobj_to_json(json_dict)
     return json_dict
 
 
