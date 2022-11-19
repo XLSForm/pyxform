@@ -1393,7 +1393,7 @@ def workbook_to_json(
         survey_children_array = stack[0]["parent_children"]
         survey_children_array.append(meta_element)
 
-    print_pyobj_to_json(json_dict)
+    # print_pyobj_to_json(json_dict)
     return json_dict
 
 
