@@ -1,5 +1,8 @@
 Pyxform Changelog
 
+# v1.11.1, 2022-11-18
+* Add __init__.py to `entities` package by @lognaturel in https://github.com/XLSForm/pyxform/pull/628
+
 # v1.11.0, 2022-11-18
 * Accept more empty rows before stopping by @yanokwa in https://github.com/XLSForm/pyxform/pull/621
 * Add initial support for entity creation by @lognaturel in https://github.com/XLSForm/pyxform/pull/624
