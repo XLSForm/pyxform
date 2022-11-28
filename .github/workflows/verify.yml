@@ -30,8 +30,8 @@ jobs:
           pip list
 
       # Linters.
-      - run: black pyxform tests
-      - run: isort pyxform tests
+      - run: black pyxform tests --check --diff
+      - run: isort pyxform tests --check-only --diff
       - run: flake8 pyxform tests
       - run: pycodestyle pyxform tests
 
