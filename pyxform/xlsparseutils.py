@@ -1,7 +1,7 @@
 import re
-from pyxform import constants
 from typing import KeysView, Optional
 
+from pyxform import constants
 from pyxform.utils import levenshtein_distance
 
 # http://www.w3.org/TR/REC-xml/
