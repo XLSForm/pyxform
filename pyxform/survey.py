@@ -827,7 +827,7 @@ class Survey(Section):
                         itext_nodes.append(
                             node("value", value, toParseString=output_inserted)
                         )
-                    elif media_type == "image":
+                    elif media_type == "image" or media_type == "big-image":
                         if value != "-":
                             itext_nodes.append(
                                 node(
