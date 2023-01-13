@@ -428,9 +428,14 @@ class SurveyElement(dict):
         msg = "The survey element named '%s' " "has no label or hint." % self.name
         if len(result) == 0:
             raise PyXFormError(msg)
+
         # Guidance hint alone is not OK since they may be hidden by default.
         if not any((self.label, self.media, self.hint)) and self.guidance_hint:
             raise PyXFormError(msg)
+
+        # big-image must combine with image
+        if not ("image" in self.media) and "big-image" in self.media:
+            raise PyXFormError("You must specify an image in order to use big-image.")
 
         return result
 
