@@ -301,3 +301,38 @@ class EntitiesTest(PyxformTestCase):
                 "[row : 2] Groups and repeats can't be saved as entity properties."
             ],
         )
+
+    def test_saveto_in_repeat__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |             |        |       |         |
+            |          | type        | name   | label | save_to |
+            |          | begin_repeat| a      | A     |         |
+            |          | text        | size   | Size  | size    |
+            |          | end_repeat  |        |       |         |
+            | entities |             |        |       |         |
+            |          | dataset     | label  |       |         |
+            |          | trees       | ${size}|       |         |
+            """,
+            errored=True,
+            error__contains=[
+                "[row : 3] Currently, you can't create entities from repeats. You may only specify save_to values for form fields outside of repeats."
+            ],
+        )
+
+    def test_saveto_in_group__works(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |             |        |       |         |
+            |          | type        | name   | label | save_to |
+            |          | begin_group | a      | A     |         |
+            |          | text        | size   | Size  | size    |
+            |          | end_group  |        |       |         |
+            | entities |             |        |       |         |
+            |          | dataset     | label  |       |         |
+            |          | trees       | ${size}|       |         |
+            """,
+            errored=False,
+        )
