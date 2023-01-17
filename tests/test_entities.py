@@ -44,7 +44,7 @@ class EntitiesTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "This version of pyxform only supports declaring a single entity per form. Please make sure your entities sheet only declares one entity."
+                "Currently, you can only declare a single entity per form. Please make sure your entities sheet only declares one entity."
             ],
         )
 

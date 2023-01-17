@@ -17,7 +17,7 @@ def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
         return {}
     elif len(entities_sheet) > 1:
         raise PyXFormError(
-            "This version of pyxform only supports declaring a single entity per form. Please make sure your entities sheet only declares one entity."
+            "Currently, you can only declare a single entity per form. Please make sure your entities sheet only declares one entity."
         )
 
     entity = entities_sheet[0]
