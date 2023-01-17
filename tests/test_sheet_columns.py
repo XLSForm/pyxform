@@ -29,7 +29,7 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             errored=False,
         )
 
-    def test_missing_label(self):
+    def test_label_or_hint__must_be_provided(self):
         self.assertPyxformXform(
             name="invalidcols",
             ss_structure={"survey": [{"type": "text", "name": "q1"}]},
@@ -61,6 +61,18 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             |        | text | c    |       | m.png        |      |
             """,
             xml__contains=prep_for_xml_contains(expected),
+        )
+
+    def test_big_image_invalid_if_no_image(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |      |      |                  |
+            |        | type | name | media::big-image |
+            |        | text | c    | m.png            |
+            """,
+            errored=True,
+            error__contains=["must also specify an image"],
         )
 
     def test_column_case(self):

@@ -152,7 +152,7 @@ class SurveyElement(dict):
     )
 
     # Supported media types for attaching to questions
-    SUPPORTED_MEDIA = ("image", "audio", "video")
+    SUPPORTED_MEDIA = ("image", "big-image", "audio", "video")
 
     def validate(self):
         if not is_valid_xml_tag(self.name):
@@ -428,9 +428,16 @@ class SurveyElement(dict):
         msg = "The survey element named '%s' " "has no label or hint." % self.name
         if len(result) == 0:
             raise PyXFormError(msg)
+
         # Guidance hint alone is not OK since they may be hidden by default.
         if not any((self.label, self.media, self.hint)) and self.guidance_hint:
             raise PyXFormError(msg)
+
+        # big-image must combine with image
+        if "image" not in self.media and "big-image" in self.media:
+            raise PyXFormError(
+                "To use big-image, you must also specify an image for the survey element named {self.name}."
+            )
 
         return result
 

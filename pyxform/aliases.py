@@ -90,6 +90,7 @@ survey_header = {
     "tag": constants.NAME,
     "value": constants.NAME,
     "image": "media::image",
+    "big-image": "media::big-image",
     "audio": "media::audio",
     "video": "media::video",
     "count": "control::jr:count",
@@ -114,7 +115,7 @@ TRANSLATABLE_SURVEY_COLUMNS = {
     constants.HINT: constants.HINT,
     "guidance_hint": "guidance_hint",
     "image": survey_header["image"],
-    # Per ODK Spec, could include "big-image" once pyxform supports it.
+    "big-image": survey_header["big-image"],
     "audio": survey_header["audio"],
     "video": survey_header["video"],
     "jr:constraintMsg": "constraint_message",
@@ -123,6 +124,7 @@ TRANSLATABLE_SURVEY_COLUMNS = {
 TRANSLATABLE_CHOICES_COLUMNS = {
     "label": constants.LABEL,
     "image": "media::image",
+    "big-image": "media::big-image",
     "audio": "media::audio",
     "video": "media::video",
 }
@@ -131,6 +133,7 @@ list_header = {
     "list_name": constants.LIST_NAME,
     "value": constants.NAME,
     "image": "media::image",
+    "big-image": "media::big-image",
     "audio": "media::audio",
     "video": "media::video",
 }

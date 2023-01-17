@@ -144,6 +144,15 @@
 									"description" : "A key value pair where the key is a language, and the value is the content uri in that language."
 								}
 							},
+							"big-image" :
+							{
+								"type" : ["object", "string"],
+								"additionalProperties":
+								{
+									"type" : "string",
+									"description" : "A key value pair where the key is a language, and the value is the content uri in that language."
+								}
+							},
 							"audio" :
 							{
 								"type" : ["object", "string"],
