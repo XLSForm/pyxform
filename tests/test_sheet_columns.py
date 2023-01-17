@@ -75,6 +75,17 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             error__contains=["must also specify an image"],
         )
 
+    def test_media_column__is_ignored(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |      |      |       |
+            |        | type | name | media |
+            |        | text | c    | m.png |
+            """,
+            xml__excludes=["m.png"],
+        )
+
     def test_column_case(self):
         """
         Ensure that column name is case insensitive
