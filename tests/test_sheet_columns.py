@@ -72,7 +72,7 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             |        | text | c    | m.png            |
             """,
             errored=True,
-            error__contains=["must specify an image"],
+            error__contains=["must also specify an image"],
         )
 
     def test_column_case(self):

@@ -434,8 +434,10 @@ class SurveyElement(dict):
             raise PyXFormError(msg)
 
         # big-image must combine with image
-        if not ("image" in self.media) and "big-image" in self.media:
-            raise PyXFormError("You must specify an image in order to use big-image.")
+        if "image" not in self.media and "big-image" in self.media:
+            raise PyXFormError(
+                "To use big-image, you must also specify an image for the survey element named {self.name}."
+            )
 
         return result
 
