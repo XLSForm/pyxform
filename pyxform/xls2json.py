@@ -886,7 +886,8 @@ def workbook_to_json(
                 f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
             )
 
-        validate_entity_saveto(row, row_number, entity_declaration)
+        in_repeat = any(ancestor["control_type"] == "repeat" for ancestor in stack)
+        validate_entity_saveto(row, row_number, entity_declaration, in_repeat)
 
         # Try to parse question as begin control statement
         # (i.e. begin loop/repeat/group):

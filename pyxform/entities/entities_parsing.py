@@ -17,7 +17,7 @@ def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
         return {}
     elif len(entities_sheet) > 1:
         raise PyXFormError(
-            "This version of pyxform only supports declaring a single entity per form. Please make sure your entities sheet only declares one entity."
+            "Currently, you can only declare a single entity per form. Please make sure your entities sheet only declares one entity."
         )
 
     entity = entities_sheet[0]
@@ -57,7 +57,9 @@ def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
     }
 
 
-def validate_entity_saveto(row: Dict, row_number: int, entity_declaration: Dict):
+def validate_entity_saveto(
+    row: Dict, row_number: int, entity_declaration: Dict, in_repeat: bool
+):
     save_to = row.get("bind", {}).get("entities:saveto", "")
     if not save_to:
         return
@@ -72,6 +74,11 @@ def validate_entity_saveto(row: Dict, row_number: int, entity_declaration: Dict)
     ):
         raise PyXFormError(
             f"{constants.ROW_FORMAT_STRING % row_number} Groups and repeats can't be saved as entity properties."
+        )
+
+    if in_repeat:
+        raise PyXFormError(
+            f"{constants.ROW_FORMAT_STRING % row_number} Currently, you can't create entities from repeats. You may only specify save_to values for form fields outside of repeats."
         )
 
     error_start = f"{constants.ROW_FORMAT_STRING % row_number} Invalid save_to name:"
