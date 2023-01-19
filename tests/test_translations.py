@@ -615,7 +615,6 @@ class TestTranslationsSurvey(PyxformTestCase):
         """
         self.assertPyxformXform(
             name="test",
-            debug=True,
             md=md,
             xml__xpath_match=[
                 self.xp.question_itext_form(DEFAULT_LANG, "image", "greeting.jpg"),

@@ -88,7 +88,7 @@ def find_missing_translations(
     if 0 < len(sheet_data):
         # e.g. ("name", "q1"), ("label", {"en": "Hello", "fr": "Bonjour"})
         for column_type, cell_content in sheet_data[0].items():
-            if column_type == constants.MEDIA:
+            if column_type == constants.MEDIA and isinstance(cell_content, dict):
                 # e.g. ("audio", {"eng": "my.mp3"})
                 for media_type, media_cell in cell_content.items():
                     process_cell(typ=media_type, cell=media_cell)

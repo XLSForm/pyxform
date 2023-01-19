@@ -774,7 +774,8 @@ class Survey(Section):
             if parent and not parent.get("choice_filter"):
                 translation_key = survey_element.get_xpath() + ":label"
                 media_dict = survey_element.get("media")
-                _set_up_media_translations(media_dict, translation_key)
+                if isinstance(media_dict, dict):
+                    _set_up_media_translations(media_dict, translation_key)
 
     def itext(self):
         """
