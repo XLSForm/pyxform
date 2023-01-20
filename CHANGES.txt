@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+v1.12.0, 2023-01-19
+* Add support for big-image by @lognaturel in https://github.com/XLSForm/pyxform/pull/635
+* Show error when there are `save_to`s in a repeat, simplify entities tests by @lognaturel in https://github.com/XLSForm/pyxform/pull/636
+* Ignore media column if it is present by @lognaturel in https://github.com/XLSForm/pyxform/pull/638
+
 # v1.11.1, 2022-11-18
 * Add __init__.py to `entities` package by @lognaturel in https://github.com/XLSForm/pyxform/pull/628
 
