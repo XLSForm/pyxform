@@ -1150,7 +1150,12 @@ def workbook_to_json(
 
                 # Always generate secondary instance for selects.
                 new_json_dict["itemset"] = list_name
-                json_dict["choices"] = choices
+                # Only add the choice if it's being used.
+                if list_name in choices:
+                    # Initialise choices output if none added already.
+                    if constants.CHOICES not in json_dict:
+                        json_dict[constants.CHOICES] = {}
+                    json_dict[constants.CHOICES][list_name] = choices[list_name]
 
                 if row.get("choice_filter"):
                     # External selects e.g. type = "select_one_external city".
@@ -1183,6 +1188,12 @@ def workbook_to_json(
                     # Then this row is the first select in a table list
                     if not isinstance(table_list, str):
                         table_list = list_name
+                        if row.get("choice_filter", None) is not None:
+                            msg = (
+                                ROW_FORMAT_STRING % row_number
+                                + " Choice filter not supported for table-list appearance."
+                            )
+                            raise PyXFormError(msg)
                         table_list_header = {
                             constants.TYPE: select_type,
                             constants.NAME: "reserved_name_for_field_list_labels_"
@@ -1190,8 +1201,7 @@ def workbook_to_json(
                             # Adding row number for uniqueness # noqa
                             constants.CONTROL: {"appearance": "label"},
                             constants.CHOICES: choices[list_name],
-                            # Do we care about filtered selects in table lists?
-                            # 'itemset' : list_name,
+                            "itemset": list_name,
                         }
                         parent_children_array.append(table_list_header)
 

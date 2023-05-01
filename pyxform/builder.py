@@ -344,7 +344,7 @@ def create_survey(
     id_string=None,
     title=None,
     default_language=None,
-):
+) -> Survey:
     """
     name_of_main_section -- a string key used to find the main section in the
                             sections dict if it is not supplied in the
@@ -384,7 +384,7 @@ def create_survey(
     return survey
 
 
-def create_survey_from_path(path, include_directory=False):
+def create_survey_from_path(path, include_directory=False) -> Survey:
     """
     include_directory -- Switch to indicate that all the survey forms in the
                          same directory as the specified file should be read
@@ -398,6 +398,4 @@ def create_survey_from_path(path, include_directory=False):
     else:
         main_section_name, section = file_utils.load_file_to_dict(path)
         sections = {main_section_name: section}
-    pkg = {"name_of_main_section": main_section_name, "sections": sections}
-
-    return create_survey(**pkg)
+    return create_survey(name_of_main_section=main_section_name, sections=sections)

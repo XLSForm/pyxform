@@ -21,6 +21,7 @@ class DumpAndLoadXForm2JsonTests(XFormTestCase, PyxformTestCase):
         self.excel_files = [
             "gps.xls",
             # "include.xls",
+            "choice_filter_test.xlsx",
             "specify_other.xls",
             "loop.xls",
             "text_and_integer.xls",
@@ -31,6 +32,8 @@ class DumpAndLoadXForm2JsonTests(XFormTestCase, PyxformTestCase):
             "simple_loop.xls",
             "yes_or_no_question.xls",
             "xlsform_spec_test.xlsx",
+            "field-list.xlsx",
+            "table-list.xls",
             "group.xls",
         ]
         self.surveys = {}
@@ -41,9 +44,12 @@ class DumpAndLoadXForm2JsonTests(XFormTestCase, PyxformTestCase):
 
     def test_load_from_dump(self):
         for filename, survey in iter(self.surveys.items()):
-            survey.json_dump()
-            survey_from_dump = create_survey_element_from_xml(survey.to_xml())
-            self.assertXFormEqual(survey.to_xml(), survey_from_dump.to_xml())
+            with self.subTest(msg=filename):
+                survey.json_dump()
+                survey_from_dump = create_survey_element_from_xml(survey.to_xml())
+                expected = survey.to_xml()
+                observed = survey_from_dump.to_xml()
+                self.assertXFormEqual(expected, observed)
 
     def tearDown(self):
         for filename, survey in self.surveys.items():

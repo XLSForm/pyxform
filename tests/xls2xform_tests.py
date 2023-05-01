@@ -244,8 +244,8 @@ class XLS2XFormTests(TestCase):
         """Should return an xml path in the same directory as the xlsx file"""
         xlsx_path = "/home/user/Desktop/xlsform.xlsx"
         expected = "/home/user/Desktop/xlsform.xml"
-        assert expected == get_xml_path(xlsx_path)
+        self.assertEqual(expected, get_xml_path(xlsx_path))
         # check that it also handles spaced routes
         xlsx_path = "/home/user/Desktop/my xlsform.xlsx"
         expected = "/home/user/Desktop/my xlsform.xml"
-        assert expected == get_xml_path(xlsx_path)
+        self.assertEqual(expected, get_xml_path(xlsx_path))

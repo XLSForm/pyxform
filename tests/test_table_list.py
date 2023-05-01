@@ -24,10 +24,10 @@ XML_CONTAINS = """
       </input>
       <select1 appearance="label" ref="/table-list-appearance-mod/tablelist1/reserved_name_for_field_list_labels_3">
         <label> </label>
-        <item>
-          <label>Yes</label>
-          <value>yes</value>
-        </item>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
       <select1 appearance="list-nolabel" ref="/table-list-appearance-mod/tablelist1/options1a">
         <label>Q1</label>
