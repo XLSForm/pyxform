@@ -155,6 +155,9 @@ class Option(SurveyElement):
     def validate(self):
         pass
 
+    def xml_control(self):
+        raise NotImplementedError()
+
 
 class MultipleChoiceQuestion(Question):
     def __init__(self, **kwargs):
@@ -325,6 +328,9 @@ class Tag(SurveyElement):
 
     def validate(self):
         pass
+
+    def xml_control(self):
+        raise NotImplementedError()
 
 
 class OsmUploadQuestion(UploadQuestion):

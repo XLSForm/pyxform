@@ -4,7 +4,7 @@ Section survey element module.
 """
 from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
-from pyxform.question import SurveyElement
+from pyxform.survey_element import SurveyElement
 from pyxform.utils import node
 
 
