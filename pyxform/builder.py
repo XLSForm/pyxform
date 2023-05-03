@@ -5,6 +5,7 @@ Survey builder functionality.
 import copy
 import os
 import re
+from typing import Any, Dict, Optional
 
 from pyxform import file_utils, utils
 from pyxform.entities.entity_declaration import EntityDeclaration
@@ -338,12 +339,11 @@ def create_survey_from_xls(path_or_file, default_name=None):
 
 
 def create_survey(
-    name_of_main_section=None,
-    sections=None,
-    main_section=None,
-    id_string=None,
-    title=None,
-    default_language=None,
+    name_of_main_section: str = None,
+    sections: Dict[str, Dict] = None,
+    main_section: Dict[str, Any] = None,
+    id_string: Optional[str] = None,
+    title: Optional[str] = None,
 ) -> Survey:
     """
     name_of_main_section -- a string key used to find the main section in the
@@ -380,11 +380,10 @@ def create_survey(
 
     if title is not None:
         survey.title = title
-    survey.def_lang = default_language
     return survey
 
 
-def create_survey_from_path(path, include_directory=False) -> Survey:
+def create_survey_from_path(path: str, include_directory: bool = False) -> Survey:
     """
     include_directory -- Switch to indicate that all the survey forms in the
                          same directory as the specified file should be read
