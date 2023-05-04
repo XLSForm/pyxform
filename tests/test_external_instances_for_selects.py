@@ -340,7 +340,6 @@ class TestSelectOneExternal(PyxformTestCase):
                 ]
                 """,
             ],
-            debug=True,
         )
 
     def test_with_params_with_filters(self):

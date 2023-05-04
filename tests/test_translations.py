@@ -322,7 +322,6 @@ class TestTranslations(PyxformTestCase):
                 xp.language_is_not_default("Russian"),
                 xp.language_is_not_default("Kyrgyz"),
             ],
-            debug=True,
         )
 
     def test_missing_translation__one_lang_all_cols(self):
