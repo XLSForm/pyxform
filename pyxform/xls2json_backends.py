@@ -60,7 +60,7 @@ def get_excel_column_headers(first_row: Iterator[Optional[str]]) -> List[Optiona
             # Preserve column order (will filter later)
             column_header_list.append(None)
             # After a run of empty cols, assume we've reached the end of the data.
-            if max_adjacent_empty_columns < adjacent_empty_cols:
+            if max_adjacent_empty_columns == adjacent_empty_cols:
                 break
             adjacent_empty_cols += 1
         else:
@@ -99,7 +99,7 @@ def get_excel_rows(
 
         if 0 == len(row_dict):
             # After a run of empty rows, assume we've reached the end of the data.
-            if max_adjacent_empty_rows < adjacent_empty_rows:
+            if max_adjacent_empty_rows == adjacent_empty_rows:
                 break
             adjacent_empty_rows += 1
         else:
