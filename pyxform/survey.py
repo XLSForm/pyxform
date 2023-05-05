@@ -645,9 +645,8 @@ class Survey(Section):
         self._translations = defaultdict(dict)  # pylint: disable=W0201
         select_types = set(aliases.select.keys())
         for element in self.iter_descendants():
-            # Skip creation of translations for choices in filtered selects
-            # The creation of these translations is done futher below in this
-            # function
+            # Skip creation of translations for choices in selects. The creation of these
+            # translations is done futher below in this function.
             parent = element.get("parent")
             if parent is not None and parent[constants.TYPE] not in select_types:
                 for d in element.get_translations(self.default_language):
@@ -671,7 +670,7 @@ class Survey(Section):
                         }
                     )
 
-        # This code sets up translations for choices in filtered selects.
+        # This code sets up translations for choices in selects.
         for list_name, choice_list in self.choices.items():
             multi_language = isinstance(choice_list[0].get("label"), dict)
             has_media = bool(choice_list[0].get("media"))
