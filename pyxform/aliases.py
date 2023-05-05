@@ -28,7 +28,7 @@ select = {
     "select one": constants.SELECT_ONE,
     "select_multiple": constants.SELECT_ALL_THAT_APPLY,
     "select all that apply": constants.SELECT_ALL_THAT_APPLY,
-    "select_one_external": "select one external",
+    "select_one_external": constants.SELECT_ONE_EXTERNAL,
     "select_one_from_file": constants.SELECT_ONE,
     "select_multiple_from_file": constants.SELECT_ALL_THAT_APPLY,
     "select one from file": constants.SELECT_ONE,

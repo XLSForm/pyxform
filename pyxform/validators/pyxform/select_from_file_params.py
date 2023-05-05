@@ -3,6 +3,8 @@ import re
 from pyxform.constants import ROW_FORMAT_STRING
 from pyxform.errors import PyXFormError
 
+VALUE_OR_LABEL_TEST_REGEX = re.compile(r"^[a-zA-Z_][a-zA-Z0-9\-_\.]*$")
+
 
 def value_or_label_format_msg(name: str, row_number: int) -> str:
     return (
@@ -14,7 +16,7 @@ def value_or_label_format_msg(name: str, row_number: int) -> str:
 
 
 def value_or_label_test(value: str) -> bool:
-    query = re.search(r"^[a-zA-Z_][a-zA-Z0-9\-_\.]*$", value)
+    query = VALUE_OR_LABEL_TEST_REGEX.search(value)
     if query is None:
         return False
     else:

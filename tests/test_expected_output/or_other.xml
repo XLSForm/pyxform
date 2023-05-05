@@ -51,30 +51,10 @@
   <h:body>
     <select1 ref="/or_other/fav_color">
       <label>What is your favorite color?</label>
-      <item>
-        <label>red</label>
-        <value>red</value>
-      </item>
-      <item>
-        <label>green</label>
-        <value>green</value>
-      </item>
-      <item>
-        <label>blue</label>
-        <value>blue</value>
-      </item>
-      <item>
-        <label>mauve</label>
-        <value>mauve</value>
-      </item>
-      <item>
-        <label>apricot</label>
-        <value>apricot</value>
-      </item>
-      <item>
-        <label>Other</label>
-        <value>other</value>
-      </item>
+      <itemset nodeset="instance('colors')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
     </select1>
     <input ref="/or_other/fav_color_other">
       <label>Specify other.</label>

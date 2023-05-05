@@ -5,56 +5,18 @@
     <model odk:xforms-version="1.0.0">
       <itext>
         <translation default="true()" lang="default">
-          <text id="/widgets/happy_sad_table_2/happy_sad_second_method/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table/happy_sad_michael/sad:label">
-            <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_second_method/sad:label">
-            <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_brian2/sad:label">
-            <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table/happy_sad_brian/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/sad:label">
-            <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_brian2/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
-          <text id="/widgets/grid_test_audio/a:label">
-            <value form="image">jr://images/a.jpg</value>
+          <text id="a_b-0">
             <value>a</value>
-          </text>
-          <text id="/widgets/grid_test_audio/b:label">
-            <value form="image">jr://images/b.jpg</value>
-            <value>b</value>
-          </text>
-          <text id="/widgets/grid_test/b:label">
-            <value form="image">jr://images/b.jpg</value>
-            <value>b</value>
-          </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_michael2/sad:label">
-            <value form="image">jr://images/sad.jpg</value>
-          </text>
-          <text id="/widgets/grid_test/a:label">
             <value form="image">jr://images/a.jpg</value>
-            <value>a</value>
           </text>
-          <text id="/widgets/happy_sad_table/happy_sad_michael/happy:label">
+          <text id="a_b-1">
+            <value>b</value>
+            <value form="image">jr://images/b.jpg</value>
+          </text>
+          <text id="happy_sad-0">
             <value form="image">jr://images/happy.jpg</value>
           </text>
-          <text id="/widgets/happy_sad_table_2/happy_sad_michael2/happy:label">
-            <value form="image">jr://images/happy.jpg</value>
-          </text>
-          <text id="/widgets/happy_sad_table/happy_sad_brian/sad:label">
+          <text id="happy_sad-1">
             <value form="image">jr://images/sad.jpg</value>
           </text>
         </translation>
@@ -109,6 +71,98 @@
             <instanceID/>
           </meta>
         </widgets>
+      </instance>
+      <instance id="list">
+        <root>
+          <item>
+            <label>option a</label>
+            <name>a</name>
+          </item>
+          <item>
+            <label>option b</label>
+            <name>b</name>
+          </item>
+          <item>
+            <label>option c</label>
+            <name>c</name>
+          </item>
+          <item>
+            <label>option d</label>
+            <name>d</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="list2">
+        <root>
+          <item>
+            <label>option 1</label>
+            <name>1</name>
+          </item>
+          <item>
+            <label>option 2</label>
+            <name>2</name>
+          </item>
+          <item>
+            <label>option 3</label>
+            <name>3</name>
+          </item>
+          <item>
+            <label>option 4</label>
+            <name>4</name>
+          </item>
+          <item>
+            <label>option 5</label>
+            <name>5</name>
+          </item>
+          <item>
+            <label>option 6</label>
+            <name>6</name>
+          </item>
+          <item>
+            <label>option 7</label>
+            <name>7</name>
+          </item>
+          <item>
+            <label>option 8</label>
+            <name>8</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="a_b">
+        <root>
+          <item>
+            <itextId>a_b-0</itextId>
+            <name>a</name>
+          </item>
+          <item>
+            <itextId>a_b-1</itextId>
+            <name>b</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <label>Yes</label>
+            <name>yes</name>
+          </item>
+          <item>
+            <label>No</label>
+            <name>no</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="happy_sad">
+        <root>
+          <item>
+            <itextId>happy_sad-0</itextId>
+            <name>happy</name>
+          </item>
+          <item>
+            <itextId>happy_sad-1</itextId>
+            <name>sad</name>
+          </item>
+        </root>
       </instance>
       <bind nodeset="/widgets/my_string" type="string"/>
       <bind constraint=". &lt; 10" jr:constraintMsg="number must be less than 10" nodeset="/widgets/my_int" type="int"/>
@@ -172,58 +226,18 @@
     <select ref="/widgets/my_select">
       <label>select multiple widget</label>
       <hint>don't pick c and d together</hint>
-      <item>
-        <label>option a</label>
-        <value>a</value>
-      </item>
-      <item>
-        <label>option b</label>
-        <value>b</value>
-      </item>
-      <item>
-        <label>option c</label>
-        <value>c</value>
-      </item>
-      <item>
-        <label>option d</label>
-        <value>d</value>
-      </item>
+      <itemset nodeset="instance('list')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
     </select>
     <select1 ref="/widgets/my_select1">
       <label>select one widget</label>
       <hint>scroll down to see default selection</hint>
-      <item>
-        <label>option 1</label>
-        <value>1</value>
-      </item>
-      <item>
-        <label>option 2</label>
-        <value>2</value>
-      </item>
-      <item>
-        <label>option 3</label>
-        <value>3</value>
-      </item>
-      <item>
-        <label>option 4</label>
-        <value>4</value>
-      </item>
-      <item>
-        <label>option 5</label>
-        <value>5</value>
-      </item>
-      <item>
-        <label>option 6</label>
-        <value>6</value>
-      </item>
-      <item>
-        <label>option 7</label>
-        <value>7</value>
-      </item>
-      <item>
-        <label>option 8</label>
-        <value>8</value>
-      </item>
+      <itemset nodeset="instance('list2')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
     </select1>
     <trigger ref="/widgets/my_trigger">
       <label>acknowledge widget</label>
@@ -266,119 +280,63 @@
     </input>
     <select1 appearance="minimal" ref="/widgets/spinner">
       <label>Spinner Widget: Select 1</label>
-      <item>
-        <label>option a</label>
-        <value>a</value>
-      </item>
-      <item>
-        <label>option b</label>
-        <value>b</value>
-      </item>
-      <item>
-        <label>option c</label>
-        <value>c</value>
-      </item>
-      <item>
-        <label>option d</label>
-        <value>d</value>
-      </item>
+      <itemset nodeset="instance('list')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
     </select1>
     <select appearance="minimal" ref="/widgets/spinner_all">
       <label>Spinner Widget: Select All</label>
-      <item>
-        <label>option a</label>
-        <value>a</value>
-      </item>
-      <item>
-        <label>option b</label>
-        <value>b</value>
-      </item>
-      <item>
-        <label>option c</label>
-        <value>c</value>
-      </item>
-      <item>
-        <label>option d</label>
-        <value>d</value>
-      </item>
+      <itemset nodeset="instance('list')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
     </select>
     <select1 appearance="quick" ref="/widgets/selectadvance">
       <label>Select Widget - Auto Advance</label>
-      <item>
-        <label>option a</label>
-        <value>a</value>
-      </item>
-      <item>
-        <label>option b</label>
-        <value>b</value>
-      </item>
-      <item>
-        <label>option c</label>
-        <value>c</value>
-      </item>
-      <item>
-        <label>option d</label>
-        <value>d</value>
-      </item>
+      <itemset nodeset="instance('list')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
     </select1>
     <select1 appearance="compact" ref="/widgets/grid_test">
       <label>Grid test</label>
       <hint>make sure to put a.jpg and b.jpg in the form-media folder</hint>
-      <item>
-        <label ref="jr:itext('/widgets/grid_test/a:label')"/>
-        <value>a</value>
-      </item>
-      <item>
-        <label ref="jr:itext('/widgets/grid_test/b:label')"/>
-        <value>b</value>
-      </item>
+      <itemset nodeset="instance('a_b')/root/item">
+        <value ref="name"/>
+        <label ref="jr:itext(itextId)"/>
+      </itemset>
     </select1>
     <select1 appearance="quickcompact" ref="/widgets/grid_test_audio">
       <label>Grid auto-advance test</label>
       <hint>make sure to put a.jpg and b.jpg in the form-media folder</hint>
-      <item>
-        <label ref="jr:itext('/widgets/grid_test_audio/a:label')"/>
-        <value>a</value>
-      </item>
-      <item>
-        <label ref="jr:itext('/widgets/grid_test_audio/b:label')"/>
-        <value>b</value>
-      </item>
+      <itemset nodeset="instance('a_b')/root/item">
+        <value ref="name"/>
+        <label ref="jr:itext(itextId)"/>
+      </itemset>
     </select1>
     <group appearance="field-list" ref="/widgets/table_list_test">
       <label>List Group</label>
       <select1 appearance="label" ref="/widgets/table_list_test/table_list_test_label">
         <label>Labeled Choices</label>
-        <item>
-          <label>Yes</label>
-          <value>yes</value>
-        </item>
-        <item>
-          <label>No</label>
-          <value>no</value>
-        </item>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
       <select1 appearance="list-nolabel" ref="/widgets/table_list_test/table_list_1">
         <label>Q1</label>
-        <item>
-          <label>Yes</label>
-          <value>yes</value>
-        </item>
-        <item>
-          <label>No</label>
-          <value>no</value>
-        </item>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
       <select1 appearance="list-nolabel" ref="/widgets/table_list_test/table_list_2">
         <label>Question 2</label>
-        <item>
-          <label>Yes</label>
-          <value>yes</value>
-        </item>
-        <item>
-          <label>No</label>
-          <value>no</value>
-        </item>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
     </group>
     <group appearance="field-list" ref="/widgets/table_list_test2">
@@ -387,72 +345,48 @@
       </input>
       <select1 appearance="label" ref="/widgets/table_list_test2/reserved_name_for_field_list_labels_30">
         <label></label>
-        <item>
-          <label>Yes</label>
-          <value>yes</value>
-        </item>
-        <item>
-          <label>No</label>
-          <value>no</value>
-        </item>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
       <select1 appearance="list-nolabel" ref="/widgets/table_list_test2/table_list_3">
         <label>Q1</label>
-        <item>
-          <label>Yes</label>
-          <value>yes</value>
-        </item>
-        <item>
-          <label>No</label>
-          <value>no</value>
-        </item>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
       <select1 appearance="list-nolabel" ref="/widgets/table_list_test2/table_list_4">
         <label>Question 2</label>
-        <item>
-          <label>Yes</label>
-          <value>yes</value>
-        </item>
-        <item>
-          <label>No</label>
-          <value>no</value>
-        </item>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
     </group>
     <group appearance="field-list" ref="/widgets/happy_sad_table_2">
       <label>Multi List Group</label>
       <select appearance="label" ref="/widgets/happy_sad_table_2/happy_sad_second_method">
         <label>Multi Choice List</label>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_second_method/happy:label')"/>
-          <value>happy</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_second_method/sad:label')"/>
-          <value>sad</value>
-        </item>
+        <itemset nodeset="instance('happy_sad')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table_2/happy_sad_brian2">
         <label>Brian</label>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_brian2/happy:label')"/>
-          <value>happy</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_brian2/sad:label')"/>
-          <value>sad</value>
-        </item>
+        <itemset nodeset="instance('happy_sad')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table_2/happy_sad_michael2">
         <label>Michael</label>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_michael2/happy:label')"/>
-          <value>happy</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table_2/happy_sad_michael2/sad:label')"/>
-          <value>sad</value>
-        </item>
+        <itemset nodeset="instance('happy_sad')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select>
     </group>
     <group appearance="field-list" ref="/widgets/happy_sad_table">
@@ -461,36 +395,24 @@
       </input>
       <select appearance="label" ref="/widgets/happy_sad_table/reserved_name_for_field_list_labels_39">
         <label></label>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/happy:label')"/>
-          <value>happy</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table/reserved_name_for_field_list_labels_39/sad:label')"/>
-          <value>sad</value>
-        </item>
+        <itemset nodeset="instance('happy_sad')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table/happy_sad_brian">
         <label>Brian</label>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_brian/happy:label')"/>
-          <value>happy</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_brian/sad:label')"/>
-          <value>sad</value>
-        </item>
+        <itemset nodeset="instance('happy_sad')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select>
       <select appearance="list-nolabel" ref="/widgets/happy_sad_table/happy_sad_michael">
         <label>Michael</label>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_michael/happy:label')"/>
-          <value>happy</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/widgets/happy_sad_table/happy_sad_michael/sad:label')"/>
-          <value>sad</value>
-        </item>
+        <itemset nodeset="instance('happy_sad')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select>
     </group>
   </h:body>

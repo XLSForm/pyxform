@@ -18,7 +18,7 @@ from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
 from pyxform.instance_info import InstanceInfo
-from pyxform.question import Question
+from pyxform.question import Option, Question
 from pyxform.section import Section
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import (
@@ -240,7 +240,7 @@ class Survey(Section):
         self._setup_xpath_dictionary()
 
         for triggering_reference in self.setvalues_by_triggering_ref.keys():
-            if not (re.match(BRACKETED_TAG_REGEX, triggering_reference)):
+            if not (re.search(BRACKETED_TAG_REGEX, triggering_reference)):
                 raise PyXFormError(
                     "Only references to other fields are allowed in the 'trigger' column."
                 )
@@ -768,14 +768,13 @@ class Survey(Section):
             self._translations = defaultdict(dict)  # pylint: disable=W0201
 
         for survey_element in self.iter_descendants():
-            # Skip set up of media for choices in filtered selects.
-            # Translations for the media content should have been set up
-            # in _setup_translations
-            parent = survey_element.get("parent")
-            if parent and not parent.get("choice_filter"):
-                translation_key = survey_element.get_xpath() + ":label"
+            # Skip set up of media for choices in selects. Translations for their media
+            # content should have been set up in _setup_translations, with one copy of
+            # each choice translation per language (after _add_empty_translations).
+            if not isinstance(survey_element, Option):
                 media_dict = survey_element.get("media")
-                if isinstance(media_dict, dict):
+                if isinstance(media_dict, dict) and 0 < len(media_dict):
+                    translation_key = survey_element.get_xpath() + ":label"
                     _set_up_media_translations(media_dict, translation_key)
 
     def itext(self):
@@ -979,7 +978,7 @@ class Survey(Section):
 
                     indexed_repeat_name_index = None
                     indexed_repeat_args = (
-                        function_args_regex.match(indexed_repeat.group())
+                        function_args_regex.search(indexed_repeat.group())
                         .group(1)
                         .split(",")
                     )
