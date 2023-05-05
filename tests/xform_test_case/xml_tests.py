@@ -2,7 +2,6 @@
 """
 Test XForm XML syntax.
 """
-import re
 from unittest import TestCase
 from xml.dom.minidom import getDOMImplementation
 
@@ -13,6 +12,8 @@ from tests.xform_test_case.base import XFormTestCase
 
 
 class XMLTests(XFormTestCase):
+    maxDiff = None
+
     def setUp(self):
         self.survey = create_survey_from_xls(
             path_to_text_fixture("yes_or_no_question.xls"), "yes_or_no_question"
@@ -35,21 +36,33 @@ class XMLTests(XFormTestCase):
           <text id="/yes_or_no_question/good_day:label">
             <value>have you had a good day today?</value>
           </text>
-          <text id="/yes_or_no_question/good_day/no:label">
-            <value>no</value>
-          </text>
-          <text id="/yes_or_no_question/good_day/yes:label">
+          <text id="yes_or_no-0">
             <value>yes</value>
+          </text>
+          <text id="yes_or_no-1">
+            <value>no</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <yes_or_no_question id="yes_or_no_question_2011_04_22">
+        <yes_or_no_question id="yes_or_no_question">
           <good_day/>
           <meta>
             <instanceID/>
           </meta>
         </yes_or_no_question>
+      </instance>
+      <instance id="yes_or_no">
+        <root>
+          <item>
+            <itextId>yes_or_no-0</itextId>
+            <name>yes</name>
+          </item>
+          <item>
+            <itextId>yes_or_no-1</itextId>
+            <name>no</name>
+          </item>
+        </root>
       </instance>
       <bind nodeset="/yes_or_no_question/good_day" type="string"/>
       <bind jr:preload="uid"
@@ -60,20 +73,14 @@ class XMLTests(XFormTestCase):
   <h:body>
     <select1 ref="/yes_or_no_question/good_day">
       <label ref="jr:itext('/yes_or_no_question/good_day:label')"/>
-      <item>
-        <label ref="jr:itext('/yes_or_no_question/good_day/yes:label')"/>
-        <value>yes</value>
-      </item>
-      <item>
-        <label ref="jr:itext('/yes_or_no_question/good_day/no:label')"/>
-        <value>no</value>
-      </item>
+      <itemset nodeset="instance('yes_or_no')/root/item">
+        <value ref="name"/>
+        <label ref="jr:itext(itextId)"/>
+      </itemset>
     </select1>
   </h:body>
 </h:html>
 """
-        xml_str = re.sub(r"yes_or_no_question_2011_04_22", self.survey.id_string, xml_str)
-        self.maxDiff = None
         self.assertXFormEqual(xml_str, self.survey.to_xml())
 
 

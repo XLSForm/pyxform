@@ -8,7 +8,7 @@ import os
 import re
 import sys
 from collections import Counter
-from typing import Any, Dict, List
+from typing import IO, Any, Dict, List, Optional
 
 from pyxform import aliases, constants
 from pyxform.constants import (
@@ -386,11 +386,11 @@ def add_choices_info_to_question(
 
 def workbook_to_json(
     workbook_dict,
-    form_name=None,
-    fallback_form_name=None,
-    default_language=constants.DEFAULT_LANGUAGE_VALUE,
-    warnings=None,
-) -> "Dict[str, Any]":
+    form_name: Optional[str] = None,
+    fallback_form_name: Optional[str] = None,
+    default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
+    warnings: Optional[List[str]] = None,
+) -> Dict[str, Any]:
     """
     workbook_dict -- nested dictionaries representing a spreadsheet.
                     should be similar to those returned by xls_to_dict
@@ -1500,12 +1500,12 @@ def get_filename(path):
 
 
 def parse_file_to_json(
-    path,
-    default_name="data",
-    default_language=constants.DEFAULT_LANGUAGE_VALUE,
-    warnings=None,
-    file_object=None,
-):
+    path: str,
+    default_name: str = "data",
+    default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
+    warnings: Optional[List[str]] = None,
+    file_object: Optional[IO] = None,
+) -> Dict[str, Any]:
     """
     A wrapper for workbook_to_json
     """
@@ -1514,7 +1514,11 @@ def parse_file_to_json(
     workbook_dict = parse_file_to_workbook_dict(path, file_object)
     fallback_form_name = str(get_filename(path))
     return workbook_to_json(
-        workbook_dict, default_name, fallback_form_name, default_language, warnings
+        workbook_dict=workbook_dict,
+        form_name=default_name,
+        fallback_form_name=fallback_form_name,
+        default_language=default_language,
+        warnings=warnings,
     )
 
 

@@ -14,16 +14,24 @@ from tests.xform_test_case.base import XFormTestCase
 class TestXFormConversion(XFormTestCase):
     maxDiff = None
 
-    def compare_xform(self, file_name: str):
+    def compare_xform(self, file_name: str, set_default_name: bool = True):
         self.get_file_path(file_name)
         expected_output_path = os.path.join(
             test_expected_output.PATH, self.root_filename + ".xml"
         )
         # Do the conversion:
         warnings = []
-        json_survey = xls2json.parse_file_to_json(
-            self.path_to_excel_file, default_name=self.root_filename, warnings=warnings
-        )
+        if set_default_name:
+            json_survey = xls2json.parse_file_to_json(
+                self.path_to_excel_file,
+                default_name=self.root_filename,
+                warnings=warnings,
+            )
+        else:
+            json_survey = xls2json.parse_file_to_json(
+                self.path_to_excel_file,
+                warnings=warnings,
+            )
         survey = builder.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # Compare with the expected output:
@@ -48,7 +56,7 @@ class TestXFormConversion(XFormTestCase):
         self.compare_xform(file_name="search_and_select.xlsx")
 
     def test_default_survey_sheet(self):
-        self.compare_xform(file_name="survey_no_name.xlsx")
+        self.compare_xform(file_name="survey_no_name.xlsx", set_default_name=False)
 
 
 class TestCalculateWithoutCalculation(TestCase):
