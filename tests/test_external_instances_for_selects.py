@@ -242,6 +242,24 @@ class TestSelectFromFile(PyxformTestCase):
                             error__contains=[msg],
                         )
 
+    def test_param_value_case_preserved(self):
+        """Should find that parameters value/label override the default itemset name/label with case preserved."""
+        md = """
+        | survey |                                        |         |         |                      |
+        |        | type                                   | name    | label   | parameters           |
+        |        | select_one_from_file cities{ext}       | city    | City    | value=VAL, label=lBl |
+        """
+        for ext, xp_city, xp_subs in self.xp_test_args:
+            with self.subTest(msg=ext):
+                self.assertPyxformXform(
+                    name="test",
+                    md=md.format(ext=ext),
+                    xml__xpath_match=[
+                        xp_city.model_external_instance_and_bind(),
+                        xp_city.body_itemset_nodeset_and_refs(value="VAL", label="lBl"),
+                    ],
+                )
+
 
 class TestSelectOneExternal(PyxformTestCase):
     """

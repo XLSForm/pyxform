@@ -4,6 +4,8 @@ from pyxform.errors import PyXFormError
 
 PARAMETERS_TYPE = Dict[str, Any]
 
+CASE_SENSITIVE_VALUES = ["label", "value"]
+
 
 def parse(raw_parameters: str) -> PARAMETERS_TYPE:
     parts = raw_parameters.split(";")
@@ -21,7 +23,7 @@ def parse(raw_parameters: str) -> PARAMETERS_TYPE:
             )
         k, v = param.split("=")[:2]
         key = k.lower().strip()
-        params[key] = v.lower().strip()
+        params[key] = v.strip() if key in CASE_SENSITIVE_VALUES else v.lower().strip()
 
     return params
 
