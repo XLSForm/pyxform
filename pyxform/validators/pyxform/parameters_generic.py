@@ -4,6 +4,7 @@ from pyxform.errors import PyXFormError
 
 PARAMETERS_TYPE = Dict[str, Any]
 
+# Label and value are used to match against user-specified files so case should be preserved.
 CASE_SENSITIVE_VALUES = ["label", "value"]
 
 
