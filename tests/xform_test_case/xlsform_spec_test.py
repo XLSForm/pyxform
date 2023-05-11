@@ -35,7 +35,9 @@ class TestXFormConversion(XFormTestCase):
         survey = builder.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # Compare with the expected output:
-        with open(expected_output_path, "r") as ef, open(self.output_path, "r") as af:
+        with open(expected_output_path, "r", encoding="utf-8") as ef, open(
+            self.output_path, "r", encoding="utf-8"
+        ) as af:
             expected = ef.read()
             observed = af.read()
         self.assertXFormEqual(expected, observed)
