@@ -112,10 +112,9 @@ class TestSecondaryInstanceTest(PyxformTestCase):
                     "default", "mood", ("Happy", "Sad")
                 ),
                 xpc.model_itext_choice_media_by_pos(
-                    "default", "mood", "0", "image", "happy.jpg"
-                ),
-                xpc.model_itext_choice_media_by_pos(
-                    "default", "mood", "1", "image", "sad.jpg"
+                    "default",
+                    "mood",
+                    ((("image", "happy.jpg"),), (("image", "sad.jpg"),)),
                 ),
             ],
         )

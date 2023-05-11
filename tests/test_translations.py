@@ -142,75 +142,6 @@ class XPathHelper:
             and not(descendant::x:value[@form='{form}' and text()='{prefix[form][1]}{fname}'])]
         """
 
-    def choice_itext_form(self, lang, cname, form, fname):
-        """There is an alternate form itext for the Choice label, referenced from the body."""
-        prefix = {
-            "audio": "jr://audio/",
-            "image": "jr://images/",
-            "big-image": "jr://images/",
-            "video": "jr://video/",
-        }
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test_name/{self.question_name}/{cname}:label']
-          /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
-        """
-
-    def choice_no_itext_form(self, lang, cname, form, fname):
-        """There is no alternate form itext for the Choice label, referenced from the body."""
-        prefix = {
-            "audio": "jr://audio/",
-            "image": "jr://images/",
-            "big-image": "jr://images/",
-            "video": "jr://video/",
-        }
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='/test_name/{self.question_name}/{cname}:label'
-            and not(descendant::x:value[@form='{form}' and text()='{prefix[form]}{fname}'])]
-        """
-
-    def choice_list_references_itext(self, lname):
-        """The Choice list (itemset) references an itext entry and internal instance."""
-        return f"""
-        /h:html/h:body/x:{self.question_type}[@ref='/test_name/{self.question_name}']
-          /x:itemset[@nodeset="instance('{lname}')/root/item[{self.question_name} != '']"
-            and child::x:label[@ref='jr:itext(itextId)'] and child::x:value[@ref='name']]
-        """
-
-    @staticmethod
-    def choice_value_in_instance(lname, cname, index):
-        """The Choice value is in an internal instance."""
-        return f"""
-        /h:html/h:head/x:model/x:instance[@id='{lname}']/x:root
-          /x:item[child::x:itextId/text()='{lname}-{index}'
-            and child::x:name='{cname}' and position()={index}+1]
-        """
-
-    @staticmethod
-    def choice_instance_itext_label(lang, lname, label, index):
-        """The Choice label value is in the itext, referenced from an internal instance."""
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='{lname}-{index}']
-          /x:value[not(@form) and text()='{label}']
-        """
-
-    @staticmethod
-    def choice_instance_itext_form(lang, lname, form, fname, index):
-        """There is an alternate form itext for the Choice label, referenced from an internal instance."""
-        prefix = {
-            "audio": "jr://audio/",
-            "image": "jr://images/",
-            "big-image": "jr://images/",
-            "video": "jr://video/",
-        }
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='{lname}-{index}']
-          /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
-        """
-
     def constraint_msg_in_bind(self, msg):
         """The Constraint Message is in the model binding."""
         return f"""
@@ -378,12 +309,14 @@ class TestTranslations(PyxformTestCase):
             xpq.body_select1_itemset("q1"),
             xpc.model_instance_choices_itext("c1", ("na", "nb")),
             xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
-            xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
-            xp.choice_itext_form("eng", "na", "image", "la-d.jpg"),
-            xp.choice_itext_form("eng", "na", "video", "la-d.mkv"),
-            xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
-            xp.choice_itext_form("eng", "nb", "image", "lb-d.jpg"),
-            xp.choice_itext_form("eng", "nb", "video", "lb-d.mkv"),
+            xpc.model_itext_choice_media_by_pos(
+                "eng",
+                "c1",
+                (
+                    (("audio", "la-d.mp3"), ("image", "la-d.jpg"), ("video", "la-d.mkv")),
+                    (("audio", "lb-d.mp3"), ("image", "lb-d.jpg"), ("video", "lb-d.mkv")),
+                ),
+            ),
         ]
         # Warning case
         self.assertPyxformXform(
@@ -402,12 +335,22 @@ class TestTranslations(PyxformTestCase):
                 xpc.model_itext_choice_text_label_by_pos(
                     "default", "c1", ("la-d", "lb-d")
                 ),
-                xp.choice_no_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
-                xp.choice_no_itext_form(DEFAULT_LANG, "na", "image", "la-d.jpg"),
-                xp.choice_no_itext_form(DEFAULT_LANG, "na", "video", "la-d.mkv"),
-                xp.choice_no_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
-                xp.choice_no_itext_form(DEFAULT_LANG, "nb", "image", "lb-d.jpg"),
-                xp.choice_no_itext_form(DEFAULT_LANG, "nb", "video", "lb-d.mkv"),
+                xpc.model_no_itext_choice_media_by_pos(
+                    DEFAULT_LANG,
+                    "c1",
+                    (
+                        (
+                            ("audio", "la-d.mp3"),
+                            ("image", "la-d.jpg"),
+                            ("video", "la-d.mkv"),
+                        ),
+                        (
+                            ("audio", "lb-d.mp3"),
+                            ("image", "lb-d.jpg"),
+                            ("video", "lb-d.mkv"),
+                        ),
+                    ),
+                ),
                 xp.language_is_default(DEFAULT_LANG),
                 xp.language_is_not_default("eng"),
             ],
@@ -984,6 +927,25 @@ class TestTranslationsSurvey(PyxformTestCase):
 class TestTranslationsChoices(PyxformTestCase):
     """Translations behaviour of columns in the Choices sheet."""
 
+    forms__ab = (
+        (
+            ("audio", "a.mp3"),
+            ("image", "a.jpg"),
+            ("big-image", "a.jpg"),
+            ("video", "a.mkv"),
+        ),
+        (
+            ("audio", "b.mp3"),
+            ("image", "b.jpg"),
+            ("big-image", "b.jpg"),
+            ("video", "b.mkv"),
+        ),
+    )
+    forms__l_audio = (
+        (("audio", "la-d.mp3"),),
+        (("audio", "lb-d.mp3"),),
+    )
+
     def setUp(self) -> None:
         self.xp = XPathHelper(question_type="select1", question_name="q1")
 
@@ -1003,14 +965,7 @@ class TestTranslationsChoices(PyxformTestCase):
             xpq.body_select1_itemset("q1"),
             xpc.model_instance_choices_itext("c1", ("na", "nb")),
             xpc.model_itext_choice_text_label_by_pos(DEFAULT_LANG, "c1", ("la", "lb")),
-            self.xp.choice_itext_form(DEFAULT_LANG, "na", "audio", "a.mp3"),
-            self.xp.choice_itext_form(DEFAULT_LANG, "na", "image", "a.jpg"),
-            self.xp.choice_itext_form(DEFAULT_LANG, "na", "big-image", "a.jpg"),
-            self.xp.choice_itext_form(DEFAULT_LANG, "na", "video", "a.mkv"),
-            self.xp.choice_itext_form(DEFAULT_LANG, "nb", "audio", "b.mp3"),
-            self.xp.choice_itext_form(DEFAULT_LANG, "nb", "image", "b.jpg"),
-            self.xp.choice_itext_form(DEFAULT_LANG, "nb", "big-image", "b.jpg"),
-            self.xp.choice_itext_form(DEFAULT_LANG, "nb", "video", "b.mkv"),
+            xpc.model_itext_choice_media_by_pos(DEFAULT_LANG, "c1", self.forms__ab),
         ]
         self.assertPyxformXform(
             md=md,
@@ -1033,14 +988,7 @@ class TestTranslationsChoices(PyxformTestCase):
             xpq.body_select1_itemset("q1"),
             xpc.model_instance_choices_itext("c1", ("na", "nb")),
             xpc.model_itext_choice_text_label_by_pos("Eng (en)", "c1", ("la", "lb")),
-            self.xp.choice_itext_form("Eng (en)", "na", "audio", "a.mp3"),
-            self.xp.choice_itext_form("Eng (en)", "na", "image", "a.jpg"),
-            self.xp.choice_itext_form("Eng (en)", "na", "big-image", "a.jpg"),
-            self.xp.choice_itext_form("Eng (en)", "na", "video", "a.mkv"),
-            self.xp.choice_itext_form("Eng (en)", "nb", "audio", "b.mp3"),
-            self.xp.choice_itext_form("Eng (en)", "nb", "image", "b.jpg"),
-            self.xp.choice_itext_form("Eng (en)", "nb", "big-image", "b.jpg"),
-            self.xp.choice_itext_form("Eng (en)", "nb", "video", "b.mkv"),
+            xpc.model_itext_choice_media_by_pos("Eng (en)", "c1", self.forms__ab),
         ]
         self.assertPyxformXform(
             md=md,
@@ -1060,23 +1008,10 @@ class TestTranslationsChoices(PyxformTestCase):
         """
         xpath_match = [
             self.xp.question_label_in_body("Question 1"),
-            self.xp.choice_list_references_itext("c1"),
-            self.xp.choice_value_in_instance("c1", "na", 0),
-            self.xp.choice_value_in_instance("c1", "nb", 1),
-            self.xp.choice_instance_itext_label(DEFAULT_LANG, "c1", "la", 0),
-            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "audio", "a.mp3", 0),
-            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "image", "a.jpg", 0),
-            self.xp.choice_instance_itext_form(
-                DEFAULT_LANG, "c1", "big-image", "a.jpg", 0
-            ),
-            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "video", "a.mkv", 0),
-            self.xp.choice_instance_itext_label(DEFAULT_LANG, "c1", "lb", 1),
-            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "audio", "b.mp3", 1),
-            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "image", "b.jpg", 1),
-            self.xp.choice_instance_itext_form(
-                DEFAULT_LANG, "c1", "big-image", "b.jpg", 1
-            ),
-            self.xp.choice_instance_itext_form(DEFAULT_LANG, "c1", "video", "b.mkv", 1),
+            xpc.body_itemset_references_itext("select1", "q1", "c1"),
+            xpc.model_instance_choices_itext("c1", ("na", "nb")),
+            xpc.model_itext_choice_text_label_by_pos(DEFAULT_LANG, "c1", ("la", "lb")),
+            xpc.model_itext_choice_media_by_pos(DEFAULT_LANG, "c1", self.forms__ab),
         ]
         self.assertPyxformXform(
             md=md,
@@ -1096,19 +1031,10 @@ class TestTranslationsChoices(PyxformTestCase):
         """
         xpath_match = [
             self.xp.question_label_in_body("Question 1"),
-            self.xp.choice_list_references_itext("c1"),
-            self.xp.choice_value_in_instance("c1", "na", "0"),
-            self.xp.choice_value_in_instance("c1", "nb", "1"),
-            self.xp.choice_instance_itext_label("Eng (en)", "c1", "la", 0),
-            self.xp.choice_instance_itext_form("Eng (en)", "c1", "audio", "a.mp3", 0),
-            self.xp.choice_instance_itext_form("Eng (en)", "c1", "image", "a.jpg", 0),
-            self.xp.choice_instance_itext_form("Eng (en)", "c1", "big-image", "a.jpg", 0),
-            self.xp.choice_instance_itext_form("Eng (en)", "c1", "video", "a.mkv", 0),
-            self.xp.choice_instance_itext_label("Eng (en)", "c1", "lb", 1),
-            self.xp.choice_instance_itext_form("Eng (en)", "c1", "audio", "b.mp3", 1),
-            self.xp.choice_instance_itext_form("Eng (en)", "c1", "image", "b.jpg", 1),
-            self.xp.choice_instance_itext_form("Eng (en)", "c1", "big-image", "b.jpg", 1),
-            self.xp.choice_instance_itext_form("Eng (en)", "c1", "video", "b.mkv", 1),
+            xpc.body_itemset_references_itext("select1", "q1", "c1"),
+            xpc.model_instance_choices_itext("c1", ("na", "nb")),
+            xpc.model_itext_choice_text_label_by_pos("Eng (en)", "c1", ("la", "lb")),
+            xpc.model_itext_choice_media_by_pos("Eng (en)", "c1", self.forms__ab),
         ]
         self.assertPyxformXform(
             md=md,
@@ -1140,10 +1066,10 @@ class TestTranslationsChoices(PyxformTestCase):
                     DEFAULT_LANG, "c1", ("la-d", "lb-d")
                 ),
                 xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
-                self.xp.choice_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
-                self.xp.choice_no_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
-                self.xp.choice_no_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                xpc.model_itext_choice_media_by_pos(
+                    DEFAULT_LANG, "c1", self.forms__l_audio
+                ),
+                xpc.model_no_itext_choice_media_by_pos("eng", "c1", self.forms__l_audio),
                 self.xp.language_is_default(DEFAULT_LANG),
                 self.xp.language_is_not_default("eng"),
             ],
@@ -1173,8 +1099,7 @@ class TestTranslationsChoices(PyxformTestCase):
                 xpq.body_select1_itemset("q1"),
                 xpc.model_instance_choices_itext("c1", ("na", "nb")),
                 xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
-                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                xpc.model_itext_choice_media_by_pos("eng", "c1", self.forms__l_audio),
                 self.xp.language_is_default("eng"),
                 # TODO: bug - missing default lang translatable/itext values.
                 self.xp.language_no_itext(DEFAULT_LANG),
@@ -1214,22 +1139,42 @@ class TestTranslationsChoices(PyxformTestCase):
                     DEFAULT_LANG, "c1", ("la-d", "lb-d")
                 ),
                 xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
-                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_form("eng", "na", "image", "la-d.jpg"),
-                self.xp.choice_itext_form("eng", "na", "big-image", "la-d.jpg"),
-                self.xp.choice_itext_form("eng", "na", "video", "la-d.mkv"),
-                self.xp.choice_no_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
-                self.xp.choice_no_itext_form(DEFAULT_LANG, "na", "image", "la-d.jpg"),
-                self.xp.choice_no_itext_form(DEFAULT_LANG, "na", "big-image", "la-d.jpg"),
-                self.xp.choice_no_itext_form(DEFAULT_LANG, "na", "video", "la-d.mkv"),
-                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
-                self.xp.choice_itext_form("eng", "nb", "image", "lb-d.jpg"),
-                self.xp.choice_itext_form("eng", "nb", "big-image", "lb-d.jpg"),
-                self.xp.choice_itext_form("eng", "nb", "video", "lb-d.mkv"),
-                self.xp.choice_no_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
-                self.xp.choice_no_itext_form(DEFAULT_LANG, "nb", "image", "lb-d.jpg"),
-                self.xp.choice_no_itext_form(DEFAULT_LANG, "nb", "big-image", "lb-d.jpg"),
-                self.xp.choice_no_itext_form(DEFAULT_LANG, "nb", "video", "lb-d.mkv"),
+                xpc.model_itext_choice_media_by_pos(
+                    "eng",
+                    "c1",
+                    (
+                        (
+                            ("audio", "la-d.mp3"),
+                            ("image", "la-d.jpg"),
+                            ("big-image", "la-d.jpg"),
+                            ("video", "la-d.mkv"),
+                        ),
+                        (
+                            ("audio", "lb-d.mp3"),
+                            ("image", "lb-d.jpg"),
+                            ("big-image", "lb-d.jpg"),
+                            ("video", "lb-d.mkv"),
+                        ),
+                    ),
+                ),
+                xpc.model_no_itext_choice_media_by_pos(
+                    DEFAULT_LANG,
+                    "c1",
+                    (
+                        (
+                            ("audio", "la-d.mp3"),
+                            ("image", "la-d.jpg"),
+                            ("big-image", "la-d.jpg"),
+                            ("video", "la-d.mkv"),
+                        ),
+                        (
+                            ("audio", "lb-d.mp3"),
+                            ("image", "lb-d.jpg"),
+                            ("big-image", "la-d.jpg"),
+                            ("video", "lb-d.mkv"),
+                        ),
+                    ),
+                ),
                 self.xp.language_is_default(DEFAULT_LANG),
                 self.xp.language_is_not_default("eng"),
             ],
@@ -1268,14 +1213,24 @@ class TestTranslationsChoices(PyxformTestCase):
                 xpq.body_select1_itemset("q1"),
                 xpc.model_instance_choices_itext("c1", ("na", "nb")),
                 xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
-                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_form("eng", "na", "image", "la-d.jpg"),
-                self.xp.choice_itext_form("eng", "na", "big-image", "la-d.jpg"),
-                self.xp.choice_itext_form("eng", "na", "video", "la-d.mkv"),
-                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
-                self.xp.choice_itext_form("eng", "nb", "image", "lb-d.jpg"),
-                self.xp.choice_itext_form("eng", "nb", "big-image", "lb-d.jpg"),
-                self.xp.choice_itext_form("eng", "nb", "video", "lb-d.mkv"),
+                xpc.model_itext_choice_media_by_pos(
+                    "eng",
+                    "c1",
+                    (
+                        (
+                            ("audio", "la-d.mp3"),
+                            ("image", "la-d.jpg"),
+                            ("big-image", "la-d.jpg"),
+                            ("video", "la-d.mkv"),
+                        ),
+                        (
+                            ("audio", "lb-d.mp3"),
+                            ("image", "lb-d.jpg"),
+                            ("big-image", "lb-d.jpg"),
+                            ("video", "lb-d.mkv"),
+                        ),
+                    ),
+                ),
                 self.xp.language_is_default("eng"),
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
@@ -1306,10 +1261,10 @@ class TestTranslationsChoices(PyxformTestCase):
                 # placeholder since XForms spec requires a value for every translation.
                 xpc.model_itext_choice_text_label_by_pos(DEFAULT_LANG, "c1", ("-", "-")),
                 xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
-                self.xp.choice_itext_form(DEFAULT_LANG, "na", "audio", "la-d.mp3"),
-                self.xp.choice_no_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_form(DEFAULT_LANG, "nb", "audio", "lb-d.mp3"),
-                self.xp.choice_no_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                xpc.model_itext_choice_media_by_pos(
+                    DEFAULT_LANG, "c1", self.forms__l_audio
+                ),
+                xpc.model_no_itext_choice_media_by_pos("eng", "c1", self.forms__l_audio),
                 self.xp.language_is_default(DEFAULT_LANG),
                 self.xp.language_is_not_default("eng"),
             ],
@@ -1341,8 +1296,7 @@ class TestTranslationsChoices(PyxformTestCase):
                 xpc.model_instance_choices_itext("c1", ("na", "nb")),
                 xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
                 # TODO: is this a bug? Default audio gets merged into eng hint.
-                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
+                xpc.model_itext_choice_media_by_pos("eng", "c1", self.forms__l_audio),
                 self.xp.language_is_default("eng"),
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
@@ -1373,10 +1327,10 @@ class TestTranslationsChoices(PyxformTestCase):
                 xpc.model_itext_choice_text_label_by_pos(
                     "french", "c1", ("la-f", "lb-f")
                 ),
-                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_no_itext_form("french", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
-                self.xp.choice_no_itext_form("french", "na", "audio", "lb-d.mp3"),
+                xpc.model_itext_choice_media_by_pos("eng", "c1", self.forms__l_audio),
+                xpc.model_no_itext_choice_media_by_pos(
+                    "french", "c1", self.forms__l_audio
+                ),
                 self.xp.language_is_not_default("eng"),
                 self.xp.language_is_not_default("french"),
                 self.xp.language_no_itext(DEFAULT_LANG),
@@ -1411,10 +1365,10 @@ class TestTranslationsChoices(PyxformTestCase):
                 xpc.model_itext_choice_text_label_by_pos(
                     "french", "c1", ("la-f", "lb-f")
                 ),
-                self.xp.choice_itext_form("eng", "na", "audio", "la-d.mp3"),
-                self.xp.choice_no_itext_form("french", "na", "audio", "la-d.mp3"),
-                self.xp.choice_itext_form("eng", "nb", "audio", "lb-d.mp3"),
-                self.xp.choice_no_itext_form("french", "na", "audio", "lb-d.mp3"),
+                xpc.model_itext_choice_media_by_pos("eng", "c1", self.forms__l_audio),
+                xpc.model_no_itext_choice_media_by_pos(
+                    "french", "c1", self.forms__l_audio
+                ),
                 self.xp.language_is_default("eng"),
                 self.xp.language_is_not_default("french"),
                 self.xp.language_no_itext(DEFAULT_LANG),

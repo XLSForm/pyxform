@@ -1,5 +1,12 @@
 from typing import Tuple
 
+JR_PREFIXES = {
+    "audio": "jr://audio/",
+    "image": "jr://images/",
+    "big-image": "jr://images/",
+    "video": "jr://video/",
+}
+
 
 class XPathHelper:
     """
@@ -81,17 +88,68 @@ class XPathHelper:
         """
 
     @staticmethod
-    def model_itext_choice_media_by_pos(lang, clist, pos, form, fname):
-        """Model itext has a text label and no other forms. Lookup by position."""
-        prefix = {
-            "audio": "jr://audio/",
-            "image": "jr://images/",
-            "video": "jr://video/",
-        }
+    def model_itext_choice_media_by_pos(
+        lang, cname, choices: Tuple[Tuple[Tuple[str, ...]]]
+    ):
+        """
+        Model itext has a text label and no other forms. Lookup by position.
+
+        Tuples: choices(choice((form, media), (form, media)), choice((form, media)))
+        """
+        choices_xp = "\n              and ".join(
+            (
+                f"""
+                ./x:text[
+                  @id='{cname}-{idx}'
+                  and ./x:value[@form='{form}' and text()='{JR_PREFIXES[form]}{media}']
+                ]
+                """
+                for idx, choice in enumerate(choices)
+                for form, media in choice
+            )
+        )
         return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
-          /x:text[@id='{clist}-{pos}']
-          /x:value[@form='{form}' and text()='{prefix[form]}{fname}']
+        /h:html/h:head/x:model/x:itext/x:translation[
+          @lang='{lang}' and
+          {choices_xp}
+        ]
+        """
+
+    @staticmethod
+    def model_no_itext_choice_media_by_pos(
+        lang, cname, choices: Tuple[Tuple[Tuple[str, ...]]]
+    ):
+        """
+        Model itext has a text label and no other forms. Lookup by position.
+
+        Tuples: choices(choice((form, media), (form, media)), choice((form, media)))
+        """
+        choices_xp = "\n              and ".join(
+            (
+                f"""
+                ./x:text[
+                  @id='{cname}-{idx}'
+                  and not(descendant::x:value[@form='{form}' and text()='{JR_PREFIXES[form]}{media}'])
+                ]
+                """
+                for idx, choice in enumerate(choices)
+                for form, media in choice
+            )
+        )
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[
+          @lang='{lang}' and
+          {choices_xp}
+        ]
+        """
+
+    @staticmethod
+    def body_itemset_references_itext(qtype: str, qname: str, cname: str) -> str:
+        """The Choice list (itemset) references an itext entry and internal instance."""
+        return f"""
+        /h:html/h:body/x:{qtype}[@ref='/test_name/{qname}']
+          /x:itemset[@nodeset="instance('{cname}')/root/item[{qname} != '']"
+            and child::x:label[@ref='jr:itext(itextId)'] and child::x:value[@ref='name']]
         """
 
 
