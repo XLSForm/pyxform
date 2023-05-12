@@ -60,6 +60,9 @@ class TestXFormConversion(XFormTestCase):
     def test_default_survey_sheet(self):
         self.compare_xform(file_name="survey_no_name.xlsx", set_default_name=False)
 
+    def test_or_other(self):
+        self.compare_xform(file_name="or_other.xlsx")
+
 
 class TestCalculateWithoutCalculation(TestCase):
     """

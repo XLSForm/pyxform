@@ -1158,7 +1158,13 @@ def workbook_to_json(
 
                 specify_other_question = None
                 if parse_dict.get("specify_other") is not None:
-                    select_type += " or specify other"
+                    select_type += constants.SELECT_OR_OTHER_SUFFIX
+                    if row.get(constants.CHOICE_FILTER):
+                        msg = (
+                            ROW_FORMAT_STRING % row_number
+                            + " Choice filter not supported with or_other."
+                        )
+                        raise PyXFormError(msg)
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type

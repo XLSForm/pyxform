@@ -960,16 +960,17 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la    | a.mp3        | a.jpg        | a.jpg            | a.mkv        |
         |         | c1        | nb   | lb    | b.mp3        | b.jpg        | b.jpg            | b.mkv        |
         """
-        xpath_match = [
-            self.xp.question_label_in_body("Question 1"),
-            xpq.body_select1_itemset("q1"),
-            xpc.model_instance_choices_itext("c1", ("na", "nb")),
-            xpc.model_itext_choice_text_label_by_pos(DEFAULT_LANG, "c1", ("la", "lb")),
-            xpc.model_itext_choice_media_by_pos(DEFAULT_LANG, "c1", self.forms__ab),
-        ]
         self.assertPyxformXform(
             md=md,
-            xml__xpath_match=xpath_match,
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    DEFAULT_LANG, "c1", ("la", "lb")
+                ),
+                xpc.model_itext_choice_media_by_pos(DEFAULT_LANG, "c1", self.forms__ab),
+            ],
         )
 
     def test_select1__non_dynamic_choices__one_lang__all_columns(self):
@@ -983,16 +984,15 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la              | a.mp3                  | a.jpg                  | a.jpg                      | a.mkv                  |
         |         | c1        | nb   | lb              | b.mp3                  | b.jpg                  | b.jpg                      | b.mkv                  |
         """
-        xpath_match = [
-            self.xp.question_label_in_body("Question 1"),
-            xpq.body_select1_itemset("q1"),
-            xpc.model_instance_choices_itext("c1", ("na", "nb")),
-            xpc.model_itext_choice_text_label_by_pos("Eng (en)", "c1", ("la", "lb")),
-            xpc.model_itext_choice_media_by_pos("Eng (en)", "c1", self.forms__ab),
-        ]
         self.assertPyxformXform(
             md=md,
-            xml__xpath_match=xpath_match,
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                xpq.body_select1_itemset("q1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos("Eng (en)", "c1", ("la", "lb")),
+                xpc.model_itext_choice_media_by_pos("Eng (en)", "c1", self.forms__ab),
+            ],
         )
 
     def test_select1__dynamic_choices__no_lang__all_columns(self):
@@ -1006,16 +1006,17 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la    | a.mp3        | a.jpg        | a.jpg            | a.mkv        |
         |         | c1        | nb   | lb    | b.mp3        | b.jpg        | b.jpg            | b.mkv        |
         """
-        xpath_match = [
-            self.xp.question_label_in_body("Question 1"),
-            xpc.body_itemset_references_itext("select1", "q1", "c1"),
-            xpc.model_instance_choices_itext("c1", ("na", "nb")),
-            xpc.model_itext_choice_text_label_by_pos(DEFAULT_LANG, "c1", ("la", "lb")),
-            xpc.model_itext_choice_media_by_pos(DEFAULT_LANG, "c1", self.forms__ab),
-        ]
         self.assertPyxformXform(
             md=md,
-            xml__xpath_match=xpath_match,
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                xpc.body_itemset_references_itext("select1", "q1", "c1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    DEFAULT_LANG, "c1", ("la", "lb")
+                ),
+                xpc.model_itext_choice_media_by_pos(DEFAULT_LANG, "c1", self.forms__ab),
+            ],
         )
 
     def test_select1__dynamic_choices__one_lang__all_columns(self):
@@ -1029,16 +1030,15 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la              | a.mp3                  | a.jpg                  | a.jpg                      | a.mkv                  |
         |         | c1        | nb   | lb              | b.mp3                  | b.jpg                  | b.jpg                      | b.mkv                  |
         """
-        xpath_match = [
-            self.xp.question_label_in_body("Question 1"),
-            xpc.body_itemset_references_itext("select1", "q1", "c1"),
-            xpc.model_instance_choices_itext("c1", ("na", "nb")),
-            xpc.model_itext_choice_text_label_by_pos("Eng (en)", "c1", ("la", "lb")),
-            xpc.model_itext_choice_media_by_pos("Eng (en)", "c1", self.forms__ab),
-        ]
         self.assertPyxformXform(
             md=md,
-            xml__xpath_match=xpath_match,
+            xml__xpath_match=[
+                self.xp.question_label_in_body("Question 1"),
+                xpc.body_itemset_references_itext("select1", "q1", "c1"),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos("Eng (en)", "c1", ("la", "lb")),
+                xpc.model_itext_choice_media_by_pos("Eng (en)", "c1", self.forms__ab),
+            ],
         )
 
     def test_missing_translation__one_lang_simple__warn__no_default(self):
@@ -1373,4 +1373,79 @@ class TestTranslationsChoices(PyxformTestCase):
                 self.xp.language_is_not_default("french"),
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
+        )
+
+    def test_specify_other__with_translations(self):
+        """Should add an "other" choice to the itemset instance and an itext label."""
+        md = """
+        | survey  |                        |       |            |            |
+        |         | type                   | name  | label      | label::eng |
+        |         | select_one c1 or_other | q1    | Question 1 | Question A |
+        | choices |           |      |       |            |           |
+        |         | list name | name | label | label::eng | label::fr |
+        |         | c1        | na   | la    | la-e       | la-f      |
+        |         | c1        | nb   | lb    | lb-e       |           |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_itext_choice_text_label_by_pos(
+                    "eng", "c1", ("la-e", "lb-e", "-")
+                ),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("la-f", "-", "-")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    DEFAULT_LANG, "c1", ("la", "lb", "Other")
+                ),
+                xpq.body_select1_itemset("q1"),
+                """
+                /h:html/h:body/x:input[@ref='/test_name/q1_other']/
+                  x:label[text() = 'Specify other.']
+                """,
+            ],
+        )
+
+    def test_specify_other__no_translations(self):
+        """Should add an "other" choice to the itemset instance, but not use itext."""
+        md = """
+        | survey  |                        |       |            |
+        |         | type                   | name  | label      |
+        |         | select_one c1 or_other | q1    | Question 1 |
+        | choices |           |      |       |
+        |         | list name | name | label |
+        |         | c1        | na   | la    |
+        |         | c1        | nb   | lb    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model[not(descendant::x:itext)]
+                """,
+                xpc.model_instance_choices_label(
+                    "c1", (("na", "la"), ("nb", "lb"), ("other", "Other"))
+                ),
+                xpq.body_select1_itemset("q1"),
+                """
+                /h:html/h:body/x:input[@ref='/test_name/q1_other']/
+                  x:label[text() = 'Specify other.']
+                """,
+            ],
+        )
+
+    def test_specify_other__choice_filter(self):
+        """Should raise an error since these featuers are unsupported together."""
+        md = """
+        | survey  |                        |       |            |
+        |         | type                   | name  | label      | choice_filter |
+        |         | input                  | q0    | Question 0 |               |
+        |         | select_one c1 or_other | q1    | Question 1 | ${q0} = cf    |
+        | choices |           |      |       |
+        |         | list name | name | label | cf |
+        |         | c1        | na   | la    | 1  |
+        |         | c1        | nb   | lb    | 2  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=["[row : 3] Choice filter not supported with or_other."],
         )

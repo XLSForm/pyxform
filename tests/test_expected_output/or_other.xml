@@ -16,29 +16,33 @@
       <instance id="colors">
         <root>
           <item>
-            <pastel>no</pastel>
-            <name>red</name>
             <label>red</label>
+            <name>red</name>
+            <pastel>no</pastel>
           </item>
           <item>
-            <pastel>no</pastel>
-            <name>green</name>
             <label>green</label>
-          </item>
-          <item>
+            <name>green</name>
             <pastel>no</pastel>
-            <name>blue</name>
+          </item>
+          <item>
             <label>blue</label>
+            <name>blue</name>
+            <pastel>no</pastel>
           </item>
           <item>
-            <pastel>yes</pastel>
-            <name>mauve</name>
             <label>mauve</label>
+            <name>mauve</name>
+            <pastel>yes</pastel>
           </item>
           <item>
-            <pastel>yes</pastel>
-            <name>apricot</name>
             <label>apricot</label>
+            <name>apricot</name>
+            <pastel>yes</pastel>
+          </item>
+          <item>
+            <label>Other</label>
+            <name>other</name>
           </item>
         </root>
       </instance>

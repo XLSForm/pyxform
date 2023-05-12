@@ -129,6 +129,7 @@ class BuilderTests(TestCase):
                 "sexes": [
                     {"label": {"English": "Male"}, "name": "male"},
                     {"label": {"English": "Female"}, "name": "female"},
+                    {"label": "Other", "name": "other"},
                 ]
             },
             "children": [
@@ -231,6 +232,7 @@ class BuilderTests(TestCase):
                         "name": "open_pit_latrine",
                     },
                     {"label": {"english": "Bucket system"}, "name": "bucket_system"},
+                    {"label": "Other", "name": "other"},
                 ]
             },
             "children": [
@@ -316,6 +318,20 @@ class BuilderTests(TestCase):
                                     "type": "integer",
                                 }
                             ],
+                        },
+                        {
+                            "children": [
+                                {
+                                    "label": {
+                                        "english": "How many Other are on the premises?"
+                                    },
+                                    "name": "number",
+                                    "type": "integer",
+                                }
+                            ],
+                            "label": "Other",
+                            "name": "other",
+                            "type": "group",
                         },
                     ],
                 },
