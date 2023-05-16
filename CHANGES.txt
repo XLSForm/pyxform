@@ -1,5 +1,8 @@
 Pyxform Changelog
 
+v1.12.1, 2023-05-16
+* Pass through itemset ref case by @lognaturel in https://github.com/XLSForm/pyxform/pull/644
+
 v1.12.0, 2023-01-19
 * Add support for big-image by @lognaturel in https://github.com/XLSForm/pyxform/pull/635
 * Show error when there are `save_to`s in a repeat, simplify entities tests by @lognaturel in https://github.com/XLSForm/pyxform/pull/636
