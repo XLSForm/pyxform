@@ -5,8 +5,9 @@ Survey builder functionality.
 import copy
 import os
 import re
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from pyxform import file_utils, utils
+from pyxform import constants, file_utils, utils
 from pyxform.entities.entity_declaration import EntityDeclaration
 from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
@@ -23,6 +24,14 @@ from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.section import GroupedSection, RepeatingSection
 from pyxform.survey import Survey
 from pyxform.xls2json import SurveyReader
+
+if TYPE_CHECKING:
+    from pyxform.survey_element import SurveyElement
+
+OR_OTHER_CHOICE = {
+    "name": "other",
+    "label": "Other",
+}
 
 
 def copy_json_dict(json_dict):
@@ -87,7 +96,9 @@ class SurveyElementBuilder:
         assert type(sections) == dict
         self._sections = sections
 
-    def create_survey_element_from_dict(self, d):
+    def create_survey_element_from_dict(
+        self, d: Dict[str, Any]
+    ) -> Union["SurveyElement", List["SurveyElement"]]:
         """
         Convert from a nested python dictionary/array structure (a json dict I
         call it because it corresponds directly with a json object)
@@ -142,7 +153,11 @@ class SurveyElementBuilder:
                 self.setvalues_by_triggering_ref[triggering_ref] = [(d["name"], value)]
 
     @staticmethod
-    def _create_question_from_dict(d, question_type_dictionary, add_none_option=False):
+    def _create_question_from_dict(
+        d: Dict[str, Any],
+        question_type_dictionary: Dict[str, Any],
+        add_none_option: bool = False,
+    ) -> Union[Question, List[Question]]:
         question_type_str = d["type"]
         d_copy = d.copy()
 
@@ -151,11 +166,9 @@ class SurveyElementBuilder:
             SurveyElementBuilder._add_none_option_to_select_all_that_apply(d_copy)
 
         # Handle or_other on select type questions
-        or_other_str = " or specify other"
-        if question_type_str.endswith(or_other_str):
-            question_type_str = question_type_str[
-                : len(question_type_str) - len(or_other_str)
-            ]
+        or_other_len = len(constants.SELECT_OR_OTHER_SUFFIX)
+        if question_type_str.endswith(constants.SELECT_OR_OTHER_SUFFIX):
+            question_type_str = question_type_str[: len(question_type_str) - or_other_len]
             d_copy["type"] = question_type_str
             SurveyElementBuilder._add_other_option_to_multiple_choice_question(d_copy)
             return [
@@ -172,20 +185,18 @@ class SurveyElementBuilder:
         # todo: clean up this spaghetti code
         d_copy["question_type_dictionary"] = question_type_dictionary
         if question_class:
-
             return question_class(**d_copy)
 
         return []
 
     @staticmethod
-    def _add_other_option_to_multiple_choice_question(d):
+    def _add_other_option_to_multiple_choice_question(d: Dict[str, Any]) -> None:
         # ideally, we'd just be pulling from children
         choice_list = d.get("choices", d.get("children", []))
         if len(choice_list) <= 0:
             raise PyXFormError("There should be choices for this question.")
-        other_choice = {"name": "other", "label": "Other"}
-        if other_choice not in choice_list:
-            choice_list.append(other_choice)
+        if OR_OTHER_CHOICE not in choice_list:
+            choice_list.append(OR_OTHER_CHOICE)
 
     @staticmethod
     def _add_none_option_to_select_all_that_apply(d_copy):
@@ -219,7 +230,7 @@ class SurveyElementBuilder:
         return SurveyElementBuilder.QUESTION_CLASSES[control_tag]
 
     @staticmethod
-    def _create_specify_other_question_from_dict(d):
+    def _create_specify_other_question_from_dict(d: Dict[str, Any]) -> InputQuestion:
         kwargs = {
             "type": "text",
             "name": "%s_other" % d["name"],
@@ -241,6 +252,11 @@ class SurveyElementBuilder:
             # And I hope it doesn't break something else.
             # I think the good solution would be to rewrite this class.
             survey_element = self.create_survey_element_from_dict(copy.deepcopy(child))
+            if child["type"].endswith(" or specify other"):
+                select_question = survey_element[0]
+                itemset_choices = result["choices"][select_question["itemset"]]
+                if OR_OTHER_CHOICE not in itemset_choices:
+                    itemset_choices.append(OR_OTHER_CHOICE)
             if survey_element:
                 result.add_children(survey_element)
 
@@ -338,13 +354,12 @@ def create_survey_from_xls(path_or_file, default_name=None):
 
 
 def create_survey(
-    name_of_main_section=None,
-    sections=None,
-    main_section=None,
-    id_string=None,
-    title=None,
-    default_language=None,
-):
+    name_of_main_section: str = None,
+    sections: Dict[str, Dict] = None,
+    main_section: Dict[str, Any] = None,
+    id_string: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Survey:
     """
     name_of_main_section -- a string key used to find the main section in the
                             sections dict if it is not supplied in the
@@ -380,11 +395,10 @@ def create_survey(
 
     if title is not None:
         survey.title = title
-    survey.def_lang = default_language
     return survey
 
 
-def create_survey_from_path(path, include_directory=False):
+def create_survey_from_path(path: str, include_directory: bool = False) -> Survey:
     """
     include_directory -- Switch to indicate that all the survey forms in the
                          same directory as the specified file should be read
@@ -398,6 +412,4 @@ def create_survey_from_path(path, include_directory=False):
     else:
         main_section_name, section = file_utils.load_file_to_dict(path)
         sections = {main_section_name: section}
-    pkg = {"name_of_main_section": main_section_name, "sections": sections}
-
-    return create_survey(**pkg)
+    return create_survey(name_of_main_section=main_section_name, sections=sections)

@@ -3,12 +3,13 @@
 Test rank widget.
 """
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 class RangeWidgetTest(PyxformTestCase):
     def test_rank(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey |              |          |       |
             |        | type         | name     | label |
@@ -18,16 +19,10 @@ class RangeWidgetTest(PyxformTestCase):
             |        | mylist       | a        | A     |
             |        | mylist       | b        | B     |
             """,
-            xml__contains=[
-                'xmlns:odk="http://www.opendatakit.org/xforms"',
-                '<bind nodeset="/data/order" type="odk:rank"/>',
-                '<odk:rank ref="/data/order">',
-                "<label>Rank</label>",
-                "<label>A</label>",
-                "<value>a</value>",
-                "<label>B</label>",
-                "<value>b</value>",
-                "</odk:rank>",
+            xml__xpath_match=[
+                xpc.model_instance_choices_label("mylist", (("a", "A"), ("b", "B"))),
+                xpq.body_odk_rank_itemset("order"),  # also an implicit test for xmlns:odk
+                "/h:html/h:head/x:model/x:bind[@nodeset='/test_name/order' and @type='odk:rank']",
             ],
         )
 
@@ -62,8 +57,8 @@ class RangeWidgetTest(PyxformTestCase):
         )
 
     def test_rank_translations(self):
+        """Should find itext/translations for rank, using itemset method."""
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey |              |          |       |                    |
             |        | type         | name     | label | label::French (fr) |
@@ -73,29 +68,19 @@ class RangeWidgetTest(PyxformTestCase):
             |        | mylist       | a        | A     |  AA                |
             |        | mylist       | b        | B     |  BB                |
             """,
-            xml__contains=[
-                'xmlns:odk="http://www.opendatakit.org/xforms"',
-                '<translation lang="French (fr)">',
-                """<text id="/data/order:label">
-            <value>Ranger</value>
-          </text>""",
-                """<text id="/data/order/a:label">
-            <value>AA</value>
-          </text>""",
-                """<text id="/data/order/b:label">
-            <value>BB</value>
-          </text>""",
-                "</translation>",
-                """<odk:rank ref="/data/order">
-      <label ref="jr:itext('/data/order:label')"/>
-      <item>
-        <label ref="jr:itext('/data/order/a:label')"/>
-        <value>a</value>
-      </item>
-      <item>
-        <label ref="jr:itext('/data/order/b:label')"/>
-        <value>b</value>
-      </item>
-    </odk:rank>""",
+            xml__xpath_match=[
+                xpc.model_instance_choices_itext("mylist", ("a", "b")),
+                xpq.body_odk_rank_itemset("order"),  # also an implicit test for xmlns:odk
+                "/h:html/h:head/x:model/x:bind[@nodeset='/test_name/order' and @type='odk:rank']",
+                # All itemset translations.
+                xpc.model_itext_choice_text_label_by_pos("default", "mylist", ("A", "B")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "French (fr)", "mylist", ("AA", "BB")
+                ),
+                # No non-itemset translations.
+                xpc.model_itext_no_text_by_id("default", "/test_name/order/a:label"),
+                xpc.model_itext_no_text_by_id("default", "/test_name/order/b:label"),
+                xpc.model_itext_no_text_by_id("French (fr)", "/test_name/order/a:label"),
+                xpc.model_itext_no_text_by_id("French (fr)", "/test_name/order/b:label"),
             ],
         )

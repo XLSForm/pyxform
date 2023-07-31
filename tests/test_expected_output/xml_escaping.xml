@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
     <h:title>xml_escaping</h:title>
     <model odk:xforms-version="1.0.0">
@@ -13,6 +13,18 @@
           </meta>
         </xml_escaping>
       </instance>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <label>Yes</label>
+            <name>yes</name>
+          </item>
+          <item>
+            <label>No</label>
+            <name>no</name>
+          </item>
+        </root>
+      </instance>
       <bind calculate="2" nodeset="/xml_escaping/a" type="string"/>
       <bind calculate="1" nodeset="/xml_escaping/b" type="string"/>
       <bind nodeset="/xml_escaping/table_list_3" type="string"/>
@@ -22,14 +34,10 @@
   <h:body>
     <select1 ref="/xml_escaping/table_list_3">
       <label>
-        <output value=" /xml_escaping/a "/>&lt; <output value=" /xml_escaping/b "/></label><item>
-        <label>Yes</label>
-        <value>yes</value>
-      </item>
-      <item>
-        <label>No</label>
-        <value>no</value>
-      </item>
+        <output value=" /xml_escaping/a "/> &lt; <output value=" /xml_escaping/b "/> </label><itemset nodeset="instance('yes_no')/root/item">
+      <value ref="name"/>
+      <label ref="label"/>
+    </itemset>
     </select1>
   </h:body>
 </h:html>

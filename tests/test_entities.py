@@ -6,7 +6,6 @@ class EntitiesTest(PyxformTestCase):
     def test_basic_entity_creation_building_blocks(self):
         self.assertPyxformXform(
             name="data",
-            debug=True,
             md="""
             | survey   |         |       |       |
             |          | type    | name  | label |

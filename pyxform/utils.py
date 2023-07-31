@@ -25,6 +25,8 @@ INVALID_XFORM_TAG_REGEXP = r"[^a-zA-Z:_][^a-zA-Z:_0-9\-.]*"
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
 BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
 LAST_SAVED_REGEX = re.compile(r"\${last-saved#(.*?)}")
+PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
+
 
 NSMAP = {
     "xmlns": "http://www.w3.org/2002/xforms",
@@ -62,7 +64,7 @@ class PatchedText(Text):
         writer.write(data)
 
 
-def node(*args, **kwargs):
+def node(*args, **kwargs) -> DetachableElement:
     """
     args[0] -- a XML tag
     args[1:] -- an array of children to append to the newly created node
@@ -182,7 +184,7 @@ def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
 def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
     wb = openpyxl.open(workbook_path, read_only=True, data_only=True)
     try:
-        sheet = wb.get_sheet_by_name(sheet_name)
+        sheet = wb[sheet_name]
     except KeyError:
         return False
 

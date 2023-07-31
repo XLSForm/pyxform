@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 class ChoicesSheetTest(PyxformTestCase):
@@ -17,7 +19,10 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 1    | One   |
             |          | choices            | 2    | Two   |
             """,
-            xml__contains=["<value>1</value>"],
+            xml__xpath_match=[
+                xpc.model_instance_choices_label("choices", (("1", "One"), ("2", "Two"))),
+                xpq.body_select1_itemset("a"),
+            ],
         )
 
     def test_numeric_choice_names__for_dynamic_selects__allowed(self):
@@ -34,7 +39,10 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 1    | One   |
             |          | choices            | 2    | Two   |
             """,
-            xml__contains=['<instance id="choices">', "<item>", "<name>1</name>"],
+            xml__xpath_match=[
+                xpc.model_instance_choices_label("choices", (("1", "One"), ("2", "Two"))),
+                xpq.body_select1_itemset("a"),
+            ],
         )
 
     def test_choices_without_labels__for_static_selects__allowed(self):
@@ -51,13 +59,27 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 1    |       |
             |          | choices            | 2    |       |
             """,
-            xml__contains=["<value>1</value>"],
+            xml__xpath_match=[
+                xpq.body_select1_itemset("a"),
+                """
+                /h:html/h:head/x:model/x:instance[@id='choices']/x:root[
+                  ./x:item/x:name/text() = '1'
+                    and not(./x:item/x:label)
+                    and not(./x:item/x:itextId)
+                  and
+                  ./x:item/x:name/text() = '2'
+                    and not(./x:item/x:label)
+                    and not(./x:item/x:itextId)
+                ]
+                """,
+            ],
         )
 
     def test_choices_without_labels__for_dynamic_selects__allowed_by_pyxform(self):
         """
         Test choices without labels for dynamic selects. Validate will fail.
         """
+        # TODO: validate doesn't fail
         self.assertPyxformXform(
             md="""
             | survey   |                    |      |       |               |
@@ -69,5 +91,18 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 2    |       |
             """,
             run_odk_validate=False,
-            xml__contains=['<instance id="choices">', "<item>", "<name>1</name>"],
+            xml__xpath_match=[
+                xpq.body_select1_itemset("a"),
+                """
+                /h:html/h:head/x:model/x:instance[@id='choices']/x:root[
+                  ./x:item/x:name/text() = '1'
+                    and not(./x:item/x:label)
+                    and not(./x:item/x:itextId)
+                  and
+                  ./x:item/x:name/text() = '2'
+                    and not(./x:item/x:label)
+                    and not(./x:item/x:itextId)
+                ]
+                """,
+            ],
         )

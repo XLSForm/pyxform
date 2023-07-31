@@ -37,12 +37,8 @@ class XFormTestCase(TestCase):
 
         # Report any errors returned from xform_compare
         errs = []
-
-        def reporter(msg):
-            errs.append(msg)
-
         self.assertTrue(
-            xml_compare(xform1, xform2, reporter), "\n\n" + "\n".join(reversed(errs))
+            xml_compare(xform1, xform2, errs.append), "\n\n" + "\n".join(reversed(errs))
         )
 
     @staticmethod

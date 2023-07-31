@@ -47,6 +47,10 @@ BIND = (
 MEDIA = "media"
 CONTROL = "control"
 APPEARANCE = "appearance"
+ITEMSET = "itemset"
+RANDOMIZE = "randomize"
+CHOICE_FILTER = "choice_filter"
+PARAMETERS = "parameters"
 
 LOOP = "loop"
 COLUMNS = "columns"
@@ -56,7 +60,9 @@ GROUP = "group"
 CHILDREN = "children"
 
 SELECT_ONE = "select one"
+SELECT_ONE_EXTERNAL = "select one external"
 SELECT_ALL_THAT_APPLY = "select all that apply"
+SELECT_OR_OTHER_SUFFIX = " or specify other"
 RANK = "rank"
 CHOICES = "choices"
 
@@ -65,6 +71,7 @@ LIST_NAME = "list name"
 CASCADING_SELECT = "cascading_select"
 TABLE_LIST = "table-list"  # hyphenated because it goes in appearance, and convention for appearance column is dashes # noqa
 FIELD_LIST = "field-list"
+LIST_NOLABEL = "list-nolabel"
 
 SURVEY = "survey"
 SETTINGS = "settings"

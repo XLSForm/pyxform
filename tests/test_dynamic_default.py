@@ -13,6 +13,8 @@ import psutil
 
 from pyxform import utils
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 @dataclass()
@@ -45,7 +47,7 @@ class XPathHelper:
         """Get the setvalue element's value attribute."""
         return fr"""
         /h:html/h:head/x:model/x:setvalue[
-          @ref="/test/q{q_num}"
+          @ref="/test_name/q{q_num}"
           and @event='odk-instance-first-load'
         ]/@value
         """
@@ -79,14 +81,14 @@ class XPathHelper:
                 value_cmp = f"""and @value="{q_default_final}" """
             return fr"""
             /h:html/h:head/x:model
-              /x:instance/x:test[@id="test"]/x:q{q_num}[
+              /x:instance/x:test_name[@id="test_id"]/x:q{q_num}[
                 not(text())
                 and ancestor::x:model/x:bind[
-                  @nodeset='/test/q{q_num}'
+                  @nodeset='/test_name/q{q_num}'
                   and @type='{q_bind}'
                 ]
                 and ancestor::x:model/x:setvalue[
-                  @ref="/test/q{q_num}"
+                  @ref="/test_name/q{q_num}"
                   and @event='odk-instance-first-load'
                   {value_cmp}
                 ]
@@ -102,12 +104,12 @@ class XPathHelper:
                     q_default_cmp = f"""and text()='{q_default_final}' """
             return fr"""
             /h:html/h:head/x:model
-              /x:instance/x:test[@id="test"]/x:q{q_num}[
+              /x:instance/x:test_name[@id="test_id"]/x:q{q_num}[
                 ancestor::x:model/x:bind[
-                  @nodeset='/test/q{q_num}'
+                  @nodeset='/test_name/q{q_num}'
                   and @type='{q_bind}'
                 ]
-                and not(ancestor::x:model/x:setvalue[@ref="/test/q{q_num}"])
+                and not(ancestor::x:model/x:setvalue[@ref="/test_name/q{q_num}"])
                 {q_default_cmp}
               ]
             """
@@ -118,10 +120,10 @@ class XPathHelper:
         if case.q_label_fr == "":
             label_cmp = f""" ./x:label[text()="Q{qnum}"] """
         else:
-            label_cmp = f""" ./x:label[@ref="jr:itext('/test/q{qnum}:label')"] """
+            label_cmp = f""" ./x:label[@ref="jr:itext('/test_name/q{qnum}:label')"] """
         return f"""
           /h:html/h:body/x:input[
-            @ref="/test/q{qnum}"
+            @ref="/test_name/q{qnum}"
             and {label_cmp}
           ]
         """
@@ -163,15 +165,13 @@ class TestDynamicDefault(PyxformTestCase):
         |        | end repeat   | r1   |       |         |
         """
         self.assertPyxformXform(
-            name="test",
-            id_string="test",
             md=md,
             xml__xpath_match=[
                 xp.model(0, Case(False, "integer", "foo")),
                 # Repeat template and first row.
                 """
-                /h:html/h:head/x:model/x:instance/x:test[
-                  @id="test"
+                /h:html/h:head/x:model/x:instance/x:test_name[
+                  @id="test_id"
                   and ./x:r1[@jr:template='']
                   and ./x:r1[not(@jr:template)]
                 ]
@@ -179,14 +179,14 @@ class TestDynamicDefault(PyxformTestCase):
                 # q1 static default value in repeat template.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q1[text()='12']
+                  ./x:bind[@nodeset='/test_name/r1/q1' and @type='int']
+                ]/x:instance/x:test_name[@id="test_id"]/x:r1[@jr:template='']/x:q1[text()='12']
                 """,
                 # q1 static default value in repeat row.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q1[text()='12']
+                  ./x:bind[@nodeset='/test_name/r1/q1' and @type='int']
+                ]/x:instance/x:test_name[@id="test_id"]/x:r1[not(@jr:template)]/x:q1[text()='12']
                 """,
             ],
         )
@@ -542,8 +542,6 @@ class TestDynamicDefault(PyxformTestCase):
 
     def test_dynamic_default_on_calculate(self):
         self.assertPyxformXform(
-            name="test",
-            id_string="test",
             md="""
             | survey |            |      |       |             |                      |
             |        | type       | name | label | calculation | default              |
@@ -575,16 +573,21 @@ class TestDynamicDefault(PyxformTestCase):
         |         | c3        | a-b  | C A-B |
         """
         self.assertPyxformXform(
-            name="test",
-            id_string="test",
             md=md,
             xml__xpath_match=[
                 xp.model(1, Case(False, "select_one", "a-2")),
                 xp.model(2, Case(False, "select_one", "1-1")),
                 xp.model(3, Case(False, "select_one", "a-b")),
-                xp.body_select1(q_num=1, choices=(("a-1", "C A-1"), ("a-2", "C A-2"))),
-                xp.body_select1(q_num=2, choices=(("1-1", "C 1-1"), ("2-2", "C 1-2"))),
-                xp.body_select1(q_num=3, choices=(("a-b", "C A-B"),)),
+                xpc.model_instance_choices_label(
+                    "c1", (("a-1", "C A-1"), ("a-2", "C A-2"))
+                ),
+                xpc.model_instance_choices_label(
+                    "c2", (("1-1", "C 1-1"), ("2-2", "C 1-2"))
+                ),
+                xpc.model_instance_choices_label("c3", (("a-b", "C A-B"),)),
+                xpq.body_select1_itemset("q1"),
+                xpq.body_select1_itemset("q2"),
+                xpq.body_select1_itemset("q3"),
             ],
         )
 
@@ -711,22 +714,22 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
             # Function with date type result.
             Case(True, "date", """concat('2022-03', '-14')"""),
             # Pyxform reference.
-            Case(True, "text", "${ref_text}", q_value=" /test/ref_text "),
-            Case(True, "integer", "${ref_int}", q_value=" /test/ref_int "),
+            Case(True, "text", "${ref_text}", q_value=" /test_name/ref_text "),
+            Case(True, "integer", "${ref_int}", q_value=" /test_name/ref_int "),
             # Pyxform reference, with last-saved.
             Case(
                 True,
                 "text",
                 "${last-saved#ref_text}",
-                q_value=" instance('__last-saved')/test/ref_text ",
+                q_value=" instance('__last-saved')/test_name/ref_text ",
             ),
             # Pyxform reference, with last-saved, inside a function.
             Case(
                 True,
                 "integer",
                 "if(${last-saved#ref_int} = '', 0, ${last-saved#ref_int} + 1)",
-                q_value="if( instance('__last-saved')/test/ref_int  = '', 0,"
-                "  instance('__last-saved')/test/ref_int  + 1)",
+                q_value="if( instance('__last-saved')/test_name/ref_int  = '', 0,"
+                "  instance('__last-saved')/test_name/ref_int  + 1)",
             ),
         )
         # Additional cases passed through default_is_dynamic only, not markdown->xform test.
@@ -764,8 +767,6 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
             md_row.strip("\n").format(q_num=q_num, c=c) for q_num, c in cases_enum
         )
         self.assertPyxformXform(
-            name="test",
-            id_string="test",
             md=md,
             run_odk_validate=True,
             # Exclude if single quote in value, to avoid comparison and escaping issues.

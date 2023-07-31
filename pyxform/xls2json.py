@@ -8,7 +8,7 @@ import os
 import re
 import sys
 from collections import Counter
-from typing import Any, Dict, List
+from typing import IO, Any, Dict, List, Optional
 
 from pyxform import aliases, constants
 from pyxform.constants import (
@@ -22,7 +22,7 @@ from pyxform.entities.entities_parsing import (
     validate_entity_saveto,
 )
 from pyxform.errors import PyXFormError
-from pyxform.utils import default_is_dynamic
+from pyxform.utils import PYXFORM_REFERENCE_REGEX, default_is_dynamic
 from pyxform.validators.pyxform import parameters_generic, select_from_file_params
 from pyxform.validators.pyxform.missing_translations_check import (
     missing_translations_check,
@@ -31,6 +31,7 @@ from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
 from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
+SEARCH_APPEARANCE_REGEX = re.compile(r"search\(.*?\)")
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -322,13 +323,74 @@ def process_image_default(default_value):
     return default_value
 
 
+def add_choices_info_to_question(
+    question: Dict[str, Any],
+    list_name: str,
+    choices: Dict[str, list],
+    choice_filter: str,
+    file_extension: str,
+):
+    """
+    Add choices-related info to the question dict, e.g. itemset, list_name, choices, etc.
+
+    :param question: A dict with question details.
+    :param list_name: The choice list name for the question.
+    :param choices: The available choices in the survey.
+    :param choice_filter: The question's choice_filter, if any.
+    :param file_extension: The question's external select file_extension, if any.
+    :return: The updated question dict.
+    """
+    if choice_filter is None:
+        choice_filter = ""
+    if file_extension is None:
+        file_extension = ""
+    try:
+        is_search = bool(
+            SEARCH_APPEARANCE_REGEX.search(
+                question[constants.CONTROL][constants.APPEARANCE]
+            )
+        )
+    except (KeyError, TypeError):
+        is_search = False
+
+    # External selects from a "search" appearance alone don't work in Enketo. In Collect
+    # they must have the "item" elements in the body, rather than in an "itemset".
+    if not is_search:
+        question[constants.ITEMSET] = list_name
+
+    if choice_filter:
+        # External selects e.g. type = "select_one_external city".
+        if question[constants.TYPE] == constants.SELECT_ONE_EXTERNAL:
+            question["query"] = list_name
+        elif choices.get(list_name):
+            # Reference to list name for data dictionary tools (ilri/odktools).
+            question["list_name"] = list_name
+            # Copy choices for data export tools (onaio/onadata).
+            # TODO: could onadata use the list_name to look up the list for
+            #  export, instead of pyxform internally duplicating choices data?
+            question[constants.CHOICES] = choices[list_name]
+    elif not (
+        # Select with randomized choices.
+        (
+            constants.RANDOMIZE in question[constants.PARAMETERS]
+            and question[constants.PARAMETERS][constants.RANDOMIZE] == "true"
+        )
+        # Select from file e.g. type = "select_one_from_file cities.xml".
+        or file_extension in EXTERNAL_INSTANCE_EXTENSIONS
+        # Select from previous answers e.g. type = "select_one ${q1}".
+        or bool(PYXFORM_REFERENCE_REGEX.search(list_name))
+    ):
+        question["list_name"] = list_name
+        question[constants.CHOICES] = choices[list_name]
+
+
 def workbook_to_json(
     workbook_dict,
-    form_name=None,
-    fallback_form_name=None,
-    default_language=constants.DEFAULT_LANGUAGE_VALUE,
-    warnings=None,
-) -> "Dict[str, Any]":
+    form_name: Optional[str] = None,
+    fallback_form_name: Optional[str] = None,
+    default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
+    warnings: Optional[List[str]] = None,
+) -> Dict[str, Any]:
     """
     workbook_dict -- nested dictionaries representing a spreadsheet.
                     should be similar to those returned by xls_to_dict
@@ -1024,16 +1086,19 @@ def workbook_to_json(
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
                 select_type = aliases.select[parse_dict["select_command"]]
-                if select_type == "select one external" and "choice_filter" not in row:
+                if (
+                    select_type == constants.SELECT_ONE_EXTERNAL
+                    and constants.CHOICE_FILTER not in row
+                ):
                     warnings.append(
                         ROW_FORMAT_STRING % row_number
                         + " select one external is only meant for"
                         " filtered selects."
                     )
                 list_name = parse_dict["list_name"]
-                list_file_name, file_extension = os.path.splitext(list_name)
+                file_extension = os.path.splitext(list_name)[1]
                 if (
-                    select_type == "select one external"
+                    select_type == constants.SELECT_ONE_EXTERNAL
                     and list_name not in external_choices
                 ):
                     if not external_choices:
@@ -1054,9 +1119,9 @@ def workbook_to_json(
                     )
                 if (
                     list_name not in choices
-                    and select_type != "select one external"
+                    and select_type != constants.SELECT_ONE_EXTERNAL
                     and file_extension not in EXTERNAL_INSTANCE_EXTENSIONS
-                    and not re.match(r"\$\{(.*?)\}", list_name)
+                    and not PYXFORM_REFERENCE_REGEX.search(list_name)
                 ):
                     if not choices:
                         k = constants.CHOICES
@@ -1093,7 +1158,13 @@ def workbook_to_json(
 
                 specify_other_question = None
                 if parse_dict.get("specify_other") is not None:
-                    select_type += " or specify other"
+                    select_type += constants.SELECT_OR_OTHER_SUFFIX
+                    if row.get(constants.CHOICE_FILTER):
+                        msg = (
+                            ROW_FORMAT_STRING % row_number
+                            + " Choice filter not supported with or_other."
+                        )
+                        raise PyXFormError(msg)
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
@@ -1146,29 +1217,25 @@ def workbook_to_json(
                         row_number=row_number,
                     )
 
-                new_json_dict["parameters"] = parameters
+                new_json_dict[constants.PARAMETERS] = parameters
 
-                if row.get("choice_filter"):
-                    if select_type == "select one external":
-                        new_json_dict["query"] = list_name
-                    else:
-                        new_json_dict["itemset"] = list_name
-                        json_dict["choices"] = choices
-                        if choices.get(list_name):
-                            new_json_dict["list_name"] = list_name
-                            new_json_dict[constants.CHOICES] = choices[list_name]
-                elif (
-                    "randomize" in parameters.keys() and parameters["randomize"] == "true"
+                add_choices_info_to_question(
+                    question=new_json_dict,
+                    list_name=list_name,
+                    choices=choices,
+                    choice_filter=row.get(constants.CHOICE_FILTER),
+                    file_extension=file_extension,
+                )
+                # Add the choice to the survey choices if it's being used in an itemset.
+                if (
+                    constants.ITEMSET in new_json_dict
+                    and new_json_dict[constants.ITEMSET] == list_name
+                    and list_name in choices
                 ):
-                    new_json_dict["itemset"] = list_name
-                    json_dict["choices"] = choices
-                elif file_extension in EXTERNAL_INSTANCE_EXTENSIONS or re.match(
-                    r"\$\{(.*?)\}", list_name
-                ):
-                    new_json_dict["itemset"] = list_name
-                else:
-                    new_json_dict["list_name"] = list_name
-                    new_json_dict[constants.CHOICES] = choices[list_name]
+                    # Initialise choices output if none added already.
+                    if constants.CHOICES not in json_dict:
+                        json_dict[constants.CHOICES] = {}
+                    json_dict[constants.CHOICES][list_name] = choices[list_name]
 
                 # Code to deal with table_list appearance flags
                 # (for groups of selects)
@@ -1176,15 +1243,20 @@ def workbook_to_json(
                     # Then this row is the first select in a table list
                     if not isinstance(table_list, str):
                         table_list = list_name
+                        if row.get(constants.CHOICE_FILTER, None) is not None:
+                            msg = (
+                                ROW_FORMAT_STRING % row_number
+                                + " Choice filter not supported for table-list appearance."
+                            )
+                            raise PyXFormError(msg)
                         table_list_header = {
                             constants.TYPE: select_type,
                             constants.NAME: "reserved_name_for_field_list_labels_"
                             + str(row_number),
                             # Adding row number for uniqueness # noqa
-                            constants.CONTROL: {"appearance": "label"},
+                            constants.CONTROL: {constants.APPEARANCE: "label"},
                             constants.CHOICES: choices[list_name],
-                            # Do we care about filtered selects in table lists?
-                            # 'itemset' : list_name,
+                            constants.ITEMSET: list_name,
                         }
                         parent_children_array.append(table_list_header)
 
@@ -1196,8 +1268,11 @@ def workbook_to_json(
                         )
                         raise PyXFormError(error_message)
 
-                    control = new_json_dict["control"] = new_json_dict.get("control", {})
-                    control["appearance"] = "list-nolabel"
+                    if constants.CONTROL not in new_json_dict:
+                        new_json_dict[constants.CONTROL] = {}
+                    new_json_dict[constants.CONTROL][
+                        constants.APPEARANCE
+                    ] = constants.LIST_NOLABEL
                 parent_children_array.append(new_json_dict)
                 if specify_other_question:
                     parent_children_array.append(specify_other_question)
@@ -1431,12 +1506,12 @@ def get_filename(path):
 
 
 def parse_file_to_json(
-    path,
-    default_name="data",
-    default_language=constants.DEFAULT_LANGUAGE_VALUE,
-    warnings=None,
-    file_object=None,
-):
+    path: str,
+    default_name: str = "data",
+    default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
+    warnings: Optional[List[str]] = None,
+    file_object: Optional[IO] = None,
+) -> Dict[str, Any]:
     """
     A wrapper for workbook_to_json
     """
@@ -1445,7 +1520,11 @@ def parse_file_to_json(
     workbook_dict = parse_file_to_workbook_dict(path, file_object)
     fallback_form_name = str(get_filename(path))
     return workbook_to_json(
-        workbook_dict, default_name, fallback_form_name, default_language, warnings
+        workbook_dict=workbook_dict,
+        form_name=default_name,
+        fallback_form_name=fallback_form_name,
+        default_language=default_language,
+        warnings=warnings,
     )
 
 

@@ -10,14 +10,15 @@ import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
 from functools import lru_cache
+from typing import Iterator, List, Optional
 
-from pyxform import constants
+from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
 from pyxform.instance_info import InstanceInfo
-from pyxform.question import Question
+from pyxform.question import Option, Question
 from pyxform.section import Section
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import (
@@ -25,6 +26,7 @@ from pyxform.utils import (
     LAST_SAVED_INSTANCE_NAME,
     LAST_SAVED_REGEX,
     NSMAP,
+    DetachableElement,
     PatchedText,
     get_languages_with_bad_tags,
     has_dynamic_label,
@@ -238,7 +240,7 @@ class Survey(Section):
         self._setup_xpath_dictionary()
 
         for triggering_reference in self.setvalues_by_triggering_ref.keys():
-            if not (re.match(BRACKETED_TAG_REGEX, triggering_reference)):
+            if not (re.search(BRACKETED_TAG_REGEX, triggering_reference)):
                 raise PyXFormError(
                     "Only references to other fields are allowed in the 'trigger' column."
                 )
@@ -262,7 +264,7 @@ class Survey(Section):
         return self.setvalues_by_triggering_ref.get("${%s}" % question_name)
 
     @staticmethod
-    def _generate_static_instances(list_name, choice_list):
+    def _generate_static_instances(list_name, choice_list) -> InstanceInfo:
         """
         Generates <instance> elements for static data
         (e.g. choices for select type questions)
@@ -275,16 +277,12 @@ class Survey(Section):
         instance_element_list = []
         multi_language = isinstance(choice_list[0].get("label"), dict)
         has_media = bool(choice_list[0].get("media"))
+        has_dyn_label = has_dynamic_label(choice_list, multi_language)
 
         for idx, choice in enumerate(choice_list):
             choice_element_list = []
-            # Add a unique id to the choice element in case there is itext
-            # it references
-            if (
-                multi_language
-                or has_media
-                or has_dynamic_label(choice_list, multi_language)
-            ):
+            # Add a unique id to the choice element in case there are itext references
+            if multi_language or has_media or has_dyn_label:
                 itext_id = "-".join([list_name, str(idx)])
                 choice_element_list.append(node("itextId", itext_id))
 
@@ -311,7 +309,7 @@ class Survey(Section):
         )
 
     @staticmethod
-    def _generate_external_instances(element):
+    def _generate_external_instances(element) -> Optional[InstanceInfo]:
         if isinstance(element, ExternalInstance):
             name = element["name"]
             extension = element["type"].split("-")[0]
@@ -330,7 +328,7 @@ class Survey(Section):
         return None
 
     @staticmethod
-    def _validate_external_instances(instances):
+    def _validate_external_instances(instances) -> None:
         """
         Must have unique names.
 
@@ -359,7 +357,7 @@ class Survey(Section):
             raise ValidationError("\n".join(errors))
 
     @staticmethod
-    def _generate_pulldata_instances(element):
+    def _generate_pulldata_instances(element) -> Optional[List[InstanceInfo]]:
         def get_pulldata_functions(element):
             """
             Returns a list of different pulldata(... function strings if
@@ -409,7 +407,7 @@ class Survey(Section):
         return None
 
     @staticmethod
-    def _generate_from_file_instances(element):
+    def _generate_from_file_instances(element) -> Optional[InstanceInfo]:
         itemset = element.get("itemset")
         file_id, ext = os.path.splitext(itemset)
         if itemset and ext in EXTERNAL_INSTANCE_EXTENSIONS:
@@ -429,9 +427,11 @@ class Survey(Section):
 
         return None
 
-    # True if a last-saved instance should be generated, false otherwise
     @staticmethod
-    def _generate_last_saved_instance(element):
+    def _generate_last_saved_instance(element) -> bool:
+        """
+        True if a last-saved instance should be generated, false otherwise.
+        """
         for expression_type in constants.EXTERNAL_INSTANCES:
             last_saved_expression = re.search(
                 LAST_SAVED_REGEX, str(element["bind"].get(expression_type))
@@ -439,12 +439,13 @@ class Survey(Section):
             if last_saved_expression:
                 return True
 
-        return re.search(LAST_SAVED_REGEX, str(element["choice_filter"])) or re.search(
-            LAST_SAVED_REGEX, str(element["default"])
+        return bool(
+            re.search(LAST_SAVED_REGEX, str(element["choice_filter"]))
+            or re.search(LAST_SAVED_REGEX, str(element["default"]))
         )
 
     @staticmethod
-    def _get_last_saved_instance():
+    def _get_last_saved_instance() -> InstanceInfo:
         name = "__last-saved"  # double underscore used to minimize risk of name conflicts
         uri = "jr://instance/last-saved"
 
@@ -456,7 +457,7 @@ class Survey(Section):
             instance=node("instance", id=name, src=uri),
         )
 
-    def _generate_instances(self):
+    def _generate_instances(self) -> Iterator[DetachableElement]:
         """
         Get instances from all the different ways that they may be generated.
 
@@ -642,12 +643,12 @@ class Survey(Section):
                         )
 
         self._translations = defaultdict(dict)  # pylint: disable=W0201
+        select_types = set(aliases.select.keys())
         for element in self.iter_descendants():
-            # Skip creation of translations for choices in filtered selects
-            # The creation of these translations is done futher below in this
-            # function
+            # Skip creation of translations for choices in selects. The creation of these
+            # translations is done futher below in this function.
             parent = element.get("parent")
-            if parent and not parent.get("choice_filter"):
+            if parent is not None and parent[constants.TYPE] not in select_types:
                 for d in element.get_translations(self.default_language):
                     translation_path = d["path"]
                     form = "long"
@@ -669,7 +670,7 @@ class Survey(Section):
                         }
                     )
 
-        # This code sets up translations for choices in filtered selects.
+        # This code sets up translations for choices in selects.
         for list_name, choice_list in self.choices.items():
             multi_language = isinstance(choice_list[0].get("label"), dict)
             has_media = bool(choice_list[0].get("media"))
@@ -679,7 +680,7 @@ class Survey(Section):
                 and not has_dynamic_label(choice_list, multi_language)
             ):
                 continue
-            for idx, choice in zip(range(len(choice_list)), choice_list):
+            for idx, choice in enumerate(choice_list):
                 for name, choice_value in choice.items():
                     itext_id = "-".join([list_name, str(idx)])
                     if isinstance(choice_value, dict):
@@ -767,14 +768,13 @@ class Survey(Section):
             self._translations = defaultdict(dict)  # pylint: disable=W0201
 
         for survey_element in self.iter_descendants():
-            # Skip set up of media for choices in filtered selects.
-            # Translations for the media content should have been set up
-            # in _setup_translations
-            parent = survey_element.get("parent")
-            if parent and not parent.get("choice_filter"):
-                translation_key = survey_element.get_xpath() + ":label"
+            # Skip set up of media for choices in selects. Translations for their media
+            # content should have been set up in _setup_translations, with one copy of
+            # each choice translation per language (after _add_empty_translations).
+            if not isinstance(survey_element, Option):
                 media_dict = survey_element.get("media")
-                if isinstance(media_dict, dict):
+                if isinstance(media_dict, dict) and 0 < len(media_dict):
+                    translation_key = survey_element.get_xpath() + ":label"
                     _set_up_media_translations(media_dict, translation_key)
 
     def itext(self):
@@ -978,7 +978,7 @@ class Survey(Section):
 
                     indexed_repeat_name_index = None
                     indexed_repeat_args = (
-                        function_args_regex.match(indexed_repeat.group())
+                        function_args_regex.search(indexed_repeat.group())
                         .group(1)
                         .split(",")
                     )

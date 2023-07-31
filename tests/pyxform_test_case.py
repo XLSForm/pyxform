@@ -125,13 +125,12 @@ class PyxformMarkdown:
         include in test cases, so this will pull a default value
         from the stack trace.
         """
-        test_name_root = "pyxform"
         if "name" not in kwargs.keys():
-            kwargs["name"] = test_name_root + "_autotestname"
+            kwargs["name"] = "test_name"
         if "title" not in kwargs.keys():
-            kwargs["title"] = test_name_root + "_autotesttitle"
+            kwargs["title"] = "test_title"
         if "id_string" not in kwargs.keys():
-            kwargs["id_string"] = test_name_root + "_autotest_id_string"
+            kwargs["id_string"] = "test_id"
 
         return kwargs
 
@@ -301,7 +300,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                         nsmap_subs=final_nsmap_subs,
                         content_str=cstr,
                     )
-                    for i in expected:
+                    for idx, i in enumerate(expected, start=1):
                         if verb == "contains":
                             self.assertContains(cstr, i, msg_prefix=keyword)
                         elif verb == "excludes":
@@ -312,6 +311,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                                 content=content,
                                 xpath=i[0],
                                 expected=i[1],
+                                case_num=idx,
                             )
                         elif verb == "xpath_count":
                             self.assert_xpath_count(
@@ -319,6 +319,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                                 content=content,
                                 xpath=i[0],
                                 expected=i[1],
+                                case_num=idx,
                             )
                         elif verb == "xpath_match":
                             self.assert_xpath_count(
@@ -326,6 +327,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                                 content=content,
                                 xpath=i,
                                 expected=1,
+                                case_num=idx,
                             )
 
                 return verb_str, check_content
@@ -443,6 +445,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         content: "_Element",
         xpath: str,
         expected: "Set[str]",
+        case_num: int,
     ) -> None:
         """
         Process an assertion for xml__xpath_exact.
@@ -455,6 +458,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         :param content: XML to be examined.
         :param xpath: XPath to execute.
         :param expected: Expected XPath matches, as XML fragments.
+        :param case_num: The list position of the test case in the input.
         """
         if not (isinstance(xpath, str) and isinstance(expected, set)):
             msg = "Each xpath_exact requires: tuple(xpath: str, expected: Set[str])."
@@ -465,7 +469,11 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             xpath=xpath,
             for_exact=True,
         )
-        self.assertSetEqual(set(expected), observed, matcher_context.content_str)
+        msg = (
+            f"XPath found no matches (test case {case_num}):\n{xpath}"
+            f"\n\nXForm content:\n{matcher_context.content_str}"
+        )
+        self.assertSetEqual(set(expected), observed, msg=msg)
 
     def assert_xpath_count(
         self,
@@ -473,6 +481,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         content: "_Element",
         xpath: str,
         expected: int,
+        case_num: int,
     ):
         """
         Process an assertion for xml__xpath_count.
@@ -481,6 +490,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         :param content: XML to be examined.
         :param xpath: XPath to execute.
         :param expected: Expected count of XPath matches.
+        :param case_num: The list position of the test case in the input.
         """
         if not (isinstance(xpath, str) and isinstance(expected, int)):
             msg = "Each xpath_count requires: tuple(xpath: str, count: int)"
@@ -490,7 +500,10 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             content=content,
             xpath=xpath,
         )
-        msg = f"XPath found no matches:\n{xpath}\n\nXForm content:\n{matcher_context.content_str}"
+        msg = (
+            f"XPath found no matches (test case {case_num}):\n{xpath}"
+            f"\n\nXForm content:\n{matcher_context.content_str}"
+        )
         self.assertEqual(expected, len(observed), msg=msg)
 
 

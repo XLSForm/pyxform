@@ -40,7 +40,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
     )
     # s1c2: mix of namespaces
     s1c2 = CaseData(
-        xpath=".//h:body/x:input[@ref='/pyxform_autotestname/Part_ID']/x:label",
+        xpath=".//h:body/x:input[@ref='/test_name/Part_ID']/x:label",
         exact={"<label>Participant ID</label>"},
         count=1,
     )
@@ -50,10 +50,10 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         exact={
             (
                 """<h:body>\n"""
-                """    <input ref="/pyxform_autotestname/Part_ID">\n"""
+                """    <input ref="/test_name/Part_ID">\n"""
                 """      <label>Participant ID</label>\n"""
                 """    </input>\n"""
-                """    <input ref="/pyxform_autotestname/Initial">\n"""
+                """    <input ref="/test_name/Initial">\n"""
                 """      <label>Initials</label>\n"""
                 """    </input>\n"""
                 """  </h:body>"""
@@ -66,7 +66,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         xpath=".//x:bind[@type='string' and @jr:preload='uid']",
         exact={
             (
-                """<bind nodeset="/pyxform_autotestname/meta/instanceID" """
+                """<bind nodeset="/test_name/meta/instanceID" """
                 """readonly="true()" type="string" jr:preload="uid"/>"""
             )
         },
@@ -75,7 +75,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
     # s1c5: namespaced attribute selector.
     s1c5 = CaseData(
         xpath=".//x:bind[@type='string' and @jr:preload='uid']/@nodeset",
-        exact={"/pyxform_autotestname/meta/instanceID"},
+        exact={"/test_name/meta/instanceID"},
         count=1,
     )
     # Convenience combinations of the above data for Suite 1 tests.
@@ -90,15 +90,15 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         xpath=".//x:bind",
         exact={
             (
-                """<bind nodeset="/pyxform_autotestname/Part_ID" """
+                """<bind nodeset="/test_name/Part_ID" """
                 """required="pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.)" """
                 """type="string"/>"""
             ),
             (
-                """<bind nodeset="/pyxform_autotestname/meta/instanceID" """
+                """<bind nodeset="/test_name/meta/instanceID" """
                 """readonly="true()" type="string" jr:preload="uid"/>"""
             ),
-            ("""<bind nodeset="/pyxform_autotestname/Initial" type="string"/>"""),
+            ("""<bind nodeset="/test_name/Initial" type="string"/>"""),
         },
         count=3,
     )
@@ -108,13 +108,13 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         exact={
             (
                 """<instance>\n"""
-                """        <pyxform_autotestname id="pyxform_autotest_id_string">\n"""
+                """        <test_name id="test_id">\n"""
                 """          <Part_ID/>\n"""
                 """          <Initial/>\n"""
                 """          <meta>\n"""
                 """            <instanceID/>\n"""
                 """          </meta>\n"""
-                """        </pyxform_autotestname>\n"""
+                """        </test_name>\n"""
                 """      </instance>"""
             ),
             ("""<instance id="ID" src="jr://file-csv/ID.csv"/>"""),

@@ -16,29 +16,33 @@
       <instance id="colors">
         <root>
           <item>
-            <pastel>no</pastel>
-            <name>red</name>
             <label>red</label>
+            <name>red</name>
+            <pastel>no</pastel>
           </item>
           <item>
-            <pastel>no</pastel>
-            <name>green</name>
             <label>green</label>
-          </item>
-          <item>
+            <name>green</name>
             <pastel>no</pastel>
-            <name>blue</name>
+          </item>
+          <item>
             <label>blue</label>
+            <name>blue</name>
+            <pastel>no</pastel>
           </item>
           <item>
-            <pastel>yes</pastel>
-            <name>mauve</name>
             <label>mauve</label>
+            <name>mauve</name>
+            <pastel>yes</pastel>
           </item>
           <item>
-            <pastel>yes</pastel>
-            <name>apricot</name>
             <label>apricot</label>
+            <name>apricot</name>
+            <pastel>yes</pastel>
+          </item>
+          <item>
+            <label>Other</label>
+            <name>other</name>
           </item>
         </root>
       </instance>
@@ -51,30 +55,10 @@
   <h:body>
     <select1 ref="/or_other/fav_color">
       <label>What is your favorite color?</label>
-      <item>
-        <label>red</label>
-        <value>red</value>
-      </item>
-      <item>
-        <label>green</label>
-        <value>green</value>
-      </item>
-      <item>
-        <label>blue</label>
-        <value>blue</value>
-      </item>
-      <item>
-        <label>mauve</label>
-        <value>mauve</value>
-      </item>
-      <item>
-        <label>apricot</label>
-        <value>apricot</value>
-      </item>
-      <item>
-        <label>Other</label>
-        <value>other</value>
-      </item>
+      <itemset nodeset="instance('colors')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
     </select1>
     <input ref="/or_other/fav_color_other">
       <label>Specify other.</label>

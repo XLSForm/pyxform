@@ -8,9 +8,12 @@ import json
 import logging
 import re
 import xml.etree.ElementTree as ETree
+from collections import Mapping
 from operator import itemgetter
+from typing import Any, Dict, List
 
 from pyxform import builder
+from pyxform.errors import PyXFormError
 from pyxform.utils import NSMAP
 
 logger = logging.getLogger(__name__)
@@ -223,6 +226,12 @@ class XFormToDictBuilder:
         self.bindings = copy.deepcopy(self.model["bind"])
         self._bind_list = copy.deepcopy(self.model["bind"])
         self.title = doc_as_dict["html"]["head"]["title"]
+        secondary = []
+        if isinstance(self.model["instance"], list):
+            secondary = self.model["instance"][1:]
+        self.secondary_instances = secondary
+        self.translations = self._get_translations()
+        self.choices = self._get_choices()
         self.new_doc = {
             "type": "survey",
             "title": self.title,
@@ -230,15 +239,13 @@ class XFormToDictBuilder:
             "id_string": self.title,
             "sms_keyword": self.title,
             "default_language": "default",
+            "choices": self.choices,
         }
         self._set_submission_info()
         self._set_survey_name()
         self.children = []
         self.ordered_binding_refs = []
         self._set_binding_order()
-
-        # set self.translations
-        self._set_translations()
 
         for key, obj in iter(self.body.items()):
             if isinstance(obj, dict):
@@ -256,10 +263,16 @@ class XFormToDictBuilder:
             self.ordered_binding_refs.append(bind["nodeset"])
 
     def _set_survey_name(self):
-        obj = self.bindings[0]
-        name = obj["nodeset"].split("/")[1]
+        name = self.bindings[0]["nodeset"].split("/")[1]
         self.new_doc["name"] = name
-        self.new_doc["id_string"] = self.model["instance"][name]["id"]
+        instances = self.model["instance"]
+        if isinstance(instances, Mapping):
+            id_string = instances[name]["id"]
+        elif isinstance(instances, list):
+            id_string = instances[0][name]["id"]
+        else:
+            raise PyXFormError(f"Unexpected type for model instances: {type(instances)}")
+        self.new_doc["id_string"] = id_string
 
     def _set_submission_info(self):
         if "submission" in self.model:
@@ -451,6 +464,19 @@ class XFormToDictBuilder:
             del question["hint"]
         if "type" not in question and type:
             question["type"] = question_type
+        if "itemset" in obj:
+            # Secondary instances
+            nodeset = obj["itemset"]["nodeset"]
+            choices_name = re.findall(r"^instance\('(.*?)'\)", nodeset)[0]
+            question["itemset"] = choices_name
+            question["list_name"] = choices_name
+            question["choices"] = self.choices[choices_name]
+            # Choice filters - attempt parsing XPath like "/node/name[./something =cf]"
+            filter_ref = re.findall(rf"\[ /{self.new_doc['name']}/(.*?) ", nodeset)
+            filter_exp = re.findall(rf"{filter_ref} (.*?)]$", nodeset)
+            if 1 == len(filter_ref) and 1 == len(filter_exp):
+                question["choice_filter"] = f"${{{filter_ref[0]}}}{filter_exp[0]}"
+                question["query"] = choices_name
         return question
 
     def _get_children_questions(self, obj):
@@ -525,16 +551,16 @@ class XFormToDictBuilder:
             return self.QUESTION_TYPES[type]
         return type
 
-    def _set_translations(self):
+    def _get_translations(self) -> List[Dict]:
         if "itext" not in self.model:
-            self.translations = []
-            return
+            return []
         assert "translation" in self.model["itext"]
-        self.translations = self.model["itext"]["translation"]
-        if isinstance(self.translations, dict):
-            self.translations = [self.translations]
-        assert "text" in self.translations[0]
-        assert "lang" in self.translations[0]
+        translations = self.model["itext"]["translation"]
+        if isinstance(translations, dict):
+            translations = [translations]
+        assert "text" in translations[0]
+        assert "lang" in translations[0]
+        return translations
 
     def _get_label(self, label_obj, key="label"):
         if isinstance(label_obj, dict):
@@ -609,7 +635,7 @@ class XFormToDictBuilder:
 
                     label[lang] = text
                     break
-        if key == "media" and label.keys() == ["default"]:
+        if key == "media" and list(label.keys()) == ["default"]:
             label = label["default"]
         return key, label
 
@@ -623,6 +649,24 @@ class XFormToDictBuilder:
                 ref = constraint_msg.replace("jr:itext('", "").replace("')", "")
                 k, constraint_msg = self._get_text_from_translation(ref)
         return constraint_msg
+
+    def _get_choices(self) -> Dict[str, Any]:
+        """
+        Get all form choices, using the model/instance and model/itext.
+        """
+        choices = {}
+        for instance in self.secondary_instances:
+            items = []
+            for choice in instance["root"]["item"]:
+                item = copy.deepcopy(choice)
+                if "itextId" in choice:
+                    key, label = self._get_text_from_translation(
+                        ref=item.pop("itextId"), key="label"
+                    )
+                    item[key] = label
+                items.append(item)
+            choices[instance["id"]] = items
+        return choices
 
     def _get_name_from_ref(self, ref):
         """given /xlsform_spec_test/launch,

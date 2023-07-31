@@ -3,7 +3,6 @@
 XForm Survey element classes for different question types.
 """
 import os.path
-import re
 
 from pyxform.constants import (
     EXTERNAL_CHOICES_ITEMSET_REF_LABEL,
@@ -15,7 +14,12 @@ from pyxform.constants import (
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import default_is_dynamic, has_dynamic_label, node
+from pyxform.utils import (
+    PYXFORM_REFERENCE_REGEX,
+    default_is_dynamic,
+    has_dynamic_label,
+    node,
+)
 
 
 class Question(SurveyElement):
@@ -155,6 +159,9 @@ class Option(SurveyElement):
     def validate(self):
         pass
 
+    def xml_control(self):
+        raise NotImplementedError()
+
 
 class MultipleChoiceQuestion(Question):
     def __init__(self, **kwargs):
@@ -222,7 +229,9 @@ class MultipleChoiceQuestion(Question):
 
             has_media = False
             has_dyn_label = False
-            is_previous_question = bool(re.match(r"^\${.*}$", self.get("itemset")))
+            is_previous_question = bool(
+                PYXFORM_REFERENCE_REGEX.search(self.get("itemset"))
+            )
 
             if choices.get(itemset):
                 has_media = bool(choices[itemset][0].get("media"))
@@ -325,6 +334,9 @@ class Tag(SurveyElement):
 
     def validate(self):
         pass
+
+    def xml_control(self):
+        raise NotImplementedError()
 
 
 class OsmUploadQuestion(UploadQuestion):

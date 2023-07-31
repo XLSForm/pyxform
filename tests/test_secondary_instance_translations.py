@@ -3,6 +3,8 @@
 Testing inlining translation when no translation is specified.
 """
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 class TestSecondaryInstanceTest(PyxformTestCase):
@@ -81,7 +83,7 @@ class TestSecondaryInstanceTest(PyxformTestCase):
         """
         Selects with media and choice filter should generate itext fields for the media.
         """
-        xform_md = """
+        md = """
         | survey |                    |                 |                                 |                           |
         |        | type               | name            | label                           | choice_filter             |
         |        | select_one consent | consent         | Would you like to participate ? |                           |
@@ -94,22 +96,27 @@ class TestSecondaryInstanceTest(PyxformTestCase):
         |         | consent   | n    | No    |              |
         """
         self.assertPyxformXform(
-            name="data",
-            id_string="some-id",
-            md=xform_md,
-            errored=False,
-            model__contains=[
-                '<text id="mood-0">',
-                '<text id="mood-1">',
-                "<itextId>mood-0</itextId>",
-                "<itextId>mood-1</itextId>",
+            md=md,
+            xml__xpath_match=[
+                # Consent
+                xpq.body_select1_itemset("consent"),
+                xpc.model_instance_choices_label("consent", (("y", "Yes"), ("n", "No"))),
+                xpc.model_itext_no_text_by_id("default", "/test_name/consent/y:label"),
+                xpc.model_itext_no_text_by_id("default", "/test_name/consent/n:label"),
+                # Mood
+                xpq.body_select1_itemset("enumerator_mood"),
+                xpc.model_instance_choices_itext("mood", ("h", "s")),
+                xpc.model_itext_no_text_by_id("default", "/test_name/mood/h:label"),
+                xpc.model_itext_no_text_by_id("default", "/test_name/mood/s:label"),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "default", "mood", ("Happy", "Sad")
+                ),
+                xpc.model_itext_choice_media_by_pos(
+                    "default",
+                    "mood",
+                    ((("image", "happy.jpg"),), (("image", "sad.jpg"),)),
+                ),
             ],
-            model__excludes=[
-                '<text id="/data/enumerator_mood/h:label">',
-                '<text id="/data/enumerator_mood/s:label">',
-            ],
-            xml__contains=['<label ref="jr:itext(itextId)"/>'],
-            xml__excludes=['<label ref="label"/>', "<label>Happy</label>"],
         )
 
     def test_select_with_choice_filter_and_translations_generates_single_translation(
@@ -239,7 +246,7 @@ class TestSecondaryInstanceTest(PyxformTestCase):
         """
         A select without a choice filter and no translations in which the first option label is dynamic should not use itext.
         """
-        xform_md = """
+        md = """
             | survey |                    |      |            |
             |        | type               | name | label      |
             |        | text               | txt  | Text       |
@@ -249,7 +256,18 @@ class TestSecondaryInstanceTest(PyxformTestCase):
             |         | choices   | one  | One - ${txt} |
             """
         self.assertPyxformXform(
-            name="data",
-            md=xform_md,
-            xml__contains=['<label> One - <output value=" /data/txt "/> </label>'],
+            md=md,
+            xml__xpath_match=[
+                xpq.body_select1_itemset("one"),
+                xpc.model_instance_choices_itext("choices", ("one",)),
+                # Output for dynamic label is mixed content so needs this unusual XPath.
+                """
+                /h:html/h:head/x:model/x:itext/x:translation[@lang='default']
+                  /x:text[@id='choices-0']
+                  /x:value[not(@form)
+                    and node()[position() = 1] = ' One - '
+                    and node()[position() = 2] = ./x:output[@value=' /test_name/txt ']
+                  ]
+                """,
+            ],
         )

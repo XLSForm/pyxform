@@ -13,6 +13,8 @@ from pyxform.xls2xform import get_xml_path, xls2xform_convert
 from tests.pyxform_test_case import PyxformTestCase
 from tests.test_utils.md_table import md_table_to_workbook
 from tests.utils import get_temp_dir
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 @dataclass()
@@ -323,7 +325,6 @@ class TestSelectOneExternal(PyxformTestCase):
         |        | select_one_external suburb | suburb | Suburb | state=${state} and city=${city} |
         """
         self.assertPyxformXform(
-            name="test",
             md=md + self.all_choices,
             xml__xpath_match=[
                 # No external instances generated, only bindings.
@@ -331,32 +332,27 @@ class TestSelectOneExternal(PyxformTestCase):
                 /h:html/h:head/x:model[
                   not(./x:instance[@id='city'])
                   and not(./x:instance[@id='suburb'])
-                  and ./x:bind[@nodeset='/test/state' and @type='string']
-                  and ./x:bind[@nodeset='/test/city' and @type='string']
-                  and ./x:bind[@nodeset='/test/suburb' and @type='string']
+                  and ./x:bind[@nodeset='/test_name/state' and @type='string']
+                  and ./x:bind[@nodeset='/test_name/city' and @type='string']
+                  and ./x:bind[@nodeset='/test_name/suburb' and @type='string']
                 ]
                 """,
                 # select_one generates internal select.
-                """
-                /h:html/h:body/x:select1[
-                  @ref='/test/state'
-                  and ./x:item/x:value[text()='nsw']
-                  and ./x:item/x:label[text()='NSW']
-                  and ./x:item/x:value[text()='vic']
-                  and ./x:item/x:label[text()='VIC']
-                ]
-                """,
+                xpc.model_instance_choices_label(
+                    "state", (("nsw", "NSW"), ("vic", "VIC"))
+                ),
+                xpq.body_select1_itemset("state"),
                 # select_one_external generates input referencing itemsets.csv
                 """
                 /h:html/h:body[.
                   /x:input[
-                    @ref='/test/city'
-                    and @query="instance('city')/root/item[state= /test/state ]"
+                    @ref='/test_name/city'
+                    and @query="instance('city')/root/item[state= /test_name/state ]"
                     and ./x:label[text()='City']
                   ]
                   and ./x:input[
-                    @ref='/test/suburb'
-                    and @query="instance('suburb')/root/item[state= /test/state  and city= /test/city ]"
+                    @ref='/test_name/suburb'
+                    and @query="instance('suburb')/root/item[state= /test_name/state  and city= /test_name/city ]"
                     and ./x:label[text()='Suburb']
                   ]
                 ]
