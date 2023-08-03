@@ -18,6 +18,7 @@ from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
 from pyxform.instance_info import InstanceInfo
+from pyxform.parsing import instance_expression
 from pyxform.question import Option, Question
 from pyxform.section import Section
 from pyxform.survey_element import SurveyElement
@@ -1067,14 +1068,15 @@ class Survey(Section):
         # variable replacement:
         text_node = PatchedText()
         text_node.data = text
-        xml_text = text_node.toxml()
+        original_xml = text_node.toxml()
 
         # need to make sure we have reason to replace
         # since at this point < is &lt,
         # the net effect &lt gets translated again to &amp;lt;
-        if str(xml_text).find("{") != -1:
-            result = re.sub(BRACKETED_TAG_REGEX, _var_repl_output_function, str(xml_text))
-            return result, not result == xml_text
+        if "{" in original_xml:
+            pass_1 = instance_expression.replace_with_output(original_xml, context, self)
+            pass_2 = re.sub(BRACKETED_TAG_REGEX, _var_repl_output_function, pass_1)
+            return pass_2, not pass_2 == original_xml
         return text, False
 
     # pylint: disable=too-many-arguments

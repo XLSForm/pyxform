@@ -387,7 +387,8 @@ def get_expression_lexer() -> re.Scanner:  # noqa
         "WHITESPACE": r"\s+",
         "PYXFORM_REF": r"\$\{" + ncname_regex + r"(#" + ncname_regex + r")?" + r"\}",
         "FUNC_CALL": ncname_regex + r"\(",
-        "XPATH_PRED": ncname_regex + r"\[",
+        "XPATH_PRED_START": ncname_regex + r"\[",
+        "XPATH_PRED_END": r"\]",
         "URI_SCHEME": ncname_regex + r"://",
         "NAME": ncname_regex,  # Must be after rules containing ncname_regex.
         "OTHER": r".+?",  # Catch any other character so that parsing doesn't stop.
