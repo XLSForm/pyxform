@@ -1073,11 +1073,14 @@ class Survey(Section):
         # need to make sure we have reason to replace
         # since at this point < is &lt,
         # the net effect &lt gets translated again to &amp;lt;
-        if "{" in original_xml:
-            pass_1 = instance_expression.replace_with_output(original_xml, context, self)
-            pass_2 = re.sub(BRACKETED_TAG_REGEX, _var_repl_output_function, pass_1)
-            return pass_2, not pass_2 == original_xml
-        return text, False
+        xml_text = instance_expression.replace_with_output(original_xml, context, self)
+        if "{" in xml_text:
+            xml_text = re.sub(BRACKETED_TAG_REGEX, _var_repl_output_function, xml_text)
+        changed = xml_text != original_xml
+        if changed:
+            return xml_text, True
+        else:
+            return text, False
 
     # pylint: disable=too-many-arguments
     def print_xform_to_file(

@@ -104,6 +104,12 @@ class TestNotes(PyxformTestCase):
                     "instance('c2')/root/item[contains(name, instance('c1')/root/item[name =  /test_name/q1 ]/label)]/label"
                 },
             ),
+            # Instance expression with predicate not using a pyxform token.
+            Case(
+                "instance('c1')/root/item[name = 'y']/label",
+                xpq.body_input_label_output_value("note"),
+                {"instance('c1')/root/item[name = 'y']/label"},
+            ),
         ]
         wrap_scenarios = ("{}", "Text {}", "{} text", "Text {} text")
         # All cases together in one.
