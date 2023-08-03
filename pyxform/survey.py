@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
 from functools import lru_cache
-from typing import Iterator, List, Optional
+from typing import Iterator, List, Optional, Tuple
 
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
@@ -34,7 +34,16 @@ from pyxform.utils import (
 )
 from pyxform.validators import enketo_validate, odk_validate
 
+RE_BRACKET = re.compile(r"\[([^]]+)\]")
+RE_FUNCTION_ARGS = re.compile(r"\b[^()]+\((.*)\)$")
+RE_INDEXED_REPEAT = re.compile(r"indexed-repeat\([^)]+\)")
+RE_INSTANCE = re.compile(r"instance\([^)]+.+")
+RE_INSTANCE_SECONDARY_REF = re.compile(
+    r"(instance\(.*\)\/root\/item\[.*?(\$\{.*\})\]\/.*?)\s"
+)
 RE_PULLDATA = re.compile(r"(pulldata\s*\(\s*)(.*?),")
+RE_XML_OUTPUT = re.compile(r"\n.*(<output.*>)\n(\s\s)*")
+RE_XML_TEXT = re.compile(r"(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)", re.DOTALL)
 
 
 def register_nsmap():
@@ -870,10 +879,10 @@ class Survey(Section):
         # TODO: check out pyxml
         # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
         xml_with_linebreaks = self.xml().toprettyxml(indent="  ")
-        text_re = re.compile(r"(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)", re.DOTALL)
-        output_re = re.compile(r"\n.*(<output.*>)\n(\s\s)*")
-        pretty_xml = text_re.sub(lambda m: "".join(m.group(1, 2, 3)), xml_with_linebreaks)
-        inline_output = output_re.sub(r"\g<1>", pretty_xml)
+        pretty_xml = RE_XML_TEXT.sub(
+            lambda m: "".join(m.group(1, 2, 3)), xml_with_linebreaks
+        )
+        inline_output = RE_XML_OUTPUT.sub(r"\g<1>", pretty_xml)
         return '<?xml version="1.0"?>\n' + inline_output
 
     def __repr__(self):
@@ -902,19 +911,15 @@ class Survey(Section):
         name = matchobj.group(2)
         last_saved = matchobj.group(1) is not None
         is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
-        indexed_repeat_regex = re.compile(r"indexed-repeat\([^)]+\)")
-        function_args_regex = re.compile(r"\b[^()]+\((.*)\)$")
-        instance_regex = re.compile(r"instance\([^)]+.+")
-        bracket_regex = re.compile(r"\[([^]]+)\]")
 
-        def _in_secondary_instance_predicate():
+        def _in_secondary_instance_predicate() -> bool:
             """
             check if ${} expression represented by matchobj
             is in a predicate for a path expression for a secondary instance
             """
 
-            if instance_regex.search(matchobj.string) is not None:
-                bracket_regex_match_iter = bracket_regex.finditer(matchobj.string)
+            if RE_INSTANCE.search(matchobj.string) is not None:
+                bracket_regex_match_iter = RE_BRACKET.finditer(matchobj.string)
                 # Check whether current ${varname} is in the correct bracket_regex_match
                 for bracket_regex_match in bracket_regex_match_iter:
                     if (
@@ -925,10 +930,11 @@ class Survey(Section):
                 return False
             return False
 
-        def _relative_path(name):
+        def _relative_path(ref_name: str, _use_current: bool) -> Optional[str]:
             """Given name in ${name}, return relative xpath to ${name}."""
             return_path = None
-            xpath, context_xpath = self._xpath[name], context.get_xpath()
+            xpath = self._xpath[ref_name]
+            context_xpath = context.get_xpath()
             # share same root i.e repeat_a from /data/repeat_a/...
             if (
                 len(context_xpath.split("/")) > 2
@@ -940,14 +946,13 @@ class Survey(Section):
                     self, xpath, context_xpath, reference_parent
                 )
                 if steps:
-                    ref_path = ref_path if ref_path.endswith(name) else "/%s" % name
-                    prefix = " current()/" if use_current else " "
-
+                    ref_path = ref_path if ref_path.endswith(ref_name) else "/%s" % name
+                    prefix = " current()/" if _use_current else " "
                     return_path = prefix + "/".join([".."] * steps) + ref_path + " "
 
             return return_path
 
-        def _is_return_relative_path():
+        def _is_return_relative_path() -> bool:
             """Determine condition to return relative xpath of current ${name}."""
             indexed_repeat_relative_path_args_index = [0, 1, 3, 5]
             current_matchobj = matchobj
@@ -958,7 +963,7 @@ class Survey(Section):
                     return True
 
                 # It is possible to have multiple indexed-repeat in an expression
-                indexed_repeats_iter = indexed_repeat_regex.finditer(matchobj.string)
+                indexed_repeats_iter = RE_INDEXED_REPEAT.finditer(matchobj.string)
                 for indexed_repeat in indexed_repeats_iter:
 
                     # Make sure current ${name} is in the correct indexed-repeat
@@ -978,7 +983,7 @@ class Survey(Section):
 
                     indexed_repeat_name_index = None
                     indexed_repeat_args = (
-                        function_args_regex.search(indexed_repeat.group())
+                        RE_FUNCTION_ARGS.search(indexed_repeat.group())
                         .group(1)
                         .split(",")
                     )
@@ -1009,7 +1014,7 @@ class Survey(Section):
         if _is_return_relative_path():
             if not use_current:
                 use_current = _in_secondary_instance_predicate()
-            relative_path = _relative_path(name)
+            relative_path = _relative_path(ref_name=name, _use_current=use_current)
             if relative_path:
                 return relative_path
 
@@ -1037,11 +1042,19 @@ class Survey(Section):
         """
         return '<output value="' + self._var_repl_function(matchobj, context) + '" />'
 
-    def insert_output_values(self, text, context=None):
+    def insert_output_values(
+        self,
+        text: str,
+        context: Optional[SurveyElement] = None,
+    ) -> Tuple[str, bool]:
         """
         Replace all the ${variables} in text with xpaths.
         Returns that and a boolean indicating if there were any ${variables}
         present.
+
+        :param text: Input text to process.
+        :param context: The document node that the text belongs to.
+        :return: The output text, and a flag indicating whether any changes were made.
         """
 
         def _var_repl_output_function(matchobj):
