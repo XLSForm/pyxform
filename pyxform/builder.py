@@ -86,6 +86,8 @@ class SurveyElementBuilder:
 
         # dictionary of setvalue target and value tuple indexed by triggering element
         self.setvalues_by_triggering_ref = {}
+        # For tracking survey-level choices while recursing through the survey.
+        self.choices: Dict[str, Any] = {}
 
     def set_sections(self, sections):
         """
@@ -108,10 +110,14 @@ class SurveyElementBuilder:
             self._add_none_option = d["add_none_option"]
 
         if d["type"] in self.SECTION_CLASSES:
+            if d["type"] == "survey":
+                self.choices = copy.deepcopy(d.get(constants.CHOICES, {}))
+
             section = self._create_section_from_dict(d)
 
             if d["type"] == "survey":
                 section.setvalues_by_triggering_ref = self.setvalues_by_triggering_ref
+                section.choices = self.choices
 
             return section
         elif d["type"] == "loop":
@@ -254,9 +260,15 @@ class SurveyElementBuilder:
             survey_element = self.create_survey_element_from_dict(copy.deepcopy(child))
             if child["type"].endswith(" or specify other"):
                 select_question = survey_element[0]
-                itemset_choices = result["choices"][select_question["itemset"]]
-                if OR_OTHER_CHOICE not in itemset_choices:
+                itemset_choices = self.choices.get(select_question["itemset"], None)
+                if (
+                    itemset_choices is not None
+                    and isinstance(itemset_choices, list)
+                    and OR_OTHER_CHOICE not in itemset_choices
+                ):
                     itemset_choices.append(OR_OTHER_CHOICE)
+                # This is required for builder_tests.BuilderTests.test_loop to pass.
+                self._add_other_option_to_multiple_choice_question(d=child)
             if survey_element:
                 result.add_children(survey_element)
 
