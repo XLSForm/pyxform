@@ -2,19 +2,10 @@
 """
 Test validators.
 """
-import sys
 from unittest import TestCase
+from unittest.mock import patch
 
 from pyxform.validators.odk_validate import check_java_available
-
-if sys.version_info >= (3, 3):
-    from unittest.mock import patch  # pylint: disable=E0611,E0401
-else:
-    try:
-        from mock import patch
-    except ImportError:
-        raise ImportError("Pyxform test suite requires the 'mock' library.")
-
 
 mock_func = "shutil.which"
 msg = "Form validation failed because Java (8+ required) could not be found."

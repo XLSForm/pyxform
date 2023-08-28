@@ -24,9 +24,7 @@ from pyxform.entities.entities_parsing import (
 from pyxform.errors import PyXFormError
 from pyxform.utils import PYXFORM_REFERENCE_REGEX, default_is_dynamic
 from pyxform.validators.pyxform import parameters_generic, select_from_file_params
-from pyxform.validators.pyxform.missing_translations_check import (
-    missing_translations_check,
-)
+from pyxform.validators.pyxform.translations_checks import SheetTranslations
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
 from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
@@ -617,11 +615,11 @@ def workbook_to_json(
 
     # Check for missing translations. The choices sheet is checked here so that the
     # warning can be combined into one message.
-    warnings = missing_translations_check(
+    sheet_translations = SheetTranslations(
         survey_sheet=survey_sheet,
         choices_sheet=choices_sheet,
-        warnings=warnings,
     )
+    sheet_translations.missing_check(warnings=warnings)
 
     # No spell check for OSM sheet (infrequently used, many spurious matches).
     osm_sheet = dealias_and_group_headers(
@@ -1158,6 +1156,7 @@ def workbook_to_json(
 
                 specify_other_question = None
                 if parse_dict.get("specify_other") is not None:
+                    sheet_translations.or_other_seen = True
                     select_type += constants.SELECT_OR_OTHER_SUFFIX
                     if row.get(constants.CHOICE_FILTER):
                         msg = (
@@ -1416,6 +1415,8 @@ def workbook_to_json(
 
         # Put the row in the json dict as is:
         parent_children_array.append(row)
+
+    sheet_translations.or_other_check(warnings=warnings)
 
     if len(stack) != 1:
         raise PyXFormError(

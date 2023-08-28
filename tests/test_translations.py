@@ -10,7 +10,8 @@ from unittest.mock import patch
 from pyxform.constants import CHOICES
 from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
 from pyxform.constants import SURVEY
-from pyxform.validators.pyxform.missing_translations_check import (
+from pyxform.validators.pyxform.translations_checks import (
+    OR_OTHER_WARNING,
     format_missing_translations_msg,
 )
 from tests.pyxform_test_case import PyxformTestCase
@@ -409,7 +410,10 @@ class TestTranslations(PyxformTestCase):
 
             run(name=f"questions={count}, with check (seconds):")
 
-            with patch("pyxform.xls2json.missing_translations_check", return_value=[]):
+            with patch(
+                "pyxform.xls2json.SheetTranslations.missing_check",
+                return_value=[],
+            ):
                 run(name=f"questions={count}, without check (seconds):")
 
 
@@ -921,6 +925,7 @@ class TestTranslationsSurvey(PyxformTestCase):
                 # TODO: bug - missing default lang translatable/itext values.
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
+            warnings__not_contains=[OR_OTHER_WARNING],
         )
 
 
@@ -1373,6 +1378,7 @@ class TestTranslationsChoices(PyxformTestCase):
                 self.xp.language_is_not_default("french"),
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
+            warnings__not_contains=[OR_OTHER_WARNING],
         )
 
     def test_specify_other__with_translations(self):
@@ -1402,6 +1408,7 @@ class TestTranslationsChoices(PyxformTestCase):
                   x:label[text() = 'Specify other.']
                 """,
             ],
+            warnings__contains=[OR_OTHER_WARNING],
         )
 
     def test_specify_other__with_translations__with_group(self):
@@ -1434,6 +1441,7 @@ class TestTranslationsChoices(PyxformTestCase):
                   /x:label[text() = 'Specify other.']
                 """,
             ],
+            warnings__contains=[OR_OTHER_WARNING],
         )
 
     def test_specify_other__with_translations__with_repeat(self):
@@ -1467,6 +1475,7 @@ class TestTranslationsChoices(PyxformTestCase):
                   /x:label[text() = 'Specify other.']
                 """,
             ],
+            warnings__contains=[OR_OTHER_WARNING],
         )
 
     def test_specify_other__with_translations__with_nested_group(self):
@@ -1509,6 +1518,7 @@ class TestTranslationsChoices(PyxformTestCase):
                   /x:label[text() = 'Specify other.']
                 """,
             ],
+            warnings__contains=[OR_OTHER_WARNING],
         )
 
     def test_specify_other__with_translations__with_nested_repeat(self):
@@ -1554,6 +1564,7 @@ class TestTranslationsChoices(PyxformTestCase):
                   /x:label[text() = 'Specify other.']
                 """,
             ],
+            warnings__contains=[OR_OTHER_WARNING],
         )
 
     def test_specify_other__no_translations(self):
@@ -1582,6 +1593,7 @@ class TestTranslationsChoices(PyxformTestCase):
                   x:label[text() = 'Specify other.']
                 """,
             ],
+            warnings__not_contains=[OR_OTHER_WARNING],
         )
 
     def test_specify_other__choice_filter(self):
