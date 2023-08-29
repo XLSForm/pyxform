@@ -66,5 +66,12 @@ class XPathHelper:
         ]
         """
 
+    @staticmethod
+    def body_input_label_output_value(q_name: str):
+        """Body has an input (note) with output reference in the label."""
+        return fr"""
+        /h:html/h:body/x:input[@ref='/test_name/{q_name}']/x:label/x:output/@value
+        """
+
 
 xpq = XPathHelper()

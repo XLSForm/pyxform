@@ -432,7 +432,7 @@ class SurveyElement(dict):
                 result.append(self.xml_label())
             result.append(self.xml_hint())
 
-        msg = "The survey element named '%s' " "has no label or hint." % self.name
+        msg = "The survey element named '%s' has no label or hint." % self.name
         if len(result) == 0:
             raise PyXFormError(msg)
 
