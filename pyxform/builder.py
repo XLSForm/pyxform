@@ -7,7 +7,8 @@ import os
 import re
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
-from pyxform import constants, file_utils, utils
+from pyxform import constants as const
+from pyxform import file_utils, utils
 from pyxform.entities.entity_declaration import EntityDeclaration
 from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
@@ -29,8 +30,8 @@ if TYPE_CHECKING:
     from pyxform.survey_element import SurveyElement
 
 OR_OTHER_CHOICE = {
-    "name": "other",
-    "label": "Other",
+    const.NAME: "other",
+    const.LABEL: "Other",
 }
 
 
@@ -73,9 +74,9 @@ class SurveyElementBuilder:
     }
 
     SECTION_CLASSES = {
-        "group": GroupedSection,
-        "repeat": RepeatingSection,
-        "survey": Survey,
+        const.GROUP: GroupedSection,
+        const.REPEAT: RepeatingSection,
+        const.SURVEY: Survey,
     }
 
     def __init__(self, **kwargs):
@@ -86,6 +87,8 @@ class SurveyElementBuilder:
 
         # dictionary of setvalue target and value tuple indexed by triggering element
         self.setvalues_by_triggering_ref = {}
+        # For tracking survey-level choices while recursing through the survey.
+        self.choices: Dict[str, Any] = {}
 
     def set_sections(self, sections):
         """
@@ -107,17 +110,21 @@ class SurveyElementBuilder:
         if "add_none_option" in d:
             self._add_none_option = d["add_none_option"]
 
-        if d["type"] in self.SECTION_CLASSES:
+        if d[const.TYPE] in self.SECTION_CLASSES:
+            if d[const.TYPE] == const.SURVEY:
+                self.choices = copy.deepcopy(d.get(const.CHOICES, {}))
+
             section = self._create_section_from_dict(d)
 
-            if d["type"] == "survey":
+            if d[const.TYPE] == const.SURVEY:
                 section.setvalues_by_triggering_ref = self.setvalues_by_triggering_ref
+                section.choices = self.choices
 
             return section
-        elif d["type"] == "loop":
+        elif d[const.TYPE] == const.LOOP:
             return self._create_loop_from_dict(d)
-        elif d["type"] == "include":
-            section_name = d["name"]
+        elif d[const.TYPE] == "include":
+            section_name = d[const.NAME]
             if section_name not in self._sections:
                 raise PyXFormError(
                     "This section has not been included.",
@@ -127,9 +134,9 @@ class SurveyElementBuilder:
             d = self._sections[section_name]
             full_survey = self.create_survey_element_from_dict(d)
             return full_survey.children
-        elif d["type"] in ["xml-external", "csv-external"]:
+        elif d[const.TYPE] in ["xml-external", "csv-external"]:
             return ExternalInstance(**d)
-        elif d["type"] == "entity":
+        elif d[const.TYPE] == "entity":
             return EntityDeclaration(**d)
         else:
             self._save_trigger_as_setvalue_and_remove_calculate(d)
@@ -142,15 +149,17 @@ class SurveyElementBuilder:
         if "trigger" in d:
             triggering_ref = re.sub(r"\s+", "", d["trigger"])
             value = ""
-            if "bind" in d and "calculate" in d["bind"]:
-                value = d["bind"]["calculate"]
+            if const.BIND in d and "calculate" in d[const.BIND]:
+                value = d[const.BIND]["calculate"]
 
             if triggering_ref in self.setvalues_by_triggering_ref:
                 self.setvalues_by_triggering_ref[triggering_ref].append(
-                    (d["name"], value)
+                    (d[const.NAME], value)
                 )
             else:
-                self.setvalues_by_triggering_ref[triggering_ref] = [(d["name"], value)]
+                self.setvalues_by_triggering_ref[triggering_ref] = [
+                    (d[const.NAME], value)
+                ]
 
     @staticmethod
     def _create_question_from_dict(
@@ -158,18 +167,18 @@ class SurveyElementBuilder:
         question_type_dictionary: Dict[str, Any],
         add_none_option: bool = False,
     ) -> Union[Question, List[Question]]:
-        question_type_str = d["type"]
+        question_type_str = d[const.TYPE]
         d_copy = d.copy()
 
         # TODO: Keep add none option?
-        if add_none_option and question_type_str.startswith("select all that apply"):
+        if add_none_option and question_type_str.startswith(const.SELECT_ALL_THAT_APPLY):
             SurveyElementBuilder._add_none_option_to_select_all_that_apply(d_copy)
 
         # Handle or_other on select type questions
-        or_other_len = len(constants.SELECT_OR_OTHER_SUFFIX)
-        if question_type_str.endswith(constants.SELECT_OR_OTHER_SUFFIX):
+        or_other_len = len(const.SELECT_OR_OTHER_SUFFIX)
+        if question_type_str.endswith(const.SELECT_OR_OTHER_SUFFIX):
             question_type_str = question_type_str[: len(question_type_str) - or_other_len]
-            d_copy["type"] = question_type_str
+            d_copy[const.TYPE] = question_type_str
             SurveyElementBuilder._add_other_option_to_multiple_choice_question(d_copy)
             return [
                 SurveyElementBuilder._create_question_from_dict(
@@ -192,7 +201,7 @@ class SurveyElementBuilder:
     @staticmethod
     def _add_other_option_to_multiple_choice_question(d: Dict[str, Any]) -> None:
         # ideally, we'd just be pulling from children
-        choice_list = d.get("choices", d.get("children", []))
+        choice_list = d.get(const.CHOICES, d.get(const.CHILDREN, []))
         if len(choice_list) <= 0:
             raise PyXFormError("There should be choices for this question.")
         if OR_OTHER_CHOICE not in choice_list:
@@ -200,19 +209,19 @@ class SurveyElementBuilder:
 
     @staticmethod
     def _add_none_option_to_select_all_that_apply(d_copy):
-        choice_list = d_copy.get("choices", d_copy.get("children", []))
+        choice_list = d_copy.get(const.CHOICES, d_copy.get(const.CHILDREN, []))
         if len(choice_list) <= 0:
             raise PyXFormError("There should be choices for this question.")
-        none_choice = {"name": "none", "label": "None"}
+        none_choice = {const.NAME: "none", const.LABEL: "None"}
         if none_choice not in choice_list:
             choice_list.append(none_choice)
             none_constraint = "(.='none' or not(selected(., 'none')))"
-            if "bind" not in d_copy:
-                d_copy["bind"] = {}
-            if "constraint" in d_copy["bind"]:
-                d_copy["bind"]["constraint"] += " and " + none_constraint
+            if const.BIND not in d_copy:
+                d_copy[const.BIND] = {}
+            if "constraint" in d_copy[const.BIND]:
+                d_copy[const.BIND]["constraint"] += " and " + none_constraint
             else:
-                d_copy["bind"]["constraint"] = none_constraint
+                d_copy[const.BIND]["constraint"] = none_constraint
 
     @staticmethod
     def _get_question_class(question_type_str, question_type_dictionary):
@@ -222,7 +231,7 @@ class SurveyElementBuilder:
         type_dictionary -> QUESTION_CLASSES
         """
         question_type = question_type_dictionary.get(question_type_str, {})
-        control_dict = question_type.get("control", {})
+        control_dict = question_type.get(const.CONTROL, {})
         control_tag = control_dict.get("tag", "")
         if control_tag == "upload" and control_dict.get("mediatype") == "osm/*":
             control_tag = "osm"
@@ -232,19 +241,19 @@ class SurveyElementBuilder:
     @staticmethod
     def _create_specify_other_question_from_dict(d: Dict[str, Any]) -> InputQuestion:
         kwargs = {
-            "type": "text",
-            "name": "%s_other" % d["name"],
-            "label": "Specify other.",
-            "bind": {"relevant": "selected(../%s, 'other')" % d["name"]},
+            const.TYPE: "text",
+            const.NAME: "%s_other" % d[const.NAME],
+            const.LABEL: "Specify other.",
+            const.BIND: {"relevant": "selected(../%s, 'other')" % d[const.NAME]},
         }
         return InputQuestion(**kwargs)
 
     def _create_section_from_dict(self, d):
         d_copy = d.copy()
-        children = d_copy.pop("children", [])
-        section_class = self.SECTION_CLASSES[d_copy["type"]]
-        if d["type"] == "survey" and "title" not in d:
-            d_copy["title"] = d["name"]
+        children = d_copy.pop(const.CHILDREN, [])
+        section_class = self.SECTION_CLASSES[d_copy[const.TYPE]]
+        if d[const.TYPE] == const.SURVEY and const.TITLE not in d:
+            d_copy[const.TITLE] = d[const.NAME]
         result = section_class(**d_copy)
         for child in children:
             # Deep copying the child is a hacky solution to the or_other bug.
@@ -252,11 +261,17 @@ class SurveyElementBuilder:
             # And I hope it doesn't break something else.
             # I think the good solution would be to rewrite this class.
             survey_element = self.create_survey_element_from_dict(copy.deepcopy(child))
-            if child["type"].endswith(" or specify other"):
+            if child[const.TYPE].endswith(const.SELECT_OR_OTHER_SUFFIX):
                 select_question = survey_element[0]
-                itemset_choices = result["choices"][select_question["itemset"]]
-                if OR_OTHER_CHOICE not in itemset_choices:
+                itemset_choices = self.choices.get(select_question[const.ITEMSET], None)
+                if (
+                    itemset_choices is not None
+                    and isinstance(itemset_choices, list)
+                    and OR_OTHER_CHOICE not in itemset_choices
+                ):
                     itemset_choices.append(OR_OTHER_CHOICE)
+                # This is required for builder_tests.BuilderTests.test_loop to pass.
+                self._add_other_option_to_multiple_choice_question(d=child)
             if survey_element:
                 result.add_children(survey_element)
 
@@ -268,8 +283,8 @@ class SurveyElementBuilder:
         Returns a GroupedSection
         """
         d_copy = d.copy()
-        children = d_copy.pop("children", [])
-        columns = d_copy.pop("columns", [])
+        children = d_copy.pop(const.CHILDREN, [])
+        columns = d_copy.pop(const.COLUMNS, [])
         result = GroupedSection(**d_copy)
 
         # columns is a left over from when this was
@@ -277,7 +292,7 @@ class SurveyElementBuilder:
         for column_dict in columns:
             # If this is a none option for a select all that apply
             # question then we should skip adding it to the result
-            if column_dict["name"] == "none":
+            if column_dict[const.NAME] == "none":
                 continue
 
             column = GroupedSection(**column_dict)
@@ -296,17 +311,17 @@ class SurveyElementBuilder:
         # if the label in column_headers has multiple languages setup a
         # dictionary by language to do substitutions.
         info_by_lang = {}
-        if type(column_headers["label"]) == dict:
+        if type(column_headers[const.LABEL]) == dict:
             info_by_lang = dict(
                 [
                     (
                         lang,
                         {
-                            "name": column_headers["name"],
-                            "label": column_headers["label"][lang],
+                            const.NAME: column_headers[const.NAME],
+                            const.LABEL: column_headers[const.LABEL][lang],
                         },
                     )
-                    for lang in column_headers["label"].keys()
+                    for lang in column_headers[const.LABEL].keys()
                 ]
             )
 
@@ -317,7 +332,7 @@ class SurveyElementBuilder:
             elif type(result[key]) == dict:
                 result[key] = result[key].copy()
                 for key2 in result[key].keys():
-                    if type(column_headers["label"]) == dict:
+                    if type(column_headers[const.LABEL]) == dict:
                         result[key][key2] %= info_by_lang.get(key2, column_headers)
                     else:
                         result[key][key2] %= column_headers

@@ -32,6 +32,30 @@ class XPathHelper:
         """
 
     @staticmethod
+    def body_group_select1_itemset(g_name: str, q_name: str):
+        """Body has a select1 with an itemset, and no inline items."""
+        return fr"""
+        /h:html/h:body/x:group[@ref='/test_name/{g_name}']/x:select1[
+          @ref = '/test_name/{g_name}/{q_name}'
+          and ./x:itemset
+          and not(./x:item)
+        ]
+        """
+
+    @staticmethod
+    def body_repeat_select1_itemset(r_name: str, q_name: str):
+        """Body has a select1 with an itemset, and no inline items."""
+        return fr"""
+        /h:html/h:body/x:group[@ref='/test_name/{r_name}']
+          /x:repeat[@nodeset='/test_name/{r_name}']
+            /x:select1[
+              @ref = '/test_name/{r_name}/{q_name}'
+              and ./x:itemset
+              and not(./x:item)
+            ]
+        """
+
+    @staticmethod
     def body_odk_rank_itemset(q_name: str):
         """Body has a rank with an itemset, and no inline items."""
         return fr"""
