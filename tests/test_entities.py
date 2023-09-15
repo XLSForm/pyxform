@@ -6,7 +6,6 @@ class EntitiesTest(PyxformTestCase):
     def test_basic_entity_creation_building_blocks(self):
         self.assertPyxformXform(
             name="data",
-            debug=True,
             md="""
             | survey   |         |       |       |
             |          | type    | name  | label |
@@ -335,4 +334,21 @@ class EntitiesTest(PyxformTestCase):
             |          | trees       | ${size}|       |         |
             """,
             errored=False,
+        )
+
+    def test_list_name_alias_to_dataset(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |           |       |       |
+            |          | type      | name  | label |
+            |          | text      | a     | A     |
+            | entities |           |       |       |
+            |          | list_name | label |       |
+            |          | trees     | a     |       |
+            """,
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity",
+                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@dataset = "trees"]',
+            ],
         )

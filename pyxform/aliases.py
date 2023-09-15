@@ -108,6 +108,9 @@ survey_header = {
     "parameters": "parameters",
     constants.ENTITIES_SAVETO: "bind::entities:saveto",
 }
+
+entities_header = {"list_name": "dataset"}
+
 # Key is the pyxform internal name, Value is the name used in error/warning messages.
 TRANSLATABLE_SURVEY_COLUMNS = {
     constants.LABEL: constants.LABEL,

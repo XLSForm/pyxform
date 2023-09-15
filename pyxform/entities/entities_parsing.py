@@ -5,9 +5,9 @@ from pyxform.errors import PyXFormError
 from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
 
-def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
-    entities_sheet = workbook_dict.get(constants.ENTITIES, [])
-
+def get_entity_declaration(
+    entities_sheet: Dict, workbook_dict: Dict, warnings: List
+) -> Dict:
     if len(entities_sheet) == 0:
         similar = find_sheet_misspellings(
             key=constants.ENTITIES, keys=workbook_dict.keys()
