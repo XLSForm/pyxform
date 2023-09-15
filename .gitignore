@@ -15,12 +15,14 @@ tests/test_output
 build
 dist
 pyxform.egg-info
+pip-wheel-metadata
 
 # By having build ignored above, this ignores documents created by
 # sphinx. Overall, I think this is a good thing.
 
 # a virtual environment
 env
+venv
 
 # ignore pypi manifest
 MANIFEST
