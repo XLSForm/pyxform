@@ -5,9 +5,9 @@ from pyxform.errors import PyXFormError
 from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
 
-def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
-    entities_sheet = workbook_dict.get(constants.ENTITIES, [])
-
+def get_entity_declaration(
+    entities_sheet: Dict, workbook_dict: Dict, warnings: List
+) -> Dict:
     if len(entities_sheet) == 0:
         similar = find_sheet_misspellings(
             key=constants.ENTITIES, keys=workbook_dict.keys()
@@ -25,12 +25,12 @@ def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
 
     if dataset.startswith(constants.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
-            f"Invalid dataset name: '{dataset}' starts with reserved prefix {constants.ENTITIES_RESERVED_PREFIX}."
+            f"Invalid entity list name: '{dataset}' starts with reserved prefix {constants.ENTITIES_RESERVED_PREFIX}."
         )
 
     if "." in dataset:
         raise PyXFormError(
-            f"Invalid dataset name: '{dataset}'. Dataset names may not include periods."
+            f"Invalid entity list name: '{dataset}'. Names may not include periods."
         )
 
     if not is_valid_xml_tag(dataset):
@@ -38,7 +38,7 @@ def get_entity_declaration(workbook_dict: Dict, warnings: List) -> Dict:
             dataset = dataset.encode("utf-8")
 
         raise PyXFormError(
-            f"Invalid dataset name: '{dataset}'. Dataset names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
+            f"Invalid entity list name: '{dataset}'. Names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
         )
 
     if not ("label" in entity):
@@ -83,7 +83,7 @@ def validate_entity_saveto(
 
     error_start = f"{constants.ROW_FORMAT_STRING % row_number} Invalid save_to name:"
 
-    if save_to == "name" or save_to == "label":
+    if save_to.lower() == "name" or save_to.lower() == "label":
         raise PyXFormError(
             f"{error_start} the entity property name '{save_to}' is reserved."
         )

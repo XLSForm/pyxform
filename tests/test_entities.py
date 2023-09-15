@@ -6,7 +6,6 @@ class EntitiesTest(PyxformTestCase):
     def test_basic_entity_creation_building_blocks(self):
         self.assertPyxformXform(
             name="data",
-            debug=True,
             md="""
             | survey   |         |       |       |
             |          | type    | name  | label |
@@ -61,7 +60,7 @@ class EntitiesTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid dataset name: '__sweet' starts with reserved prefix __."
+                "Invalid entity list name: '__sweet' starts with reserved prefix __."
             ],
         )
 
@@ -78,7 +77,7 @@ class EntitiesTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid dataset name: '$sweet'. Dataset names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
+                "Invalid entity list name: '$sweet'. Names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
             ],
         )
 
@@ -95,7 +94,7 @@ class EntitiesTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid dataset name: 's.w.eet'. Dataset names may not include periods."
+                "Invalid entity list name: 's.w.eet'. Names may not include periods."
             ],
         )
 
@@ -233,6 +232,23 @@ class EntitiesTest(PyxformTestCase):
             ],
         )
 
+    def test_naMe_in_saveto_column__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |         |
+            |          | type    | name  | label | save_to |
+            |          | text    | a     | A     | naMe    |
+            | entities |         |       |       |         |
+            |          | dataset | label |       |         |
+            |          | trees   | a     |       |         |
+            """,
+            errored=True,
+            error__contains=[
+                "[row : 2] Invalid save_to name: the entity property name 'naMe' is reserved."
+            ],
+        )
+
     def test_label_in_saveto_column__errors(self):
         self.assertPyxformXform(
             name="data",
@@ -247,6 +263,23 @@ class EntitiesTest(PyxformTestCase):
             errored=True,
             error__contains=[
                 "[row : 2] Invalid save_to name: the entity property name 'label' is reserved."
+            ],
+        )
+
+    def test_lAbEl_in_saveto_column__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |         |
+            |          | type    | name  | label | save_to |
+            |          | text    | a     | A     | lAbEl   |
+            | entities |         |       |       |         |
+            |          | dataset | label |       |         |
+            |          | trees   | a     |       |         |
+            """,
+            errored=True,
+            error__contains=[
+                "[row : 2] Invalid save_to name: the entity property name 'lAbEl' is reserved."
             ],
         )
 
@@ -335,4 +368,21 @@ class EntitiesTest(PyxformTestCase):
             |          | trees       | ${size}|       |         |
             """,
             errored=False,
+        )
+
+    def test_list_name_alias_to_dataset(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |           |       |       |
+            |          | type      | name  | label |
+            |          | text      | a     | A     |
+            | entities |           |       |       |
+            |          | list_name | label |       |
+            |          | trees     | a     |       |
+            """,
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity",
+                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@dataset = "trees"]',
+            ],
         )
