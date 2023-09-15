@@ -83,7 +83,7 @@ def validate_entity_saveto(
 
     error_start = f"{constants.ROW_FORMAT_STRING % row_number} Invalid save_to name:"
 
-    if save_to == "name" or save_to == "label":
+    if save_to.lower() == "name" or save_to.lower() == "label":
         raise PyXFormError(
             f"{error_start} the entity property name '{save_to}' is reserved."
         )

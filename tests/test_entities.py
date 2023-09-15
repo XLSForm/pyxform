@@ -232,6 +232,23 @@ class EntitiesTest(PyxformTestCase):
             ],
         )
 
+    def test_naMe_in_saveto_column__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |         |
+            |          | type    | name  | label | save_to |
+            |          | text    | a     | A     | naMe    |
+            | entities |         |       |       |         |
+            |          | dataset | label |       |         |
+            |          | trees   | a     |       |         |
+            """,
+            errored=True,
+            error__contains=[
+                "[row : 2] Invalid save_to name: the entity property name 'naMe' is reserved."
+            ],
+        )
+
     def test_label_in_saveto_column__errors(self):
         self.assertPyxformXform(
             name="data",
@@ -246,6 +263,23 @@ class EntitiesTest(PyxformTestCase):
             errored=True,
             error__contains=[
                 "[row : 2] Invalid save_to name: the entity property name 'label' is reserved."
+            ],
+        )
+
+    def test_lAbEl_in_saveto_column__errors(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey   |         |       |       |         |
+            |          | type    | name  | label | save_to |
+            |          | text    | a     | A     | lAbEl   |
+            | entities |         |       |       |         |
+            |          | dataset | label |       |         |
+            |          | trees   | a     |       |         |
+            """,
+            errored=True,
+            error__contains=[
+                "[row : 2] Invalid save_to name: the entity property name 'lAbEl' is reserved."
             ],
         )
 
