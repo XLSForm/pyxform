@@ -60,7 +60,7 @@ class EntitiesTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid dataset name: '__sweet' starts with reserved prefix __."
+                "Invalid entity list name: '__sweet' starts with reserved prefix __."
             ],
         )
 
@@ -77,7 +77,7 @@ class EntitiesTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid dataset name: '$sweet'. Dataset names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
+                "Invalid entity list name: '$sweet'. Names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
             ],
         )
 
@@ -94,7 +94,7 @@ class EntitiesTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid dataset name: 's.w.eet'. Dataset names may not include periods."
+                "Invalid entity list name: 's.w.eet'. Names may not include periods."
             ],
         )
 
