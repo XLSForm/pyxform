@@ -1,8 +1,11 @@
-===============
-pyxform v1.12.1
-===============
+========
+pyxform
+========
 
-|python| |black|
+|pypi| |python| |black|
+
+.. |pypi| image:: https://badge.fury.io/py/pyxform.svg
+    :target: https://badge.fury.io/py/pyxform
 
 .. |python| image:: https://img.shields.io/badge/python-3.7,3.8,3.9-blue.svg
     :target: https://www.python.org/downloads
@@ -124,7 +127,7 @@ Releasing pyxform
 3. Draft a new GitHub release with the list of merged PRs. Follow the title and description pattern of the previous release.
 4. Checkout a release branch from latest upstream master.
 5. Update ``CHANGES.txt`` with the text of the draft release.
-6. Update ``README.rst``, ``setup.py``, ``pyxform/__init__.py`` with the new release version number.
+6. Update ``setup.py``, ``pyxform/__init__.py`` with the new release version number.
 7. Commit, push the branch, and initiate a pull request. Wait for tests to pass, then merge the PR.
 8. Tag the release and it will automatically be published
 
