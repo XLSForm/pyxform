@@ -1,17 +1,17 @@
 {
   "assets": [
     {
-      "browser_download_url": "https://github.com/getodk/validate/releases/download/v1.17.0/ODK-Validate-v1.17.0.jar",
+      "browser_download_url": "https://github.com/getodk/validate/releases/download/v1.18.0/ODK-Validate-v1.18.0.jar",
       "content_type": "application/java-archive",
-      "created_at": "2022-01-25T17:40:00Z",
-      "download_count": 20,
-      "id": 54930301,
+      "created_at": "2023-09-16T04:28:56Z",
+      "download_count": 1,
+      "id": 126294873,
       "label": null,
-      "name": "ODK-Validate-v1.17.0.jar",
-      "node_id": "RA_kwDOAmc2ms4DRit9",
-      "size": 1692279,
+      "name": "ODK-Validate-v1.18.0.jar",
+      "node_id": "RA_kwDOAmc2ms4HhxtZ",
+      "size": 5618270,
       "state": "uploaded",
-      "updated_at": "2022-01-25T17:40:03Z",
+      "updated_at": "2023-09-16T04:28:57Z",
       "uploader": {
         "avatar_url": "https://avatars.githubusercontent.com/u/967540?v=4",
         "events_url": "https://api.github.com/users/lognaturel/events{/privacy}",
@@ -32,10 +32,10 @@
         "type": "User",
         "url": "https://api.github.com/users/lognaturel"
       },
-      "url": "https://api.github.com/repos/getodk/validate/releases/assets/54930301"
+      "url": "https://api.github.com/repos/getodk/validate/releases/assets/126294873"
     }
   ],
-  "assets_url": "https://api.github.com/repos/getodk/validate/releases/57942979/assets",
+  "assets_url": "https://api.github.com/repos/getodk/validate/releases/121394106/assets",
   "author": {
     "avatar_url": "https://avatars.githubusercontent.com/u/967540?v=4",
     "events_url": "https://api.github.com/users/lognaturel/events{/privacy}",
@@ -56,20 +56,20 @@
     "type": "User",
     "url": "https://api.github.com/users/lognaturel"
   },
-  "body": "## What's Changed\r\n* https://github.com/getodk/validate/pull/86 Validate forms with itemsets using external instances and custom refs\r\n  * H\u00e9l\u00e8ne Martin @lognaturel (ODK)\r\n\r\n**Full Changelog**: https://github.com/getodk/validate/compare/v1.16.0...v1.17.0",
-  "created_at": "2022-01-25T17:36:01Z",
+  "body": "## What's Changed\r\n* Upgrade [JavaRosa to 4.2.0](https://github.com/getodk/javarosa/releases/tag/v4.2.0) by @lognaturel in https://github.com/getodk/validate/pull/89\r\n\r\n\r\n**Full Changelog**: https://github.com/getodk/validate/compare/v1.17.0...v1.18.0",
+  "created_at": "2023-09-16T04:14:54Z",
   "draft": false,
-  "html_url": "https://github.com/getodk/validate/releases/tag/v1.17.0",
-  "id": 57942979,
+  "html_url": "https://github.com/getodk/validate/releases/tag/v1.18.0",
+  "id": 121394106,
   "mentions_count": 1,
-  "name": "ODK Validate v1.17.0",
-  "node_id": "RE_kwDOAmc2ms4DdCPD",
+  "name": "v1.18.0",
+  "node_id": "RE_kwDOAmc2ms4HPFO6",
   "prerelease": false,
-  "published_at": "2022-01-25T17:38:06Z",
-  "tag_name": "v1.17.0",
-  "tarball_url": "https://api.github.com/repos/getodk/validate/tarball/v1.17.0",
+  "published_at": "2023-09-16T04:23:43Z",
+  "tag_name": "v1.18.0",
+  "tarball_url": "https://api.github.com/repos/getodk/validate/tarball/v1.18.0",
   "target_commitish": "master",
-  "upload_url": "https://uploads.github.com/repos/getodk/validate/releases/57942979/assets{?name,label}",
-  "url": "https://api.github.com/repos/getodk/validate/releases/57942979",
-  "zipball_url": "https://api.github.com/repos/getodk/validate/zipball/v1.17.0"
+  "upload_url": "https://uploads.github.com/repos/getodk/validate/releases/121394106/assets{?name,label}",
+  "url": "https://api.github.com/repos/getodk/validate/releases/121394106",
+  "zipball_url": "https://api.github.com/repos/getodk/validate/zipball/v1.18.0"
 }

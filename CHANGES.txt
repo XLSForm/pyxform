@@ -1,5 +1,8 @@
 Pyxform Changelog
 
+v1.12.2, 2023-09-15
+* Alias list_name to dataset in entities sheet by @lognaturel in https://github.com/XLSForm/pyxform/pull/654
+
 v1.12.1, 2023-05-16
 * Pass through itemset ref case by @lognaturel in https://github.com/XLSForm/pyxform/pull/644
 
