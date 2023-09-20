@@ -10,7 +10,7 @@ import os
 import re
 from collections import namedtuple
 from json.decoder import JSONDecodeError
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from xml.dom.minidom import Element, Text, parseString
 
 import openpyxl
@@ -277,17 +277,20 @@ def default_is_dynamic(element_default, element_type=None):
     return False
 
 
-# If the first or second choice label includes a reference, we must use itext.
-# Check the first two choices in case first is something like "Other".
-def has_dynamic_label(choice_list, multi_language):
-    if not multi_language:
-        for i in range(0, min(2, len(choice_list))):
-            if (
-                choice_list[i].get("label") is not None
-                and re.search(BRACKETED_TAG_REGEX, choice_list[i].get("label"))
-                is not None
-            ):
-                return True
+def has_dynamic_label(choice_list: "List[Dict[str, str]]") -> bool:
+    """
+    If the first or second choice label includes a reference, we must use itext.
+
+    Check the first two choices in case first is something like "Other".
+    """
+    for c in choice_list[:2]:
+        choice_label = c.get("label")
+        if (
+            choice_label is not None
+            and isinstance(choice_label, str)
+            and re.search(BRACKETED_TAG_REGEX, choice_label) is not None
+        ):
+            return True
     return False
 
 

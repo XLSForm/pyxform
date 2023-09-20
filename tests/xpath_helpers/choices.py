@@ -106,6 +106,7 @@ class XPathHelper:
                 """
                 for idx, choice in enumerate(choices)
                 for form, media in choice
+                if form is not None
             )
         )
         return f"""
@@ -134,6 +135,7 @@ class XPathHelper:
                 """
                 for idx, choice in enumerate(choices)
                 for form, media in choice
+                if form is not None
             )
         )
         return f"""

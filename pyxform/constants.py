@@ -64,6 +64,8 @@ SELECT_ONE_EXTERNAL = "select one external"
 SELECT_ALL_THAT_APPLY = "select all that apply"
 SELECT_OR_OTHER_SUFFIX = " or specify other"
 RANK = "rank"
+QUESTION = "question"
+CHOICE = "choice"
 CHOICES = "choices"
 
 # XLS Specific constants

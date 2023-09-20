@@ -10,14 +10,13 @@ import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from datetime import datetime
 from functools import lru_cache
-from typing import Iterator, List, Optional, Tuple
+from typing import Generator, Iterator, List, Optional, Tuple
 
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
-from pyxform.instance_info import InstanceInfo
 from pyxform.parsing import instance_expression
 from pyxform.question import Option, Question
 from pyxform.section import Section
@@ -47,6 +46,26 @@ RE_XML_OUTPUT = re.compile(r"\n.*(<output.*>)\n(\s\s)*")
 RE_XML_TEXT = re.compile(r"(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)", re.DOTALL)
 
 
+class InstanceInfo:
+    """Standardise Instance details relevant during XML generation."""
+
+    __slots__ = ("type", "context", "name", "src", "instance")
+
+    def __init__(
+        self,
+        type: str,
+        context: Optional[str],
+        name: str,
+        src: Optional[str],
+        instance: "DetachableElement",
+    ):
+        self.type: str = type
+        self.context: Optional[str] = context
+        self.name: str = name
+        self.src: Optional[str] = src
+        self.instance: "DetachableElement" = instance
+
+
 def register_nsmap():
     """Function to register NSMAP namespaces with ETree"""
     for prefix, uri in NSMAP.items():
@@ -57,7 +76,7 @@ def register_nsmap():
 register_nsmap()
 
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=65536)  # 2^16
 def is_parent_a_repeat(survey, xpath):
     """
     Returns the XPATH of the first repeat of the given xpath in the survey,
@@ -73,7 +92,7 @@ def is_parent_a_repeat(survey, xpath):
     return is_parent_a_repeat(survey, parent_xpath)
 
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=65536)  # 2^16
 def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=False):
     """
     Returns a tuple of the number of steps from the context xpath to the shared
@@ -151,6 +170,22 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
     return (None, None)
 
 
+@lru_cache(maxsize=65536)  # 2^16
+def is_label_dynamic(label: str) -> bool:
+    if (
+        label is not None
+        and isinstance(label, str)
+        and re.search(BRACKETED_TAG_REGEX, label) is not None
+    ):
+        return True
+    else:
+        return False
+
+
+def recursive_dict():
+    return defaultdict(recursive_dict)
+
+
 class Survey(Section):
     """
     Survey class - represents the full XForm XML.
@@ -174,7 +209,7 @@ class Survey(Section):
             constants.COMPACT_DELIMITER: str,
             "file_name": str,
             "default_language": str,
-            "_translations": dict,
+            "_translations": recursive_dict,
             "submission_url": str,
             "auto_send": str,
             "auto_delete": str,
@@ -267,27 +302,30 @@ class Survey(Section):
             "h:html",
             node("h:head", node("h:title", self.title), self.xml_model()),
             node("h:body", *self.xml_control(), **body_kwargs),
-            **nsmap
+            **nsmap,
         )
 
     def get_setvalues_for_question_name(self, question_name):
         return self.setvalues_by_triggering_ref.get("${%s}" % question_name)
 
-    @staticmethod
-    def _generate_static_instances(list_name, choice_list) -> InstanceInfo:
+    def _generate_static_instances(self, list_name, choice_list) -> InstanceInfo:
         """
-        Generates <instance> elements for static data
-        (e.g. choices for select type questions)
-
-        Note that per commit message 0578242 and in xls2json.py R539, an
-        instance is only output for select items defined in the choices sheet
-        when the item has a choice_filter, and it is that way for backwards
-        compatibility.
+        Generate <instance> elements for static data (e.g. choices for selects)
         """
         instance_element_list = []
-        multi_language = isinstance(choice_list[0].get("label"), dict)
         has_media = bool(choice_list[0].get("media"))
-        has_dyn_label = has_dynamic_label(choice_list, multi_language)
+        has_dyn_label = has_dynamic_label(choice_list)
+        multi_language = False
+        if isinstance(self._translations, dict):
+            choices = tuple(
+                k
+                for items in self._translations.values()
+                for k, v in items.items()
+                if v.get(constants.TYPE, "") == constants.CHOICE
+                and k.split("-")[0] == list_name
+            )
+            if 0 < len(choices):
+                multi_language = True
 
         for idx, choice in enumerate(choice_list):
             choice_element_list = []
@@ -302,7 +340,7 @@ class Survey(Section):
                 if (
                     not multi_language
                     and not has_media
-                    and not has_dynamic_label(choice_list, multi_language)
+                    and not has_dyn_label
                     and isinstance(value, str)
                     and name == "label"
                 ):
@@ -391,9 +429,9 @@ class Survey(Section):
             uri = "jr://file-csv/{}.csv".format(file_id)
 
             return InstanceInfo(
-                type=u"pulldata",
+                type="pulldata",
                 context="[type: {t}, name: {n}]".format(
-                    t=element[u"parent"][u"type"], n=element[u"parent"][u"name"]
+                    t=element["parent"]["type"], n=element["parent"]["name"]
                 ),
                 name=file_id,
                 src=uri,
@@ -626,7 +664,11 @@ class Survey(Section):
 
     def _add_to_nested_dict(self, dicty, path, value):
         if len(path) == 1:
-            dicty[path[0]] = value
+            key = path[0]
+            if key in dicty and isinstance(dicty[key], dict) and isinstance(value, dict):
+                dicty[key].update(value)
+            else:
+                dicty[key] = value
             return
         if path[0] not in dicty:
             dicty[path[0]] = {}
@@ -638,32 +680,69 @@ class Survey(Section):
         setup media and itext functions
         """
 
-        def _setup_choice_translations(name, choice_value, itext_id):
-            for media_type_or_language, value in choice_value.items():  # noqa
+        def _setup_choice_translations(
+            name, choice_value, itext_id
+        ) -> Generator[Tuple[List[str], str], None, None]:
+            for media_or_lang, value in choice_value.items():  # noqa
                 if isinstance(value, dict):
                     for language, val in value.items():
-                        self._add_to_nested_dict(
-                            self._translations,
-                            [language, itext_id, media_type_or_language],
-                            val,
-                        )
+                        yield ([language, itext_id, media_or_lang], val)
                 else:
-                    if name == "media":
-                        self._add_to_nested_dict(
-                            self._translations,
-                            [self.default_language, itext_id, media_type_or_language],
-                            value,
-                        )
+                    if name == constants.MEDIA:
+                        yield ([self.default_language, itext_id, media_or_lang], value)
                     else:
-                        self._add_to_nested_dict(
-                            self._translations,
-                            [media_type_or_language, itext_id, "long"],
-                            value,
+                        yield ([media_or_lang, itext_id, "long"], value)
+
+        itemsets_multi_language = set()
+        itemsets_has_media = set()
+        itemsets_has_dyn_label = set()
+
+        def get_choices():
+            for list_name, choice_list in self.choices.items():
+                multi_language = False
+                has_media = False
+                dyn_label = False
+                choices = []
+                for idx, choice in enumerate(choice_list):
+                    for col_name, choice_value in choice.items():
+                        lang_choice = None
+                        if col_name == constants.MEDIA:
+                            has_media = True
+                        if isinstance(choice_value, dict):
+                            lang_choice = choice_value
+                            multi_language = True
+                        elif col_name == constants.LABEL:
+                            lang_choice = {self.default_language: choice_value}
+                            if is_label_dynamic(choice_value):
+                                dyn_label = True
+                        if lang_choice is not None:
+                            # e.g. (label, {"default": "Yes"}, "consent", 0)
+                            choices.append((col_name, lang_choice, list_name, idx))
+                if multi_language or has_media or dyn_label:
+                    if multi_language:
+                        itemsets_multi_language.add(list_name)
+                    if has_media:
+                        itemsets_has_media.add(list_name)
+                    if dyn_label:
+                        itemsets_has_dyn_label.add(list_name)
+                    for c in choices:
+                        yield from _setup_choice_translations(
+                            c[0], c[1], f"{c[2]}-{c[3]}"
                         )
 
-        self._translations = defaultdict(dict)  # pylint: disable=W0201
+        for path, value in get_choices():
+            last_path = path.pop()
+            leaf_value = {last_path: value, constants.TYPE: constants.CHOICE}
+            self._add_to_nested_dict(self._translations, path, leaf_value)
+
         select_types = set(aliases.select.keys())
         for element in self.iter_descendants():
+            itemset = element.get("itemset")
+            if itemset is not None:
+                element._itemset_multi_language = itemset in itemsets_multi_language
+                element._itemset_has_media = itemset in itemsets_has_media
+                element._itemset_dyn_label = itemset in itemsets_has_dyn_label
+
             # Skip creation of translations for choices in selects. The creation of these
             # translations is done futher below in this function.
             parent = element.get("parent")
@@ -685,37 +764,15 @@ class Survey(Section):
                             form: {
                                 "text": d["text"],
                                 "output_context": d["output_context"],
-                            }
+                            },
+                            constants.TYPE: constants.QUESTION,
                         }
                     )
 
-        # This code sets up translations for choices in selects.
-        for list_name, choice_list in self.choices.items():
-            multi_language = isinstance(choice_list[0].get("label"), dict)
-            has_media = bool(choice_list[0].get("media"))
-            if (
-                not multi_language
-                and not has_media
-                and not has_dynamic_label(choice_list, multi_language)
-            ):
-                continue
-            for idx, choice in enumerate(choice_list):
-                for name, choice_value in choice.items():
-                    itext_id = "-".join([list_name, str(idx)])
-                    if isinstance(choice_value, dict):
-                        _setup_choice_translations(name, choice_value, itext_id)
-                    elif name == "label":
-                        self._add_to_nested_dict(
-                            self._translations,
-                            [self.default_language, itext_id, "long"],
-                            choice_value,
-                        )
-
     def _add_empty_translations(self):
         """
-        Adds translations so that every itext element has the same elements \
-        accross every language.
-        When translations are not provided "-" will be used.
+        Adds translations so that every itext element has the same elements across every
+        language. When translations are not provided "-" will be used.
         This disables any of the default_language fallback functionality.
         """
         paths = {}
@@ -767,7 +824,6 @@ class Survey(Section):
 
                     # Create the required dictionaries in _translations,
                     # then add media as a leaf value:
-
                     if language not in self._translations:
                         self._translations[language] = {}
 
@@ -782,9 +838,6 @@ class Survey(Section):
                         translations_trans_key[media_type] = {}
 
                     translations_trans_key[media_type] = media
-
-        if not self._translations:
-            self._translations = defaultdict(dict)  # pylint: disable=W0201
 
         for survey_element in self.iter_descendants():
             # Skip set up of media for choices in selects. Translations for their media
@@ -818,6 +871,9 @@ class Survey(Section):
                     raise Exception()
 
                 for media_type, media_value in content.items():
+                    # Ignore key indicating Question or Choice translation type.
+                    if media_type == constants.TYPE:
+                        continue
                     if isinstance(media_value, dict):
                         value, output_inserted = self.insert_output_values(
                             media_value["text"], context=media_value["output_context"]

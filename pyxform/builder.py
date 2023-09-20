@@ -83,12 +83,13 @@ class SurveyElementBuilder:
         # I don't know why we would need an explicit none option for
         # select alls
         self._add_none_option = False
+        self._sections: Optional[Dict[str, Dict]] = None
         self.set_sections(kwargs.get("sections", {}))
 
         # dictionary of setvalue target and value tuple indexed by triggering element
         self.setvalues_by_triggering_ref = {}
         # For tracking survey-level choices while recursing through the survey.
-        self.choices: Dict[str, Any] = {}
+        self._choices: Dict[str, Any] = {}
 
     def set_sections(self, sections):
         """
@@ -112,13 +113,13 @@ class SurveyElementBuilder:
 
         if d[const.TYPE] in self.SECTION_CLASSES:
             if d[const.TYPE] == const.SURVEY:
-                self.choices = copy.deepcopy(d.get(const.CHOICES, {}))
+                self._choices = copy.deepcopy(d.get(const.CHOICES, {}))
 
             section = self._create_section_from_dict(d)
 
             if d[const.TYPE] == const.SURVEY:
                 section.setvalues_by_triggering_ref = self.setvalues_by_triggering_ref
-                section.choices = self.choices
+                section.choices = self._choices
 
             return section
         elif d[const.TYPE] == const.LOOP:
@@ -263,7 +264,7 @@ class SurveyElementBuilder:
             survey_element = self.create_survey_element_from_dict(copy.deepcopy(child))
             if child[const.TYPE].endswith(const.SELECT_OR_OTHER_SUFFIX):
                 select_question = survey_element[0]
-                itemset_choices = self.choices.get(select_question[const.ITEMSET], None)
+                itemset_choices = self._choices.get(select_question[const.ITEMSET], None)
                 if (
                     itemset_choices is not None
                     and isinstance(itemset_choices, list)
@@ -307,7 +308,8 @@ class SurveyElementBuilder:
         # TODO: Verify that nothing breaks if this returns a list
         return result.children
 
-    def _name_and_label_substitutions(self, question_template, column_headers):
+    @staticmethod
+    def _name_and_label_substitutions(question_template, column_headers):
         # if the label in column_headers has multiple languages setup a
         # dictionary by language to do substitutions.
         info_by_lang = {}

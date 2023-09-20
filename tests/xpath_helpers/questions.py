@@ -1,6 +1,6 @@
 class XPathHelper:
     """
-    XPath expressions for choices assertions.
+    XPath expressions for questions assertions.
     """
 
     @staticmethod
@@ -18,6 +18,47 @@ class XPathHelper:
             @nodeset='/test_name/{q_name}'
             and @type='{_type}'
           ]
+        """
+
+    @staticmethod
+    def model_itext_label(q_name: str, lang: str, q_label: str):
+        """Model itext contains the question label."""
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test_name/{q_name}:label']
+          /x:value[not(@form) and text()='{q_label}']
+        """
+
+    @staticmethod
+    def model_itext_form(q_name: str, lang: str, form: str, fname: str):
+        """Model itext contains an alternate form itext for the label or hint."""
+        prefix = {
+            "audio": ("label", "jr://audio/"),
+            "image": ("label", "jr://images/"),
+            "big-image": ("label", "jr://images/"),
+            "video": ("label", "jr://video/"),
+            "guidance": ("hint", ""),
+        }
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test_name/{q_name}:{prefix[form][0]}']
+          /x:value[@form='{form}' and text()='{prefix[form][1]}{fname}']
+        """
+
+    @staticmethod
+    def body_label_inline(q_type: str, q_name: str, q_label: str):
+        """Body element contains the question label."""
+        return f"""
+        /h:html/h:body/x:{q_type}[@ref='/test_name/{q_name}']
+          /x:label[not(@ref) and text()='{q_label}']
+        """
+
+    @staticmethod
+    def body_label_itext(q_type: str, q_name: str):
+        """Body element references itext for the question label."""
+        return f"""
+        /h:html/h:body/x:{q_type}[@ref='/test_name/{q_name}']
+          /x:label[@ref="jr:itext('/test_name/{q_name}:label')" and not(text())]
         """
 
     @staticmethod
