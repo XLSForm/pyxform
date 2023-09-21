@@ -1310,7 +1310,13 @@ def workbook_to_json(
 
             if row.get("default"):
                 new_dict["default"] = process_image_default(row["default"])
-            parameters_generic.validate(parameters=parameters, allowed=("max-pixels","app",))
+            parameters_generic.validate(
+                parameters=parameters,
+                allowed=(
+                    "max-pixels",
+                    "app",
+                ),
+            )
             if "max-pixels" in parameters.keys():
                 try:
                     int(parameters["max-pixels"])
@@ -1326,13 +1332,13 @@ def workbook_to_json(
                 )
 
             if "app" in parameters.keys():
-                android_package_regex_pattern = "^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+[0-9a-z_]$"
+                android_package_regex_pattern = (
+                    "^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+[0-9a-z_]$"
+                )
                 app_package_name = str(parameters["app"])
                 if re.fullmatch(android_package_regex_pattern, app_package_name):
                     new_dict["control"] = new_dict.get("control", {})
-                    new_dict["control"].update(
-                        {"intent": app_package_name}
-                    )
+                    new_dict["control"].update({"intent": app_package_name})
                 else:
                     raise PyXFormError("Invalid Android package name format")
 

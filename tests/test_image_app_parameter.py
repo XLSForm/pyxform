@@ -6,13 +6,12 @@ from tests.pyxform_test_case import PyxformTestCase
 
 
 class ImageAppParameterTest(PyxformTestCase):
-
     def test_valid_android_package_name(self):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey |        |          |       |                                        |
-            |        | type   | name     | label | parameters                             |
+            | survey |        |          |       |                                     |
+            |        | type   | name     | label | parameters                          |
             |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree |
             """,
             xml__xpath_match=[
@@ -25,11 +24,9 @@ class ImageAppParameterTest(PyxformTestCase):
             name="data",
             errored=True,
             md="""
-            | survey |        |          |       |                                        |
-            |        | type   | name     | label | parameters                             |
+            | survey |        |          |       |               |
+            |        | type   | name     | label | parameters    |
             |        | image  | my_image | Image | app=something |
             """,
-            error__contains=[
-                "Invalid Android package name format"
-            ],
-        )    
+            error__contains=["Invalid Android package name format"],
+        )
