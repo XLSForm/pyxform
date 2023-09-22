@@ -57,7 +57,7 @@ class ImageAppParameterTest(PyxformTestCase):
             ],
         )
 
-    def test_ignoring_valid_android_package_name_in_draw_image(self):
+    def test_ignoring_android_package_name_in_draw_image(self):
         self.assertPyxformXform(
             name="data",
             md="""
@@ -70,7 +70,7 @@ class ImageAppParameterTest(PyxformTestCase):
             ],
         )
 
-    def test_ignoring_valid_android_package_name_in_draw_image(self):
+    def test_ignoring_android_package_name_in_selfie_image(self):
         self.assertPyxformXform(
             name="data",
             md="""
