@@ -30,3 +30,55 @@ class ImageAppParameterTest(PyxformTestCase):
             """,
             error__contains=["Invalid Android package name format"],
         )
+
+    def test_adding_android_package_name_in_annotate_image(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |       |                                     |            |
+            |        | type   | name     | label | parameters                          | appearance |
+            |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree | annotate   |
+            """,
+            xml__xpath_match=[
+                "/h:html/h:body/x:upload[@intent='com.jeyluta.timestampcamerafree' and @mediatype='image/*' and @ref='/data/my_image']"
+            ],
+        )
+
+    def test_ignoring_android_package_name_in_signature_image(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |       |                                     |            |
+            |        | type   | name     | label | parameters                          | appearance |
+            |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree | signature  |
+            """,
+            xml__xpath_match=[
+                "/h:html/h:body/x:upload[@mediatype='image/*' and @ref='/data/my_image']"
+            ],
+        )
+
+    def test_ignoring_valid_android_package_name_in_draw_image(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |       |                                     |            |
+            |        | type   | name     | label | parameters                          | appearance |
+            |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree | draw       |
+            """,
+            xml__xpath_match=[
+                "/h:html/h:body/x:upload[@mediatype='image/*' and @ref='/data/my_image']"
+            ],
+        )
+
+    def test_ignoring_valid_android_package_name_in_draw_image(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |       |                                     |            |
+            |        | type   | name     | label | parameters                          | appearance |
+            |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree | new-front  |
+            """,
+            xml__xpath_match=[
+                "/h:html/h:body/x:upload[@mediatype='image/*' and @ref='/data/my_image']"
+            ],
+        )
