@@ -1332,15 +1332,17 @@ def workbook_to_json(
                 )
 
             if "app" in parameters.keys():
-                android_package_regex_pattern = (
-                    "^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+[0-9a-z_]$"
-                )
-                app_package_name = str(parameters["app"])
-                if re.fullmatch(android_package_regex_pattern, app_package_name):
-                    new_dict["control"] = new_dict.get("control", {})
-                    new_dict["control"].update({"intent": app_package_name})
-                else:
-                    raise PyXFormError("Invalid Android package name format")
+                appearance = row.get("control", {}).get("appearance")
+                if appearance is None or appearance == "annotate":
+                    android_package_regex_pattern = (
+                        "^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+[0-9a-z_]$"
+                    )
+                    app_package_name = str(parameters["app"])
+                    if re.fullmatch(android_package_regex_pattern, app_package_name):
+                        new_dict["control"] = new_dict.get("control", {})
+                        new_dict["control"].update({"intent": app_package_name})
+                    else:
+                        raise PyXFormError("Invalid Android package name format.")
 
             parent_children_array.append(new_dict)
             continue
