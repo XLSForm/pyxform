@@ -4,81 +4,56 @@ Test image app parameter.
 """
 from tests.pyxform_test_case import PyxformTestCase
 
+class TestImageAppParameter(PyxformTestCase):
+    def test_adding_valid_android_package_name_in_image_with_supported_appearances(self):
+        appearances = ("", "annotate")
+        md = """
+        | survey |        |          |       |                                     |            |
+        |        | type   | name     | label | parameters                          | appearance |
+        |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree | {case}     |
+        """
+        for case in appearances:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    name="data",
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        "/h:html/h:body/x:upload[@intent='com.jeyluta.timestampcamerafree' and @mediatype='image/*' and @ref='/data/my_image']"
+                    ],
+                )
 
-class ImageAppParameterTest(PyxformTestCase):
-    def test_valid_android_package_name(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey |        |          |       |                                     |
-            |        | type   | name     | label | parameters                          |
-            |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree |
-            """,
-            xml__xpath_match=[
-                "/h:html/h:body/x:upload[@intent='com.jeyluta.timestampcamerafree' and @mediatype='image/*' and @ref='/data/my_image']"
-            ],
-        )
+    def test_throwing_error_when_invalid_android_package_name_is_used(self):
+        appearances = ("", "annotate")
+        md = """
+        | survey |        |          |       |                 |            |
+        |        | type   | name     | label | parameters      | appearance |
+        |        | image  | my_image | Image | app=something   | {case}     |
+        """
+        error__contains = (["Invalid Android package name format"],)
+        for case in appearances:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    name="data",
+                    errored=True,
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        "/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image']"
+                    ],
+                )
 
-    def test_invalid_android_package_name(self):
-        self.assertPyxformXform(
-            name="data",
-            errored=True,
-            md="""
-            | survey |        |          |       |               |
-            |        | type   | name     | label | parameters    |
-            |        | image  | my_image | Image | app=something |
-            """,
-            error__contains=["Invalid Android package name format"],
-        )
-
-    def test_adding_android_package_name_in_annotate_image(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey |        |          |       |                                     |            |
-            |        | type   | name     | label | parameters                          | appearance |
-            |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree | annotate   |
-            """,
-            xml__xpath_match=[
-                "/h:html/h:body/x:upload[@intent='com.jeyluta.timestampcamerafree' and @mediatype='image/*' and @ref='/data/my_image']"
-            ],
-        )
-
-    def test_ignoring_android_package_name_in_signature_image(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey |        |          |       |                                     |            |
-            |        | type   | name     | label | parameters                          | appearance |
-            |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree | signature  |
-            """,
-            xml__xpath_match=[
-                "/h:html/h:body/x:upload[@mediatype='image/*' and @ref='/data/my_image']"
-            ],
-        )
-
-    def test_ignoring_android_package_name_in_draw_image(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey |        |          |       |                                     |            |
-            |        | type   | name     | label | parameters                          | appearance |
-            |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree | draw       |
-            """,
-            xml__xpath_match=[
-                "/h:html/h:body/x:upload[@mediatype='image/*' and @ref='/data/my_image']"
-            ],
-        )
-
-    def test_ignoring_android_package_name_in_selfie_image(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey |        |          |       |                                     |            |
-            |        | type   | name     | label | parameters                          | appearance |
-            |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree | new-front  |
-            """,
-            xml__xpath_match=[
-                "/h:html/h:body/x:upload[@mediatype='image/*' and @ref='/data/my_image']"
-            ],
-        )
+    def test_ignoring_android_package_name_in_image_with_not_supported_appearances(self):
+        appearances = ("signature", "draw", "new-front")
+        md = """
+        | survey |        |          |       |                                     |            |
+        |        | type   | name     | label | parameters                          | appearance |
+        |        | image  | my_image | Image | app=com.jeyluta.timestampcamerafree | {case}     |
+        """
+        for case in appearances:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    name="data",
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        "/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image']"
+                    ],
+                )
