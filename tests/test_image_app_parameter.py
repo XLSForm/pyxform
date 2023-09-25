@@ -29,7 +29,7 @@ class TestImageAppParameter(PyxformTestCase):
         |        | type   | name     | label | parameters      | appearance |
         |        | image  | my_image | Image | app=something   | {case}     |
         """
-        error__contains = (["Invalid Android package name format"],)
+        error__contains = (["[row = 2] Invalid Android package name format"],)
         for case in appearances:
             with self.subTest(msg=case):
                 self.assertPyxformXform(

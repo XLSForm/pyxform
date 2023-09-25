@@ -1342,7 +1342,10 @@ def workbook_to_json(
                         new_dict["control"] = new_dict.get("control", {})
                         new_dict["control"].update({"intent": app_package_name})
                     else:
-                        raise PyXFormError("Invalid Android package name format.")
+                        raise PyXFormError(
+                            (ROW_FORMAT_STRING % row_number)
+                            + " Invalid Android package name format."
+                        )
 
             parent_children_array.append(new_dict)
             continue
