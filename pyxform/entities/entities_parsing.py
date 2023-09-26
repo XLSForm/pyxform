@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
@@ -6,8 +6,8 @@ from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
 
 def get_entity_declaration(
-    entities_sheet: Dict, workbook_dict: Dict, warnings: List
-) -> Dict:
+    entities_sheet: List[Dict], workbook_dict: Dict[str, List[Dict]], warnings: List[str]
+) -> Dict[str, Any]:
     if len(entities_sheet) == 0:
         similar = find_sheet_misspellings(
             key=constants.ENTITIES, keys=workbook_dict.keys()
@@ -81,7 +81,7 @@ def get_validated_dataset_name(entity):
 
 
 def validate_entity_saveto(
-    row: Dict, row_number: int, entity_declaration: Dict, in_repeat: bool
+    row: Dict, row_number: int, entity_declaration: Dict[str, Any], in_repeat: bool
 ):
     save_to = row.get("bind", {}).get("entities:saveto", "")
     if not save_to:
