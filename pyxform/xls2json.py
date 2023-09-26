@@ -626,9 +626,13 @@ def workbook_to_json(
     # ########## Entities sheet ###########
     entities_sheet = workbook_dict.get(constants.ENTITIES, [])
     entities_sheet = dealias_and_group_headers(
-        entities_sheet, aliases.entities_header, False
+        dict_array=entities_sheet,
+        header_aliases=aliases.entities_header,
+        use_double_colons=False,
     )
-    entity_declaration = get_entity_declaration(entities_sheet, workbook_dict, warnings)
+    entity_declaration = get_entity_declaration(
+        entities_sheet=entities_sheet.data, workbook_dict=workbook_dict, warnings=warnings
+    )
 
     # ########## Survey sheet ###########
     survey_sheet = workbook_dict[constants.SURVEY]
