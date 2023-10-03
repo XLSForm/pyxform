@@ -24,6 +24,7 @@ from pyxform.entities.entities_parsing import (
 from pyxform.errors import PyXFormError
 from pyxform.utils import PYXFORM_REFERENCE_REGEX, default_is_dynamic
 from pyxform.validators.pyxform import parameters_generic, select_from_file_params
+from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
 from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
@@ -1334,17 +1335,14 @@ def workbook_to_json(
             if "app" in parameters.keys():
                 appearance = row.get("control", {}).get("appearance")
                 if appearance is None or appearance == "annotate":
-                    android_package_regex_pattern = (
-                        "^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+[0-9a-z_]$"
-                    )
                     app_package_name = str(parameters["app"])
-                    if re.fullmatch(android_package_regex_pattern, app_package_name):
+                    validation_result = validate_android_package_name(app_package_name)
+                    if validation_result is None:
                         new_dict["control"] = new_dict.get("control", {})
                         new_dict["control"].update({"intent": app_package_name})
                     else:
                         raise PyXFormError(
-                            (ROW_FORMAT_STRING % row_number)
-                            + " Invalid Android package name format."
+                            (ROW_FORMAT_STRING % row_number) + " " + validation_result
                         )
 
             parent_children_array.append(new_dict)
