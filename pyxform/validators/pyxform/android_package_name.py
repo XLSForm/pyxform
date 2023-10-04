@@ -1,7 +1,8 @@
 import re
+from typing import Optional
 
 
-def validate_android_package_name(name: str) -> str | None:
+def validate_android_package_name(name: str) -> Optional[str]:
     prefix = "Invalid Android package name - "
 
     if not name.strip():
