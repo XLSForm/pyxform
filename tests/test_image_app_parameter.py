@@ -135,3 +135,20 @@ class TestImageParameters(PyxformTestCase):
 
         self.assertTrue(len(warnings) == 2)
         self.assertTrue("max-pixels" in warnings[0] and "max-pixels" in warnings[1])
+
+    def test_max_pixels_and_app(self):
+        self.assertPyxformXform(
+            name="data",
+            md="""
+            | survey |        |          |       |                                                    |
+            |        | type   | name     | label | parameters                                         |
+            |        | image  | my_image | Image | max-pixels=640 app=com.jeyluta.timestampcamerafree |
+            """,
+            xml__contains=[
+                'xmlns:orx="http://openrosa.org/xforms"',
+                '<bind nodeset="/data/my_image" type="binary" orx:max-pixels="640"/>',
+            ],
+            xml__xpath_match=[
+                "/h:html/h:body/x:upload[@intent='com.jeyluta.timestampcamerafree' and @mediatype='image/*' and @ref='/data/my_image']"
+            ],
+        )
