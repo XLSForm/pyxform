@@ -5,7 +5,7 @@ Test image max-pixels and app parameters.
 from tests.pyxform_test_case import PyxformTestCase
 
 
-class TestImageAppParameter(PyxformTestCase):
+class TestImageParameters(PyxformTestCase):
     def test_adding_valid_android_package_name_in_image_with_supported_appearances(self):
         appearances = ("", "annotate")
         md = """
