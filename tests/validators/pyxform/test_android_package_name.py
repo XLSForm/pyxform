@@ -6,13 +6,15 @@ class TestAndroidPackageNameValidator(PyxformTestCase):
     def test_empty_package_name(self):
         result = validate_android_package_name("")
         self.assertEqual(
-            result, "Parameter 'app' has an invalid Android package name - package name is missing."
+            result,
+            "Parameter 'app' has an invalid Android package name - package name is missing.",
         )
 
     def test_blank_package_name(self):
         result = validate_android_package_name(" ")
         self.assertEqual(
-            result, "Parameter 'app' has an invalid Android package name - package name is missing."
+            result,
+            "Parameter 'app' has an invalid Android package name - package name is missing.",
         )
 
     def test_missing_separator(self):
@@ -39,9 +41,7 @@ class TestAndroidPackageNameValidator(PyxformTestCase):
 
     def test_package_name_segment_with_zero_length(self):
         result = validate_android_package_name("com..app")
-        expected_error = (
-            "Parameter 'app' has an invalid Android package name - package segments must be of non-zero length."
-        )
+        expected_error = "Parameter 'app' has an invalid Android package name - package segments must be of non-zero length."
         self.assertEqual(result, expected_error)
 
     def test_separator_as_last_char_in_package_name(self):
