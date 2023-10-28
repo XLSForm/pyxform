@@ -3,7 +3,7 @@ from typing import Optional
 
 
 def validate_android_package_name(name: str) -> Optional[str]:
-    prefix = "Invalid Android package name - "
+    prefix = "Parameter 'app' has an invalid Android package name - "
 
     if not name.strip():
         return f"{prefix}package name is missing."

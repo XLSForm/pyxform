@@ -37,7 +37,7 @@ class TestImageParameters(PyxformTestCase):
                 self.assertPyxformXform(
                     name="data",
                     errored=True,
-                    error__contains="[row : 2] Invalid Android package name - the package name must have at least one '.' separator.",
+                    error__contains="[row : 2] Parameter 'app' has an invalid Android package name - the package name must have at least one '.' separator.",
                     md=md.format(case=case),
                     xml__xpath_match=[
                         "/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image']"
