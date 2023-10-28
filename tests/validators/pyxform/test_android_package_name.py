@@ -34,7 +34,7 @@ class TestAndroidPackageNameValidator(PyxformTestCase):
 
     def test_invalid_character(self):
         result = validate_android_package_name("com.example.app$")
-        expected_error = "Parameter 'app' has an invalid Android package name - the package name contains not allowed characters."
+        expected_error = "Parameter 'app' has an invalid Android package name - the package name can only include letters (a-z, A-Z), numbers (0-9), dots (.), and underscores (_)."
         self.assertEqual(result, expected_error)
 
     def test_package_name_segment_with_zero_length(self):

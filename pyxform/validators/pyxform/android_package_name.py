@@ -27,6 +27,6 @@ def validate_android_package_name(name: str) -> Optional[str]:
     pattern = re.compile(r"[^a-zA-Z0-9._]")
     for segment in segments:
         if pattern.search(segment):
-            return f"{prefix}the package name contains not allowed characters."
+            return f"{prefix}the package name can only include letters (a-z, A-Z), numbers (0-9), dots (.), and underscores (_)."
 
     return None
