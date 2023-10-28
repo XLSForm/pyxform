@@ -1,6 +1,8 @@
 import re
 from typing import Optional
 
+PACKAGE_NAME_REGEX = re.compile(r"[^a-zA-Z0-9._]")
+
 
 def validate_android_package_name(name: str) -> Optional[str]:
     prefix = "Parameter 'app' has an invalid Android package name - "
@@ -24,9 +26,8 @@ def validate_android_package_name(name: str) -> Optional[str]:
     if any(segment[0].isdigit() for segment in segments):
         return f"{prefix}a digit cannot be the first character in a package name segment."
 
-    pattern = re.compile(r"[^a-zA-Z0-9._]")
     for segment in segments:
-        if pattern.search(segment):
+        if PACKAGE_NAME_REGEX.search(segment):
             return f"{prefix}the package name can only include letters (a-z, A-Z), numbers (0-9), dots (.), and underscores (_)."
 
     return None
