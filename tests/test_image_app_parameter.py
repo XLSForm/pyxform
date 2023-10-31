@@ -27,24 +27,53 @@ class TestImageParameters(PyxformTestCase):
         self,
     ):
         appearances = ("", "annotate")
+        parameters = ("app=something", "app=_")
         md = """
-        | survey |        |          |       |                 |            |
-        |        | type   | name     | label | parameters      | appearance |
-        |        | image  | my_image | Image | app=something   | {case}     |
-        """
-        for case in appearances:
-            with self.subTest(msg=case):
-                self.assertPyxformXform(
-                    name="data",
-                    errored=True,
-                    error__contains="[row : 2] Parameter 'app' has an invalid Android package name - the package name must have at least one '.' separator.",
-                    md=md.format(case=case),
-                    xml__xpath_match=[
-                        "/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image']"
-                    ],
-                )
+           | survey |        |          |       |              |              |
+           |        | type   | name     | label | parameters   | appearance   |
+           |        | image  | my_image | Image | {parameter}  | {appearance} |
+           """
+        for appearance in appearances:
+            for parameter in parameters:
+                with self.subTest(msg=f"{appearance} - {parameter}"):
+                    self.assertPyxformXform(
+                        name="data",
+                        errored=True,
+                        error__contains=[
+                            "[row : 2] Parameter 'app' has an invalid Android package name - the package name must have at least one '.' separator."
+                        ],
+                        md=md.format(parameter=parameter, appearance=appearance),
+                        xml__xpath_match=[
+                            "/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image']"
+                        ],
+                    )
 
-    def test_ignoring_invalid_android_package_name_is_used_with_not_supported_appearances(
+    def test_throwing_error_when_blank_android_package_name_is_used_with_supported_appearances(
+        self,
+    ):
+        appearances = ("", "annotate")
+        parameters = ("app=", "app= ")
+        md = """
+           | survey |        |          |       |              |              |
+           |        | type   | name     | label | parameters   | appearance   |
+           |        | image  | my_image | Image | {parameter}  | {appearance} |
+           """
+        for appearance in appearances:
+            for parameter in parameters:
+                with self.subTest(msg=f"{appearance} - {parameter}"):
+                    self.assertPyxformXform(
+                        name="data",
+                        errored=True,
+                        error__contains=[
+                            "[row : 2] Parameter 'app' has an invalid Android package name - package name is missing."
+                        ],
+                        md=md.format(parameter=parameter, appearance=appearance),
+                        xml__xpath_match=[
+                            "/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image']"
+                        ],
+                    )
+
+    def test_ignoring_invalid_android_package_name_with_not_supported_appearances(
         self,
     ):
         appearances = ("signature", "draw", "new-front")
