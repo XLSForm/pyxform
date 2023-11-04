@@ -8,43 +8,82 @@ class EntityDeclaration(SurveyElement):
     def xml_instance(self, **kwargs):
         attributes = {}
         attributes["dataset"] = self.get("parameters", {}).get("dataset", "")
-        attributes["create"] = "1"
         attributes["id"] = ""
 
-        label_node = node("label")
-        return node("entity", label_node, **attributes)
+        entity_id_expression = self.get("parameters", {}).get("entity_id", None)
+        create_condition = self.get("parameters", {}).get("create", None)
+        update_condition = self.get("parameters", {}).get("update", None)
+
+        if entity_id_expression:
+            attributes["update"] = "1"
+            attributes["baseVersion"] = ""
+
+        if create_condition or (not (update_condition) and not (entity_id_expression)):
+            attributes["create"] = "1"
+
+        if self.get("parameters", {}).get("label", None):
+            return node("entity", node("label"), **attributes)
+        else:
+            return node("entity", **attributes)
 
     def xml_bindings(self):
         survey = self.get_root()
+        entity_id_expression = self.get("parameters", {}).get("entity_id", None)
+        create_condition = self.get("parameters", {}).get("create", None)
+        update_condition = self.get("parameters", {}).get("update", None)
+        label_expression = self.get("parameters", {}).get("label", None)
 
-        create_expr = survey.insert_xpaths(
-            self.get("parameters", {}).get("create", "true()"), context=self
-        )
-        create_bind = {
-            "calculate": create_expr,
-            "type": "string",
-            "readonly": "true()",
-        }
-        create_node = node("bind", nodeset=self.get_xpath() + "/@create", **create_bind)
+        bind_nodes = []
 
+        if create_condition:
+            bind_nodes.append(self._get_bind_node(survey, create_condition, "/@create"))
+
+        bind_nodes.append(self._get_id_bind_node(survey, entity_id_expression))
+
+        if create_condition or not (entity_id_expression):
+            bind_nodes.append(self._get_id_setvalue_node())
+
+        if update_condition:
+            bind_nodes.append(self._get_bind_node(survey, update_condition, "/@update"))
+
+        if entity_id_expression:
+            dataset_name = self.get("parameters", {}).get("dataset", "")
+            base_version_expression = f"instance('{dataset_name}')/root/item[name={entity_id_expression}]/__version"
+            bind_nodes.append(
+                self._get_bind_node(survey, base_version_expression, "/@baseVersion")
+            )
+
+        if label_expression:
+            bind_nodes.append(self._get_bind_node(survey, label_expression, "/label"))
+
+        return bind_nodes
+
+    def _get_id_bind_node(self, survey, entity_id_expression):
         id_bind = {"type": "string", "readonly": "true()"}
-        id_node = node("bind", nodeset=self.get_xpath() + "/@id", **id_bind)
 
+        if entity_id_expression:
+            id_bind["calculate"] = survey.insert_xpaths(
+                entity_id_expression, context=self
+            )
+
+        return node("bind", nodeset=self.get_xpath() + "/@id", **id_bind)
+
+    def _get_id_setvalue_node(self):
         id_setvalue_attrs = {
             "event": "odk-instance-first-load",
             "type": "string",
             "readonly": "true()",
             "value": "uuid()",
         }
-        id_setvalue = node("setvalue", ref=self.get_xpath() + "/@id", **id_setvalue_attrs)
 
-        label_expr = survey.insert_xpaths(
-            self.get("parameters", {}).get("label", ""), context=self
-        )
-        label_bind = {
-            "calculate": label_expr,
+        return node("setvalue", ref=self.get_xpath() + "/@id", **id_setvalue_attrs)
+
+    def _get_bind_node(self, survey, expression, destination):
+        expr = survey.insert_xpaths(expression, context=self)
+        bind_attrs = {
+            "calculate": expr,
             "type": "string",
             "readonly": "true()",
         }
-        label_node = node("bind", nodeset=self.get_xpath() + "/label", **label_bind)
-        return [create_node, id_node, id_setvalue, label_node]
+
+        return node("bind", nodeset=self.get_xpath() + destination, **bind_attrs)
