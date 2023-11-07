@@ -23,10 +23,10 @@ def get_entity_declaration(
     entity_row = entities_sheet[0]
 
     dataset_name = get_validated_dataset_name(entity_row)
-    entity_id = entity_row["entity_id"] if "entity_id" in entity_row else None
-    create_condition = entity_row["create_if"] if "create_if" in entity_row else None
-    update_condition = entity_row["update_if"] if "update_if" in entity_row else None
-    entity_label = entity_row["label"] if "label" in entity_row else None
+    entity_id = entity_row.get("entity_id", None)
+    create_condition = entity_row.get("create_if", None)
+    update_condition = entity_row.get("update_if", None)
+    entity_label = entity_row.get("label", None)
 
     if update_condition and not (entity_id):
         raise PyXFormError(
