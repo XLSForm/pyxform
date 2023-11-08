@@ -5,6 +5,23 @@ from pyxform.utils import node
 
 
 class EntityDeclaration(SurveyElement):
+    """
+    An entity declaration includes an entity instance node with optional label child, some attributes, and corresponding bindings.
+
+    The ODK XForms Entities specification can be found at https://getodk.github.io/xforms-spec/entities
+
+    XLSForm uses a combination of the entity_id, create_if and update_if columns to determine what entity action is intended:
+        id    create  update  result
+        1     0       0       always update
+        1     0       1       update based on condition
+        1     1       0       error, id only acceptable when updating
+        1     1       1       include conditions for create and update, user's responsibility to make sure they're exclusive
+        0     0       0       always create
+        0     0       1       error, need id to update
+        0     1       0       create based on condition
+        0     1       1       error, need id to update
+    """
+
     def xml_instance(self, **kwargs):
         attributes = {}
         attributes["dataset"] = self.get("parameters", {}).get("dataset", "")
@@ -27,6 +44,9 @@ class EntityDeclaration(SurveyElement):
             return node("entity", **attributes)
 
     def xml_bindings(self):
+        """
+        See the class comment for an explanation of the logic for generating bindings.
+        """
         survey = self.get_root()
         entity_id_expression = self.get("parameters", {}).get("entity_id", None)
         create_condition = self.get("parameters", {}).get("create", None)
@@ -87,3 +107,6 @@ class EntityDeclaration(SurveyElement):
         }
 
         return node("bind", nodeset=self.get_xpath() + destination, **bind_attrs)
+
+    def xml_control(self):
+        raise NotImplementedError()
