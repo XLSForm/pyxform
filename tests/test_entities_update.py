@@ -24,7 +24,7 @@ class EntitiesUpdateTest(PyxformTestCase):
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@id" and @type = "string" and @readonly = "true()" and @calculate = " /data/id "]',
                 '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@baseVersion = ""]',
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@baseVersion" and @type = "string" and @readonly = "true()" and @calculate = "instance(\'trees\')/root/item[name= /data/id ]/__version"]',
-                '/h:html/h:head/x:model[@entities:entities-version = "2022.1.0"]',
+                '/h:html/h:head/x:model[@entities:entities-version = "2023.1.0"]',
             ],
             xml__xpath_count=[
                 ("/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label", 0),
