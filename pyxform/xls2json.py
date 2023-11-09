@@ -704,7 +704,7 @@ def workbook_to_json(
         if not question_type:
             # if name and label are also missing,
             # then its a comment row, and we skip it with warning
-            if not ((constants.NAME in row) or (constants.LABEL in row)):
+            if not (constants.NAME in row or constants.LABEL in row):
                 warnings.append(
                     ROW_FORMAT_STRING % row_number
                     + " Row without name, text, or label is being skipped:\n"

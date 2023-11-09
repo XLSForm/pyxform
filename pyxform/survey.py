@@ -250,7 +250,7 @@ class Survey(Section):
         self._setup_xpath_dictionary()
 
         for triggering_reference in self.setvalues_by_triggering_ref.keys():
-            if not (re.search(BRACKETED_TAG_REGEX, triggering_reference)):
+            if not re.search(BRACKETED_TAG_REGEX, triggering_reference):
                 raise PyXFormError(
                     "Only references to other fields are allowed in the 'trigger' column."
                 )

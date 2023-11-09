@@ -35,7 +35,7 @@ class EntityDeclaration(SurveyElement):
             attributes["update"] = "1"
             attributes["baseVersion"] = ""
 
-        if create_condition or (not (update_condition) and not (entity_id_expression)):
+        if create_condition or (not update_condition and not entity_id_expression):
             attributes["create"] = "1"
 
         if self.get("parameters", {}).get("label", None):
@@ -60,7 +60,7 @@ class EntityDeclaration(SurveyElement):
 
         bind_nodes.append(self._get_id_bind_node(survey, entity_id_expression))
 
-        if create_condition or not (entity_id_expression):
+        if create_condition or not entity_id_expression:
             bind_nodes.append(self._get_id_setvalue_node())
 
         if update_condition:

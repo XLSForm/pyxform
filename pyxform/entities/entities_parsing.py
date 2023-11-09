@@ -28,17 +28,17 @@ def get_entity_declaration(
     update_condition = entity_row.get("update_if", None)
     entity_label = entity_row.get("label", None)
 
-    if update_condition and not (entity_id):
+    if update_condition and not entity_id:
         raise PyXFormError(
             "The entities sheet is missing the entity_id column which is required when updating entities."
         )
 
-    if entity_id and create_condition and not (update_condition):
+    if entity_id and create_condition and not update_condition:
         raise PyXFormError(
             "The entities sheet can't specify an entity creation condition and an entity_id without also including an update condition."
         )
 
-    if not (entity_id) and not (entity_label):
+    if not entity_id and not entity_label:
         raise PyXFormError(
             "The entities sheet is missing the label column which is required when creating entities."
         )
