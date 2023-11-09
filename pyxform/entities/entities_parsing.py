@@ -20,7 +20,43 @@ def get_entity_declaration(
             "Currently, you can only declare a single entity per form. Please make sure your entities sheet only declares one entity."
         )
 
-    entity = entities_sheet[0]
+    entity_row = entities_sheet[0]
+
+    dataset_name = get_validated_dataset_name(entity_row)
+    entity_id = entity_row.get("entity_id", None)
+    create_condition = entity_row.get("create_if", None)
+    update_condition = entity_row.get("update_if", None)
+    entity_label = entity_row.get("label", None)
+
+    if update_condition and not entity_id:
+        raise PyXFormError(
+            "The entities sheet is missing the entity_id column which is required when updating entities."
+        )
+
+    if entity_id and create_condition and not update_condition:
+        raise PyXFormError(
+            "The entities sheet can't specify an entity creation condition and an entity_id without also including an update condition."
+        )
+
+    if not entity_id and not entity_label:
+        raise PyXFormError(
+            "The entities sheet is missing the label column which is required when creating entities."
+        )
+
+    return {
+        "name": "entity",
+        "type": "entity",
+        "parameters": {
+            "dataset": dataset_name,
+            "entity_id": entity_id,
+            "create": create_condition,
+            "update": update_condition,
+            "label": entity_label,
+        },
+    }
+
+
+def get_validated_dataset_name(entity):
     dataset = entity["dataset"]
 
     if dataset.startswith(constants.ENTITIES_RESERVED_PREFIX):
@@ -41,20 +77,7 @@ def get_entity_declaration(
             f"Invalid entity list name: '{dataset}'. Names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
         )
 
-    if not ("label" in entity):
-        raise PyXFormError("The entities sheet is missing the required label column.")
-
-    creation_condition = entity["create_if"] if "create_if" in entity else "1"
-
-    return {
-        "name": "entity",
-        "type": "entity",
-        "parameters": {
-            "dataset": dataset,
-            "create": creation_condition,
-            "label": entity["label"],
-        },
-    }
+    return dataset
 
 
 def validate_entity_saveto(

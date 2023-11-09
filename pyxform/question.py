@@ -74,7 +74,7 @@ class Question(SurveyElement):
                     .strip(),
                     "event": "xforms-value-changed",
                 }
-                if not (setvalue[1] == ""):
+                if not setvalue[1] == "":
                     setvalue_attrs["value"] = self.get_root().insert_xpaths(
                         setvalue[1], self
                     )

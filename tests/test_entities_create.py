@@ -2,7 +2,7 @@
 from tests.pyxform_test_case import PyxformTestCase
 
 
-class EntitiesTest(PyxformTestCase):
+class EntitiesCreationTest(PyxformTestCase):
     def test_basic_entity_creation_building_blocks(self):
         self.assertPyxformXform(
             name="data",
@@ -25,6 +25,9 @@ class EntitiesTest(PyxformTestCase):
                 "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label",
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/label" and @type = "string" and @readonly = "true()" and @calculate = "a"]',
                 '/h:html/h:head/x:model[@entities:entities-version = "2022.1.0"]',
+            ],
+            xml__xpath_count=[
+                ("/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/@update", 0),
             ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
@@ -160,7 +163,9 @@ class EntitiesTest(PyxformTestCase):
             |          | trees   |       |       |
             """,
             errored=True,
-            error__contains=["The entities sheet is missing the required label column."],
+            error__contains=[
+                "The entities sheet is missing the label column which is required when creating entities."
+            ],
         )
 
     def test_entities_namespace__omitted_if_no_entities_sheet(self):
