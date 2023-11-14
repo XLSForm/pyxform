@@ -1306,6 +1306,21 @@ def workbook_to_json(
             parent_children_array.append(new_dict)
             continue
 
+        if question_type == "text":
+            new_dict = row.copy()
+
+            if "rows" in parameters.keys():
+                try:
+                    int(parameters["rows"])
+                except ValueError:
+                    raise PyXFormError("Parameter rows must have an integer value.")
+
+                new_dict["control"] = new_dict.get("control", {})
+                new_dict["control"].update({"rows": parameters["rows"]})
+
+            parent_children_array.append(new_dict)
+            continue
+
         if question_type == "photo":
             new_dict = row.copy()
 
