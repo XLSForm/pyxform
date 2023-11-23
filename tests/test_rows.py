@@ -47,5 +47,7 @@ class TestRows(PyxformTestCase):
                     name="data",
                     md=md.format(case=case),
                     errored=True,
-                    error__contains=["Parameter rows must have an integer value."],
+                    error__contains=[
+                        "[row : 2] Parameter rows must have an integer value."
+                    ],
                 )

@@ -1314,7 +1314,10 @@ def workbook_to_json(
                 try:
                     int(parameters["rows"])
                 except ValueError:
-                    raise PyXFormError("Parameter rows must have an integer value.")
+                    raise PyXFormError(
+                        (ROW_FORMAT_STRING % row_number)
+                        + " Parameter rows must have an integer value."
+                    )
 
                 new_dict["control"] = new_dict.get("control", {})
                 new_dict["control"].update({"rows": parameters["rows"]})
