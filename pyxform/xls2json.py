@@ -1308,6 +1308,7 @@ def workbook_to_json(
 
         if question_type == "text":
             new_dict = row.copy()
+            parameters_generic.validate(parameters=parameters, allowed=("rows",))
 
             if "rows" in parameters.keys():
                 try:
