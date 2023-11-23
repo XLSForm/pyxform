@@ -5,7 +5,7 @@ Test text rows parameter.
 from tests.pyxform_test_case import PyxformTestCase
 
 
-class TestRows(PyxformTestCase):
+class TestParametersRows(PyxformTestCase):
     def test_adding_rows_to_the_body_if_set_in_its_own_column(
         self,
     ):
