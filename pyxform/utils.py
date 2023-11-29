@@ -80,10 +80,8 @@ def node(*args, **kwargs) -> DetachableElement:
     assert len(unicode_args) <= 1
     parsed_string = False
 
-    # Convert the kwargs xml attribute dictionary to a xml.dom.minidom.Element. Sort the
-    # attributes to guarantee a consistent order across Python versions.
-    # See pyxform_test_case.reorder_attributes for details.
-    for k, v in iter(sorted(kwargs.items())):
+    # Convert the kwargs xml attribute dictionary to a xml.dom.minidom.Element.
+    for k, v in iter(kwargs.items()):
         if k in blocked_attributes:
             continue
         if k == "toParseString":

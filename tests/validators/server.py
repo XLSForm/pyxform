@@ -2,6 +2,7 @@
 import os
 import posixpath
 import threading
+import time
 from http.server import SimpleHTTPRequestHandler
 from socketserver import ThreadingTCPServer
 from urllib.parse import unquote
@@ -70,13 +71,18 @@ class ThreadingServerInThread:
             self._server_address, self._handler, bind_and_activate=False
         )
 
-    def _bind_and_activate(self):
+    def _bind_and_activate(self, tries: int = 0):
+        tries += 1
         try:
             self.httpd.server_bind()
             self.httpd.server_activate()
-        except Exception as e:
+        except OSError as e:
             self.httpd.server_close()
-            raise e
+            if 5 < tries:
+                raise e
+            else:
+                time.sleep(0.5)
+                self._bind_and_activate(tries=tries)
 
     def start(self):
         self._bind_and_activate()

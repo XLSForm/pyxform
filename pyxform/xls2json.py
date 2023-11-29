@@ -58,19 +58,22 @@ def merge_dicts(dict_a, dict_b, default_key="default"):
     if dict_b is None or dict_b == {}:
         return dict_a
 
-    if type(dict_a) is not dict:
+    if not isinstance(dict_a, dict):
         if default_key in dict_b:
             return dict_b
         dict_a = {default_key: dict_a}
-    if type(dict_b) is not dict:
+    if not isinstance(dict_b, dict):
         if default_key in dict_a:
             return dict_a
         dict_b = {default_key: dict_b}
 
-    all_keys = set(dict_a.keys()).union(set(dict_b.keys()))
+    # Union keys but retain order (as opposed to set()), preferencing dict_a then dict_b.
+    # E.g. {"a": 1, "b": 2} + {"c": 3, "a": 4} -> {"a": None, "b": None, "c": None}
+    all_keys = {k: None for k in dict_a.keys()}
+    all_keys.update({k: None for k in dict_b.keys()})
 
     out_dict = dict()
-    for key in all_keys:
+    for key in all_keys.keys():
         out_dict[key] = merge_dicts(dict_a.get(key), dict_b.get(key), default_key)
     return out_dict
 

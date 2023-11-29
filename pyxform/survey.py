@@ -296,7 +296,7 @@ class Survey(Section):
                 itext_id = "-".join([list_name, str(idx)])
                 choice_element_list.append(node("itextId", itext_id))
 
-            for name, value in sorted(choice.items()):
+            for name, value in choice.items():
                 if isinstance(value, str) and name != "label":
                     choice_element_list.append(node(name, str(value)))
                 if (
