@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from pyxform import constants as const
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import node
+
+EC = const.EntityColumns
 
 
 class EntityDeclaration(SurveyElement):
@@ -23,13 +26,14 @@ class EntityDeclaration(SurveyElement):
     """
 
     def xml_instance(self, **kwargs):
-        attributes = {}
-        attributes["dataset"] = self.get("parameters", {}).get("dataset", "")
-        attributes["id"] = ""
+        attributes = {
+            EC.DATASET.value: self.get(const.PARAMETERS, {}).get(EC.DATASET, ""),
+            "id": "",
+        }
 
-        entity_id_expression = self.get("parameters", {}).get("entity_id", None)
-        create_condition = self.get("parameters", {}).get("create", None)
-        update_condition = self.get("parameters", {}).get("update", None)
+        entity_id_expression = self.get(const.PARAMETERS, {}).get(EC.ENTITY_ID, None)
+        create_condition = self.get(const.PARAMETERS, {}).get(EC.CREATE_IF, None)
+        update_condition = self.get(const.PARAMETERS, {}).get(EC.UPDATE_IF, None)
 
         if entity_id_expression:
             attributes["update"] = "1"
@@ -38,20 +42,20 @@ class EntityDeclaration(SurveyElement):
         if create_condition or (not update_condition and not entity_id_expression):
             attributes["create"] = "1"
 
-        if self.get("parameters", {}).get("label", None):
-            return node("entity", node("label"), **attributes)
+        if self.get(const.PARAMETERS, {}).get(EC.LABEL, None):
+            return node(const.ENTITY, node(const.LABEL), **attributes)
         else:
-            return node("entity", **attributes)
+            return node(const.ENTITY, **attributes)
 
     def xml_bindings(self):
         """
         See the class comment for an explanation of the logic for generating bindings.
         """
         survey = self.get_root()
-        entity_id_expression = self.get("parameters", {}).get("entity_id", None)
-        create_condition = self.get("parameters", {}).get("create", None)
-        update_condition = self.get("parameters", {}).get("update", None)
-        label_expression = self.get("parameters", {}).get("label", None)
+        entity_id_expression = self.get(const.PARAMETERS, {}).get(EC.ENTITY_ID, None)
+        create_condition = self.get(const.PARAMETERS, {}).get(EC.CREATE_IF, None)
+        update_condition = self.get(const.PARAMETERS, {}).get(EC.UPDATE_IF, None)
+        label_expression = self.get(const.PARAMETERS, {}).get(EC.LABEL, None)
 
         bind_nodes = []
 
@@ -67,7 +71,7 @@ class EntityDeclaration(SurveyElement):
             bind_nodes.append(self._get_bind_node(survey, update_condition, "/@update"))
 
         if entity_id_expression:
-            dataset_name = self.get("parameters", {}).get("dataset", "")
+            dataset_name = self.get(const.PARAMETERS, {}).get(EC.DATASET, "")
             base_version_expression = f"instance('{dataset_name}')/root/item[name={entity_id_expression}]/__version"
             bind_nodes.append(
                 self._get_bind_node(survey, base_version_expression, "/@baseVersion")
@@ -79,19 +83,19 @@ class EntityDeclaration(SurveyElement):
         return bind_nodes
 
     def _get_id_bind_node(self, survey, entity_id_expression):
-        id_bind = {"type": "string", "readonly": "true()"}
+        id_bind = {const.TYPE: "string", "readonly": "true()"}
 
         if entity_id_expression:
             id_bind["calculate"] = survey.insert_xpaths(
                 entity_id_expression, context=self
             )
 
-        return node("bind", nodeset=self.get_xpath() + "/@id", **id_bind)
+        return node(const.BIND, nodeset=self.get_xpath() + "/@id", **id_bind)
 
     def _get_id_setvalue_node(self):
         id_setvalue_attrs = {
             "event": "odk-instance-first-load",
-            "type": "string",
+            const.TYPE: "string",
             "readonly": "true()",
             "value": "uuid()",
         }
@@ -102,11 +106,11 @@ class EntityDeclaration(SurveyElement):
         expr = survey.insert_xpaths(expression, context=self)
         bind_attrs = {
             "calculate": expr,
-            "type": "string",
+            const.TYPE: "string",
             "readonly": "true()",
         }
 
-        return node("bind", nodeset=self.get_xpath() + destination, **bind_attrs)
+        return node(const.BIND, nodeset=self.get_xpath() + destination, **bind_attrs)
 
     def xml_control(self):
         raise NotImplementedError()

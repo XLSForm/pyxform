@@ -367,7 +367,7 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | type        | name   | label | save_to |
             |          | begin_group | a      | A     |         |
             |          | text        | size   | Size  | size    |
-            |          | end_group  |        |       |         |
+            |          | end_group   |        |       |         |
             | entities |             |        |       |         |
             |          | dataset     | label  |       |         |
             |          | trees       | ${size}|       |         |
@@ -389,5 +389,52 @@ class EntitiesCreationTest(PyxformTestCase):
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity",
                 '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@dataset = "trees"]',
+            ],
+        )
+
+    def test_entities_columns__all_expected(self):
+        self.assertPyxformXform(
+            md="""
+            | survey   |           |       |       |
+            |          | type      | name  | label |
+            |          | text      | id    | Treid |
+            |          | text      | a     | A     |
+            | entities |           |       |       |
+            |          | dataset   | label | update_if  | create_if  | entity_id |
+            |          | trees     | a     | id != ''   | id = ''    | ${a}      |
+            """,
+            errored=False,
+            warnings_count=0,
+        )
+
+    def test_entities_columns__one_unexpected(self):
+        self.assertPyxformXform(
+            md="""
+            | survey   |           |       |       |
+            |          | type      | name  | label |
+            |          | text      | a     | A     |
+            | entities |           |       |       |
+            |          | dataset   | label | what  |
+            |          | trees     | a     | !     |
+            """,
+            errored=True,
+            error_contains=[
+                "The entities sheet included the following unexpected column(s): 'what'"
+            ],
+        )
+
+    def test_entities_columns__multiple_unexpected(self):
+        self.assertPyxformXform(
+            md="""
+            | survey   |           |       |       |
+            |          | type      | name  | label |
+            |          | text      | a     | A     |
+            | entities |           |       |       |
+            |          | dataset   | label | what  | why |
+            |          | trees     | a     | !     | ?   |
+            """,
+            errored=True,
+            error_contains=[
+                "The entities sheet included the following unexpected column(s): 'what', 'why'"
             ],
         )

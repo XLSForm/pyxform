@@ -1,19 +1,19 @@
 from typing import Dict, List
 
-from pyxform import constants
+from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
+
+EC = const.EntityColumns
 
 
 def get_entity_declaration(
     entities_sheet: Dict, workbook_dict: Dict, warnings: List
 ) -> Dict:
     if len(entities_sheet) == 0:
-        similar = find_sheet_misspellings(
-            key=constants.ENTITIES, keys=workbook_dict.keys()
-        )
+        similar = find_sheet_misspellings(key=const.ENTITIES, keys=workbook_dict.keys())
         if similar is not None:
-            warnings.append(similar + constants._MSG_SUPPRESS_SPELLING)
+            warnings.append(similar + const._MSG_SUPPRESS_SPELLING)
         return {}
     elif len(entities_sheet) > 1:
         raise PyXFormError(
@@ -22,11 +22,12 @@ def get_entity_declaration(
 
     entity_row = entities_sheet[0]
 
+    validate_entities_columns(row=entity_row)
     dataset_name = get_validated_dataset_name(entity_row)
-    entity_id = entity_row.get("entity_id", None)
-    create_condition = entity_row.get("create_if", None)
-    update_condition = entity_row.get("update_if", None)
-    entity_label = entity_row.get("label", None)
+    entity_id = entity_row.get(EC.ENTITY_ID, None)
+    create_condition = entity_row.get(EC.CREATE_IF, None)
+    update_condition = entity_row.get(EC.UPDATE_IF, None)
+    entity_label = entity_row.get(EC.LABEL, None)
 
     if update_condition and not entity_id:
         raise PyXFormError(
@@ -44,24 +45,24 @@ def get_entity_declaration(
         )
 
     return {
-        "name": "entity",
-        "type": "entity",
-        "parameters": {
-            "dataset": dataset_name,
-            "entity_id": entity_id,
-            "create": create_condition,
-            "update": update_condition,
-            "label": entity_label,
+        const.NAME: const.ENTITY,
+        const.TYPE: const.ENTITY,
+        const.PARAMETERS: {
+            EC.DATASET: dataset_name,
+            EC.ENTITY_ID: entity_id,
+            EC.CREATE_IF: create_condition,
+            EC.UPDATE_IF: update_condition,
+            EC.LABEL: entity_label,
         },
     }
 
 
 def get_validated_dataset_name(entity):
-    dataset = entity["dataset"]
+    dataset = entity[EC.DATASET]
 
-    if dataset.startswith(constants.ENTITIES_RESERVED_PREFIX):
+    if dataset.startswith(const.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
-            f"Invalid entity list name: '{dataset}' starts with reserved prefix {constants.ENTITIES_RESERVED_PREFIX}."
+            f"Invalid entity list name: '{dataset}' starts with reserved prefix {const.ENTITIES_RESERVED_PREFIX}."
         )
 
     if "." in dataset:
@@ -83,7 +84,7 @@ def get_validated_dataset_name(entity):
 def validate_entity_saveto(
     row: Dict, row_number: int, entity_declaration: Dict, in_repeat: bool
 ):
-    save_to = row.get("bind", {}).get("entities:saveto", "")
+    save_to = row.get(const.BIND, {}).get("entities:saveto", "")
     if not save_to:
         return
 
@@ -92,28 +93,26 @@ def validate_entity_saveto(
             "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
         )
 
-    if constants.GROUP in row.get(constants.TYPE) or constants.REPEAT in row.get(
-        constants.TYPE
-    ):
+    if const.GROUP in row.get(const.TYPE) or const.REPEAT in row.get(const.TYPE):
         raise PyXFormError(
-            f"{constants.ROW_FORMAT_STRING % row_number} Groups and repeats can't be saved as entity properties."
+            f"{const.ROW_FORMAT_STRING % row_number} Groups and repeats can't be saved as entity properties."
         )
 
     if in_repeat:
         raise PyXFormError(
-            f"{constants.ROW_FORMAT_STRING % row_number} Currently, you can't create entities from repeats. You may only specify save_to values for form fields outside of repeats."
+            f"{const.ROW_FORMAT_STRING % row_number} Currently, you can't create entities from repeats. You may only specify save_to values for form fields outside of repeats."
         )
 
-    error_start = f"{constants.ROW_FORMAT_STRING % row_number} Invalid save_to name:"
+    error_start = f"{const.ROW_FORMAT_STRING % row_number} Invalid save_to name:"
 
-    if save_to.lower() == "name" or save_to.lower() == "label":
+    if save_to.lower() == const.NAME or save_to.lower() == const.LABEL:
         raise PyXFormError(
             f"{error_start} the entity property name '{save_to}' is reserved."
         )
 
-    if save_to.startswith(constants.ENTITIES_RESERVED_PREFIX):
+    if save_to.startswith(const.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
-            f"{error_start} the entity property name '{save_to}' starts with reserved prefix {constants.ENTITIES_RESERVED_PREFIX}."
+            f"{error_start} the entity property name '{save_to}' starts with reserved prefix {const.ENTITIES_RESERVED_PREFIX}."
         )
 
     if not is_valid_xml_tag(save_to):
@@ -121,5 +120,20 @@ def validate_entity_saveto(
             save_to = save_to.encode("utf-8")
 
         raise PyXFormError(
-            f"{error_start} '{save_to}'. Entity property names {constants.XML_IDENTIFIER_ERROR_MESSAGE}"
+            f"{error_start} '{save_to}'. Entity property names {const.XML_IDENTIFIER_ERROR_MESSAGE}"
         )
+
+
+def validate_entities_columns(row: Dict):
+    expected = set(EC.value_list())
+    observed = set(row.keys())
+    extra = observed.difference(expected)
+    if 0 < len(extra):
+        fmt_extra = ", ".join((f"'{k}'" for k in extra))
+        msg = (
+            f"The entities sheet included the following unexpected column(s): {fmt_extra}. "
+            f"These columns are not supported by this version of pyxform. Please either: "
+            f"check the spelling of the column names, remove the columns, or update "
+            f"pyxform."
+        )
+        raise PyXFormError(msg)

@@ -8,6 +8,7 @@ are easier to find.
 """
 # TODO: Replace matching strings in the json2xforms code (builder.py,
 # survey.py, survey_element.py, question.py) with these constants
+from pyxform.util.enum import StrEnum
 
 TYPE = "type"
 TITLE = "title"
@@ -112,8 +113,18 @@ CURRENT_XFORMS_VERSION = "1.0.0"
 # The ODK entities spec version that generated forms comply to
 ENTITIES_CREATE_VERSION = "2022.1.0"
 CURRENT_ENTITIES_VERSION = "2023.1.0"
+ENTITY = "entity"
 ENTITY_FEATURES = "entity_features"
 ENTITIES_RESERVED_PREFIX = "__"
+
+
+class EntityColumns(StrEnum):
+    DATASET = "dataset"
+    ENTITY_ID = "entity_id"
+    CREATE_IF = "create_if"
+    UPDATE_IF = "update_if"
+    LABEL = "label"
+
 
 DEPRECATED_DEVICE_ID_METADATA_FIELDS = ["subscriberid", "simserial"]
 
