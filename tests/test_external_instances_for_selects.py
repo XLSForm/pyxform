@@ -7,6 +7,7 @@ See also test_external_instances
 import os
 from dataclasses import dataclass, field
 
+from pyxform import aliases
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
 from pyxform.errors import PyXFormError
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
@@ -202,7 +203,7 @@ class TestSelectFromFile(PyxformTestCase):
         |        | type          | name    | label   | parameters |
         |        | {q} cities{e} | city    | City    | {p}        |
         """
-        from pyxform.validators.pyxform import select_from_file_params
+        from pyxform.validators.pyxform import select_from_file
 
         q_types = ("select_one_from_file", "select_multiple_from_file")
         good_params = (
@@ -235,7 +236,7 @@ class TestSelectFromFile(PyxformTestCase):
                         name = "value"
                         if "label" in param:
                             name = "label"
-                        msg = select_from_file_params.value_or_label_format_msg(
+                        msg = select_from_file.value_or_label_format_msg(
                             name=name, row_number=2
                         )
                         self.assertPyxformXform(
@@ -261,6 +262,28 @@ class TestSelectFromFile(PyxformTestCase):
                         xp_city.body_itemset_nodeset_and_refs(value="VAL", label="lBl"),
                     ],
                 )
+
+    def test_expected_error_message(self):
+        """Should get helpful error when select_from_file is missing a file extension."""
+        md = """
+        | survey |                      |      |       |
+        |        | type                 | name | label |
+        |        | {select} cities{ext} | city | City  |
+        """
+        types = aliases.select_from_file.keys()
+        exts = ("", ".exe", ".sav", ".pdf")
+        error = (
+            "File name for '{select} cities{ext}' should end with "
+            "one of the supported file extensions"
+        )
+        for select in types:
+            for ext in exts:
+                with self.subTest(msg=(select, ext)):
+                    self.assertPyxformXform(
+                        md=md.format(select=select, ext=ext),
+                        errored=True,
+                        error__contains=[error.format(select=select, ext=ext)],
+                    )
 
 
 class TestSelectOneExternal(PyxformTestCase):
@@ -477,37 +500,3 @@ class TestSelectOneExternal(PyxformTestCase):
                 self.assertContains(
                     str(e), "should be an external_choices sheet in this xlsform"
                 )
-
-
-class TestInvalidExternalFileInstances(PyxformTestCase):
-    def test_external_other_extension_instances(self):
-        # re: https://github.com/XLSForm/pyxform/issues/30
-        self.assertPyxformXform(
-            name="epdf",
-            md="""
-            | survey |                                              |                |                |
-            |        | type                                         | name           | label          |
-            |        | select_one_from_file cities.pdf              | city           | City           |
-            |        | select_multiple_from_file neighbourhoods.pdf | neighbourhoods | Neighbourhoods |
-            """,  # noqa
-            errored=True,
-            error__contains=["should be a choices sheet in this xlsform"],
-        )
-
-    def test_external_choices_sheet_included_instances(self):
-        # re: https://github.com/XLSForm/pyxform/issues/30
-        self.assertPyxformXform(
-            name="epdf",
-            md="""
-            | survey |                                              |                |                |
-            |        | type                                         | name           | label          |
-            |        | select_one_from_file cities.pdf              | city           | City           |
-            |        | select_multiple_from_file neighbourhoods.pdf | neighbourhoods | Neighbourhoods |
-
-            | choices |
-            |         | list name | name  | label |
-            |         | fruits    | apple | Apple |
-            """,  # noqa
-            errored=True,
-            error__contains=["List name not in choices sheet: cities.pdf"],
-        )
