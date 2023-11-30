@@ -418,7 +418,7 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | trees     | a     | !     |
             """,
             errored=True,
-            error_contains=[
+            error__contains=[
                 "The entities sheet included the following unexpected column(s): 'what'"
             ],
         )
@@ -434,7 +434,9 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | trees     | a     | !     | ?   |
             """,
             errored=True,
-            error_contains=[
-                "The entities sheet included the following unexpected column(s): 'what', 'why'"
+            error__contains=[
+                "The entities sheet included the following unexpected column(s):",
+                "'what'",
+                "'why'",
             ],
         )

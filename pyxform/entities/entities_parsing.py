@@ -125,11 +125,9 @@ def validate_entity_saveto(
 
 
 def validate_entities_columns(row: Dict):
-    expected = set(EC.value_list())
-    observed = set(row.keys())
-    extra = observed.difference(expected)
+    extra = {k: None for k in row.keys() if k not in EC.value_list()}
     if 0 < len(extra):
-        fmt_extra = ", ".join((f"'{k}'" for k in extra))
+        fmt_extra = ", ".join((f"'{k}'" for k in extra.keys()))
         msg = (
             f"The entities sheet included the following unexpected column(s): {fmt_extra}. "
             f"These columns are not supported by this version of pyxform. Please either: "
