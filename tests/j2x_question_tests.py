@@ -154,20 +154,31 @@ class Json2XformQuestionValidationTests(TestCase):
             "name": "phone_number_q",
         }
 
-        expected_phone_number_control_xml = self.config.get(
-            self.cls_name, "test_simple_phone_number_question_type_multilingual_control"
-        )
-
-        expected_phone_number_binding_xml = self.config.get(
-            self.cls_name, "test_simple_phone_number_question_type_multilingual_binding"
-        )
-
         q = create_survey_element_from_dict(simple_phone_number_question)
         self.s.add_child(q)
-        self.assertEqual(ctw(q.xml_control()), expected_phone_number_control_xml)
 
-        if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_bindings()), expected_phone_number_binding_xml)
+        # Inspect XML Control
+        observed = q.xml_control()
+        self.assertEqual("input", observed.nodeName)
+        self.assertEqual("/test/phone_number_q", observed.attributes["ref"].nodeValue)
+        observed_label = observed.childNodes[0]
+        self.assertEqual("label", observed_label.nodeName)
+        self.assertEqual(
+            "jr:itext('/test/phone_number_q:label')",
+            observed_label.attributes["ref"].nodeValue,
+        )
+        observed_hint = observed.childNodes[1]
+        self.assertEqual("hint", observed_hint.nodeName)
+        self.assertEqual("Enter numbers only.", observed_hint.childNodes[0].nodeValue)
+
+        # Inspect XML Binding
+        expected = {
+            "nodeset": "/test/phone_number_q",
+            "type": "string",
+            "constraint": r"regex(., '^\d*$')",
+        }
+        observed = {k: v for k, v in q.xml_bindings()[0].attributes.items()}
+        self.assertDictEqual(expected, observed)
 
     def test_simple_select_all_question_multilingual(self):
         """

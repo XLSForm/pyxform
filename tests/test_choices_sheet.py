@@ -106,3 +106,32 @@ class ChoicesSheetTest(PyxformTestCase):
                 """,
             ],
         )
+
+    def test_choices_extra_columns_output_order_matches_xlsform(self):
+        """Should find that element order matches column order."""
+        md = """
+        | survey   |                    |      |       |
+        |          | type               | name | label |
+        |          | select_one choices | a    | A     |
+        | choices  |                    |      |       |
+        |          | list_name          | name | label | geometry                 |
+        |          | choices            | 1    |       | 46.5841618 7.0801379 0 0 |
+        |          | choices            | 2    |       | 35.8805082 76.515057 0 0 |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_contains=[
+                """
+                /h:html/h:head/x:model/x:instance[@id='choices']/x:root/x:item[
+                  ./x:name[position() = 1 and text() = '1']
+                  and ./x:geometry[position() = 2]
+                ]
+                """
+                """
+                /h:html/h:head/x:model/x:instance[@id='choices']/x:root/x:item[
+                  ./x:name[position() = 1 and text() = '2']
+                  and ./x:geometry[position() = 2]
+                ]
+                """
+            ],
+        )

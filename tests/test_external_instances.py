@@ -8,6 +8,7 @@ from textwrap import dedent
 
 from pyxform.errors import PyXFormError
 from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
+from tests.xpath_helpers.choices import xpc
 
 
 class ExternalInstanceTests(PyxformTestCase):
@@ -229,21 +230,10 @@ class ExternalInstanceTests(PyxformTestCase):
                 '<instance id="city1" src="jr://file/city1.xml"/>',
                 '<instance id="cities" src="jr://file-csv/cities.csv"/>',
                 '<instance id="fruits" src="jr://file-csv/fruits.csv"/>',
-                """
-      <instance id="states">
-        <root>
-          <item>
-            <label>Pass</label>
-            <name>1</name>
-          </item>
-          <item>
-            <label>Fail</label>
-            <name>2</name>
-          </item>
-        </root>
-      </instance>
-""",
             ],  # noqa
+            xml__xpath_match=[
+                xpc.model_instance_choices_label("states", (("1", "Pass"), ("2", "Fail")))
+            ],
         )
 
     def test_cannot__use_different_src_same_id__select_then_internal(self):
