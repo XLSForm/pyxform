@@ -22,6 +22,7 @@ from pyxform.entities.entities_parsing import (
     validate_entity_saveto,
 )
 from pyxform.errors import PyXFormError
+from pyxform.parsing.expression import is_single_token_expression
 from pyxform.utils import PYXFORM_REFERENCE_REGEX, default_is_dynamic
 from pyxform.validators.pyxform import parameters_generic, select_from_file
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
@@ -1017,24 +1018,29 @@ def workbook_to_json(
                         )
                     new_json_dict[constants.COLUMNS] = choices[list_name]
 
-                # Generate a new node for the jr:count column so
-                # xpath expressions can be used.
+                # Generate a new node for the jr:count column so xpath expressions can be used.
                 repeat_count_expression = new_json_dict.get("control", {}).get("jr:count")
                 if repeat_count_expression:
-                    generated_node_name = new_json_dict["name"] + "_count"
-                    parent_children_array.append(
-                        {
-                            "name": generated_node_name,
-                            "bind": {
-                                "readonly": "true()",
-                                "calculate": repeat_count_expression,
-                            },
-                            "type": "calculate",
-                        }
+                    # Simple expressions don't require a new node, they can reference directly.
+                    simple_expression = is_single_token_expression(
+                        expression=repeat_count_expression, token_types=["PYXFORM_REF"]
                     )
-                    new_json_dict["control"]["jr:count"] = (
-                        "${" + generated_node_name + "}"
-                    )
+                    if not simple_expression:
+                        generated_node_name = new_json_dict["name"] + "_count"
+                        parent_children_array.append(
+                            {
+                                "name": generated_node_name,
+                                "bind": {
+                                    "readonly": "true()",
+                                    "calculate": repeat_count_expression,
+                                },
+                                "type": "calculate",
+                            }
+                        )
+                        # This re-directs the body/repeat ref to the above generated node.
+                        new_json_dict["control"]["jr:count"] = (
+                            "${" + generated_node_name + "}"
+                        )
 
                 # Code to deal with table_list appearance flags
                 # (for groups of selects)
