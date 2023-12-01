@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
     <h:title>repeat_date_test</h:title>
     <model odk:xforms-version="1.0.0">
@@ -7,7 +7,6 @@
         <repeat_date_test id="repeat_date_test">
           <generated_note_name_2/>
           <repeat_count/>
-          <repeat_test_count/>
           <repeat_test jr:template="">
             <table_list_3/>
             <table_list_4/>
@@ -36,7 +35,6 @@
       </instance>
       <bind nodeset="/repeat_date_test/generated_note_name_2" readonly="true()" type="string"/>
       <bind calculate="1" nodeset="/repeat_date_test/repeat_count" type="string"/>
-      <bind calculate=" /repeat_date_test/repeat_count " nodeset="/repeat_date_test/repeat_test_count" readonly="true()" type="string"/>
       <bind nodeset="/repeat_date_test/repeat_test/table_list_3" type="string"/>
       <bind nodeset="/repeat_date_test/repeat_test/table_list_4" type="string"/>
       <bind nodeset="/repeat_date_test/generated_note_name_8" readonly="true()" type="string"/>
@@ -49,7 +47,7 @@
     </input>
     <group ref="/repeat_date_test/repeat_test">
       <label></label>
-      <repeat jr:count=" /repeat_date_test/repeat_test_count " nodeset="/repeat_date_test/repeat_test">
+      <repeat jr:count=" /repeat_date_test/repeat_count " nodeset="/repeat_date_test/repeat_test">
         <select1 ref="/repeat_date_test/repeat_test/table_list_3">
           <label>Q1</label>
           <itemset nodeset="instance('yes_no')/root/item">

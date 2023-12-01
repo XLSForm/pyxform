@@ -984,3 +984,44 @@ class TestRepeat(PyxformTestCase):
                 """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label,  ../pos5  + 1)" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
             ],
         )
+
+    def test_repeat_count_item_with_same_suffix_as_repeat_is_ok(self):
+        """Should not have a name clash, the referenced item should be used directly."""
+        md = """
+        | survey |              |         |       |              |
+        |        | type         | name    | label | repeat_count |
+        |        | integer      | a_count | 1     |              |
+        |        | begin repeat | a       | 2     | ${a_count}   |
+        |        | text         | b       | 3     |              |
+        |        | end repeat   | a       |       |              |
+        """
+        self.assertPyxformXform(
+            md=md,
+            debug=True,
+            xml__xpath_match=[
+                # repeat references existing count element directly.
+                """
+                /h:html/h:body/x:group[@ref='/test_name/a']/x:repeat[
+                  @jr:count=' /test_name/a_count '
+                  and @nodeset='/test_name/a'
+                  and ./x:input[@ref='/test_name/a/b']
+                ]
+                """,
+                # binding for existing count element but no calculate binding.
+                """
+                /h:html/h:head/x:model[
+                  ./x:bind[@nodeset='/test_name/a_count' and @type='int']
+                  and not(./x:bind[
+                    @calculate=' /test_name/a_count'
+                    and @nodeset='/test_name/a_count'
+                    and @readonly='true()'
+                  ])
+                ]
+                """,
+                # no duplicated element in the instance.
+                """
+                /h:html/h:head/x:model/x:instance/x:test_name/x:a_count
+                """,
+            ],
+            run_odk_validate=True,
+        )
