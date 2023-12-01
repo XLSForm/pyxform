@@ -668,7 +668,8 @@ class XFormToDictBuilder:
             choices[instance["id"]] = items
         return choices
 
-    def _get_name_from_ref(self, ref):
+    @staticmethod
+    def _get_name_from_ref(ref):
         """given /xlsform_spec_test/launch,
         return the string after the last occurance of the character '/'
         """
@@ -678,10 +679,12 @@ class XFormToDictBuilder:
         else:
             return ref[pos + 1 :].strip()
 
-    def _expand_child(self, obj_list):
+    @staticmethod
+    def _expand_child(obj_list):
         return obj_list
 
-    def _shorten_xpaths_in_string(self, text):
+    @staticmethod
+    def _shorten_xpaths_in_string(text):
         def get_last_item(xpath_str):
             last_item = xpath_str.split("/")
             return last_item[len(last_item) - 1].strip()

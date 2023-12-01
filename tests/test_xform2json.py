@@ -35,9 +35,10 @@ class TestXForm2JSON(PyxformTestCase):
             kwargs={"id_string": "id", "name": "multi-language", "title": "some-title"},
             autoname=False,
         )
-        expected_xml = survey.to_xml()
+        expected = survey.to_xml()
         generated_json = survey.to_json()
 
-        survey = create_survey_element_from_dict(json.loads(generated_json))
+        survey_from_builder = create_survey_element_from_dict(json.loads(generated_json))
+        observed = survey_from_builder.to_xml()
 
-        self.assertEqual(expected_xml, survey.to_xml())
+        self.assertEqual(expected, observed)

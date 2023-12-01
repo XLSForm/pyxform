@@ -416,6 +416,146 @@ class TestTranslations(PyxformTestCase):
             ):
                 run(name=f"questions={count}, without check (seconds):")
 
+    def test_translation_detection__survey_and_choices_columns_present(self):
+        """Should identify that the survey is multi-language when first row(s) empty."""
+        md = """
+        | survey  |                |       |            |            |
+        |         | type           | name  | label      | label::en  |
+        |         | select_one c0  | f     | f          |            |
+        |         | select_one c1  | q1    | Question 1 | Question A |
+        | choices |           |      |        |            |           |
+        |         | list name | name | label  | label::en  | label::fr |
+        |         | c0        | n    | l      |            |           |
+        |         | c1        | na   | la     |            |           |
+        |         | c1        | nb   | lb     | lb-e       | lb-f      |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.body_select1_itemset("f"),
+                xpq.body_label_inline("select1", "f", "f"),
+                xpq.body_select1_itemset("q1"),
+                xpq.body_label_itext("select1", "q1"),
+                xpq.model_itext_label("q1", DEFAULT_LANG, "Question 1"),
+                xpq.model_itext_label("q1", "en", "Question A"),
+                xpq.model_itext_label("q1", "fr", "-"),
+                xpc.model_instance_choices_label("c0", (("n", "l"),)),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    DEFAULT_LANG, "c1", ("la", "lb")
+                ),
+                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("-", "lb-e")),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("-", "lb-f")),
+            ],
+        )
+
+    def test_translation_detection__survey_columns_not_present(self):
+        """Should identify that the survey is multi-language when only choices translated."""
+        md = """
+        | survey  |                |       |            |
+        |         | type           | name  | label      |
+        |         | select_one c0  | f     | f          |
+        |         | select_one c1  | q1    | Question 1 |
+        | choices |           |      |        |            |           |
+        |         | list name | name | label  | label::en  | label::fr |
+        |         | c0        | n    | l      |            |           |
+        |         | c1        | na   | la     |            |           |
+        |         | c1        | nb   | lb     | lb-e       | lb-f      |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.body_select1_itemset("f"),
+                xpq.body_label_inline("select1", "f", "f"),
+                xpq.body_select1_itemset("q1"),
+                xpq.body_label_inline("select1", "q1", "Question 1"),
+                xpc.model_instance_choices_label("c0", (("n", "l"),)),
+                xpc.model_instance_choices_itext("c1", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    DEFAULT_LANG, "c1", ("la", "lb")
+                ),
+                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("-", "lb-e")),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("-", "lb-f")),
+            ],
+        )
+
+    def test_translation_detection__only_survey_columns_present(self):
+        """Should identify that the survey is multi-language when first row(s) empty."""
+        md = """
+        | survey  |                |       |            |            |
+        |         | type           | name  | label      | label::en  |
+        |         | select_one c0  | f     | f          |            |
+        |         | select_one c1  | q1    | Question 1 | Question A |
+        | choices |           |      |        |
+        |         | list name | name | label  |
+        |         | c0        | n    | l      |
+        |         | c1        | na   | la     |
+        |         | c1        | nb   | lb     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.body_select1_itemset("f"),
+                xpq.body_label_inline("select1", "f", "f"),
+                xpq.body_select1_itemset("q1"),
+                xpq.body_label_itext("select1", "q1"),
+                xpq.model_itext_label("q1", DEFAULT_LANG, "Question 1"),
+                xpq.model_itext_label("q1", "en", "Question A"),
+                xpc.model_instance_choices_label("c0", (("n", "l"),)),
+                xpc.model_instance_choices_label("c1", (("na", "la"), ("nb", "lb"))),
+            ],
+        )
+
+    def test_translation_detection__survey_columns_present_with_media(self):
+        """Should identify that the survey is multi-language when first row(s) empty."""
+        md = """
+        | survey  |                |       |            |            |           |
+        |         | type           | name  | label      | label::en  | image::en |
+        |         | select_one c0  | f     | f          |            |           |
+        |         | select_one c1  | q1    | Question 1 | Question A | c1.png    |
+        | choices |           |      |        |            |           |
+        |         | list name | name | label  | label::en  | label::fr | audio::de |
+        |         | c0        | n    | l      |            |           |           |
+        |         | c1        | na   | la     |            |           |           |
+        |         | c1        | nb   | lb     | lb-e       |           | c1_nb.mp3 |
+        |         | c1        | nc   | lc     | lc-e       | lc-f      | c1_nc.mp3 |
+        """
+        self.assertPyxformXform(
+            md=md,
+            debug=True,
+            xml__xpath_match=[
+                xpq.body_select1_itemset("f"),
+                xpq.body_label_inline("select1", "f", "f"),
+                xpq.body_select1_itemset("q1"),
+                xpq.body_label_itext("select1", "q1"),
+                xpq.model_itext_label("q1", DEFAULT_LANG, "Question 1"),
+                xpq.model_itext_label(
+                    "q1",
+                    "en",
+                    "Question A",
+                ),
+                xpq.model_itext_form("q1", "en", "image", "c1.png"),
+                xpc.model_instance_choices_label("c0", (("n", "l"),)),
+                xpc.model_itext_choice_text_label_by_pos(
+                    DEFAULT_LANG, "c1", ("la", "lb", "lc")
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "en", "c1", ("-", "lb-e", "lc-e")
+                ),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("-", "-", "lc-f")),
+                xpc.model_itext_choice_text_label_by_pos("de", "c1", ("-", "-", "-")),
+                xpc.model_itext_choice_media_by_pos(
+                    "de",
+                    "c1",
+                    (
+                        ((None, None),),
+                        (("audio", "c1_nb.mp3"),),
+                        (("audio", "c1_nc.mp3"),),
+                    ),
+                ),
+            ],
+        )
+
 
 class TestTranslationsSurvey(PyxformTestCase):
     """Translations behaviour of columns in the Survey sheet."""
@@ -1090,9 +1230,9 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | type          | name  | label      |
         |         | select_one c1 | q1    | Question 1 |
         | choices |           |      |                 |
-        |         | list name | name | label | label::eng | media::audio |
-        |         | c1        | na   | la-d  | la-e       | la-d.mp3     |
-        |         | c1        | nb   | lb-d  | lb-e       | lb-d.mp3     |
+        |         | list name | name | label::eng | media::audio |
+        |         | c1        | na   | la-e       | la-d.mp3     |
+        |         | c1        | nb   | lb-e       | lb-d.mp3     |
         """
         cols = {CHOICES: {"default": ("label",), "eng": ("media::audio",)}}
         warning = format_missing_translations_msg(_in=cols)

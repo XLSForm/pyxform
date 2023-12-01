@@ -4,6 +4,7 @@ Survey Element base class for all survey elements.
 """
 import json
 import re
+from collections import deque
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
@@ -188,16 +189,14 @@ class SurveyElement(dict):
         """
         Return a the list [root, ..., self._parent, self]
         """
-        result = [self]
+        result = deque((self,))
         current_element = self
         while current_element.parent:
             current_element = current_element.parent
-            result = [current_element] + result
+            result.appendleft(current_element)
         # For some reason the root element has a True flat property...
-        output = [result[0]]
-        for item in result[1:]:
-            if not item.get("flat"):
-                output.append(item)
+        output = [result.popleft()]
+        output.extend([i for i in result if not i.get("flat")])
         return output
 
     def get_root(self):

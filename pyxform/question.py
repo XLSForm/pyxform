@@ -14,15 +14,19 @@ from pyxform.constants import (
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import (
-    PYXFORM_REFERENCE_REGEX,
-    default_is_dynamic,
-    has_dynamic_label,
-    node,
-)
+from pyxform.utils import PYXFORM_REFERENCE_REGEX, default_is_dynamic, node
 
 
 class Question(SurveyElement):
+    FIELDS = SurveyElement.FIELDS.copy()
+    FIELDS.update(
+        {
+            "_itemset_multi_language": bool,
+            "_itemset_has_media": bool,
+            "_itemset_dyn_label": bool,
+        }
+    )
+
     def validate(self):
         SurveyElement.validate(self)
 
@@ -202,12 +206,6 @@ class MultipleChoiceQuestion(Question):
         for element in self.xml_label_and_hint():
             result.appendChild(element)
 
-        choices = survey.get("choices")
-        multi_language = False
-        if choices is not None and len(choices) > 0:
-            first_choices = next(iter(choices.values()))
-            multi_language = isinstance(first_choices[0].get("label"), dict)
-
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
         if self["itemset"] and isinstance(self["itemset"], str):
@@ -227,15 +225,12 @@ class MultipleChoiceQuestion(Question):
                 else EXTERNAL_CHOICES_ITEMSET_REF_LABEL,
             )
 
-            has_media = False
-            has_dyn_label = False
+            multi_language = self.get("_itemset_multi_language", False)
+            has_media = self.get("_itemset_has_media", False)
+            has_dyn_label = self.get("_itemset_dyn_label", False)
             is_previous_question = bool(
                 PYXFORM_REFERENCE_REGEX.search(self.get("itemset"))
             )
-
-            if choices.get(itemset):
-                has_media = bool(choices[itemset][0].get("media"))
-                has_dyn_label = has_dynamic_label(choices[itemset], multi_language)
 
             if file_extension in EXTERNAL_INSTANCE_EXTENSIONS:
                 itemset = itemset

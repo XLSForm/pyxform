@@ -6,9 +6,9 @@ from pyxform import constants as const
 from pyxform.errors import PyXFormError
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Optional, Sequence, Set, Union
+    from typing import Dict, List, Optional, Sequence, Set, Tuple
 
-    SheetData = List[Dict[str, Union[str, Dict]]]
+    SheetData = Tuple[Tuple[str, ...]]
     Warnings = List[str]
 
 
@@ -93,31 +93,20 @@ class Translations:
     def _find_translations(
         self, sheet_data: "SheetData", translatable_columns: "Dict[str, str]"
     ):
-        def process_cell(typ, cell):
-            if cell is not None:
-                if typ in translatable_columns.keys():
-                    name = translatable_columns[typ]
-                    if isinstance(cell, str):
-                        self.seen[const.DEFAULT_LANGUAGE_VALUE].append(name)
-                        self.columns_seen.add(name)
-                    elif isinstance(cell, dict):
-                        for lng in cell:
-                            self.seen[lng].append(name)
-                            self.columns_seen.add(name)
+        def process_header(head):
+            if head[0] in translatable_columns.keys():
+                name = translatable_columns[head[0]]
+                if len(head) == 1:
+                    self.seen[const.DEFAULT_LANGUAGE_VALUE].append(name)
+                elif len(head) == 2:
+                    self.seen[head[1]].append(name)
+                self.columns_seen.add(name)
 
-        if 0 < len(sheet_data):
-            # e.g. ("name", "q1"), ("label", {"en": "Hello", "fr": "Bonjour"})
-            for column_type, cell_content in sheet_data[0].items():
-                if column_type == const.MEDIA and isinstance(cell_content, dict):
-                    # e.g. ("audio", {"eng": "my.mp3"})
-                    for media_type, media_cell in cell_content.items():
-                        process_cell(typ=media_type, cell=media_cell)
-                if column_type == const.BIND:
-                    # e.g. ("jr:constraintMsg", "Try again")
-                    for bind_type, bind_cell in cell_content.items():
-                        process_cell(typ=bind_type, cell=bind_cell)
-                else:
-                    process_cell(typ=column_type, cell=cell_content)
+        for header in sheet_data:
+            if 1 < len(header) and header[0] in (const.MEDIA, const.BIND):
+                process_header(head=header[1:])
+            else:
+                process_header(head=header)
 
     def seen_default_only(self) -> bool:
         return 0 == len(self.seen) or (

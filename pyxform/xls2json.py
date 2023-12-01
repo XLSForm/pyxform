@@ -8,7 +8,7 @@ import os
 import re
 import sys
 from collections import Counter
-from typing import IO, Any, Dict, List, Optional
+from typing import IO, Any, Dict, List, Optional, Tuple
 
 from pyxform import aliases, constants
 from pyxform.constants import (
@@ -101,13 +101,25 @@ def replace_smart_quotes_in_dict(_d):
             _d[key] = value
 
 
+class DealiasAndGroupHeadersResult:
+    __slots__ = ("headers", "data")
+
+    def __init__(self, headers: Tuple[Tuple[str, ...], ...], data: List[Dict]):
+        """
+        :param headers: Distinct headers seen in the sheet, parsed / split if applicable.
+        :param data: Sheet data rows, in grouped dict format.
+        """
+        self.headers: Tuple[Tuple[str, ...], ...] = headers
+        self.data: List[Dict] = data
+
+
 def dealias_and_group_headers(
-    dict_array: "List[Dict]",
-    header_aliases: "Dict",
+    dict_array: List[Dict],
+    header_aliases: Dict[str, str],
     use_double_colons: bool,
     default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
     ignore_case: bool = False,
-):
+) -> DealiasAndGroupHeadersResult:
     """
     For each row in the worksheet, group all keys that contain a double colon.
     So
@@ -121,10 +133,10 @@ def dealias_and_group_headers(
     """
     group_delimiter = "::"
     out_dict_array = list()
+    seen_headers = {}
     for row in dict_array:
         out_row = dict()
         for header, val in row.items():
-
             if ignore_case:
                 header = header.lower()
 
@@ -154,9 +166,12 @@ def dealias_and_group_headers(
             new_key = tokens[0]
             new_value = list_to_nested_dict(tokens[1:] + [val])
             out_row = merge_dicts(out_row, {new_key: new_value}, default_language)
+            seen_headers[tuple(tokens)] = None
 
         out_dict_array.append(out_row)
-    return out_dict_array
+    return DealiasAndGroupHeadersResult(
+        headers=tuple(seen_headers.keys()), data=out_dict_array
+    )
 
 
 def dealias_types(dict_array):
@@ -478,9 +493,11 @@ def workbook_to_json(
         settings_sheet_headers = []
 
     settings_sheet = dealias_and_group_headers(
-        settings_sheet_headers, aliases.settings_header, use_double_colons
+        dict_array=settings_sheet_headers,
+        header_aliases=aliases.settings_header,
+        use_double_colons=use_double_colons,
     )
-    settings = settings_sheet[0] if len(settings_sheet) > 0 else {}
+    settings = settings_sheet.data[0] if len(settings_sheet.data) > 0 else {}
     replace_smart_quotes_in_dict(settings)
 
     default_language = settings.get(constants.DEFAULT_LANGUAGE_KEY, default_language)
@@ -518,10 +535,13 @@ def workbook_to_json(
         replace_smart_quotes_in_dict(choice_item)
 
     external_choices_sheet = dealias_and_group_headers(
-        external_choices_sheet, aliases.list_header, use_double_colons, default_language
+        dict_array=external_choices_sheet,
+        header_aliases=aliases.list_header,
+        use_double_colons=use_double_colons,
+        default_language=default_language,
     )
     external_choices = group_dictionaries_by_key(
-        external_choices_sheet, constants.LIST_NAME
+        list_of_dicts=external_choices_sheet.data, key=constants.LIST_NAME
     )
 
     # ########## Choices sheet ##########
@@ -529,9 +549,14 @@ def workbook_to_json(
     for choice_item in choices_sheet:
         replace_smart_quotes_in_dict(choice_item)
     choices_sheet = dealias_and_group_headers(
-        choices_sheet, aliases.list_header, use_double_colons, default_language
+        dict_array=choices_sheet,
+        header_aliases=aliases.list_header,
+        use_double_colons=use_double_colons,
+        default_language=default_language,
     )
-    combined_lists = group_dictionaries_by_key(choices_sheet, constants.LIST_NAME)
+    combined_lists = group_dictionaries_by_key(
+        list_of_dicts=choices_sheet.data, key=constants.LIST_NAME
+    )
     # To combine the warning into one message, the check for missing choices translation
     # columns is run with Survey sheet below.
 
@@ -605,9 +630,13 @@ def workbook_to_json(
     # ########## Entities sheet ###########
     entities_sheet = workbook_dict.get(constants.ENTITIES, [])
     entities_sheet = dealias_and_group_headers(
-        entities_sheet, aliases.entities_header, False
+        dict_array=entities_sheet,
+        header_aliases=aliases.entities_header,
+        use_double_colons=False,
     )
-    entity_declaration = get_entity_declaration(entities_sheet, workbook_dict, warnings)
+    entity_declaration = get_entity_declaration(
+        entities_sheet=entities_sheet.data, workbook_dict=workbook_dict, warnings=warnings
+    )
 
     # ########## Survey sheet ###########
     survey_sheet = workbook_dict[constants.SURVEY]
@@ -618,23 +647,30 @@ def workbook_to_json(
     if clean_text_values_enabled:
         survey_sheet = clean_text_values(survey_sheet)
     survey_sheet = dealias_and_group_headers(
-        survey_sheet, aliases.survey_header, use_double_colons, default_language
+        dict_array=survey_sheet,
+        header_aliases=aliases.survey_header,
+        use_double_colons=use_double_colons,
+        default_language=default_language,
     )
-    survey_sheet = dealias_types(survey_sheet)
+    survey_sheet.data = dealias_types(dict_array=survey_sheet.data)
 
     # Check for missing translations. The choices sheet is checked here so that the
     # warning can be combined into one message.
     sheet_translations = SheetTranslations(
-        survey_sheet=survey_sheet,
-        choices_sheet=choices_sheet,
+        survey_sheet=survey_sheet.headers,
+        choices_sheet=choices_sheet.headers,
     )
     sheet_translations.missing_check(warnings=warnings)
 
     # No spell check for OSM sheet (infrequently used, many spurious matches).
     osm_sheet = dealias_and_group_headers(
-        workbook_dict.get(constants.OSM, []), aliases.list_header, True
+        dict_array=workbook_dict.get(constants.OSM, []),
+        header_aliases=aliases.list_header,
+        use_double_colons=True,
     )
-    osm_tags = group_dictionaries_by_key(osm_sheet, constants.LIST_NAME)
+    osm_tags = group_dictionaries_by_key(
+        list_of_dicts=osm_sheet.data, key=constants.LIST_NAME
+    )
     # #################################
 
     # Parse the survey sheet while generating a survey in our json format:
@@ -677,7 +713,7 @@ def workbook_to_json(
 
     # row by row, validate questions, throwing errors and adding warnings
     # where needed.
-    for row in survey_sheet:
+    for row in survey_sheet.data:
         row_number += 1
         if stack[-1] is not None:
             prev_control_type = stack[-1]["control_type"]
@@ -1683,7 +1719,7 @@ class QuestionTypesReader(SpreadsheetReader):
             header_aliases={},
             use_double_colons=use_double_colons,
             default_language=constants.DEFAULT_LANGUAGE_VALUE,
-        )
+        ).data
         self._dict = organize_by_values(self._dict, "name")
 
 
