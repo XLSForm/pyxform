@@ -23,7 +23,7 @@ from pyxform.entities.entities_parsing import (
 )
 from pyxform.errors import PyXFormError
 from pyxform.utils import PYXFORM_REFERENCE_REGEX, default_is_dynamic
-from pyxform.validators.pyxform import parameters_generic, select_from_file_params
+from pyxform.validators.pyxform import parameters_generic, select_from_file
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
@@ -1120,6 +1120,11 @@ def workbook_to_json(
                         + "List name not in external choices sheet: "
                         + list_name
                     )
+                select_from_file.validate_list_name_extension(
+                    select_command=parse_dict["select_command"],
+                    list_name=list_name,
+                    row_number=row_number,
+                )
                 if (
                     list_name not in choices
                     and select_type != constants.SELECT_ONE_EXTERNAL
@@ -1209,13 +1214,13 @@ def workbook_to_json(
                     )
 
                 if "value" in parameters.keys():
-                    select_from_file_params.value_or_label_check(
+                    select_from_file.value_or_label_check(
                         name="value",
                         value=parameters["value"],
                         row_number=row_number,
                     )
                 if "label" in parameters.keys():
-                    select_from_file_params.value_or_label_check(
+                    select_from_file.value_or_label_check(
                         name="label",
                         value=parameters["label"],
                         row_number=row_number,

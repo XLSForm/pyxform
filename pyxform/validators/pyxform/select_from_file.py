@@ -1,6 +1,8 @@
 import re
+from pathlib import Path
 
-from pyxform.constants import ROW_FORMAT_STRING
+from pyxform import aliases
+from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, ROW_FORMAT_STRING
 from pyxform.errors import PyXFormError
 
 VALUE_OR_LABEL_TEST_REGEX = re.compile(r"^[a-zA-Z_][a-zA-Z0-9\-_\.]*$")
@@ -42,3 +44,20 @@ def value_or_label_check(name: str, value: str, row_number: int) -> None:
         msg = value_or_label_format_msg(name=name, row_number=row_number)
         raise PyXFormError(msg)
     return None
+
+
+def validate_list_name_extension(
+    select_command: str, list_name: str, row_number: int
+) -> None:
+    """For select_from_file types, the list_name should end with a supported extension."""
+    list_path = Path(list_name)
+    if select_command in aliases.select_from_file and (
+        1 != len(list_path.suffixes)
+        or list_path.suffix not in EXTERNAL_INSTANCE_EXTENSIONS
+    ):
+        exts = ", ".join((f"'{e}'" for e in EXTERNAL_INSTANCE_EXTENSIONS))
+        raise PyXFormError(
+            ROW_FORMAT_STRING % row_number
+            + f" File name for '{select_command} {list_name}' should end with one of "
+            + f"the supported file extensions: {exts}"
+        )

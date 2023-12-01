@@ -18,6 +18,12 @@ control = {
     "loop": constants.LOOP,
     "looped group": constants.REPEAT,
 }
+select_from_file = {
+    "select_one_from_file": constants.SELECT_ONE,
+    "select_multiple_from_file": constants.SELECT_ALL_THAT_APPLY,
+    "select one from file": constants.SELECT_ONE,
+    "select multiple from file": constants.SELECT_ALL_THAT_APPLY,
+}
 select = {
     "add select one prompt using": constants.SELECT_ONE,
     "add select multiple prompt using": constants.SELECT_ALL_THAT_APPLY,
@@ -29,10 +35,7 @@ select = {
     "select_multiple": constants.SELECT_ALL_THAT_APPLY,
     "select all that apply": constants.SELECT_ALL_THAT_APPLY,
     "select_one_external": constants.SELECT_ONE_EXTERNAL,
-    "select_one_from_file": constants.SELECT_ONE,
-    "select_multiple_from_file": constants.SELECT_ALL_THAT_APPLY,
-    "select one from file": constants.SELECT_ONE,
-    "select multiple from file": constants.SELECT_ALL_THAT_APPLY,
+    **select_from_file,
     "rank": constants.RANK,
 }
 cascading = {
