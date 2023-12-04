@@ -172,14 +172,11 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
 
 @lru_cache(maxsize=65536)  # 2^16
 def is_label_dynamic(label: str) -> bool:
-    if (
+    return (
         label is not None
         and isinstance(label, str)
         and re.search(BRACKETED_TAG_REGEX, label) is not None
-    ):
-        return True
-    else:
-        return False
+    )
 
 
 def recursive_dict():
