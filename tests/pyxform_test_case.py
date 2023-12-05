@@ -200,7 +200,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         warnings = kwargs.get("warnings", [])
         xml_nodes = {}
 
-        run_odk_validate = kwargs.get("run_odk_validate", False)
+        run_odk_validate = kwargs.get("run_odk_validate", True)
         odk_validate_error__contains = kwargs.get("odk_validate_error__contains", [])
         survey_valid = True
 

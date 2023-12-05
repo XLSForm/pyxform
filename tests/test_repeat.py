@@ -307,7 +307,7 @@ class TestRepeat(PyxformTestCase):
       </input>
     </group>"""  # noqa
 
-        self.assertPyxformXform(md=md, xml__contains=[expected], run_odk_validate=True)
+        self.assertPyxformXform(md=md, xml__contains=[expected])
 
     def test_choice_from_previous_repeat_answers(self):
         """Select one choices from previous repeat answers."""
@@ -1023,5 +1023,4 @@ class TestRepeat(PyxformTestCase):
                 /h:html/h:head/x:model/x:instance/x:test_name/x:a_count
                 """,
             ],
-            run_odk_validate=True,
         )

@@ -768,7 +768,6 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         )
         self.assertPyxformXform(
             md=md,
-            run_odk_validate=True,
             # Exclude if single quote in value, to avoid comparison and escaping issues.
             xml__xpath_match=[
                 xpaths

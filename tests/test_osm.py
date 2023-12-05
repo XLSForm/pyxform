@@ -24,7 +24,6 @@ class OSMWidgetsTest(PyxformTestCase):
     def test_osm_type(self):
         self.assertPyxformXform(
             name="osm",
-            run_odk_validate=True,
             md="""
             | survey |                   |              |          |
             |        | type              |   name       | label    |

@@ -34,7 +34,6 @@ class GuidanceHintTest(PyxformTestCase):
                 '<value form="guidance">as shown on birth certificate</value>',
                 "<hint ref=\"jr:itext('/data/name:hint')\"/>",
             ],
-            run_odk_validate=True,
         )
 
     def test_hint_and_guidance_one_language(self):  # pylint: disable=C0103
