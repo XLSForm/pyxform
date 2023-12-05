@@ -395,13 +395,14 @@ class EntitiesCreationTest(PyxformTestCase):
     def test_entities_columns__all_expected(self):
         self.assertPyxformXform(
             md="""
-            | survey   |           |       |       |
-            |          | type      | name  | label |
-            |          | text      | id    | Treid |
-            |          | text      | a     | A     |
-            | entities |           |       |       |
-            |          | dataset   | label | update_if  | create_if  | entity_id |
-            |          | trees     | a     | id != ''   | id = ''    | ${a}      |
+            | survey   |              |       |            |
+            |          | type         | name  | label      |
+            |          | text         | id    | Treid      |
+            |          | text         | a     | A          |
+            |          | csv-external | trees |            |
+            | entities |              |       |            |
+            |          | dataset      | label | update_if  | create_if  | entity_id |
+            |          | trees        | a     | id != ''   | id = ''    | ${a}      |
             """,
             errored=False,
             warnings_count=0,

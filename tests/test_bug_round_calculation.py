@@ -16,5 +16,4 @@ class RoundCalculationTest(PyxformTestCase):
             |        | calculate   | rounded        | Rounded | round(${amount}, 0) |
             """,  # noqa
             xml__contains=["""<instance>"""],
-            run_odk_validate=True,
         )

@@ -19,7 +19,6 @@ class ValidateUnicodeException(PyxformTestCase):
             |         | type      | name  | label | calculation    |
             |         | calculate | bad   | bad   | $(myField)='1' |
             """,
-            run_odk_validate=True,
             odk_validate_error__contains=[
                 'Invalid calculate for the bind attached to "${bad}" : Couldn\'t '
                 "understand the expression starting at this point:"
@@ -33,7 +32,6 @@ class ValidateUnicodeException(PyxformTestCase):
             |         | type      | name  | label | calculation    |
             |         | calculate | bad   | bad   | £¥§©®₱₩        |
             """,
-            run_odk_validate=True,
             odk_validate_error__contains=[
                 'Invalid calculate for the bind attached to "${bad}" : Couldn\'t '
                 "understand the expression starting at this point:"

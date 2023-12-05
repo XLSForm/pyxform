@@ -425,8 +425,6 @@ class ExternalInstanceTests(PyxformTestCase):
             xml__contains=[
                 """<instance id="my_data_b" src="jr://file-csv/my_data_b.csv"/>"""
             ],
-            # Is Validate OK with the multi-line expression.
-            run_odk_validate=True,
         )
 
     def test_pulldata_calculate_multi_line_expression__multiple_calls(self):
@@ -455,8 +453,6 @@ class ExternalInstanceTests(PyxformTestCase):
                 """<instance id="my_data_b" src="jr://file-csv/my_data_b.csv"/>""",
                 """<instance id="my_data_c" src="jr://file-csv/my_data_c.csv"/>""",
             ],
-            # Is Validate OK with the multi-line expression and multiple instances.
-            run_odk_validate=True,
         )
 
     def test_pulldata_calculate_single_line_expression__multiple_calls(self):
@@ -479,8 +475,6 @@ class ExternalInstanceTests(PyxformTestCase):
                 """<instance id="my_data_b" src="jr://file-csv/my_data_b.csv"/>""",
                 """<instance id="my_data_c" src="jr://file-csv/my_data_c.csv"/>""",
             ],
-            # Is Validate OK with the multiple instances.
-            run_odk_validate=True,
         )
 
     def test_external_instance_pulldata_readonly(self):

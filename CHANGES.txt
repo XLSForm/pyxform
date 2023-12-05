@@ -1,5 +1,19 @@
 Pyxform Changelog
 
+v2.0.0, 2023-12-05
+* Always generate secondary instance for selects by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/614
+* Fix or_other + translations + group or repeat by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/650
+* Detect instance() expressions in notes and make them into outputs by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/648
+* Upgrade Validate by @lognaturel in https://github.com/XLSForm/pyxform/pull/658
+* Add support for specifying a custom camera app for image questions by @grzesiek2010 in https://github.com/XLSForm/pyxform/pull/659
+* Add rows to parameters column for text type  by @grzesiek2010 in https://github.com/XLSForm/pyxform/pull/667
+* Reject form with unknown columns in entities sheet by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/671
+* Nicer error about choices sheet when extension omitted in select_.._from_file by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/673
+* Fix _count suffix name clash with repeats targeting another item by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/674
+* Preserve order of columns when building secondary instance by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/672
+* Detection of multilanguage choices only works if first choice list is multilanguage by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/666
+* Tidy up is_label_dynamic to return condition directly by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/675
+
 v1.12.2, 2023-09-15
 * Alias list_name to dataset in entities sheet by @lognaturel in https://github.com/XLSForm/pyxform/pull/654
 

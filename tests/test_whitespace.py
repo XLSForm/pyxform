@@ -29,7 +29,6 @@ class WhitespaceTest(PyxformTestCase):
           """
         self.assertPyxformXform(
             md=md,
-            run_odk_validate=True,
             xml__xpath_contains=[
                 """
                 /h:html/h:head/x:model/x:submission[

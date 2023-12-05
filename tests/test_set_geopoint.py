@@ -21,5 +21,4 @@ class SetGeopointTest(PyxformTestCase):
                 '<odk:setgeopoint event="odk-instance-first-load" ref="/data/my-location"/>',
                 "",
             ],
-            run_odk_validate=True,
         )
