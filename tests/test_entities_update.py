@@ -7,13 +7,14 @@ class EntitiesUpdateTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |         |            |         |
-            |          | type    | name       | label   |
-            |          | text    | id         | Tree id |
-            |          | text    | a          | A       |
-            | entities |         |            |         |
-            |          | dataset | entity_id  |         |
-            |          | trees   | ${id}      |         |
+            | survey   |              |            |         |
+            |          | type         | name       | label   |
+            |          | text         | id         | Tree id |
+            |          | text         | a          | A       |
+            |          | csv-external | trees      |         |
+            | entities |              |            |         |
+            |          | dataset      | entity_id  |         |
+            |          | trees        | ${id}      |         |
             """,
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity",
@@ -92,13 +93,14 @@ class EntitiesUpdateTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |         |                      |           |
-            |          | type    | name                 | label     |
-            |          | text    | id                   | Tree id   |
-            |          | text    | a                    | A         |
-            | entities |         |                      |           |
-            |          | dataset | update_if            | entity_id |
-            |          | trees   | string-length(a) > 3 | ${id}     |
+            | survey   |              |                      |           |
+            |          | type         | name                 | label     |
+            |          | text         | id                   | Tree id   |
+            |          | text         | a                    | A         |
+            |          | csv-external | trees                |           |
+            | entities |              |                      |           |
+            |          | dataset      | update_if            | entity_id |
+            |          | trees        | string-length(a) > 3 | ${id}     |
             """,
             xml__xpath_match=[
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@update" and @calculate = "string-length(a) > 3"]',
@@ -116,13 +118,14 @@ class EntitiesUpdateTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |         |            |            |           |
-            |          | type    | name       | label      |           |
-            |          | text    | id         | Tree id    |           |
-            |          | integer | a          | A          |           |
-            | entities |         |            |            |           |
-            |          | dataset | update_if  | create_if  | entity_id |
-            |          | trees   | id != ''   | id = ''    | ${id}     |
+            | survey   |              |            |            |           |
+            |          | type         | name       | label      |           |
+            |          | text         | id         | Tree id    |           |
+            |          | integer      | a          | A          |           |
+            |          | csv-external | trees      |            |           |
+            | entities |              |            |            |           |
+            |          | dataset      | update_if  | create_if  | entity_id |
+            |          | trees        | id != ''   | id = ''    | ${id}     |
             """,
             xml__xpath_match=[
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@update" and @calculate = "id != \'\'"]',
@@ -140,13 +143,14 @@ class EntitiesUpdateTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |         |            |         |
-            |          | type    | name       | label   |
-            |          | text    | id         | Tree id |
-            |          | text    | a          | A       |
-            | entities |         |            |         |
-            |          | dataset | entity_id  | label   |
-            |          | trees   | ${id}      | a       |
+            | survey   |              |            |         |
+            |          | type         | name       | label   |
+            |          | text         | id         | Tree id |
+            |          | text         | a          | A       |
+            |          | csv-external | trees      |         |
+            | entities |              |            |         |
+            |          | dataset      | entity_id  | label   |
+            |          | trees        | ${id}      | a       |
             """,
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label",
@@ -158,13 +162,14 @@ class EntitiesUpdateTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey   |         |            |         |         |
-            |          | type    | name       | label   | save_to |
-            |          | text    | id         | Tree id |         |
-            |          | text    | a          | A       | foo     |
-            | entities |         |            |         |         |
-            |          | dataset | entity_id  |         |         |
-            |          | trees   | ${id}      |         |         |
+            | survey   |              |            |         |         |
+            |          | type         | name       | label   | save_to |
+            |          | text         | id         | Tree id |         |
+            |          | text         | a          | A       | foo     |
+            |          | csv-external | trees      |         |         |
+            | entities |              |            |         |         |
+            |          | dataset      | entity_id  |         |         |
+            |          | trees        | ${id}      |         |         |
             """,
             xml__xpath_match=[
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/a" and @entities:saveto = "foo"]'
