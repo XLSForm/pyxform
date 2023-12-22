@@ -185,6 +185,5 @@ class TypedCalculatesTest(PyxformTestCase):
         |        | type       | name | label       | calculation | default  |
         |        | calculate  | a    |             |             | random() |
         """,
-            errored=False,
             instance__contains=["<a/>"],
         )

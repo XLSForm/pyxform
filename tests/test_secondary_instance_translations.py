@@ -139,8 +139,6 @@ class TestSecondaryInstanceTest(PyxformTestCase):
             name="data",
             id_string="some-id",
             md=xform_md,
-            errored=False,
-            debug=False,
             itext__contains=[
                 '<text id="list-0">',
                 '<text id="list-1">',
@@ -171,7 +169,6 @@ class TestSecondaryInstanceTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md=xform_md,
-            debug=False,
             itext__contains=[
                 '<text id="choices-0">',
                 '<value> One - <output value=" /data/txt "/>',

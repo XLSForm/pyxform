@@ -18,7 +18,6 @@ class SettingsAutoSendDelete(PyxformTestCase):
             |          | auto_send    |           |           |
             |          | true         |           |           |
             """,
-            debug=False,
             xml__contains=['<submission orx:auto-send="true"/>'],
         )
 
@@ -34,7 +33,6 @@ class SettingsAutoSendDelete(PyxformTestCase):
             |          | auto_delete  |           |           |
             |          | true         |           |           |
             """,
-            debug=False,
             xml__contains=['<submission orx:auto-delete="true"/>'],
         )
 
@@ -50,7 +48,6 @@ class SettingsAutoSendDelete(PyxformTestCase):
             |          | auto_delete  | auto_send |           |
             |          | false        | false     |           |
             """,
-            debug=False,
             xml__contains=['<submission orx:auto-delete="false" orx:auto-send="false"/>'],
         )
 
@@ -72,7 +69,6 @@ class SettingsAutoSendDelete(PyxformTestCase):
             |          | bRHBG7TQm+Afnx0s5E2bGIT5jB5cj9YaX6BqZSeodpafQjpXEJg6uufxF1Ni3Btv   |           |           |
             |          |  4wIDAQAB                                                          |           |           |
             """,
-            debug=False,
             xml__contains=[
                 '<submission base64RsaPublicKey="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwOHPJWD9zc8JPBZj/UtC" orx:auto-send="false"/>'
             ],
@@ -90,7 +86,6 @@ class SettingsAutoSendDelete(PyxformTestCase):
             |          | submission_url                                        | auto_send |           |
             |          | https://odk.ona.io/random_person/submission           | false     |           |
             """,
-            debug=False,
             xml__contains=[
                 '<submission action="https://odk.ona.io/random_person/submission" method="post" orx:auto-send="false"/>'
             ],

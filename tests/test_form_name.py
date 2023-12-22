@@ -19,7 +19,6 @@ class FormNameTest(PyxformTestCase):
             |          | id_string | name |
             |          | some-id   | data |
             """,
-            kwargs={},
             autoname=False,
         )
 

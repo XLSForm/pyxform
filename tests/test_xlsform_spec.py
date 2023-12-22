@@ -56,6 +56,7 @@ class TestWarnings(PyxformTestCase):
         """  # noqa
         warnings = []
         self.assertPyxformXform(
+            debug=True,
             name="spec_test",
             md=md,
             warnings=warnings,

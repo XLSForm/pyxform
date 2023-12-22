@@ -50,7 +50,8 @@ class BuilderTests(TestCase):
             self.survey_out_dict, utils.path_to_text_fixture("how_old_are_you.json")
         )
 
-    def test_create_from_file_object(self):
+    @staticmethod
+    def test_create_from_file_object():
         path = utils.path_to_text_fixture("yes_or_no_question.xls")
         with open(path, "rb") as f:
             create_survey_from_xls(f)

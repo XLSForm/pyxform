@@ -36,8 +36,6 @@ class XlsFormHeadersTest(PyxformTestCase):
             |        | decimal   | amount  | Counter |               |
             |        | calculate | doubled | Doubled | ${amount} * 2 |
             """,
-            errored=False,
-            debug=False,
         )
 
     def test_form_id_variant(self):
@@ -49,9 +47,9 @@ class XlsFormHeadersTest(PyxformTestCase):
 |              | id_string                         | version                | form_id     |
 |              | get_option_from_two_repeat_answer | vWvvk3GYzjXcJQyvTWELej | AUTO-v2-jef |
 """
-        kwargs = {"name": "None", "title": "AUTO-v2-jef", "id_string": "AUTO-v2-jef"}
-
-        survey = self.md_to_pyxform_survey(md, kwargs=kwargs, autoname=False)
+        survey = self.md_to_pyxform_survey(
+            md_raw=md, title="AUTO-v2-jef", id_string="AUTO-v2-jef", autoname=False
+        )
 
         self.assertEqual(survey.id_string, "AUTO-v2-jef")
         self.assertEqual(survey.version, "vWvvk3GYzjXcJQyvTWELej")

@@ -522,7 +522,6 @@ class TestTranslations(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            debug=True,
             xml__xpath_match=[
                 xpq.body_select1_itemset("f"),
                 xpq.body_label_inline("select1", "f", "f"),
