@@ -1737,7 +1737,7 @@ class TestTranslationsChoices(PyxformTestCase):
         )
 
     def test_specify_other__choice_filter(self):
-        """Should raise an error since these featuers are unsupported together."""
+        """Should raise an error since these features are unsupported together."""
         md = """
         | survey  |                        |       |            |
         |         | type                   | name  | label      | choice_filter |
@@ -1752,4 +1752,36 @@ class TestTranslationsChoices(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=["[row : 3] Choice filter not supported with or_other."],
+        )
+
+    def test_choice_name_containing_dash_output_itext(self):
+        """Should output itext when list_name contains a dash (itextId separator)."""
+        md = """
+        | survey  |                      |       |            |
+        |         | type                 | name  | label:en   | label:fr |
+        |         | select_one with_us   | q0    | Q1 EN      | Q1 FR    |
+        |         | select_one with-dash | q1    | Q2 EN      | Q2 FR    |
+        | choices |           |      |          |
+        |         | list name | name | label:en | label:fr |
+        |         | with_us   | na   | l1a-en   | l1a-fr   |
+        |         | with_us   | nb   | l1b-en   | l1b-fr   |
+        |         | with-dash | na   | l2a-en   | l2a-fr   |
+        |         | with-dash | nb   | l2b-en   | l2b-fr   |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_itext_choice_text_label_by_pos(
+                    "en", "with_us", ("l1a-en", "l1b-en")
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "en", "with-dash", ("l2a-en", "l2b-en")
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "fr", "with_us", ("l1a-fr", "l1b-fr")
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "fr", "with-dash", ("l2a-fr", "l2b-fr")
+                ),
+            ],
         )
