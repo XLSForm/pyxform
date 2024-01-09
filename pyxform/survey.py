@@ -319,7 +319,7 @@ class Survey(Section):
                 for items in self._translations.values()
                 for k, v in items.items()
                 if v.get(constants.TYPE, "") == constants.CHOICE
-                and k.split("-")[0] == list_name
+                and "-".join(k.split("-")[:-1]) == list_name
             )
             if 0 < len(choices):
                 multi_language = True
