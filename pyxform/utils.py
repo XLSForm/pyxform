@@ -11,7 +11,8 @@ import re
 from collections import namedtuple
 from json.decoder import JSONDecodeError
 from typing import Dict, List, Tuple
-from xml.dom.minidom import Element, Text, parseString
+from xml.dom import Node
+from xml.dom.minidom import Element, Text, _write_data, parseString
 
 import openpyxl
 import xlrd
@@ -26,6 +27,7 @@ LAST_SAVED_INSTANCE_NAME = "__last-saved"
 BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
 LAST_SAVED_REGEX = re.compile(r"\${last-saved#(.*?)}")
 PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
+NODE_TYPE_TEXT = (Node.TEXT_NODE, Node.CDATA_SECTION_NODE)
 
 
 NSMAP = {
@@ -53,6 +55,39 @@ class DetachableElement(Element):
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
         self.ownerDocument = None
+
+    def writexml(self, writer, indent="", addindent="", newl=""):
+        # indent = current indentation
+        # addindent = indentation to add to higher levels
+        # newl = newline string
+        writer.write(indent + "<" + self.tagName)
+
+        attrs = self._get_attributes()
+
+        for a_name in attrs.keys():
+            writer.write(' %s="' % a_name)
+            _write_data(writer, attrs[a_name].value)
+            writer.write('"')
+        if self.childNodes:
+            writer.write(">")
+            # For text or mixed content, write without adding indents or newlines.
+            if 0 < len([c for c in self.childNodes if c.nodeType in NODE_TYPE_TEXT]):
+                # Conditions to match old Survey.py regex for remaining whitespace.
+                child_nodes = len(self.childNodes)
+                for idx, cnode in enumerate(self.childNodes):
+                    if 1 < child_nodes and idx == 0 and cnode.nodeType in NODE_TYPE_TEXT:
+                        writer.write(" ")
+                    cnode.writexml(writer, "", "", "")
+                    if 1 < child_nodes and (idx + 1) == child_nodes:
+                        writer.write(" ")
+            else:
+                writer.write(newl)
+                for cnode in self.childNodes:
+                    cnode.writexml(writer, indent + addindent, addindent, newl)
+                writer.write(indent)
+            writer.write("</%s>%s" % (self.tagName, newl))
+        else:
+            writer.write("/>%s" % (newl))
 
 
 class PatchedText(Text):
