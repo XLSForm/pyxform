@@ -42,8 +42,6 @@ RE_INSTANCE_SECONDARY_REF = re.compile(
     r"(instance\(.*\)\/root\/item\[.*?(\$\{.*\})\]\/.*?)\s"
 )
 RE_PULLDATA = re.compile(r"(pulldata\s*\(\s*)(.*?),")
-RE_XML_OUTPUT = re.compile(r"\n.*(<output.*>)\n(\s\s)*")
-RE_XML_TEXT = re.compile(r"(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)", re.DOTALL)
 SEARCH_APPEARANCE_REGEX = re.compile(r"search\(.*?\)")
 
 
@@ -965,20 +963,8 @@ class Survey(Section):
         return '<?xml version="1.0"?>' + self.xml().toxml()
 
     def _to_pretty_xml(self):
-        """
-        I want the to_xml method to by default validate the xml we are
-        producing.
-        """
-        # Hacky way of pretty printing xml without adding extra white
-        # space to text
-        # TODO: check out pyxml
-        # http://ronrothman.com/public/leftbraned/xml-dom-minidom-toprettyxml-and-silly-whitespace/
-        xml_with_linebreaks = self.xml().toprettyxml(indent="  ")
-        pretty_xml = RE_XML_TEXT.sub(
-            lambda m: "".join(m.group(1, 2, 3)), xml_with_linebreaks
-        )
-        inline_output = RE_XML_OUTPUT.sub(r"\g<1>", pretty_xml)
-        return '<?xml version="1.0"?>\n' + inline_output
+        """Get the XForm with human readable formatting."""
+        return '<?xml version="1.0"?>\n' + self.xml().toprettyxml(indent="  ")
 
     def __repr__(self):
         return self.__unicode__()

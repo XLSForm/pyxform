@@ -94,7 +94,7 @@ class TestRepeat(PyxformTestCase):
                 """<label> B w <output value=" ../A "/> </label>""",
                 """<label> E w <output value=" /test_repeat/Z "/> </label>""",
                 """<label> Noted <output value=" ../FF "/> w """
-                """<output value=" ../sectionb/H "/> </label></input>""",
+                """<output value=" ../sectionb/H "/> </label>""",
             ],
         )
 
