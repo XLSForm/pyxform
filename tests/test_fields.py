@@ -126,6 +126,39 @@ class FieldsTests(PyxformTestCase):
             ],
         )
 
+    def test_duplicate_choices_with_allow_choice_duplicates_setting_and_translations(
+        self,
+    ):
+        md = """
+            | survey  |                 |      |       |
+            |         | type            | name | label::en | label::ko |
+            |         | select_one list | S1   | s1        | 질문 1     |
+            | choices |                 |      |                |
+            |         | list name       | name | label::en      | label::ko |
+            |         | list            | a    | Pass           | 패스       |
+            |         | list            | b    | Fail           | 실패       |
+            |         | list            | c    | Skipped        | 건너뛴     |
+            |         | list            | c    | Not Applicable | 해당 없음  |
+            | settings |                |                         |
+            |          | id_string      | allow_choice_duplicates |
+            |          | Duplicates     | Yes                     |
+            """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_itext_choice_text_label_by_pos(
+                    "en",
+                    "list",
+                    ("Pass", "Fail", "Skipped", "Not Applicable"),
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "ko",
+                    "list",
+                    ("패스", "실패", "건너뛴", "해당 없음"),
+                ),
+            ],
+        )
+
     def test_choice_list_without_duplicates_is_successful(self):
         md = """
             | survey  |                 |      |       |
