@@ -239,13 +239,12 @@ class MultipleChoiceQuestion(Question):
             )
 
             if file_extension in EXTERNAL_INSTANCE_EXTENSIONS:
-                itemset = itemset
+                pass
+            elif not multi_language and not has_media and not has_dyn_label:
+                itemset = self["itemset"]
             else:
-                if not multi_language and not has_media and not has_dyn_label:
-                    itemset = self["itemset"]
-                else:
-                    itemset = self["itemset"]
-                    itemset_label_ref = "jr:itext(itextId)"
+                itemset = self["itemset"]
+                itemset_label_ref = "jr:itext(itextId)"
 
             choice_filter = survey.insert_xpaths(
                 choice_filter, self, True, is_previous_question

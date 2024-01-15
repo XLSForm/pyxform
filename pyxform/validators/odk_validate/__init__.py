@@ -90,16 +90,15 @@ def check_xform(path_to_xform):
 
     if result.timeout:
         return ["XForm took to long to completely validate."]
-    else:
-        if result.return_code > 0:  # Error invalid
-            raise ODKValidateError(
-                "ODK Validate Errors:\n" + ErrorCleaner.odk_validate(result.stderr)
-            )
-        elif result.return_code == 0:
-            if result.stderr:
-                warnings.append("ODK Validate Warnings:\n" + result.stderr)
-        elif result.return_code < 0:
-            return ["Bad return code from ODK Validate."]
+    elif result.return_code > 0:  # Error invalid
+        raise ODKValidateError(
+            "ODK Validate Errors:\n" + ErrorCleaner.odk_validate(result.stderr)
+        )
+    elif result.return_code == 0:
+        if result.stderr:
+            warnings.append("ODK Validate Warnings:\n" + result.stderr)
+    elif result.return_code < 0:
+        return ["Bad return code from ODK Validate."]
 
     return warnings
 

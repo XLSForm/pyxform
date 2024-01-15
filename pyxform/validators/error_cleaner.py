@@ -14,7 +14,7 @@ class ErrorCleaner:
         # eliminate e.g /html/body/select1[@ref=/id_string/elId]/item/value
         # instance('q4')/root/item[...]
         if strmatch.startswith(
-            ("/html/body"), ("/root/item"), ("/html/head/model/bind")
+            (("/html/body"), ("/root/item"), ("/html/head/model/bind"))
         ) or strmatch.endswith("/item/value"):
             return strmatch
         line = match.group().split("/")

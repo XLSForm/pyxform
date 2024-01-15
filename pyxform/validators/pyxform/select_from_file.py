@@ -43,7 +43,6 @@ def value_or_label_check(name: str, value: str, row_number: int) -> None:
     if not value_or_label_test(value=value):
         msg = value_or_label_format_msg(name=name, row_number=row_number)
         raise PyXFormError(msg)
-    return None
 
 
 def validate_list_name_extension(

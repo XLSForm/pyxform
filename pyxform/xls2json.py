@@ -287,12 +287,11 @@ def add_flat_annotations(prompt_list, parent_relevant="", name_prefix=""):
             add_flat_annotations(
                 children, new_relevant, name_prefix + "_" + prompt["name"]
             )
-        else:
-            if new_relevant != "":
-                prompt["bind"] = prompt.get("bind", {})
-                prompt["bind"]["relevant"] = new_relevant
-                # if name_prefix != '':
-                #    prompt['name'] = name_prefix + prompt['name']
+        elif new_relevant != "":
+            prompt["bind"] = prompt.get("bind", {})
+            prompt["bind"]["relevant"] = new_relevant
+            # if name_prefix != '':
+            #    prompt['name'] = name_prefix + prompt['name']
 
 
 def process_range_question_type(

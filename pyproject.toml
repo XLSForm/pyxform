@@ -64,7 +64,7 @@ select = [
   "I",  # isort
   "PERF",  # perflint
   "PIE",  # flake8-pie
-#  "PL",  # pylint
+  "PL",  # pylint
 #  "PTH",  # flake8-use-pathlib
 #  "PYI",  # flake8-pyi
 #  "RET",  # flake8-return
@@ -76,10 +76,16 @@ select = [
 #  "W",  # pycodestyle warning
 ]
 ignore = [
-    "E501",  # line-too-long (we have a lot of long strings)
-    "F821",  # undefined-name (doesn't work well with type hints as of ruff 0.1.11).
-    "PERF401",  # manual-list-comprehension (false positives on selective transforms)
-    "PERF402",  # manual-list-copy (false positives on selective transforms)
-    "RUF001",  # ambiguous-unicode-character-string (false positives on unicode tests)
+  "E501",  # line-too-long (we have a lot of long strings)
+  "F821",  # undefined-name (doesn't work well with type hints as of ruff 0.1.11).
+  "PERF401",  # manual-list-comprehension (false positives on selective transforms)
+  "PERF402",  # manual-list-copy (false positives on selective transforms)
+  "PLR2004",  # magic-value-comparison (many tests expect certain numbers of things)
+  "PLR0911",  # too-many-return-statements (complexity not useful to warn every time)
+  "PLR0912",  # too-many-branches (complexity not useful to warn every time)
+  "PLR0913",  # too-many-arguments (complexity not useful to warn every time)
+  "PLR0915",  # too-many-statements (complexity not useful to warn every time)
+  "PLW2901",  # redefined-loop-name (usually not a bug)
+  "RUF001",  # ambiguous-unicode-character-string (false positives on unicode tests)
 ]
 # per-file-ignores = {"tests/*" = ["E501"]}

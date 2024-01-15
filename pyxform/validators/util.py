@@ -48,7 +48,6 @@ def run_popen_with_timeout(command, timeout) -> "PopenResult":
         os.kill(pid, signal.SIGTERM)
         kill_check.set()  # tell the main routine that we had to kill
         # use SIGKILL if hard to kill...
-        return
 
     startup_info = None
     env = None
@@ -121,11 +120,13 @@ def request_get(url):
         raise PyXFormError(
             "Unable to fulfill request. Error code: '{c}'. "
             "Reason: '{r}'. URL: '{u}'."
-            "".format(r=e.reason, c=e.code, u=url)
+            "".format(r=http_err.reason, c=http_err.code, u=url)
         ) from http_err
     except URLError as url_err:
         raise PyXFormError(
-            "Unable to reach a server. Reason: {r}. " "URL: {u}".format(r=e.reason, u=url)
+            "Unable to reach a server. Reason: {r}. " "URL: {u}".format(
+                r=url_err.reason, u=url
+            )
         ) from url_err
 
 

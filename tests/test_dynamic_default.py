@@ -97,11 +97,10 @@ class XPathHelper:
         else:
             if 0 == len(q_default_final):
                 q_default_cmp = """and not(text()) """
+            elif "'" in q_default_final:
+                q_default_cmp = ""
             else:
-                if "'" in q_default_final:
-                    q_default_cmp = ""
-                else:
-                    q_default_cmp = f"""and text()='{q_default_final}' """
+                q_default_cmp = f"""and text()='{q_default_final}' """
             return rf"""
             /h:html/h:head/x:model
               /x:instance/x:test_name[@id="test_id"]/x:q{q_num}[

@@ -393,7 +393,7 @@ class _UpdateHandler:
             os.chmod(new_bin_file_path, current_mode | S_IXUSR | S_IXGRP)
 
         except PyXFormError as px_err:
-            raise PyXFormError("\n\nUpdate failed!\n\n" + str(e)) from px_err
+            raise PyXFormError("\n\nUpdate failed!\n\n" + str(px_err)) from px_err
         else:
             return latest
 

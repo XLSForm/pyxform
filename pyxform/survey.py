@@ -454,7 +454,7 @@ class Survey(Section):
         file_id, ext = os.path.splitext(itemset)
         if itemset and ext in EXTERNAL_INSTANCE_EXTENSIONS:
             uri = "jr://%s/%s" % (
-                "file" if ext == ".xml" or ext == ".geojson" else "file-%s" % ext[1:],
+                "file" if ext in {".xml", ".geojson"} else "file-%s" % ext[1:],
                 itemset,
             )
             return InstanceInfo(
@@ -710,11 +710,10 @@ class Survey(Section):
                 if isinstance(value, dict):
                     for language, val in value.items():
                         yield ([language, itext_id, media_or_lang], val)
+                elif name == constants.MEDIA:
+                    yield ([self.default_language, itext_id, media_or_lang], value)
                 else:
-                    if name == constants.MEDIA:
-                        yield ([self.default_language, itext_id, media_or_lang], value)
-                    else:
-                        yield ([media_or_lang, itext_id, "long"], value)
+                    yield ([media_or_lang, itext_id, "long"], value)
 
         itemsets_multi_language = set()
         itemsets_has_media = set()
@@ -926,7 +925,7 @@ class Survey(Section):
                         itext_nodes.append(
                             node("value", value, toParseString=output_inserted)
                         )
-                    elif media_type == "image" or media_type == "big-image":
+                    elif media_type in {"image", "big-image"}:
                         if value != "-":
                             itext_nodes.append(
                                 node(
@@ -936,16 +935,15 @@ class Survey(Section):
                                     toParseString=output_inserted,
                                 )
                             )
-                    else:
-                        if value != "-":
-                            itext_nodes.append(
-                                node(
-                                    "value",
-                                    "jr://" + media_type + "/" + value,
-                                    form=media_type,
-                                    toParseString=output_inserted,
-                                )
+                    elif value != "-":
+                        itext_nodes.append(
+                            node(
+                                "value",
+                                "jr://" + media_type + "/" + value,
+                                form=media_type,
+                                toParseString=output_inserted,
                             )
+                        )
 
                 result[-1].appendChild(node("text", *itext_nodes, id=label_name))
 
