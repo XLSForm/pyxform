@@ -1715,28 +1715,6 @@ class QuestionTypesReader(SpreadsheetReader):
         self._dict = organize_by_values(self._dict, "name")
 
 
-# Not used internally (or on formhub)
-# TODO: If this is used anywhere else it is probably broken
-#      from the changes I made to SpreadsheetReader.
-class VariableNameReader(SpreadsheetReader):
-    def __init__(self, path):
-        SpreadsheetReader.__init__(self, path)
-        self._organize_renames()
-
-    def _organize_renames(self):
-        new_dict = {}
-        variable_names_so_far = []
-        assert "Dictionary" in self._dict
-        for d in self._dict["Dictionary"]:
-            if "Variable Name" in d:
-                assert d["Variable Name"] not in variable_names_so_far, d["Variable Name"]
-                variable_names_so_far.append(d["Variable Name"])
-                new_dict[d["XPath"]] = d["Variable Name"]
-            else:
-                variable_names_so_far.append(d["XPath"])
-        self._dict = new_dict
-
-
 if __name__ == "__main__":
     # Open the excel file specified by the argument of this python call,
     # convert that file to json, then print it

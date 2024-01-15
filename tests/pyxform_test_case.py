@@ -139,7 +139,8 @@ class PyxformMarkdown:
         finally:
             # Clean up the temporary file
             os.remove(tmp.name)
-            assert not os.path.isfile(tmp.name)
+            if os.path.isfile(tmp.name):
+                raise PyXFormError(f"Temporary file still exists: {tmp.name}")
 
     @staticmethod
     def _autoname_inputs(

@@ -200,7 +200,8 @@ class MultipleChoiceQuestion(Question):
             choice.validate()
 
     def build_xml(self):
-        assert self.bind["type"] in ["string", "odk:rank"]
+        if self.bind["type"] not in ["string", "odk:rank"]:
+            raise PyXFormError("""Invalid value for `self.bind["type"]`.""")
         survey = self.get_root()
         control_dict = self.control.copy()
         # Resolve field references in attributes

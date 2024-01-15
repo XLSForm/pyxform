@@ -69,7 +69,7 @@ select = [
 #  "PYI",  # flake8-pyi
 #  "RET",  # flake8-return
   "RUF",  # ruff-specific rules
-#  "S",  # flake8-bandit
+  "S",  # flake8-bandit
 #  "SIM",  # flake8-simplify
 #  "TRY",  # tryceratops
 #  "UP",  # pyupgrade
@@ -77,7 +77,7 @@ select = [
 ]
 ignore = [
   "E501",  # line-too-long (we have a lot of long strings)
-  "F821",  # undefined-name (doesn't work well with type hints as of ruff 0.1.11).
+  "F821",  # undefined-name (doesn't work well with type hints, ruff 0.1.11).
   "PERF401",  # manual-list-comprehension (false positives on selective transforms)
   "PERF402",  # manual-list-copy (false positives on selective transforms)
   "PLR2004",  # magic-value-comparison (many tests expect certain numbers of things)
@@ -86,6 +86,9 @@ ignore = [
   "PLR0913",  # too-many-arguments (complexity not useful to warn every time)
   "PLR0915",  # too-many-statements (complexity not useful to warn every time)
   "PLW2901",  # redefined-loop-name (usually not a bug)
+  "S310",  # suspicious-url-open-usage (prone to false positives, ruff 0.1.11)
+  "S320",  # suspicious-xmle-tree-usage (according to defusedxml author lxml is safe)
+  "S603",  # subprocess-without-shell-equals-true (prone to false positives, ruff 0.1.11)
   "RUF001",  # ambiguous-unicode-character-string (false positives on unicode tests)
 ]
 # per-file-ignores = {"tests/*" = ["E501"]}

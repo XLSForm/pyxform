@@ -108,6 +108,8 @@ def request_get(url):
     Get the response content from URL.
     """
     try:
+        if not url.startswith(("http:", "https:")):
+            raise ValueError("URL must start with 'http:' or 'https:'")
         r = Request(url)
         r.add_header("Accept", "application/json")
         with closing(urlopen(r)) as u:

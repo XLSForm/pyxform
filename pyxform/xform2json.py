@@ -7,10 +7,12 @@ import copy
 import json
 import logging
 import re
-import xml.etree.ElementTree as ETree
 from collections import Mapping
 from operator import itemgetter
 from typing import Any, Dict, List
+from xml.etree.ElementTree import Element
+
+from defusedxml.ElementTree import ParseError, XMLParser, fromstring, parse
 
 from pyxform import builder
 from pyxform.errors import PyXFormError
@@ -84,7 +86,8 @@ class XmlDictObject(dict):
 
 
 def _convert_dict_to_xml_recurse(parent, dictitem):
-    assert not isinstance(dictitem, list)
+    if isinstance(dictitem, list):
+        raise PyXFormError("""Invalid value for `dictitem`.""")
 
     if isinstance(dictitem, dict):
         for tag, child in iter(dictitem.items()):
@@ -93,11 +96,11 @@ def _convert_dict_to_xml_recurse(parent, dictitem):
             elif isinstance(child, list):
                 # iterate through the array and convert
                 for listchild in child:
-                    elem = ETree.Element(tag)
+                    elem = Element(tag)
                     parent.append(elem)
                     _convert_dict_to_xml_recurse(elem, listchild)
             else:
-                elem = ETree.Element(tag)
+                elem = Element(tag)
                 parent.append(elem)
                 _convert_dict_to_xml_recurse(elem, child)
     else:
@@ -110,7 +113,7 @@ def convert_dict_to_xml(xmldict):
     """
 
     roottag = xmldict.keys()[0]
-    root = ETree.Element(roottag)
+    root = Element(roottag)
     _convert_dict_to_xml_recurse(root, xmldict[roottag])
     return root
 
@@ -164,7 +167,7 @@ def convert_xml_to_dict(root, dictclass=XmlDictObject):
     # If a string is passed in, try to open it as a file
     if isinstance(root, str):
         root = _try_parse(root)
-    elif not isinstance(root, ETree.Element):
+    elif not isinstance(root, Element):
         raise TypeError("Expected ElementTree.Element or file path string")
 
     return dictclass({root.tag: _convert_xml_to_dict_recurse(root, dictclass)})
@@ -179,21 +182,21 @@ def _try_parse(root, parser=None):
     """
     root = root.encode("UTF-8")
     try:
-        parsed_root = ETree.fromstring(root, parser)
-    except ETree.ParseError:
-        parsed_root = ETree.parse(root, parser=parser).getroot()
+        parsed_root = fromstring(root, parser)
+    except ParseError:
+        parsed_root = parse(root, parser=parser).getroot()
     return parsed_root
 
 
 class XFormToDict:
     def __init__(self, root):
         if isinstance(root, str):
-            parser = ETree.XMLParser(encoding="UTF-8")
+            parser = XMLParser(encoding="UTF-8")
             self._root = _try_parse(root, parser)
             self._dict = XmlDictObject(
                 {self._root.tag: _convert_xml_to_dict_recurse(self._root, XmlDictObject)}
             )
-        elif not isinstance(root, ETree.Element):
+        elif not isinstance(root, Element):
             raise TypeError("Expected ElementTree.Element or file path string")
 
     def get_dict(self):
@@ -215,12 +218,18 @@ class XFormToDictBuilder:
         doc_as_dict = XFormToDict(xml_file).get_dict()
         self._xmldict = doc_as_dict
 
-        assert "html" in doc_as_dict
-        assert "body" in doc_as_dict["html"]
-        assert "head" in doc_as_dict["html"]
-        assert "model" in doc_as_dict["html"]["head"]
-        assert "title" in doc_as_dict["html"]["head"]
-        assert "bind" in doc_as_dict["html"]["head"]["model"]
+        if "html" not in doc_as_dict:
+            raise PyXFormError("""Invalid value for `doc_as_dict`.""")
+        if "body" not in doc_as_dict["html"]:
+            raise PyXFormError("""Invalid value for `doc_as_dict`.""")
+        if "head" not in doc_as_dict["html"]:
+            raise PyXFormError("""Invalid value for `doc_as_dict`.""")
+        if "model" not in doc_as_dict["html"]["head"]:
+            raise PyXFormError("""Invalid value for `doc_as_dict`.""")
+        if "title" not in doc_as_dict["html"]["head"]:
+            raise PyXFormError("""Invalid value for `doc_as_dict`.""")
+        if "bind" not in doc_as_dict["html"]["head"]["model"]:
+            raise PyXFormError("""Invalid value for `doc_as_dict`.""")
 
         self.body = doc_as_dict["html"]["body"]
         self.model = doc_as_dict["html"]["head"]["model"]
@@ -558,12 +567,15 @@ class XFormToDictBuilder:
     def _get_translations(self) -> List[Dict]:
         if "itext" not in self.model:
             return []
-        assert "translation" in self.model["itext"]
+        if "translation" not in self.model["itext"]:
+            raise PyXFormError("""Invalid value for `self.model["itext"]`.""")
         translations = self.model["itext"]["translation"]
         if isinstance(translations, dict):
             translations = [translations]
-        assert "text" in translations[0]
-        assert "lang" in translations[0]
+        if "text" not in translations[0]:
+            raise PyXFormError("""Invalid value for `translations[0]`.""")
+        if "lang" not in translations[0]:
+            raise PyXFormError("""Invalid value for `translations[0]`.""")
         return translations
 
     def _get_label(self, label_obj, key="label"):

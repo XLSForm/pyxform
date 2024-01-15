@@ -4,9 +4,9 @@ Test builder module functionality.
 """
 import os
 import re
-import xml.etree.ElementTree as ETree
 from unittest import TestCase
 
+import defusedxml.ElementTree as ETree
 from pyxform import InputQuestion, Survey
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.errors import PyXFormError

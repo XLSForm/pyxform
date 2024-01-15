@@ -16,7 +16,9 @@ from xml.dom.minidom import Element, Text, _write_data, parseString
 
 import openpyxl
 import xlrd
+from defusedxml.minidom import parseString
 
+from pyxform.errors import PyXFormError
 from pyxform.xls2json_backends import is_empty, xls_value_to_unicode, xlsx_value_to_str
 
 SEP = "_"
@@ -112,7 +114,8 @@ def node(*args, **kwargs) -> DetachableElement:
     args = args[1:]
     result = DetachableElement(tag)
     unicode_args = [u for u in args if isinstance(u, str)]
-    assert len(unicode_args) <= 1
+    if len(unicode_args) > 1:
+        raise PyXFormError("""Invalid value for `unicode_args`.""")
     parsed_string = False
 
     # Convert the kwargs xml attribute dictionary to a xml.dom.minidom.Element.

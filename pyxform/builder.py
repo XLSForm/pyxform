@@ -96,7 +96,8 @@ class SurveyElementBuilder:
         the name of the section and the value is a dict that can be
         used to create a whole survey.
         """
-        assert isinstance(sections, dict)
+        if not isinstance(sections, dict):
+            raise PyXFormError("""Invalid value for `sections`.""")
         self._sections = sections
 
     def create_survey_element_from_dict(
