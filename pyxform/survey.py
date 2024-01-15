@@ -450,10 +450,8 @@ class Survey(Section):
         itemset = element.get("itemset")
         file_id, ext = os.path.splitext(itemset)
         if itemset and ext in EXTERNAL_INSTANCE_EXTENSIONS:
-            uri = "jr://%s/%s" % (
-                "file" if ext in {".xml", ".geojson"} else "file-%s" % ext[1:],
-                itemset,
-            )
+            file_ext = "file" if ext in {".xml", ".geojson"} else f"file-{ext[1:]}"
+            uri = f"jr://{file_ext}/{itemset}"
             return InstanceInfo(
                 type="file",
                 context="[type: {t}, name: {n}]".format(
@@ -1064,8 +1062,8 @@ class Survey(Section):
             return False
 
         intro = (
-            "There has been a problem trying to replace %s with the "
-            "XPath to the survey element named '%s'." % (matchobj.group(0), name)
+            f"There has been a problem trying to replace {matchobj.group(0)} with the "
+            f"XPath to the survey element named '{name}'."
         )
         if name not in self._xpath:
             raise PyXFormError(intro + " There is no survey element with this name.")

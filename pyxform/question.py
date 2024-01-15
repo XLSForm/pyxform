@@ -53,8 +53,9 @@ class Question(SurveyElement):
             if nested_setvalues:
                 for setvalue in nested_setvalues:
                     msg = (
-                        "The question ${%s} is not user-visible so it can't be used as a calculation trigger for question ${%s}."
-                        % (self.name, setvalue[0])
+                        f"The question ${{{self.name}}} is not user-visible "
+                        "so it can't be used as a calculation trigger for "
+                        f"question ${{{setvalue[0]}}}."
                     )
                     raise PyXFormError(msg)
             return None

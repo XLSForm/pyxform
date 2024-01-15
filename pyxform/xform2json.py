@@ -366,7 +366,7 @@ class XFormToDictBuilder:
         rs = {}
         name_splits = name.split("/")
         rs["name"] = name_splits[0]
-        ref = "%s/%s" % (ref, rs["name"])
+        ref = f"""{ref}/{rs["name"]}"""
         rs["ref"] = ref
         if name_splits.__len__() > 1:
             rs["type"] = "group"

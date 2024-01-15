@@ -7,7 +7,7 @@ from pyxform.utils import levenshtein_distance
 # http://www.w3.org/TR/REC-xml/
 TAG_START_CHAR = r"[a-zA-Z:_]"
 TAG_CHAR = r"[a-zA-Z:_0-9\-.]"
-XFORM_TAG_REGEXP = "%(start)s%(char)s*" % {"start": TAG_START_CHAR, "char": TAG_CHAR}
+XFORM_TAG_REGEXP = f"{TAG_START_CHAR}{TAG_CHAR}*"
 
 
 def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":

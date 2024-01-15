@@ -57,11 +57,11 @@ class SurveyInstance:
         A horrible way to do this, but it works (until we need the attributes
          pumped out in order, etc)
         """
-        open_str = """<?xml version='1.0' ?><%s id="%s">""" % (self._name, self._id)
+        open_str = f"""<?xml version='1.0' ?><{self._name} id="{self._id}">"""
         close_str = """</%s>""" % self._name
         vals = ""
         for k, v in self._answers.items():
-            vals += "<%s>%s</%s>" % (k, str(v), k)
+            vals += f"<{k}>{v!s}</{k}>"
 
         output = open_str + vals + close_str
         return output

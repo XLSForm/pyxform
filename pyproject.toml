@@ -51,10 +51,6 @@ src = ["pyxform", "tests"]
 
 [tool.ruff.lint]
 # By default, ruff enables flake8's F rules, along with a subset of the E rules.
-extend-select = [
-  "I",  # isort
-]
-# Potentially useful rule sets to enable in future:
 select = [
   "B",  # flake8-bugbear
   "C4",  # flake8-comprehensions
@@ -72,20 +68,7 @@ select = [
   "S",  # flake8-bandit
 #  "SIM",  # flake8-simplify
   "TRY",  # tryceratops
-#  "UP",  # pyupgrade
-  "UP004",
-  "UP005",
-  "UP008",
-  "UP009",
-  "UP015",
-  "UP018",
-  "UP020",
-  "UP024",
-  "UP028",
-  "UP030",
-  "UP032",
-  "UP034",
-  "UP035",
+  "UP",  # pyupgrade
   "W",  # pycodestyle warning
 ]
 ignore = [

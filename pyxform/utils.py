@@ -93,7 +93,7 @@ class DetachableElement(Element):
 class PatchedText(Text):
     def writexml(self, writer, indent="", addindent="", newl=""):
         """Same as original but no replacing double quotes with '&quot;'."""
-        data = "%s%s%s" % (indent, self.data, newl)
+        data = "".join((indent, self.data, newl))
         if data:
             data = data.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         writer.write(data)

@@ -22,9 +22,8 @@ class Section(SurveyElement):
             elem_lower = element.name.lower()
             if elem_lower in element_slugs:
                 raise PyXFormError(
-                    "There are more than one survey elements named '%s' "
-                    "(case-insensitive) in the section named '%s'."
-                    % (elem_lower, self.name)
+                    f"There are more than one survey elements named '{elem_lower}' "
+                    f"(case-insensitive) in the section named '{self.name}'."
                 )
             element_slugs.add(elem_lower)
 
