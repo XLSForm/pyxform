@@ -20,6 +20,15 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
+QUESTION_TYPES = {
+    "select": "select all that apply",
+    "select1": "select one",
+    "int": "integer",
+    "dateTime": "datetime",
+    "string": "text",
+}
+
+
 # {{{ http://code.activestate.com/recipes/573463/ (r7)
 class XmlDictObject(dict):
     """
@@ -201,14 +210,6 @@ def create_survey_element_from_xml(xml_file):
 
 class XFormToDictBuilder:
     """Experimental XFORM xml to XFORM JSON"""
-
-    QUESTION_TYPES = {
-        "select": "select all that apply",
-        "select1": "select one",
-        "int": "integer",
-        "dateTime": "datetime",
-        "string": "text",
-    }
 
     def __init__(self, xml_file):
         doc_as_dict = XFormToDict(xml_file).get_dict()
@@ -461,7 +462,7 @@ class XFormToDictBuilder:
             "select1",
             "select",
         ]:  # Select bind type is 'string' https://github.com/XLSForm/pyxform/issues/168
-            question["type"] = self.QUESTION_TYPES[type]
+            question["type"] = QUESTION_TYPES[type]
         if question_type == "geopoint" and "hint" in question:
             del question["hint"]
         if "type" not in question and type:
@@ -507,7 +508,7 @@ class XFormToDictBuilder:
                     if k == "nodeset":
                         continue
                     if k == "type":
-                        v = self._get_question_type(v)
+                        v = self._get_question_type(question_type=v)
                     if k in [
                         "relevant",
                         "required",
@@ -548,10 +549,11 @@ class XFormToDictBuilder:
                 return rs
         return None
 
-    def _get_question_type(self, type):
-        if type in self.QUESTION_TYPES.keys():
-            return self.QUESTION_TYPES[type]
-        return type
+    @staticmethod
+    def _get_question_type(question_type):
+        if question_type in QUESTION_TYPES.keys():
+            return QUESTION_TYPES[question_type]
+        return question_type
 
     def _get_translations(self) -> List[Dict]:
         if "itext" not in self.model:

@@ -168,7 +168,7 @@ class RangeWidgetTest(PyxformTestCase):
             | survey |        |          |       |                                 |
             |        | type   |   name   | label | parameters                      |
             |        | range  |   level  | Scale | start = 1 , end = 10 , step = 2 |
-            """,  # noqa
+            """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
                 '<range end="10" ref="/data/level" start="1" step="2">',

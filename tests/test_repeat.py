@@ -64,7 +64,7 @@ class TestRepeat(PyxformTestCase):
                 |        | note         | note9    |            | ${FF} ${H} ${N} ${N} |
                 |        | end repeat   |          |            |                      |
                 |        |              |          |            |                      |
-                """,  # noqa pylint: disable=line-too-long
+                """,  # pylint: disable=line-too-long
             instance__contains=[
                 '<section jr:template="">',
                 "<A/>",
@@ -119,7 +119,7 @@ class TestRepeat(PyxformTestCase):
                 |         | crop_list            | maize | Maize  |                |
                 |         | crop_list            | beans | Beans  |                |
                 |         | crop_list            | kale  | Kale   |                |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             model__contains=[
                 """<bind calculate="name =  ../crop " """
                 """nodeset="/data/rep/a" type="string"/>""",
@@ -149,10 +149,10 @@ class TestRepeat(PyxformTestCase):
                 |         | crop_list            | maize | Maize  |                |
                 |         | crop_list            | beans | Beans  |                |
                 |         | crop_list            | kale  | Kale   |                |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../crop ]">""",  # noqa pylint: disable=line-too-long
-                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../../crop ]">""",  # noqa pylint: disable=line-too-long
+                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../crop ]">""",  # pylint: disable=line-too-long
+                """<itemset nodeset="instance('crop_list')/root/item[name =  current()/../../crop ]">""",  # pylint: disable=line-too-long
             ],
         )
 
@@ -181,9 +181,9 @@ class TestRepeat(PyxformTestCase):
                 |         | crop_list            | maize | Maize  |                                  |
                 |         | crop_list            | beans | Beans  |                                  |
                 |         | crop_list            | kale  | Kale   |                                  |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             model__contains=[
-                """<bind calculate="indexed-repeat( /data/rep/rep2/a ,  /data/rep/rep2 , 1)" nodeset="/data/rep/c1" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="indexed-repeat( /data/rep/rep2/a ,  /data/rep/rep2 , 1)" nodeset="/data/rep/c1" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -267,7 +267,7 @@ class TestRepeat(PyxformTestCase):
             |        | pet               | cat            | Cat               |                      |
             |        | pet               | bird           | Bird              |                      |
             |        | pet               | fish           | Fish              |                      |
-            """  # noqa
+            """
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
@@ -294,7 +294,7 @@ class TestRepeat(PyxformTestCase):
             |        | text              | child_name             | Name of child?                                          | Should be a text             |
             |        | decimal           | birthweight            | Child birthweight (in kgs)?                             | Should be a decimal          |
             |        | end group         |                        |                                                         |                              |
-            """  # noqa
+            """
         expected = """<group ref="/test_name/child_group">
       <label>Please enter birth information for each child born.</label>
       <input ref="/test_name/child_group/child_name">
@@ -305,7 +305,7 @@ class TestRepeat(PyxformTestCase):
         <label>Child birthweight (in kgs)?</label>
         <hint>Should be a decimal</hint>
       </input>
-    </group>"""  # noqa
+    </group>"""
 
         self.assertPyxformXform(md=md, xml__contains=[expected])
 
@@ -485,9 +485,9 @@ class TestRepeat(PyxformTestCase):
                 |         | text           | name      | Enter name                       |                                              |
                 |         | text           | prev_name | Name in previous repeat instance | indexed-repeat(${name}, ${person}, ${pos}-1) |
                 |         | end repeat     |           |                                  |                                              |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             model__contains=[
-                """<bind calculate="indexed-repeat( /data/person/name ,  /data/person ,  ../pos -1)" nodeset="/data/person/prev_name" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="indexed-repeat( /data/person/name ,  /data/person ,  ../pos -1)" nodeset="/data/person/prev_name" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -503,9 +503,9 @@ class TestRepeat(PyxformTestCase):
                 |         | text           | name      | Enter name                       |                                                    |
                 |         | text           | prev_name | Name in previous repeat instance | indexed-repeat(${name}, ${person}, position(..)-1) |
                 |         | end repeat     |           |                                  |                                                    |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/person/prev_name" value="indexed-repeat( /data/person/name ,  /data/person , position(..)-1)"/>"""  # noqa pylint: disable=line-too-long
+                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/person/prev_name" value="indexed-repeat( /data/person/name ,  /data/person , position(..)-1)"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -524,9 +524,9 @@ class TestRepeat(PyxformTestCase):
                 |         | text           | prev_name      | Non-sensible previous name in first family, 2nd person | indexed-repeat(${name}, ${family}, 1, ${person}, 2) |
                 |         | end repeat     |                |                                                        |                                                     |
                 |         | end repeat     |                |                                                        |                                                     |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/family/person/prev_name" value="indexed-repeat( /data/family/person/name ,  /data/family , 1,  /data/family/person , 2)"/>"""  # noqa pylint: disable=line-too-long
+                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/family/person/prev_name" value="indexed-repeat( /data/family/person/name ,  /data/family , 1,  /data/family/person , 2)"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -548,9 +548,9 @@ class TestRepeat(PyxformTestCase):
                 |         | text           | prev_name      | Expression label                 | 7 * indexed-repeat(${age}, ${family}, 1, ${person}, 2) |
                 |         | end repeat     |                |                                  |                                                        |
                 |         | end repeat     |                |                                  |                                                        |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<bind calculate="7 * indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" nodeset="/data/family/person/prev_name" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="7 * indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" nodeset="/data/family/person/prev_name" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -572,9 +572,9 @@ class TestRepeat(PyxformTestCase):
                 |         | text           | prev_name      | Expression label                 | concat(indexed-repeat(${name}, ${family}, 1, ${person}, 2), indexed-repeat(${age}, ${family}, 1, ${person}, 2)) |
                 |         | end repeat     |                |                                  |                                                                                                                 |
                 |         | end repeat     |                |                                  |                                                                                                                 |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<bind nodeset="/data/family/person/prev_name" required="concat(indexed-repeat( /data/family/person/name ,  /data/family , 1,  /data/family/person , 2), indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2))" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind nodeset="/data/family/person/prev_name" required="concat(indexed-repeat( /data/family/person/name ,  /data/family , 1,  /data/family/person , 2), indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2))" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -596,9 +596,9 @@ class TestRepeat(PyxformTestCase):
                 |         | text           | prev_name      | Expression label                 | concat(${name}, indexed-repeat(${age}, ${family}, 1, ${person}, 2), ${age})                                     |
                 |         | end repeat     |                |                                  |                                                                                                                 |
                 |         | end repeat     |                |                                  |                                                                                                                 |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<bind calculate="concat( ../name , indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2),  ../age )" nodeset="/data/family/person/prev_name" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="concat( ../name , indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2),  ../age )" nodeset="/data/family/person/prev_name" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -620,9 +620,9 @@ class TestRepeat(PyxformTestCase):
                 |         | integer        | bp_dia   | Diastolic pressure     | if(${bp_row} = 1, '',  indexed-repeat(${bp_dia}, ${bp_rg}, ${bp_row} - 1))  |
                 |         | end repeat     |          |                        |                                                                             |
                 |         | end group      |          |                        |                                                                             |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/page/bp_rg/bp_dia" value="if( ../bp_row  = 1, '', indexed-repeat( /data/page/bp_rg/bp_dia ,  /data/page/bp_rg ,  ../bp_row  - 1))"/>"""  # noqa pylint: disable=line-too-long
+                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/page/bp_rg/bp_dia" value="if( ../bp_row  = 1, '', indexed-repeat( /data/page/bp_rg/bp_dia ,  /data/page/bp_rg ,  ../bp_row  - 1))"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -644,9 +644,9 @@ class TestRepeat(PyxformTestCase):
                 |         | text           | prev_name      | Expression label                 | ${age} > indexed-repeat(${age}, ${family}, 1, ${person}, 2) |
                 |         | end repeat     |                |                                  |                                                             |
                 |         | end repeat     |                |                                  |                                                             |
-            """,  # noqa pylint: disable=line-too-long
+            """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<bind nodeset="/data/family/person/prev_name" relevant=" ../age  &gt; indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind nodeset="/data/family/person/prev_name" relevant=" ../age  &gt; indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -677,7 +677,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/data/item-repeat/item" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/data/item-repeat/item" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -708,7 +708,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate=" ../item-counter  + instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/data/item-repeat/item" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate=" ../item-counter  + instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/data/item-repeat/item" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -734,7 +734,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index= current()/../../pos3 ]/label" nodeset="/data/rep3/grp3/item3" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index= current()/../../pos3 ]/label" nodeset="/data/rep3/grp3/item3" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -758,7 +758,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index= current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index= current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -784,9 +784,9 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index=  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
-                """<bind calculate="instance('item')/root/item[index = current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item6" type="string"/>""",  # noqa pylint: disable=line-too-long
-                """<bind calculate="instance('item')/root/item[index =  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item7" type="string"/>""",  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index=  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index = current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item6" type="string"/>""",  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index =  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item7" type="string"/>""",  # pylint: disable=line-too-long
             ],
         )
 
@@ -810,7 +810,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index=number(1+  current()/../pos5 ) and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index=number(1+  current()/../pos5 ) and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -834,7 +834,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index =  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index =  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -855,7 +855,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index= /data/pos1 ]/label" nodeset="/data/item1" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index= /data/pos1 ]/label" nodeset="/data/item1" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -878,7 +878,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate=" /data/rep1 [number( ../pos2 )]/label" nodeset="/data/rep1/item2" type="string"/>"""  # noqa pylint: disable=line-too-long
+                """<bind calculate=" /data/rep1 [number( ../pos2 )]/label" nodeset="/data/rep1/item2" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -902,7 +902,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index =  current()/../pos5 ][position()= current()/../pos6 ]/label" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index =  current()/../pos5 ][position()= current()/../pos6 ]/label" nodeset="/data/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
             ],
         )
 
@@ -928,7 +928,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index = current()/../pos5  and selected('1 2 3 4',  /data/pos1 )][position()= current()/../pos6 ]/label" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index = current()/../pos5  and selected('1 2 3 4',  /data/pos1 )][position()= current()/../pos6 ]/label" nodeset="/data/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
             ],
         )
 
@@ -954,7 +954,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label, /data[position()= current()/../pos5 ]/text)" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
+                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label, /data[position()= current()/../pos5 ]/text)" nodeset="/data/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
             ],
         )
 
@@ -980,7 +980,7 @@ class TestRepeat(PyxformTestCase):
             name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label,  ../pos5  + 1)" nodeset="/data/rep5/item5" type="string"/>""",  # noqa pylint: disable=line-too-long
+                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label,  ../pos5  + 1)" nodeset="/data/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
             ],
         )
 

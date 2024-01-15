@@ -8,9 +8,8 @@ Test xls2xform module.
 
 import argparse
 import logging
-from unittest import TestCase
+from unittest import TestCase, mock
 
-import pyxform
 from pyxform.xls2xform import (
     _create_parser,
     _validator_args_logic,
@@ -20,27 +19,8 @@ from pyxform.xls2xform import (
 
 from tests.utils import path_to_text_fixture
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-
 
 class XLS2XFormTests(TestCase):
-    survey_package = {
-        "id_string": "test_2011_08_29b",
-        "name_of_main_section": "gps",
-        "sections": {
-            "gps": {
-                "children": [{"name": "location", "type": "gps"}],
-                "name": "gps",
-                "type": "survey",
-            }
-        },
-        "title": "test",
-    }
-    survey = pyxform.create_survey(**survey_package)
-
     def test_create_parser_without_args(self):
         """Should exit when no args provided."""
         with self.assertRaises(SystemExit):

@@ -14,6 +14,6 @@ class RoundCalculationTest(PyxformTestCase):
             |        | type        | name           | label   | calculation         |
             |        | decimal     | amount         | Counter |                     |
             |        | calculate   | rounded        | Rounded | round(${amount}, 0) |
-            """,  # noqa
+            """,
             xml__contains=["""<instance>"""],
         )

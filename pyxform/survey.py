@@ -708,7 +708,7 @@ class Survey(Section):
         def _setup_choice_translations(
             name, choice_value, itext_id
         ) -> Generator[Tuple[List[str], str], None, None]:
-            for media_or_lang, value in choice_value.items():  # noqa
+            for media_or_lang, value in choice_value.items():
                 if isinstance(value, dict):
                     for language, val in value.items():
                         yield ([language, itext_id, media_or_lang], val)

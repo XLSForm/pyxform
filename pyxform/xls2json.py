@@ -564,7 +564,7 @@ def workbook_to_json(
                     "On the choices sheet there is a option with no label. " + info
                 )
             # chrislrobert's fix for a cryptic error message:
-            # see: https://code.google.com/p/opendatakit/issues/detail?id=832&start=200 # noqa
+            # see: https://code.google.com/p/opendatakit/issues/detail?id=832&start=200
             option_keys = list(option.keys())
             for headername in option_keys:
                 # Using warnings and removing the bad columns
@@ -613,7 +613,7 @@ def workbook_to_json(
                                         ]
                                     ),
                                 )
-                            )  # noqa
+                            )
 
     # ########## Entities sheet ###########
     entities_sheet = workbook_dict.get(constants.ENTITIES, [])
@@ -1294,7 +1294,7 @@ def workbook_to_json(
                             constants.TYPE: select_type,
                             constants.NAME: "reserved_name_for_field_list_labels_"
                             + str(row_number),
-                            # Adding row number for uniqueness # noqa
+                            # Adding row number for uniqueness
                             constants.CONTROL: {constants.APPEARANCE: "label"},
                             constants.CHOICES: choices[list_name],
                             constants.ITEMSET: list_name,
@@ -1511,7 +1511,7 @@ def workbook_to_json(
         # print "Generating flattened instance..."
         add_flat_annotations(stack[0]["parent_children"])
 
-    meta_children = [] + survey_meta
+    meta_children = [*survey_meta]
 
     if aliases.yes_no.get(settings.get("omit_instanceID")):
         if settings.get("public_key"):

@@ -375,7 +375,7 @@ def levenshtein_distance(a: str, b: str) -> int:
     return v0[n]
 
 
-def get_expression_lexer() -> re.Scanner:  # noqa
+def get_expression_lexer() -> re.Scanner:
     """
     Get a expression lexer (scanner) for parsing.
     """
@@ -439,7 +439,7 @@ def get_expression_lexer() -> re.Scanner:  # noqa
     lexicon = [(v, get_tokenizer(k)) for k, v in lexer_rules.items()]
     # re.Scanner is undocumented but has been around since at least 2003
     # https://mail.python.org/pipermail/python-dev/2003-April/035075.html
-    return re.Scanner(lexicon)  # noqa
+    return re.Scanner(lexicon)
 
 
 # Scanner takes a few 100ms to compile so use this shared instance.

@@ -423,7 +423,7 @@ def convert_file_to_csv_string(path):
             for out_key in out_keys:
                 out_row.append(row.get(out_key, None))
             out_rows.append(out_row)
-        writer.writerow([None] + out_keys)
+        writer.writerow([None, *out_keys])
         for out_row in out_rows:
-            writer.writerow([None] + out_row)
+            writer.writerow([None, *out_row])
     return foo.getvalue()

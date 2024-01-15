@@ -323,8 +323,8 @@ class TestTranslations(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             warnings__contains=[warning],
-            xml__xpath_match=common_xpaths
-            + [
+            xml__xpath_match=[
+                *common_xpaths,
                 xp.question_itext_label(DEFAULT_LANG, "hello"),
                 xp.question_itext_hint(DEFAULT_LANG, "-"),
                 xp.question_itext_form(DEFAULT_LANG, "guidance", "-"),
@@ -361,8 +361,11 @@ class TestTranslations(PyxformTestCase):
             md=settings + md,
             # TODO: bug - missing default lang translatable/itext values.
             # warnings__contains=[warning],
-            xml__xpath_match=common_xpaths
-            + [xp.language_is_default("eng"), xp.language_no_itext(DEFAULT_LANG)],
+            xml__xpath_match=[
+                *common_xpaths,
+                xp.language_is_default("eng"),
+                xp.language_no_itext(DEFAULT_LANG),
+            ],
         )
 
     @unittest.skip("Slow performance test. Un-skip to run as needed.")

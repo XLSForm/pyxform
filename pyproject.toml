@@ -68,7 +68,7 @@ select = [
 #  "PTH",  # flake8-use-pathlib
 #  "PYI",  # flake8-pyi
 #  "RET",  # flake8-return
-#  "RUF",  # ruff-specific rules
+  "RUF",  # ruff-specific rules
 #  "S",  # flake8-bandit
 #  "SIM",  # flake8-simplify
 #  "TRY",  # tryceratops
@@ -80,3 +80,4 @@ ignore = [
     "F821",  # undefined-name (doesn't work well with type hints as of ruff 0.1.11).
     "RUF001",  # ambiguous-unicode-character-string (false positives on unicode tests)
 ]
+# per-file-ignores = {"tests/*" = ["E501"]}

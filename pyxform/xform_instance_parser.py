@@ -46,7 +46,7 @@ def _flatten_dict(d, prefix):
     assert isinstance(prefix, list)
 
     for key, value in d.items():
-        new_prefix = prefix + [key]
+        new_prefix = [*prefix, key]
         if isinstance(value, dict):
             for pair in _flatten_dict(value, new_prefix):
                 yield pair

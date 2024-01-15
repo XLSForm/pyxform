@@ -33,6 +33,23 @@ OR_OTHER_CHOICE = {
     const.NAME: "other",
     const.LABEL: "Other",
 }
+QUESTION_CLASSES = {
+    "": Question,
+    "action": Question,
+    "input": InputQuestion,
+    "odk:rank": MultipleChoiceQuestion,
+    "osm": OsmUploadQuestion,
+    "range": RangeQuestion,
+    "select": MultipleChoiceQuestion,
+    "select1": MultipleChoiceQuestion,
+    "trigger": TriggerQuestion,
+    "upload": UploadQuestion,
+}
+SECTION_CLASSES = {
+    const.GROUP: GroupedSection,
+    const.REPEAT: RepeatingSection,
+    const.SURVEY: Survey,
+}
 
 
 def copy_json_dict(json_dict):
@@ -60,24 +77,6 @@ def copy_json_dict(json_dict):
 
 class SurveyElementBuilder:
     # we use this CLASSES dict to create questions from dictionaries
-    QUESTION_CLASSES = {
-        "": Question,
-        "action": Question,
-        "input": InputQuestion,
-        "odk:rank": MultipleChoiceQuestion,
-        "osm": OsmUploadQuestion,
-        "range": RangeQuestion,
-        "select": MultipleChoiceQuestion,
-        "select1": MultipleChoiceQuestion,
-        "trigger": TriggerQuestion,
-        "upload": UploadQuestion,
-    }
-
-    SECTION_CLASSES = {
-        const.GROUP: GroupedSection,
-        const.REPEAT: RepeatingSection,
-        const.SURVEY: Survey,
-    }
 
     def __init__(self, **kwargs):
         # I don't know why we would need an explicit none option for
@@ -111,7 +110,7 @@ class SurveyElementBuilder:
         if "add_none_option" in d:
             self._add_none_option = d["add_none_option"]
 
-        if d[const.TYPE] in self.SECTION_CLASSES:
+        if d[const.TYPE] in SECTION_CLASSES:
             if d[const.TYPE] == const.SURVEY:
                 self._choices = copy.deepcopy(d.get(const.CHOICES, {}))
 
@@ -257,7 +256,7 @@ class SurveyElementBuilder:
         if control_tag == "upload" and control_dict.get("mediatype") == "osm/*":
             control_tag = "osm"
 
-        return SurveyElementBuilder.QUESTION_CLASSES[control_tag]
+        return QUESTION_CLASSES[control_tag]
 
     @staticmethod
     def _create_specify_other_question_from_dict(d: Dict[str, Any]) -> InputQuestion:
@@ -272,7 +271,7 @@ class SurveyElementBuilder:
     def _create_section_from_dict(self, d):
         d_copy = d.copy()
         children = d_copy.pop(const.CHILDREN, [])
-        section_class = self.SECTION_CLASSES[d_copy[const.TYPE]]
+        section_class = SECTION_CLASSES[d_copy[const.TYPE]]
         if d[const.TYPE] == const.SURVEY and const.TITLE not in d:
             d_copy[const.TITLE] = d[const.NAME]
         result = section_class(**d_copy)
@@ -394,9 +393,9 @@ def create_survey_from_xls(path_or_file, default_name=None):
 
 
 def create_survey(
-    name_of_main_section: str = None,
-    sections: Dict[str, Dict] = None,
-    main_section: Dict[str, Any] = None,
+    name_of_main_section: Optional[str] = None,
+    sections: Optional[Dict[str, Dict]] = None,
+    main_section: Optional[Dict[str, Any]] = None,
     id_string: Optional[str] = None,
     title: Optional[str] = None,
 ) -> Survey:

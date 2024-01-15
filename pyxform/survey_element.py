@@ -6,9 +6,9 @@ import json
 import re
 from collections import deque
 from functools import lru_cache
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List
 
-from pyxform import constants
+from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.utils import (
@@ -21,9 +21,39 @@ from pyxform.xls2json import print_pyobj_to_json
 from pyxform.xlsparseutils import is_valid_xml_tag
 
 if TYPE_CHECKING:
-    from typing import List
-
     from pyxform.utils import DetachableElement
+
+# The following are important keys for the underlying dict that describes SurveyElement
+FIELDS = {
+    "name": str,
+    const.COMPACT_TAG: str,  # used for compact (sms) representation
+    "sms_field": str,
+    "sms_option": str,
+    "label": str,
+    "hint": str,
+    "guidance_hint": str,
+    "default": str,
+    "type": str,
+    "appearance": str,
+    "parameters": dict,
+    "intent": str,
+    "jr:count": str,
+    "bind": dict,
+    "instance": dict,
+    "control": dict,
+    "media": dict,
+    # this node will also have a parent and children, like a tree!
+    "parent": lambda: None,
+    "children": list,
+    "itemset": str,
+    "choice_filter": str,
+    "query": str,
+    "autoplay": str,
+    "flat": lambda: False,
+    "action": str,
+    "list_name": str,
+    "trigger": str,
+}
 
 
 def _overlay(over, under):
@@ -38,7 +68,7 @@ def _overlay(over, under):
 def any_repeat(survey_element: "SurveyElement", parent_xpath: str) -> bool:
     """Return True if there ia any repeat in `parent_xpath`."""
     for item in survey_element.iter_descendants():
-        if item.get_xpath() == parent_xpath and item.type == constants.REPEAT:
+        if item.get_xpath() == parent_xpath and item.type == const.REPEAT:
             return True
 
     return False
@@ -52,39 +82,7 @@ class SurveyElement(dict):
     """
 
     __name__ = "SurveyElement"
-
-    # the following are important keys for the underlying dict that
-    # describes this survey element
-    FIELDS = {
-        "name": str,
-        constants.COMPACT_TAG: str,  # used for compact (sms) representation
-        "sms_field": str,
-        "sms_option": str,
-        "label": str,
-        "hint": str,
-        "guidance_hint": str,
-        "default": str,
-        "type": str,
-        "appearance": str,
-        "parameters": dict,
-        "intent": str,
-        "jr:count": str,
-        "bind": dict,
-        "instance": dict,
-        "control": dict,
-        "media": dict,
-        # this node will also have a parent and children, like a tree!
-        "parent": lambda: None,
-        "children": list,
-        "itemset": str,
-        "choice_filter": str,
-        "query": str,
-        "autoplay": str,
-        "flat": lambda: False,
-        "action": str,
-        "list_name": str,
-        "trigger": str,
-    }
+    FIELDS: ClassVar[Dict[str, Any]] = FIELDS.copy()
 
     def _default(self):
         # TODO: need way to override question type dictionary
@@ -137,29 +135,6 @@ class SurveyElement(dict):
         else:
             self.add_child(children)
 
-    BINDING_CONVERSIONS = {
-        "yes": "true()",
-        "Yes": "true()",
-        "YES": "true()",
-        "true": "true()",
-        "True": "true()",
-        "TRUE": "true()",
-        "no": "false()",
-        "No": "false()",
-        "NO": "false()",
-        "false": "false()",
-        "False": "false()",
-        "FALSE": "false()",
-    }
-
-    CONVERTIBLE_BIND_ATTRIBUTES = (
-        "readonly",
-        "required",
-        "relevant",
-        "constraint",
-        "calculate",
-    )
-
     # Supported media types for attaching to questions
     SUPPORTED_MEDIA = ("image", "big-image", "audio", "video")
 
@@ -167,7 +142,7 @@ class SurveyElement(dict):
         if not is_valid_xml_tag(self.name):
             invalid_char = re.search(INVALID_XFORM_TAG_REGEXP, self.name)
             raise PyXFormError(
-                f"The name '{self.name}' contains an invalid character '{invalid_char.group(0)}'. Names {constants.XML_IDENTIFIER_ERROR_MESSAGE}"
+                f"The name '{self.name}' contains an invalid character '{invalid_char.group(0)}'. Names {const.XML_IDENTIFIER_ERROR_MESSAGE}"
             )
 
     # TODO: Make sure renaming this doesn't cause any problems
@@ -419,7 +394,7 @@ class SurveyElement(dict):
             hint, output_inserted = self.get_root().insert_output_values(self.hint, self)
             return node("hint", hint, toParseString=output_inserted)
 
-    def xml_label_and_hint(self) -> "List[DetachableElement]":
+    def xml_label_and_hint(self) -> List["DetachableElement"]:
         """
         Return a list containing one node for the label and if there
         is a hint one node for the hint.
@@ -470,10 +445,10 @@ class SurveyElement(dict):
                 # the xls2json side.
                 if (
                     hashable(v)
-                    and v in self.BINDING_CONVERSIONS
-                    and k in self.CONVERTIBLE_BIND_ATTRIBUTES
+                    and v in const.BINDING_CONVERSIONS
+                    and k in const.CONVERTIBLE_BIND_ATTRIBUTES
                 ):
-                    v = self.BINDING_CONVERSIONS[v]
+                    v = const.BINDING_CONVERSIONS[v]
                 if k == "jr:constraintMsg" and (
                     isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
                 ):
