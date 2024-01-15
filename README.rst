@@ -106,11 +106,12 @@ When writing new ``PyxformTestCase`` tests that make content assertions, it is s
 
 Documentation
 =============
-To check out the documentation for pyxform do the following::
+For developers, ``pyxform`` uses docstrings, type annotations, and test cases. Most modern IDEs can display docstrings and type annotations in a easily navigable format, so no additional docs are compiled (e.g. sphinx). In addition to the user documentation, developers should be familiar with the `ODK XForms Specification https://getodk.github.io/xforms-spec/`.
 
-    pip install Sphinx==1.0.7
-    cd your-virtual-env-dir/src/pyxform/docs
-    make html
+For users, ``pyxform`` has documentation at the following locations:
+* `XLSForm docs https://xlsform.org/`
+* `XLSForm template https://docs.google.com/spreadsheets/d/1v9Bumt3R0vCOGEKQI6ExUf2-8T72-XXp_CbKKTACuko/edit#gid=1052905058`
+* `ODK Docs https://docs.getodk.org/`
 
 Change Log
 ==========
