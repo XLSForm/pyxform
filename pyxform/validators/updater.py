@@ -62,7 +62,7 @@ class _UpdateInfo:
         self.installed_path = os.path.join(self.bin_path, "installed.json")
         self.bin_new_path = os.path.join(self.mod_path, "bin_new")
 
-        self.manual_msg = "Download manually from: {r}.".format(r=self.repo_url)
+        self.manual_msg = f"Download manually from: {self.repo_url}."
 
 
 class _UpdateHandler:
@@ -86,7 +86,7 @@ class _UpdateHandler:
     @staticmethod
     def _check_path(file_path):
         if not os.path.exists(file_path):
-            raise PyXFormError("Expected path does not exist: {p}" "".format(p=file_path))
+            raise PyXFormError(f"Expected path does not exist: {file_path}" "")
         else:
             return True
 
@@ -96,7 +96,7 @@ class _UpdateHandler:
         Read the JSON file to a string.
         """
         _UpdateHandler._check_path(file_path=file_path)
-        with open(file_path, mode="r") as in_file:
+        with open(file_path) as in_file:
             return json.load(in_file)
 
     @staticmethod
@@ -114,7 +114,7 @@ class _UpdateHandler:
         Read the .last_check file.
         """
         _UpdateHandler._check_path(file_path=file_path)
-        with open(file_path, mode="r") as in_file:
+        with open(file_path) as in_file:
             first_line = in_file.readline()
         try:
             last_check = datetime.strptime(first_line, UTC_FMT)
@@ -192,7 +192,7 @@ class _UpdateHandler:
         latest = _UpdateHandler._get_latest(update_info=update_info)
         latest_files = latest["assets"]
         if len(latest_files) == 0:
-            file_message = "- None!\n\n{m}".format(m=update_info.manual_msg)
+            file_message = f"- None!\n\n{update_info.manual_msg}"
         else:
             file_names = ["- {n}".format(n=x["name"]) for x in latest_files]
             file_message = "\n".join(file_names)
@@ -229,8 +229,8 @@ class _UpdateHandler:
         urls_len = len(file_urls)
         if 0 == urls_len:
             raise PyXFormError(
-                "No files with the name '{n}' attached to release '{r}'."
-                "\n\n{h}".format(n=file_name, r=rel_name, h=update_info.manual_msg)
+                f"No files with the name '{file_name}' attached to release '{rel_name}'."
+                f"\n\n{update_info.manual_msg}"
             )
         elif 1 < urls_len:
             raise PyXFormError(
@@ -558,8 +558,8 @@ class ODKValidateUpdater(_UpdateService):
 def _build_validator_menu(main_subparser, validator_name, updater_instance):
     main = main_subparser.add_parser(
         validator_name.lower(),
-        description="{v} Sub-menu".format(v=validator_name),
-        help="For help, use '{v} -h'.".format(v=validator_name.lower()),
+        description=f"{validator_name} Sub-menu",
+        help=f"For help, use '{validator_name.lower()} -h'.",
     )
     subs = main.add_subparsers(metavar="<sub_command>")
 

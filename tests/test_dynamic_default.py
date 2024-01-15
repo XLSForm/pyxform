@@ -802,7 +802,7 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         |        | text       | q{i}     | Q{i}     | if(../t2 = 'test', 1, 2) + 15 - int(1.2) |
         """
         for count in (500, 1000, 2000):
-            questions = "\n".join((question.format(i=i) for i in range(1, count)))
+            questions = "\n".join(question.format(i=i) for i in range(1, count))
             md = "".join((survey_header, questions))
 
             def run(name, case):
@@ -836,7 +836,7 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         question = """
         |        | text       | q{i}     | Q{i}     | if(../t2 = 'test', 1, 2) + 15 - int(1.2) |
         """
-        questions = "\n".join((question.format(i=i) for i in range(1, 2000)))
+        questions = "\n".join(question.format(i=i) for i in range(1, 2000))
         md = "".join((survey_header, questions))
         process = psutil.Process(os.getpid())
         pre_mem = process.memory_info().rss

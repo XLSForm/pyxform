@@ -355,7 +355,7 @@ class Survey(Section):
             name = element["name"]
             extension = element["type"].split("-")[0]
             prefix = "file-csv" if extension == "csv" else "file"
-            src = "jr://{}/{}.{}".format(prefix, name, extension)
+            src = f"jr://{prefix}/{name}.{extension}"
             return InstanceInfo(
                 type="external",
                 context="[type: {t}, name: {n}]".format(
@@ -389,10 +389,8 @@ class Survey(Section):
                 contexts = ", ".join(x.context for x in copies)
                 errors.append(
                     "Instance names must be unique within a form. "
-                    "The name '{i}' was found {c} time(s), "
-                    "under these contexts: {contexts}".format(
-                        i=element, c=len(copies), contexts=contexts
-                    )
+                    f"The name '{element}' was found {len(copies)} time(s), "
+                    f"under these contexts: {contexts}"
                 )
         if errors:
             raise ValidationError("\n".join(errors))
@@ -419,7 +417,7 @@ class Survey(Section):
             return functions_present
 
         def get_instance_info(element, file_id):
-            uri = "jr://file-csv/{}.csv".format(file_id)
+            uri = f"jr://file-csv/{file_id}.csv"
 
             return InstanceInfo(
                 type="pulldata",
@@ -566,16 +564,9 @@ class Survey(Section):
                 msg = (
                     "The same instance id will be generated for different "
                     "external instance source URIs. Please check the form."
-                    " Instance name: '{i}', Existing type: '{e}', "
-                    "Existing URI: '{iu}', Duplicate type: '{d}', "
-                    "Duplicate URI: '{du}', Duplicate context: '{c}'.".format(
-                        i=i.name,
-                        iu=seen[i.name].src,
-                        e=seen[i.name].type,
-                        d=i.type,
-                        du=i.src,
-                        c=i.context,
-                    )
+                    f" Instance name: '{i.name}', Existing type: '{seen[i.name].type}', "
+                    f"Existing URI: '{seen[i.name].src}', Duplicate type: '{i.type}', "
+                    f"Duplicate URI: '{i.src}', Duplicate context: '{i.context}'."
                 )
                 raise PyXFormError(msg)
             elif i.name in seen.keys() and seen[i.name].src == i.src:
@@ -1059,7 +1050,7 @@ class Survey(Section):
                         .group(1)
                         .split(",")
                     )
-                    name_arg = "${{{}}}".format(name)
+                    name_arg = f"${{{name}}}"
                     for idx, arg in enumerate(indexed_repeat_args):
                         if name_arg in arg.strip():
                             indexed_repeat_name_index = idx

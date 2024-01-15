@@ -32,7 +32,7 @@ def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
         msg = (
             "When looking for a sheet named '{k}', the following sheets with "
             "similar names were found: {c}."
-        ).format(k=key, c=str(", ".join(("'{}'".format(c) for c in candidates))))
+        ).format(k=key, c=str(", ".join(f"'{c}'" for c in candidates)))
         return msg
     else:
         return None

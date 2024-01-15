@@ -113,20 +113,18 @@ def request_get(url):
         with closing(urlopen(r)) as u:
             content = u.read()
         if len(content) == 0:
-            raise PyXFormError("Empty response from URL: '{u}'.".format(u=url))
+            raise PyXFormError(f"Empty response from URL: '{url}'.")
         else:
             return content
     except HTTPError as http_err:
         raise PyXFormError(
-            "Unable to fulfill request. Error code: '{c}'. "
-            "Reason: '{r}'. URL: '{u}'."
-            "".format(r=http_err.reason, c=http_err.code, u=url)
+            f"Unable to fulfill request. Error code: '{http_err.code}'. "
+            f"Reason: '{http_err.reason}'. URL: '{url}'."
+            ""
         ) from http_err
     except URLError as url_err:
         raise PyXFormError(
-            "Unable to reach a server. Reason: {r}. " "URL: {u}".format(
-                r=url_err.reason, u=url
-            )
+            f"Unable to reach a server. Reason: {url_err.reason}. " f"URL: {url}"
         ) from url_err
 
 
@@ -195,7 +193,7 @@ def check_readable(file_path, retry_limit=10, wait_seconds=0.5):
 
     def catch_try():
         try:
-            with open(file_path, mode="r"):
+            with open(file_path):
                 return True
         except OSError:
             return False
@@ -206,5 +204,5 @@ def check_readable(file_path, retry_limit=10, wait_seconds=0.5):
             tries += 1
             time.sleep(wait_seconds)
         else:
-            raise OSError("Could not read file: {f}".format(f=file_path))
+            raise OSError(f"Could not read file: {file_path}")
     return True

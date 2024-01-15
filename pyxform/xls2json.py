@@ -424,7 +424,7 @@ def workbook_to_json(
     workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
     workbook_keys = workbook_dict.keys()
     if constants.SURVEY not in workbook_dict:
-        msg = "You must have a sheet named '{k}'. ".format(k=constants.SURVEY)
+        msg = f"You must have a sheet named '{constants.SURVEY}'. "
         similar = find_sheet_misspellings(key=constants.SURVEY, keys=workbook_keys)
         if similar is not None:
             msg += similar
@@ -609,10 +609,7 @@ def workbook_to_json(
                                 "allow_choice_duplicates setting to 'yes'. Learn more: https://xlsform.org/#choice-names.".format(
                                     list_name,
                                     ", ".join(
-                                        [
-                                            "'{}'".format(dupe)
-                                            for dupe in choice_duplicates
-                                        ]
+                                        [f"'{dupe}'" for dupe in choice_duplicates]
                                     ),
                                 )
                             )
@@ -1592,7 +1589,7 @@ def get_filename(path):
     """
     Get the extensionless filename from a path
     """
-    return os.path.splitext((os.path.basename(path)))[0]
+    return os.path.splitext(os.path.basename(path))[0]
 
 
 def parse_file_to_json(

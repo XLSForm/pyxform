@@ -77,11 +77,14 @@ select = [
   "UP005",
   "UP008",
   "UP009",
+  "UP015",
   "UP018",
   "UP020",
   "UP024",
   "UP028",
   "UP030",
+  "UP032",
+  "UP034",
   "UP035",
   "W",  # pycodestyle warning
 ]

@@ -327,7 +327,7 @@ def get_cascading_json(sheet_list, prefix, level):
 
 def csv_to_dict(path_or_file):
     if isinstance(path_or_file, str):
-        csv_data = open(path_or_file, "r", encoding="utf-8", newline="")
+        csv_data = open(path_or_file, encoding="utf-8", newline="")
     else:
         csv_data = path_or_file
 

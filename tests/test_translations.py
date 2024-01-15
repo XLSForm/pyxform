@@ -396,8 +396,8 @@ class TestTranslations(PyxformTestCase):
         |         | c{i}        | nb   | lb-d  | lb-e       |
         """
         for count in (500, 1000, 2000):
-            questions = "\n".join((question.format(i=i) for i in range(1, count)))
-            choice_lists = "\n".join((choice_list.format(i=i) for i in range(1, count)))
+            questions = "\n".join(question.format(i=i) for i in range(1, count))
+            choice_lists = "\n".join(choice_list.format(i=i) for i in range(1, count))
             md = "".join((survey_header, questions, choices_header, choice_lists))
 
             def run(name, case):

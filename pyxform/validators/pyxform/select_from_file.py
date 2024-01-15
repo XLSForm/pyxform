@@ -54,7 +54,7 @@ def validate_list_name_extension(
         1 != len(list_path.suffixes)
         or list_path.suffix not in EXTERNAL_INSTANCE_EXTENSIONS
     ):
-        exts = ", ".join((f"'{e}'" for e in EXTERNAL_INSTANCE_EXTENSIONS))
+        exts = ", ".join(f"'{e}'" for e in EXTERNAL_INSTANCE_EXTENSIONS)
         raise PyXFormError(
             ROW_FORMAT_STRING % row_number
             + f" File name for '{select_command} {list_name}' should end with one of "

@@ -29,8 +29,8 @@ class TestSurvey(PyxformTestCase):
             {q}
             |        | note | n    | {n}  |
             """.format(
-                q="\n".join((tmpl_q.format(i) for i in range(1, 250))),
-                n=" ".join((tmpl_n.format(i) for i in range(1, 250))),
+                q="\n".join(tmpl_q.format(i) for i in range(1, 250)),
+                n=" ".join(tmpl_n.format(i) for i in range(1, 250)),
             ),
         )
 
@@ -45,7 +45,7 @@ class TestSurvey(PyxformTestCase):
             {q}
             {n}
             """.format(
-                q="\n".join((tmpl_q.format(i) for i in range(1, 250))),
-                n="\n".join((tmpl_n.format(i) for i in range(1, 250))),
+                q="\n".join(tmpl_q.format(i) for i in range(1, 250)),
+                n="\n".join(tmpl_n.format(i) for i in range(1, 250)),
             ),
         )
