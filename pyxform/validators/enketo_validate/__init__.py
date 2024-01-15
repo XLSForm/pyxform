@@ -24,8 +24,6 @@ ENKETO_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", "validate")
 class EnketoValidateError(Exception):
     """Common base class for Enketo validate exceptions."""
 
-    pass
-
 
 def install_exists():
     """

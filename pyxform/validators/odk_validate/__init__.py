@@ -27,8 +27,6 @@ ODK_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", "ODK_Validate.jar")
 class ODKValidateError(Exception):
     """ODK Validation exception error."""
 
-    pass
-
 
 def install_exists():
     """Returns True if ODK_VALIDATE_PATH exists."""

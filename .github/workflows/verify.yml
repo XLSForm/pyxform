@@ -30,8 +30,8 @@ jobs:
           pip list
 
       # Linter.
-      - run: ruff format pyxform tests --diff
       - run: ruff check pyxform tests --no-fix
+      - run: ruff format pyxform tests --diff
 
   test:
     runs-on: ${{ matrix.os }}

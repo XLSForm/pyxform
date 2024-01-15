@@ -85,7 +85,7 @@ class PyxformMarkdown:
 
             def _row_to_dict(row):
                 out_dict = {}
-                for i in range(0, len(row)):
+                for i in range(len(row)):
                     col = row[i]
                     if col not in [None, ""]:
                         out_dict[headers[i]] = col

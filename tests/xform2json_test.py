@@ -43,7 +43,7 @@ class DumpAndLoadXForm2JsonTests(XFormTestCase, PyxformTestCase):
             self.surveys[filename] = create_survey_from_path(path)
 
     def test_load_from_dump(self):
-        for filename, survey in iter(self.surveys.items()):
+        for filename, survey in self.surveys.items():
             with self.subTest(msg=filename):
                 survey.json_dump()
                 survey_from_dump = create_survey_element_from_xml(survey.to_xml())
@@ -52,7 +52,7 @@ class DumpAndLoadXForm2JsonTests(XFormTestCase, PyxformTestCase):
                 self.assertXFormEqual(expected, observed)
 
     def tearDown(self):
-        for _, survey in self.surveys.items():
+        for survey in self.surveys.values():
             path = survey.name + ".json"
             if os.path.exists(path):
                 os.remove(path)

@@ -342,14 +342,14 @@ def levenshtein_distance(a: str, b: str) -> int:
     n = len(b)
 
     # create two work vectors of integer distances
-    v1 = [0 for _ in range(0, n + 1)]
+    v1 = [0 for _ in range(n + 1)]
 
     # initialize v0 (the previous row of distances)
     # this row is A[0][i]: edit distance for an empty s
     # the distance is just the number of characters to delete from t
-    v0 = list(range(0, n + 1))
+    v0 = list(range(n + 1))
 
-    for i in range(0, m):
+    for i in range(m):
         # calculate v1 (current row distances) from the previous row v0
 
         # first element of v1 is A[i+1][0]
@@ -357,7 +357,7 @@ def levenshtein_distance(a: str, b: str) -> int:
         v1[0] = i + 1
 
         # use formula to fill in the rest of the row
-        for j in range(0, n):
+        for j in range(n):
             # calculating costs for A[i+1][j+1]
             deletion_cost = v0[j + 1] + 1
             insertion_cost = v1[j] + 1

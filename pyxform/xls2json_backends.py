@@ -148,7 +148,7 @@ def xls_to_dict(path_or_file):
         first_row = (c.value for c in next(sheet.get_rows(), []))
         headers = get_excel_column_headers(first_row=first_row)
         row_iter = (
-            tuple(sheet.cell(r, c) for c in range(0, len(headers)))
+            tuple(sheet.cell(r, c) for c in range(len(headers)))
             for r in range(1, sheet.nrows)
         )
         rows = get_excel_rows(headers=headers, rows=row_iter, cell_func=xls_clean_cell)

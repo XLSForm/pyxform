@@ -62,8 +62,8 @@ select = [
 #  "ERA",  # eradicate (commented out code)
   "F",  # pyflakes
   "I",  # isort
-#  "PERF",  # perflint
-#  "PIE",  # flake8-pie
+  "PERF",  # perflint
+  "PIE",  # flake8-pie
 #  "PL",  # pylint
 #  "PTH",  # flake8-use-pathlib
 #  "PYI",  # flake8-pyi
@@ -78,6 +78,8 @@ select = [
 ignore = [
     "E501",  # line-too-long (we have a lot of long strings)
     "F821",  # undefined-name (doesn't work well with type hints as of ruff 0.1.11).
+    "PERF401",  # manual-list-comprehension (false positives on selective transforms)
+    "PERF402",  # manual-list-copy (false positives on selective transforms)
     "RUF001",  # ambiguous-unicode-character-string (false positives on unicode tests)
 ]
 # per-file-ignores = {"tests/*" = ["E501"]}
