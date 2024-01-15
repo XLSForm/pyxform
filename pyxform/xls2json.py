@@ -1634,7 +1634,7 @@ def organize_by_values(dict_list, key):
             dicty_copy = dicty.copy()
             val = dicty_copy.pop(key)
             if val in result:
-                raise Exception("Duplicate key: " + val)
+                raise PyXFormError("Duplicate key: " + val)
             result[val] = dicty_copy
     return result
 

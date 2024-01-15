@@ -492,7 +492,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         """
         if not (isinstance(xpath, str) and isinstance(expected, set)):
             msg = "Each xpath_exact requires: tuple(xpath: str, expected: Set[str])."
-            raise SyntaxError(msg)
+            raise TypeError(msg)
         observed = xpath_evaluate(
             matcher_context=matcher_context,
             content=content,
@@ -524,7 +524,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         """
         if not (isinstance(xpath, str) and isinstance(expected, int)):
             msg = "Each xpath_count requires: tuple(xpath: str, count: int)"
-            raise SyntaxError(msg)
+            raise TypeError(msg)
         observed = xpath_evaluate(
             matcher_context=matcher_context,
             content=content,

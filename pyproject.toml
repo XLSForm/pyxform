@@ -66,29 +66,30 @@ select = [
   "PIE",  # flake8-pie
   "PL",  # pylint
 #  "PTH",  # flake8-use-pathlib
-#  "PYI",  # flake8-pyi
+  "PYI",  # flake8-pyi
 #  "RET",  # flake8-return
   "RUF",  # ruff-specific rules
   "S",  # flake8-bandit
 #  "SIM",  # flake8-simplify
-#  "TRY",  # tryceratops
+  "TRY",  # tryceratops
 #  "UP",  # pyupgrade
-#  "W",  # pycodestyle warning
+  "W",  # pycodestyle warning
 ]
 ignore = [
   "E501",  # line-too-long (we have a lot of long strings)
   "F821",  # undefined-name (doesn't work well with type hints, ruff 0.1.11).
   "PERF401",  # manual-list-comprehension (false positives on selective transforms)
   "PERF402",  # manual-list-copy (false positives on selective transforms)
-  "PLR2004",  # magic-value-comparison (many tests expect certain numbers of things)
   "PLR0911",  # too-many-return-statements (complexity not useful to warn every time)
   "PLR0912",  # too-many-branches (complexity not useful to warn every time)
   "PLR0913",  # too-many-arguments (complexity not useful to warn every time)
   "PLR0915",  # too-many-statements (complexity not useful to warn every time)
+  "PLR2004",  # magic-value-comparison (many tests expect certain numbers of things)
   "PLW2901",  # redefined-loop-name (usually not a bug)
+  "RUF001",  # ambiguous-unicode-character-string (false positives on unicode tests)
   "S310",  # suspicious-url-open-usage (prone to false positives, ruff 0.1.11)
   "S320",  # suspicious-xmle-tree-usage (according to defusedxml author lxml is safe)
   "S603",  # subprocess-without-shell-equals-true (prone to false positives, ruff 0.1.11)
-  "RUF001",  # ambiguous-unicode-character-string (false positives on unicode tests)
+  "TRY003",  # raise-vanilla-args (reasonable lint but would require large refactor)
 ]
 # per-file-ignores = {"tests/*" = ["E501"]}

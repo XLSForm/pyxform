@@ -76,10 +76,10 @@ class ThreadingServerInThread:
         try:
             self.httpd.server_bind()
             self.httpd.server_activate()
-        except OSError as e:
+        except OSError:
             self.httpd.server_close()
             if 5 < tries:
-                raise e
+                raise
             else:
                 time.sleep(0.5)
                 self._bind_and_activate(tries=tries)

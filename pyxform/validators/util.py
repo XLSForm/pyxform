@@ -2,7 +2,6 @@
 """
 The validators utility functions.
 """
-import collections
 import io
 import logging
 import os
@@ -13,6 +12,7 @@ import threading
 import time
 from contextlib import closing
 from subprocess import PIPE, Popen
+from typing import Dict, List, NamedTuple
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -132,6 +132,11 @@ def request_get(url):
         ) from url_err
 
 
+class _LoggingWatcher(NamedTuple):
+    records: List
+    output: Dict
+
+
 class CapturingHandler(logging.Handler):
     """
     A logging handler capturing all (raw and formatted) logging output.
@@ -169,7 +174,6 @@ class CapturingHandler(logging.Handler):
 
     @staticmethod
     def _get_watcher():
-        _LoggingWatcher = collections.namedtuple("_LoggingWatcher", ["records", "output"])
         levels = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
         return _LoggingWatcher([], {x: [] for x in levels})
 

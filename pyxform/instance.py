@@ -2,6 +2,7 @@
 """
 SurveyInstance class module.
 """
+from pyxform.errors import PyXFormError
 from pyxform.xform_instance_parser import parse_xform_instance
 
 
@@ -35,7 +36,7 @@ class SurveyInstance:
 
     def answer(self, name=None, value=None):
         if name is None:
-            raise Exception("In answering, name must be given")
+            raise PyXFormError("In answering, name must be given")
 
         # ahh. this is horrible, but we need the xpath dict in survey
         # to be up-to-date ...maybe

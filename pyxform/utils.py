@@ -8,9 +8,8 @@ import csv
 import json
 import os
 import re
-from collections import namedtuple
 from json.decoder import JSONDecodeError
-from typing import Dict, List, Tuple
+from typing import Dict, List, NamedTuple, Tuple
 from xml.dom import Node
 from xml.dom.minidom import Element, Text, _write_data, parseString
 
@@ -446,7 +445,13 @@ def get_expression_lexer() -> re.Scanner:
 
 
 # Scanner takes a few 100ms to compile so use this shared instance.
-ExpLexerToken = namedtuple("ExpLexerToken", ["name", "value", "start", "end"])
+class ExpLexerToken(NamedTuple):
+    name: str
+    value: str
+    start: int
+    end: int
+
+
 EXPRESSION_LEXER = get_expression_lexer()
 
 

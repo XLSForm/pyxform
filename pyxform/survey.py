@@ -890,7 +890,7 @@ class Survey(Section):
                 label_type = label_name.partition(":")[-1]
 
                 if not isinstance(content, dict):
-                    raise Exception()
+                    raise PyXFormError("""Invalid value for `content`.""")
 
                 for media_type, media_value in content.items():
                     # Ignore key indicating Question or Choice translation type.
@@ -1172,10 +1172,10 @@ class Survey(Section):
                     file_obj.write(self._to_pretty_xml())
                 else:
                     file_obj.write(self._to_ugly_xml())
-        except Exception as error:
+        except Exception:
             if os.path.exists(path):
                 os.unlink(path)
-            raise error
+            raise
         if validate:
             warnings.extend(odk_validate.check_xform(path))
         if enketo:
