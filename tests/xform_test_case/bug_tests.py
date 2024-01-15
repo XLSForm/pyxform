@@ -7,6 +7,7 @@ import os
 import unittest
 
 import pyxform
+from pyxform.errors import PyXFormError
 from pyxform.utils import has_external_choices
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
@@ -27,7 +28,7 @@ class GroupNames(unittest.TestCase):
         output_path = os.path.join(test_output.PATH, root_filename + ".xml")
         # Do the conversion:
         warnings = []
-        with self.assertRaises(Exception):
+        with self.assertRaises(PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(
                 path_to_excel_file, default_name="group_name_test", warnings=warnings
             )
@@ -46,7 +47,7 @@ class NotClosedGroup(unittest.TestCase):
         output_path = os.path.join(test_output.PATH, root_filename + ".xml")
         # Do the conversion:
         warnings = []
-        with self.assertRaises(Exception):
+        with self.assertRaises(PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(
                 path_to_excel_file,
                 default_name="not_closed_group_test",
@@ -67,7 +68,7 @@ class DuplicateColumns(unittest.TestCase):
         output_path = os.path.join(test_output.PATH, root_filename + ".xml")
         # Do the conversion:
         warnings = []
-        with self.assertRaises(Exception):
+        with self.assertRaises(PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(
                 path_to_excel_file, default_name="duplicate_columns", warnings=warnings
             )

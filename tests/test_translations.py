@@ -398,23 +398,23 @@ class TestTranslations(PyxformTestCase):
             choice_lists = "\n".join((choice_list.format(i=i) for i in range(1, count)))
             md = "".join((survey_header, questions, choices_header, choice_lists))
 
-            def run(name):
+            def run(name, case):
                 runs = 0
                 results = []
                 while runs < 10:
                     start = perf_counter()
-                    self.assertPyxformXform(md=md)
+                    self.assertPyxformXform(md=case)
                     results.append(perf_counter() - start)
                     runs += 1
                 print(name, sum(results) / len(results))
 
-            run(name=f"questions={count}, with check (seconds):")
+            run(name=f"questions={count}, with check (seconds):", case=md)
 
             with patch(
                 "pyxform.xls2json.SheetTranslations.missing_check",
                 return_value=[],
             ):
-                run(name=f"questions={count}, without check (seconds):")
+                run(name=f"questions={count}, without check (seconds):", case=md)
 
     def test_translation_detection__survey_and_choices_columns_present(self):
         """Should identify that the survey is multi-language when first row(s) empty."""

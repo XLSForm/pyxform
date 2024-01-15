@@ -101,7 +101,7 @@ def decode_stream(stream):
             return stream.decode("latin-1")
         except BaseException as be:
             msg = "Failed to decode validate stderr as utf-8 or latin-1."
-            raise IOError(msg, ude, be)
+            raise IOError(msg, ude, be) from be
 
 
 def request_get(url):
@@ -117,16 +117,16 @@ def request_get(url):
             raise PyXFormError("Empty response from URL: '{u}'.".format(u=url))
         else:
             return content
-    except HTTPError as e:
+    except HTTPError as http_err:
         raise PyXFormError(
             "Unable to fulfill request. Error code: '{c}'. "
             "Reason: '{r}'. URL: '{u}'."
             "".format(r=e.reason, c=e.code, u=url)
-        )
-    except URLError as e:
+        ) from http_err
+    except URLError as url_err:
         raise PyXFormError(
             "Unable to reach a server. Reason: {r}. " "URL: {u}".format(r=e.reason, u=url)
-        )
+        ) from url_err
 
 
 class CapturingHandler(logging.Handler):

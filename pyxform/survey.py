@@ -803,11 +803,11 @@ class Survey(Section):
         This disables any of the default_language fallback functionality.
         """
         paths = {}
-        for lang, translation in self._translations.items():
+        for translation in self._translations.values():
             for path, content in translation.items():
                 paths[path] = paths.get(path, set()).union(content.keys())
 
-        for lang, translation in self._translations.items():
+        for lang in self._translations:
             for path, content_types in paths.items():
                 if path not in self._translations[lang]:
                     self._translations[lang][path] = {}

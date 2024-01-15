@@ -55,14 +55,13 @@ extend-select = [
   "I",  # isort
 ]
 # Potentially useful rule sets to enable in future:
-#select = [
-#  "A",  # flake8-builtins
-#  "B",  # flake8-bugbear
+select = [
+  "B",  # flake8-bugbear
 #  "C4",  # flake8-comprehensions
-#  "E",  # pycodestyle error
+  "E",  # pycodestyle error
 #  "ERA",  # eradicate (commented out code)
-#  "F",  # pyflakes
-#  "I",  # isort
+  "F",  # pyflakes
+  "I",  # isort
 #  "PERF",  # perflint
 #  "PIE",  # flake8-pie
 #  "PL",  # pylint
@@ -75,7 +74,7 @@ extend-select = [
 #  "TRY",  # tryceratops
 #  "UP",  # pyupgrade
 #  "W",  # pycodestyle warning
-#]
+]
 ignore = [
     "E501",  # line-too-long (we have a lot of long strings)
     "F821",  # undefined-name (doesn't work well with type hints as of ruff 0.1.11).

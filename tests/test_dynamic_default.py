@@ -807,20 +807,20 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
             questions = "\n".join((question.format(i=i) for i in range(1, count)))
             md = "".join((survey_header, questions))
 
-            def run(name):
+            def run(name, case):
                 runs = 0
                 results = []
                 while runs < 10:
                     start = perf_counter()
-                    self.assertPyxformXform(md=md)
+                    self.assertPyxformXform(md=case)
                     results.append(perf_counter() - start)
                     runs += 1
                 print(name, round(sum(results) / len(results), 4))
 
-            run(name=f"questions={count}, with check (seconds):")
+            run(name=f"questions={count}, with check (seconds):", case=md)
 
             with patch("pyxform.utils.default_is_dynamic", return_value=True):
-                run(name=f"questions={count}, without check (seconds):")
+                run(name=f"questions={count}, without check (seconds):", case=md)
 
     def test_dynamic_default_performance__memory(self):
         """

@@ -325,7 +325,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 raise PyxformTestError(
                     "ODK Validate error was thrown but 'odk_validate_error__contains' "
                     "was empty: " + str(e)
-                )
+                ) from e
             for v_err in odk_validate_error__contains:
                 self.assertContains(
                     e.args[0], v_err, msg_prefix="odk_validate_error__contains"

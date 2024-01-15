@@ -392,8 +392,8 @@ class _UpdateHandler:
             current_mode = os.stat(new_bin_file_path).st_mode
             os.chmod(new_bin_file_path, current_mode | S_IXUSR | S_IXGRP)
 
-        except PyXFormError as e:
-            raise PyXFormError("\n\nUpdate failed!\n\n" + str(e))
+        except PyXFormError as px_err:
+            raise PyXFormError("\n\nUpdate failed!\n\n" + str(e)) from px_err
         else:
             return latest
 

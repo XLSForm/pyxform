@@ -253,7 +253,7 @@ class TestSelectFromFile(PyxformTestCase):
         |        | type                                   | name    | label   | parameters           |
         |        | select_one_from_file cities{ext}       | city    | City    | value=VAL, label=lBl |
         """
-        for ext, xp_city, xp_subs in self.xp_test_args:
+        for ext, xp_city, _ in self.xp_test_args:
             with self.subTest(msg=ext):
                 self.assertPyxformXform(
                     name="test",

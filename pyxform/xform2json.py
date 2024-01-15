@@ -385,8 +385,10 @@ class XFormToDictBuilder:
         except KeyError:
             try:
                 ref = obj["nodeset"]
-            except KeyError:
-                raise TypeError('cannot find "ref" or "nodeset" in {}'.format(repr(obj)))
+            except KeyError as node_err:
+                raise PyXFormError(
+                    'Cannot find "ref" or "nodeset" in {}'.format(repr(obj))
+                ) from node_err
         question = {
             "ref": ref,
             "__order": self._get_question_order(ref),

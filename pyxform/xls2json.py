@@ -317,10 +317,10 @@ def process_range_question_type(
 
     try:
         has_float = any([float(x) and "." in str(x) for x in parameters.values()])
-    except ValueError:
+    except ValueError as range_err:
         raise PyXFormError(
             "Range parameters 'start', " "'end' or 'step' must all be numbers."
-        )
+        ) from range_err
     else:
         # is integer by default, convert to decimal if it has any float values
         if has_float:
@@ -590,7 +590,7 @@ def workbook_to_json(
         list_name_choices = [option.get("name") for option in options]
         if len(list_name_choices) != len(set(list_name_choices)):
             duplicate_setting = settings.get("allow_choice_duplicates")
-            for k, v in Counter(list_name_choices).items():
+            for v in Counter(list_name_choices).values():
                 if v > 1:
                     if not duplicate_setting or duplicate_setting.capitalize() != "Yes":
                         choice_duplicates = [
@@ -841,12 +841,12 @@ def workbook_to_json(
 
                     try:
                         int(parameters[constants.LOCATION_MIN_INTERVAL])
-                    except ValueError:
+                    except ValueError as lmi_err:
                         raise PyXFormError(
                             "Parameter "
                             + constants.LOCATION_MIN_INTERVAL
                             + " must have an integer value."
-                        )
+                        ) from lmi_err
                     if int(parameters[constants.LOCATION_MIN_INTERVAL]) < 0:
                         raise PyXFormError(
                             "Parameter "
@@ -856,12 +856,12 @@ def workbook_to_json(
 
                     try:
                         int(parameters[constants.LOCATION_MAX_AGE])
-                    except ValueError:
+                    except ValueError as lma_err:
                         raise PyXFormError(
                             "Parameter "
                             + constants.LOCATION_MAX_AGE
                             + " must have an integer value."
-                        )
+                        ) from lma_err
                     if int(parameters[constants.LOCATION_MAX_AGE]) < 0:
                         raise PyXFormError(
                             "Parameter "
@@ -1236,10 +1236,10 @@ def workbook_to_json(
                         if not parameters["seed"].startswith("${"):
                             try:
                                 float(parameters["seed"])
-                            except ValueError:
+                            except ValueError as seed_err:
                                 raise PyXFormError(
                                     "seed value must be a number or a reference to another field."
-                                )
+                                ) from seed_err
                 elif "seed" in parameters.keys():
                     raise PyXFormError(
                         "Parameters must include randomize=true to use a seed."
@@ -1350,11 +1350,11 @@ def workbook_to_json(
             if "rows" in parameters.keys():
                 try:
                     int(parameters["rows"])
-                except ValueError:
+                except ValueError as rows_err:
                     raise PyXFormError(
                         (ROW_FORMAT_STRING % row_number)
                         + " Parameter rows must have an integer value."
-                    )
+                    ) from rows_err
 
                 new_dict["control"] = new_dict.get("control", {})
                 new_dict["control"].update({"rows": parameters["rows"]})
@@ -1377,8 +1377,10 @@ def workbook_to_json(
             if "max-pixels" in parameters.keys():
                 try:
                     int(parameters["max-pixels"])
-                except ValueError:
-                    raise PyXFormError("Parameter max-pixels must have an integer value.")
+                except ValueError as mp_err:
+                    raise PyXFormError(
+                        "Parameter max-pixels must have an integer value."
+                    ) from mp_err
 
                 new_dict["bind"] = new_dict.get("bind", {})
                 new_dict["bind"].update({"orx:max-pixels": parameters["max-pixels"]})
@@ -1474,10 +1476,10 @@ def workbook_to_json(
                     new_dict["control"].update(
                         {"accuracyThreshold": parameters["capture-accuracy"]}
                     )
-                except ValueError:
+                except ValueError as ca_err:
                     raise PyXFormError(
                         "Parameter capture-accuracy must have a numeric value"
-                    )
+                    ) from ca_err
 
             if "warning-accuracy" in parameters.keys():
                 try:
@@ -1485,10 +1487,10 @@ def workbook_to_json(
                     new_dict["control"].update(
                         {"unacceptableAccuracyThreshold": parameters["warning-accuracy"]}
                     )
-                except ValueError:
+                except ValueError as wa_err:
                     raise PyXFormError(
                         "Parameter warning-accuracy must have a numeric value"
-                    )
+                    ) from wa_err
 
             parent_children_array.append(new_dict)
             continue

@@ -126,8 +126,8 @@ def xls_to_dict(path_or_file):
             workbook = xlrd.open_workbook(filename=path_or_file)
         else:
             workbook = xlrd.open_workbook(file_contents=path_or_file.read())
-    except xlrd.XLRDError as error:
-        raise PyXFormError("Error reading .xls file: %s" % error)
+    except xlrd.XLRDError as read_err:
+        raise PyXFormError("Error reading .xls file: %s" % read_err) from read_err
 
     def xls_clean_cell(cell: xlrdCell, row_n: int, col_key: str) -> Optional[str]:
         value = cell.value
@@ -136,8 +136,10 @@ def xls_to_dict(path_or_file):
         if not is_empty(value):
             try:
                 return xls_value_to_unicode(value, cell.ctype, workbook.datemode)
-            except XLDateAmbiguous:
-                raise PyXFormError(XL_DATE_AMBIGOUS_MSG % (wb_sheet.name, col_key, row_n))
+            except XLDateAmbiguous as date_err:
+                raise PyXFormError(
+                    XL_DATE_AMBIGOUS_MSG % (wb_sheet.name, col_key, row_n)
+                ) from date_err
 
         return None
 
@@ -217,8 +219,8 @@ def xlsx_to_dict(path_or_file):
     """
     try:
         workbook = openpyxl.open(filename=path_or_file, read_only=True, data_only=True)
-    except (OSError, BadZipFile, KeyError) as error:
-        raise PyXFormError("Error reading .xlsx file: %s" % error)
+    except (OSError, BadZipFile, KeyError) as read_err:
+        raise PyXFormError("Error reading .xlsx file: %s" % read_err) from read_err
 
     def xlsx_clean_cell(cell: pyxlCell, row_n: int, col_key: str) -> Optional[str]:
         value = cell.value

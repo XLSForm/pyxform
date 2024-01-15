@@ -34,12 +34,24 @@ def _overlay(over, under):
     return over if over else under
 
 
+@lru_cache(maxsize=65536)
+def any_repeat(survey_element: "SurveyElement", parent_xpath: str) -> bool:
+    """Return True if there ia any repeat in `parent_xpath`."""
+    for item in survey_element.iter_descendants():
+        if item.get_xpath() == parent_xpath and item.type == constants.REPEAT:
+            return True
+
+    return False
+
+
 class SurveyElement(dict):
     """
     SurveyElement is the base class we'll looks for the following keys
     in kwargs: name, label, hint, type, bind, control, parent,
     children, and question_type_dictionary.
     """
+
+    __name__ = "SurveyElement"
 
     # the following are important keys for the underlying dict that
     # describes this survey element
@@ -94,10 +106,6 @@ class SurveyElement(dict):
 
     def __hash__(self):
         return hash(id(self))
-
-    @property
-    def __name__(self):
-        return "SurveyElement"
 
     def __setattr__(self, key, value):
         self[key] = value
@@ -176,14 +184,9 @@ class SurveyElement(dict):
             for f in e.iter_descendants():
                 yield f
 
-    @lru_cache(maxsize=None)
-    def any_repeat(self, parent_xpath):
+    def any_repeat(self, parent_xpath: str) -> bool:
         """Return True if there ia any repeat in `parent_xpath`."""
-        for item in self.iter_descendants():
-            if item.get_xpath() == parent_xpath and item.type == constants.REPEAT:
-                return True
-
-        return False
+        return any_repeat(survey_element=self, parent_xpath=parent_xpath)
 
     def get_lineage(self):
         """
