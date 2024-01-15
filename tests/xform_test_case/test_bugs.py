@@ -19,7 +19,7 @@ from tests.xform_test_case.base import XFormTestCase
 class GroupNames(unittest.TestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "group_name_test.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         # Get the xform output path:
@@ -38,7 +38,7 @@ class GroupNames(unittest.TestCase):
 class NotClosedGroup(unittest.TestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "not_closed_group_test.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         # Get the xform output path:
@@ -59,7 +59,7 @@ class NotClosedGroup(unittest.TestCase):
 class DuplicateColumns(unittest.TestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "duplicate_columns.xlsx"
         path_to_excel_file = os.path.join(example_xls.PATH, filename)
         # Get the xform output path:
@@ -78,7 +78,7 @@ class DuplicateColumns(unittest.TestCase):
 class RepeatDateTest(XFormTestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "repeat_date_test.xls"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
@@ -102,7 +102,7 @@ class RepeatDateTest(XFormTestCase):
 class XmlEscaping(XFormTestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "xml_escaping.xls"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
@@ -126,7 +126,7 @@ class XmlEscaping(XFormTestCase):
 class DefaultTimeTest(XFormTestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "default_time_demo.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         # Get the xform output path:
@@ -153,7 +153,7 @@ class ValidateWrapper(unittest.TestCase):
     maxDiff = None
 
     @staticmethod
-    def runTest():
+    def test_conversion(self):
         filename = "ODKValidateWarnings.xlsx"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         # Get the xform output path:
@@ -169,7 +169,7 @@ class ValidateWrapper(unittest.TestCase):
 
 
 class EmptyStringOnRelevantColumnTest(unittest.TestCase):
-    def runTest(self):
+    def test_conversion(self):
         filename = "ict_survey_fails.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         workbook_dict = pyxform.xls2json.parse_file_to_workbook_dict(path_to_excel_file)
@@ -179,7 +179,7 @@ class EmptyStringOnRelevantColumnTest(unittest.TestCase):
 
 
 class BadChoicesSheetHeaders(unittest.TestCase):
-    def runTest(self):
+    def test_conversion(self):
         filename = "spaces_in_choices_header.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         warnings = []

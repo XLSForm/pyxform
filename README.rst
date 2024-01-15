@@ -83,11 +83,7 @@ To set up for development / contributing, first complete the above steps for "Ru
 
 You can run tests with::
 
-    nosetests
-
-On Windows, use::
-
-    nosetests -v -v --traverse-namespace ./tests
+    python -m unittest
 
 Before committing, make sure to format and lint the code using ``ruff``::
 

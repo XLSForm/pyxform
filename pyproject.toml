@@ -8,15 +8,14 @@ description = "A Python package to create XForms for ODK Collect."
 readme = "README.rst"
 requires-python = ">=3.7"
 dependencies = [
-  "xlrd==2.0.1",
-  "openpyxl==3.1.2",
-  "defusedxml==0.7.1",
+  "xlrd==2.0.1",        # Read XLS files
+  "openpyxl==3.1.2",    # Read XLSX files
+  "defusedxml==0.7.1",  # Parse XML
 ]
 
 [project.optional-dependencies]
 # Install with `pip install pyxform[dev]`.
 dev = [
-  "nose==1.3.7",        # Run tests
   "formencode==2.1.0",  # Compare XML
   "lxml==5.1.0",        # XPath test expressions
   "psutil==5.9.7",      # Process info for performance tests

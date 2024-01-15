@@ -66,7 +66,7 @@ class TestCalculateWithoutCalculation(TestCase):
     Just checks that calculate field without calculation raises a PyXFormError.
     """
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "calculate_without_calculation.xls"
         path_to_excel_file = os.path.join(example_xls.PATH, filename)
         self.assertRaises(PyXFormError, xls2json.parse_file_to_json, path_to_excel_file)

@@ -1175,7 +1175,7 @@ class Survey(Section):
             bad_languages = get_languages_with_bad_tags(translations)
             if bad_languages:
                 warnings.append(
-                    "\tThe following language declarations do not contain "
+                    "The following language declarations do not contain "
                     "valid machine-readable codes: "
                     + ", ".join(bad_languages)
                     + ". "
