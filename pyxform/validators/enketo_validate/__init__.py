@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Validate XForms using Enketo validator.
 """

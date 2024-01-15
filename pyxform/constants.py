@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This file contains constants that correspond with the property names in the
 json survey format. (@see json_form_schema.json) These names are to be shared

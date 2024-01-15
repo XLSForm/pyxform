@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 XFormInstanceParser class module - parses an instance XML.
 """

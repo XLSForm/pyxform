@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Aliases for elements which could mean the same element in XForm but is represented
 differently on the XLSForm.

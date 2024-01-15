@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 PyxformTestCase base class using markdown to define the XLSForm.
 """

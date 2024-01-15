@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test handling dynamic default in forms
 """

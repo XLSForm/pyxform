@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test image max-pixels and app parameters.
 """

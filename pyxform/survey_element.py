@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Survey Element base class for all survey elements.
 """

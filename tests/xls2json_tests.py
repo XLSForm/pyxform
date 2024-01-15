@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Testing simple cases for Xls2Json
 """

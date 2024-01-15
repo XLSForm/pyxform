@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from pyxform import constants as const
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import node

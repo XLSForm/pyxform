@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 odk_validate.py
 A python wrapper around ODK Validate

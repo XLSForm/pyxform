@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 xls2xform converts properly formatted Excel documents into XForms for
 use with ODK Collect.

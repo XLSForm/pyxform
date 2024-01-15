@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test xml-external syntax and instances generated from pulldata calls.
 

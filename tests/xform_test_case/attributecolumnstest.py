@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Some tests for the new (v0.9) spec is properly implemented.
 """

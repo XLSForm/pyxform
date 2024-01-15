@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 pyxform_validator_update - command to update XForm validators.
 """

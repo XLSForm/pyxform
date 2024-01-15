@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test missing headers in XLSForm.
 """

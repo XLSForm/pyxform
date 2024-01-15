@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Common base classes for pyxform exceptions.
 """

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 xform2json module - Transform an XForm to a JSON dictionary.
 """

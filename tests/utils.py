@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The tests utils module functionality.
 """

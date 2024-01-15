@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Testing preparation of values for XForm exporting
 """

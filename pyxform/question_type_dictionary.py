@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 XForm survey question type mapping dictionary module.
 """

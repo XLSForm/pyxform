@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test XForm2JSON functionality
 """

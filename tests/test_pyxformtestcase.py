@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Ensuring that the pyxform_test_case.PyxformTestCase class does some
 internal conversions correctly.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Survey module with XForm Survey objects and utility functions.
 """

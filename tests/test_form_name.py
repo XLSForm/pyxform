@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test setting form name to data.
 """

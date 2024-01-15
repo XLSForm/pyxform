@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 AreaTest - test enclosed-area(geo_shape) calculation.
 """

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test round(number, precision) calculation.
 """

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq

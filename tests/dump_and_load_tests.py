@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test multiple XLSForm can be generated successfully.
 """

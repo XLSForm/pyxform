@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 XForm Survey element classes for different question types.
 """

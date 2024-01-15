@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Testing creation of Surveys using verbose methods
 """

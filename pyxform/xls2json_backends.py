@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """

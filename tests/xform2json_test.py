@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test xform2json module.
 """

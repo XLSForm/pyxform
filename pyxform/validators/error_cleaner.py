@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Cleans up error messages from the validators.
 """

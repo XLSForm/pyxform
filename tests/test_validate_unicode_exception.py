@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test unicode characters in validate error messages.
 """

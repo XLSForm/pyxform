@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test duplicate survey question field name.
 """
