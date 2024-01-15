@@ -50,6 +50,7 @@ From the command line, complete the following. These steps use a `virtualenv <ht
 
     # Install the pyxform and it's production dependencies.
     (venv)$ cd repo
+    # If this doesn't work, upgrade pip ``pip install --upgrade pip`` and retry.
     (venv)$ pip install -e .
     (venv)$ python pyxform/xls2xform.py --help
     (venv)$ xls2xform --help           # same effect as previous line
@@ -76,9 +77,9 @@ You can then run xls2xform from the commandline::
 
 Development
 ===========
-To set up for development / contributing, first complete the above steps for "Running pyxform from local source", then complete the below.::
+To set up for development / contributing, first complete the above steps for "Running pyxform from local source". Then repeat the command used to install pyxform, but with ``[dev]`` appended to the end, e.g.::
 
-    pip install -r dev_requirements.pip
+    pip install -e .[dev]
 
 You can run tests with::
 
@@ -88,13 +89,12 @@ On Windows, use::
 
     nosetests -v -v --traverse-namespace ./tests
 
-Before committing, make sure to format the code using ``black``::
+Before committing, make sure to format and lint the code using ``ruff``::
 
-    black pyxform tests
+    ruff format pyxform tests
+    ruff check pyxform tests
 
-If you are using a copy of black outside your virtualenv, make sure it is the same version as listed in requirements_dev.pip.
-
-In case the pre-commit.sh hooks don't run, also run the code through ``isort`` (sorts imports) and ``flake8`` (misc code quality suggestions). The syntax is the same as above for ``black``.
+If you are using a copy of ``ruff`` outside your virtualenv, make sure it is the same version as listed in ``pyproject.toml``. Use the project configuration for ``ruff` in ``pyproject.toml``, which occurs automatically if ``ruff`` is run from the project root (where ``pyproject.toml`` is).
 
 Writing tests
 -------------
@@ -127,7 +127,7 @@ Releasing pyxform
 3. Draft a new GitHub release with the list of merged PRs. Follow the title and description pattern of the previous release.
 4. Checkout a release branch from latest upstream master.
 5. Update ``CHANGES.txt`` with the text of the draft release.
-6. Update ``setup.py``, ``pyxform/__init__.py`` with the new release version number.
+6. Update ``pyproject.toml``, ``pyxform/__init__.py`` with the new release version number.
 7. Commit, push the branch, and initiate a pull request. Wait for tests to pass, then merge the PR.
 8. Tag the release and it will automatically be published
 
@@ -144,18 +144,14 @@ Releases are now automatic. These instructions are provided for forks or for a f
 3. Install the production and packaging requirements::
 
      pip install -e .
-     pip install wheel twine
+     pip install flit==3.9.0
 
 4. Clean up build and dist folders::
 
      rm -rf build dist pyxform.egg-info
 
-5. Prepare ``sdist`` and ``bdist_wheel`` distributions::
+5. Prepare ``sdist`` and ``bdist_wheel`` distributions, and publish to PyPI::
 
-     python setup.py sdist bdist_wheel
+     flit --debug publish --no-use-vcs
 
-6. Publish release to PyPI with ``twine``::
-
-     twine upload dist/pyxform-*-py3-none-any.whl dist/pyxform-*.tar.gz
-
-7. Tag the GitHub release and publish it.
+6. Tag the GitHub release and publish it.

@@ -111,7 +111,7 @@ def node(*args, **kwargs) -> DetachableElement:
     tag = args[0] if len(args) > 0 else kwargs["tag"]
     args = args[1:]
     result = DetachableElement(tag)
-    unicode_args = [u for u in args if type(u) == str]
+    unicode_args = [u for u in args if isinstance(u, str)]
     assert len(unicode_args) <= 1
     parsed_string = False
 
@@ -147,11 +147,11 @@ def node(*args, **kwargs) -> DetachableElement:
         text_node.data = unicode_args[0]
         result.appendChild(text_node)
     for n in args:
-        if type(n) == int or type(n) == float or type(n) == bytes:
+        if isinstance(n, (int, float, bytes)):
             text_node = PatchedText()
             text_node.data = str(n)
             result.appendChild(text_node)
-        elif type(n) is not str:
+        elif not isinstance(n, str):
             result.appendChild(n)
     return result
 
@@ -271,7 +271,7 @@ def get_languages_with_bad_tags(languages):
         lang_code = re.search(lang_code_regex, lang)
 
         if lang != "default" and (
-            not lang_code or not lang_code.group(1) in iana_subtags
+            not lang_code or lang_code.group(1) not in iana_subtags
         ):
             languages_with_bad_tags.append(lang)
     return languages_with_bad_tags

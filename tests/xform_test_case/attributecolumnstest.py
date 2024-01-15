@@ -7,12 +7,12 @@ import os
 import unittest
 
 import pyxform
+
 from tests import test_expected_output
 from tests.xform_test_case.base import XFormTestCase
 
 
 class AttributeColumnsTest(XFormTestCase):
-
     maxDiff = None
 
     def runTest(self):

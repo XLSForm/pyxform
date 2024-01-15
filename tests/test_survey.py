@@ -15,9 +15,7 @@ class TestSurvey(PyxformTestCase):
             |        | text | q1   | Q1    |          |
             |        | note | n    | {n}   |          |
             |        | text | q2   | Q2    | {r}      |
-            """.format(
-                n="q1 = ${q1} " * 250, r=" or ".join(["${q1} = 'y'"] * 250)
-            ),
+            """.format(n="q1 = ${q1} " * 250, r=" or ".join(["${q1} = 'y'"] * 250)),
         )
 
     def test_many_xpath_references_do_not_hit_64_recursion_limit__many_to_one(self):

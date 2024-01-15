@@ -7,13 +7,13 @@ from dataclasses import dataclass
 from time import perf_counter
 from unittest.mock import patch
 
-from pyxform.constants import CHOICES
+from pyxform.constants import CHOICES, SURVEY
 from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
-from pyxform.constants import SURVEY
 from pyxform.validators.pyxform.translations_checks import (
     OR_OTHER_WARNING,
     format_missing_translations_msg,
 )
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq

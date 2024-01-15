@@ -7,11 +7,11 @@ from unittest import TestCase
 
 from pyxform.builder import create_survey_from_path
 from pyxform.xls2json import SurveyReader
+
 from tests import utils
 
 
 class SettingsTests(TestCase):
-
     maxDiff = None
 
     def setUp(self):
@@ -20,26 +20,26 @@ class SettingsTests(TestCase):
     def test_survey_reader(self):
         survey_reader = SurveyReader(self.path, default_name="settings")
         expected_dict = {
-            u"id_string": u"new_id",
-            u"sms_keyword": u"new_id",
-            u"default_language": u"default",
-            u"name": u"settings",
-            u"title": u"My Survey",
-            u"type": u"survey",
-            u"attribute": {
-                u"my_number": u"1234567890",
-                u"my_string": u"lor\xe9m ipsum",
+            "id_string": "new_id",
+            "sms_keyword": "new_id",
+            "default_language": "default",
+            "name": "settings",
+            "title": "My Survey",
+            "type": "survey",
+            "attribute": {
+                "my_number": "1234567890",
+                "my_string": "lor\xe9m ipsum",
             },
-            u"children": [
+            "children": [
                 {
-                    u"name": u"your_name",
-                    u"label": {u"english": u"What is your name?"},
-                    u"type": u"text",
+                    "name": "your_name",
+                    "label": {"english": "What is your name?"},
+                    "type": "text",
                 },
                 {
-                    u"name": u"your_age",
-                    u"label": {u"english": u"How many years old are you?"},
-                    u"type": u"integer",
+                    "name": "your_age",
+                    "label": {"english": "How many years old are you?"},
+                    "type": "integer",
                 },
                 {
                     "children": [

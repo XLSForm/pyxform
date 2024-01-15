@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 def _overlay(over, under):
-    if type(under) == dict:
+    if isinstance(under, dict):
         result = under.copy()
         result.update(over)
         return result
@@ -123,7 +123,7 @@ class SurveyElement(dict):
         child.parent = self
 
     def add_children(self, children):
-        if type(children) == list:
+        if isinstance(children, list):
             for child in children:
                 self.add_child(child)
         else:
@@ -282,9 +282,9 @@ class SurveyElement(dict):
         the <itext> block. @see survey._setup_translations
         """
         bind_dict = self.get("bind")
-        if bind_dict and type(bind_dict) is dict:
+        if bind_dict and isinstance(bind_dict, dict):
             constraint_msg = bind_dict.get("jr:constraintMsg")
-            if type(constraint_msg) is dict:
+            if isinstance(constraint_msg, dict):
                 for lang, text in constraint_msg.items():
                     yield {
                         "path": self._translation_path("jr:constraintMsg"),
@@ -301,7 +301,7 @@ class SurveyElement(dict):
                 }
 
             required_msg = bind_dict.get("jr:requiredMsg")
-            if type(required_msg) is dict:
+            if isinstance(required_msg, dict):
                 for lang, text in required_msg.items():
                     yield {
                         "path": self._translation_path("jr:requiredMsg"),
@@ -317,7 +317,7 @@ class SurveyElement(dict):
                     "output_context": self,
                 }
             no_app_error_string = bind_dict.get("jr:noAppErrorString")
-            if type(no_app_error_string) is dict:
+            if isinstance(no_app_error_string, dict):
                 for lang, text in no_app_error_string.items():
                     yield {
                         "path": self._translation_path("jr:noAppErrorString"),
@@ -332,7 +332,7 @@ class SurveyElement(dict):
             if (
                 display_element == "label"
                 and self.needs_itext_ref()
-                and type(label_or_hint) is not dict
+                and not isinstance(label_or_hint, dict)
                 and label_or_hint
             ):
                 label_or_hint = {default_language: label_or_hint}
@@ -356,7 +356,7 @@ class SurveyElement(dict):
             ):
                 label_or_hint = {default_language: label_or_hint}
 
-            if type(label_or_hint) is dict:
+            if isinstance(label_or_hint, dict):
                 for lang, text in label_or_hint.items():
                     yield {
                         "display_element": display_element,  # Not used
@@ -375,8 +375,8 @@ class SurveyElement(dict):
         return {"media": "%s:media" % self.get_xpath()}
 
     def needs_itext_ref(self):
-        return type(self.label) is dict or (
-            type(self.media) is dict and len(self.media) > 0
+        return isinstance(self.label, dict) or (
+            isinstance(self.media, dict) and len(self.media) > 0
         )
 
     def get_setvalue_node_for_dynamic_default(self, in_repeat=False):
@@ -472,14 +472,14 @@ class SurveyElement(dict):
                 ):
                     v = self.BINDING_CONVERSIONS[v]
                 if k == "jr:constraintMsg" and (
-                    type(v) is dict or re.search(BRACKETED_TAG_REGEX, v)
+                    isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
                 ):
                     v = "jr:itext('%s')" % self._translation_path("jr:constraintMsg")
                 if k == "jr:requiredMsg" and (
-                    type(v) is dict or re.search(BRACKETED_TAG_REGEX, v)
+                    isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
                 ):
                     v = "jr:itext('%s')" % self._translation_path("jr:requiredMsg")
-                if k == "jr:noAppErrorString" and type(v) is dict:
+                if k == "jr:noAppErrorString" and isinstance(v, dict):
                     v = "jr:itext('%s')" % self._translation_path("jr:noAppErrorString")
                 bind_dict[k] = survey.insert_xpaths(v, context=self)
             return [node("bind", nodeset=self.get_xpath(), **bind_dict)]

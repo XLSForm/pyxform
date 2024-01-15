@@ -7,6 +7,7 @@ See also test_external_instances_for_selects
 from textwrap import dedent
 
 from pyxform.errors import PyXFormError
+
 from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
 from tests.xpath_helpers.choices import xpc
 
@@ -339,7 +340,9 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.csv      | pmonth | Location of worst pain this month. |                                                   |
             |        | select_one_from_file pain_locations.csv      | pyear  | Location of worst pain this year.  |                                                   |
             """  # noqa
-        expected = """<instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>"""  # noqa
+        expected = (
+            """<instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>"""  # noqa
+        )
         self.assertPyxformXform(md=md, model__contains=[expected])
 
     def test_can__reuse_xml__selects_then_external(self):
@@ -371,7 +374,9 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.xml      | pmonth         | Location of worst pain this month. |
             |        | select_one_from_file pain_locations.xml      | pyear          | Location of worst pain this year.  |
             """  # noqa
-        expected = """<instance id="pain_locations" src="jr://file/pain_locations.xml"/>"""  # noqa
+        expected = (
+            """<instance id="pain_locations" src="jr://file/pain_locations.xml"/>"""  # noqa
+        )
         self.assertPyxformXform(md=md, model__contains=[expected])
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()

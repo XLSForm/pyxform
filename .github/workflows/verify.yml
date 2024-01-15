@@ -22,18 +22,16 @@ jobs:
         id: python-cache
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.pip') }}
+          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('pyproject.toml') }}
       - name: Install dependencies.
         run: |
           python -m pip install --upgrade pip
           pip install -r dev_requirements.pip
           pip list
 
-      # Linters.
-      - run: black pyxform tests --check --diff
-      - run: isort pyxform tests --check-only --diff
-      - run: flake8 pyxform tests
-      - run: pycodestyle pyxform tests
+      # Linter.
+      - run: ruff format pyxform tests --diff
+      - run: ruff check pyxform tests --no-fix
 
   test:
     runs-on: ${{ matrix.os }}

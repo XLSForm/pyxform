@@ -17,6 +17,7 @@ from pyxform.validators.updater import (
     _UpdateInfo,
     capture_handler,
 )
+
 from tests import validators
 from tests.utils import get_temp_dir, get_temp_file
 from tests.validators.server import ThreadingServerInThread
@@ -77,7 +78,6 @@ class TestTempUtils(TestCase):
 
 
 class TestUpdateHandler(TestCase):
-
     server: "Optional[ThreadingServerInThread]" = None
 
     @classmethod

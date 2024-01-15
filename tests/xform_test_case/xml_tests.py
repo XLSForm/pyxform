@@ -7,6 +7,7 @@ from xml.dom.minidom import getDOMImplementation
 
 from pyxform import create_survey_from_xls
 from pyxform.utils import node
+
 from tests.utils import path_to_text_fixture
 from tests.xform_test_case.base import XFormTestCase
 

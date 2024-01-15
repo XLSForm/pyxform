@@ -252,7 +252,7 @@ def has_double_colon(workbook_dict) -> bool:
     for sheet in workbook_dict.values():
         for row in sheet:
             for column_header in row.keys():
-                if type(column_header) is not str:
+                if not isinstance(column_header, str):
                     continue
                 if "::" in column_header:
                     return True
@@ -782,8 +782,9 @@ def workbook_to_json(
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
                         {
-                            "odk:"
-                            + constants.TRACK_CHANGES: parameters[constants.TRACK_CHANGES]
+                            "odk:" + constants.TRACK_CHANGES: parameters[
+                                constants.TRACK_CHANGES
+                            ]
                         }
                     )
 
@@ -811,8 +812,9 @@ def workbook_to_json(
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
                         {
-                            "odk:"
-                            + constants.IDENTIFY_USER: parameters[constants.IDENTIFY_USER]
+                            "odk:" + constants.IDENTIFY_USER: parameters[
+                                constants.IDENTIFY_USER
+                            ]
                         }
                     )
 
@@ -823,7 +825,6 @@ def workbook_to_json(
             )
             if any(k in parameters.keys() for k in location_parameters):
                 if all(k in parameters.keys() for k in location_parameters):
-
                     if parameters[constants.LOCATION_PRIORITY] not in [
                         "no-power",
                         "low-power",
@@ -882,16 +883,13 @@ def workbook_to_json(
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
                         {
-                            "odk:"
-                            + constants.LOCATION_MAX_AGE: parameters[
+                            "odk:" + constants.LOCATION_MAX_AGE: parameters[
                                 constants.LOCATION_MAX_AGE
                             ],
-                            "odk:"
-                            + constants.LOCATION_MIN_INTERVAL: parameters[
+                            "odk:" + constants.LOCATION_MIN_INTERVAL: parameters[
                                 constants.LOCATION_MIN_INTERVAL
                             ],
-                            "odk:"
-                            + constants.LOCATION_PRIORITY: parameters[
+                            "odk:" + constants.LOCATION_PRIORITY: parameters[
                                 constants.LOCATION_PRIORITY
                             ],
                         }
@@ -1127,7 +1125,8 @@ def workbook_to_json(
                     and constants.CHOICE_FILTER not in row
                 ):
                     warnings.append(
-                        ROW_FORMAT_STRING % row_number
+                        ROW_FORMAT_STRING
+                        % row_number
                         + " select one external is only meant for"
                         " filtered selects."
                     )

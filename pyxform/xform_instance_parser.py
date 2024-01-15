@@ -29,7 +29,7 @@ def _xml_node_to_dict(node):
             if child_name not in value:
                 # copy the value into the dict
                 value[child_name] = d[child_name]
-            elif type(value[child_name]) == list:
+            elif isinstance(value[child_name], list):
                 # add to the existing list
                 value[child_name].append(d[child_name])
             else:
@@ -42,15 +42,15 @@ def _flatten_dict(d, prefix):
     """
     Return a list of XPath, value pairs.
     """
-    assert type(d) == dict
-    assert type(prefix) == list
+    assert isinstance(d, dict)
+    assert isinstance(prefix, list)
 
     for key, value in d.items():
         new_prefix = prefix + [key]
-        if type(value) == dict:
+        if isinstance(value, dict):
             for pair in _flatten_dict(value, new_prefix):
                 yield pair
-        elif type(value) == list:
+        elif isinstance(value, list):
             for i, item in enumerate(value):
                 item_prefix = list(new_prefix)  # make a copy
                 # note on indexing xpaths: IE5 and later has
@@ -58,7 +58,7 @@ def _flatten_dict(d, prefix):
                 # according to the W3C standard it should have been
                 # [1]. I'm adding 1 to i to start at 1.
                 item_prefix[-1] += "[%s]" % str(i + 1)
-                if type(item) == dict:
+                if isinstance(item, dict):
                     for pair in _flatten_dict(item, item_prefix):
                         yield pair
                 else:

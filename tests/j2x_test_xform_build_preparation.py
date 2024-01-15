@@ -9,7 +9,6 @@ from pyxform import MultipleChoiceQuestion, Survey
 
 class Json2XformExportingPrepTests(TestCase):
     def test_dictionary_consolidates_duplicate_entries(self):
-
         yes_or_no_dict_array = [
             {"label": {"French": "Oui", "English": "Yes"}, "name": "yes"},
             {"label": {"French": "Non", "English": "No"}, "name": "no"},

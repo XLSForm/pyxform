@@ -7,7 +7,6 @@ from tests.pyxform_test_case import PyxformTestCase
 
 class SettingsAutoSendDelete(PyxformTestCase):
     def test_settings_auto_send_true(self):
-
         self.assertPyxformXform(
             name="data",
             md="""
@@ -22,7 +21,6 @@ class SettingsAutoSendDelete(PyxformTestCase):
         )
 
     def test_settings_auto_delete_true(self):
-
         self.assertPyxformXform(
             name="data",
             md="""
@@ -37,7 +35,6 @@ class SettingsAutoSendDelete(PyxformTestCase):
         )
 
     def test_settings_auto_send_delete_false(self):
-
         self.assertPyxformXform(
             name="data",
             md="""
@@ -52,7 +49,6 @@ class SettingsAutoSendDelete(PyxformTestCase):
         )
 
     def test_settings_without_submission_url_does_not_generate_method_attribute(self):
-
         self.assertPyxformXform(
             name="data",
             md="""
@@ -75,7 +71,6 @@ class SettingsAutoSendDelete(PyxformTestCase):
         )
 
     def test_settings_with_submission_url_generates_method_attribute(self):
-
         self.assertPyxformXform(
             name="data",
             md="""

@@ -78,7 +78,7 @@ def _convert_dict_to_xml_recurse(parent, dictitem):
     assert not isinstance(dictitem, list)
 
     if isinstance(dictitem, dict):
-        for (tag, child) in iter(dictitem.items()):
+        for tag, child in iter(dictitem.items()):
             if str(tag) == "_text":
                 parent.text = str(child)
             elif isinstance(child, list):

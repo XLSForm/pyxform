@@ -42,15 +42,15 @@ def copy_json_dict(json_dict):
     json_dict_copy = None
     items = None
 
-    if type(json_dict) is list:
+    if isinstance(json_dict, list):
         json_dict_copy = [None] * len(json_dict)
         items = enumerate(json_dict)
-    elif type(json_dict) is dict:
+    elif isinstance(json_dict, dict):
         json_dict_copy = {}
         items = json_dict.items()
 
     for key, value in items:
-        if type(value) is dict or type(value) is list:
+        if isinstance(value, (dict, list)):
             json_dict_copy[key] = copy_json_dict(value)
         else:
             json_dict_copy[key] = value
@@ -97,7 +97,7 @@ class SurveyElementBuilder:
         the name of the section and the value is a dict that can be
         used to create a whole survey.
         """
-        assert type(sections) == dict
+        assert isinstance(sections, dict)
         self._sections = sections
 
     def create_survey_element_from_dict(
@@ -336,7 +336,7 @@ class SurveyElementBuilder:
         # if the label in column_headers has multiple languages setup a
         # dictionary by language to do substitutions.
         info_by_lang = {}
-        if type(column_headers[const.LABEL]) == dict:
+        if isinstance(column_headers[const.LABEL], dict):
             info_by_lang = dict(
                 [
                     (
@@ -352,12 +352,12 @@ class SurveyElementBuilder:
 
         result = question_template.copy()
         for key in result.keys():
-            if type(result[key]) == str:
+            if isinstance(result[key], str):
                 result[key] %= column_headers
-            elif type(result[key]) == dict:
+            elif isinstance(result[key], dict):
                 result[key] = result[key].copy()
                 for key2 in result[key].keys():
-                    if type(column_headers[const.LABEL]) == dict:
+                    if isinstance(column_headers[const.LABEL], dict):
                         result[key][key2] %= info_by_lang.get(key2, column_headers)
                     else:
                         result[key][key2] %= column_headers

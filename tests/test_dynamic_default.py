@@ -10,8 +10,8 @@ from typing import Optional, Tuple
 from unittest.mock import patch
 
 import psutil
-
 from pyxform import utils
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
@@ -45,7 +45,7 @@ class XPathHelper:
     @staticmethod
     def model_setvalue(q_num: int):
         """Get the setvalue element's value attribute."""
-        return fr"""
+        return rf"""
         /h:html/h:head/x:model/x:setvalue[
           @ref="/test_name/q{q_num}"
           and @event='odk-instance-first-load'
@@ -79,7 +79,7 @@ class XPathHelper:
                 value_cmp = ""
             else:
                 value_cmp = f"""and @value="{q_default_final}" """
-            return fr"""
+            return rf"""
             /h:html/h:head/x:model
               /x:instance/x:test_name[@id="test_id"]/x:q{q_num}[
                 not(text())
@@ -102,7 +102,7 @@ class XPathHelper:
                     q_default_cmp = ""
                 else:
                     q_default_cmp = f"""and text()='{q_default_final}' """
-            return fr"""
+            return rf"""
             /h:html/h:head/x:model
               /x:instance/x:test_name[@id="test_id"]/x:q{q_num}[
                 ancestor::x:model/x:bind[
@@ -137,7 +137,7 @@ class XPathHelper:
                 for cv, cl in choices
             )
         )
-        return fr"""
+        return rf"""
         /h:html/h:body/x:select1[
           @ref = '/test/q{q_num}'
           and ./x:label/text() = 'Select{q_num}'

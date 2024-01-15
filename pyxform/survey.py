@@ -835,7 +835,6 @@ class Survey(Section):
                 media_dict = media_dict_default
 
             for media_type, possibly_localized_media in media_dict.items():
-
                 if media_type not in SurveyElement.SUPPORTED_MEDIA:
                     raise PyXFormError("Media type: " + media_type + " not supported")
 
@@ -848,7 +847,6 @@ class Survey(Section):
                     localized_media = {self.default_language: possibly_localized_media}
 
                 for language, media in localized_media.items():
-
                     # Create the required dictionaries in _translations,
                     # then add media as a leaf value:
                     if language not in self._translations:
@@ -1039,14 +1037,12 @@ class Survey(Section):
             current_matchobj = matchobj
 
             if not last_saved and context:
-
                 if not is_indexed_repeat:
                     return True
 
                 # It is possible to have multiple indexed-repeat in an expression
                 indexed_repeats_iter = RE_INDEXED_REPEAT.finditer(matchobj.string)
                 for indexed_repeat in indexed_repeats_iter:
-
                     # Make sure current ${name} is in the correct indexed-repeat
                     if current_matchobj.end() > indexed_repeat.end():
                         try:

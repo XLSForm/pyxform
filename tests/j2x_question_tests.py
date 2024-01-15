@@ -6,6 +6,7 @@ from unittest import TestCase
 
 from pyxform import Survey
 from pyxform.builder import create_survey_element_from_dict
+
 from tests.utils import prep_class_config
 
 TESTING_BINDINGS = True

@@ -221,8 +221,9 @@ class _UpdateHandler:
 
         if len(files) == 0:
             raise PyXFormError(
-                "No files attached to release '{r}'.\n\n{h}"
-                "".format(r=rel_name, h=update_info.manual_msg)
+                "No files attached to release '{r}'.\n\n{h}" "".format(
+                    r=rel_name, h=update_info.manual_msg
+                )
             )
 
         file_urls = [x["browser_download_url"] for x in files if x["name"] == file_name]
@@ -270,8 +271,9 @@ class _UpdateHandler:
             main_bin = "*validate"
         else:
             raise PyXFormError(
-                "Did not find a supported main binary for file: {p}.\n\n{h}"
-                "".format(p=file_path, h=update_info.manual_msg)
+                "Did not find a supported main binary for file: {p}.\n\n{h}" "".format(
+                    p=file_path, h=update_info.manual_msg
+                )
             )
         return [
             (main_bin, update_info.validator_basename),
@@ -309,8 +311,9 @@ class _UpdateHandler:
                     zip_jobs[file_out_path] = zip_item
         if len(bin_paths) != len(zip_jobs.keys()):
             raise PyXFormError(
-                "Expected {e} zip job files, found: {c}"
-                "".format(e=len(bin_paths), c=len(zip_jobs.keys()))
+                "Expected {e} zip job files, found: {c}" "".format(
+                    e=len(bin_paths), c=len(zip_jobs.keys())
+                )
             )
         return zip_jobs
 
@@ -497,7 +500,6 @@ class _UpdateHandler:
 
 
 class _UpdateService:
-
     update_info = None
 
     def list(self):
@@ -556,7 +558,6 @@ class ODKValidateUpdater(_UpdateService):
 
 
 def _build_validator_menu(main_subparser, validator_name, updater_instance):
-
     main = main_subparser.add_parser(
         validator_name.lower(),
         description="{v} Sub-menu".format(v=validator_name),

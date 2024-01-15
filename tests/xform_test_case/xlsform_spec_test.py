@@ -7,6 +7,7 @@ from unittest import TestCase
 
 from pyxform import builder, xls2json
 from pyxform.errors import PyXFormError
+
 from tests import example_xls, test_expected_output
 from tests.xform_test_case.base import XFormTestCase
 

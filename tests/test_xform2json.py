@@ -5,6 +5,7 @@ Test XForm2JSON functionality
 import json
 
 from pyxform.builder import create_survey_element_from_dict
+
 from tests.pyxform_test_case import PyxformTestCase
 
 

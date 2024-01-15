@@ -15,12 +15,12 @@ from lxml import etree
 
 # noinspection PyProtectedMember
 from lxml.etree import _Element
-
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
 from pyxform.utils import NSMAP, coalesce
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.xls2json import workbook_to_json
+
 from tests.test_utils.md_table import md_table_to_ss_structure
 
 logger = logging.getLogger(__name__)

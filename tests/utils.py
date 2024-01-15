@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
+
 from tests import example_xls
 
 if TYPE_CHECKING:
