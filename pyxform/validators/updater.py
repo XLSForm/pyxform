@@ -3,7 +3,6 @@ pyxform_validator_update - command to update XForm validators.
 """
 import argparse
 import fnmatch
-import io
 import json
 import logging
 import os
@@ -97,7 +96,7 @@ class _UpdateHandler:
         Read the JSON file to a string.
         """
         _UpdateHandler._check_path(file_path=file_path)
-        with io.open(file_path, mode="r") as in_file:
+        with open(file_path, mode="r") as in_file:
             return json.load(in_file)
 
     @staticmethod
@@ -105,7 +104,7 @@ class _UpdateHandler:
         """
         Save the JSON data to a file.
         """
-        with io.open(file_path, mode="w", newline="\n") as out_file:
+        with open(file_path, mode="w", newline="\n") as out_file:
             data = json.dumps(content, indent=2, sort_keys=True)
             out_file.write(str(data))
 
@@ -115,7 +114,7 @@ class _UpdateHandler:
         Read the .last_check file.
         """
         _UpdateHandler._check_path(file_path=file_path)
-        with io.open(file_path, mode="r") as in_file:
+        with open(file_path, mode="r") as in_file:
             first_line = in_file.readline()
         try:
             last_check = datetime.strptime(first_line, UTC_FMT)
@@ -129,7 +128,7 @@ class _UpdateHandler:
         """
         Write the .last_check file.
         """
-        with io.open(file_path, mode="w", newline="\n") as out_file:
+        with open(file_path, mode="w", newline="\n") as out_file:
             out_file.write(str(content.strftime(UTC_FMT)))
 
     @staticmethod
@@ -248,7 +247,7 @@ class _UpdateHandler:
         """
         Save response content from the URL to a binary file at the file path.
         """
-        with io.open(file_path, mode="wb") as out_file:
+        with open(file_path, mode="wb") as out_file:
             file_data = request_get(url=url)
             out_file.write(file_data)
 
@@ -330,7 +329,7 @@ class _UpdateHandler:
             os.makedirs(out_parent)
         with open_zip_file.open(zip_item, mode="r") as zip_item_file:
             zip_item_data = zip_item_file.read()
-            with io.open(file_out_path, "wb") as file_out_file:
+            with open(file_out_path, "wb") as file_out_file:
                 file_out_file.write(zip_item_data)
 
     @staticmethod

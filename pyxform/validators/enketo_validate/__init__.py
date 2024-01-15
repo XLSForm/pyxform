@@ -60,7 +60,7 @@ def check_xform(path_to_xform):
     :return: warnings or List[str]
     """
     if not install_exists():
-        raise EnvironmentError(
+        raise OSError(
             "Enketo-validate dependency not found. "
             "Please use the updater tool to install the latest version."
         )

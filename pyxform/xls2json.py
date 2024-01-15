@@ -1698,7 +1698,7 @@ class QuestionTypesReader(SpreadsheetReader):
     """
 
     def __init__(self, path):
-        super(QuestionTypesReader, self).__init__(path)
+        super().__init__(path)
         self._setup_question_types_dictionary()
 
     def _setup_question_types_dictionary(self):

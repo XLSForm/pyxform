@@ -89,4 +89,4 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
             },
             "type": "survey",
         }
-        self.assertEquals(survey.to_json_dict(), expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)

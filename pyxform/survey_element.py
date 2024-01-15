@@ -155,8 +155,7 @@ class SurveyElement(dict):
         # it really seems like this method should not yield self
         yield self
         for e in self.children:
-            for f in e.iter_descendants():
-                yield f
+            yield from e.iter_descendants()
 
     def any_repeat(self, parent_xpath: str) -> bool:
         """Return True if there ia any repeat in `parent_xpath`."""

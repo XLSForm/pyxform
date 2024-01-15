@@ -82,8 +82,7 @@ def _get_all_attributes(node):
         for key in node.attributes.keys():
             yield key, node.getAttribute(key)
     for child in node.childNodes:
-        for pair in _get_all_attributes(child):
-            yield pair
+        yield from _get_all_attributes(child)
 
 
 class XFormInstanceParser:
@@ -92,7 +91,7 @@ class XFormInstanceParser:
 
     def parse(self, xml_str):
         clean_xml_str = xml_str.strip()
-        clean_xml_str = re.sub(str(r">\s+<"), str("><"), clean_xml_str)
+        clean_xml_str = re.sub(r">\s+<", "><", clean_xml_str)
         self._xml_obj = parseString(clean_xml_str)
         self._root_node = self._xml_obj.documentElement
         self._dict = _xml_node_to_dict(self._root_node)

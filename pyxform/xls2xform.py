@@ -173,7 +173,7 @@ def main_cli():
                 pretty_print=args.pretty_print,
                 enketo=args.enketo_validate,
             )
-        except EnvironmentError:
+        except OSError:
             # Do not crash if 'java' not installed
             logger.exception("EnvironmentError during conversion")
         except ODKValidateError:

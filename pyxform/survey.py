@@ -222,7 +222,7 @@ class Survey(Section):
     def validate(self):
         if self.id_string in [None, "None"]:
             raise PyXFormError("Survey cannot have an empty id_string")
-        super(Survey, self).validate()
+        super().validate()
         self._validate_uniqueness_of_section_names()
 
     def _validate_uniqueness_of_section_names(self):
@@ -1059,7 +1059,7 @@ class Survey(Section):
                         .group(1)
                         .split(",")
                     )
-                    name_arg = "${{{0}}}".format(name)
+                    name_arg = "${{{}}}".format(name)
                     for idx, arg in enumerate(indexed_repeat_args):
                         if name_arg in arg.strip():
                             indexed_repeat_name_index = idx

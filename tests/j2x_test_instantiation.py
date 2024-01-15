@@ -26,8 +26,8 @@ class Json2XformExportingPrepTests(TestCase):
 
         i = surv.instantiate()
 
-        self.assertEquals(i.keys(), ["survey_question"])
-        self.assertEquals(set(i.xpaths()), {"/Simple", "/Simple/survey_question"})
+        self.assertEqual(i.keys(), ["survey_question"])
+        self.assertEqual(set(i.xpaths()), {"/Simple", "/Simple/survey_question"})
 
     def test_simple_survey_answering(self):
         surv = Survey(name="Water")
@@ -43,10 +43,10 @@ class Json2XformExportingPrepTests(TestCase):
         i = SurveyInstance(surv)
 
         i.answer(name="color", value="blue")
-        self.assertEquals(i.answers()["color"], "blue")
+        self.assertEqual(i.answers()["color"], "blue")
 
         i.answer(name="feeling", value="liquidy")
-        self.assertEquals(i.answers()["feeling"], "liquidy")
+        self.assertEqual(i.answers()["feeling"], "liquidy")
 
     def test_answers_can_be_imported_from_xml(self):
         surv = Survey(name="data")

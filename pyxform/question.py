@@ -305,7 +305,7 @@ class MultipleChoiceQuestion(Question):
 
 class SelectOneQuestion(MultipleChoiceQuestion):
     def __init__(self, **kwargs):
-        super(SelectOneQuestion, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._dict[self.TYPE] = "select one"
 
 
@@ -314,7 +314,7 @@ class Tag(SurveyElement):
         kwargs_copy = kwargs.copy()
         choices = kwargs_copy.pop("choices", []) + kwargs_copy.pop("children", [])
 
-        super(Tag, self).__init__(**kwargs_copy)
+        super().__init__(**kwargs_copy)
 
         if choices:
             self.children = []
@@ -344,7 +344,7 @@ class OsmUploadQuestion(UploadQuestion):
         kwargs_copy = kwargs.copy()
         tags = kwargs_copy.pop("tags", []) + kwargs_copy.pop("children", [])
 
-        super(OsmUploadQuestion, self).__init__(**kwargs_copy)
+        super().__init__(**kwargs_copy)
 
         if tags:
             self.children = []

@@ -89,4 +89,4 @@ class LoopTests(TestCase):
                 },
             ],
         }
-        self.assertEquals(survey.to_json_dict(), expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)

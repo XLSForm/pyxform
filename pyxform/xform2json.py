@@ -6,7 +6,7 @@ import copy
 import json
 import logging
 import re
-from collections import Mapping
+from collections.abc import Mapping
 from operator import itemgetter
 from typing import Any, Dict, List
 from xml.etree.ElementTree import Element

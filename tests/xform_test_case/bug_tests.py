@@ -188,7 +188,7 @@ class BadChoicesSheetHeaders(unittest.TestCase):
             default_name="spaces_in_choices_header",
             warnings=warnings,
         )
-        self.assertEquals(len(warnings), 3, "Found " + str(len(warnings)) + " warnings")
+        self.assertEqual(len(warnings), 3, "Found " + str(len(warnings)) + " warnings")
 
     def test_values_with_spaces_are_cleaned(self):
         """

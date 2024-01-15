@@ -1,7 +1,6 @@
 """
 The validators utility functions.
 """
-import io
 import logging
 import os
 import signal
@@ -99,7 +98,7 @@ def decode_stream(stream):
             return stream.decode("latin-1")
         except BaseException as be:
             msg = "Failed to decode validate stderr as utf-8 or latin-1."
-            raise IOError(msg, ude, be) from be
+            raise OSError(msg, ude, be) from be
 
 
 def request_get(url):
@@ -196,9 +195,9 @@ def check_readable(file_path, retry_limit=10, wait_seconds=0.5):
 
     def catch_try():
         try:
-            with io.open(file_path, mode="r"):
+            with open(file_path, mode="r"):
                 return True
-        except IOError:
+        except OSError:
             return False
 
     tries = 0
@@ -207,5 +206,5 @@ def check_readable(file_path, retry_limit=10, wait_seconds=0.5):
             tries += 1
             time.sleep(wait_seconds)
         else:
-            raise IOError("Could not read file: {f}".format(f=file_path))
+            raise OSError("Could not read file: {f}".format(f=file_path))
     return True

@@ -65,7 +65,7 @@ def check_java_available():
         "To fix this, please either: 1) install Java, or 2) run pyxform with the "
         "--skip_validate flag, or 3) add the installed Java to the environment path."
     )
-    raise EnvironmentError(msg)
+    raise OSError(msg)
 
 
 def check_xform(path_to_xform):

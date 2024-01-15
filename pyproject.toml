@@ -73,7 +73,16 @@ select = [
 #  "SIM",  # flake8-simplify
   "TRY",  # tryceratops
 #  "UP",  # pyupgrade
+  "UP004",
+  "UP005",
+  "UP008",
   "UP009",
+  "UP018",
+  "UP020",
+  "UP024",
+  "UP028",
+  "UP030",
+  "UP035",
   "W",  # pycodestyle warning
 ]
 ignore = [
