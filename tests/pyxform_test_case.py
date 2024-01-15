@@ -1,7 +1,6 @@
 """
 PyxformTestCase base class using markdown to define the XLSForm.
 """
-import codecs
 import logging
 import os
 import re
@@ -131,7 +130,7 @@ class PyxformMarkdown:
         tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
         tmp.close()
         try:
-            with codecs.open(tmp.name, mode="w", encoding="utf-8") as fp:
+            with open(tmp.name, mode="w", encoding="utf-8") as fp:
                 fp.write(xml)
                 fp.close()
             check_xform(tmp.name)

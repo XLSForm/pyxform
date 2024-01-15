@@ -1,7 +1,6 @@
 """
 Testing simple cases for Xls2Json
 """
-import codecs
 import json
 import os
 from unittest import TestCase
@@ -32,14 +31,11 @@ class BasicXls2JsonApiTests(TestCase):
         )
         x = SurveyReader(path_to_excel_file, default_name="yes_or_no_question")
         x_results = x.to_json_dict()
-        with codecs.open(output_path, mode="w", encoding="utf-8") as fp:
+        with open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
         # Compare with the expected output:
-        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
-            with codecs.open(output_path, "rb", encoding="utf-8") as actual_file:
-                expected_json = json.load(expected_file)
-                actual_json = json.load(actual_file)
-                self.assertEqual(expected_json, actual_json)
+        with open(expected_output_path) as expected, open(output_path) as observed:
+            self.assertEqual(json.load(expected), json.load(observed))
 
     def test_hidden(self):
         x = SurveyReader(utils.path_to_text_fixture("hidden.xls"), default_name="hidden")
@@ -127,14 +123,11 @@ class BasicXls2JsonApiTests(TestCase):
         )
         x = SurveyReader(path_to_excel_file, default_name="simple_loop")
         x_results = x.to_json_dict()
-        with codecs.open(output_path, mode="w", encoding="utf-8") as fp:
+        with open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
         # Compare with the expected output:
-        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
-            with codecs.open(output_path, "rb", encoding="utf-8") as actual_file:
-                expected_json = json.load(expected_file)
-                actual_json = json.load(actual_file)
-                self.assertEqual(expected_json, actual_json)
+        with open(expected_output_path) as expected, open(output_path) as observed:
+            self.assertEqual(json.load(expected), json.load(observed))
 
     def test_choice_filter_choice_fields(self):
         """

@@ -1,7 +1,6 @@
 """
 pyxform utils module.
 """
-import codecs
 import copy
 import csv
 import json
@@ -165,8 +164,8 @@ def get_pyobj_from_json(str_or_path):
     """
     try:
         # see if treating str_or_path as a path works
-        fp = codecs.open(str_or_path, mode="r", encoding="utf-8")
-        doc = json.load(fp)
+        with open(str_or_path, encoding="utf-8") as fp:
+            doc = json.load(fp)
     except (JSONDecodeError, OSError):
         # if it doesn't work load the text
         doc = json.loads(str_or_path)

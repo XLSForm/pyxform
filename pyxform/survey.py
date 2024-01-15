@@ -1,7 +1,6 @@
 """
 Survey module with XForm Survey objects and utility functions.
 """
-import codecs
 import os
 import re
 import tempfile
@@ -1155,7 +1154,7 @@ class Survey(Section):
         if not path:
             path = self._print_name + ".xml"
         try:
-            with codecs.open(path, mode="w", encoding="utf-8") as file_obj:
+            with open(path, mode="w", encoding="utf-8") as file_obj:
                 if pretty_print:
                     file_obj.write(self._to_pretty_xml())
                 else:

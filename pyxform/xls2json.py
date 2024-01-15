@@ -1,7 +1,6 @@
 """
 A Python script to convert excel files into JSON.
 """
-import codecs
 import json
 import os
 import re
@@ -38,9 +37,8 @@ def print_pyobj_to_json(pyobj, path=None):
     or stdout if no file is specified
     """
     if path:
-        fp = codecs.open(path, mode="w", encoding="utf-8")
-        json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
-        fp.close()
+        with open(path, mode="w", encoding="utf-8") as fp:
+            json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
     else:
         sys.stdout.write(json.dumps(pyobj, ensure_ascii=False, indent=4))
 

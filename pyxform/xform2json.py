@@ -1,7 +1,6 @@
 """
 xform2json module - Transform an XForm to a JSON dictionary.
 """
-import codecs
 import copy
 import json
 import logging
@@ -717,6 +716,6 @@ class XFormToDictBuilder:
 
 def write_object_to_file(filename, obj):
     """Writes to a JSON filename the dictionary obj."""
-    with codecs.open(filename, "w", encoding="utf-8") as output_file:
+    with open(filename, "w", encoding="utf-8") as output_file:
         output_file.write(json.dumps(obj, indent=2))
     logger.info("object written to file: %s", filename)

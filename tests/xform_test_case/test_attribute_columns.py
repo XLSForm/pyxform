@@ -1,7 +1,6 @@
 """
 Some tests for the new (v0.9) spec is properly implemented.
 """
-import codecs
 import os
 
 import pyxform
@@ -31,6 +30,5 @@ class AttributeColumnsTest(XFormTestCase):
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
-            with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
-                self.assertXFormEqual(expected_file.read(), actual_file.read())
+        with open(expected_output_path) as expected, open(self.output_path) as observed:
+            self.assertXFormEqual(expected.read(), observed.read())
