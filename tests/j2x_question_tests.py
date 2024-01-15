@@ -178,7 +178,7 @@ class Json2XformQuestionValidationTests(TestCase):
             "type": "string",
             "constraint": r"regex(., '^\d*$')",
         }
-        observed = {k: v for k, v in q.xml_bindings()[0].attributes.items()}
+        observed = {k: v for k, v in q.xml_bindings()[0].attributes.items()}  # noqa: C416
         self.assertDictEqual(expected, observed)
 
     def test_simple_select_all_question_multilingual(self):

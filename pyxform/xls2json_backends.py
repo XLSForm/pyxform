@@ -53,7 +53,7 @@ def trim_trailing_empty(a_list: list, n_empty: int) -> list:
 def get_excel_column_headers(first_row: Iterator[Optional[str]]) -> List[Optional[str]]:
     """Get column headers from the first row; stop if there's a run of empty columns."""
     max_adjacent_empty_columns = 20
-    column_header_list = list()
+    column_header_list = []
     adjacent_empty_cols = 0
     for column_header in first_row:
         if is_empty(column_header):
@@ -313,7 +313,7 @@ def get_cascading_json(sheet_list, prefix, level):
                     elif isinstance(v, dict):
                         d[k] = replace_prefix(v, prefix)
                     elif isinstance(v, list):
-                        d[k] = map(lambda x: replace_prefix(x, prefix), v)
+                        d[k] = (replace_prefix(x, prefix) for x in v)
                 return d
 
             return_list.append(replace_prefix(row["lambda"], prefix))

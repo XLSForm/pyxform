@@ -89,7 +89,7 @@ class RangeWidgetTest(PyxformTestCase):
             ],
         )
 
-    def test_range_type_invvalid_parameters(self):
+    def test_range_type_invalid_parameters(self):
         # 'increment' is an invalid property
         self.assertPyxformXform(
             name="data",

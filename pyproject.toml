@@ -57,7 +57,7 @@ extend-select = [
 # Potentially useful rule sets to enable in future:
 select = [
   "B",  # flake8-bugbear
-#  "C4",  # flake8-comprehensions
+  "C4",  # flake8-comprehensions
   "E",  # pycodestyle error
 #  "ERA",  # eradicate (commented out code)
   "F",  # pyflakes

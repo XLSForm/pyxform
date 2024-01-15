@@ -550,12 +550,9 @@ class BuilderTests(TestCase):
         xml = survey.to_xml()
         # find the body tag
         root_elm = ETree.fromstring(xml.encode("utf-8"))
-        body_elms = list(
-            filter(
-                lambda e: self.STRIP_NS_FROM_TAG_RE.sub("", e.tag) == "body",
-                [c for c in root_elm],
-            )
-        )
+        body_elms = [
+            c for c in root_elm if self.STRIP_NS_FROM_TAG_RE.sub("", c.tag) == "body"
+        ]
         self.assertEqual(len(body_elms), 1)
         self.assertIsNone(body_elms[0].get("class"))
 
@@ -566,11 +563,8 @@ class BuilderTests(TestCase):
         xml = survey.to_xml()
         # find the body tag
         root_elm = ETree.fromstring(xml.encode("utf-8"))
-        body_elms = list(
-            filter(
-                lambda e: self.STRIP_NS_FROM_TAG_RE.sub("", e.tag) == "body",
-                [c for c in root_elm],
-            )
-        )
+        body_elms = [
+            c for c in root_elm if self.STRIP_NS_FROM_TAG_RE.sub("", c.tag) == "body"
+        ]
         self.assertEqual(len(body_elms), 1)
         self.assertEqual(body_elms[0].get("class"), "ltr")

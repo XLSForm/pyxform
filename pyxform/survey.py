@@ -261,13 +261,11 @@ class Survey(Section):
             xmlns = "xmlns:"
             nsmap = NSMAP.copy()
             nsmap.update(
-                dict(
-                    [
-                        (xmlns + k, v.replace('"', "").replace("'", ""))
-                        for k, v in nslist
-                        if xmlns + k not in nsmap
-                    ]
-                )
+                {
+                    xmlns + k: v.replace('"', "").replace("'", "")
+                    for k, v in nslist
+                    if xmlns + k not in nsmap
+                }
             )
             return nsmap
 
@@ -619,7 +617,7 @@ class Survey(Section):
         model_children += self.xml_actions()
 
         if self.submission_url or self.public_key or self.auto_send or self.auto_delete:
-            submission_attrs = dict()
+            submission_attrs = {}
             if self.submission_url:
                 submission_attrs["action"] = self.submission_url
                 submission_attrs["method"] = "post"

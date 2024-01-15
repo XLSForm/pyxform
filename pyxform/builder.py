@@ -336,18 +336,13 @@ class SurveyElementBuilder:
         # dictionary by language to do substitutions.
         info_by_lang = {}
         if isinstance(column_headers[const.LABEL], dict):
-            info_by_lang = dict(
-                [
-                    (
-                        lang,
-                        {
-                            const.NAME: column_headers[const.NAME],
-                            const.LABEL: column_headers[const.LABEL][lang],
-                        },
-                    )
-                    for lang in column_headers[const.LABEL].keys()
-                ]
-            )
+            info_by_lang = {
+                lang: {
+                    const.NAME: column_headers[const.NAME],
+                    const.LABEL: column_headers[const.LABEL][lang],
+                }
+                for lang in column_headers[const.LABEL].keys()
+            }
 
         result = question_template.copy()
         for key in result.keys():

@@ -347,7 +347,7 @@ def levenshtein_distance(a: str, b: str) -> int:
     # initialize v0 (the previous row of distances)
     # this row is A[0][i]: edit distance for an empty s
     # the distance is just the number of characters to delete from t
-    v0 = [i for i in range(0, n + 1)]
+    v0 = list(range(0, n + 1))
 
     for i in range(0, m):
         # calculate v1 (current row distances) from the previous row v0

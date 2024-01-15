@@ -68,7 +68,7 @@ class XmlDictObject(dict):
     @staticmethod
     def _un_wrap(x):
         if isinstance(x, dict):
-            return dict((k, XmlDictObject._un_wrap(v)) for (k, v) in iter(x.items()))
+            return {k: XmlDictObject._un_wrap(v) for k, v in x.items()}
         elif isinstance(x, list):
             return [XmlDictObject._un_wrap(v) for v in x]
         else:

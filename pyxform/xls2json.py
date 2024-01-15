@@ -72,7 +72,7 @@ def merge_dicts(dict_a, dict_b, default_key="default"):
     all_keys = {k: None for k in dict_a.keys()}
     all_keys.update({k: None for k in dict_b.keys()})
 
-    out_dict = dict()
+    out_dict = {}
     for key in all_keys.keys():
         out_dict[key] = merge_dicts(dict_a.get(key), dict_b.get(key), default_key)
     return out_dict
@@ -131,10 +131,10 @@ def dealias_and_group_headers(
     without a language specified with localized versions.
     """
     group_delimiter = "::"
-    out_dict_array = list()
+    out_dict_array = []
     seen_headers = {}
     for row in dict_array:
-        out_row = dict()
+        out_row = {}
         for header, val in row.items():
             if ignore_case:
                 header = header.lower()
@@ -230,7 +230,7 @@ def group_dictionaries_by_key(list_of_dicts, key, remove_key=True):
     The grouping key is removed by default.
     If the key is not in any dictionary an empty dict is returned.
     """
-    dict_of_lists = dict()
+    dict_of_lists = {}
     for dicty in list_of_dicts:
         if key not in dicty:
             continue
@@ -315,11 +315,15 @@ def process_range_question_type(
         if key not in parameters:
             parameters[key] = defaults[key]
 
+    has_float = False
     try:
-        has_float = any([float(x) and "." in str(x) for x in parameters.values()])
+        # Check all parameters.
+        for x in parameters.values():
+            if float(x) and "." in str(x):
+                has_float = True
     except ValueError as range_err:
         raise PyXFormError(
-            "Range parameters 'start', " "'end' or 'step' must all be numbers."
+            "Range parameters 'start', 'end' or 'step' must all be numbers."
         ) from range_err
     else:
         # is integer by default, convert to decimal if it has any float values
@@ -1025,7 +1029,7 @@ def workbook_to_json(
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type
-                child_list = list()
+                child_list = []
                 new_json_dict[constants.CHILDREN] = child_list
                 if control_type is constants.LOOP:
                     if not parse_dict.get("list_name"):
