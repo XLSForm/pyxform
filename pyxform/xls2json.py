@@ -556,7 +556,7 @@ def workbook_to_json(
             if "name" not in option:
                 info = "[list_name : " + list_name + "]"
                 raise PyXFormError(
-                    "On the choices sheet there is " "a option with no name. " + info
+                    "On the choices sheet there is a option with no name. " + info
                 )
             if "label" not in option:
                 info = "[list_name : " + list_name + "]"
@@ -564,7 +564,7 @@ def workbook_to_json(
                     "On the choices sheet there is a option with no label. " + info
                 )
             # chrislrobert's fix for a cryptic error message:
-            # see: https://code.google.com/p/opendatakit/issues/detail?id=832&start=200
+            # see: https://code.google.com/p/opendatakit/issues/detail?id=833&start=200
             option_keys = list(option.keys())
             for headername in option_keys:
                 # Using warnings and removing the bad columns

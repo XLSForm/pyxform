@@ -3,17 +3,23 @@ XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
 import csv
 import datetime
+import os
 import re
 from collections import OrderedDict
+from contextlib import closing
 from functools import reduce
 from io import StringIO
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 from zipfile import BadZipFile
 
-import openpyxl
 import xlrd
 from openpyxl.cell import Cell as pyxlCell
+from openpyxl.reader.excel import ExcelReader
+from openpyxl.workbook import Workbook as pyxlWorkbook
+from openpyxl.worksheet.worksheet import Worksheet as pyxlWorksheet
+from xlrd.book import Book as xlrdBook
 from xlrd.sheet import Cell as xlrdCell
+from xlrd.sheet import Sheet as xlrdSheet
 from xlrd.xldate import XLDateAmbiguous
 
 from pyxform import constants
@@ -120,21 +126,16 @@ def xls_to_dict(path_or_file):
     equal to the cell value for that row and column.
     All the keys and leaf elements are unicode text.
     """
-    try:
-        if isinstance(path_or_file, str):
-            workbook = xlrd.open_workbook(filename=path_or_file)
-        else:
-            workbook = xlrd.open_workbook(file_contents=path_or_file.read())
-    except xlrd.XLRDError as read_err:
-        raise PyXFormError("Error reading .xls file: %s" % read_err) from read_err
 
-    def xls_clean_cell(cell: xlrdCell, row_n: int, col_key: str) -> Optional[str]:
+    def xls_clean_cell(
+        wb: xlrdBook, wb_sheet: xlrdSheet, cell: xlrdCell, row_n: int, col_key: str
+    ) -> Optional[str]:
         value = cell.value
         if isinstance(value, str):
             value = value.strip()
         if not is_empty(value):
             try:
-                return xls_value_to_unicode(value, cell.ctype, workbook.datemode)
+                return xls_value_to_unicode(value, cell.ctype, wb.datemode)
             except XLDateAmbiguous as date_err:
                 raise PyXFormError(
                     XL_DATE_AMBIGOUS_MSG % (wb_sheet.name, col_key, row_n)
@@ -142,39 +143,59 @@ def xls_to_dict(path_or_file):
 
         return None
 
-    def xls_to_dict_normal_sheet(sheet):
+    def xls_to_dict_normal_sheet(wb: xlrdBook, wb_sheet: xlrdSheet):
         # XLS format: max cols 256, max rows 65536
-        first_row = (c.value for c in next(sheet.get_rows(), []))
+        first_row = (c.value for c in next(wb_sheet.get_rows(), []))
         headers = get_excel_column_headers(first_row=first_row)
         row_iter = (
-            tuple(sheet.cell(r, c) for c in range(len(headers)))
-            for r in range(1, sheet.nrows)
+            tuple(wb_sheet.cell(r, c) for c in range(len(headers)))
+            for r in range(1, wb_sheet.nrows)
         )
-        rows = get_excel_rows(headers=headers, rows=row_iter, cell_func=xls_clean_cell)
+
+        # Inject wb/sheet as closure since functools.partial isn't typing friendly.
+        def clean_func(cell: xlrdCell, row_n: int, col_key: str) -> Optional[str]:
+            return xls_clean_cell(
+                wb=wb, wb_sheet=wb_sheet, cell=cell, row_n=row_n, col_key=col_key
+            )
+
+        rows = get_excel_rows(headers=headers, rows=row_iter, cell_func=clean_func)
         column_header_list = [key for key in headers if key is not None]
         return rows, _list_to_dict_list(column_header_list)
 
-    result_book = OrderedDict()
-    for wb_sheet in workbook.sheets():
-        # Note that the sheet exists but do no further processing here.
-        result_book[wb_sheet.name] = []
-        # Do not process sheets that have nothing to do with XLSForm.
-        if wb_sheet.name not in constants.SUPPORTED_SHEET_NAMES:
-            if len(workbook.sheets()) == 1:
-                (
-                    result_book[constants.SURVEY],
-                    result_book["%s_header" % constants.SURVEY],
-                ) = xls_to_dict_normal_sheet(wb_sheet)
+    def process_workbook(wb: xlrdBook):
+        result_book = OrderedDict()
+        for wb_sheet in wb.sheets():
+            # Note that the sheet exists but do no further processing here.
+            result_book[wb_sheet.name] = []
+            # Do not process sheets that have nothing to do with XLSForm.
+            if wb_sheet.name not in constants.SUPPORTED_SHEET_NAMES:
+                if len(wb.sheets()) == 1:
+                    (
+                        result_book[constants.SURVEY],
+                        result_book["%s_header" % constants.SURVEY],
+                    ) = xls_to_dict_normal_sheet(wb=wb, wb_sheet=wb_sheet)
+                else:
+                    continue
             else:
-                continue
-        else:
-            (
-                result_book[wb_sheet.name],
-                result_book["%s_header" % wb_sheet.name],
-            ) = xls_to_dict_normal_sheet(wb_sheet)
+                (
+                    result_book[wb_sheet.name],
+                    result_book["%s_header" % wb_sheet.name],
+                ) = xls_to_dict_normal_sheet(wb=wb, wb_sheet=wb_sheet)
+        return result_book
 
-    workbook.release_resources()
-    return result_book
+    try:
+        if isinstance(path_or_file, (str, bytes, os.PathLike)):
+            file = open(path_or_file, mode="rb")
+        else:
+            file = path_or_file
+        with closing(file) as wb_file:
+            workbook = xlrd.open_workbook(file_contents=wb_file.read())
+            try:
+                return process_workbook(wb=workbook)
+            finally:
+                workbook.release_resources()
+    except xlrd.XLRDError as read_err:
+        raise PyXFormError("Error reading .xls file: %s" % read_err) from read_err
 
 
 def xls_value_to_unicode(value, value_type, datemode) -> str:
@@ -216,10 +237,6 @@ def xlsx_to_dict(path_or_file):
     equal to the cell value for that row and column.
     All the keys and leaf elements are strings.
     """
-    try:
-        workbook = openpyxl.open(filename=path_or_file, read_only=True, data_only=True)
-    except (OSError, BadZipFile, KeyError) as read_err:
-        raise PyXFormError("Error reading .xlsx file: %s" % read_err) from read_err
 
     def xlsx_clean_cell(cell: pyxlCell, row_n: int, col_key: str) -> Optional[str]:
         value = cell.value
@@ -230,7 +247,7 @@ def xlsx_to_dict(path_or_file):
 
         return None
 
-    def xlsx_to_dict_normal_sheet(sheet):
+    def xlsx_to_dict_normal_sheet(sheet: pyxlWorksheet):
         # XLSX format: max cols 16384, max rows 1048576
         first_row = (c.value for c in next(sheet.rows, []))
         headers = get_excel_column_headers(first_row=first_row)
@@ -239,28 +256,43 @@ def xlsx_to_dict(path_or_file):
         column_header_list = [key for key in headers if key is not None]
         return rows, _list_to_dict_list(column_header_list)
 
-    result_book = OrderedDict()
-    for sheetname in workbook.sheetnames:
-        wb_sheet = workbook[sheetname]
-        # Note that the sheet exists but do no further processing here.
-        result_book[sheetname] = []
-        # Do not process sheets that have nothing to do with XLSForm.
-        if sheetname not in constants.SUPPORTED_SHEET_NAMES:
-            if len(workbook.sheetnames) == 1:
-                (
-                    result_book[constants.SURVEY],
-                    result_book[f"{constants.SURVEY}_header"],
-                ) = xlsx_to_dict_normal_sheet(wb_sheet)
+    def process_workbook(wb: pyxlWorkbook):
+        result_book = OrderedDict()
+        for sheetname in wb.sheetnames:
+            wb_sheet = wb[sheetname]
+            # Note that the sheet exists but do no further processing here.
+            result_book[sheetname] = []
+            # Do not process sheets that have nothing to do with XLSForm.
+            if sheetname not in constants.SUPPORTED_SHEET_NAMES:
+                if len(wb.sheetnames) == 1:
+                    (
+                        result_book[constants.SURVEY],
+                        result_book[f"{constants.SURVEY}_header"],
+                    ) = xlsx_to_dict_normal_sheet(wb_sheet)
+                else:
+                    continue
             else:
-                continue
-        else:
-            (
-                result_book[sheetname],
-                result_book[f"{sheetname}_header"],
-            ) = xlsx_to_dict_normal_sheet(wb_sheet)
+                (
+                    result_book[sheetname],
+                    result_book[f"{sheetname}_header"],
+                ) = xlsx_to_dict_normal_sheet(wb_sheet)
+        return result_book
 
-    workbook.close()
-    return result_book
+    try:
+        if isinstance(path_or_file, (str, bytes, os.PathLike)):
+            file = open(path_or_file, mode="rb")
+        else:
+            file = path_or_file
+        with closing(file) as wb_file:
+            reader = ExcelReader(wb_file, read_only=True, data_only=True)
+            reader.read()
+            try:
+                return process_workbook(wb=reader.wb)
+            finally:
+                reader.wb.close()
+                reader.archive.close()
+    except (OSError, BadZipFile, KeyError) as read_err:
+        raise PyXFormError("Error reading .xlsx file: %s" % read_err) from read_err
 
 
 def xlsx_value_to_str(value) -> str:

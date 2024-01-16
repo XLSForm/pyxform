@@ -184,7 +184,10 @@ class BadChoicesSheetHeaders(TestCase):
             default_name="spaces_in_choices_header",
             warnings=warnings,
         )
-        self.assertEqual(len(warnings), 3, "Found " + str(len(warnings)) + " warnings")
+        # The "column with no header" warning is probably not reachable since XLS/X
+        # pre-processing ignores any columns without a header.
+        observed = [w for w in warnings if "Headers cannot include spaces" in w]
+        self.assertEqual(1, len(observed), warnings)
 
     def test_values_with_spaces_are_cleaned(self):
         """

@@ -171,7 +171,7 @@ class _UpdateHandler:
 
     @staticmethod
     def _get_release_message(json_data):
-        template = "- Tag name = {tag_name}\n" "- Tag URL = {tag_url}\n\n"
+        template = "- Tag name = {tag_name}\n- Tag URL = {tag_url}\n\n"
         return template.format(
             tag_name=json_data["tag_name"], tag_url=json_data["html_url"]
         )
@@ -219,9 +219,7 @@ class _UpdateHandler:
 
         if len(files) == 0:
             raise PyXFormError(
-                "No files attached to release '{r}'.\n\n{h}" "".format(
-                    r=rel_name, h=update_info.manual_msg
-                )
+                f"No files attached to release '{rel_name}'.\n\n{update_info.manual_msg}"
             )
 
         file_urls = [x["browser_download_url"] for x in files if x["name"] == file_name]
@@ -269,7 +267,7 @@ class _UpdateHandler:
             main_bin = "*validate"
         else:
             raise PyXFormError(
-                "Did not find a supported main binary for file: {p}.\n\n{h}" "".format(
+                "Did not find a supported main binary for file: {p}.\n\n{h}".format(
                     p=file_path, h=update_info.manual_msg
                 )
             )
@@ -309,9 +307,7 @@ class _UpdateHandler:
                     zip_jobs[file_out_path] = zip_item
         if len(bin_paths) != len(zip_jobs.keys()):
             raise PyXFormError(
-                "Expected {e} zip job files, found: {c}" "".format(
-                    e=len(bin_paths), c=len(zip_jobs.keys())
-                )
+                f"Expected {len(bin_paths)} zip job files, found: {len(zip_jobs.keys())}"
             )
         return zip_jobs
 
