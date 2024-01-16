@@ -205,8 +205,32 @@ class SurveyElementBuilder:
         choice_list = d.get(const.CHOICES, d.get(const.CHILDREN, []))
         if len(choice_list) <= 0:
             raise PyXFormError("There should be choices for this question.")
-        if OR_OTHER_CHOICE not in choice_list:
-            choice_list.append(OR_OTHER_CHOICE)
+        if not any(
+            OR_OTHER_CHOICE[const.NAME] in choice[const.NAME] for choice in choice_list
+        ):
+            choice_list.append(
+                SurveyElementBuilder._get_translated_other_label(choice_list)
+            )
+
+    @staticmethod
+    def _get_translated_other_label(choice_list) -> Dict[str, Any]:
+        translated_other_choice = OR_OTHER_CHOICE.copy()
+
+        if isinstance(choice_list[0][const.LABEL], Dict):
+            # Get all langs defined across all existing choices in this list and give them all a label of "Other"
+            langs = set().union(
+                *map(
+                    set,
+                    [
+                        itemset_choice[const.LABEL].keys()
+                        for itemset_choice in choice_list
+                    ],
+                )
+            )
+            translated_other_choice[const.LABEL] = dict(
+                map(lambda l: (l, OR_OTHER_CHOICE[const.LABEL]), langs)
+            )
+        return translated_other_choice
 
     @staticmethod
     def _add_none_option_to_select_all_that_apply(d_copy):
@@ -268,10 +292,15 @@ class SurveyElementBuilder:
                 if (
                     itemset_choices is not None
                     and isinstance(itemset_choices, list)
-                    and OR_OTHER_CHOICE not in itemset_choices
+                    and not any(
+                        OR_OTHER_CHOICE[const.NAME] in choice[const.NAME]
+                        for choice in itemset_choices
+                    )
                 ):
-                    itemset_choices.append(OR_OTHER_CHOICE)
-                # This is required for builder_tests.BuilderTests.test_loop to pass.
+                    itemset_choices.append(
+                        self._get_translated_other_label(itemset_choices)
+                    )
+                # Select choices need to be both in choices and children. See the loop test in builder_tests
                 self._add_other_option_to_multiple_choice_question(d=child)
             if survey_element:
                 result.add_children(survey_element)

@@ -522,7 +522,6 @@ class TestTranslations(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            debug=True,
             xml__xpath_match=[
                 xpq.body_select1_itemset("f"),
                 xpq.body_label_inline("select1", "f", "f"),
@@ -1521,26 +1520,92 @@ class TestTranslationsChoices(PyxformTestCase):
             warnings__not_contains=[OR_OTHER_WARNING],
         )
 
-    def test_specify_other__with_translations(self):
-        """Should add an "other" choice to the itemset instance and an itext label."""
+    def test_choice_name_containing_dash_output_itext(self):
+        """Should output itext when list_name contains a dash (itextId separator)."""
         md = """
-        | survey  |                        |       |            |            |
-        |         | type                   | name  | label      | label::eng |
-        |         | select_one c1 or_other | q1    | Question 1 | Question A |
-        | choices |           |      |       |            |           |
-        |         | list name | name | label | label::eng | label::fr |
-        |         | c1        | na   | la    | la-e       | la-f      |
-        |         | c1        | nb   | lb    | lb-e       |           |
+        | survey  |                      |       |            |
+        |         | type                 | name  | label:en   | label:fr |
+        |         | select_one with_us   | q0    | Q1 EN      | Q1 FR    |
+        |         | select_one with-dash | q1    | Q2 EN      | Q2 FR    |
+        | choices |           |      |          |
+        |         | list name | name | label:en | label:fr |
+        |         | with_us   | na   | l1a-en   | l1a-fr   |
+        |         | with_us   | nb   | l1b-en   | l1b-fr   |
+        |         | with-dash | na   | l2a-en   | l2a-fr   |
+        |         | with-dash | nb   | l2b-en   | l2b-fr   |
         """
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
                 xpc.model_itext_choice_text_label_by_pos(
-                    "eng", "c1", ("la-e", "lb-e", "-")
+                    "en", "with_us", ("l1a-en", "l1b-en")
                 ),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("la-f", "-", "-")),
                 xpc.model_itext_choice_text_label_by_pos(
-                    DEFAULT_LANG, "c1", ("la", "lb", "Other")
+                    "en", "with-dash", ("l2a-en", "l2b-en")
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "fr", "with_us", ("l1a-fr", "l1b-fr")
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "fr", "with-dash", ("l2a-fr", "l2b-fr")
+                ),
+            ],
+        )
+
+    # region or_other
+
+    def test_specify_other__with_translations(self):
+        """Should add an "other" choice to the itemset instance and an itext label."""
+        md = """
+        | survey  |                        |      |            |           |
+        |         | type                   | name | label::eng | label::fr |
+        |         | select_one c1 or_other | q1   | Question A | A FR      |
+        | choices |           |      |            |            |
+        |         | list name | name | label::eng | label::fr  |
+        |         | c1        | na   | la-e       | la-f       |
+        |         | c1        | nb   | lb-e       | lb-f       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_itext_choice_text_label_by_pos(
+                    "eng", "c1", ("la-e", "lb-e", "Other")
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "fr", "c1", ("la-f", "lb-f", "Other")
+                ),
+                xpq.body_select1_itemset("q1"),
+                """
+                /h:html/h:body/x:input[@ref='/test_name/q1_other']/
+                  x:label[text() = 'Specify other.']
+                """,
+            ],
+            warnings__contains=[OR_OTHER_WARNING],
+        )
+
+    def test_specify_other__with_translations_and_existing_other(self):
+        """Should not add "other" choice again."""
+        md = """
+        | survey  |                        |      |            |           |
+        |         | type                   | name | label::eng | label::fr |
+        |         | select_one c1 or_other | q1   | Question A | A FR      |
+        | choices |           |      |            |            |
+        |         | list name | name | label::eng | label::fr  |
+        |         | c1        | na   | la-e       | la-f       |
+        |         | c1        | nb   | lb-e       | lb-f       |
+        |         | c1        | other| Other      | Autre      |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_count=[
+                ("/h:html/h:head/x:model/x:instance[@id='c1']/x:root/x:item", 3)
+            ],
+            xml__xpath_match=[
+                xpc.model_itext_choice_text_label_by_pos(
+                    "eng", "c1", ("la-e", "lb-e", "Other")
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "fr", "c1", ("la-f", "lb-f", "Autre")
                 ),
                 xpq.body_select1_itemset("q1"),
                 """
@@ -1554,25 +1619,24 @@ class TestTranslationsChoices(PyxformTestCase):
     def test_specify_other__with_translations__with_group(self):
         """Should add an "other" choice to the itemset instance and an itext label."""
         md = """
-        | survey  |                        |       |            |            |
-        |         | type                   | name  | label      | label::eng |
-        |         | begin group            | g1    | Group 1    | Group 1    |
-        |         | select_one c1 or_other | q1    | Question 1 | Question A |
-        |         | end group              | g1    |            |            |
-        | choices |           |      |       |            |           |
-        |         | list name | name | label | label::eng | label::fr |
-        |         | c1        | na   | la    | la-e       | la-f      |
-        |         | c1        | nb   | lb    | lb-e       |           |
+        | survey  |                        |       |            |
+        |         | type                   | name  | label::eng |
+        |         | begin group            | g1    | Group 1    |
+        |         | select_one c1 or_other | q1    | Question A |
+        |         | end group              | g1    |            |
+        | choices |           |      |            |           |
+        |         | list name | name | label::eng | label::fr |
+        |         | c1        | na   | la-e       | la-f      |
+        |         | c1        | nb   | lb-e       | lb-f      |
         """
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
                 xpc.model_itext_choice_text_label_by_pos(
-                    "eng", "c1", ("la-e", "lb-e", "-")
+                    "eng", "c1", ("la-e", "lb-e", "Other")
                 ),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("la-f", "-", "-")),
                 xpc.model_itext_choice_text_label_by_pos(
-                    DEFAULT_LANG, "c1", ("la", "lb", "Other")
+                    "fr", "c1", ("la-f", "lb-f", "Other")
                 ),
                 xpq.body_group_select1_itemset("g1", "q1"),
                 """
@@ -1587,25 +1651,24 @@ class TestTranslationsChoices(PyxformTestCase):
     def test_specify_other__with_translations__with_repeat(self):
         """Should add an "other" choice to the itemset instance and an itext label."""
         md = """
-        | survey  |                        |       |            |            |
-        |         | type                   | name  | label      | label::eng |
-        |         | begin repeat           | r1    | Repeat 1   | Repeat 1   |
-        |         | select_one c1 or_other | q1    | Question 1 | Question A |
-        |         | end repeat             | r1    |            |            |
-        | choices |           |      |       |            |           |
-        |         | list name | name | label | label::eng | label::fr |
-        |         | c1        | na   | la    | la-e       | la-f      |
-        |         | c1        | nb   | lb    | lb-e       |           |
+        | survey  |                        |       |               |            |
+        |         | type                   | name  | label::fr     | label::eng |
+        |         | begin repeat           | r1    | Repeat 1 fr   | Repeat 1   |
+        |         | select_one c1 or_other | q1    | Question 1 fr | Question A |
+        |         | end repeat             | r1    |               |            |
+        | choices |           |      |            |           |
+        |         | list name | name | label::eng | label::fr |
+        |         | c1        | na   | la-e       | la-f      |
+        |         | c1        | nb   | lb-e       | lb-f      |
         """
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
                 xpc.model_itext_choice_text_label_by_pos(
-                    "eng", "c1", ("la-e", "lb-e", "-")
+                    "eng", "c1", ("la-e", "lb-e", "Other")
                 ),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("la-f", "-", "-")),
                 xpc.model_itext_choice_text_label_by_pos(
-                    DEFAULT_LANG, "c1", ("la", "lb", "Other")
+                    "fr", "c1", ("la-f", "lb-f", "Other")
                 ),
                 xpq.body_repeat_select1_itemset("r1", "q1"),
                 """
@@ -1630,16 +1693,18 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | end group              | g1    |            |            |
         | choices |           |      |       |            |           |
         |         | list name | name | label | label::eng | label::fr |
-        |         | c1        | na   | la    | la-e       | la-f      |
+        |         | c1        | na   | la    |            | la-f      |
         |         | c1        | nb   | lb    | lb-e       |           |
         """
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
                 xpc.model_itext_choice_text_label_by_pos(
-                    "eng", "c1", ("la-e", "lb-e", "-")
+                    "eng", "c1", ("-", "lb-e", "Other")
                 ),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("la-f", "-", "-")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "fr", "c1", ("la-f", "-", "Other")
+                ),
                 xpc.model_itext_choice_text_label_by_pos(
                     DEFAULT_LANG, "c1", ("la", "lb", "Other")
                 ),
@@ -1664,27 +1729,26 @@ class TestTranslationsChoices(PyxformTestCase):
     def test_specify_other__with_translations__with_nested_repeat(self):
         """Should add an "other" choice to the itemset instance and an itext label."""
         md = """
-        | survey  |                        |       |            |            |
-        |         | type                   | name  | label      | label::eng |
-        |         | begin group            | g1    | Group 1    | Group 1    |
-        |         | begin repeat           | r1    | Repeat 1   | Repeat 1   |
-        |         | select_one c1 or_other | q1    | Question 1 | Question A |
-        |         | end repeat             | r1    |            |            |
-        |         | end group              | g1    |            |            |
-        | choices |           |      |       |            |           |
-        |         | list name | name | label | label::eng | label::fr |
-        |         | c1        | na   | la    | la-e       | la-f      |
-        |         | c1        | nb   | lb    | lb-e       |           |
+        | survey  |                        |       |            |
+        |         | type                   | name  | label::eng |
+        |         | begin group            | g1    | Group 1    |
+        |         | begin repeat           | r1    | Repeat 1   |
+        |         | select_one c1 or_other | q1    | Question A |
+        |         | end repeat             | r1    |            |
+        |         | end group              | g1    |            |
+        | choices |           |      |            |           |
+        |         | list name | name | label::eng | label::fr |
+        |         | c1        | na   | la-e       | la-f      |
+        |         | c1        | nb   | lb-e       |           |
         """
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
                 xpc.model_itext_choice_text_label_by_pos(
-                    "eng", "c1", ("la-e", "lb-e", "-")
+                    "eng", "c1", ("la-e", "lb-e", "Other")
                 ),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("la-f", "-", "-")),
                 xpc.model_itext_choice_text_label_by_pos(
-                    DEFAULT_LANG, "c1", ("la", "lb", "Other")
+                    "fr", "c1", ("la-f", "-", "Other")
                 ),
                 """
                 /h:html/h:body/x:group[@ref='/test_name/g1']
@@ -1737,11 +1801,11 @@ class TestTranslationsChoices(PyxformTestCase):
         )
 
     def test_specify_other__choice_filter(self):
-        """Should raise an error since these features are unsupported together."""
+        """Should work starting in pyxform 2"""
         md = """
         | survey  |                        |       |            |
         |         | type                   | name  | label      | choice_filter |
-        |         | input                  | q0    | Question 0 |               |
+        |         | text                   | q0    | Question 0 |               |
         |         | select_one c1 or_other | q1    | Question 1 | ${q0} = cf    |
         | choices |           |      |       |
         |         | list name | name | label | cf |
@@ -1750,38 +1814,21 @@ class TestTranslationsChoices(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            errored=True,
-            error__contains=["[row : 3] Choice filter not supported with or_other."],
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model[not(descendant::x:itext)]
+                """,
+                xpc.model_instance_choices_label(
+                    "c1", (("na", "la"), ("nb", "lb"), ("other", "Other"))
+                ),
+                xpq.body_select1_itemset("q1"),
+                """
+                /h:html/h:body/x:input[@ref='/test_name/q1_other']/
+                  x:label[text() = 'Specify other.']
+                """,
+            ],
+            warnings__not_contains=[OR_OTHER_WARNING],
         )
 
-    def test_choice_name_containing_dash_output_itext(self):
-        """Should output itext when list_name contains a dash (itextId separator)."""
-        md = """
-        | survey  |                      |       |            |
-        |         | type                 | name  | label:en   | label:fr |
-        |         | select_one with_us   | q0    | Q1 EN      | Q1 FR    |
-        |         | select_one with-dash | q1    | Q2 EN      | Q2 FR    |
-        | choices |           |      |          |
-        |         | list name | name | label:en | label:fr |
-        |         | with_us   | na   | l1a-en   | l1a-fr   |
-        |         | with_us   | nb   | l1b-en   | l1b-fr   |
-        |         | with-dash | na   | l2a-en   | l2a-fr   |
-        |         | with-dash | nb   | l2b-en   | l2b-fr   |
-        """
-        self.assertPyxformXform(
-            md=md,
-            xml__xpath_match=[
-                xpc.model_itext_choice_text_label_by_pos(
-                    "en", "with_us", ("l1a-en", "l1b-en")
-                ),
-                xpc.model_itext_choice_text_label_by_pos(
-                    "en", "with-dash", ("l2a-en", "l2b-en")
-                ),
-                xpc.model_itext_choice_text_label_by_pos(
-                    "fr", "with_us", ("l1a-fr", "l1b-fr")
-                ),
-                xpc.model_itext_choice_text_label_by_pos(
-                    "fr", "with-dash", ("l2a-fr", "l2b-fr")
-                ),
-            ],
-        )
+
+# endregion

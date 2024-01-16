@@ -997,7 +997,6 @@ class TestRepeat(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            debug=True,
             xml__xpath_match=[
                 # repeat references existing count element directly.
                 """
