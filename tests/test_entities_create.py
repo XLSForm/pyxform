@@ -372,7 +372,6 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | dataset     | label  |       |         |
             |          | trees       | ${size}|       |         |
             """,
-            errored=False,
         )
 
     def test_list_name_alias_to_dataset(self):
@@ -404,7 +403,6 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | dataset      | label | update_if  | create_if  | entity_id |
             |          | trees        | a     | id != ''   | id = ''    | ${a}      |
             """,
-            errored=False,
             warnings_count=0,
         )
 

@@ -8,7 +8,7 @@ import os
 import re
 import tempfile
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Set, Tuple, Union
 from unittest import TestCase
 
 from lxml import etree
@@ -18,7 +18,7 @@ from lxml.etree import _Element
 
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
-from pyxform.utils import NSMAP
+from pyxform.utils import NSMAP, coalesce
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.xls2json import workbook_to_json
 from tests.test_utils.md_table import md_table_to_ss_structure
@@ -29,7 +29,7 @@ logger.setLevel(logging.DEBUG)
 
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Set, Tuple, Union
+    from pyxform.survey import Survey
 
     NSMAPSubs: "List[Tuple[str, str]]"
 
@@ -49,11 +49,21 @@ class MatcherContext:
 class PyxformMarkdown:
     """Transform markdown formatted xlsform to a pyxform survey object"""
 
-    def md_to_pyxform_survey(self, md_raw, kwargs=None, autoname=True, warnings=None):
-        if kwargs is None:
-            kwargs = {}
+    def md_to_pyxform_survey(
+        self,
+        md_raw: str,
+        name: Optional[str] = None,
+        title: Optional[str] = None,
+        id_string: Optional[str] = None,
+        debug: bool = False,
+        autoname: bool = True,
+        warnings: List[str] = None,
+    ):
         if autoname:
-            kwargs = self._autoname_inputs(kwargs)
+            kwargs = self._autoname_inputs(name=name, title=title, id_string=id_string)
+            name = kwargs["name"]
+            title = kwargs["title"]
+            id_string = kwargs["id_string"]
         _md = []
         for line in md_raw.split("\n"):
             if re.match(r"^\s+#", line):
@@ -67,7 +77,7 @@ class PyxformMarkdown:
                 _md.append(line.strip())
         md = "\n".join(_md)
 
-        if kwargs.get("debug"):
+        if debug:
             logger.debug(md)
 
         def list_to_dicts(arr):
@@ -87,18 +97,31 @@ class PyxformMarkdown:
         for sheet, contents in md_table_to_ss_structure(md):
             sheets[sheet] = list_to_dicts(contents)
 
-        return self._ss_structure_to_pyxform_survey(sheets, kwargs, warnings=warnings)
+        return self._ss_structure_to_pyxform_survey(
+            ss_structure=sheets,
+            name=name,
+            title=title,
+            id_string=id_string,
+            warnings=warnings,
+        )
 
     @staticmethod
-    def _ss_structure_to_pyxform_survey(ss_structure, kwargs, warnings=None):
+    def _ss_structure_to_pyxform_survey(
+        ss_structure: Dict,
+        name: Optional[str] = None,
+        title: Optional[str] = None,
+        id_string: Optional[str] = None,
+        warnings: List[str] = None,
+    ):
         # using existing methods from the builder
-        imported_survey_json = workbook_to_json(ss_structure, warnings=warnings)
-        # ideally, when all these tests are working, this would be
-        # refactored as well
+        imported_survey_json = workbook_to_json(
+            workbook_dict=ss_structure, warnings=warnings
+        )
+        # ideally, when all these tests are working, this would be refactored as well
         survey = create_survey_element_from_dict(imported_survey_json)
-        survey.name = kwargs.get("name", "data")
-        survey.title = kwargs.get("title")
-        survey.id_string = kwargs.get("id_string")
+        survey.name = coalesce(name, "data")
+        survey.title = title
+        survey.id_string = id_string
 
         return survey
 
@@ -119,106 +142,133 @@ class PyxformMarkdown:
             assert not os.path.isfile(tmp.name)
 
     @staticmethod
-    def _autoname_inputs(kwargs):
+    def _autoname_inputs(
+        name: Optional[str] = None,
+        title: Optional[str] = None,
+        id_string: Optional[str] = None,
+    ) -> Dict[str, str]:
         """
-        title and name are necessary for surveys, but not always convenient to
-        include in test cases, so this will pull a default value
-        from the stack trace.
+        Fill in any blank inputs with default values.
         """
-        if "name" not in kwargs.keys():
-            kwargs["name"] = "test_name"
-        if "title" not in kwargs.keys():
-            kwargs["title"] = "test_title"
-        if "id_string" not in kwargs.keys():
-            kwargs["id_string"] = "test_id"
-
-        return kwargs
+        return {
+            "name": coalesce(name, "test_name"),
+            "title": coalesce(title, "test_title"),
+            "id_string": coalesce(id_string, "test_id"),
+        }
 
 
 class PyxformTestCase(PyxformMarkdown, TestCase):
     maxDiff = None
 
-    def assertPyxformXform(self, **kwargs):
+    def assertPyxformXform(
+        self,
+        # Survey input
+        md: str = None,
+        ss_structure: Dict = None,
+        survey: "Survey" = None,
+        # XForm assertions
+        xml__xpath_match: Iterable[str] = None,
+        xml__xpath_exact: Iterable[Tuple[str, Set[str]]] = None,
+        xml__xpath_count: Iterable[Tuple[str, int]] = None,
+        # XForm assertions - deprecated
+        xml__contains: Iterable[str] = None,
+        xml__excludes: Iterable[str] = None,
+        model__contains: Iterable[str] = None,
+        model__excludes: Iterable[str] = None,
+        itext__contains: Iterable[str] = None,
+        itext__excludes: Iterable[str] = None,
+        instance__contains: Iterable[str] = None,
+        # Errors assertions
+        error__contains: Iterable[str] = None,
+        error__not_contains: Iterable[str] = None,
+        odk_validate_error__contains: Iterable[str] = None,
+        warnings__contains: Iterable[str] = None,
+        warnings__not_contains: Iterable[str] = None,
+        warnings_count: Optional[int] = None,
+        errored: bool = False,
+        # Optional extras
+        name: str = None,
+        id_string: str = None,
+        title: str = None,
+        warnings: List[str] = None,
+        run_odk_validate: bool = False,
+        debug: bool = False,
+    ):
         """
-        PyxformTestCase.assertPyxformXform() named arguments:
-        -----------------------------------------------------
+        One survey input:
+        :param md: a markdown formatted xlsform (easy to read in code). Escape a literal
+          pipe value with a single back-slash.
+        :param ss_structure: a dictionary with sheets and their contents. Best used in
+          cases where testing whitespace and cells' type is important.
+        :param survey: easy for reuse within a test
+        # Note: XLS is not implemented at this time. You can use builder to create a
+        pyxform Survey object
 
-        one of these possible survey input types
-          * md: (str) a markdown formatted xlsform (easy to read in code)
-                [consider a plugin to help with formatting md tables,
-                 e.g. https://github.com/vkocubinsky/SublimeTableEditor].
-                Escape a literal pipe value with a single back-slash.
-          * ss_structure: (dict) a python dictionary with sheets and their
-                contents. best used in cases where testing whitespace and
-                cells' type is important
-          * survey: (pyxform.survey.Survey) easy for reuse within a test
-          # Note: XLS is not implemented at this time. You can use builder to
-          create a pyxform Survey object
+        One or more XForm assertions:
+        :param xml__xpath_exact: A list of tuples where the first tuple element is an
+          XPath expression and the second tuple element is a set of exact string match
+          results that are expected. E.g. `[(".//some_xpath", {"match1", "match2"}), ...]`
+        :param xml__xpath_count: A list of tuples where the first tuple element is an
+          XPath expression and the second tuple element is the integer number of match
+          results that are expected. E.g. `[(".//some_xpath", 1), (".//an_xpath", 2)]`
+        :param xml__xpath_match: A list of XPath expression strings for which exactly one
+          match result each is expected. Effectively a shortcut for xml__xpath_count with
+          a count of 1. E.g. `[".//some_xpath", ".//an_xpath"]`
 
-        one or many of these string "matchers":
-          * xml__contains: an array of strings which exist in the
-                resulting xml. [xml|model|instance|itext]_excludes are also supported.
-          * error__contains: a list of strings which should exist in the error
-          * error__not_contains: a list of strings which should not exist in the error
-          * odk_validate_error__contains: list of strings; run_odk_validate must be set
-          * warnings__contains: a list of strings which should exist in the warnings
-          * warnings__not_contains: a list of strings which should not exist in the warnings
-          * warnings_count: the number of expected warning messages
-          * xml__excludes: an array of strings which should not exist in the resulting
-               xml. [xml|model|instance|itext]_excludes are also supported.
-          * xml__xpath_exact: A list of tuples where the first tuple element is an XPath
-               expression and the second tuple element is a set of exact string match
-               results that are expected.
-          * xml__xpath_count: A list of tuples where the first tuple element is an XPath
-               expression and the second tuple element is the integer number of match
-               results that are expected.
-          * xml__xpath_match: A list of XPath expression strings for which exactly one
-               match result each is expected. Effectively a shortcut for
-               xml__xpath_count with a count of 1.
-
-        For each of the xpath_* matchers above, if the XPath expression is looking for an
+        For each of the xpath_* assertions above, if the XPath expression looks for an
         element in the 'default' namespace (xforms) then use an 'x' namespace prefix for
         the element. For example to find input nodes in the body: ".//h:body/x:input".
-        This 'x' prefix is not required for attributes. When writing a xpath_* test, use
-        debug=True to show the XPath match results.
+        This 'x' prefix is not required for attributes. When writing a xpath_* test, the
+        option debug=True can be used to show the XPath match results.
 
-        optional other parameters passed to pyxform:
-          * errored: (bool) if the xlsform is not supposed to compile,
-                this must be True
-          * name: (str) a valid xml tag to be used as the form name
-          * id_string: (str)
-          * title: (str)
-          * run_odk_validate: (bool) when True, runs ODK Validate process
-                Default value = False because it slows down tests
-          * warnings: (list) a list to use for storing warnings for inspection.
-          * debug: (bool) when True, log details of the test to stdout. Details include
-                the input survey markdown, the XML document, XPath match strings.
+        XForm assertions that should not be used in new tests:
+        :param xml__contains: Strings that should which exist in the XForm.
+        :param xml__excludes: Strings that should not exist in the XForm.
+        :param model__contains: Strings that should exist in the XForm model.
+        :param model__excludes: Strings that should not exist in the XForm model.
+        :param itext__contains: Strings that should exist in the XForm itext.
+        :param itext__excludes: Strings that should not exist in the XForm itext.
+        :param instance__contains: Strings that should exist in the XForm main instance.
+
+        One or more Pyxform errors assertions:
+        :param error__contains: Strings which should exist in the PyxformError.
+        :param error__not_contains: Strings which should not exist in the PyxformError.
+        :param odk_validate_error__contains: Strings which should exist in the ODK
+          Validate error. The parameter `run_odk_validate` must be set for this to work.
+        :param warnings__contains: Strings which should exist in the warnings.
+        :param warnings__not_contains: Strings which should not exist in the warnings.
+        :param warnings_count: the number of expected warning messages.
+        :param errored: If True, it is expected that a PyxformError will be raised.
+
+        Optional extra parameters:
+        :param name: a valid xml tag, for the root element in the XForm main instance.
+        :param id_string: an identifier, for the XForm main instance @id attribute.
+        :param title: a name, for the XForm header title.
+        :param warnings: a list to use for storing warnings for inspection.
+        :param run_odk_validate: If True, run ODK Validate on the XForm output.
+        :param debug: If True, log details of the test to stdout. Details include the
+          input survey markdown, the XML document, XPath match strings.
         """
-        debug = kwargs.get("debug", False)
-        expecting_invalid_survey = kwargs.get("errored", False)
         errors = []
-        warnings = kwargs.get("warnings", [])
+        warnings = coalesce(warnings, [])
         xml_nodes = {}
 
-        run_odk_validate = kwargs.get("run_odk_validate", False)
-        odk_validate_error__contains = kwargs.get("odk_validate_error__contains", [])
+        odk_validate_error__contains = coalesce(odk_validate_error__contains, [])
         survey_valid = True
 
         try:
-            if "md" in kwargs.keys():
-                kwargs = self._autoname_inputs(kwargs)
+            if md is not None:
                 survey = self.md_to_pyxform_survey(
-                    kwargs.get("md"), kwargs, warnings=warnings
-                )
-            elif "ss_structure" in kwargs.keys():
-                kwargs = self._autoname_inputs(kwargs)
-                survey = self._ss_structure_to_pyxform_survey(
-                    kwargs.get("ss_structure"),
-                    kwargs,
+                    md_raw=md,
                     warnings=warnings,
+                    **self._autoname_inputs(name=name, title=title, id_string=id_string),
                 )
-            else:
-                survey = kwargs.get("survey")
+            elif ss_structure is not None:
+                survey = self._ss_structure_to_pyxform_survey(
+                    ss_structure=ss_structure,
+                    warnings=warnings,
+                    **self._autoname_inputs(name=name, title=title, id_string=id_string),
+                )
 
             xml = survey._to_pretty_xml()
             root = etree.fromstring(xml.encode("utf-8"))
@@ -247,7 +297,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 if _r:
                     return _r[0]
 
-                return False
+                return None
 
             for _n in ["model", "instance", "itext"]:
                 xml_nodes[_n] = _pull_xml_node_from_root(_n)
@@ -264,13 +314,17 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
             if debug:
                 logger.debug("<xml unavailable />")
                 logger.debug("ERROR: '%s'", errors[0])
+            if not errored:
+                raise PyxformTestError(
+                    "Expected valid survey but compilation failed. Try correcting the "
+                    "error with 'debug=True', setting 'errored=True', and or optionally "
+                    "'error__contains=[...]'\nError(s): " + "\n".join(errors)
+                )
         except ODKValidateError as e:
             if not odk_validate_error__contains:
                 raise PyxformTestError(
-                    "ODK Validate error was thrown but "
-                    + "'odk_validate_error__contains'"
-                    + " was empty:"
-                    + str(e)
+                    "ODK Validate error was thrown but 'odk_validate_error__contains' "
+                    "was empty: " + str(e)
                 )
             for v_err in odk_validate_error__contains:
                 self.assertContains(
@@ -278,115 +332,90 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                 )
 
         if survey_valid:
+            if errored:
+                raise PyxformTestError("Expected survey to be invalid.")
 
-            def _check(keyword, verb):
-                verb_str = "%s__%s" % (keyword, verb)
+            xml_nodes_str = {}
 
-                bad_kwarg = "%s_%s" % (code, verb)
-                if bad_kwarg in kwargs:
-                    good_kwarg = "%s__%s" % (code, verb)
-                    raise SyntaxError(
-                        ("'%s' is not a valid parameter. " "Use double underscores: '%s'")
-                        % (bad_kwarg, good_kwarg)
+            def get_xml_nodes_str(node_key: str) -> str:
+                if node_key not in xml_nodes_str:
+                    xml_nodes_str[node_key] = etree.tostring(
+                        xml_nodes[node_key], encoding=str, pretty_print=True
                     )
+                return xml_nodes_str[node_key]
 
-                def check_content(content, expected):
-                    if content is None:
-                        self.fail(msg="No '{}' found in document.".format(keyword))
-                    cstr = etree.tostring(content, encoding=str, pretty_print=True)
-                    matcher_context = MatcherContext(
-                        debug=debug,
-                        nsmap_xpath=final_nsmap_xpath,
-                        nsmap_subs=final_nsmap_subs,
-                        content_str=cstr,
-                    )
-                    for idx, i in enumerate(expected, start=1):
-                        if verb == "contains":
-                            self.assertContains(cstr, i, msg_prefix=keyword)
-                        elif verb == "excludes":
-                            self.assertNotContains(cstr, i, msg_prefix=keyword)
-                        elif verb == "xpath_exact":
-                            self.assert_xpath_exact(
-                                matcher_context=matcher_context,
-                                content=content,
-                                xpath=i[0],
-                                expected=i[1],
-                                case_num=idx,
-                            )
-                        elif verb == "xpath_count":
-                            self.assert_xpath_count(
-                                matcher_context=matcher_context,
-                                content=content,
-                                xpath=i[0],
-                                expected=i[1],
-                                case_num=idx,
-                            )
-                        elif verb == "xpath_match":
-                            self.assert_xpath_count(
-                                matcher_context=matcher_context,
-                                content=content,
-                                xpath=i,
-                                expected=1,
-                                case_num=idx,
-                            )
+            string_test_specs = (
+                (xml__contains, "xml", self.assertContains),
+                (xml__excludes, "xml", self.assertNotContains),
+                (instance__contains, "instance", self.assertContains),
+                (model__contains, "model", self.assertContains),
+                (model__excludes, "model", self.assertNotContains),
+                (itext__contains, "itext", self.assertContains),
+                (itext__excludes, "itext", self.assertNotContains),
+            )
 
-                return verb_str, check_content
+            for test_spec, key, test_func in string_test_specs:
+                if test_spec is not None:
+                    for i in test_spec:
+                        test_func(content=get_xml_nodes_str(key), text=i, msg_prefix=key)
 
-            if "body_contains" in kwargs or "body__contains" in kwargs:
-                raise SyntaxError(
-                    "Invalid parameter: 'body__contains'." "Use 'xml__contains' instead"
+            def get_xpath_matcher_context():
+                return MatcherContext(
+                    debug=debug,
+                    nsmap_xpath=final_nsmap_xpath,
+                    nsmap_subs=final_nsmap_subs,
+                    content_str=get_xml_nodes_str("xml"),
                 )
 
-            for code in ["xml", "instance", "model", "itext"]:
-                for _verb in ["contains", "excludes"]:
-                    (code__str, checker) = _check(code, _verb)
-                    if kwargs.get(code__str):
-                        checker(xml_nodes[code], kwargs[code__str])
+            if xml__xpath_exact is not None:
+                xpath_matcher = get_xpath_matcher_context()
+                for idx, i in enumerate(xml__xpath_exact, start=1):
+                    self.assert_xpath_exact(
+                        matcher_context=xpath_matcher,
+                        content=xml_nodes["xml"],
+                        xpath=i[0],
+                        expected=i[1],
+                        case_num=idx,
+                    )
 
-            for xpath_verb in ("xpath_exact", "xpath_count", "xpath_match"):
-                code__str, checker = _check("xml", xpath_verb)
-                if kwargs.get(code__str) is not None:
-                    checker(xml_nodes["xml"], kwargs[code__str])
+            if xml__xpath_count is not None:
+                xpath_matcher = get_xpath_matcher_context()
+                for idx, i in enumerate(xml__xpath_count, start=1):
+                    self.assert_xpath_count(
+                        matcher_context=xpath_matcher,
+                        content=xml_nodes["xml"],
+                        xpath=i[0],
+                        expected=i[1],
+                        case_num=idx,
+                    )
 
-        if not survey_valid and not expecting_invalid_survey:
-            raise PyxformTestError(
-                "Expected valid survey but compilation failed. "
-                "Try correcting the error with 'debug=True', "
-                "setting 'errored=True', "
-                "and or optionally 'error__contains=[...]'"
-                "\nError(s): " + "\n".join(errors)
-            )
-        elif survey_valid and expecting_invalid_survey:
-            raise PyxformTestError("Expected survey to be invalid.")
+            if xml__xpath_match is not None:
+                xpath_matcher = get_xpath_matcher_context()
+                for idx, i in enumerate(xml__xpath_match, start=1):
+                    self.assert_xpath_count(
+                        matcher_context=xpath_matcher,
+                        content=xml_nodes["xml"],
+                        xpath=i,
+                        expected=1,
+                        case_num=idx,
+                    )
 
-        search_test_kwargs = (
-            "error__contains",
-            "error__not_contains",
-            "warnings__contains",
-            "warnings__not_contains",
+        problem_test_specs = (
+            (error__contains, "errors", errors, self.assertContains),
+            (error__not_contains, "errors", errors, self.assertNotContains),
+            (warnings__contains, "warnings", warnings, self.assertContains),
+            (warnings__not_contains, "warnings", warnings, self.assertNotContains),
         )
-        for k in search_test_kwargs:
-            if k not in kwargs:
-                continue
-            if k.endswith("__contains"):
-                assertion = self.assertContains
-            elif k.endswith("__not_contains"):
-                assertion = self.assertNotContains
-            else:
-                raise PyxformTestError("Unexpected search test kwarg: {}".format(k))
-            if k.startswith("error"):
-                joined = "\n".join(errors)
-            elif k.startswith("warnings"):
-                joined = "\n".join(warnings)
-            else:
-                raise PyxformTestError("Unexpected search test kwarg: {}".format(k))
-            for text in kwargs[k]:
-                assertion(joined, text, msg_prefix=k)
-        if "warnings_count" in kwargs:
-            c = kwargs.get("warnings_count")
-            if not isinstance(c, int):
-                PyxformTestError("warnings_count must be an integer.")
-            self.assertEqual(c, len(warnings))
+        for test_spec, prefix, test_obj, test_func in problem_test_specs:
+            if test_spec is not None:
+                test_str = "\n".join(test_obj)
+                for i in test_spec:
+                    test_func(content=test_str, text=i, msg_prefix=prefix)
+
+        if warnings_count is not None:
+            if not isinstance(warnings_count, int):
+                raise PyxformTestError("warnings_count must be an integer.")
+            self.assertEqual(warnings_count, len(warnings))
 
     @staticmethod
     def _assert_contains(content, text, msg_prefix):

@@ -376,7 +376,6 @@ class TestRepeat(PyxformTestCase):
                 '<itemset nodeset="/data/rep[starts-with( ./name , &quot;b&quot;)]">',
                 '<itemset nodeset="/data/rep[ ./demographics/age  &gt; 18]">',
             ],
-            run_odk_validate=False,
         )
 
     def test_choice_from_previous_repeat_answers_in_child_repeat(self):
@@ -997,7 +996,6 @@ class TestRepeat(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            debug=True,
             xml__xpath_match=[
                 # repeat references existing count element directly.
                 """

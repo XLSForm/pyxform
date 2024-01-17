@@ -90,7 +90,6 @@ class ChoicesSheetTest(PyxformTestCase):
             |          | choices            | 1    |       |
             |          | choices            | 2    |       |
             """,
-            run_odk_validate=False,
             xml__xpath_match=[
                 xpq.body_select1_itemset("a"),
                 """
@@ -120,18 +119,18 @@ class ChoicesSheetTest(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            xml__xpath_contains=[
+            xml__xpath_match=[
                 """
                 /h:html/h:head/x:model/x:instance[@id='choices']/x:root/x:item[
-                  ./x:name[position() = 1 and text() = '1']
-                  and ./x:geometry[position() = 2]
+                  ./x:name = ./x:*[position() = 1 and text() = '1']
+                  and ./x:geometry = ./x:*[position() = 2 and text() = '46.5841618 7.0801379 0 0']
                 ]
-                """
+                """,
                 """
                 /h:html/h:head/x:model/x:instance[@id='choices']/x:root/x:item[
-                  ./x:name[position() = 1 and text() = '2']
-                  and ./x:geometry[position() = 2]
+                  ./x:name = ./x:*[position() = 1 and text() = '2']
+                  and ./x:geometry = ./x:*[position() = 2 and text() = '35.8805082 76.515057 0 0']
                 ]
-                """
+                """,
             ],
         )

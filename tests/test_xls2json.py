@@ -59,7 +59,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 name="test",
                 md=CHOICES.format(name=n),
-                errored=False,
                 warnings_count=0,
             )
 
@@ -70,7 +69,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 name="test",
                 md=EXTERNAL_CHOICES.format(name=n),
-                errored=False,
                 warnings_count=0,
             )
 
@@ -81,7 +79,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 name="test",
                 md=SETTINGS.format(name=n),
-                errored=False,
                 warnings_count=0,
             )
 
@@ -92,7 +89,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 name="test",
                 md=SURVEY.format(name=n),
-                errored=False,
                 warnings_count=0,
             )
 
@@ -127,7 +123,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 name="test",
                 md=SETTINGS.format(name=n),
-                errored=False,
                 warnings_count=0,
             )
 
@@ -173,7 +168,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | list_name     | name      | label |
             |          | l1            | 1         | C1    |
             """,
-            errored=False,
             warnings_count=0,
         )
 
@@ -234,7 +228,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | l1                     | 1         | 1     |               |
             |          | l1                     | 2         | 2     |               |
             """,
-            errored=False,
             warnings_count=0,
         )
 
@@ -272,7 +265,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 name="test",
                 md=SETTINGS.format(name=n),
-                errored=False,
                 warnings__contains=[self.err_similar_found, "'{}'".format(n)],
             )
 
@@ -291,7 +283,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | id_string | title     |       |
             |          | my_id     | My Survey |       |
             """,
-            errored=False,
             warnings_count=0,
         )
 
@@ -310,7 +301,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | id_string | title     |       |
             |          | my_id     | My Survey |       |
             """,
-            errored=False,
             warnings__contains=[self.err_similar_found, "'setting'", "'stetings'"],
         )
 
@@ -341,7 +331,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |         | type      | name      | label |
             |         | text      | q1        | Q1    |
             """,
-            errored=False,
             warnings_count=0,
         )
 
@@ -395,7 +384,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 name="test",
                 md=SETTINGS.format(name=n),
-                errored=False,
                 warnings_count=0,
             )
 
@@ -430,7 +418,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | id_string     | title     |
             |          | my_id         | My Survey |
             """,
-            errored=False,
             warnings_count=0,
         )
 
@@ -600,7 +587,6 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | list_name | name      | label |
             |          | l1        | c1        | One   |
             """,
-            errored=False,
             warnings_count=0,
         )
 

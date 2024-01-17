@@ -132,7 +132,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
     def test_randomized_select_one_bad_param(self):
         self.assertPyxformXform(
             name="data",
-            errored="true",
+            errored=True,
             md="""
             | survey |                    |         |       |                |
             |        | type               | name    | label | parameters     |
@@ -152,7 +152,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
     def test_randomized_select_one_bad_randomize(self):
         self.assertPyxformXform(
             name="data",
-            errored="true",
+            errored=True,
             md="""
             | survey |                    |         |       |                  |
             |        | type               | name    | label | parameters       |
@@ -171,7 +171,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
     def test_randomized_select_one_bad_seed(self):
         self.assertPyxformXform(
             name="data",
-            errored="true",
+            errored=True,
             md="""
             | survey |                    |         |       |                             |
             |        | type               | name    | label | parameters                  |
@@ -190,7 +190,7 @@ class RandomizeItemsetsTest(PyxformTestCase):
     def test_randomized_select_one_seed_without_randomize(self):
         self.assertPyxformXform(
             name="data",
-            errored="true",
+            errored=True,
             md="""
             | survey |                    |         |       |                  |
             |        | type               | name    | label | parameters       |

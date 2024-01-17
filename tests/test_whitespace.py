@@ -29,7 +29,7 @@ class WhitespaceTest(PyxformTestCase):
           """
         self.assertPyxformXform(
             md=md,
-            xml__xpath_contains=[
+            xml__xpath_match=[
                 """
                 /h:html/h:head/x:model/x:submission[
                   @action='https://odk.ona.io/random_person/submission'

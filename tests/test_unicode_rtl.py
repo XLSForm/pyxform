@@ -13,7 +13,6 @@ class UnicodeStrings(PyxformTestCase):
             |        | type | name    | label |
             |        | text | snowman | ☃     |
             """,
-            errored=False,
             xml__contains=["<label>☃</label>"],
         )
 
@@ -49,8 +48,6 @@ class UnicodeStrings(PyxformTestCase):
                 ],
                 "settings": [{"version": "q(‘-’)p"}],
             },
-            errored=False,
-            validate=False,
             name="quoth",
             xml__contains=[
                 "'single-quoted",

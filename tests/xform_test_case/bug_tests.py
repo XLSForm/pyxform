@@ -151,7 +151,8 @@ class DefaultTimeTest(XFormTestCase):
 class ValidateWrapper(unittest.TestCase):
     maxDiff = None
 
-    def runTest(self):
+    @staticmethod
+    def runTest():
         filename = "ODKValidateWarnings.xlsx"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         # Get the xform output path:

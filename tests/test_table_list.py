@@ -41,5 +41,4 @@ class TableListTest(PyxformTestCase):
             name="table-list-appearance-mod",
             md=MD,
             xml__contains=[XML_CONTAINS],
-            debug=False,
         )

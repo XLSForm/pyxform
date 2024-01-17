@@ -47,7 +47,6 @@ class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
         """
         self.assertPyxformXform(
             ss_structure={"survey": [{"type": "note", "name": "n1", "label": "Note 1"}]},
-            errored=False,
         )
 
 
@@ -63,7 +62,6 @@ class XlsFormPyxformSurveyTest(PyxformTestCase):
             |        | type | name | label |
             |        | note | q    | Q     |
             """,
-            {},
             autoname=True,
         )
 

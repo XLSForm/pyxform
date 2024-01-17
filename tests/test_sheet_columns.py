@@ -28,7 +28,6 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
         self.assertPyxformXform(
             name="invalidcols",
             ss_structure={"survey": [{"value": "q1", "type": "text", "label": "label"}]},
-            errored=False,
         )
 
     def test_label_or_hint__must_be_provided(self):
@@ -101,8 +100,6 @@ class InvalidSurveyColumnsTests(PyxformTestCase):
             |        | integer | age     | the age       |
             |        | text    | gender  | the gender    |
             """,
-            errored=False,
-            debug=False,
         )
 
 
@@ -111,7 +108,8 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
     Invalid choice sheet column tests
     """
 
-    def _simple_choice_ss(self, choice_sheet=None):
+    @staticmethod
+    def _simple_choice_ss(choice_sheet=None):
         """
         Return simple choices sheet
         """
@@ -142,7 +140,6 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
                     {"list_name": "l1", "name": "c2", "label": "choice 2"},
                 ]
             ),
-            errored=False,
         )
 
     def test_invalid_choices_sheet_fails(self):
@@ -175,7 +172,6 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
                     {"bad_column": "l1", "name": "l1c1", "label": "choice 2"},
                 ]
             ),
-            debug=False,
             errored=True,
             # some basic keywords that should be in the error:
             error__contains=["choices", "name", "list_name"],

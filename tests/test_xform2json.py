@@ -30,11 +30,7 @@ class TestXForm2JSON(PyxformTestCase):
         |         | fruits                 | 3     | Apple      | Pomme    |
         """
 
-        survey = self.md_to_pyxform_survey(
-            md_raw=md,
-            kwargs={"id_string": "id", "name": "multi-language", "title": "some-title"},
-            autoname=False,
-        )
+        survey = self.md_to_pyxform_survey(md_raw=md)
         expected = survey.to_xml()
         generated_json = survey.to_json()
 
