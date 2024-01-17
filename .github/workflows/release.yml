@@ -12,14 +12,14 @@ jobs:
         python: ['3.8']
         os: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: Python cache with dependencies.
         id: python-cache
         with:
