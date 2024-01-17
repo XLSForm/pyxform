@@ -95,7 +95,7 @@ def truncate_temp_files(temp_dir):
                 truncate_temp_files(f.path)
             # Check still in temp directory
             elif f.path.startswith(temp_root):
-                with open(f.path, mode="w") as _:
+                with open(f.path, mode="w", encoding="utf-8") as _:
                     pass
 
 

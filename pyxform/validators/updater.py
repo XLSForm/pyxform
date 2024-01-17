@@ -96,7 +96,7 @@ class _UpdateHandler:
         Read the JSON file to a string.
         """
         _UpdateHandler._check_path(file_path=file_path)
-        with open(file_path) as in_file:
+        with open(file_path, encoding="utf-8") as in_file:
             return json.load(in_file)
 
     @staticmethod
@@ -104,7 +104,7 @@ class _UpdateHandler:
         """
         Save the JSON data to a file.
         """
-        with open(file_path, mode="w", newline="\n") as out_file:
+        with open(file_path, mode="w", encoding="utf-8", newline="\n") as out_file:
             data = json.dumps(content, indent=2, sort_keys=True)
             out_file.write(str(data))
 
@@ -114,7 +114,7 @@ class _UpdateHandler:
         Read the .last_check file.
         """
         _UpdateHandler._check_path(file_path=file_path)
-        with open(file_path) as in_file:
+        with open(file_path, encoding="utf-8") as in_file:
             first_line = in_file.readline()
         try:
             last_check = datetime.strptime(first_line, UTC_FMT)
@@ -128,7 +128,7 @@ class _UpdateHandler:
         """
         Write the .last_check file.
         """
-        with open(file_path, mode="w", newline="\n") as out_file:
+        with open(file_path, mode="w", encoding="utf-8", newline="\n") as out_file:
             out_file.write(str(content.strftime(UTC_FMT)))
 
     @staticmethod

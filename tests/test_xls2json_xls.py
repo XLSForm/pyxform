@@ -34,7 +34,9 @@ class BasicXls2JsonApiTests(TestCase):
         with open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
         # Compare with the expected output:
-        with open(expected_output_path) as expected, open(output_path) as observed:
+        with open(expected_output_path, encoding="utf-8") as expected, open(
+            output_path, encoding="utf-8"
+        ) as observed:
             self.assertEqual(json.load(expected), json.load(observed))
 
     def test_hidden(self):
@@ -126,7 +128,9 @@ class BasicXls2JsonApiTests(TestCase):
         with open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
         # Compare with the expected output:
-        with open(expected_output_path) as expected, open(output_path) as observed:
+        with open(expected_output_path, encoding="utf-8") as expected, open(
+            output_path, encoding="utf-8"
+        ) as observed:
             self.assertEqual(json.load(expected), json.load(observed))
 
     def test_choice_filter_choice_fields(self):

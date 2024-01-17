@@ -30,5 +30,7 @@ class AttributeColumnsTest(XFormTestCase):
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with open(expected_output_path) as expected, open(self.output_path) as observed:
+        with open(expected_output_path, encoding="utf-8") as expected, open(
+            self.output_path, encoding="utf-8"
+        ) as observed:
             self.assertXFormEqual(expected.read(), observed.read())

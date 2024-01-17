@@ -1681,7 +1681,7 @@ class SurveyReader(SpreadsheetReader):
 
     def print_warning_log(self, warn_out_file):
         # Open file to print warning log to.
-        warn_out = open(warn_out_file, "w")
+        warn_out = open(warn_out_file, mode="w", encoding="utf-8")
         warn_out.write("\n".join(self._warnings))
 
 

@@ -77,7 +77,7 @@ class TestXMLParse(TestCase):
         """Should return root node from XML file path."""
         xml_path = os.path.join(test_output.PATH, "test_try_parse.xml")
         self.tidy_file = xml_path
-        with open(xml_path, "w") as xml_file:
+        with open(xml_path, mode="w", encoding="utf-8") as xml_file:
             xml_file.write(self.xml)
         root = _try_parse(xml_path)
         self.assertEqual("a", root.tag)
@@ -97,7 +97,7 @@ class TestXMLParse(TestCase):
         """Should raise XMLSyntaxError: file exists but content is not valid."""
         xml_path = os.path.join(test_output.PATH, "test_try_parse.xml")
         self.tidy_file = xml_path
-        with open(xml_path, "w") as xml_file:
+        with open(xml_path, mode="w", encoding="utf-8") as xml_file:
             xml_file.write("not valid xml :(")
         with self.assertRaises(ParseError):
             _try_parse(xml_path)

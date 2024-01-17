@@ -441,7 +441,7 @@ class TestSelectOneExternal(PyxformTestCase):
             self.assertIn(log_msg, [r.message for r in log.records])
             self.assertTrue(os.path.exists(itemsets_path))
 
-            with open(itemsets_path) as csv:
+            with open(itemsets_path, encoding="utf-8") as csv:
                 rows = csv.readlines()
             # Should have the non-empty headers in the first row.
             self.assertEqual('"list_name","name","state","city"\n', rows[0])

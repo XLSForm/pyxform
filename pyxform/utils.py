@@ -192,7 +192,7 @@ def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
         return False
     if not sheet or sheet.nrows < 2:
         return False
-    with open(csv_path, "w", newline="") as f:
+    with open(csv_path, mode="w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         mask = [v and len(v.strip()) > 0 for v in sheet.row_values(0)]
         for row_idx in range(sheet.nrows):
@@ -220,7 +220,7 @@ def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
     except KeyError:
         return False
 
-    with open(csv_path, "w", newline="") as f:
+    with open(csv_path, mode="w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         mask = [not is_empty(cell.value) for cell in sheet[1]]
         for row in sheet.rows:
@@ -260,7 +260,8 @@ def get_languages_with_bad_tags(languages):
     """
     Returns languages with invalid or missing IANA subtags.
     """
-    with open(os.path.join(os.path.dirname(__file__), "iana_subtags.txt")) as f:
+    path = os.path.join(os.path.dirname(__file__), "iana_subtags.txt")
+    with open(path, encoding="utf-8") as f:
         iana_subtags = f.read().splitlines()
 
     lang_code_regex = re.compile(r"\((.*)\)$")
