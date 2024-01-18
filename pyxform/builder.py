@@ -205,8 +205,28 @@ class SurveyElementBuilder:
         choice_list = d.get(const.CHOICES, d.get(const.CHILDREN, []))
         if len(choice_list) <= 0:
             raise PyXFormError("There should be choices for this question.")
-        if OR_OTHER_CHOICE not in choice_list:
-            choice_list.append(OR_OTHER_CHOICE)
+        if not any(c[const.NAME] == OR_OTHER_CHOICE[const.NAME] for c in choice_list):
+            choice_list.append(SurveyElementBuilder._get_or_other_choice(choice_list))
+
+    @staticmethod
+    def _get_or_other_choice(
+        choice_list: List[Dict[str, Any]]
+    ) -> Dict[str, Union[str, Dict]]:
+        """
+        If the choices have any translations, return an OR_OTHER choice for each lang.
+        """
+        if any(isinstance(c.get(const.LABEL), dict) for c in choice_list):
+            langs = set(
+                lang
+                for c in choice_list
+                for lang in c[const.LABEL]
+                if isinstance(c.get(const.LABEL), dict)
+            )
+            return {
+                const.NAME: OR_OTHER_CHOICE[const.NAME],
+                const.LABEL: {lang: OR_OTHER_CHOICE[const.LABEL] for lang in langs},
+            }
+        return OR_OTHER_CHOICE
 
     @staticmethod
     def _add_none_option_to_select_all_that_apply(d_copy):
@@ -268,9 +288,12 @@ class SurveyElementBuilder:
                 if (
                     itemset_choices is not None
                     and isinstance(itemset_choices, list)
-                    and OR_OTHER_CHOICE not in itemset_choices
+                    and not any(
+                        c[const.NAME] == OR_OTHER_CHOICE[const.NAME]
+                        for c in itemset_choices
+                    )
                 ):
-                    itemset_choices.append(OR_OTHER_CHOICE)
+                    itemset_choices.append(self._get_or_other_choice(itemset_choices))
                 # This is required for builder_tests.BuilderTests.test_loop to pass.
                 self._add_other_option_to_multiple_choice_question(d=child)
             if survey_element:

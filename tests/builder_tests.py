@@ -130,7 +130,7 @@ class BuilderTests(TestCase):
                 "sexes": [
                     {"label": {"English": "Male"}, "name": "male"},
                     {"label": {"English": "Female"}, "name": "female"},
-                    {"label": "Other", "name": "other"},
+                    {"label": {"English": "Other"}, "name": "other"},
                 ]
             },
             "children": [
@@ -145,7 +145,7 @@ class BuilderTests(TestCase):
                         # json2xform half that will need to change)
                         {"name": "male", "label": {"English": "Male"}},
                         {"name": "female", "label": {"English": "Female"}},
-                        {"name": "other", "label": "Other"},
+                        {"name": "other", "label": {"English": "Other"}},
                     ],
                 },
                 {
@@ -233,7 +233,7 @@ class BuilderTests(TestCase):
                         "name": "open_pit_latrine",
                     },
                     {"label": {"english": "Bucket system"}, "name": "bucket_system"},
-                    {"label": "Other", "name": "other"},
+                    {"label": {"english": "Other"}, "name": "other"},
                 ]
             },
             "children": [
@@ -262,7 +262,7 @@ class BuilderTests(TestCase):
                         #    u'name': u'none',
                         #    u'label': u'None',
                         #    },
-                        {"name": "other", "label": "Other"},
+                        {"name": "other", "label": {"english": "Other"}},
                     ],
                 },
                 {
@@ -330,7 +330,7 @@ class BuilderTests(TestCase):
                                     "type": "integer",
                                 }
                             ],
-                            "label": "Other",
+                            "label": {"english": "Other"},
                             "name": "other",
                             "type": "group",
                         },
