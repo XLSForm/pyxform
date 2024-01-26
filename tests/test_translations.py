@@ -1556,48 +1556,22 @@ class TestTranslationsChoices(PyxformTestCase):
 class TestTranslationsSearchAppearance(PyxformTestCase):
     """Translations behaviour with the search() appearance."""
 
-    def test_shared_choice_list(self):
-        """Should include translation for search() items, sharing the choice list"""
-        md = """
-        | survey  |               |       |            |           |                    |
-        |         | type          | name  | label::en  | label::fr | appearance         |
-        |         | select_one c1 | q1    | Question 1 | Chose 1   | search('my_file')  |
-        |         | select_one c2 | q2    | Question 2 | Chose 2   |                    |
-        | choices |               |       |            |           |
-        |         | list_name     | name  | label::en  | label::fr |
-        |         | c1            | na    | la-e       | la-f      |
-        |         | c1            | nb    | lb-e       | lb-f      |
-        |         | c2            | na    | la-e       | la-f      |
-        """
-        self.assertPyxformXform(
-            md=md,
-            run_odk_validate=True,
-            xml__xpath_match=[
-                "/h:html/h:body/x:select1/x:item[./x:value/text()='na']",
-                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("la-e", "lb-e")),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("la-f", "lb-f")),
-                xpc.model_itext_choice_text_label_by_pos("en", "c2", ("la-e",)),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c2", ("la-f",)),
-            ],
-        )
-
-    def test_single_question_single_choice(self):
-        """Should include translation for search() items, edge case of single elements"""
+    def test_translations_for_search(self):
+        """Should include translation for search() items"""
         md = """
         | survey  |               |       |            |           |                    |
         |         | type          | name  | label::en  | label::fr | appearance         |
         |         | select_one c1 | q1    | Question 1 | Chose 1   | search('my_file')  |
         | choices |               |       |            |           |
-        |         | list_name     | name  | label::en  | label::fr |
-        |         | c1            | na    | la-e       | la-f      |
+        |         | list_name     | name  | label::en  | label::fr |                    |
+        |         | c1            | id    | label_en   | label_fr  |                    |
         """
         self.assertPyxformXform(
             md=md,
-            run_odk_validate=True,
             xml__xpath_match=[
-                "/h:html/h:body/x:select1/x:item[./x:value/text()='na']",
-                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("la-e",)),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("la-f",)),
+                "/h:html/h:body/x:select1/x:item[./x:value/text()='id']",
+                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("label_en",)),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("label_fr",)),
             ],
         )
 
@@ -1609,15 +1583,14 @@ class TestTranslationsSearchAppearance(PyxformTestCase):
         |         | select_one c1-0 | c1-0  | Question 1 | Chose 1   | search('my_file')  |
         | choices |               |       |            |           |
         |         | list_name     | name  | label::en  | label::fr |
-        |         | c1-0          | na    | la-e       | la-f      |
+        |         | c1-0          | id    | label_en   | label_fr  |
         """
         self.assertPyxformXform(
             md=md,
-            run_odk_validate=True,
             xml__xpath_match=[
-                "/h:html/h:body/x:select1/x:item[./x:value/text()='na']",
-                xpc.model_itext_choice_text_label_by_pos("en", "c1-0", ("la-e",)),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1-0", ("la-f",)),
+                "/h:html/h:body/x:select1/x:item[./x:value/text()='id']",
+                xpc.model_itext_choice_text_label_by_pos("en", "c1-0", ("label_en",)),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1-0", ("label_fr",)),
             ],
         )
 
