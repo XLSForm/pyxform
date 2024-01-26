@@ -1,5 +1,8 @@
 Pyxform Changelog
 
+v2.0.2, 2024-01-26
+* Generate translations for choice list used with search() by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/690
+
 v2.0.1, 2024-01-22
 * Add itextId node to instance items for choice list names with dashes in multilingual forms by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/680
 * Add test for allowed duplicate choices with translations by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/682
