@@ -31,7 +31,6 @@ from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
 from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
-SEARCH_APPEARANCE_REGEX = re.compile(r"search\(.*?\)")
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -362,19 +361,8 @@ def add_choices_info_to_question(
         choice_filter = ""
     if file_extension is None:
         file_extension = ""
-    try:
-        is_search = bool(
-            SEARCH_APPEARANCE_REGEX.search(
-                question[constants.CONTROL][constants.APPEARANCE]
-            )
-        )
-    except (KeyError, TypeError):
-        is_search = False
 
-    # External selects from a "search" appearance alone don't work in Enketo. In Collect
-    # they must have the "item" elements in the body, rather than in an "itemset".
-    if not is_search:
-        question[constants.ITEMSET] = list_name
+    question[constants.ITEMSET] = list_name
 
     if choice_filter:
         # External selects e.g. type = "select_one_external city".
