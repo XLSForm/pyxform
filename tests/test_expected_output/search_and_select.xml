@@ -12,6 +12,14 @@
           </meta>
         </search_and_select>
       </instance>
+      <instance id="fruits">
+        <root>
+          <item>
+            <name>name_key</name>
+            <label>name</label>
+          </item>
+        </root>
+      </instance>
       <bind nodeset="/search_and_select/fruit" type="string"/>
       <bind nodeset="/search_and_select/note_fruit" readonly="true()" type="string"/>
       <bind jr:preload="uid" nodeset="/search_and_select/meta/instanceID" readonly="true()" type="string"/>

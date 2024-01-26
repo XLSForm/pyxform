@@ -44,6 +44,7 @@ RE_INSTANCE_SECONDARY_REF = re.compile(
 RE_PULLDATA = re.compile(r"(pulldata\s*\(\s*)(.*?),")
 RE_XML_OUTPUT = re.compile(r"\n.*(<output.*>)\n(\s\s)*")
 RE_XML_TEXT = re.compile(r"(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)", re.DOTALL)
+SEARCH_APPEARANCE_REGEX = re.compile(r"search\(.*?\)")
 
 
 class InstanceInfo:
@@ -671,6 +672,35 @@ class Survey(Section):
             dicty[path[0]] = {}
         self._add_to_nested_dict(dicty[path[0]], path[1:], value)
 
+    @staticmethod
+    def _redirect_is_search_itext(element: SurveyElement) -> None:
+        """
+        For selects using the "search()" appearance, redirect itext for in-line items.
+
+        External selects from a "search" appearance alone don't work in Enketo. In Collect
+        they must have the "item" elements in the body, rather than in an "itemset".
+
+        The "itemset" reference is cleared below, so that the element will get in-line
+        items instead of an itemset reference to a secondary instance. The itext ref is
+        passed to the options/choices so they can use the generated translations. This
+        accounts for questions with and without a "search()" appearance sharing choices.
+
+        :param element: A select type question.
+        :return: None, the question/children are modified in-place.
+        """
+        try:
+            is_search = bool(
+                SEARCH_APPEARANCE_REGEX.search(
+                    element[constants.CONTROL][constants.APPEARANCE]
+                )
+            )
+        except (KeyError, TypeError):
+            is_search = False
+        if is_search:
+            element[constants.ITEMSET] = ""
+            for i, opt in enumerate(element.get(constants.CHILDREN, [])):
+                opt["_choice_itext_id"] = f"{element['list_name']}-{i}"
+
     def _setup_translations(self):
         """
         set up the self._translations dict which will be referenced in the
@@ -740,8 +770,10 @@ class Survey(Section):
                 element._itemset_has_media = itemset in itemsets_has_media
                 element._itemset_dyn_label = itemset in itemsets_has_dyn_label
 
+            if element[constants.TYPE] in select_types:
+                self._redirect_is_search_itext(element=element)
             # Skip creation of translations for choices in selects. The creation of these
-            # translations is done futher below in this function.
+            # translations is done above in this function.
             parent = element.get("parent")
             if parent is not None and parent[constants.TYPE] not in select_types:
                 for d in element.get_translations(self.default_language):

@@ -166,6 +166,12 @@ class Option(SurveyElement):
     def xml_control(self):
         raise NotImplementedError()
 
+    def _translation_path(self, display_element):
+        choice_itext_id = self.get("_choice_itext_id")
+        if choice_itext_id is not None:
+            return choice_itext_id
+        return super()._translation_path(display_element=display_element)
+
 
 class MultipleChoiceQuestion(Question):
     def __init__(self, **kwargs):

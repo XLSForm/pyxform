@@ -272,7 +272,8 @@ class SurveyElement(dict):
             and self.to_json_dict() == y.to_json_dict()
         )
 
-    def _translation_path(self, display_element):
+    def _translation_path(self, display_element: str) -> str:
+        """Get an itextId based on the element XPath and display type."""
         return self.get_xpath() + ":" + display_element
 
     def get_translations(self, default_language):
