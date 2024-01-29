@@ -1554,70 +1554,218 @@ class TestTranslationsChoices(PyxformTestCase):
 
 
 class TestTranslationsSearchAppearance(PyxformTestCase):
-    """Translations behaviour with the search() appearance."""
+    """
+    Translations behaviour with the search() appearance.
+
+    The search() appearance is a Collect-only feature, so ODK Validate is run for these
+    tests to try and ensure that the output will be accepted by Collect. In particular,
+    the search() appearance requires in-line (body) items for choices.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.run_odk_validate = True
+
+    @staticmethod
+    def xpath_body_select_search_appearance(
+        qname: str, appearance: str = "search('my_file')"
+    ) -> str:
+        return f"""
+          /h:html/h:body/x:select1[
+            @ref='/test_name/{qname}'
+            and @appearance="{appearance}"
+          ]
+        """
+
+    @staticmethod
+    def xpath_body_select_config_choice(qname: str, cname: str, cvname: str) -> str:
+        return f"""
+          /h:html/h:body/x:select1[@ref='/test_name/{qname}']/x:item[
+            ./x:value/text()='{cvname}'
+            and ./x:label[@ref="jr:itext('{cname}-0')"]
+          ]
+        """
 
     def test_shared_choice_list(self):
-        """Should include translation for search() items, sharing the choice list"""
+        """Should include translation for search() items, when sharing the choice list"""
         md = """
-        | survey  |               |       |            |           |                    |
-        |         | type          | name  | label::en  | label::fr | appearance         |
-        |         | select_one c1 | q1    | Question 1 | Chose 1   | search('my_file')  |
-        |         | select_one c2 | q2    | Question 2 | Chose 2   |                    |
-        | choices |               |       |            |           |
-        |         | list_name     | name  | label::en  | label::fr |
-        |         | c1            | na    | la-e       | la-f      |
-        |         | c1            | nb    | lb-e       | lb-f      |
-        |         | c2            | na    | la-e       | la-f      |
+        | survey  |               |       |            |           |                   |
+        |         | type          | name  | label::en  | label::fr | appearance        |
+        |         | select_one c1 | q1    | Question 1 | Chose 1   | search('my_file') |
+        |         | select_one c1 | q2    | Question 2 | Chose 2   | search('my_file', 'matches', 'filtercol', 'x1') |
+        | choices |               |       |           |           |
+        |         | list_name     | name  | label::en | label::fr |
+        |         | c1            | id    | label_en  | label_fr  |
         """
         self.assertPyxformXform(
             md=md,
-            run_odk_validate=True,
+            run_odk_validate=self.run_odk_validate,
             xml__xpath_match=[
-                "/h:html/h:body/x:select1/x:item[./x:value/text()='na']",
-                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("la-e", "lb-e")),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("la-f", "lb-f")),
-                xpc.model_itext_choice_text_label_by_pos("en", "c2", ("la-e",)),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c2", ("la-f",)),
+                self.xpath_body_select_search_appearance("q1"),
+                self.xpath_body_select_config_choice("q1", "c1", "id"),
+                self.xpath_body_select_search_appearance(
+                    "q2", "search('my_file', 'matches', 'filtercol', 'x1')"
+                ),
+                self.xpath_body_select_config_choice("q2", "c1", "id"),
+                xpc.model_instance_choices_itext("c1", ("id",)),
+                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("label_en",)),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("label_fr",)),
             ],
         )
 
-    def test_single_question_single_choice(self):
-        """Should include translation for search() items, edge case of single elements"""
+    def test_usage_with_other_selects(self):
+        """Should include translation for search() items, when used with other selects"""
         md = """
-        | survey  |               |       |            |           |                    |
-        |         | type          | name  | label::en  | label::fr | appearance         |
-        |         | select_one c1 | q1    | Question 1 | Chose 1   | search('my_file')  |
+        | survey  |               |       |            |           |                   |
+        |         | type          | name  | label::en  | label::fr | appearance        |
+        |         | select_one c1 | q1    | Question 1 | Chose 1   | search('my_file') |
+        |         | select_one c2 | q2    | Question 2 | Chose 2   |                   |
         | choices |               |       |            |           |
-        |         | list_name     | name  | label::en  | label::fr |
-        |         | c1            | na    | la-e       | la-f      |
+        |         | list_name     | name  | label::en | label::fr |
+        |         | c1            | id    | label_en  | label_fr  |
+        |         | c2            | na    | la-e      | la-f      |
+        |         | c2            | nb    | lb-e      | lb-f      |
         """
         self.assertPyxformXform(
             md=md,
-            run_odk_validate=True,
+            run_odk_validate=self.run_odk_validate,
             xml__xpath_match=[
-                "/h:html/h:body/x:select1/x:item[./x:value/text()='na']",
-                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("la-e",)),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("la-f",)),
+                self.xpath_body_select_search_appearance("q1"),
+                self.xpath_body_select_config_choice("q1", "c1", "id"),
+                xpc.model_instance_choices_itext("c1", ("id",)),
+                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("label_en",)),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("label_fr",)),
+                xpc.model_instance_choices_itext("c2", ("na", "nb")),
+                xpc.model_itext_choice_text_label_by_pos("en", "c2", ("la-e", "lb-e")),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c2", ("la-f", "lb-f")),
+            ],
+        )
+
+    def test_usage_with_other_selects__invalid_list_reuse_by_non_search_question(self):
+        """By design, q2 won't pull data but the test is to document output behaviour."""
+        md = """
+        | survey  |               |       |            |           |                   |
+        |         | type          | name  | label::en  | label::fr | appearance        |
+        |         | select_one c1 | q1    | Question 1 | Chose 1   | search('my_file') |
+        |         | select_one c1 | q2    | Question 2 | Chose 2   |                   |
+        | choices |               |       |           |           |
+        |         | list_name     | name  | label::en | label::fr |
+        |         | c1            | id    | label_en  | label_fr  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            run_odk_validate=self.run_odk_validate,
+            xml__xpath_match=[
+                self.xpath_body_select_search_appearance("q1"),
+                self.xpath_body_select_config_choice("q1", "c1", "id"),
+                xpq.body_select1_itemset("q2"),
+                xpc.model_instance_choices_itext("c1", ("id",)),
+                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("label_en",)),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("label_fr",)),
+            ],
+        )
+
+    def test_single_question_usage(self):
+        """Should include translation for search() items, edge case of single question"""
+        md = """
+        | survey  |               |       |            |           |                   |
+        |         | type          | name  | label::en  | label::fr | appearance        |
+        |         | select_one c1 | q1    | Question 1 | Chose 1   | search('my_file') |
+        | choices |               |       |           |           |
+        |         | list_name     | name  | label::en | label::fr |
+        |         | c1            | id    | label_en  | label_fr  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            run_odk_validate=self.run_odk_validate,
+            xml__xpath_match=[
+                self.xpath_body_select_search_appearance("q1"),
+                self.xpath_body_select_config_choice("q1", "c1", "id"),
+                xpc.model_instance_choices_itext("c1", ("id",)),
+                xpc.model_itext_choice_text_label_by_pos("en", "c1", ("label_en",)),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1", ("label_fr",)),
+            ],
+        )
+
+    def test_additional_static_choices(self):
+        """Should include translation for search() items, when adding static choices"""
+        md = """
+        | survey  |               |       |            |           |                   |
+        |         | type          | name  | label::en  | label::fr | appearance        |
+        |         | select_one c1 | q1    | Question 1 | Chose 1   | search('my_file') |
+        | choices |               |       |           |           |
+        |         | list_name     | name  | label::en | label::fr |
+        |         | c1            | id    | label_en  | label_fr  |
+        |         | c1            | 0     | l0-e      | l0-f      |
+        |         | c1            | 1     | l1-e      | l1-f      |
+        """
+        self.assertPyxformXform(
+            md=md,
+            run_odk_validate=self.run_odk_validate,
+            xml__xpath_match=[
+                self.xpath_body_select_search_appearance("q1"),
+                self.xpath_body_select_config_choice("q1", "c1", "id"),
+                xpc.model_instance_choices_itext("c1", ("id", "0", "1")),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "en", "c1", ("label_en", "l0-e", "l1-e")
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "fr", "c1", ("label_fr", "l0-f", "l1-f")
+                ),
             ],
         )
 
     def test_name_clashes(self):
         """Should include translation for search() items, avoids any name clashes."""
         md = """
-        | survey  |                 |       |            |           |                    |
-        |         | type            | name  | label::en  | label::fr | appearance         |
-        |         | select_one c1-0 | c1-0  | Question 1 | Chose 1   | search('my_file')  |
+        | survey  |                 |       |            |           |                   |
+        |         | type            | name  | label::en  | label::fr | appearance        |
+        |         | select_one c1-0 | c1-0  | Question 1 | Chose 1   | search('my_file') |
         | choices |               |       |            |           |
         |         | list_name     | name  | label::en  | label::fr |
-        |         | c1-0          | na    | la-e       | la-f      |
+        |         | c1-0          | id    | label_en   | label_fr  |
         """
         self.assertPyxformXform(
             md=md,
-            run_odk_validate=True,
+            run_odk_validate=self.run_odk_validate,
             xml__xpath_match=[
-                "/h:html/h:body/x:select1/x:item[./x:value/text()='na']",
-                xpc.model_itext_choice_text_label_by_pos("en", "c1-0", ("la-e",)),
-                xpc.model_itext_choice_text_label_by_pos("fr", "c1-0", ("la-f",)),
+                self.xpath_body_select_search_appearance("c1-0"),
+                self.xpath_body_select_config_choice("c1-0", "c1-0", "id"),
+                xpc.model_instance_choices_itext("c1-0", ("id",)),
+                xpc.model_itext_choice_text_label_by_pos("en", "c1-0", ("label_en",)),
+                xpc.model_itext_choice_text_label_by_pos("fr", "c1-0", ("label_fr",)),
+            ],
+        )
+
+    def test_search_and_select_xlsx(self):
+        """Test to replace the old XLSX-based test fixture, 'search_and_select.xlsx'"""
+        md = """
+        | survey  |                   |            |                |                  |
+        |         | type              | name       | label          | appearance       |
+        |         | select_one fruits | fruit      | Choose a fruit | search('fruits') |
+        |         | note              | note_fruit | The fruit ${fruit} pulled from csv | |
+        | choices |               |          |       |
+        |         | list_name     | name     | label |
+        |         | fruits        | name_key | name  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            run_odk_validate=self.run_odk_validate,
+            xml__xpath_match=[
+                "/h:html/h:head/x:model[not(descendant::x:itext)]",
+                xpc.model_instance_choices_label("fruits", (("name_key", "name"),)),
+                """
+                /h:html/h:body/x:select1[
+                  @ref='/test_name/fruit'
+                  and @appearance="search('fruits')"
+                ]/x:item[
+                  ./x:value/text()='name_key'
+                  and ./x:label/text()='name'
+                ]
+                """,
+                xpq.model_instance_bind("fruit", "string"),
+                xpq.model_instance_bind("note_fruit", "string"),
+                "/h:html/h:body/x:input[@ref='/test_name/note_fruit']",
             ],
         )
 
