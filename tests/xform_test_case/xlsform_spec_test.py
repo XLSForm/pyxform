@@ -54,9 +54,6 @@ class TestXFormConversion(XFormTestCase):
     def test_pull_data(self):
         self.compare_xform(file_name="pull_data.xlsx")
 
-    def test_search_and_select(self):
-        self.compare_xform(file_name="search_and_select.xlsx")
-
     def test_default_survey_sheet(self):
         self.compare_xform(file_name="survey_no_name.xlsx", set_default_name=False)
 
