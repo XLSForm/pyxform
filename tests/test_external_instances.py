@@ -610,3 +610,20 @@ class ExternalInstanceTests(PyxformTestCase):
                 '<instance id="instance4" src="jr://file-csv/instance4.csv"/>',
             ],
         )
+
+    def test_search_and_pulldata(self):
+        """Should not generate secondary instance for choice list used to configure search()"""
+        md = """
+        | survey  |                   |         |             |                    |             |
+        |         | type              | name    | label       | appearance         | calculation |
+        |         | select_one fruits | fruit   | Question 1  | search('fruits')   |             |
+        |         | calculate         | calc    |             |                    | pulldata('fruits', 'this', 'that', ${fruit}) |
+        | choices |               |       |        |
+        |         | list_name     | name  | label  |
+        |         | fruits        | na    | la     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=["/h:html/h:body/x:select1/x:item[./x:value/text()='na']"],
+            xml__excludes=['<instance id="fruits">']
+        )

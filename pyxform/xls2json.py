@@ -23,7 +23,11 @@ from pyxform.entities.entities_parsing import (
 )
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_single_token_expression
-from pyxform.utils import PYXFORM_REFERENCE_REGEX, default_is_dynamic
+from pyxform.utils import (
+    PYXFORM_REFERENCE_REGEX,
+    default_is_dynamic,
+    has_search_appearance_function,
+)
 from pyxform.validators.pyxform import parameters_generic, select_from_file
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
@@ -362,7 +366,8 @@ def add_choices_info_to_question(
     if file_extension is None:
         file_extension = ""
 
-    question[constants.ITEMSET] = list_name
+    if not has_search_appearance_function(question):
+        question[constants.ITEMSET] = list_name
 
     if choice_filter:
         # External selects e.g. type = "select_one_external city".

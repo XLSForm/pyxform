@@ -10,12 +10,13 @@ import os
 import re
 from collections import namedtuple
 from json.decoder import JSONDecodeError
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 from xml.dom import Node
 from xml.dom.minidom import Element, Text, _write_data, parseString
 
 import openpyxl
 import xlrd
+from pyxform import constants
 
 from pyxform.xls2json_backends import is_empty, xls_value_to_unicode, xlsx_value_to_str
 
@@ -28,7 +29,6 @@ BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
 LAST_SAVED_REGEX = re.compile(r"\${last-saved#(.*?)}")
 PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
 NODE_TYPE_TEXT = (Node.TEXT_NODE, Node.CDATA_SECTION_NODE)
-
 
 NSMAP = {
     "xmlns": "http://www.w3.org/2002/xforms",
@@ -325,6 +325,20 @@ def has_dynamic_label(choice_list: "List[Dict[str, str]]") -> bool:
         ):
             return True
     return False
+
+
+def has_search_appearance_function(question: Dict[str, Any]) -> bool:
+    """
+    The search() appearance can be applied to selects to use a Collect-only database-backed select implementation.
+    """
+    try:
+        return bool(
+            re.compile(r"search\(.*?\)").search(
+                question[constants.CONTROL][constants.APPEARANCE]
+            )
+        )
+    except (KeyError, TypeError):
+        return False
 
 
 def levenshtein_distance(a: str, b: str) -> int:

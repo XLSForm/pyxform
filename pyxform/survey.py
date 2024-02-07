@@ -30,6 +30,7 @@ from pyxform.utils import (
     PatchedText,
     get_languages_with_bad_tags,
     has_dynamic_label,
+    has_search_appearance_function,
     node,
 )
 from pyxform.validators import enketo_validate, odk_validate
@@ -42,7 +43,8 @@ RE_INSTANCE_SECONDARY_REF = re.compile(
     r"(instance\(.*\)\/root\/item\[.*?(\$\{.*\})\]\/.*?)\s"
 )
 RE_PULLDATA = re.compile(r"(pulldata\s*\(\s*)(.*?),")
-SEARCH_APPEARANCE_REGEX = re.compile(r"search\(.*?\)")
+RE_XML_OUTPUT = re.compile(r"\n.*(<output.*>)\n(\s\s)*")
+RE_XML_TEXT = re.compile(r"(>)\n\s*(\s[^<>\s].*?)\n\s*(\s</)", re.DOTALL)
 
 
 class InstanceInfo:
@@ -686,16 +688,7 @@ class Survey(Section):
         :param element: A select type question.
         :return: None, the question/children are modified in-place.
         """
-        try:
-            is_search = bool(
-                SEARCH_APPEARANCE_REGEX.search(
-                    element[constants.CONTROL][constants.APPEARANCE]
-                )
-            )
-        except (KeyError, TypeError):
-            is_search = False
-        if is_search:
-            element[constants.ITEMSET] = ""
+        if has_search_appearance_function(element):
             for i, opt in enumerate(element.get(constants.CHILDREN, [])):
                 opt["_choice_itext_id"] = f"{element['list_name']}-{i}"
 
