@@ -7,6 +7,7 @@ from collections import deque
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, ClassVar, Dict, List
 
+from pyxform import aliases as alias
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
@@ -443,10 +444,10 @@ class SurveyElement(dict):
                 # the xls2json side.
                 if (
                     hashable(v)
-                    and v in const.BINDING_CONVERSIONS
+                    and v in alias.BINDING_CONVERSIONS
                     and k in const.CONVERTIBLE_BIND_ATTRIBUTES
                 ):
-                    v = const.BINDING_CONVERSIONS[v]
+                    v = alias.BINDING_CONVERSIONS[v]
                 if k == "jr:constraintMsg" and (
                     isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
                 ):

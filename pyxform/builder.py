@@ -75,8 +75,6 @@ def copy_json_dict(json_dict):
 
 
 class SurveyElementBuilder:
-    # we use this CLASSES dict to create questions from dictionaries
-
     def __init__(self, **kwargs):
         # I don't know why we would need an explicit none option for
         # select alls

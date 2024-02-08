@@ -148,20 +148,6 @@ _MSG_SUPPRESS_SPELLING = (
     "becomes '_setting'."
 )
 
-BINDING_CONVERSIONS = {
-    "yes": "true()",
-    "Yes": "true()",
-    "YES": "true()",
-    "true": "true()",
-    "True": "true()",
-    "TRUE": "true()",
-    "no": "false()",
-    "No": "false()",
-    "NO": "false()",
-    "false": "false()",
-    "False": "false()",
-    "FALSE": "false()",
-}
 CONVERTIBLE_BIND_ATTRIBUTES = (
     "readonly",
     "required",
