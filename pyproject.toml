@@ -18,8 +18,8 @@ dependencies = [
 dev = [
   "formencode==2.1.0",  # Compare XML
   "lxml==5.1.0",        # XPath test expressions
-  "psutil==5.9.7",      # Process info for performance tests
-  "ruff==0.1.11",       # Format and lint
+  "psutil==5.9.8",      # Process info for performance tests
+  "ruff==0.2.1",        # Format and lint
 ]
 
 [project.urls]
@@ -45,7 +45,7 @@ line-length = 90
 target-version = "py38"
 fix = true
 show-fixes = true
-show-source = true
+output-format = "full"
 src = ["pyxform", "tests"]
 
 [tool.ruff.lint]
