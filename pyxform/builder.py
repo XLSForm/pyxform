@@ -209,18 +209,18 @@ class SurveyElementBuilder:
 
     @staticmethod
     def _get_or_other_choice(
-        choice_list: List[Dict[str, Any]]
+        choice_list: List[Dict[str, Any]],
     ) -> Dict[str, Union[str, Dict]]:
         """
         If the choices have any translations, return an OR_OTHER choice for each lang.
         """
         if any(isinstance(c.get(const.LABEL), dict) for c in choice_list):
-            langs = set(
+            langs = {
                 lang
                 for c in choice_list
                 for lang in c[const.LABEL]
                 if isinstance(c.get(const.LABEL), dict)
-            )
+            }
             return {
                 const.NAME: OR_OTHER_CHOICE[const.NAME],
                 const.LABEL: {lang: OR_OTHER_CHOICE[const.LABEL] for lang in langs},

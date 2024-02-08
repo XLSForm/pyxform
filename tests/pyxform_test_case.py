@@ -55,7 +55,7 @@ class PyxformMarkdown:
         id_string: Optional[str] = None,
         debug: bool = False,
         autoname: bool = True,
-        warnings: List[str] = None,
+        warnings: Optional[List[str]] = None,
     ):
         if autoname:
             kwargs = self._autoname_inputs(name=name, title=title, id_string=id_string)
@@ -109,7 +109,7 @@ class PyxformMarkdown:
         name: Optional[str] = None,
         title: Optional[str] = None,
         id_string: Optional[str] = None,
-        warnings: List[str] = None,
+        warnings: Optional[List[str]] = None,
     ):
         # using existing methods from the builder
         imported_survey_json = workbook_to_json(
@@ -162,34 +162,34 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
     def assertPyxformXform(
         self,
         # Survey input
-        md: str = None,
-        ss_structure: Dict = None,
-        survey: "Survey" = None,
+        md: Optional[str] = None,
+        ss_structure: Optional[Dict] = None,
+        survey: Optional["Survey"] = None,
         # XForm assertions
-        xml__xpath_match: Iterable[str] = None,
-        xml__xpath_exact: Iterable[Tuple[str, Set[str]]] = None,
-        xml__xpath_count: Iterable[Tuple[str, int]] = None,
+        xml__xpath_match: Optional[Iterable[str]] = None,
+        xml__xpath_exact: Optional[Iterable[Tuple[str, Set[str]]]] = None,
+        xml__xpath_count: Optional[Iterable[Tuple[str, int]]] = None,
         # XForm assertions - deprecated
-        xml__contains: Iterable[str] = None,
-        xml__excludes: Iterable[str] = None,
-        model__contains: Iterable[str] = None,
-        model__excludes: Iterable[str] = None,
-        itext__contains: Iterable[str] = None,
-        itext__excludes: Iterable[str] = None,
-        instance__contains: Iterable[str] = None,
+        xml__contains: Optional[Iterable[str]] = None,
+        xml__excludes: Optional[Iterable[str]] = None,
+        model__contains: Optional[Iterable[str]] = None,
+        model__excludes: Optional[Iterable[str]] = None,
+        itext__contains: Optional[Iterable[str]] = None,
+        itext__excludes: Optional[Iterable[str]] = None,
+        instance__contains: Optional[Iterable[str]] = None,
         # Errors assertions
-        error__contains: Iterable[str] = None,
-        error__not_contains: Iterable[str] = None,
-        odk_validate_error__contains: Iterable[str] = None,
-        warnings__contains: Iterable[str] = None,
-        warnings__not_contains: Iterable[str] = None,
+        error__contains: Optional[Iterable[str]] = None,
+        error__not_contains: Optional[Iterable[str]] = None,
+        odk_validate_error__contains: Optional[Iterable[str]] = None,
+        warnings__contains: Optional[Iterable[str]] = None,
+        warnings__not_contains: Optional[Iterable[str]] = None,
         warnings_count: Optional[int] = None,
         errored: bool = False,
         # Optional extras
-        name: str = None,
-        id_string: str = None,
-        title: str = None,
-        warnings: List[str] = None,
+        name: Optional[str] = None,
+        id_string: Optional[str] = None,
+        title: Optional[str] = None,
+        warnings: Optional[List[str]] = None,
         run_odk_validate: bool = False,
         debug: bool = False,
     ):
@@ -318,7 +318,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                     "Expected valid survey but compilation failed. Try correcting the "
                     "error with 'debug=True', setting 'errored=True', and or optionally "
                     "'error__contains=[...]'\nError(s): " + "\n".join(errors)
-                )
+                ) from e
         except ODKValidateError as e:
             if not odk_validate_error__contains:
                 raise PyxformTestError(

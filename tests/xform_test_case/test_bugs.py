@@ -155,7 +155,7 @@ class ValidateWrapper(TestCase):
     maxDiff = None
 
     @staticmethod
-    def test_conversion(self):
+    def test_conversion():
         filename = "ODKValidateWarnings.xlsx"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         # Get the xform output path:

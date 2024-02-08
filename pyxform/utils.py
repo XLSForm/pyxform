@@ -9,7 +9,7 @@ import re
 from json.decoder import JSONDecodeError
 from typing import Dict, List, NamedTuple, Tuple
 from xml.dom import Node
-from xml.dom.minidom import Element, Text, _write_data, parseString
+from xml.dom.minidom import Element, Text, _write_data
 
 import openpyxl
 import xlrd
@@ -84,9 +84,9 @@ class DetachableElement(Element):
                 for cnode in self.childNodes:
                     cnode.writexml(writer, indent + addindent, addindent, newl)
                 writer.write(indent)
-            writer.write("</%s>%s" % (self.tagName, newl))
+            writer.write(f"</{self.tagName}>{newl}")
         else:
-            writer.write("/>%s" % (newl))
+            writer.write(f"/>{newl}")
 
 
 class PatchedText(Text):
