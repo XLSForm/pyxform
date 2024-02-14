@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Aliases for elements which could mean the same element in XForm but is represented
 differently on the XLSForm.
@@ -181,3 +180,17 @@ label_optional_types = [
     "username",
 ]
 osm = {"osm": constants.OSM_TYPE}
+BINDING_CONVERSIONS = {
+    "yes": "true()",
+    "Yes": "true()",
+    "YES": "true()",
+    "true": "true()",
+    "True": "true()",
+    "TRUE": "true()",
+    "no": "false()",
+    "No": "false()",
+    "NO": "false()",
+    "false": "false()",
+    "False": "false()",
+    "FALSE": "false()",
+}

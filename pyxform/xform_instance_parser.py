@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 XFormInstanceParser class module - parses an instance XML.
 """
@@ -6,13 +5,18 @@ XFormInstanceParser class module - parses an instance XML.
 # where this code is actually going to live.
 
 import re
-from xml.dom import minidom
+from xml.dom.minidom import Node
+
+from defusedxml.minidom import parseString
+
+from pyxform.errors import PyXFormError
 
 XFORM_ID_STRING = "_xform_id_string"
 
 
 def _xml_node_to_dict(node):
-    assert isinstance(node, minidom.Node)
+    if not isinstance(node, Node):
+        raise PyXFormError("""Invalid value for `node`.""")
     if len(node.childNodes) == 0:
         # there's no data for this leaf node
         value = None
@@ -25,11 +29,12 @@ def _xml_node_to_dict(node):
         for child in node.childNodes:
             d = _xml_node_to_dict(child)
             child_name = child.nodeName
-            assert list(d.keys()) == [child_name]
+            if list(d.keys()) != [child_name]:
+                raise PyXFormError("""Invalid value for `d`.""")
             if child_name not in value:
                 # copy the value into the dict
                 value[child_name] = d[child_name]
-            elif type(value[child_name]) == list:
+            elif isinstance(value[child_name], list):
                 # add to the existing list
                 value[child_name].append(d[child_name])
             else:
@@ -42,15 +47,17 @@ def _flatten_dict(d, prefix):
     """
     Return a list of XPath, value pairs.
     """
-    assert type(d) == dict
-    assert type(prefix) == list
+    if not isinstance(d, dict):
+        raise PyXFormError("""Invalid value for `d`.""")
+    if not isinstance(prefix, list):
+        raise PyXFormError("""Invalid value for `prefix`.""")
 
     for key, value in d.items():
-        new_prefix = prefix + [key]
-        if type(value) == dict:
+        new_prefix = [*prefix, key]
+        if isinstance(value, dict):
             for pair in _flatten_dict(value, new_prefix):
                 yield pair
-        elif type(value) == list:
+        elif isinstance(value, list):
             for i, item in enumerate(value):
                 item_prefix = list(new_prefix)  # make a copy
                 # note on indexing xpaths: IE5 and later has
@@ -58,7 +65,7 @@ def _flatten_dict(d, prefix):
                 # according to the W3C standard it should have been
                 # [1]. I'm adding 1 to i to start at 1.
                 item_prefix[-1] += "[%s]" % str(i + 1)
-                if type(item) == dict:
+                if isinstance(item, dict):
                     for pair in _flatten_dict(item, item_prefix):
                         yield pair
                 else:
@@ -75,8 +82,7 @@ def _get_all_attributes(node):
         for key in node.attributes.keys():
             yield key, node.getAttribute(key)
     for child in node.childNodes:
-        for pair in _get_all_attributes(child):
-            yield pair
+        yield from _get_all_attributes(child)
 
 
 class XFormInstanceParser:
@@ -85,8 +91,8 @@ class XFormInstanceParser:
 
     def parse(self, xml_str):
         clean_xml_str = xml_str.strip()
-        clean_xml_str = re.sub(str(r">\s+<"), str("><"), clean_xml_str)
-        self._xml_obj = minidom.parseString(clean_xml_str)
+        clean_xml_str = re.sub(r">\s+<", "><", clean_xml_str)
+        self._xml_obj = parseString(clean_xml_str)
         self._root_node = self._xml_obj.documentElement
         self._dict = _xml_node_to_dict(self._root_node)
         self._flat_dict = {}
@@ -113,7 +119,8 @@ class XFormInstanceParser:
         self._attributes = {}
         all_attributes = list(_get_all_attributes(self._root_node))
         for key, value in all_attributes:
-            assert key not in self._attributes
+            if key in self._attributes:
+                raise PyXFormError("""Invalid value for `self._attributes`.""")
             self._attributes[key] = value
 
     def get_xform_id_string(self):

@@ -3,14 +3,23 @@
   <h:head>
     <h:title>Spec test</h:title>
     <model odk:xforms-version="1.0.0">
-      <submission action="https://example-odk-aggregate.appspot.com/submission" base64RsaPublicKey="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo93+Dgn3iDleC9XMTDH7ez1MOm/BOt287DgkldNkdvrtdC4oUegx3N8Say9tq47k2EOzeLYkezVnKdtserx+g/+R6pDIOS66bwbH+HoslDEUaZRZ47EipSGC1JhtOp/nQGQCsdVc5q/fPvw8d2rLLi+PQUZPBOiBxUo9h/CFc41hl/quUELmylSdL4O06OAP8OCEDA+tl0C2Ik+uCYMDJLD4m7YVbkV7jJXjtILj+GW+noLriFMRsgg7WKQe2j9fw5+v46nzhokOnDnHh+yGwQMfs/B0jfFAgXllLNjIPlXQf2UVzuxEax6wLCyqUXMIjCPSNfnzDRgFB4Qw3QbJCwIDAQAB" method="form-data-post"/>
+      <submission action="https://example-odk-aggregate.appspot.com/submission" base64RsaPublicKey="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo93+Dgn3iDleC9XMTDH7ez1MOm/BOt287DgkldNkdvrtdC4oUegx3N8Say9tq47k2EOzeLYkezVnKdtserx+g/+R6pDIOS66bwbH+HoslDEUaZRZ47EipSGC1JhtOp/nQGQCsdVc5q/fPvw8d2rLLi+PQUZPBOiBxUo9h/CFc41hl/quUELmylSdL4O06OAP8OCEDA+tl0C2Ik+uCYMDJLD4m7YVbkV7jJXjtILj+GW+noLriFMRsgg7WKQe2j9fw5+v46nzhokOnDnHh+yGwQMfs/B0jfFAgXllLNjIPlXQf2UVzuxEax6wLCyqUXMIjCPSNfnzDRgFB4Qw3QbJCwIDAQAB" method="post"/>
       <itext>
         <translation default="true()" lang="default">
+          <text id="yes_no-0">
+            <value>Yes</value>
+          </text>
+          <text id="yes_no-1">
+            <value>No</value>
+          </text>
+          <text id="a_b-0">
+            <value form="image">jr://images/a.jpg</value>
+          </text>
+          <text id="a_b-1">
+            <value form="image">jr://images/b.jpg</value>
+          </text>
           <text id="/attribute_columns_test/everything/video_test:label">
             <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-2-test/a:label">
-            <value form="image">jr://images/a.jpg</value>
           </text>
           <text id="/attribute_columns_test/everything/repeat_test/name/table_list_question:label">
             <value>-</value>
@@ -36,9 +45,6 @@
           <text id="/attribute_columns_test/everything/address:hint">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test/yes:label">
-            <value>Yes</value>
-          </text>
           <text id="/attribute_columns_test/everything/_1:label">
             <value>-</value>
           </text>
@@ -47,9 +53,6 @@
           </text>
           <text id="/attribute_columns_test/everything/start_test_output:label">
             <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test/yes:label">
-            <value>Yes</value>
           </text>
           <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test:label">
             <value>-</value>
@@ -65,12 +68,6 @@
           </text>
           <text id="/attribute_columns_test/everything/date_test:label">
             <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test/no:label">
-            <value>No</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-test/a:label">
-            <value form="image">jr://images/a.jpg</value>
           </text>
           <text id="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test:label">
             <value>-</value>
@@ -93,20 +90,8 @@
           <text id="/attribute_columns_test/everything/end_test_output:label">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-test/b:label">
-            <value form="image">jr://images/b.jpg</value>
-          </text>
-          <text id="/attribute_columns_test/skip_to_end/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/no:label">
-            <value>No</value>
-          </text>
           <text id="/attribute_columns_test/everything/address:label">
             <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/autocomplete_test/yes:label">
-            <value>Yes</value>
           </text>
           <text id="/attribute_columns_test/everything/a_integer:label">
             <value>-</value>
@@ -132,9 +117,6 @@
           <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test:label">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/table_list_question/no:label">
-            <value>No</value>
-          </text>
           <text id="/attribute_columns_test/everything/invalid_variable:label">
             <value>-</value>
           </text>
@@ -143,9 +125,6 @@
           </text>
           <text id="/attribute_columns_test/everything/datetime_test:label">
             <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/autocomplete_chars_test/no:label">
-            <value>No</value>
           </text>
           <text id="/attribute_columns_test/everything/simserial_test_output:label">
             <value>-</value>
@@ -156,26 +135,8 @@
           <text id="/attribute_columns_test/everything/my_name:label">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test/no:label">
-            <value>No</value>
-          </text>
           <text id="/attribute_columns_test/everything/acknowledge_test:label">
             <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/table_list_question/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/attribute_columns_test/everything/autocomplete_chars_test/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-2-test/b:label">
-            <value form="image">jr://images/b.jpg</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/attribute_columns_test/skip_to_end/no:label">
-            <value>No</value>
           </text>
           <text id="/attribute_columns_test/everything/email_note:label">
             <value>-</value>
@@ -183,17 +144,8 @@
           <text id="/attribute_columns_test/everything/number_label:hint">
             <value>a note</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test/yes:label">
-            <value>Yes</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test/no:label">
-            <value>No</value>
-          </text>
           <text id="/attribute_columns_test/everything/display_image_test:label">
             <value form="image">jr://images/img_test.jpg</value>
-          </text>
-          <text id="/attribute_columns_test/everything/autocomplete_test/no:label">
-            <value>No</value>
           </text>
           <text id="/attribute_columns_test/everything/FALSE:label">
             <value>-</value>
@@ -209,6 +161,14 @@
           </text>
         </translation>
         <translation lang="chinese">
+          <text id="yes_no-0">
+            <value>是</value>
+          </text>
+          <text id="yes_no-1">
+            <value>没有</value>
+          </text>
+          <text id="a_b-0"/>
+          <text id="a_b-1"/>
           <text id="/attribute_columns_test/everything/video_test:label">
             <value>-</value>
           </text>
@@ -233,14 +193,8 @@
           <text id="/attribute_columns_test/everything/uri_deviceid_test_output:label">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-2-test/a:label">
-            <value form="image">jr://images/-</value>
-          </text>
           <text id="/attribute_columns_test/everything/address:hint">
             <value>ni hao</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test/yes:label">
-            <value>是</value>
           </text>
           <text id="/attribute_columns_test/everything/_1:label">
             <value>-</value>
@@ -251,16 +205,11 @@
           <text id="/attribute_columns_test/everything/start_test_output:label">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/yes:label">
-            <value>是</value>
-          </text>
           <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test:label">
             <value>-</value>
           </text>
           <text id="/attribute_columns_test/everything/text_image_audio_video_test:label">
-            <value form="image">jr://images/-</value>
             <value form="audio">jr://audio/chinese_audio.wav</value>
-            <value form="video">jr://video/-</value>
             <value>您好</value>
           </text>
           <text id="/attribute_columns_test/everything/deviceid_test_output:label">
@@ -268,12 +217,6 @@
           </text>
           <text id="/attribute_columns_test/everything/date_test:label">
             <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test/no:label">
-            <value>没有</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-test/a:label">
-            <value form="image">jr://images/-</value>
           </text>
           <text id="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test:label">
             <value>-</value>
@@ -296,30 +239,13 @@
           <text id="/attribute_columns_test/everything/end_test_output:label">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-test/b:label">
-            <value form="image">jr://images/-</value>
-          </text>
-          <text id="/attribute_columns_test/skip_to_end/yes:label">
-            <value>是</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/no:label">
-            <value>没有</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test/no:label">
-            <value>没有</value>
-          </text>
-          <text id="/attribute_columns_test/everything/autocomplete_test/yes:label">
-            <value>是</value>
-          </text>
           <text id="/attribute_columns_test/everything/a_integer:label">
             <value>-</value>
           </text>
           <text id="/attribute_columns_test/everything/calculate_test_output:label">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/display_image_test:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/attribute_columns_test/everything/display_image_test:label"/>
           <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group:label">
             <value>-</value>
           </text>
@@ -335,9 +261,6 @@
           <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test:label">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/table_list_question/no:label">
-            <value>没有</value>
-          </text>
           <text id="/attribute_columns_test/everything/invalid_variable:label">
             <value>-</value>
           </text>
@@ -346,9 +269,6 @@
           </text>
           <text id="/attribute_columns_test/everything/datetime_test:label">
             <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/autocomplete_chars_test/no:label">
-            <value>没有</value>
           </text>
           <text id="/attribute_columns_test/everything/simserial_test_output:label">
             <value>-</value>
@@ -365,38 +285,14 @@
           <text id="/attribute_columns_test/everything/acknowledge_test:label">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/table_list_question/yes:label">
-            <value>是</value>
-          </text>
-          <text id="/attribute_columns_test/everything/autocomplete_chars_test/yes:label">
-            <value>是</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-2-test/b:label">
-            <value form="image">jr://images/-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test/yes:label">
-            <value>是</value>
-          </text>
-          <text id="/attribute_columns_test/skip_to_end/no:label">
-            <value>没有</value>
-          </text>
           <text id="/attribute_columns_test/everything/email_note:label">
             <value>-</value>
           </text>
           <text id="/attribute_columns_test/everything/number_label:hint">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test/yes:label">
-            <value>是</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test/no:label">
-            <value>没有</value>
-          </text>
           <text id="/attribute_columns_test/everything/repeat_test/group_test/required_text:label">
             <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/autocomplete_test/no:label">
-            <value>没有</value>
           </text>
           <text id="/attribute_columns_test/everything/FALSE:label">
             <value>-</value>
@@ -412,6 +308,14 @@
           </text>
         </translation>
         <translation lang="english">
+          <text id="yes_no-0">
+            <value>-</value>
+          </text>
+          <text id="yes_no-1">
+            <value>-</value>
+          </text>
+          <text id="a_b-0"/>
+          <text id="a_b-1"/>
           <text id="/attribute_columns_test/everything/video_test:label">
             <value>video_test</value>
           </text>
@@ -427,9 +331,6 @@
           <text id="/attribute_columns_test/everything/a_decimal:label">
             <value>constrained decimal</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/no:label">
-            <value>-</value>
-          </text>
           <text id="/attribute_columns_test/launch:label">
             <value>This launches a fictional application to get an integer result.</value>
           </text>
@@ -438,9 +339,6 @@
           </text>
           <text id="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test:label">
             <value>select multiple test</value>
-          </text>
-          <text id="/attribute_columns_test/everything/autocomplete_test/no:label">
-            <value>-</value>
           </text>
           <text id="/attribute_columns_test/everything/uri_deviceid_test_output:label">
             <value>deviceid_test_output: <output value=" /attribute_columns_test/everything/uri_deviceid "/></value></text>
@@ -452,28 +350,17 @@
           </text>
           <text id="/attribute_columns_test/everything/start_test_output:label">
             <value>start test output: <output value=" /attribute_columns_test/everything/start "/></value></text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/yes:label">
-            <value>-</value>
-          </text>
           <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test:label">
             <value>label-test</value>
           </text>
           <text id="/attribute_columns_test/everything/text_image_audio_video_test:label">
             <value form="image">jr://images/img_test_2.jpg</value>
-            <value form="audio">jr://audio/-</value>
-            <value form="video">jr://video/-</value>
             <value>text_image_audio_video_test</value>
           </text>
           <text id="/attribute_columns_test/everything/deviceid_test_output:label">
             <value>deviceid_test_output: <output value=" /attribute_columns_test/everything/deviceid "/></value></text>
           <text id="/attribute_columns_test/everything/date_test:label">
             <value>date_test</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test/no:label">
-            <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-test/a:label">
-            <value form="image">jr://images/-</value>
           </text>
           <text id="/attribute_columns_test/everything/autocomplete_test:label">
             <value>autocomplete_test</value>
@@ -483,34 +370,16 @@
           <text id="/attribute_columns_test/everything/text_image_audio_video_test:hint">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/skip_to_end/yes:label">
-            <value>-</value>
-          </text>
           <text id="/attribute_columns_test/everything/image_test:label">
             <value>image_test</value>
           </text>
           <text id="/attribute_columns_test/everything/datetime_test:label">
             <value>datetime_test</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-test/b:label">
-            <value form="image">jr://images/-</value>
-          </text>
           <text id="/attribute_columns_test/everything/today_test_output:label">
             <value>today_test_output: <output value=" /attribute_columns_test/everything/today "/></value></text>
-          <text id="/attribute_columns_test/everything/autocomplete_chars_test/no:label">
-            <value>-</value>
-          </text>
           <text id="/attribute_columns_test/everything/audio_test:label">
             <value>audio_test</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-2-test/a:label">
-            <value form="image">jr://images/-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test/no:label">
-            <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/autocomplete_test/yes:label">
-            <value>-</value>
           </text>
           <text id="/attribute_columns_test/everything/a_integer:label">
             <value>a integer</value>
@@ -518,9 +387,7 @@
           <text id="/attribute_columns_test/everything/calculate_test_output:label">
             <value><output value=" /attribute_columns_test/everything/calculate_test "/></value>
           </text>
-          <text id="/attribute_columns_test/everything/display_image_test:label">
-            <value form="image">jr://images/-</value>
-          </text>
+          <text id="/attribute_columns_test/everything/display_image_test:label"/>
           <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group:label">
             <value>labeled select group test</value>
           </text>
@@ -533,16 +400,10 @@
           <text id="/attribute_columns_test/skip_to_end:label">
             <value>Skip to end</value>
           </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/table_list_question/no:label">
-            <value>-</value>
-          </text>
           <text id="/attribute_columns_test/everything/invalid_variable:label">
             <value>Your name is <output value=" /attribute_columns_test/everything/my_name "/></value></text>
           <text id="/attribute_columns_test/everything/time_test:label">
             <value>time_test</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test/yes:label">
-            <value>-</value>
           </text>
           <text id="/attribute_columns_test/everything/simserial_test_output:label">
             <value>simserial_test_output: <output value=" /attribute_columns_test/everything/simserial "/></value></text>
@@ -563,31 +424,10 @@
           <text id="/attribute_columns_test/everything/address:hint">
             <value>-</value>
           </text>
-          <text id="/attribute_columns_test/everything/autocomplete_chars_test/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/name/table_list_question/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/compact-2-test/b:label">
-            <value form="image">jr://images/-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/skip_to_end/no:label">
-            <value>-</value>
-          </text>
           <text id="/attribute_columns_test/everything/email_note:label">
             <value>You entered an email address</value>
           </text>
           <text id="/attribute_columns_test/everything/number_label:hint">
-            <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test/yes:label">
-            <value>-</value>
-          </text>
-          <text id="/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test/no:label">
             <value>-</value>
           </text>
           <text id="/attribute_columns_test/everything/repeat_test/group_test/required_text:label">
@@ -623,7 +463,23 @@
             <a_integer/>
             <a_decimal/>
             <repeat_test_count/>
-            <repeat_test jr:template="" testAttribute="test">
+            <repeat_test jr:template="">
+              <group_test>
+                <required_text/>
+                <select_multiple_test/>
+              </group_test>
+              <labeled_select_group>
+                <label-test/>
+                <list-nolabel-test/>
+              </labeled_select_group>
+              <name>
+                <reserved_name_for_field_list_labels_25/>
+                <table_list_question/>
+              </name>
+              <compact-test/>
+              <compact-2-test/>
+            </repeat_test>
+            <repeat_test testAttribute="test">
               <group_test>
                 <required_text/>
                 <select_multiple_test/>
@@ -674,6 +530,30 @@
             <instanceName/>
           </meta>
         </attribute_columns_test>
+      </instance>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <itextId>yes_no-0</itextId>
+            <name>yes</name>
+          </item>
+          <item>
+            <itextId>yes_no-1</itextId>
+            <name>no</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="a_b">
+        <root>
+          <item>
+            <itextId>a_b-0</itextId>
+            <name>a</name>
+          </item>
+          <item>
+            <itextId>a_b-1</itextId>
+            <name>b</name>
+          </item>
+        </root>
       </instance>
       <bind nodeset="/attribute_columns_test/skip_to_end" saveIncomplete="true()" type="string"/>
       <bind nodeset="/attribute_columns_test/everything" relevant="not(selected( /attribute_columns_test/skip_to_end , 'yes'))"/>
@@ -734,14 +614,10 @@
   <h:body>
     <select1 bodyAttribute="42" ref="/attribute_columns_test/skip_to_end">
       <label ref="jr:itext('/attribute_columns_test/skip_to_end:label')"/>
-      <item>
-        <label ref="jr:itext('/attribute_columns_test/skip_to_end/yes:label')"/>
-        <value>yes</value>
-      </item>
-      <item>
-        <label ref="jr:itext('/attribute_columns_test/skip_to_end/no:label')"/>
-        <value>no</value>
-      </item>
+      <itemset nodeset="instance('yes_no')/root/item">
+        <value ref="name"/>
+        <label ref="jr:itext(itextId)"/>
+      </itemset>
     </select1>
     <group bodyAttribute2="test" ref="/attribute_columns_test/everything">
       <input ref="/attribute_columns_test/everything/my_name" rows="12">
@@ -771,25 +647,17 @@
       </input>
       <select1 appearance="autocomplete" ref="/attribute_columns_test/everything/autocomplete_test">
         <label ref="jr:itext('/attribute_columns_test/everything/autocomplete_test:label')"/>
-        <item>
-          <label ref="jr:itext('/attribute_columns_test/everything/autocomplete_test/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/attribute_columns_test/everything/autocomplete_test/no:label')"/>
-          <value>no</value>
-        </item>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
       <select1 appearance="autocomplete_chars" ref="/attribute_columns_test/everything/autocomplete_chars_test">
         <label ref="jr:itext('/attribute_columns_test/everything/autocomplete_chars_test:label')"/>
-        <item>
-          <label ref="jr:itext('/attribute_columns_test/everything/autocomplete_chars_test/yes:label')"/>
-          <value>yes</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/attribute_columns_test/everything/autocomplete_chars_test/no:label')"/>
-          <value>no</value>
-        </item>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="jr:itext(itextId)"/>
+        </itemset>
       </select1>
       <input ref="/attribute_columns_test/everything/a_integer">
         <label ref="jr:itext('/attribute_columns_test/everything/a_integer:label')"/>
@@ -806,87 +674,59 @@
             </input>
             <select appearance="minimal" ref="/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test">
               <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test:label')"/>
-              <item>
-                <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test/yes:label')"/>
-                <value>yes</value>
-              </item>
-              <item>
-                <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/group_test/select_multiple_test/no:label')"/>
-                <value>no</value>
-              </item>
+              <itemset nodeset="instance('yes_no')/root/item">
+                <value ref="name"/>
+                <label ref="jr:itext(itextId)"/>
+              </itemset>
             </select>
           </group>
           <group appearance="field-list" ref="/attribute_columns_test/everything/repeat_test/labeled_select_group">
             <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/labeled_select_group:label')"/>
             <select1 appearance="label" ref="/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test">
               <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test:label')"/>
-              <item>
-                <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test/yes:label')"/>
-                <value>yes</value>
-              </item>
-              <item>
-                <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/labeled_select_group/label-test/no:label')"/>
-                <value>no</value>
-              </item>
+              <itemset nodeset="instance('yes_no')/root/item">
+                <value ref="name"/>
+                <label ref="jr:itext(itextId)"/>
+              </itemset>
             </select1>
             <select1 appearance="list-nolabel" ref="/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test">
               <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test:label')"/>
-              <item>
-                <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test/yes:label')"/>
-                <value>yes</value>
-              </item>
-              <item>
-                <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/labeled_select_group/list-nolabel-test/no:label')"/>
-                <value>no</value>
-              </item>
+              <itemset nodeset="instance('yes_no')/root/item">
+                <value ref="name"/>
+                <label ref="jr:itext(itextId)"/>
+              </itemset>
             </select1>
           </group>
           <group appearance="field-list" ref="/attribute_columns_test/everything/repeat_test/name">
             <select1 appearance="label" ref="/attribute_columns_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25">
               <label></label>
-              <item>
-                <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/yes:label')"/>
-                <value>yes</value>
-              </item>
-              <item>
-                <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/name/reserved_name_for_field_list_labels_25/no:label')"/>
-                <value>no</value>
-              </item>
+              <itemset nodeset="instance('yes_no')/root/item">
+                <value ref="name"/>
+                <label ref="jr:itext(itextId)"/>
+              </itemset>
             </select1>
             <select1 appearance="list-nolabel" ref="/attribute_columns_test/everything/repeat_test/name/table_list_question">
               <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/name/table_list_question:label')"/>
               <hint>hint</hint>
-              <item>
-                <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/name/table_list_question/yes:label')"/>
-                <value>yes</value>
-              </item>
-              <item>
-                <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/name/table_list_question/no:label')"/>
-                <value>no</value>
-              </item>
+              <itemset nodeset="instance('yes_no')/root/item">
+                <value ref="name"/>
+                <label ref="jr:itext(itextId)"/>
+              </itemset>
             </select1>
           </group>
           <select1 appearance="compact" ref="/attribute_columns_test/everything/repeat_test/compact-test">
             <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/compact-test:label')"/>
-            <item>
-              <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/compact-test/a:label')"/>
-              <value>a</value>
-            </item>
-            <item>
-              <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/compact-test/b:label')"/>
-              <value>b</value>
-            </item>
+            <itemset nodeset="instance('a_b')/root/item">
+              <value ref="name"/>
+              <label ref="jr:itext(itextId)"/>
+            </itemset>
           </select1>
           <select1 appearance="compact-2" ref="/attribute_columns_test/everything/repeat_test/compact-2-test">
             <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/compact-2-test:label')"/>
-            <item>
-              <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/compact-2-test/a:label')"/>
-              <value>a</value>
-            </item>
-            <item>
-              <label ref="jr:itext('/attribute_columns_test/everything/repeat_test/compact-2-test/b:label')"/>
-              <value>b</value>
-            </item>
+            <itemset nodeset="instance('a_b')/root/item">
+              <value ref="name"/>
+              <label ref="jr:itext(itextId)"/>
+            </itemset>
           </select1>
         </repeat>
       </group>

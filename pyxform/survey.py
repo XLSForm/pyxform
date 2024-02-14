@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 Survey module with XForm Survey objects and utility functions.
 """
-import codecs
 import os
 import re
 import tempfile
@@ -223,7 +221,7 @@ class Survey(Section):
     def validate(self):
         if self.id_string in [None, "None"]:
             raise PyXFormError("Survey cannot have an empty id_string")
-        super(Survey, self).validate()
+        super().validate()
         self._validate_uniqueness_of_section_names()
 
     def _validate_uniqueness_of_section_names(self):
@@ -261,13 +259,11 @@ class Survey(Section):
             xmlns = "xmlns:"
             nsmap = NSMAP.copy()
             nsmap.update(
-                dict(
-                    [
-                        (xmlns + k, v.replace('"', "").replace("'", ""))
-                        for k, v in nslist
-                        if xmlns + k not in nsmap
-                    ]
-                )
+                {
+                    xmlns + k: v.replace('"', "").replace("'", "")
+                    for k, v in nslist
+                    if xmlns + k not in nsmap
+                }
             )
             return nsmap
 
@@ -358,7 +354,7 @@ class Survey(Section):
             name = element["name"]
             extension = element["type"].split("-")[0]
             prefix = "file-csv" if extension == "csv" else "file"
-            src = "jr://{}/{}.{}".format(prefix, name, extension)
+            src = f"jr://{prefix}/{name}.{extension}"
             return InstanceInfo(
                 type="external",
                 context="[type: {t}, name: {n}]".format(
@@ -392,10 +388,8 @@ class Survey(Section):
                 contexts = ", ".join(x.context for x in copies)
                 errors.append(
                     "Instance names must be unique within a form. "
-                    "The name '{i}' was found {c} time(s), "
-                    "under these contexts: {contexts}".format(
-                        i=element, c=len(copies), contexts=contexts
-                    )
+                    f"The name '{element}' was found {len(copies)} time(s), "
+                    f"under these contexts: {contexts}"
                 )
         if errors:
             raise ValidationError("\n".join(errors))
@@ -422,7 +416,7 @@ class Survey(Section):
             return functions_present
 
         def get_instance_info(element, file_id):
-            uri = "jr://file-csv/{}.csv".format(file_id)
+            uri = f"jr://file-csv/{file_id}.csv"
 
             return InstanceInfo(
                 type="pulldata",
@@ -455,10 +449,8 @@ class Survey(Section):
         itemset = element.get("itemset")
         file_id, ext = os.path.splitext(itemset)
         if itemset and ext in EXTERNAL_INSTANCE_EXTENSIONS:
-            uri = "jr://%s/%s" % (
-                "file" if ext == ".xml" or ext == ".geojson" else "file-%s" % ext[1:],
-                itemset,
-            )
+            file_ext = "file" if ext in {".xml", ".geojson"} else f"file-{ext[1:]}"
+            uri = f"jr://{file_ext}/{itemset}"
             return InstanceInfo(
                 type="file",
                 context="[type: {t}, name: {n}]".format(
@@ -569,16 +561,9 @@ class Survey(Section):
                 msg = (
                     "The same instance id will be generated for different "
                     "external instance source URIs. Please check the form."
-                    " Instance name: '{i}', Existing type: '{e}', "
-                    "Existing URI: '{iu}', Duplicate type: '{d}', "
-                    "Duplicate URI: '{du}', Duplicate context: '{c}'.".format(
-                        i=i.name,
-                        iu=seen[i.name].src,
-                        e=seen[i.name].type,
-                        d=i.type,
-                        du=i.src,
-                        c=i.context,
-                    )
+                    f" Instance name: '{i.name}', Existing type: '{seen[i.name].type}', "
+                    f"Existing URI: '{seen[i.name].src}', Duplicate type: '{i.type}', "
+                    f"Duplicate URI: '{i.src}', Duplicate context: '{i.context}'."
                 )
                 raise PyXFormError(msg)
             elif i.name in seen.keys() and seen[i.name].src == i.src:
@@ -619,7 +604,7 @@ class Survey(Section):
         model_children += self.xml_actions()
 
         if self.submission_url or self.public_key or self.auto_send or self.auto_delete:
-            submission_attrs = dict()
+            submission_attrs = {}
             if self.submission_url:
                 submission_attrs["action"] = self.submission_url
                 submission_attrs["method"] = "post"
@@ -708,15 +693,14 @@ class Survey(Section):
         def _setup_choice_translations(
             name, choice_value, itext_id
         ) -> Generator[Tuple[List[str], str], None, None]:
-            for media_or_lang, value in choice_value.items():  # noqa
+            for media_or_lang, value in choice_value.items():
                 if isinstance(value, dict):
                     for language, val in value.items():
                         yield ([language, itext_id, media_or_lang], val)
+                elif name == constants.MEDIA:
+                    yield ([self.default_language, itext_id, media_or_lang], value)
                 else:
-                    if name == constants.MEDIA:
-                        yield ([self.default_language, itext_id, media_or_lang], value)
-                    else:
-                        yield ([media_or_lang, itext_id, "long"], value)
+                    yield ([media_or_lang, itext_id, "long"], value)
 
         itemsets_multi_language = set()
         itemsets_has_media = set()
@@ -803,11 +787,11 @@ class Survey(Section):
         This disables any of the default_language fallback functionality.
         """
         paths = {}
-        for lang, translation in self._translations.items():
+        for translation in self._translations.values():
             for path, content in translation.items():
                 paths[path] = paths.get(path, set()).union(content.keys())
 
-        for lang, translation in self._translations.items():
+        for lang in self._translations:
             for path, content_types in paths.items():
                 if path not in self._translations[lang]:
                     self._translations[lang][path] = {}
@@ -835,7 +819,6 @@ class Survey(Section):
                 media_dict = media_dict_default
 
             for media_type, possibly_localized_media in media_dict.items():
-
                 if media_type not in SurveyElement.SUPPORTED_MEDIA:
                     raise PyXFormError("Media type: " + media_type + " not supported")
 
@@ -848,7 +831,6 @@ class Survey(Section):
                     localized_media = {self.default_language: possibly_localized_media}
 
                 for language, media in localized_media.items():
-
                     # Create the required dictionaries in _translations,
                     # then add media as a leaf value:
                     if language not in self._translations:
@@ -895,7 +877,7 @@ class Survey(Section):
                 label_type = label_name.partition(":")[-1]
 
                 if not isinstance(content, dict):
-                    raise Exception()
+                    raise PyXFormError("""Invalid value for `content`.""")
 
                 for media_type, media_value in content.items():
                     # Ignore key indicating Question or Choice translation type.
@@ -930,7 +912,7 @@ class Survey(Section):
                         itext_nodes.append(
                             node("value", value, toParseString=output_inserted)
                         )
-                    elif media_type == "image" or media_type == "big-image":
+                    elif media_type in {"image", "big-image"}:
                         if value != "-":
                             itext_nodes.append(
                                 node(
@@ -940,16 +922,15 @@ class Survey(Section):
                                     toParseString=output_inserted,
                                 )
                             )
-                    else:
-                        if value != "-":
-                            itext_nodes.append(
-                                node(
-                                    "value",
-                                    "jr://" + media_type + "/" + value,
-                                    form=media_type,
-                                    toParseString=output_inserted,
-                                )
+                    elif value != "-":
+                        itext_nodes.append(
+                            node(
+                                "value",
+                                "jr://" + media_type + "/" + value,
+                                form=media_type,
+                                toParseString=output_inserted,
                             )
+                        )
 
                 result[-1].appendChild(node("text", *itext_nodes, id=label_name))
 
@@ -1039,14 +1020,12 @@ class Survey(Section):
             current_matchobj = matchobj
 
             if not last_saved and context:
-
                 if not is_indexed_repeat:
                     return True
 
                 # It is possible to have multiple indexed-repeat in an expression
                 indexed_repeats_iter = RE_INDEXED_REPEAT.finditer(matchobj.string)
                 for indexed_repeat in indexed_repeats_iter:
-
                     # Make sure current ${name} is in the correct indexed-repeat
                     if current_matchobj.end() > indexed_repeat.end():
                         try:
@@ -1068,7 +1047,7 @@ class Survey(Section):
                         .group(1)
                         .split(",")
                     )
-                    name_arg = "${{{0}}}".format(name)
+                    name_arg = f"${{{name}}}"
                     for idx, arg in enumerate(indexed_repeat_args):
                         if name_arg in arg.strip():
                             indexed_repeat_name_index = idx
@@ -1082,8 +1061,8 @@ class Survey(Section):
             return False
 
         intro = (
-            "There has been a problem trying to replace %s with the "
-            "XPath to the survey element named '%s'." % (matchobj.group(0), name)
+            f"There has been a problem trying to replace {matchobj.group(0)} with the "
+            f"XPath to the survey element named '{name}'."
         )
         if name not in self._xpath:
             raise PyXFormError(intro + " There is no survey element with this name.")
@@ -1175,15 +1154,15 @@ class Survey(Section):
         if not path:
             path = self._print_name + ".xml"
         try:
-            with codecs.open(path, mode="w", encoding="utf-8") as file_obj:
+            with open(path, mode="w", encoding="utf-8") as file_obj:
                 if pretty_print:
                     file_obj.write(self._to_pretty_xml())
                 else:
                     file_obj.write(self._to_ugly_xml())
-        except Exception as error:
+        except Exception:
             if os.path.exists(path):
                 os.unlink(path)
-            raise error
+            raise
         if validate:
             warnings.extend(odk_validate.check_xform(path))
         if enketo:
@@ -1195,7 +1174,7 @@ class Survey(Section):
             bad_languages = get_languages_with_bad_tags(translations)
             if bad_languages:
                 warnings.append(
-                    "\tThe following language declarations do not contain "
+                    "The following language declarations do not contain "
                     "valid machine-readable codes: "
                     + ", ".join(bad_languages)
                     + ". "

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 ExternalInstance class module
 """
@@ -12,4 +11,3 @@ class ExternalInstance(SurveyElement):
 
         Exists here because there's a soft abstractmethod in SurveyElement.
         """
-        pass

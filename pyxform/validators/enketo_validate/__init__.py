@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Validate XForms using Enketo validator.
 """
@@ -23,8 +22,6 @@ ENKETO_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", "validate")
 
 class EnketoValidateError(Exception):
     """Common base class for Enketo validate exceptions."""
-
-    pass
 
 
 def install_exists():
@@ -63,7 +60,7 @@ def check_xform(path_to_xform):
     :return: warnings or List[str]
     """
     if not install_exists():
-        raise EnvironmentError(
+        raise OSError(
             "Enketo-validate dependency not found. "
             "Please use the updater tool to install the latest version."
         )
@@ -75,14 +72,13 @@ def check_xform(path_to_xform):
 
     if timeout:
         return ["XForm took to long to completely validate."]
-    else:
-        if returncode > 0:  # Error invalid
-            raise EnketoValidateError(
-                "Enketo Validate Errors:\n" + ErrorCleaner.enketo_validate(stderr)
-            )
-        elif returncode == 0:
-            if stdout:
-                warnings.append("Enketo Validate Warnings:\n" + stdout)
-            return warnings
-        elif returncode < 0:
-            return ["Bad return code from Enketo Validate."]
+    elif returncode > 0:  # Error invalid
+        raise EnketoValidateError(
+            "Enketo Validate Errors:\n" + ErrorCleaner.enketo_validate(stderr)
+        )
+    elif returncode == 0:
+        if stdout:
+            warnings.append("Enketo Validate Warnings:\n" + stdout)
+        return warnings
+    elif returncode < 0:
+        return ["Bad return code from Enketo Validate."]

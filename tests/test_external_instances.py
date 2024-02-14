@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test xml-external syntax and instances generated from pulldata calls.
 
@@ -7,6 +6,7 @@ See also test_external_instances_for_selects
 from textwrap import dedent
 
 from pyxform.errors import PyXFormError
+
 from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
 from tests.xpath_helpers.choices import xpc
 
@@ -171,7 +171,7 @@ class ExternalInstanceTests(PyxformTestCase):
                 |        | begin group                          | g4   |       |                                             |
                 |        | calculate                            | city | City  | pulldata('fruits', 'name', 'name', 'mango') |
                 |        | end group                            | g4   |       |                                             |
-                """,  # noqa
+                """,
                 model__contains=[],
             )
         self.assertIn("The name 'city' was found 2 time(s)", repr(ctx.exception))
@@ -196,7 +196,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | text                                 | foo  | Foo   |                                             |
             |        | calculate                            | city | City  | pulldata('fruits', 'name', 'name', 'mango') |
             |        | end group                            | g4   |       |                                             |
-            """,  # noqa
+            """,
             model__contains=['<instance id="city" src="jr://file-csv/city.csv"/>'],
         )
 
@@ -225,12 +225,12 @@ class ExternalInstanceTests(PyxformTestCase):
             |         | list_name                            | name  | label |                                             |               |
             |         | states                               | 1     | Pass  |                                             |               |
             |         | states                               | 2     | Fail  |                                             |               |
-            """,  # noqa
+            """,
             model__contains=[
                 '<instance id="city1" src="jr://file/city1.xml"/>',
                 '<instance id="cities" src="jr://file-csv/cities.csv"/>',
                 '<instance id="fruits" src="jr://file-csv/fruits.csv"/>',
-            ],  # noqa
+            ],
             xml__xpath_match=[
                 xpc.model_instance_choices_label("states", (("1", "Pass"), ("2", "Fail")))
             ],
@@ -247,7 +247,7 @@ class ExternalInstanceTests(PyxformTestCase):
             |         | list_name                       | name  | label |                                    |
             |         | states                          | 1     | Pass  |                                    |
             |         | states                          | 2     | Fail  |                                    |
-            """  # noqa
+            """
         with self.assertRaises(PyXFormError) as ctx:
             survey = self.md_to_pyxform_survey(md_raw=md)
             survey._to_pretty_xml()
@@ -271,14 +271,14 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | calculate    | f_csv  | City             | pulldata('fruits', 'name', 'name', 'mango') |
             |        | note         | note   | Fruity! ${f_csv} |                                             |
             |        | end group    | g1     |                  |                                             |
-            """  # noqa
+            """
         with self.assertRaises(PyXFormError) as ctx:
             survey = self.md_to_pyxform_survey(md_raw=md)
             survey._to_pretty_xml()
         self.assertIn(
             "Instance name: 'fruits', "
             "Existing type: 'external', Existing URI: 'jr://file/fruits.xml', "
-            "Duplicate type: 'pulldata', Duplicate URI: 'jr://file-csv/fruits.csv', "  # noqa
+            "Duplicate type: 'pulldata', Duplicate URI: 'jr://file-csv/fruits.csv', "
             "Duplicate context: '[type: group, name: g1]'.",
             repr(ctx.exception),
         )
@@ -295,14 +295,14 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | xml-external | fruits |                  |                                             |
             |        | note         | note   | Fruity! ${f_csv} |                                             |
             |        | end group    | g1     |                  |                                             |
-            """  # noqa
+            """
         with self.assertRaises(PyXFormError) as ctx:
             survey = self.md_to_pyxform_survey(md_raw=md)
             survey._to_pretty_xml()
         self.assertIn(
             "Instance name: 'fruits', "
-            "Existing type: 'pulldata', Existing URI: 'jr://file-csv/fruits.csv', "  # noqa
-            "Duplicate type: 'external', Duplicate URI: 'jr://file/fruits.xml', "  # noqa
+            "Existing type: 'pulldata', Existing URI: 'jr://file-csv/fruits.csv', "
+            "Duplicate type: 'external', Duplicate URI: 'jr://file/fruits.xml', "
             "Duplicate context: '[type: group, name: g1]'.",
             repr(ctx.exception),
         )
@@ -318,10 +318,10 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.csv      | pyear  | Location of worst pain this year.  |                                                   |
             |        | calculate                                    | f_csv  | pd                                 | pulldata('pain_locations', 'name', 'name', 'arm') |
             |        | note                                         | note   | Arm ${f_csv}                       |                                                   |
-            """  # noqa
+            """
         expected = """
       <instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>
-"""  # noqa
+"""
         self.assertPyxformXform(md=md, model__contains=[expected])
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
@@ -338,8 +338,10 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.csv      | pweek  | Location of worst pain this week.  |                                                   |
             |        | select_one_from_file pain_locations.csv      | pmonth | Location of worst pain this month. |                                                   |
             |        | select_one_from_file pain_locations.csv      | pyear  | Location of worst pain this year.  |                                                   |
-            """  # noqa
-        expected = """<instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>"""  # noqa
+            """
+        expected = (
+            """<instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>"""
+        )
         self.assertPyxformXform(md=md, model__contains=[expected])
 
     def test_can__reuse_xml__selects_then_external(self):
@@ -352,10 +354,10 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.xml      | pmonth         | Location of worst pain this month. |
             |        | select_one_from_file pain_locations.xml      | pyear          | Location of worst pain this year.  |
             |        | xml-external                                 | pain_locations |                                    |
-            """  # noqa
+            """
         expected = """
       <instance id="pain_locations" src="jr://file/pain_locations.xml"/>
-"""  # noqa
+"""
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
         self.assertEqual(1, xml.count(expected))
@@ -370,8 +372,10 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.xml      | pweek          | Location of worst pain this week.  |
             |        | select_one_from_file pain_locations.xml      | pmonth         | Location of worst pain this month. |
             |        | select_one_from_file pain_locations.xml      | pyear          | Location of worst pain this year.  |
-            """  # noqa
-        expected = """<instance id="pain_locations" src="jr://file/pain_locations.xml"/>"""  # noqa
+            """
+        expected = (
+            """<instance id="pain_locations" src="jr://file/pain_locations.xml"/>"""
+        )
         self.assertPyxformXform(md=md, model__contains=[expected])
         survey = self.md_to_pyxform_survey(md_raw=md)
         xml = survey._to_pretty_xml()
@@ -602,7 +606,7 @@ class ExternalInstanceTests(PyxformTestCase):
                 |        | calculate   | calculate2 |       | pulldata('instance2',"last",'rcid',concat('RC',${rcid}))   |
                 |        | calculate   | calculate3 |       | pulldata('instance3','envelope','rcid',"Bar")              |
                 |        | calculate   | calculate4 |       | pulldata('instance4'          ,'envelope','rcid',"Bar")    |
-                """,  # noqa
+                """,
             xml__contains=[
                 '<instance id="instance1" src="jr://file-csv/instance1.csv"/>',
                 '<instance id="instance2" src="jr://file-csv/instance2.csv"/>',

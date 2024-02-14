@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Survey Element base class for all survey elements.
 """
@@ -6,9 +5,10 @@ import json
 import re
 from collections import deque
 from functools import lru_cache
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List
 
-from pyxform import constants
+from pyxform import aliases as alias
+from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.utils import (
@@ -21,17 +21,57 @@ from pyxform.xls2json import print_pyobj_to_json
 from pyxform.xlsparseutils import is_valid_xml_tag
 
 if TYPE_CHECKING:
-    from typing import List
-
     from pyxform.utils import DetachableElement
+
+# The following are important keys for the underlying dict that describes SurveyElement
+FIELDS = {
+    "name": str,
+    const.COMPACT_TAG: str,  # used for compact (sms) representation
+    "sms_field": str,
+    "sms_option": str,
+    "label": str,
+    "hint": str,
+    "guidance_hint": str,
+    "default": str,
+    "type": str,
+    "appearance": str,
+    "parameters": dict,
+    "intent": str,
+    "jr:count": str,
+    "bind": dict,
+    "instance": dict,
+    "control": dict,
+    "media": dict,
+    # this node will also have a parent and children, like a tree!
+    "parent": lambda: None,
+    "children": list,
+    "itemset": str,
+    "choice_filter": str,
+    "query": str,
+    "autoplay": str,
+    "flat": lambda: False,
+    "action": str,
+    "list_name": str,
+    "trigger": str,
+}
 
 
 def _overlay(over, under):
-    if type(under) == dict:
+    if isinstance(under, dict):
         result = under.copy()
         result.update(over)
         return result
     return over if over else under
+
+
+@lru_cache(maxsize=65536)
+def any_repeat(survey_element: "SurveyElement", parent_xpath: str) -> bool:
+    """Return True if there ia any repeat in `parent_xpath`."""
+    for item in survey_element.iter_descendants():
+        if item.get_xpath() == parent_xpath and item.type == const.REPEAT:
+            return True
+
+    return False
 
 
 class SurveyElement(dict):
@@ -41,38 +81,8 @@ class SurveyElement(dict):
     children, and question_type_dictionary.
     """
 
-    # the following are important keys for the underlying dict that
-    # describes this survey element
-    FIELDS = {
-        "name": str,
-        constants.COMPACT_TAG: str,  # used for compact (sms) representation
-        "sms_field": str,
-        "sms_option": str,
-        "label": str,
-        "hint": str,
-        "guidance_hint": str,
-        "default": str,
-        "type": str,
-        "appearance": str,
-        "parameters": dict,
-        "intent": str,
-        "jr:count": str,
-        "bind": dict,
-        "instance": dict,
-        "control": dict,
-        "media": dict,
-        # this node will also have a parent and children, like a tree!
-        "parent": lambda: None,
-        "children": list,
-        "itemset": str,
-        "choice_filter": str,
-        "query": str,
-        "autoplay": str,
-        "flat": lambda: False,
-        "action": str,
-        "list_name": str,
-        "trigger": str,
-    }
+    __name__ = "SurveyElement"
+    FIELDS: ClassVar[Dict[str, Any]] = FIELDS.copy()
 
     def _default(self):
         # TODO: need way to override question type dictionary
@@ -94,10 +104,6 @@ class SurveyElement(dict):
 
     def __hash__(self):
         return hash(id(self))
-
-    @property
-    def __name__(self):
-        return "SurveyElement"
 
     def __setattr__(self, key, value):
         self[key] = value
@@ -123,34 +129,11 @@ class SurveyElement(dict):
         child.parent = self
 
     def add_children(self, children):
-        if type(children) == list:
+        if isinstance(children, list):
             for child in children:
                 self.add_child(child)
         else:
             self.add_child(children)
-
-    BINDING_CONVERSIONS = {
-        "yes": "true()",
-        "Yes": "true()",
-        "YES": "true()",
-        "true": "true()",
-        "True": "true()",
-        "TRUE": "true()",
-        "no": "false()",
-        "No": "false()",
-        "NO": "false()",
-        "false": "false()",
-        "False": "false()",
-        "FALSE": "false()",
-    }
-
-    CONVERTIBLE_BIND_ATTRIBUTES = (
-        "readonly",
-        "required",
-        "relevant",
-        "constraint",
-        "calculate",
-    )
 
     # Supported media types for attaching to questions
     SUPPORTED_MEDIA = ("image", "big-image", "audio", "video")
@@ -159,7 +142,7 @@ class SurveyElement(dict):
         if not is_valid_xml_tag(self.name):
             invalid_char = re.search(INVALID_XFORM_TAG_REGEXP, self.name)
             raise PyXFormError(
-                f"The name '{self.name}' contains an invalid character '{invalid_char.group(0)}'. Names {constants.XML_IDENTIFIER_ERROR_MESSAGE}"
+                f"The name '{self.name}' contains an invalid character '{invalid_char.group(0)}'. Names {const.XML_IDENTIFIER_ERROR_MESSAGE}"
             )
 
     # TODO: Make sure renaming this doesn't cause any problems
@@ -173,17 +156,11 @@ class SurveyElement(dict):
         # it really seems like this method should not yield self
         yield self
         for e in self.children:
-            for f in e.iter_descendants():
-                yield f
+            yield from e.iter_descendants()
 
-    @lru_cache(maxsize=None)
-    def any_repeat(self, parent_xpath):
+    def any_repeat(self, parent_xpath: str) -> bool:
         """Return True if there ia any repeat in `parent_xpath`."""
-        for item in self.iter_descendants():
-            if item.get_xpath() == parent_xpath and item.type == constants.REPEAT:
-                return True
-
-        return False
+        return any_repeat(survey_element=self, parent_xpath=parent_xpath)
 
     def get_lineage(self):
         """
@@ -282,9 +259,9 @@ class SurveyElement(dict):
         the <itext> block. @see survey._setup_translations
         """
         bind_dict = self.get("bind")
-        if bind_dict and type(bind_dict) is dict:
+        if bind_dict and isinstance(bind_dict, dict):
             constraint_msg = bind_dict.get("jr:constraintMsg")
-            if type(constraint_msg) is dict:
+            if isinstance(constraint_msg, dict):
                 for lang, text in constraint_msg.items():
                     yield {
                         "path": self._translation_path("jr:constraintMsg"),
@@ -301,7 +278,7 @@ class SurveyElement(dict):
                 }
 
             required_msg = bind_dict.get("jr:requiredMsg")
-            if type(required_msg) is dict:
+            if isinstance(required_msg, dict):
                 for lang, text in required_msg.items():
                     yield {
                         "path": self._translation_path("jr:requiredMsg"),
@@ -317,7 +294,7 @@ class SurveyElement(dict):
                     "output_context": self,
                 }
             no_app_error_string = bind_dict.get("jr:noAppErrorString")
-            if type(no_app_error_string) is dict:
+            if isinstance(no_app_error_string, dict):
                 for lang, text in no_app_error_string.items():
                     yield {
                         "path": self._translation_path("jr:noAppErrorString"),
@@ -332,7 +309,7 @@ class SurveyElement(dict):
             if (
                 display_element == "label"
                 and self.needs_itext_ref()
-                and type(label_or_hint) is not dict
+                and not isinstance(label_or_hint, dict)
                 and label_or_hint
             ):
                 label_or_hint = {default_language: label_or_hint}
@@ -356,7 +333,7 @@ class SurveyElement(dict):
             ):
                 label_or_hint = {default_language: label_or_hint}
 
-            if type(label_or_hint) is dict:
+            if isinstance(label_or_hint, dict):
                 for lang, text in label_or_hint.items():
                     yield {
                         "display_element": display_element,  # Not used
@@ -375,8 +352,8 @@ class SurveyElement(dict):
         return {"media": "%s:media" % self.get_xpath()}
 
     def needs_itext_ref(self):
-        return type(self.label) is dict or (
-            type(self.media) is dict and len(self.media) > 0
+        return isinstance(self.label, dict) or (
+            isinstance(self.media, dict) and len(self.media) > 0
         )
 
     def get_setvalue_node_for_dynamic_default(self, in_repeat=False):
@@ -416,7 +393,7 @@ class SurveyElement(dict):
             hint, output_inserted = self.get_root().insert_output_values(self.hint, self)
             return node("hint", hint, toParseString=output_inserted)
 
-    def xml_label_and_hint(self) -> "List[DetachableElement]":
+    def xml_label_and_hint(self) -> List["DetachableElement"]:
         """
         Return a list containing one node for the label and if there
         is a hint one node for the hint.
@@ -467,19 +444,19 @@ class SurveyElement(dict):
                 # the xls2json side.
                 if (
                     hashable(v)
-                    and v in self.BINDING_CONVERSIONS
-                    and k in self.CONVERTIBLE_BIND_ATTRIBUTES
+                    and v in alias.BINDING_CONVERSIONS
+                    and k in const.CONVERTIBLE_BIND_ATTRIBUTES
                 ):
-                    v = self.BINDING_CONVERSIONS[v]
+                    v = alias.BINDING_CONVERSIONS[v]
                 if k == "jr:constraintMsg" and (
-                    type(v) is dict or re.search(BRACKETED_TAG_REGEX, v)
+                    isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
                 ):
                     v = "jr:itext('%s')" % self._translation_path("jr:constraintMsg")
                 if k == "jr:requiredMsg" and (
-                    type(v) is dict or re.search(BRACKETED_TAG_REGEX, v)
+                    isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
                 ):
                     v = "jr:itext('%s')" % self._translation_path("jr:requiredMsg")
-                if k == "jr:noAppErrorString" and type(v) is dict:
+                if k == "jr:noAppErrorString" and isinstance(v, dict):
                     v = "jr:itext('%s')" % self._translation_path("jr:noAppErrorString")
                 bind_dict[k] = survey.insert_xpaths(v, context=self)
             return [node("bind", nodeset=self.get_xpath(), **bind_dict)]

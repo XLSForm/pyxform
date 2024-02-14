@@ -43,7 +43,6 @@ def value_or_label_check(name: str, value: str, row_number: int) -> None:
     if not value_or_label_test(value=value):
         msg = value_or_label_format_msg(name=name, row_number=row_number)
         raise PyXFormError(msg)
-    return None
 
 
 def validate_list_name_extension(
@@ -55,7 +54,7 @@ def validate_list_name_extension(
         1 != len(list_path.suffixes)
         or list_path.suffix not in EXTERNAL_INSTANCE_EXTENSIONS
     ):
-        exts = ", ".join((f"'{e}'" for e in EXTERNAL_INSTANCE_EXTENSIONS))
+        exts = ", ".join(f"'{e}'" for e in EXTERNAL_INSTANCE_EXTENSIONS)
         raise PyXFormError(
             ROW_FORMAT_STRING % row_number
             + f" File name for '{select_command} {list_name}' should end with one of "

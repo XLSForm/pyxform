@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The tests utils module functionality.
 """
@@ -12,6 +11,7 @@ from typing import TYPE_CHECKING
 
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
+
 from tests import example_xls
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ def build_survey(filename):
 
 
 def create_survey_from_fixture(fixture_name, filetype="xls", include_directory=False):
-    fixture_path = path_to_text_fixture("%s.%s" % (fixture_name, filetype))
+    fixture_path = path_to_text_fixture(f"{fixture_name}.{filetype}")
     noop, section_dict = file_utils.load_file_to_dict(fixture_path)
     pkg = {"main_section": section_dict}
     if include_directory:
@@ -93,11 +93,10 @@ def truncate_temp_files(temp_dir):
         for f in os.scandir(temp_dir):
             if os.path.isdir(f.path):
                 truncate_temp_files(f.path)
-            else:
-                # Check still in temp directory
-                if f.path.startswith(temp_root):
-                    with open(f.path, mode="w") as _:
-                        pass
+            # Check still in temp directory
+            elif f.path.startswith(temp_root):
+                with open(f.path, mode="w", encoding="utf-8") as _:
+                    pass
 
 
 def cleanup_pyxform_temp_files(prefix: str):

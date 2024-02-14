@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Some tests for the new (v0.9) spec is properly implemented.
 """
@@ -7,6 +6,7 @@ from unittest import TestCase
 
 from pyxform import builder, xls2json
 from pyxform.errors import PyXFormError
+
 from tests import example_xls, test_expected_output
 from tests.xform_test_case.base import XFormTestCase
 
@@ -35,8 +35,8 @@ class TestXFormConversion(XFormTestCase):
         survey = builder.create_survey_element_from_dict(json_survey)
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # Compare with the expected output:
-        with open(expected_output_path, "r", encoding="utf-8") as ef, open(
-            self.output_path, "r", encoding="utf-8"
+        with open(expected_output_path, encoding="utf-8") as ef, open(
+            self.output_path, encoding="utf-8"
         ) as af:
             expected = ef.read()
             observed = af.read()
@@ -66,7 +66,7 @@ class TestCalculateWithoutCalculation(TestCase):
     Just checks that calculate field without calculation raises a PyXFormError.
     """
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "calculate_without_calculation.xls"
         path_to_excel_file = os.path.join(example_xls.PATH, filename)
         self.assertRaises(PyXFormError, xls2json.parse_file_to_json, path_to_excel_file)

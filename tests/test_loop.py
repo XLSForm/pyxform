@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """
 Test loop syntax.
 """
 from unittest import TestCase
 
 from pyxform.builder import create_survey_from_xls
+
 from tests import utils
 
 
@@ -89,4 +89,4 @@ class LoopTests(TestCase):
                 },
             ],
         }
-        self.assertEquals(survey.to_json_dict(), expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)

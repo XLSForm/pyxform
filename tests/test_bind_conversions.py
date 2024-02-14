@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 BindConversionsTest - test bind conversions.
 """

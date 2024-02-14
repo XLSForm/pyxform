@@ -1,24 +1,24 @@
-# -*- coding: utf-8 -*-
 """
 Some tests for the new (v0.9) spec is properly implemented.
 """
-import codecs
 import os
-import unittest
+from unittest import TestCase
 
 import pyxform
+from pyxform.errors import PyXFormError
 from pyxform.utils import has_external_choices
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
 from pyxform.xls2json_backends import xlsx_to_dict
+
 from tests import bug_example_xls, example_xls, test_expected_output, test_output
 from tests.xform_test_case.base import XFormTestCase
 
 
-class GroupNames(unittest.TestCase):
+class GroupNames(TestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "group_name_test.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         # Get the xform output path:
@@ -26,7 +26,7 @@ class GroupNames(unittest.TestCase):
         output_path = os.path.join(test_output.PATH, root_filename + ".xml")
         # Do the conversion:
         warnings = []
-        with self.assertRaises(Exception):
+        with self.assertRaises(PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(
                 path_to_excel_file, default_name="group_name_test", warnings=warnings
             )
@@ -34,10 +34,10 @@ class GroupNames(unittest.TestCase):
             survey.print_xform_to_file(output_path, warnings=warnings)
 
 
-class NotClosedGroup(unittest.TestCase):
+class NotClosedGroup(TestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "not_closed_group_test.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         # Get the xform output path:
@@ -45,7 +45,7 @@ class NotClosedGroup(unittest.TestCase):
         output_path = os.path.join(test_output.PATH, root_filename + ".xml")
         # Do the conversion:
         warnings = []
-        with self.assertRaises(Exception):
+        with self.assertRaises(PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(
                 path_to_excel_file,
                 default_name="not_closed_group_test",
@@ -55,10 +55,10 @@ class NotClosedGroup(unittest.TestCase):
             survey.print_xform_to_file(output_path, warnings=warnings)
 
 
-class DuplicateColumns(unittest.TestCase):
+class DuplicateColumns(TestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "duplicate_columns.xlsx"
         path_to_excel_file = os.path.join(example_xls.PATH, filename)
         # Get the xform output path:
@@ -66,7 +66,7 @@ class DuplicateColumns(unittest.TestCase):
         output_path = os.path.join(test_output.PATH, root_filename + ".xml")
         # Do the conversion:
         warnings = []
-        with self.assertRaises(Exception):
+        with self.assertRaises(PyXFormError):
             json_survey = pyxform.xls2json.parse_file_to_json(
                 path_to_excel_file, default_name="duplicate_columns", warnings=warnings
             )
@@ -77,7 +77,7 @@ class DuplicateColumns(unittest.TestCase):
 class RepeatDateTest(XFormTestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "repeat_date_test.xls"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
@@ -93,15 +93,16 @@ class RepeatDateTest(XFormTestCase):
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
-            with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
-                self.assertXFormEqual(expected_file.read(), actual_file.read())
+        with open(expected_output_path, encoding="utf-8") as expected, open(
+            self.output_path, encoding="utf-8"
+        ) as observed:
+            self.assertXFormEqual(expected.read(), observed.read())
 
 
 class XmlEscaping(XFormTestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "xml_escaping.xls"
         self.get_file_path(filename)
         expected_output_path = os.path.join(
@@ -117,15 +118,16 @@ class XmlEscaping(XFormTestCase):
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
-            with codecs.open(self.output_path, "rb", encoding="utf-8") as actual_file:
-                self.assertXFormEqual(expected_file.read(), actual_file.read())
+        with open(expected_output_path, encoding="utf-8") as expected, open(
+            self.output_path, encoding="utf-8"
+        ) as observed:
+            self.assertXFormEqual(expected.read(), observed.read())
 
 
 class DefaultTimeTest(XFormTestCase):
     maxDiff = None
 
-    def runTest(self):
+    def test_conversion(self):
         filename = "default_time_demo.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         # Get the xform output path:
@@ -143,16 +145,17 @@ class DefaultTimeTest(XFormTestCase):
         survey.print_xform_to_file(output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with codecs.open(expected_output_path, "rb", encoding="utf-8") as expected_file:
-            with codecs.open(output_path, "rb", encoding="utf-8") as actual_file:
-                self.assertXFormEqual(expected_file.read(), actual_file.read())
+        with open(expected_output_path, encoding="utf-8") as expected, open(
+            output_path, encoding="utf-8"
+        ) as observed:
+            self.assertXFormEqual(expected.read(), observed.read())
 
 
-class ValidateWrapper(unittest.TestCase):
+class ValidateWrapper(TestCase):
     maxDiff = None
 
     @staticmethod
-    def runTest():
+    def test_conversion():
         filename = "ODKValidateWarnings.xlsx"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         # Get the xform output path:
@@ -167,8 +170,8 @@ class ValidateWrapper(unittest.TestCase):
         survey.print_xform_to_file(output_path, warnings=warnings)
 
 
-class EmptyStringOnRelevantColumnTest(unittest.TestCase):
-    def runTest(self):
+class EmptyStringOnRelevantColumnTest(TestCase):
+    def test_conversion(self):
         filename = "ict_survey_fails.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         workbook_dict = pyxform.xls2json.parse_file_to_workbook_dict(path_to_excel_file)
@@ -177,8 +180,8 @@ class EmptyStringOnRelevantColumnTest(unittest.TestCase):
             workbook_dict["survey"][0]["bind: relevant"].strip()
 
 
-class BadChoicesSheetHeaders(unittest.TestCase):
-    def runTest(self):
+class BadChoicesSheetHeaders(TestCase):
+    def test_conversion(self):
         filename = "spaces_in_choices_header.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
         warnings = []
@@ -187,7 +190,10 @@ class BadChoicesSheetHeaders(unittest.TestCase):
             default_name="spaces_in_choices_header",
             warnings=warnings,
         )
-        self.assertEquals(len(warnings), 3, "Found " + str(len(warnings)) + " warnings")
+        # The "column with no header" warning is probably not reachable since XLS/X
+        # pre-processing ignores any columns without a header.
+        observed = [w for w in warnings if "Headers cannot include spaces" in w]
+        self.assertEqual(1, len(observed), warnings)
 
     def test_values_with_spaces_are_cleaned(self):
         """
@@ -208,7 +214,7 @@ class BadChoicesSheetHeaders(unittest.TestCase):
         )
 
 
-class TestChoiceNameAsType(unittest.TestCase):
+class TestChoiceNameAsType(TestCase):
     def test_choice_name_as_type(self):
         filename = "choice_name_as_type.xls"
         path_to_excel_file = os.path.join(example_xls.PATH, filename)
@@ -217,7 +223,7 @@ class TestChoiceNameAsType(unittest.TestCase):
         self.assertTrue(has_external_choices(survey_dict))
 
 
-class TestBlankSecondRow(unittest.TestCase):
+class TestBlankSecondRow(TestCase):
     def test_blank_second_row(self):
         filename = "blank_second_row.xls"
         path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
@@ -226,7 +232,7 @@ class TestBlankSecondRow(unittest.TestCase):
         self.assertTrue(len(survey_dict) > 0)
 
 
-class TestXLDateAmbigous(unittest.TestCase):
+class TestXLDateAmbigous(TestCase):
     """Test non standard sheet with exception is processed successfully."""
 
     def test_xl_date_ambigous(self):
@@ -238,7 +244,7 @@ class TestXLDateAmbigous(unittest.TestCase):
         self.assertTrue(len(survey_dict) > 0)
 
 
-class TestXLDateAmbigousNoException(unittest.TestCase):
+class TestXLDateAmbigousNoException(TestCase):
     """Test date values that exceed the workbook datemode value.
     (This would cause an exception with xlrd, but openpyxl handles it)."""
 
@@ -250,7 +256,7 @@ class TestXLDateAmbigousNoException(unittest.TestCase):
         self.assertEqual(survey_dict["survey"][4]["default"], "1900-01-01 00:00:00")
 
 
-class TestSpreadSheetFilesWithMacrosAreAllowed(unittest.TestCase):
+class TestSpreadSheetFilesWithMacrosAreAllowed(TestCase):
     """Test that spreadsheets with .xlsm extension are allowed"""
 
     def test_xlsm_files_are_allowed(self):
@@ -260,14 +266,10 @@ class TestSpreadSheetFilesWithMacrosAreAllowed(unittest.TestCase):
         self.assertIsInstance(result, dict)
 
 
-class TestBadCalculation(unittest.TestCase):
+class TestBadCalculation(TestCase):
     """Bad calculation should not kill the application"""
 
     def test_bad_calculate_javarosa_error(self):
         filename = "bad_calc.xml"
         test_xml = os.path.join(test_output.PATH, filename)
         self.assertRaises(ODKValidateError, check_xform, test_xml)
-
-
-if __name__ == "__main__":
-    unittest.main()

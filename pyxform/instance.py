@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 SurveyInstance class module.
 """
+from pyxform.errors import PyXFormError
 from pyxform.xform_instance_parser import parse_xform_instance
 
 
@@ -35,7 +35,7 @@ class SurveyInstance:
 
     def answer(self, name=None, value=None):
         if name is None:
-            raise Exception("In answering, name must be given")
+            raise PyXFormError("In answering, name must be given")
 
         # ahh. this is horrible, but we need the xpath dict in survey
         # to be up-to-date ...maybe
@@ -57,11 +57,11 @@ class SurveyInstance:
         A horrible way to do this, but it works (until we need the attributes
          pumped out in order, etc)
         """
-        open_str = """<?xml version='1.0' ?><%s id="%s">""" % (self._name, self._id)
+        open_str = f"""<?xml version='1.0' ?><{self._name} id="{self._id}">"""
         close_str = """</%s>""" % self._name
         vals = ""
         for k, v in self._answers.items():
-            vals += "<%s>%s</%s>" % (k, str(v), k)
+            vals += f"<{k}>{v!s}</{k}>"
 
         output = open_str + vals + close_str
         return output
@@ -78,7 +78,7 @@ class SurveyInstance:
         import os.path
 
         if os.path.isfile(xml_string_or_filename):
-            xml_str = open(xml_string_or_filename).read()
+            xml_str = open(xml_string_or_filename, encoding="utf-8").read()
         else:
             xml_str = xml_string_or_filename
         key_val_dict = parse_xform_instance(xml_str)

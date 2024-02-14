@@ -1,22 +1,21 @@
-# -*- coding: utf-8 -*-
 """
 pyxform utils module.
 """
-import codecs
 import copy
 import csv
 import json
 import os
 import re
-from collections import namedtuple
 from json.decoder import JSONDecodeError
-from typing import Dict, List, Tuple
+from typing import Dict, List, NamedTuple, Tuple
 from xml.dom import Node
-from xml.dom.minidom import Element, Text, _write_data, parseString
+from xml.dom.minidom import Element, Text, _write_data
 
 import openpyxl
 import xlrd
+from defusedxml.minidom import parseString
 
+from pyxform.errors import PyXFormError
 from pyxform.xls2json_backends import is_empty, xls_value_to_unicode, xlsx_value_to_str
 
 SEP = "_"
@@ -85,15 +84,15 @@ class DetachableElement(Element):
                 for cnode in self.childNodes:
                     cnode.writexml(writer, indent + addindent, addindent, newl)
                 writer.write(indent)
-            writer.write("</%s>%s" % (self.tagName, newl))
+            writer.write(f"</{self.tagName}>{newl}")
         else:
-            writer.write("/>%s" % (newl))
+            writer.write(f"/>{newl}")
 
 
 class PatchedText(Text):
     def writexml(self, writer, indent="", addindent="", newl=""):
         """Same as original but no replacing double quotes with '&quot;'."""
-        data = "%s%s%s" % (indent, self.data, newl)
+        data = "".join((indent, self.data, newl))
         if data:
             data = data.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         writer.write(data)
@@ -111,8 +110,9 @@ def node(*args, **kwargs) -> DetachableElement:
     tag = args[0] if len(args) > 0 else kwargs["tag"]
     args = args[1:]
     result = DetachableElement(tag)
-    unicode_args = [u for u in args if type(u) == str]
-    assert len(unicode_args) <= 1
+    unicode_args = [u for u in args if isinstance(u, str)]
+    if len(unicode_args) > 1:
+        raise PyXFormError("""Invalid value for `unicode_args`.""")
     parsed_string = False
 
     # Convert the kwargs xml attribute dictionary to a xml.dom.minidom.Element.
@@ -147,11 +147,11 @@ def node(*args, **kwargs) -> DetachableElement:
         text_node.data = unicode_args[0]
         result.appendChild(text_node)
     for n in args:
-        if type(n) == int or type(n) == float or type(n) == bytes:
+        if isinstance(n, (int, float, bytes)):
             text_node = PatchedText()
             text_node.data = str(n)
             result.appendChild(text_node)
-        elif type(n) is not str:
+        elif not isinstance(n, str):
             result.appendChild(n)
     return result
 
@@ -164,9 +164,9 @@ def get_pyobj_from_json(str_or_path):
     """
     try:
         # see if treating str_or_path as a path works
-        fp = codecs.open(str_or_path, mode="r", encoding="utf-8")
-        doc = json.load(fp)
-    except (IOError, JSONDecodeError, OSError):
+        with open(str_or_path, encoding="utf-8") as fp:
+            doc = json.load(fp)
+    except (JSONDecodeError, OSError):
         # if it doesn't work load the text
         doc = json.loads(str_or_path)
     return doc
@@ -174,8 +174,7 @@ def get_pyobj_from_json(str_or_path):
 
 def flatten(li):
     for subli in li:
-        for it in subli:
-            yield it
+        yield from subli
 
 
 def sheet_to_csv(workbook_path, csv_path, sheet_name):
@@ -193,7 +192,7 @@ def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
         return False
     if not sheet or sheet.nrows < 2:
         return False
-    with open(csv_path, "w", newline="") as f:
+    with open(csv_path, mode="w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         mask = [v and len(v.strip()) > 0 for v in sheet.row_values(0)]
         for row_idx in range(sheet.nrows):
@@ -221,7 +220,7 @@ def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
     except KeyError:
         return False
 
-    with open(csv_path, "w", newline="") as f:
+    with open(csv_path, mode="w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
         mask = [not is_empty(cell.value) for cell in sheet[1]]
         for row in sheet.rows:
@@ -261,7 +260,8 @@ def get_languages_with_bad_tags(languages):
     """
     Returns languages with invalid or missing IANA subtags.
     """
-    with open(os.path.join(os.path.dirname(__file__), "iana_subtags.txt")) as f:
+    path = os.path.join(os.path.dirname(__file__), "iana_subtags.txt")
+    with open(path, encoding="utf-8") as f:
         iana_subtags = f.read().splitlines()
 
     lang_code_regex = re.compile(r"\((.*)\)$")
@@ -271,7 +271,7 @@ def get_languages_with_bad_tags(languages):
         lang_code = re.search(lang_code_regex, lang)
 
         if lang != "default" and (
-            not lang_code or not lang_code.group(1) in iana_subtags
+            not lang_code or lang_code.group(1) not in iana_subtags
         ):
             languages_with_bad_tags.append(lang)
     return languages_with_bad_tags
@@ -342,14 +342,14 @@ def levenshtein_distance(a: str, b: str) -> int:
     n = len(b)
 
     # create two work vectors of integer distances
-    v1 = [0 for _ in range(0, n + 1)]
+    v1 = [0 for _ in range(n + 1)]
 
     # initialize v0 (the previous row of distances)
     # this row is A[0][i]: edit distance for an empty s
     # the distance is just the number of characters to delete from t
-    v0 = [i for i in range(0, n + 1)]
+    v0 = list(range(n + 1))
 
-    for i in range(0, m):
+    for i in range(m):
         # calculate v1 (current row distances) from the previous row v0
 
         # first element of v1 is A[i+1][0]
@@ -357,7 +357,7 @@ def levenshtein_distance(a: str, b: str) -> int:
         v1[0] = i + 1
 
         # use formula to fill in the rest of the row
-        for j in range(0, n):
+        for j in range(n):
             # calculating costs for A[i+1][j+1]
             deletion_cost = v0[j + 1] + 1
             insertion_cost = v1[j] + 1
@@ -375,7 +375,7 @@ def levenshtein_distance(a: str, b: str) -> int:
     return v0[n]
 
 
-def get_expression_lexer() -> re.Scanner:  # noqa
+def get_expression_lexer() -> re.Scanner:
     """
     Get a expression lexer (scanner) for parsing.
     """
@@ -439,11 +439,17 @@ def get_expression_lexer() -> re.Scanner:  # noqa
     lexicon = [(v, get_tokenizer(k)) for k, v in lexer_rules.items()]
     # re.Scanner is undocumented but has been around since at least 2003
     # https://mail.python.org/pipermail/python-dev/2003-April/035075.html
-    return re.Scanner(lexicon)  # noqa
+    return re.Scanner(lexicon)
 
 
 # Scanner takes a few 100ms to compile so use this shared instance.
-ExpLexerToken = namedtuple("ExpLexerToken", ["name", "value", "start", "end"])
+class ExpLexerToken(NamedTuple):
+    name: str
+    value: str
+    start: int
+    end: int
+
+
 EXPRESSION_LEXER = get_expression_lexer()
 
 

@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 The validators utility functions.
 """
-import collections
-import io
 import logging
 import os
 import signal
@@ -13,6 +10,7 @@ import threading
 import time
 from contextlib import closing
 from subprocess import PIPE, Popen
+from typing import Dict, List, NamedTuple
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -48,7 +46,6 @@ def run_popen_with_timeout(command, timeout) -> "PopenResult":
         os.kill(pid, signal.SIGTERM)
         kill_check.set()  # tell the main routine that we had to kill
         # use SIGKILL if hard to kill...
-        return
 
     startup_info = None
     env = None
@@ -101,7 +98,7 @@ def decode_stream(stream):
             return stream.decode("latin-1")
         except BaseException as be:
             msg = "Failed to decode validate stderr as utf-8 or latin-1."
-            raise IOError(msg, ude, be)
+            raise OSError(msg, ude, be) from be
 
 
 def request_get(url):
@@ -109,24 +106,31 @@ def request_get(url):
     Get the response content from URL.
     """
     try:
+        if not url.startswith(("http:", "https:")):
+            raise ValueError("URL must start with 'http:' or 'https:'")
         r = Request(url)
         r.add_header("Accept", "application/json")
         with closing(urlopen(r)) as u:
             content = u.read()
         if len(content) == 0:
-            raise PyXFormError("Empty response from URL: '{u}'.".format(u=url))
+            raise PyXFormError(f"Empty response from URL: '{url}'.")
         else:
             return content
-    except HTTPError as e:
+    except HTTPError as http_err:
         raise PyXFormError(
-            "Unable to fulfill request. Error code: '{c}'. "
-            "Reason: '{r}'. URL: '{u}'."
-            "".format(r=e.reason, c=e.code, u=url)
-        )
-    except URLError as e:
+            f"Unable to fulfill request. Error code: '{http_err.code}'. "
+            f"Reason: '{http_err.reason}'. URL: '{url}'."
+            ""
+        ) from http_err
+    except URLError as url_err:
         raise PyXFormError(
-            "Unable to reach a server. Reason: {r}. " "URL: {u}".format(r=e.reason, u=url)
-        )
+            f"Unable to reach a server. Reason: {url_err.reason}. " f"URL: {url}"
+        ) from url_err
+
+
+class _LoggingWatcher(NamedTuple):
+    records: List
+    output: Dict
 
 
 class CapturingHandler(logging.Handler):
@@ -166,7 +170,6 @@ class CapturingHandler(logging.Handler):
 
     @staticmethod
     def _get_watcher():
-        _LoggingWatcher = collections.namedtuple("_LoggingWatcher", ["records", "output"])
         levels = ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"]
         return _LoggingWatcher([], {x: [] for x in levels})
 
@@ -190,9 +193,9 @@ def check_readable(file_path, retry_limit=10, wait_seconds=0.5):
 
     def catch_try():
         try:
-            with io.open(file_path, mode="r"):
+            with open(file_path):
                 return True
-        except IOError:
+        except OSError:
             return False
 
     tries = 0
@@ -201,5 +204,5 @@ def check_readable(file_path, retry_limit=10, wait_seconds=0.5):
             tries += 1
             time.sleep(wait_seconds)
         else:
-            raise IOError("Could not read file: {f}".format(f=file_path))
+            raise OSError(f"Could not read file: {file_path}")
     return True

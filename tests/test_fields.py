@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test duplicate survey question field name.
 """
@@ -59,7 +58,7 @@ class FieldsTests(PyxformTestCase):
             errored=True,
             error__contains=[
                 "The name column for the 'list' choice list contains these duplicates: 'b'"
-            ],  # noqa
+            ],
         )
 
     def test_multiple_duplicate_choices_without_setting(self):
@@ -78,7 +77,7 @@ class FieldsTests(PyxformTestCase):
             errored=True,
             error__contains=[
                 "The name column for the 'list' choice list contains these duplicates: 'a', 'b'"
-            ],  # noqa
+            ],
         )
 
     def test_duplicate_choices_with_setting_not_set_to_yes(self):
@@ -99,7 +98,7 @@ class FieldsTests(PyxformTestCase):
             errored=True,
             error__contains=[
                 "The name column for the 'list' choice list contains these duplicates: 'b'"
-            ],  # noqa
+            ],
         )
 
     def test_duplicate_choices_with_allow_choice_duplicates_setting(self):

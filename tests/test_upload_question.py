@@ -73,6 +73,7 @@ class UploadTest(PyxformTestCase):
             |        | text  | watermark_phrase | Watermark Text: |                               |
             |        | text  | text1            | Text            |                               |
             |        | image | image1           | Take a Photo:   | watermark=${watermark_phrase} |
-            """,  # noqa
+            """,
+            errored=False,
             xml__contains=["watermark= /data/watermark_phrase "],
         )

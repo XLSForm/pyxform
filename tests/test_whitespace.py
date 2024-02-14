@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test whitespace around output variables in XForms.
 """

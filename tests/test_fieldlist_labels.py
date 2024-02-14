@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test field-list labels
 """

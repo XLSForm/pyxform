@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 xls2xform converts properly formatted Excel documents into XForms for
 use with ODK Collect.
@@ -174,13 +173,13 @@ def main_cli():
                 pretty_print=args.pretty_print,
                 enketo=args.enketo_validate,
             )
-        except EnvironmentError as e:
+        except OSError:
             # Do not crash if 'java' not installed
-            logger.error(e)
-        except ODKValidateError as e:
+            logger.exception("EnvironmentError during conversion")
+        except ODKValidateError:
             # Remove output file if there is an error
             os.remove(args.output_path)
-            logger.error(e)
+            logger.exception("ODKValidateError during conversion.")
         else:
             if len(warnings) > 0:
                 logger.warning("Warnings:")

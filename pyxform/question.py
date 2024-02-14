@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 XForm Survey element classes for different question types.
 """
@@ -54,8 +53,9 @@ class Question(SurveyElement):
             if nested_setvalues:
                 for setvalue in nested_setvalues:
                     msg = (
-                        "The question ${%s} is not user-visible so it can't be used as a calculation trigger for question ${%s}."
-                        % (self.name, setvalue[0])
+                        f"The question ${{{self.name}}} is not user-visible "
+                        "so it can't be used as a calculation trigger for "
+                        f"question ${{{setvalue[0]}}}."
                     )
                     raise PyXFormError(msg)
             return None
@@ -200,7 +200,8 @@ class MultipleChoiceQuestion(Question):
             choice.validate()
 
     def build_xml(self):
-        assert self.bind["type"] in ["string", "odk:rank"]
+        if self.bind["type"] not in ["string", "odk:rank"]:
+            raise PyXFormError("""Invalid value for `self.bind["type"]`.""")
         survey = self.get_root()
         control_dict = self.control.copy()
         # Resolve field references in attributes
@@ -239,13 +240,12 @@ class MultipleChoiceQuestion(Question):
             )
 
             if file_extension in EXTERNAL_INSTANCE_EXTENSIONS:
-                itemset = itemset
+                pass
+            elif not multi_language and not has_media and not has_dyn_label:
+                itemset = self["itemset"]
             else:
-                if not multi_language and not has_media and not has_dyn_label:
-                    itemset = self["itemset"]
-                else:
-                    itemset = self["itemset"]
-                    itemset_label_ref = "jr:itext(itextId)"
+                itemset = self["itemset"]
+                itemset_label_ref = "jr:itext(itextId)"
 
             choice_filter = survey.insert_xpaths(
                 choice_filter, self, True, is_previous_question
@@ -306,7 +306,7 @@ class MultipleChoiceQuestion(Question):
 
 class SelectOneQuestion(MultipleChoiceQuestion):
     def __init__(self, **kwargs):
-        super(SelectOneQuestion, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._dict[self.TYPE] = "select one"
 
 
@@ -315,7 +315,7 @@ class Tag(SurveyElement):
         kwargs_copy = kwargs.copy()
         choices = kwargs_copy.pop("choices", []) + kwargs_copy.pop("children", [])
 
-        super(Tag, self).__init__(**kwargs_copy)
+        super().__init__(**kwargs_copy)
 
         if choices:
             self.children = []
@@ -345,7 +345,7 @@ class OsmUploadQuestion(UploadQuestion):
         kwargs_copy = kwargs.copy()
         tags = kwargs_copy.pop("tags", []) + kwargs_copy.pop("children", [])
 
-        super(OsmUploadQuestion, self).__init__(**kwargs_copy)
+        super().__init__(**kwargs_copy)
 
         if tags:
             self.children = []

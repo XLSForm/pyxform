@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 PyxformTestCase base class using markdown to define the XLSForm.
 """
-import codecs
 import logging
 import os
 import re
@@ -15,12 +13,12 @@ from lxml import etree
 
 # noinspection PyProtectedMember
 from lxml.etree import _Element
-
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import PyXFormError
 from pyxform.utils import NSMAP, coalesce
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.xls2json import workbook_to_json
+
 from tests.test_utils.md_table import md_table_to_ss_structure
 
 logger = logging.getLogger(__name__)
@@ -57,7 +55,7 @@ class PyxformMarkdown:
         id_string: Optional[str] = None,
         debug: bool = False,
         autoname: bool = True,
-        warnings: List[str] = None,
+        warnings: Optional[List[str]] = None,
     ):
         if autoname:
             kwargs = self._autoname_inputs(name=name, title=title, id_string=id_string)
@@ -85,7 +83,7 @@ class PyxformMarkdown:
 
             def _row_to_dict(row):
                 out_dict = {}
-                for i in range(0, len(row)):
+                for i in range(len(row)):
                     col = row[i]
                     if col not in [None, ""]:
                         out_dict[headers[i]] = col
@@ -111,7 +109,7 @@ class PyxformMarkdown:
         name: Optional[str] = None,
         title: Optional[str] = None,
         id_string: Optional[str] = None,
-        warnings: List[str] = None,
+        warnings: Optional[List[str]] = None,
     ):
         # using existing methods from the builder
         imported_survey_json = workbook_to_json(
@@ -132,14 +130,15 @@ class PyxformMarkdown:
         tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
         tmp.close()
         try:
-            with codecs.open(tmp.name, mode="w", encoding="utf-8") as fp:
+            with open(tmp.name, mode="w", encoding="utf-8") as fp:
                 fp.write(xml)
                 fp.close()
             check_xform(tmp.name)
         finally:
             # Clean up the temporary file
             os.remove(tmp.name)
-            assert not os.path.isfile(tmp.name)
+            if os.path.isfile(tmp.name):
+                raise PyXFormError(f"Temporary file still exists: {tmp.name}")
 
     @staticmethod
     def _autoname_inputs(
@@ -163,34 +162,34 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
     def assertPyxformXform(
         self,
         # Survey input
-        md: str = None,
-        ss_structure: Dict = None,
-        survey: "Survey" = None,
+        md: Optional[str] = None,
+        ss_structure: Optional[Dict] = None,
+        survey: Optional["Survey"] = None,
         # XForm assertions
-        xml__xpath_match: Iterable[str] = None,
-        xml__xpath_exact: Iterable[Tuple[str, Set[str]]] = None,
-        xml__xpath_count: Iterable[Tuple[str, int]] = None,
+        xml__xpath_match: Optional[Iterable[str]] = None,
+        xml__xpath_exact: Optional[Iterable[Tuple[str, Set[str]]]] = None,
+        xml__xpath_count: Optional[Iterable[Tuple[str, int]]] = None,
         # XForm assertions - deprecated
-        xml__contains: Iterable[str] = None,
-        xml__excludes: Iterable[str] = None,
-        model__contains: Iterable[str] = None,
-        model__excludes: Iterable[str] = None,
-        itext__contains: Iterable[str] = None,
-        itext__excludes: Iterable[str] = None,
-        instance__contains: Iterable[str] = None,
+        xml__contains: Optional[Iterable[str]] = None,
+        xml__excludes: Optional[Iterable[str]] = None,
+        model__contains: Optional[Iterable[str]] = None,
+        model__excludes: Optional[Iterable[str]] = None,
+        itext__contains: Optional[Iterable[str]] = None,
+        itext__excludes: Optional[Iterable[str]] = None,
+        instance__contains: Optional[Iterable[str]] = None,
         # Errors assertions
-        error__contains: Iterable[str] = None,
-        error__not_contains: Iterable[str] = None,
-        odk_validate_error__contains: Iterable[str] = None,
-        warnings__contains: Iterable[str] = None,
-        warnings__not_contains: Iterable[str] = None,
+        error__contains: Optional[Iterable[str]] = None,
+        error__not_contains: Optional[Iterable[str]] = None,
+        odk_validate_error__contains: Optional[Iterable[str]] = None,
+        warnings__contains: Optional[Iterable[str]] = None,
+        warnings__not_contains: Optional[Iterable[str]] = None,
         warnings_count: Optional[int] = None,
         errored: bool = False,
         # Optional extras
-        name: str = None,
-        id_string: str = None,
-        title: str = None,
-        warnings: List[str] = None,
+        name: Optional[str] = None,
+        id_string: Optional[str] = None,
+        title: Optional[str] = None,
+        warnings: Optional[List[str]] = None,
         run_odk_validate: bool = False,
         debug: bool = False,
     ):
@@ -319,13 +318,13 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
                     "Expected valid survey but compilation failed. Try correcting the "
                     "error with 'debug=True', setting 'errored=True', and or optionally "
                     "'error__contains=[...]'\nError(s): " + "\n".join(errors)
-                )
+                ) from e
         except ODKValidateError as e:
             if not odk_validate_error__contains:
                 raise PyxformTestError(
                     "ODK Validate error was thrown but 'odk_validate_error__contains' "
                     "was empty: " + str(e)
-                )
+                ) from e
             for v_err in odk_validate_error__contains:
                 self.assertContains(
                     e.args[0], v_err, msg_prefix="odk_validate_error__contains"
@@ -491,7 +490,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         """
         if not (isinstance(xpath, str) and isinstance(expected, set)):
             msg = "Each xpath_exact requires: tuple(xpath: str, expected: Set[str])."
-            raise SyntaxError(msg)
+            raise TypeError(msg)
         observed = xpath_evaluate(
             matcher_context=matcher_context,
             content=content,
@@ -523,7 +522,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         """
         if not (isinstance(xpath, str) and isinstance(expected, int)):
             msg = "Each xpath_count requires: tuple(xpath: str, count: int)"
-            raise SyntaxError(msg)
+            raise TypeError(msg)
         observed = xpath_evaluate(
             matcher_context=matcher_context,
             content=content,

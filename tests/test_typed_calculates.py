@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test that any row with a calculation becomes a calculate of the row's type or of type string if the type is "calculate". A hint or label
 error should only be thrown for a row without a calculation.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test external instance syntax
 
@@ -11,6 +10,7 @@ from pyxform import aliases
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
 from pyxform.errors import PyXFormError
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.test_utils.md_table import md_table_to_workbook
 from tests.utils import get_temp_dir
@@ -252,7 +252,7 @@ class TestSelectFromFile(PyxformTestCase):
         |        | type                                   | name    | label   | parameters           |
         |        | select_one_from_file cities{ext}       | city    | City    | value=VAL, label=lBl |
         """
-        for ext, xp_city, xp_subs in self.xp_test_args:
+        for ext, xp_city, _ in self.xp_test_args:
             with self.subTest(msg=ext):
                 self.assertPyxformXform(
                     name="test",
@@ -441,7 +441,7 @@ class TestSelectOneExternal(PyxformTestCase):
             self.assertIn(log_msg, [r.message for r in log.records])
             self.assertTrue(os.path.exists(itemsets_path))
 
-            with open(itemsets_path, "r") as csv:
+            with open(itemsets_path, encoding="utf-8") as csv:
                 rows = csv.readlines()
             # Should have the non-empty headers in the first row.
             self.assertEqual('"list_name","name","state","city"\n', rows[0])

@@ -12,38 +12,31 @@ jobs:
         python: ['3.8']
         os: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: Python cache with dependencies.
         id: python-cache
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.pip') }}
+          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('pyproject.toml') }}
       - name: Install dependencies.
         run: |
           python -m pip install --upgrade pip
-          pip install -r dev_requirements.pip
+          pip install -e .
           pip list
 
-      # Build.
-      - name: Build sdist and wheel.
-        run: |
-          pip install wheel
-          python clean_for_build.py
-          python setup.py sdist bdist_wheel
-
-      # Publish.
-      - name: Publish release to PyPI with twine
+      # Build and publish.
+      - name: Publish release to PyPI
         if: success()
         run: |
-          pip install twine
-          twine upload dist/pyxform-*-py3-none-any.whl dist/pyxform-*.tar.gz
+          pip install flit==3.9.0
+          flit --debug publish --no-use-vcs
         env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          FLIT_USERNAME: __token__
+          FLIT_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}

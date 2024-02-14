@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test validator update cli command.
 """
@@ -17,6 +16,7 @@ from pyxform.validators.updater import (
     _UpdateInfo,
     capture_handler,
 )
+
 from tests import validators
 from tests.utils import get_temp_dir, get_temp_file
 from tests.validators.server import ThreadingServerInThread
@@ -77,7 +77,6 @@ class TestTempUtils(TestCase):
 
 
 class TestUpdateHandler(TestCase):
-
     server: "Optional[ThreadingServerInThread]" = None
 
     @classmethod
@@ -363,7 +362,7 @@ class TestUpdateHandler(TestCase):
                 open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir
             )
         self.assertEqual(3, len(jobs.keys()))
-        self.assertTrue(list(jobs.keys())[0].startswith(temp_dir))
+        self.assertTrue(next(iter(jobs.keys())).startswith(temp_dir))
 
     def test_unzip_find_zip_jobs__ok_real_ideal(self):
         """Should return a list of zip jobs same length as search."""
@@ -377,7 +376,7 @@ class TestUpdateHandler(TestCase):
                 open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir
             )
         self.assertEqual(3, len(jobs.keys()))
-        self.assertTrue(list(jobs.keys())[0].startswith(temp_dir))
+        self.assertTrue(next(iter(jobs.keys())).startswith(temp_dir))
 
     def test_unzip_find_zip_jobs__ok_real_dupes(self):
         """Should return a list of zip jobs same length as search."""
@@ -391,7 +390,7 @@ class TestUpdateHandler(TestCase):
                 open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir
             )
         self.assertEqual(3, len(jobs.keys()))
-        self.assertTrue(list(jobs.keys())[0].startswith(temp_dir))
+        self.assertTrue(next(iter(jobs.keys())).startswith(temp_dir))
 
     def test_unzip_find_zip_jobs__not_found_raises(self):
         """Should raise an error if zip jobs isn't same length as search."""
@@ -420,9 +419,9 @@ class TestUpdateHandler(TestCase):
         with get_temp_dir() as temp_dir, ZipFile(
             self.zip_file, mode="r"
         ) as zip_file, self.assertRaises(BadZipFile) as ctx:
-            zip_item = [
+            zip_item = next(
                 x for x in zip_file.infolist() if x.filename.endswith("validate")
-            ][0]
+            )
             zip_item.CRC = 12345
             file_out_path = os.path.join(temp_dir, "validate")
             self.updater._unzip_extract_file(

@@ -79,10 +79,10 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         count=1,
     )
     # Convenience combinations of the above data for Suite 1 tests.
-    suite1 = [s1c1, s1c2, s1c3, s1c4, s1c5]
-    suite1_counts = [c.ctuple for c in suite1]
-    suite1_exacts = [c.etuple for c in suite1]
-    suite1_xpaths = [c.xpath for c in suite1]
+    suite1 = (s1c1, s1c2, s1c3, s1c4, s1c5)
+    suite1_counts = tuple(c.ctuple for c in suite1)
+    suite1_exacts = tuple(c.etuple for c in suite1)
+    suite1_xpaths = tuple(c.xpath for c in suite1)
 
     # Suite 2: multiple expected match results.
     # s2c1: element in default namespace.
@@ -131,10 +131,10 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         count=2,
     )
     # Convenience combinations of the above data for Suite 2 tests.
-    suite2 = [s2c1, s2c2, s2c3]
-    suite2_counts = [c.ctuple for c in suite2]
-    suite2_exacts = [c.etuple for c in suite2]
-    suite2_xpaths = [c.xpath for c in suite2]
+    suite2 = (s2c1, s2c2, s2c3)
+    suite2_counts = tuple(c.ctuple for c in suite2)
+    suite2_exacts = tuple(c.etuple for c in suite2)
+    suite2_xpaths = tuple(c.xpath for c in suite2)
 
     # Suite 3: other misc cases.
     # s3c1: XPath with no expected matches.
@@ -220,7 +220,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         with self.assertRaises(self.failureException):
             self.assertPyxformXform(
                 md=self.md,
-                xml__xpath_exact=self.suite1_exacts + [(self.s1c1.xpath, {"bananas"})],
+                xml__xpath_exact=[*self.suite1_exacts, (self.s1c1.xpath, {"bananas"})],
                 run_odk_validate=False,
             )
 
@@ -229,7 +229,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         with self.assertRaises(self.failureException):
             self.assertPyxformXform(
                 md=self.md,
-                xml__xpath_count=self.suite1_counts + [(self.s1c1.xpath, 5)],
+                xml__xpath_count=[*self.suite1_counts, (self.s1c1.xpath, 5)],
                 run_odk_validate=False,
             )
 
@@ -238,7 +238,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         with self.assertRaises(self.failureException):
             self.assertPyxformXform(
                 md=self.md,
-                xml__xpath_match=self.suite1_xpaths + [self.s3c1.xpath],
+                xml__xpath_match=[*self.suite1_xpaths, self.s3c1.xpath],
                 run_odk_validate=False,
             )
 
@@ -314,8 +314,10 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         with self.assertRaises(self.failureException):
             self.assertPyxformXform(
                 md=self.md,
-                xml__xpath_exact=self.suite2_exacts
-                + [(self.s2c3.xpath, {"bananas", "eggs"})],
+                xml__xpath_exact=[
+                    *self.suite2_exacts,
+                    (self.s2c3.xpath, {"bananas", "eggs"}),
+                ],
                 run_odk_validate=False,
             )
 
@@ -324,7 +326,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         with self.assertRaises(self.failureException):
             self.assertPyxformXform(
                 md=self.md,
-                xml__xpath_count=self.suite2_counts + [(self.s2c3.xpath, 5)],
+                xml__xpath_count=[*self.suite2_counts, (self.s2c3.xpath, 5)],
                 run_odk_validate=False,
             )
 
@@ -333,6 +335,6 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         with self.assertRaises(self.failureException):
             self.assertPyxformXform(
                 md=self.md,
-                xml__xpath_match=self.suite2_xpaths + [self.s1c1.xpath],
+                xml__xpath_match=[*self.suite2_xpaths, self.s1c1.xpath],
                 run_odk_validate=False,
             )

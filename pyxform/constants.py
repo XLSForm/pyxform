@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This file contains constants that correspond with the property names in the
 json survey format. (@see json_form_schema.json) These names are to be shared
@@ -42,9 +41,7 @@ STYLE = "style"
 ATTRIBUTE = "attribute"
 ALLOW_CHOICE_DUPLICATES = "allow_choice_duplicates"
 
-BIND = (
-    "bind"  # TODO: What should I do with the nested types? (readonly and relevant) # noqa
-)
+BIND = "bind"  # TODO: What should I do with the nested types? (readonly and relevant)
 MEDIA = "media"
 CONTROL = "control"
 APPEARANCE = "appearance"
@@ -72,7 +69,7 @@ CHOICES = "choices"
 # XLS Specific constants
 LIST_NAME = "list name"
 CASCADING_SELECT = "cascading_select"
-TABLE_LIST = "table-list"  # hyphenated because it goes in appearance, and convention for appearance column is dashes # noqa
+TABLE_LIST = "table-list"  # hyphenated because it goes in appearance, and convention for appearance column is dashes
 FIELD_LIST = "field-list"
 LIST_NOLABEL = "list-nolabel"
 
@@ -149,4 +146,12 @@ _MSG_SUPPRESS_SPELLING = (
     " If you do not mean to include a sheet, to suppress this message, "
     "prefix the sheet name with an underscore. For example 'setting' "
     "becomes '_setting'."
+)
+
+CONVERTIBLE_BIND_ATTRIBUTES = (
+    "readonly",
+    "required",
+    "relevant",
+    "constraint",
+    "calculate",
 )

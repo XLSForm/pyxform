@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """
 Testing creation of Surveys using verbose methods
 """
 from unittest import TestCase
 
 from pyxform import MultipleChoiceQuestion, Survey, create_survey_from_xls
+
 from tests import utils
 
 
@@ -89,4 +89,4 @@ class Json2XformVerboseSurveyCreationTests(TestCase):
             },
             "type": "survey",
         }
-        self.assertEquals(survey.to_json_dict(), expected_dict)
+        self.assertEqual(survey.to_json_dict(), expected_dict)

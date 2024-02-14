@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Survey builder functionality.
 """
@@ -33,6 +32,23 @@ OR_OTHER_CHOICE = {
     const.NAME: "other",
     const.LABEL: "Other",
 }
+QUESTION_CLASSES = {
+    "": Question,
+    "action": Question,
+    "input": InputQuestion,
+    "odk:rank": MultipleChoiceQuestion,
+    "osm": OsmUploadQuestion,
+    "range": RangeQuestion,
+    "select": MultipleChoiceQuestion,
+    "select1": MultipleChoiceQuestion,
+    "trigger": TriggerQuestion,
+    "upload": UploadQuestion,
+}
+SECTION_CLASSES = {
+    const.GROUP: GroupedSection,
+    const.REPEAT: RepeatingSection,
+    const.SURVEY: Survey,
+}
 
 
 def copy_json_dict(json_dict):
@@ -42,15 +58,15 @@ def copy_json_dict(json_dict):
     json_dict_copy = None
     items = None
 
-    if type(json_dict) is list:
+    if isinstance(json_dict, list):
         json_dict_copy = [None] * len(json_dict)
         items = enumerate(json_dict)
-    elif type(json_dict) is dict:
+    elif isinstance(json_dict, dict):
         json_dict_copy = {}
         items = json_dict.items()
 
     for key, value in items:
-        if type(value) is dict or type(value) is list:
+        if isinstance(value, (dict, list)):
             json_dict_copy[key] = copy_json_dict(value)
         else:
             json_dict_copy[key] = value
@@ -59,26 +75,6 @@ def copy_json_dict(json_dict):
 
 
 class SurveyElementBuilder:
-    # we use this CLASSES dict to create questions from dictionaries
-    QUESTION_CLASSES = {
-        "": Question,
-        "action": Question,
-        "input": InputQuestion,
-        "odk:rank": MultipleChoiceQuestion,
-        "osm": OsmUploadQuestion,
-        "range": RangeQuestion,
-        "select": MultipleChoiceQuestion,
-        "select1": MultipleChoiceQuestion,
-        "trigger": TriggerQuestion,
-        "upload": UploadQuestion,
-    }
-
-    SECTION_CLASSES = {
-        const.GROUP: GroupedSection,
-        const.REPEAT: RepeatingSection,
-        const.SURVEY: Survey,
-    }
-
     def __init__(self, **kwargs):
         # I don't know why we would need an explicit none option for
         # select alls
@@ -97,7 +93,8 @@ class SurveyElementBuilder:
         the name of the section and the value is a dict that can be
         used to create a whole survey.
         """
-        assert type(sections) == dict
+        if not isinstance(sections, dict):
+            raise PyXFormError("""Invalid value for `sections`.""")
         self._sections = sections
 
     def create_survey_element_from_dict(
@@ -111,7 +108,7 @@ class SurveyElementBuilder:
         if "add_none_option" in d:
             self._add_none_option = d["add_none_option"]
 
-        if d[const.TYPE] in self.SECTION_CLASSES:
+        if d[const.TYPE] in SECTION_CLASSES:
             if d[const.TYPE] == const.SURVEY:
                 self._choices = copy.deepcopy(d.get(const.CHOICES, {}))
 
@@ -210,18 +207,18 @@ class SurveyElementBuilder:
 
     @staticmethod
     def _get_or_other_choice(
-        choice_list: List[Dict[str, Any]]
+        choice_list: List[Dict[str, Any]],
     ) -> Dict[str, Union[str, Dict]]:
         """
         If the choices have any translations, return an OR_OTHER choice for each lang.
         """
         if any(isinstance(c.get(const.LABEL), dict) for c in choice_list):
-            langs = set(
+            langs = {
                 lang
                 for c in choice_list
                 for lang in c[const.LABEL]
                 if isinstance(c.get(const.LABEL), dict)
-            )
+            }
             return {
                 const.NAME: OR_OTHER_CHOICE[const.NAME],
                 const.LABEL: {lang: OR_OTHER_CHOICE[const.LABEL] for lang in langs},
@@ -257,7 +254,7 @@ class SurveyElementBuilder:
         if control_tag == "upload" and control_dict.get("mediatype") == "osm/*":
             control_tag = "osm"
 
-        return SurveyElementBuilder.QUESTION_CLASSES[control_tag]
+        return QUESTION_CLASSES[control_tag]
 
     @staticmethod
     def _create_specify_other_question_from_dict(d: Dict[str, Any]) -> InputQuestion:
@@ -272,7 +269,7 @@ class SurveyElementBuilder:
     def _create_section_from_dict(self, d):
         d_copy = d.copy()
         children = d_copy.pop(const.CHILDREN, [])
-        section_class = self.SECTION_CLASSES[d_copy[const.TYPE]]
+        section_class = SECTION_CLASSES[d_copy[const.TYPE]]
         if d[const.TYPE] == const.SURVEY and const.TITLE not in d:
             d_copy[const.TITLE] = d[const.NAME]
         result = section_class(**d_copy)
@@ -336,28 +333,23 @@ class SurveyElementBuilder:
         # if the label in column_headers has multiple languages setup a
         # dictionary by language to do substitutions.
         info_by_lang = {}
-        if type(column_headers[const.LABEL]) == dict:
-            info_by_lang = dict(
-                [
-                    (
-                        lang,
-                        {
-                            const.NAME: column_headers[const.NAME],
-                            const.LABEL: column_headers[const.LABEL][lang],
-                        },
-                    )
-                    for lang in column_headers[const.LABEL].keys()
-                ]
-            )
+        if isinstance(column_headers[const.LABEL], dict):
+            info_by_lang = {
+                lang: {
+                    const.NAME: column_headers[const.NAME],
+                    const.LABEL: column_headers[const.LABEL][lang],
+                }
+                for lang in column_headers[const.LABEL].keys()
+            }
 
         result = question_template.copy()
         for key in result.keys():
-            if type(result[key]) == str:
+            if isinstance(result[key], str):
                 result[key] %= column_headers
-            elif type(result[key]) == dict:
+            elif isinstance(result[key], dict):
                 result[key] = result[key].copy()
                 for key2 in result[key].keys():
-                    if type(column_headers[const.LABEL]) == dict:
+                    if isinstance(column_headers[const.LABEL], dict):
                         result[key][key2] %= info_by_lang.get(key2, column_headers)
                     else:
                         result[key][key2] %= column_headers
@@ -394,9 +386,9 @@ def create_survey_from_xls(path_or_file, default_name=None):
 
 
 def create_survey(
-    name_of_main_section: str = None,
-    sections: Dict[str, Dict] = None,
-    main_section: Dict[str, Any] = None,
+    name_of_main_section: Optional[str] = None,
+    sections: Optional[Dict[str, Dict]] = None,
+    main_section: Optional[Dict[str, Any]] = None,
     id_string: Optional[str] = None,
     title: Optional[str] = None,
 ) -> Survey:

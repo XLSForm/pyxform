@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 A Python script to convert excel files into JSON.
 """
-import codecs
 import json
 import os
 import re
@@ -39,9 +37,8 @@ def print_pyobj_to_json(pyobj, path=None):
     or stdout if no file is specified
     """
     if path:
-        fp = codecs.open(path, mode="w", encoding="utf-8")
-        json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
-        fp.close()
+        with open(path, mode="w", encoding="utf-8") as fp:
+            json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
     else:
         sys.stdout.write(json.dumps(pyobj, ensure_ascii=False, indent=4))
 
@@ -72,7 +69,7 @@ def merge_dicts(dict_a, dict_b, default_key="default"):
     all_keys = {k: None for k in dict_a.keys()}
     all_keys.update({k: None for k in dict_b.keys()})
 
-    out_dict = dict()
+    out_dict = {}
     for key in all_keys.keys():
         out_dict[key] = merge_dicts(dict_a.get(key), dict_b.get(key), default_key)
     return out_dict
@@ -131,10 +128,10 @@ def dealias_and_group_headers(
     without a language specified with localized versions.
     """
     group_delimiter = "::"
-    out_dict_array = list()
+    out_dict_array = []
     seen_headers = {}
     for row in dict_array:
-        out_row = dict()
+        out_row = {}
         for header, val in row.items():
             if ignore_case:
                 header = header.lower()
@@ -230,7 +227,7 @@ def group_dictionaries_by_key(list_of_dicts, key, remove_key=True):
     The grouping key is removed by default.
     If the key is not in any dictionary an empty dict is returned.
     """
-    dict_of_lists = dict()
+    dict_of_lists = {}
     for dicty in list_of_dicts:
         if key not in dicty:
             continue
@@ -252,7 +249,7 @@ def has_double_colon(workbook_dict) -> bool:
     for sheet in workbook_dict.values():
         for row in sheet:
             for column_header in row.keys():
-                if type(column_header) is not str:
+                if not isinstance(column_header, str):
                     continue
                 if "::" in column_header:
                     return True
@@ -287,12 +284,11 @@ def add_flat_annotations(prompt_list, parent_relevant="", name_prefix=""):
             add_flat_annotations(
                 children, new_relevant, name_prefix + "_" + prompt["name"]
             )
-        else:
-            if new_relevant != "":
-                prompt["bind"] = prompt.get("bind", {})
-                prompt["bind"]["relevant"] = new_relevant
-                # if name_prefix != '':
-                #    prompt['name'] = name_prefix + prompt['name']
+        elif new_relevant != "":
+            prompt["bind"] = prompt.get("bind", {})
+            prompt["bind"]["relevant"] = new_relevant
+            # if name_prefix != '':
+            #    prompt['name'] = name_prefix + prompt['name']
 
 
 def process_range_question_type(
@@ -315,12 +311,16 @@ def process_range_question_type(
         if key not in parameters:
             parameters[key] = defaults[key]
 
+    has_float = False
     try:
-        has_float = any([float(x) and "." in str(x) for x in parameters.values()])
-    except ValueError:
+        # Check all parameters.
+        for x in parameters.values():
+            if float(x) and "." in str(x):
+                has_float = True
+    except ValueError as range_err:
         raise PyXFormError(
-            "Range parameters 'start', " "'end' or 'step' must all be numbers."
-        )
+            "Range parameters 'start', 'end' or 'step' must all be numbers."
+        ) from range_err
     else:
         # is integer by default, convert to decimal if it has any float values
         if has_float:
@@ -422,7 +422,7 @@ def workbook_to_json(
     workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
     workbook_keys = workbook_dict.keys()
     if constants.SURVEY not in workbook_dict:
-        msg = "You must have a sheet named '{k}'. ".format(k=constants.SURVEY)
+        msg = f"You must have a sheet named '{constants.SURVEY}'. "
         similar = find_sheet_misspellings(key=constants.SURVEY, keys=workbook_keys)
         if similar is not None:
             msg += similar
@@ -556,7 +556,7 @@ def workbook_to_json(
             if "name" not in option:
                 info = "[list_name : " + list_name + "]"
                 raise PyXFormError(
-                    "On the choices sheet there is " "a option with no name. " + info
+                    "On the choices sheet there is a option with no name. " + info
                 )
             if "label" not in option:
                 info = "[list_name : " + list_name + "]"
@@ -564,7 +564,7 @@ def workbook_to_json(
                     "On the choices sheet there is a option with no label. " + info
                 )
             # chrislrobert's fix for a cryptic error message:
-            # see: https://code.google.com/p/opendatakit/issues/detail?id=832&start=200 # noqa
+            # see: https://code.google.com/p/opendatakit/issues/detail?id=833&start=200
             option_keys = list(option.keys())
             for headername in option_keys:
                 # Using warnings and removing the bad columns
@@ -590,7 +590,7 @@ def workbook_to_json(
         list_name_choices = [option.get("name") for option in options]
         if len(list_name_choices) != len(set(list_name_choices)):
             duplicate_setting = settings.get("allow_choice_duplicates")
-            for k, v in Counter(list_name_choices).items():
+            for v in Counter(list_name_choices).values():
                 if v > 1:
                     if not duplicate_setting or duplicate_setting.capitalize() != "Yes":
                         choice_duplicates = [
@@ -607,13 +607,10 @@ def workbook_to_json(
                                 "allow_choice_duplicates setting to 'yes'. Learn more: https://xlsform.org/#choice-names.".format(
                                     list_name,
                                     ", ".join(
-                                        [
-                                            "'{}'".format(dupe)
-                                            for dupe in choice_duplicates
-                                        ]
+                                        [f"'{dupe}'" for dupe in choice_duplicates]
                                     ),
                                 )
-                            )  # noqa
+                            )
 
     # ########## Entities sheet ###########
     entities_sheet = workbook_dict.get(constants.ENTITIES, [])
@@ -782,8 +779,9 @@ def workbook_to_json(
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
                         {
-                            "odk:"
-                            + constants.TRACK_CHANGES: parameters[constants.TRACK_CHANGES]
+                            "odk:" + constants.TRACK_CHANGES: parameters[
+                                constants.TRACK_CHANGES
+                            ]
                         }
                     )
 
@@ -811,8 +809,9 @@ def workbook_to_json(
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
                         {
-                            "odk:"
-                            + constants.IDENTIFY_USER: parameters[constants.IDENTIFY_USER]
+                            "odk:" + constants.IDENTIFY_USER: parameters[
+                                constants.IDENTIFY_USER
+                            ]
                         }
                     )
 
@@ -823,7 +822,6 @@ def workbook_to_json(
             )
             if any(k in parameters.keys() for k in location_parameters):
                 if all(k in parameters.keys() for k in location_parameters):
-
                     if parameters[constants.LOCATION_PRIORITY] not in [
                         "no-power",
                         "low-power",
@@ -840,12 +838,12 @@ def workbook_to_json(
 
                     try:
                         int(parameters[constants.LOCATION_MIN_INTERVAL])
-                    except ValueError:
+                    except ValueError as lmi_err:
                         raise PyXFormError(
                             "Parameter "
                             + constants.LOCATION_MIN_INTERVAL
                             + " must have an integer value."
-                        )
+                        ) from lmi_err
                     if int(parameters[constants.LOCATION_MIN_INTERVAL]) < 0:
                         raise PyXFormError(
                             "Parameter "
@@ -855,12 +853,12 @@ def workbook_to_json(
 
                     try:
                         int(parameters[constants.LOCATION_MAX_AGE])
-                    except ValueError:
+                    except ValueError as lma_err:
                         raise PyXFormError(
                             "Parameter "
                             + constants.LOCATION_MAX_AGE
                             + " must have an integer value."
-                        )
+                        ) from lma_err
                     if int(parameters[constants.LOCATION_MAX_AGE]) < 0:
                         raise PyXFormError(
                             "Parameter "
@@ -882,16 +880,13 @@ def workbook_to_json(
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
                         {
-                            "odk:"
-                            + constants.LOCATION_MAX_AGE: parameters[
+                            "odk:" + constants.LOCATION_MAX_AGE: parameters[
                                 constants.LOCATION_MAX_AGE
                             ],
-                            "odk:"
-                            + constants.LOCATION_MIN_INTERVAL: parameters[
+                            "odk:" + constants.LOCATION_MIN_INTERVAL: parameters[
                                 constants.LOCATION_MIN_INTERVAL
                             ],
-                            "odk:"
-                            + constants.LOCATION_PRIORITY: parameters[
+                            "odk:" + constants.LOCATION_PRIORITY: parameters[
                                 constants.LOCATION_PRIORITY
                             ],
                         }
@@ -1027,7 +1022,7 @@ def workbook_to_json(
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type
-                child_list = list()
+                child_list = []
                 new_json_dict[constants.CHILDREN] = child_list
                 if control_type is constants.LOOP:
                     if not parse_dict.get("list_name"):
@@ -1127,7 +1122,8 @@ def workbook_to_json(
                     and constants.CHOICE_FILTER not in row
                 ):
                     warnings.append(
-                        ROW_FORMAT_STRING % row_number
+                        ROW_FORMAT_STRING
+                        % row_number
                         + " select one external is only meant for"
                         " filtered selects."
                     )
@@ -1237,10 +1233,10 @@ def workbook_to_json(
                         if not parameters["seed"].startswith("${"):
                             try:
                                 float(parameters["seed"])
-                            except ValueError:
+                            except ValueError as seed_err:
                                 raise PyXFormError(
                                     "seed value must be a number or a reference to another field."
-                                )
+                                ) from seed_err
                 elif "seed" in parameters.keys():
                     raise PyXFormError(
                         "Parameters must include randomize=true to use a seed."
@@ -1295,7 +1291,7 @@ def workbook_to_json(
                             constants.TYPE: select_type,
                             constants.NAME: "reserved_name_for_field_list_labels_"
                             + str(row_number),
-                            # Adding row number for uniqueness # noqa
+                            # Adding row number for uniqueness
                             constants.CONTROL: {constants.APPEARANCE: "label"},
                             constants.CHOICES: choices[list_name],
                             constants.ITEMSET: list_name,
@@ -1351,11 +1347,11 @@ def workbook_to_json(
             if "rows" in parameters.keys():
                 try:
                     int(parameters["rows"])
-                except ValueError:
+                except ValueError as rows_err:
                     raise PyXFormError(
                         (ROW_FORMAT_STRING % row_number)
                         + " Parameter rows must have an integer value."
-                    )
+                    ) from rows_err
 
                 new_dict["control"] = new_dict.get("control", {})
                 new_dict["control"].update({"rows": parameters["rows"]})
@@ -1378,8 +1374,10 @@ def workbook_to_json(
             if "max-pixels" in parameters.keys():
                 try:
                     int(parameters["max-pixels"])
-                except ValueError:
-                    raise PyXFormError("Parameter max-pixels must have an integer value.")
+                except ValueError as mp_err:
+                    raise PyXFormError(
+                        "Parameter max-pixels must have an integer value."
+                    ) from mp_err
 
                 new_dict["bind"] = new_dict.get("bind", {})
                 new_dict["bind"].update({"orx:max-pixels": parameters["max-pixels"]})
@@ -1475,10 +1473,10 @@ def workbook_to_json(
                     new_dict["control"].update(
                         {"accuracyThreshold": parameters["capture-accuracy"]}
                     )
-                except ValueError:
+                except ValueError as ca_err:
                     raise PyXFormError(
                         "Parameter capture-accuracy must have a numeric value"
-                    )
+                    ) from ca_err
 
             if "warning-accuracy" in parameters.keys():
                 try:
@@ -1486,10 +1484,10 @@ def workbook_to_json(
                     new_dict["control"].update(
                         {"unacceptableAccuracyThreshold": parameters["warning-accuracy"]}
                     )
-                except ValueError:
+                except ValueError as wa_err:
                     raise PyXFormError(
                         "Parameter warning-accuracy must have a numeric value"
-                    )
+                    ) from wa_err
 
             parent_children_array.append(new_dict)
             continue
@@ -1510,7 +1508,7 @@ def workbook_to_json(
         # print "Generating flattened instance..."
         add_flat_annotations(stack[0]["parent_children"])
 
-    meta_children = [] + survey_meta
+    meta_children = [*survey_meta]
 
     if aliases.yes_no.get(settings.get("omit_instanceID")):
         if settings.get("public_key"):
@@ -1589,7 +1587,7 @@ def get_filename(path):
     """
     Get the extensionless filename from a path
     """
-    return os.path.splitext((os.path.basename(path)))[0]
+    return os.path.splitext(os.path.basename(path))[0]
 
 
 def parse_file_to_json(
@@ -1630,7 +1628,7 @@ def organize_by_values(dict_list, key):
             dicty_copy = dicty.copy()
             val = dicty_copy.pop(key)
             if val in result:
-                raise Exception("Duplicate key: " + val)
+                raise PyXFormError("Duplicate key: " + val)
             result[val] = dicty_copy
     return result
 
@@ -1683,7 +1681,7 @@ class SurveyReader(SpreadsheetReader):
 
     def print_warning_log(self, warn_out_file):
         # Open file to print warning log to.
-        warn_out = open(warn_out_file, "w")
+        warn_out = open(warn_out_file, mode="w", encoding="utf-8")
         warn_out.write("\n".join(self._warnings))
 
 
@@ -1695,7 +1693,7 @@ class QuestionTypesReader(SpreadsheetReader):
     """
 
     def __init__(self, path):
-        super(QuestionTypesReader, self).__init__(path)
+        super().__init__(path)
         self._setup_question_types_dictionary()
 
     def _setup_question_types_dictionary(self):
@@ -1709,28 +1707,6 @@ class QuestionTypesReader(SpreadsheetReader):
             default_language=constants.DEFAULT_LANGUAGE_VALUE,
         ).data
         self._dict = organize_by_values(self._dict, "name")
-
-
-# Not used internally (or on formhub)
-# TODO: If this is used anywhere else it is probably broken
-#      from the changes I made to SpreadsheetReader.
-class VariableNameReader(SpreadsheetReader):
-    def __init__(self, path):
-        SpreadsheetReader.__init__(self, path)
-        self._organize_renames()
-
-    def _organize_renames(self):
-        new_dict = {}
-        variable_names_so_far = []
-        assert "Dictionary" in self._dict
-        for d in self._dict["Dictionary"]:
-            if "Variable Name" in d:
-                assert d["Variable Name"] not in variable_names_so_far, d["Variable Name"]
-                variable_names_so_far.append(d["Variable Name"])
-                new_dict[d["XPath"]] = d["Variable Name"]
-            else:
-                variable_names_so_far.append(d["XPath"])
-        self._dict = new_dict
 
 
 if __name__ == "__main__":

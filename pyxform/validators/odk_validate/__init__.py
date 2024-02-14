@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 odk_validate.py
 A python wrapper around ODK Validate
@@ -26,8 +25,6 @@ ODK_VALIDATE_PATH = os.path.join(CURRENT_DIRECTORY, "bin", "ODK_Validate.jar")
 
 class ODKValidateError(Exception):
     """ODK Validation exception error."""
-
-    pass
 
 
 def install_exists():
@@ -68,7 +65,7 @@ def check_java_available():
         "To fix this, please either: 1) install Java, or 2) run pyxform with the "
         "--skip_validate flag, or 3) add the installed Java to the environment path."
     )
-    raise EnvironmentError(msg)
+    raise OSError(msg)
 
 
 def check_xform(path_to_xform):
@@ -92,16 +89,15 @@ def check_xform(path_to_xform):
 
     if result.timeout:
         return ["XForm took to long to completely validate."]
-    else:
-        if result.return_code > 0:  # Error invalid
-            raise ODKValidateError(
-                "ODK Validate Errors:\n" + ErrorCleaner.odk_validate(result.stderr)
-            )
-        elif result.return_code == 0:
-            if result.stderr:
-                warnings.append("ODK Validate Warnings:\n" + result.stderr)
-        elif result.return_code < 0:
-            return ["Bad return code from ODK Validate."]
+    elif result.return_code > 0:  # Error invalid
+        raise ODKValidateError(
+            "ODK Validate Errors:\n" + ErrorCleaner.odk_validate(result.stderr)
+        )
+    elif result.return_code == 0:
+        if result.stderr:
+            warnings.append("ODK Validate Warnings:\n" + result.stderr)
+    elif result.return_code < 0:
+        return ["Bad return code from ODK Validate."]
 
     return warnings
 

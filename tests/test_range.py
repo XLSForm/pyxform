@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test range widget.
 """
@@ -89,7 +88,7 @@ class RangeWidgetTest(PyxformTestCase):
             ],
         )
 
-    def test_range_type_invvalid_parameters(self):
+    def test_range_type_invalid_parameters(self):
         # 'increment' is an invalid property
         self.assertPyxformXform(
             name="data",
@@ -168,7 +167,7 @@ class RangeWidgetTest(PyxformTestCase):
             | survey |        |          |       |                                 |
             |        | type   |   name   | label | parameters                      |
             |        | range  |   level  | Scale | start = 1 , end = 10 , step = 2 |
-            """,  # noqa
+            """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
                 '<range end="10" ref="/data/level" start="1" step="2">',

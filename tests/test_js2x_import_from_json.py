@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Testing our ability to import from a JSON text file.
 """

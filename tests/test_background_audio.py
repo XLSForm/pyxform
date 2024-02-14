@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from tests.pyxform_test_case import PyxformTestCase
 
 

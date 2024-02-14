@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Testing creation of Surveys using verbose methods
 """
@@ -6,6 +5,7 @@ from unittest import TestCase
 
 from pyxform import Survey
 from pyxform.builder import create_survey_element_from_dict
+
 from tests.utils import prep_class_config
 
 TESTING_BINDINGS = True
@@ -177,7 +177,7 @@ class Json2XformQuestionValidationTests(TestCase):
             "type": "string",
             "constraint": r"regex(., '^\d*$')",
         }
-        observed = {k: v for k, v in q.xml_bindings()[0].attributes.items()}
+        observed = {k: v for k, v in q.xml_bindings()[0].attributes.items()}  # noqa: C416
         self.assertDictEqual(expected, observed)
 
     def test_simple_select_all_question_multilingual(self):

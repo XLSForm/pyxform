@@ -53,7 +53,7 @@ class TestWarnings(PyxformTestCase):
         | settings |            |           |            |                |                  |
         |          | form_title | form_id   | public_key | submission_url | default_language |
         |          | spec_test  | spec_test |            |                |                  |
-        """  # noqa
+        """
         warnings = []
         self.assertPyxformXform(
             debug=True,

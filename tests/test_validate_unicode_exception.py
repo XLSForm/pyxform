@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test unicode characters in validate error messages.
 """
@@ -27,7 +26,7 @@ class ValidateUnicodeException(PyxformTestCase):
 
     def test_validate_with_more_unicode(self):
         self.assertPyxformXform(
-            md=u"""
+            md="""
             | survey  |           |       |       |                |
             |         | type      | name  | label | calculation    |
             |         | calculate | bad   | bad   | £¥§©®₱₩        |

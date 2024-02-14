@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 pyxform_validator_update - command to update XForm validators.
 """
 import argparse
 import fnmatch
-import io
 import json
 import logging
 import os
@@ -64,7 +62,7 @@ class _UpdateInfo:
         self.installed_path = os.path.join(self.bin_path, "installed.json")
         self.bin_new_path = os.path.join(self.mod_path, "bin_new")
 
-        self.manual_msg = "Download manually from: {r}.".format(r=self.repo_url)
+        self.manual_msg = f"Download manually from: {self.repo_url}."
 
 
 class _UpdateHandler:
@@ -88,7 +86,7 @@ class _UpdateHandler:
     @staticmethod
     def _check_path(file_path):
         if not os.path.exists(file_path):
-            raise PyXFormError("Expected path does not exist: {p}" "".format(p=file_path))
+            raise PyXFormError(f"Expected path does not exist: {file_path}" "")
         else:
             return True
 
@@ -98,7 +96,7 @@ class _UpdateHandler:
         Read the JSON file to a string.
         """
         _UpdateHandler._check_path(file_path=file_path)
-        with io.open(file_path, mode="r") as in_file:
+        with open(file_path, encoding="utf-8") as in_file:
             return json.load(in_file)
 
     @staticmethod
@@ -106,7 +104,7 @@ class _UpdateHandler:
         """
         Save the JSON data to a file.
         """
-        with io.open(file_path, mode="w", newline="\n") as out_file:
+        with open(file_path, mode="w", encoding="utf-8", newline="\n") as out_file:
             data = json.dumps(content, indent=2, sort_keys=True)
             out_file.write(str(data))
 
@@ -116,7 +114,7 @@ class _UpdateHandler:
         Read the .last_check file.
         """
         _UpdateHandler._check_path(file_path=file_path)
-        with io.open(file_path, mode="r") as in_file:
+        with open(file_path, encoding="utf-8") as in_file:
             first_line = in_file.readline()
         try:
             last_check = datetime.strptime(first_line, UTC_FMT)
@@ -130,7 +128,7 @@ class _UpdateHandler:
         """
         Write the .last_check file.
         """
-        with io.open(file_path, mode="w", newline="\n") as out_file:
+        with open(file_path, mode="w", encoding="utf-8", newline="\n") as out_file:
             out_file.write(str(content.strftime(UTC_FMT)))
 
     @staticmethod
@@ -173,7 +171,7 @@ class _UpdateHandler:
 
     @staticmethod
     def _get_release_message(json_data):
-        template = "- Tag name = {tag_name}\n" "- Tag URL = {tag_url}\n\n"
+        template = "- Tag name = {tag_name}\n- Tag URL = {tag_url}\n\n"
         return template.format(
             tag_name=json_data["tag_name"], tag_url=json_data["html_url"]
         )
@@ -194,7 +192,7 @@ class _UpdateHandler:
         latest = _UpdateHandler._get_latest(update_info=update_info)
         latest_files = latest["assets"]
         if len(latest_files) == 0:
-            file_message = "- None!\n\n{m}".format(m=update_info.manual_msg)
+            file_message = f"- None!\n\n{update_info.manual_msg}"
         else:
             file_names = ["- {n}".format(n=x["name"]) for x in latest_files]
             file_message = "\n".join(file_names)
@@ -221,8 +219,7 @@ class _UpdateHandler:
 
         if len(files) == 0:
             raise PyXFormError(
-                "No files attached to release '{r}'.\n\n{h}"
-                "".format(r=rel_name, h=update_info.manual_msg)
+                f"No files attached to release '{rel_name}'.\n\n{update_info.manual_msg}"
             )
 
         file_urls = [x["browser_download_url"] for x in files if x["name"] == file_name]
@@ -230,8 +227,8 @@ class _UpdateHandler:
         urls_len = len(file_urls)
         if 0 == urls_len:
             raise PyXFormError(
-                "No files with the name '{n}' attached to release '{r}'."
-                "\n\n{h}".format(n=file_name, r=rel_name, h=update_info.manual_msg)
+                f"No files with the name '{file_name}' attached to release '{rel_name}'."
+                f"\n\n{update_info.manual_msg}"
             )
         elif 1 < urls_len:
             raise PyXFormError(
@@ -248,7 +245,7 @@ class _UpdateHandler:
         """
         Save response content from the URL to a binary file at the file path.
         """
-        with io.open(file_path, mode="wb") as out_file:
+        with open(file_path, mode="wb") as out_file:
             file_data = request_get(url=url)
             out_file.write(file_data)
 
@@ -270,8 +267,9 @@ class _UpdateHandler:
             main_bin = "*validate"
         else:
             raise PyXFormError(
-                "Did not find a supported main binary for file: {p}.\n\n{h}"
-                "".format(p=file_path, h=update_info.manual_msg)
+                "Did not find a supported main binary for file: {p}.\n\n{h}".format(
+                    p=file_path, h=update_info.manual_msg
+                )
             )
         return [
             (main_bin, update_info.validator_basename),
@@ -309,8 +307,7 @@ class _UpdateHandler:
                     zip_jobs[file_out_path] = zip_item
         if len(bin_paths) != len(zip_jobs.keys()):
             raise PyXFormError(
-                "Expected {e} zip job files, found: {c}"
-                "".format(e=len(bin_paths), c=len(zip_jobs.keys()))
+                f"Expected {len(bin_paths)} zip job files, found: {len(zip_jobs.keys())}"
             )
         return zip_jobs
 
@@ -328,7 +325,7 @@ class _UpdateHandler:
             os.makedirs(out_parent)
         with open_zip_file.open(zip_item, mode="r") as zip_item_file:
             zip_item_data = zip_item_file.read()
-            with io.open(file_out_path, "wb") as file_out_file:
+            with open(file_out_path, "wb") as file_out_file:
                 file_out_file.write(zip_item_data)
 
     @staticmethod
@@ -389,8 +386,8 @@ class _UpdateHandler:
             current_mode = os.stat(new_bin_file_path).st_mode
             os.chmod(new_bin_file_path, current_mode | S_IXUSR | S_IXGRP)
 
-        except PyXFormError as e:
-            raise PyXFormError("\n\nUpdate failed!\n\n" + str(e))
+        except PyXFormError as px_err:
+            raise PyXFormError("\n\nUpdate failed!\n\n" + str(px_err)) from px_err
         else:
             return latest
 
@@ -497,7 +494,6 @@ class _UpdateHandler:
 
 
 class _UpdateService:
-
     update_info = None
 
     def list(self):
@@ -556,11 +552,10 @@ class ODKValidateUpdater(_UpdateService):
 
 
 def _build_validator_menu(main_subparser, validator_name, updater_instance):
-
     main = main_subparser.add_parser(
         validator_name.lower(),
-        description="{v} Sub-menu".format(v=validator_name),
-        help="For help, use '{v} -h'.".format(v=validator_name.lower()),
+        description=f"{validator_name} Sub-menu",
+        help=f"For help, use '{validator_name.lower()} -h'.",
     )
     subs = main.add_subparsers(metavar="<sub_command>")
 

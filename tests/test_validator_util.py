@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test pyxform.validators.utils module.
 """
@@ -7,6 +6,7 @@ from unittest import TestCase
 
 from pyxform.validators.error_cleaner import ErrorCleaner
 from pyxform.validators.util import XFORM_SPEC_PATH, check_readable
+
 from tests.utils import prep_class_config
 
 

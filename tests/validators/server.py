@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import posixpath
 import threading
@@ -10,7 +9,7 @@ from urllib.parse import unquote
 HERE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 
 
-class SimpleHTTPRequestHandlerHere(SimpleHTTPRequestHandler, object):
+class SimpleHTTPRequestHandlerHere(SimpleHTTPRequestHandler):
     def send_head(self):
         if self.client_address[0] != "127.0.0.1":
             self.send_error(
@@ -18,7 +17,7 @@ class SimpleHTTPRequestHandlerHere(SimpleHTTPRequestHandler, object):
             )
             return None
         else:
-            return super(SimpleHTTPRequestHandlerHere, self).send_head()
+            return super().send_head()
 
     def translate_path(self, path):
         """
@@ -76,10 +75,10 @@ class ThreadingServerInThread:
         try:
             self.httpd.server_bind()
             self.httpd.server_activate()
-        except OSError as e:
+        except OSError:
             self.httpd.server_close()
             if 5 < tries:
-                raise e
+                raise
             else:
                 time.sleep(0.5)
                 self._bind_and_activate(tries=tries)

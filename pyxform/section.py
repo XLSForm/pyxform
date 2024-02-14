@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Section survey element module.
 """
@@ -10,7 +9,7 @@ from pyxform.utils import node
 
 class Section(SurveyElement):
     def validate(self):
-        super(Section, self).validate()
+        super().validate()
         for element in self.children:
             element.validate()
         self._validate_uniqueness_of_element_names()
@@ -23,9 +22,8 @@ class Section(SurveyElement):
             elem_lower = element.name.lower()
             if elem_lower in element_slugs:
                 raise PyXFormError(
-                    "There are more than one survey elements named '%s' "
-                    "(case-insensitive) in the section named '%s'."
-                    % (elem_lower, self.name)
+                    f"There are more than one survey elements named '{elem_lower}' "
+                    f"(case-insensitive) in the section named '{self.name}'."
                 )
             element_slugs.add(elem_lower)
 
@@ -77,8 +75,7 @@ class Section(SurveyElement):
         """
         for child in self.children:
             if child.get("flat"):
-                for grandchild in child.xml_instance_array():
-                    yield grandchild
+                yield from child.xml_instance_array()
             else:
                 yield child.xml_instance()
 
@@ -145,7 +142,7 @@ class RepeatingSection(Section):
     # I'm anal about matching function signatures when overriding a function,
     # but there's no reason for kwargs to be an argument
     def template_instance(self, **kwargs):
-        return super(RepeatingSection, self).generate_repeating_template(**kwargs)
+        return super().generate_repeating_template(**kwargs)
 
 
 class GroupedSection(Section):
@@ -197,6 +194,6 @@ class GroupedSection(Section):
     def to_json_dict(self):
         # This is quite hacky, might want to think about a smart way
         # to approach this problem.
-        result = super(GroupedSection, self).to_json_dict()
+        result = super().to_json_dict()
         result["type"] = "group"
         return result

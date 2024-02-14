@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Markdown table utility functions.
 """

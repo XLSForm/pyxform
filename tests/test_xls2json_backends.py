@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test xls2json_backends module functionality.
 """
@@ -8,13 +7,13 @@ from unittest import TestCase
 
 import openpyxl
 import xlrd
-
 from pyxform.xls2json_backends import (
     xls_to_dict,
     xls_value_to_unicode,
     xlsx_to_dict,
     xlsx_value_to_str,
 )
+
 from tests import bug_example_xls, utils
 
 

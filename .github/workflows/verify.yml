@@ -10,30 +10,28 @@ jobs:
         python: ['3.8']
         os: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: Python cache with dependencies.
         id: python-cache
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.pip') }}
+          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('pyproject.toml') }}
       - name: Install dependencies.
         run: |
           python -m pip install --upgrade pip
-          pip install -r dev_requirements.pip
+          pip install -e .[dev]
           pip list
 
-      # Linters.
-      - run: black pyxform tests --check --diff
-      - run: isort pyxform tests --check-only --diff
-      - run: flake8 pyxform tests
-      - run: pycodestyle pyxform tests
+      # Linter.
+      - run: ruff check pyxform tests --no-fix
+      - run: ruff format pyxform tests --diff
 
   test:
     runs-on: ${{ matrix.os }}
@@ -47,38 +45,38 @@ jobs:
           - os: windows-latest
             windows_nose_args: --traverse-namespace ./tests
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: Python cache with dependencies.
         id: python-cache
         with:
           path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('setup.py') }}-${{ hashFiles('dev_requirements.pip') }}
+          key: ${{ env.pythonLocation }}-${{ matrix.os }}-${{ matrix.python }}-${{ hashFiles('pyproject.toml') }}
       - name: Install dependencies.
         run: |
           python -m pip install --upgrade pip
-          pip install -r dev_requirements.pip
+          pip install -e .[dev]
           pip list
 
       # Tests.
       - name: Run tests
-        run: nosetests -v -v ${{ matrix.windows_nose_args }}
+        run: python -m unittest --verbose
 
       # Build and Upload.
       - name: Build sdist and wheel.
+        if: success()
         run: |
-          pip install wheel
-          python clean_for_build.py
-          python setup.py sdist bdist_wheel
+          pip install flit==3.9.0
+          flit --debug build --no-use-vcs
       - name: Upload sdist and wheel.
         if: success()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pyxform--on-${{ matrix.os }}--py${{ matrix.python }}
           path: ${{ github.workspace }}/dist/pyxform*

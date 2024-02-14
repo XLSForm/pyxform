@@ -1,9 +1,9 @@
 import os
 
 import psutil
-
 from pyxform.xls2json_backends import xlsx_to_dict
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
+
 from tests import example_xls, test_output
 from tests.pyxform_test_case import PyxformTestCase
 from tests.test_utils.md_table import md_table_to_workbook
@@ -101,7 +101,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 md=CHOICES.format(name=n),
                 errored=True,
                 error__contains=[self.err_choices_required],
-                error__not_contains=[self.err_similar_found, "'{}'".format(n)],
+                error__not_contains=[self.err_similar_found, f"'{n}'"],
             )
 
     def test_workbook_to_json__ignore_prefixed_name__external_choices(self):
@@ -113,7 +113,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 md=EXTERNAL_CHOICES.format(name=n),
                 errored=True,
                 error__contains=[self.err_ext_choices_required],
-                error__not_contains=[self.err_similar_found, "'{}'".format(n)],
+                error__not_contains=[self.err_similar_found, f"'{n}'"],
             )
 
     def test_workbook_to_json__ignore_prefixed_name__settings(self):
@@ -135,7 +135,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 md=SURVEY.format(name=n),
                 errored=True,
                 error__contains=[self.err_survey_required],
-                error__not_contains=[self.err_similar_found, "'{}'".format(n)],
+                error__not_contains=[self.err_similar_found, f"'{n}'"],
             )
 
     def test_workbook_to_json__misspelled_found__choices(self):
@@ -149,7 +149,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 error__contains=[
                     self.err_choices_required,
                     self.err_similar_found,
-                    "'{}'".format(n),
+                    f"'{n}'",
                 ],
             )
 
@@ -206,7 +206,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 error__contains=[
                     self.err_ext_choices_required,
                     self.err_similar_found,
-                    "'{}'".format(n),
+                    f"'{n}'",
                 ],
             )
 
@@ -265,7 +265,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 name="test",
                 md=SETTINGS.format(name=n),
-                warnings__contains=[self.err_similar_found, "'{}'".format(n)],
+                warnings__contains=[self.err_similar_found, f"'{n}'"],
             )
 
     def test_workbook_to_json__misspelled_found__settings_exists(self):
@@ -315,7 +315,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 error__contains=[
                     self.err_survey_required,
                     self.err_similar_found,
-                    "'{}'".format(n),
+                    f"'{n}'",
                 ],
             )
 
@@ -363,7 +363,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 name="test",
                 md=CHOICES.format(name=n),
                 errored=True,
-                error__not_contains=[self.err_similar_found, "'{}'".format(n)],
+                error__not_contains=[self.err_similar_found, f"'{n}'"],
             )
 
     def test_workbook_to_json__misspelled_not_found__external_choices(self):
@@ -374,7 +374,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 name="test",
                 md=EXTERNAL_CHOICES.format(name=n),
                 errored=True,
-                error__not_contains=[self.err_similar_found, "'{}'".format(n)],
+                error__not_contains=[self.err_similar_found, f"'{n}'"],
             )
 
     def test_workbook_to_json__misspelled_not_found__settings(self):

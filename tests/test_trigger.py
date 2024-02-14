@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test handling setvalue of 'trigger' column in forms
 """

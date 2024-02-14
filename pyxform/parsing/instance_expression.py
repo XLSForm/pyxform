@@ -91,7 +91,7 @@ def find_boundaries(xml_text: str) -> List[Tuple[int, int]]:
 
     # Pair up the boundaries [1, 2, 3, 4] -> [(1, 2), (3, 4)].
     bounds = iter(boundaries)
-    pos_bounds = [(x, y) for x, y in zip(bounds, bounds)]
+    pos_bounds = list(zip(bounds, bounds))
     return pos_bounds
 
 

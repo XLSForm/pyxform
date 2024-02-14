@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Testing inlining translation when no translation is specified.
 """

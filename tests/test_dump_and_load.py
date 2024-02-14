@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test multiple XLSForm can be generated successfully.
 """
@@ -6,6 +5,7 @@ import os
 from unittest import TestCase
 
 from pyxform.builder import create_survey_from_path
+
 from tests import utils
 
 
@@ -32,13 +32,13 @@ class DumpAndLoadTests(TestCase):
             self.surveys[filename] = create_survey_from_path(path)
 
     def test_load_from_dump(self):
-        for filename, survey in self.surveys.items():
+        for survey in self.surveys.values():
             survey.json_dump()
             path = survey.name + ".json"
             survey_from_dump = create_survey_from_path(path)
             self.assertEqual(survey.to_json_dict(), survey_from_dump.to_json_dict())
 
     def tearDown(self):
-        for filename, survey in self.surveys.items():
+        for survey in self.surveys.values():
             path = survey.name + ".json"
             os.remove(path)

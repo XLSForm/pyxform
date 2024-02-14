@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
 """
 Test xls2json_backends util functions.
 """
 from unittest import TestCase
 
 from pyxform.xls2json_backends import convert_file_to_csv_string
+
 from tests import utils
 
 

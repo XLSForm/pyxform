@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test translations syntax.
 """
@@ -7,13 +6,13 @@ from dataclasses import dataclass
 from time import perf_counter
 from unittest.mock import patch
 
-from pyxform.constants import CHOICES
+from pyxform.constants import CHOICES, SURVEY
 from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
-from pyxform.constants import SURVEY
 from pyxform.validators.pyxform.translations_checks import (
     OR_OTHER_WARNING,
     format_missing_translations_msg,
 )
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
@@ -323,8 +322,8 @@ class TestTranslations(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             warnings__contains=[warning],
-            xml__xpath_match=common_xpaths
-            + [
+            xml__xpath_match=[
+                *common_xpaths,
                 xp.question_itext_label(DEFAULT_LANG, "hello"),
                 xp.question_itext_hint(DEFAULT_LANG, "-"),
                 xp.question_itext_form(DEFAULT_LANG, "guidance", "-"),
@@ -361,8 +360,11 @@ class TestTranslations(PyxformTestCase):
             md=settings + md,
             # TODO: bug - missing default lang translatable/itext values.
             # warnings__contains=[warning],
-            xml__xpath_match=common_xpaths
-            + [xp.language_is_default("eng"), xp.language_no_itext(DEFAULT_LANG)],
+            xml__xpath_match=[
+                *common_xpaths,
+                xp.language_is_default("eng"),
+                xp.language_no_itext(DEFAULT_LANG),
+            ],
         )
 
     @unittest.skip("Slow performance test. Un-skip to run as needed.")
@@ -394,27 +396,27 @@ class TestTranslations(PyxformTestCase):
         |         | c{i}        | nb   | lb-d  | lb-e       |
         """
         for count in (500, 1000, 2000):
-            questions = "\n".join((question.format(i=i) for i in range(1, count)))
-            choice_lists = "\n".join((choice_list.format(i=i) for i in range(1, count)))
+            questions = "\n".join(question.format(i=i) for i in range(1, count))
+            choice_lists = "\n".join(choice_list.format(i=i) for i in range(1, count))
             md = "".join((survey_header, questions, choices_header, choice_lists))
 
-            def run(name):
+            def run(name, case):
                 runs = 0
                 results = []
                 while runs < 10:
                     start = perf_counter()
-                    self.assertPyxformXform(md=md)
+                    self.assertPyxformXform(md=case)
                     results.append(perf_counter() - start)
                     runs += 1
                 print(name, sum(results) / len(results))
 
-            run(name=f"questions={count}, with check (seconds):")
+            run(name=f"questions={count}, with check (seconds):", case=md)
 
             with patch(
                 "pyxform.xls2json.SheetTranslations.missing_check",
                 return_value=[],
             ):
-                run(name=f"questions={count}, without check (seconds):")
+                run(name=f"questions={count}, without check (seconds):", case=md)
 
     def test_translation_detection__survey_and_choices_columns_present(self):
         """Should identify that the survey is multi-language when first row(s) empty."""

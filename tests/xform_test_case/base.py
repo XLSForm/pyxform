@@ -1,7 +1,7 @@
 import os
-import xml.etree.ElementTree as ETree
 from unittest import TestCase
 
+from defusedxml.ElementTree import fromstring
 from formencode.doctest_xml_compare import xml_compare
 
 from tests import example_xls, test_output
@@ -28,8 +28,8 @@ class XFormTestCase(TestCase):
         self.output_path = os.path.join(test_output.PATH, self.root_filename + ".xml")
 
     def assertXFormEqual(self, xform1, xform2):
-        xform1 = ETree.fromstring(xform1.encode("utf-8"))
-        xform2 = ETree.fromstring(xform2.encode("utf-8"))
+        xform1 = fromstring(xform1.encode("utf-8"))
+        xform2 = fromstring(xform2.encode("utf-8"))
 
         # Sort tags under <model> section in each form
         self.sort_model(xform1)

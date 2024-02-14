@@ -22,7 +22,7 @@ class XPathHelper:
                 for cv, cl in choices
             )
         )
-        return fr"""
+        return rf"""
         /h:html/h:head/x:model/x:instance[@id='{cname}']/x:root[
           {choices_xp}
         ]
@@ -41,7 +41,7 @@ class XPathHelper:
                 for idx, cv in enumerate(choices)
             )
         )
-        return fr"""
+        return rf"""
         /h:html/h:head/x:model/x:instance[@id='{cname}']/x:root[
           {choices_xp}
         ]

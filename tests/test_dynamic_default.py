@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Test handling dynamic default in forms
 """
@@ -10,8 +9,8 @@ from typing import Optional, Tuple
 from unittest.mock import patch
 
 import psutil
-
 from pyxform import utils
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
@@ -45,7 +44,7 @@ class XPathHelper:
     @staticmethod
     def model_setvalue(q_num: int):
         """Get the setvalue element's value attribute."""
-        return fr"""
+        return rf"""
         /h:html/h:head/x:model/x:setvalue[
           @ref="/test_name/q{q_num}"
           and @event='odk-instance-first-load'
@@ -79,7 +78,7 @@ class XPathHelper:
                 value_cmp = ""
             else:
                 value_cmp = f"""and @value="{q_default_final}" """
-            return fr"""
+            return rf"""
             /h:html/h:head/x:model
               /x:instance/x:test_name[@id="test_id"]/x:q{q_num}[
                 not(text())
@@ -97,12 +96,11 @@ class XPathHelper:
         else:
             if 0 == len(q_default_final):
                 q_default_cmp = """and not(text()) """
+            elif "'" in q_default_final:
+                q_default_cmp = ""
             else:
-                if "'" in q_default_final:
-                    q_default_cmp = ""
-                else:
-                    q_default_cmp = f"""and text()='{q_default_final}' """
-            return fr"""
+                q_default_cmp = f"""and text()='{q_default_final}' """
+            return rf"""
             /h:html/h:head/x:model
               /x:instance/x:test_name[@id="test_id"]/x:q{q_num}[
                 ancestor::x:model/x:bind[
@@ -137,7 +135,7 @@ class XPathHelper:
                 for cv, cl in choices
             )
         )
-        return fr"""
+        return rf"""
         /h:html/h:body/x:select1[
           @ref = '/test/q{q_num}'
           and ./x:label/text() = 'Select{q_num}'
@@ -804,23 +802,23 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         |        | text       | q{i}     | Q{i}     | if(../t2 = 'test', 1, 2) + 15 - int(1.2) |
         """
         for count in (500, 1000, 2000):
-            questions = "\n".join((question.format(i=i) for i in range(1, count)))
+            questions = "\n".join(question.format(i=i) for i in range(1, count))
             md = "".join((survey_header, questions))
 
-            def run(name):
+            def run(name, case):
                 runs = 0
                 results = []
                 while runs < 10:
                     start = perf_counter()
-                    self.assertPyxformXform(md=md)
+                    self.assertPyxformXform(md=case)
                     results.append(perf_counter() - start)
                     runs += 1
                 print(name, round(sum(results) / len(results), 4))
 
-            run(name=f"questions={count}, with check (seconds):")
+            run(name=f"questions={count}, with check (seconds):", case=md)
 
             with patch("pyxform.utils.default_is_dynamic", return_value=True):
-                run(name=f"questions={count}, without check (seconds):")
+                run(name=f"questions={count}, without check (seconds):", case=md)
 
     def test_dynamic_default_performance__memory(self):
         """
@@ -838,7 +836,7 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         question = """
         |        | text       | q{i}     | Q{i}     | if(../t2 = 'test', 1, 2) + 15 - int(1.2) |
         """
-        questions = "\n".join((question.format(i=i) for i in range(1, 2000)))
+        questions = "\n".join(question.format(i=i) for i in range(1, 2000))
         md = "".join((survey_header, questions))
         process = psutil.Process(os.getpid())
         pre_mem = process.memory_info().rss
