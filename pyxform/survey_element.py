@@ -51,7 +51,7 @@ FIELDS = {
     "autoplay": str,
     "flat": lambda: False,
     "action": str,
-    "list_name": str,
+    const.LIST_NAME_U: str,
     "trigger": str,
 }
 
