@@ -13,8 +13,8 @@ from xml.etree.ElementTree import Element
 from defusedxml.ElementTree import ParseError, XMLParser, fromstring, parse
 
 from pyxform import builder
+from pyxform.constants import NSMAP
 from pyxform.errors import PyXFormError
-from pyxform.utils import NSMAP
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

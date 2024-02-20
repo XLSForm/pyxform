@@ -14,8 +14,9 @@ from lxml import etree
 # noinspection PyProtectedMember
 from lxml.etree import _Element
 from pyxform.builder import create_survey_element_from_dict
+from pyxform.constants import NSMAP
 from pyxform.errors import PyXFormError
-from pyxform.utils import NSMAP, coalesce
+from pyxform.utils import coalesce
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.xls2json import workbook_to_json
 
@@ -113,13 +114,17 @@ class PyxformMarkdown:
     ):
         # using existing methods from the builder
         imported_survey_json = workbook_to_json(
-            workbook_dict=ss_structure, warnings=warnings
+            workbook_dict=ss_structure, form_name=name, warnings=warnings
         )
         # ideally, when all these tests are working, this would be refactored as well
         survey = create_survey_element_from_dict(imported_survey_json)
-        survey.name = coalesce(name, "data")
-        survey.title = title
-        survey.id_string = id_string
+        # Due to str(name) in workbook_to_json
+        if survey.name is None or survey.name == "None":
+            survey.name = coalesce(name, "data")
+        if survey.title is None:
+            survey.title = title
+        if survey.id_string is None:
+            survey.id_string = id_string
 
         return survey
 

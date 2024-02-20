@@ -11,7 +11,7 @@ from functools import lru_cache
 from typing import Generator, Iterator, List, Optional, Tuple
 
 from pyxform import aliases, constants
-from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
+from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -23,7 +23,6 @@ from pyxform.utils import (
     BRACKETED_TAG_REGEX,
     LAST_SAVED_INSTANCE_NAME,
     LAST_SAVED_REGEX,
-    NSMAP,
     DetachableElement,
     PatchedText,
     get_languages_with_bad_tags,

@@ -545,7 +545,7 @@ class BuilderTests(TestCase):
     STRIP_NS_FROM_TAG_RE = re.compile(r"\{.+\}")
 
     def test_style_not_added_to_body_if_not_present(self):
-        survey = utils.create_survey_from_fixture("settings", filetype=FIXTURE_FILETYPE)
+        survey = utils.create_survey_from_fixture("widgets", filetype=FIXTURE_FILETYPE)
         xml = survey.to_xml()
         # find the body tag
         root_elm = ETree.fromstring(xml.encode("utf-8"))

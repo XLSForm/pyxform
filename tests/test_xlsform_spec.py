@@ -51,13 +51,11 @@ class TestWarnings(PyxformTestCase):
         |          | animals   | zebra   |       |       |
         |          | animals   | buffalo |       |       |
         | settings |            |           |            |                |                  |
-        |          | form_title | form_id   | public_key | submission_url | default_language |
+        |          | title      | id_string | public_key | submission_url | default_language |
         |          | spec_test  | spec_test |            |                |                  |
         """
         warnings = []
         self.assertPyxformXform(
-            debug=True,
-            name="spec_test",
             md=md,
             warnings=warnings,
         )
