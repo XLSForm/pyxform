@@ -39,7 +39,7 @@ RE_INSTANCE_SECONDARY_REF = re.compile(
     r"(instance\(.*\)\/root\/item\[.*?(\$\{.*\})\]\/.*?)\s"
 )
 RE_PULLDATA = re.compile(r"(pulldata\s*\(\s*)(.*?),")
-SEARCH_APPEARANCE_REGEX = re.compile(r"search\(.*?\)")
+SEARCH_FUNCTION_REGEX = re.compile(r"search\(.*?\)")
 
 
 class InstanceInfo:
@@ -656,22 +656,22 @@ class Survey(Section):
 
     def _redirect_is_search_itext(self, element: SurveyElement) -> bool:
         """
-        For selects using the "search()" appearance, redirect itext for in-line items.
+        For selects using the "search()" function, redirect itext for in-line items.
 
-        External selects from a "search" appearance alone don't work in Enketo. In Collect
+        External selects from a "search" function alone don't work in Enketo. In Collect
         they must have the "item" elements in the body, rather than in an "itemset".
 
         The "itemset" reference is cleared below, so that the element will get in-line
         items instead of an itemset reference to a secondary instance. The itext ref is
         passed to the options/choices so they can use the generated translations. This
-        accounts for questions with and without a "search()" appearance sharing choices.
+        accounts for questions with and without a "search()" function sharing choices.
 
         :param element: A select type question.
-        :return: If True, the element has a search appearance.
+        :return: If True, the element uses the search function.
         """
         try:
             is_search = bool(
-                SEARCH_APPEARANCE_REGEX.search(
+                SEARCH_FUNCTION_REGEX.search(
                     element[constants.CONTROL][constants.APPEARANCE]
                 )
             )
@@ -682,8 +682,8 @@ class Survey(Section):
             if ext in EXTERNAL_INSTANCE_EXTENSIONS:
                 msg = (
                     f"Question '{element[constants.NAME]}' is a select from file type, "
-                    "with a 'search' appearance. This combination is not supported. "
-                    "Remove the 'search' appearance, or change the select type."
+                    "using 'search()'. This combination is not supported. "
+                    "Remove the 'search()' usage, or change the select type."
                 )
                 raise PyXFormError(msg)
             itemset = element[constants.ITEMSET]
@@ -799,15 +799,14 @@ class Survey(Section):
         for q_name, list_name in search_lists:
             choice_refs = [f"'{q}'" for q, c in non_search_lists if c == list_name]
             if len(choice_refs) > 0:
-                choice_refs_str = ", ".join(choice_refs)
+                refs_str = ", ".join(choice_refs)
                 msg = (
-                    f"Question '{q_name}' uses the 'search' appearance, and its select "
-                    f"type references the choice list name '{list_name}'. This choice "
-                    "list name is referenced by at least one other non-'search' "
-                    f"question, which will not work: {choice_refs_str}. "
-                    "Either 1) use the 'search' appearance for all questions using "
-                    f"this choice list name, or 2) use a different choice list name "
-                    "for the 'search' question."
+                    f"Question '{q_name}' uses 'search()', and its select type references"
+                    f" the choice list name '{list_name}'. This choice list name is "
+                    f"referenced by at least one other question that is not using "
+                    f"'search()', which will not work: {refs_str}. Either 1) use "
+                    f"'search()' for all questions using this choice list name, or 2) "
+                    f"use a different choice list name for the question using 'search()'."
                 )
                 raise PyXFormError(msg)
 

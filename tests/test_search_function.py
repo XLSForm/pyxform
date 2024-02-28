@@ -1,3 +1,10 @@
+"""
+Tests about the 'search()' function, which pulls data from CSV, optionally filtering it.
+
+Although both go in the 'appearance' column, 'search()' is not the same as 'search'. The
+latter is a style which enables a choice filtering UI.
+"""
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
@@ -127,7 +134,7 @@ class TestTranslations(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=["Question 'q1' uses the 'search' appearance"],
+            error__contains=["Question 'q1' uses 'search()',"],
         )
 
     def test_single_question_usage(self):
@@ -566,6 +573,6 @@ class TestSecondaryInstances(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                "Question 'q1' is a select from file type, with a 'search' appearance."
+                "Question 'q1' is a select from file type, using 'search()'."
             ],
         )

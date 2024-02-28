@@ -51,7 +51,7 @@ class TestWarnings(PyxformTestCase):
         |          | animals   | zebra   |       |       |
         |          | animals   | buffalo |       |       |
         | settings |            |           |            |                |                  |
-        |          | title      | id_string | public_key | submission_url | default_language |
+        |          | form_title | form_id   | public_key | submission_url | default_language |
         |          | spec_test  | spec_test |            |                |                  |
         """
         warnings = []

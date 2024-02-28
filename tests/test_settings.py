@@ -4,12 +4,19 @@ from tests.xpath_helpers.questions import xpq
 
 
 class TestSettings(PyxformTestCase):
-    def test_title(self):
+    """
+    Test form settings.
+
+    Use the documented setting name, even if it's an alias.
+    """
+
+    #
+    def test_form_title(self):
         """Should find the title set in the XForm."""
         md = """
         | settings |
-        |          | title   |
-        |          | My Form |
+        |          | form_title |
+        |          | My Form    |
         | survey |       |      |       |
         |        | type  | name | label |
         |        | text  | q1   | hello |
@@ -19,18 +26,19 @@ class TestSettings(PyxformTestCase):
             xml__xpath_match=["/h:html/h:head/h:title[.='My Form']"],
         )
 
-    def test_id_string(self):
+    def test_form_id(self):
         """Should find the instance id set in the XForm."""
         md = """
         | settings |
-        |          | id_string |
-        |          | my_form   |
+        |          | form_id |
+        |          | my_form |
         | survey |       |      |       |
         |        | type  | name | label |
         |        | text  | q1   | hello |
         """
         self.assertPyxformXform(
             md=md,
+            debug=True,
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:test_name[@id='my_form']"
             ],
