@@ -11,7 +11,7 @@ from functools import lru_cache
 from typing import Generator, Iterator, List, Optional, Tuple
 
 from pyxform import aliases, constants
-from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
+from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -23,7 +23,6 @@ from pyxform.utils import (
     BRACKETED_TAG_REGEX,
     LAST_SAVED_INSTANCE_NAME,
     LAST_SAVED_REGEX,
-    NSMAP,
     DetachableElement,
     PatchedText,
     get_languages_with_bad_tags,
@@ -40,7 +39,7 @@ RE_INSTANCE_SECONDARY_REF = re.compile(
     r"(instance\(.*\)\/root\/item\[.*?(\$\{.*\})\]\/.*?)\s"
 )
 RE_PULLDATA = re.compile(r"(pulldata\s*\(\s*)(.*?),")
-SEARCH_APPEARANCE_REGEX = re.compile(r"search\(.*?\)")
+SEARCH_FUNCTION_REGEX = re.compile(r"search\(.*?\)")
 
 
 class InstanceInfo:
@@ -216,7 +215,7 @@ class Survey(Section):
             "namespaces": str,
             constants.ENTITY_FEATURES: list,
         }
-    )  # yapf: disable
+    )
 
     def validate(self):
         if self.id_string in [None, "None"]:
@@ -385,7 +384,7 @@ class Survey(Section):
         errors = []
         for element, copies in seen.items():
             if len(copies) > 1:
-                contexts = ", ".join(x.context for x in copies)
+                contexts = ", ".join(f"{x.context}({x.type})" for x in copies)
                 errors.append(
                     "Instance names must be unique within a form. "
                     f"The name '{element}' was found {len(copies)} time(s), "
@@ -655,34 +654,44 @@ class Survey(Section):
             dicty[path[0]] = {}
         self._add_to_nested_dict(dicty[path[0]], path[1:], value)
 
-    @staticmethod
-    def _redirect_is_search_itext(element: SurveyElement) -> None:
+    def _redirect_is_search_itext(self, element: SurveyElement) -> bool:
         """
-        For selects using the "search()" appearance, redirect itext for in-line items.
+        For selects using the "search()" function, redirect itext for in-line items.
 
-        External selects from a "search" appearance alone don't work in Enketo. In Collect
+        External selects from a "search" function alone don't work in Enketo. In Collect
         they must have the "item" elements in the body, rather than in an "itemset".
 
         The "itemset" reference is cleared below, so that the element will get in-line
         items instead of an itemset reference to a secondary instance. The itext ref is
         passed to the options/choices so they can use the generated translations. This
-        accounts for questions with and without a "search()" appearance sharing choices.
+        accounts for questions with and without a "search()" function sharing choices.
 
         :param element: A select type question.
-        :return: None, the question/children are modified in-place.
+        :return: If True, the element uses the search function.
         """
         try:
             is_search = bool(
-                SEARCH_APPEARANCE_REGEX.search(
+                SEARCH_FUNCTION_REGEX.search(
                     element[constants.CONTROL][constants.APPEARANCE]
                 )
             )
         except (KeyError, TypeError):
             is_search = False
         if is_search:
+            file_id, ext = os.path.splitext(element[constants.ITEMSET])
+            if ext in EXTERNAL_INSTANCE_EXTENSIONS:
+                msg = (
+                    f"Question '{element[constants.NAME]}' is a select from file type, "
+                    "using 'search()'. This combination is not supported. "
+                    "Remove the 'search()' usage, or change the select type."
+                )
+                raise PyXFormError(msg)
+            itemset = element[constants.ITEMSET]
+            self.choices.pop(itemset, None)
             element[constants.ITEMSET] = ""
             for i, opt in enumerate(element.get(constants.CHILDREN, [])):
-                opt["_choice_itext_id"] = f"{element['list_name']}-{i}"
+                opt["_choice_itext_id"] = f"{element[constants.LIST_NAME_U]}-{i}"
+        return is_search
 
     def _setup_translations(self):
         """
@@ -745,6 +754,8 @@ class Survey(Section):
             self._add_to_nested_dict(self._translations, path, leaf_value)
 
         select_types = set(aliases.select.keys())
+        search_lists = set()
+        non_search_lists = set()
         for element in self.iter_descendants():
             itemset = element.get("itemset")
             if itemset is not None:
@@ -753,7 +764,12 @@ class Survey(Section):
                 element._itemset_dyn_label = itemset in itemsets_has_dyn_label
 
             if element[constants.TYPE] in select_types:
-                self._redirect_is_search_itext(element=element)
+                select_ref = (element[constants.NAME], element[constants.LIST_NAME_U])
+                if self._redirect_is_search_itext(element=element):
+                    search_lists.add(select_ref)
+                else:
+                    non_search_lists.add(select_ref)
+
             # Skip creation of translations for choices in selects. The creation of these
             # translations is done above in this function.
             parent = element.get("parent")
@@ -779,6 +795,20 @@ class Survey(Section):
                             constants.TYPE: constants.QUESTION,
                         }
                     )
+
+        for q_name, list_name in search_lists:
+            choice_refs = [f"'{q}'" for q, c in non_search_lists if c == list_name]
+            if len(choice_refs) > 0:
+                refs_str = ", ".join(choice_refs)
+                msg = (
+                    f"Question '{q_name}' uses 'search()', and its select type references"
+                    f" the choice list name '{list_name}'. This choice list name is "
+                    f"referenced by at least one other question that is not using "
+                    f"'search()', which will not work: {refs_str}. Either 1) use "
+                    f"'search()' for all questions using this choice list name, or 2) "
+                    f"use a different choice list name for the question using 'search()'."
+                )
+                raise PyXFormError(msg)
 
     def _add_empty_translations(self):
         """

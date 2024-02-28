@@ -4,6 +4,13 @@ class XPathHelper:
     """
 
     @staticmethod
+    def model_instance_exists(i_id: str):
+        """Model instance with the given instance id exists."""
+        return rf"""
+          /h:html/h:head/x:model[./x:instance[@id='{i_id}']]
+        """
+
+    @staticmethod
     def model_instance_item(q_name: str):
         """Model instance contains the question item."""
         return rf"""
@@ -17,6 +24,16 @@ class XPathHelper:
           /h:html/h:head/x:model/x:bind[
             @nodeset='/test_name/{q_name}'
             and @type='{_type}'
+          ]
+        """
+
+    @staticmethod
+    def model_instance_bind_attr(qname: str, key: str, value: str) -> str:
+        """Model instance contains the question item and given key/value."""
+        return f"""
+          /h:html/h:head/x:model/x:bind[
+            @nodeset='/test_name/{qname}'
+            and @{key}="{value}"
           ]
         """
 

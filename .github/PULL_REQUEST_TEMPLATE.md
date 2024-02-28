@@ -8,6 +8,6 @@ Closes #
 
 #### Before submitting this PR, please make sure you have:
 - [ ] included test cases for core behavior and edge cases in `tests`
-- [ ] run `nosetests` and verified all tests pass
-- [ ] run `black pyxform tests` to format code
+- [ ] run `python -m unittest` and verified all tests pass
+- [ ] run `ruff format pyxform tests` and `ruff check pyxform tests` to lint code
 - [ ] verified that any code or assets from external sources are properly credited in comments

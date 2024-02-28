@@ -73,7 +73,7 @@ survey_header = {
     "SMS Response": constants.SMS_RESPONSE,
     "compact_tag": "instance::odk:tag",  # used for compact representation
     "Type": "type",
-    "List_name": "list_name",
+    "List_name": constants.LIST_NAME_U,
     # u"repeat_count": u"jr:count",  duplicate key
     "read_only": "bind::readonly",
     "readonly": "bind::readonly",
@@ -111,7 +111,7 @@ survey_header = {
     constants.ENTITIES_SAVETO: "bind::entities:saveto",
 }
 
-entities_header = {"list_name": "dataset"}
+entities_header = {constants.LIST_NAME_U: "dataset"}
 
 # Key is the pyxform internal name, Value is the name used in error/warning messages.
 TRANSLATABLE_SURVEY_COLUMNS = {
@@ -135,7 +135,7 @@ TRANSLATABLE_CHOICES_COLUMNS = {
 }
 list_header = {
     "caption": constants.LABEL,
-    "list_name": constants.LIST_NAME,
+    constants.LIST_NAME_U: constants.LIST_NAME_S,
     "value": constants.NAME,
     "image": "media::image",
     "big-image": "media::big-image",

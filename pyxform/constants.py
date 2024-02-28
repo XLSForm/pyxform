@@ -67,7 +67,8 @@ CHOICE = "choice"
 CHOICES = "choices"
 
 # XLS Specific constants
-LIST_NAME = "list name"
+LIST_NAME_S = "list name"
+LIST_NAME_U = "list_name"
 CASCADING_SELECT = "cascading_select"
 TABLE_LIST = "table-list"  # hyphenated because it goes in appearance, and convention for appearance column is dashes
 FIELD_LIST = "field-list"
@@ -155,3 +156,12 @@ CONVERTIBLE_BIND_ATTRIBUTES = (
     "constraint",
     "calculate",
 )
+NSMAP = {
+    "xmlns": "http://www.w3.org/2002/xforms",
+    "xmlns:h": "http://www.w3.org/1999/xhtml",
+    "xmlns:ev": "http://www.w3.org/2001/xml-events",
+    "xmlns:xsd": "http://www.w3.org/2001/XMLSchema",
+    "xmlns:jr": "http://openrosa.org/javarosa",
+    "xmlns:orx": "http://openrosa.org/xforms",
+    "xmlns:odk": "http://www.opendatakit.org/xforms",
+}

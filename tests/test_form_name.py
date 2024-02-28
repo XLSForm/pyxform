@@ -4,7 +4,7 @@ Test setting form name to data.
 from tests.pyxform_test_case import PyxformTestCase
 
 
-class FormNameTest(PyxformTestCase):
+class TestFormName(PyxformTestCase):
     def test_default_to_data_when_no_name(self):
         """
         Test no form_name will default to survey name to 'data'.
@@ -14,9 +14,6 @@ class FormNameTest(PyxformTestCase):
             | survey   |           |      |           |
             |          | type      | name | label     |
             |          | text      | city | City Name |
-            | settings |           |      |           |
-            |          | id_string | name |
-            |          | some-id   | data |
             """,
             autoname=False,
         )

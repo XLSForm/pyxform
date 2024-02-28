@@ -370,7 +370,7 @@ def add_choices_info_to_question(
             question["query"] = list_name
         elif choices.get(list_name):
             # Reference to list name for data dictionary tools (ilri/odktools).
-            question["list_name"] = list_name
+            question[constants.LIST_NAME_U] = list_name
             # Copy choices for data export tools (onaio/onadata).
             # TODO: could onadata use the list_name to look up the list for
             #  export, instead of pyxform internally duplicating choices data?
@@ -386,7 +386,7 @@ def add_choices_info_to_question(
         # Select from previous answers e.g. type = "select_one ${q1}".
         or bool(PYXFORM_REFERENCE_REGEX.search(list_name))
     ):
-        question["list_name"] = list_name
+        question[constants.LIST_NAME_U] = list_name
         question[constants.CHOICES] = choices[list_name]
 
 
@@ -529,7 +529,7 @@ def workbook_to_json(
         default_language=default_language,
     )
     external_choices = group_dictionaries_by_key(
-        list_of_dicts=external_choices_sheet.data, key=constants.LIST_NAME
+        list_of_dicts=external_choices_sheet.data, key=constants.LIST_NAME_S
     )
 
     # ########## Choices sheet ##########
@@ -543,7 +543,7 @@ def workbook_to_json(
         default_language=default_language,
     )
     combined_lists = group_dictionaries_by_key(
-        list_of_dicts=choices_sheet.data, key=constants.LIST_NAME
+        list_of_dicts=choices_sheet.data, key=constants.LIST_NAME_S
     )
     # To combine the warning into one message, the check for missing choices translation
     # columns is run with Survey sheet below.
@@ -654,7 +654,7 @@ def workbook_to_json(
         use_double_colons=True,
     )
     osm_tags = group_dictionaries_by_key(
-        list_of_dicts=osm_sheet.data, key=constants.LIST_NAME
+        list_of_dicts=osm_sheet.data, key=constants.LIST_NAME_S
     )
     # #################################
 
@@ -1025,13 +1025,13 @@ def workbook_to_json(
                 child_list = []
                 new_json_dict[constants.CHILDREN] = child_list
                 if control_type is constants.LOOP:
-                    if not parse_dict.get("list_name"):
+                    if not parse_dict.get(constants.LIST_NAME_U):
                         # TODO: Perhaps warn and make repeat into a group?
                         raise PyXFormError(
                             ROW_FORMAT_STRING % row_number
                             + " Repeat loop without list name."
                         )
-                    list_name = parse_dict["list_name"]
+                    list_name = parse_dict[constants.LIST_NAME_U]
                     if list_name not in choices:
                         raise PyXFormError(
                             ROW_FORMAT_STRING % row_number
@@ -1127,7 +1127,7 @@ def workbook_to_json(
                         + " select one external is only meant for"
                         " filtered selects."
                     )
-                list_name = parse_dict["list_name"]
+                list_name = parse_dict[constants.LIST_NAME_U]
                 file_extension = os.path.splitext(list_name)[1]
                 if (
                     select_type == constants.SELECT_ONE_EXTERNAL
@@ -1323,8 +1323,8 @@ def workbook_to_json(
             new_dict = row.copy()
             new_dict["type"] = constants.OSM
 
-            if parse_dict.get("list_name") is not None:
-                tags = osm_tags.get(parse_dict.get("list_name"))
+            if parse_dict.get(constants.LIST_NAME_U) is not None:
+                tags = osm_tags.get(parse_dict.get(constants.LIST_NAME_U))
                 for tag in tags:
                     if osm_tags.get(tag.get("name")):
                         tag["choices"] = osm_tags.get(tag.get("name"))
