@@ -6,6 +6,7 @@ import csv
 import json
 import os
 import re
+from io import BytesIO, TextIOWrapper
 from json.decoder import JSONDecodeError
 from typing import Dict, List, NamedTuple, Tuple
 from xml.dom import Node
@@ -166,26 +167,44 @@ def flatten(li):
         yield from subli
 
 
-def sheet_to_csv(workbook_path, csv_path, sheet_name):
-    if workbook_path.endswith(".xls"):
-        return xls_sheet_to_csv(workbook_path, csv_path, sheet_name)
+def sheet_to_csv(path_or_file, sheet_name, file_type, csv_path=None):
+    if isinstance(path_or_file, str):
+        # Read in file
+        with open(path_or_file, "rb") as file:
+            content = file.read()
+            return process_workbook(content, file_type, sheet_name, csv_path)
+    elif isinstance(path_or_file, BytesIO):
+        # Read BytesIO object
+        content = path_or_file.getvalue()
+        return process_workbook(content, file_type, sheet_name)
     else:
-        return xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name)
+        raise ValueError("Unsupported input. Must be valid file path, or BytesIO object. ")
 
 
-def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
-    wb = xlrd.open_workbook(workbook_path)
+def process_workbook(content, file_type, sheet_name, csv_path=None):
+    if file_type == ".xls":
+        return xls_sheet_to_csv(content, sheet_name, csv_path)
+    elif file_type == ".xlsx":
+        return xlsx_sheet_to_csv(content, sheet_name, csv_path)
+    else:
+        raise ValueError("Unsupported file type")
+
+
+def xls_sheet_to_csv(workbook_content, sheet_name, csv_path=None):
+    wb = xlrd.open_workbook(file_contents=workbook_content)
     try:
         sheet = wb.sheet_by_name(sheet_name)
     except xlrd.biffh.XLRDError:
-        return False
+        return None
     if not sheet or sheet.nrows < 2:
-        return False
-    with open(csv_path, mode="w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        return None
+
+    with BytesIO() as buffer:
+        sb = TextIOWrapper(buffer, "utf-8", newline="")
+        writer = csv.writer(sb, quoting=csv.QUOTE_ALL)
         mask = [v and len(v.strip()) > 0 for v in sheet.row_values(0)]
         for row_idx in range(sheet.nrows):
-            csv_data = []
+            row_data = []
             try:
                 for v, m in zip(sheet.row(row_idx), mask):
                     if m:
@@ -194,38 +213,56 @@ def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
                         data = xls_value_to_unicode(value, value_type, wb.datemode)
                         # clean the values of leading and trailing whitespaces
                         data = data.strip()
-                        csv_data.append(data)
+                        row_data.append(data)
             except TypeError:
                 continue
-            writer.writerow(csv_data)
+            writer.writerow(row_data)
+        sb.flush()
+        csv_data = buffer.getvalue()
 
-    return True
+    if csv_path is None:
+        return BytesIO(csv_data)
+    else:
+        with open(csv_path, mode="wb") as f:
+            f.write(csv_data)
+        return csv_path
 
 
-def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
-    wb = openpyxl.open(workbook_path, read_only=True, data_only=True)
+def xlsx_sheet_to_csv(workbook_content, sheet_name, csv_path=None):
+    wb = openpyxl.load_workbook(BytesIO(workbook_content), read_only=True, data_only=True)
     try:
         sheet = wb[sheet_name]
     except KeyError:
-        return False
-
-    with open(csv_path, mode="w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
+        return None
+    
+    with BytesIO() as buffer:
+        sb = TextIOWrapper(buffer, "utf-8", newline="")
+        writer = csv.writer(sb, quoting=csv.QUOTE_ALL)
         mask = [not is_empty(cell.value) for cell in sheet[1]]
         for row in sheet.rows:
-            csv_data = []
+            row_data = []
             try:
                 for v, m in zip(row, mask):
                     if m:
                         data = xlsx_value_to_str(v.value)
                         # clean the values of leading and trailing whitespaces
                         data = data.strip()
-                        csv_data.append(data)
+                        row_data.append(data)
             except TypeError:
                 continue
-            writer.writerow(csv_data)
+            if not all(item == 'None' for item in row_data):
+                # Only write if all rows not equal to None
+                writer.writerow(row_data)
+        sb.flush()
+        csv_data = buffer.getvalue()
     wb.close()
-    return True
+
+    if csv_path is None:
+        return BytesIO(csv_data)
+    else:
+        with open(csv_path, mode="wb") as f:
+            f.write(csv_data)
+        return csv_path
 
 
 def has_external_choices(json_struct):

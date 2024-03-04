@@ -7,6 +7,8 @@ import json
 import logging
 import os
 from os.path import splitext
+from io import BytesIO
+from pathlib import Path
 
 from pyxform import builder, xls2json
 from pyxform.utils import has_external_choices, sheet_to_csv
@@ -28,34 +30,96 @@ def get_xml_path(path):
 
 
 def xls2xform_convert(
-    xlsform_path, xform_path, validate=True, pretty_print=True, enketo=False
+    xlsform_path,
+    xform_path=None,
+    validate=True,
+    pretty_print=True,
+    enketo=False,
+    xlsform_object=None,
 ):
+    """Convert an XLSForm input to XForm output.
+
+    xlsform_path is mandatory and must contain the file exension.
+
+    To use an in-memory XLSForm instead, set a dummy path for xlsform_path,
+    such as '/tmp/form.xlsx' (the extension is important, however).
+
+    If xform_path is provided the output will be written to a file.
+    If xform_path is not provided, the output will be returned as a tuple:
+        (xform_data, warnings, choices_data)
+    However, in this scenario, validation of the output XForm will be disabled.
+
+    Setting `validate` to false will cause the form not to be processed by ODK Validate.
+    This may be desirable since ODK Validate requires launching a subprocess that runs
+    some Java code.
+    """
+    if not xform_path and not xlsform_object:
+        msg = "Either xform_path or xlsform_object params must be specified"
+        logger.error(msg)
+        raise ValueError(msg)
+
     warnings = []
 
-    json_survey = xls2json.parse_file_to_json(xlsform_path, warnings=warnings)
-    survey = builder.create_survey_element_from_dict(json_survey)
-    # Setting validate to false will cause the form not to be processed by
-    # ODK Validate.
-    # This may be desirable since ODK Validate requires launching a subprocess
-    # that runs some java code.
-    survey.print_xform_to_file(
-        xform_path,
-        validate=validate,
-        pretty_print=pretty_print,
+    if xlsform_object:
+        logger.debug("Input read from memory object.")
+
+    json_survey = xls2json.parse_file_to_json(
+        xlsform_path,
         warnings=warnings,
-        enketo=enketo,
+        file_object=BytesIO(xlsform_object.getvalue()) if xlsform_object else None,
     )
-    output_dir = os.path.split(xform_path)[0]
-    if has_external_choices(json_survey):
-        itemsets_csv = os.path.join(output_dir, "itemsets.csv")
-        choices_exported = sheet_to_csv(xlsform_path, itemsets_csv, "external_choices")
+
+    survey = builder.create_survey_element_from_dict(json_survey)
+
+    if not xform_path:
+        logger.info("No xform_path specified. XForm validation will be skipped.")
+
+    # Read input from memory & write output to memory object
+    if xlsform_object:
+        xform = survey.to_xml(validate=validate, pretty_print=pretty_print, warnings=warnings)
+    # Read input from filesystem & write output to filesystem
+    else:
+        survey.print_xform_to_file(
+            xform_path,
+            validate=validate if xform_path else False,
+            pretty_print=pretty_print,
+            warnings=warnings,
+            enketo=enketo if xform_path else False,
+        )
+
+    file_type = Path(xlsform_path).suffix.lower()
+    choices_exported = None
+
+    if file_type != ".csv" and has_external_choices(json_survey):
+        itemsets_csv = None
+        
+        if xform_path:
+            itemsets_csv = str(Path(xform_path).parent / "itemsets.csv")
+        
+        choices_exported = sheet_to_csv(
+            BytesIO(xlsform_object.getvalue()) if xlsform_object else xlsform_path,
+            "external_choices",
+            csv_path=itemsets_csv if itemsets_csv else None,
+            file_type=file_type,
+        )
+
         if not choices_exported:
             warnings.append(
                 "Could not export itemsets.csv, perhaps the "
                 "external choices sheet is missing."
             )
         else:
-            logger.info("External choices csv is located at: %s", itemsets_csv)
+            if itemsets_csv:
+                logger.info("External choices csv is located at: %s", itemsets_csv)
+            else:
+                logger.info("External choices csv generated")
+
+    if xlsform_object and not xform_path:
+        # Return XForm data, else written to specified file
+        if not choices_exported:
+            return BytesIO(xform.encode("utf-8")), warnings
+        return BytesIO(xform.encode("utf-8")), warnings, choices_exported
+
     return warnings
 
 

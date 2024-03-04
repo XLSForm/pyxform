@@ -8,7 +8,7 @@ import re
 from collections import OrderedDict
 from contextlib import closing
 from functools import reduce
-from io import StringIO
+from io import StringIO, BytesIO
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 from zipfile import BadZipFile
 
@@ -359,9 +359,10 @@ def get_cascading_json(sheet_list, prefix, level):
 
 def csv_to_dict(path_or_file):
     if isinstance(path_or_file, str):
-        csv_data = open(path_or_file, encoding="utf-8", newline="")
+        with open(path_or_file, encoding="utf-8", newline="") as csv_file:
+            csv_data = csv_file.readlines()
     else:
-        csv_data = path_or_file
+        csv_data = path_or_file.read().decode("utf-8").splitlines()
 
     _dict = OrderedDict()
 
@@ -404,7 +405,6 @@ def csv_to_dict(path_or_file):
                         # (but the csv reader might already handle that.)
                         _d[str(key)] = str(val.strip())
                 _dict[sheet_name].append(_d)
-    csv_data.close()
     return _dict
 
 
