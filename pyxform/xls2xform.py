@@ -2,6 +2,7 @@
 xls2xform converts properly formatted Excel documents into XForms for
 use with ODK Collect.
 """
+
 import argparse
 import json
 import logging
@@ -76,7 +77,9 @@ def xls2xform_convert(
 
     # Read input from memory & write output to memory object
     if xlsform_object:
-        xform = survey.to_xml(validate=validate, pretty_print=pretty_print, warnings=warnings)
+        xform = survey.to_xml(
+            validate=validate, pretty_print=pretty_print, warnings=warnings
+        )
     # Read input from filesystem & write output to filesystem
     else:
         survey.print_xform_to_file(
@@ -92,10 +95,10 @@ def xls2xform_convert(
 
     if file_type != ".csv" and has_external_choices(json_survey):
         itemsets_csv = None
-        
+
         if xform_path:
             itemsets_csv = str(Path(xform_path).parent / "itemsets.csv")
-        
+
         choices_exported = sheet_to_csv(
             BytesIO(xlsform_object.getvalue()) if xlsform_object else xlsform_path,
             "external_choices",

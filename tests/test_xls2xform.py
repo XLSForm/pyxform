@@ -233,15 +233,15 @@ class XLS2XFormTests(TestCase):
             xform_path="/tmp/xform.xml",
             validate=False,
             pretty_print=False,
-            enketo=False
+            enketo=False,
         )
         # Check if conversion was successful
         self.assertEqual(
             warnings,
             [
                 'On the choices sheet there is a column ("tutorial notes") with an '
-                'illegal header. Headers cannot include spaces.'
-            ]
+                "illegal header. Headers cannot include spaces."
+            ],
         )
 
     def test_xls2form_convert_invalid_input(self):
@@ -276,9 +276,9 @@ class XLS2XFormTests(TestCase):
         self.assertEqual(
             warnings,
             [
-                'The following language declarations do not contain valid machine-readable '
-                'codes: english. Learn more: http://xlsform.org#multiple-language-support'
-            ]
+                "The following language declarations do not contain valid machine-readable "
+                "codes: english. Learn more: http://xlsform.org#multiple-language-support"
+            ],
         )
         self.assertEqual(type(xform), BytesIO)
         self.assertEqual(len(xform.getvalue()), 1245)
@@ -288,7 +288,9 @@ class XLS2XFormTests(TestCase):
         Tests xls2form_convert with XLS BytesIO object instead of file path.
         """
         # Read in XLS
-        with open("./tests/example_xls/choice_name_same_as_select_name.xls", "rb") as xlsform:
+        with open(
+            "./tests/example_xls/choice_name_same_as_select_name.xls", "rb"
+        ) as xlsform:
             xlsdata = BytesIO(xlsform.read())
 
         # Call the conversion function
@@ -300,10 +302,7 @@ class XLS2XFormTests(TestCase):
             xlsform_object=xlsdata,
         )
         # Check if conversion was successful
-        self.assertEqual(
-            warnings,
-            []
-        )
+        self.assertEqual(warnings, [])
         self.assertEqual(type(xform), BytesIO)
         self.assertEqual(len(xform.getvalue()), 879)
 
@@ -327,9 +326,9 @@ class XLS2XFormTests(TestCase):
         self.assertEqual(
             warnings,
             [
-                'The following language declarations do not contain valid machine-readable '
-                'codes: english. Learn more: http://xlsform.org#multiple-language-support'
-            ]
+                "The following language declarations do not contain valid machine-readable "
+                "codes: english. Learn more: http://xlsform.org#multiple-language-support"
+            ],
         )
         self.assertEqual(type(xform), BytesIO)
         self.assertEqual(len(xform.getvalue()), 1245)
@@ -347,15 +346,17 @@ class XLS2XFormTests(TestCase):
             enketo=False,
         )
 
-        assert os.path.exists("/tmp/itemsets.csv"), "itemsets.csv not found in /tmp directory"
+        assert os.path.exists(
+            "/tmp/itemsets.csv"
+        ), "itemsets.csv not found in /tmp directory"
 
         self.assertEqual(
             warnings,
             [
-                'The following language declarations do not contain valid machine-readable '
-                'codes: English, French. Learn more: '
-                'http://xlsform.org#multiple-language-support'
-            ]
+                "The following language declarations do not contain valid machine-readable "
+                "codes: English, French. Learn more: "
+                "http://xlsform.org#multiple-language-support"
+            ],
         )
 
         # Check content of written choices file
@@ -379,15 +380,17 @@ class XLS2XFormTests(TestCase):
             enketo=False,
         )
 
-        assert os.path.exists("/tmp/itemsets.csv"), "itemsets.csv not found in /tmp directory"
+        assert os.path.exists(
+            "/tmp/itemsets.csv"
+        ), "itemsets.csv not found in /tmp directory"
 
         self.assertEqual(
             warnings,
             [
-                'The following language declarations do not contain valid machine-readable '
-                'codes: English, French. Learn more: '
-                'http://xlsform.org#multiple-language-support'
-            ]
+                "The following language declarations do not contain valid machine-readable "
+                "codes: English, French. Learn more: "
+                "http://xlsform.org#multiple-language-support"
+            ],
         )
 
         # Check content of written choices file
@@ -414,10 +417,10 @@ class XLS2XFormTests(TestCase):
         self.assertEqual(
             warnings,
             [
-                'The following language declarations do not contain valid machine-readable '
-                'codes: English, French. Learn more: '
-                'http://xlsform.org#multiple-language-support'
-            ]
+                "The following language declarations do not contain valid machine-readable "
+                "codes: English, French. Learn more: "
+                "http://xlsform.org#multiple-language-support"
+            ],
         )
         data = choices.getvalue()
         assert len(data) == 806

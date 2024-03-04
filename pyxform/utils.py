@@ -1,6 +1,7 @@
 """
 pyxform utils module.
 """
+
 import copy
 import csv
 import json
@@ -178,7 +179,9 @@ def sheet_to_csv(path_or_file, sheet_name, file_type, csv_path=None):
         content = path_or_file.getvalue()
         return process_workbook(content, file_type, sheet_name)
     else:
-        raise ValueError("Unsupported input. Must be valid file path, or BytesIO object. ")
+        raise ValueError(
+            "Unsupported input. Must be valid file path, or BytesIO object. "
+        )
 
 
 def process_workbook(content, file_type, sheet_name, csv_path=None):
@@ -234,7 +237,7 @@ def xlsx_sheet_to_csv(workbook_content, sheet_name, csv_path=None):
         sheet = wb[sheet_name]
     except KeyError:
         return None
-    
+
     with BytesIO() as buffer:
         sb = TextIOWrapper(buffer, "utf-8", newline="")
         writer = csv.writer(sb, quoting=csv.QUOTE_ALL)
@@ -250,7 +253,7 @@ def xlsx_sheet_to_csv(workbook_content, sheet_name, csv_path=None):
                         row_data.append(data)
             except TypeError:
                 continue
-            if not all(item == 'None' for item in row_data):
+            if not all(item == "None" for item in row_data):
                 # Only write if all rows not equal to None
                 writer.writerow(row_data)
         sb.flush()
