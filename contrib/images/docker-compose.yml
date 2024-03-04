@@ -1,0 +1,19 @@
+
+version: "3"
+
+name: pyxform
+
+services:
+  pyxform:
+    image: "ghcr.io/xlsform/pyxform:ci"
+    build:
+      context: ../../
+      dockerfile: contrib/images/Dockerfile
+      target: runtime
+      args:
+        PYTHON_IMG_TAG: "${PYTHON_IMG_TAG:-3.10}"
+    volumes:
+      - ../../tests:/code/tests
+      - ../../pyxform:/root/.local/lib/python3.10/site-packages/pyxform
+    entrypoint: ["python", "-m", "unittest", "--verbose"]
+    restart: "unless-stopped"
