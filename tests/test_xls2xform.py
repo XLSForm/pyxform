@@ -18,6 +18,7 @@ from pyxform.xls2xform import (
     main_cli,
     xls2xform_convert,
 )
+from pyxform.errors import PyXFormError
 
 from tests.utils import path_to_text_fixture
 
@@ -255,6 +256,91 @@ class XLS2XFormTests(TestCase):
                 pretty_print=False,
                 enketo=False,
             )
+
+    @mock.patch('pyxform.xls2json.parse_file_to_json')
+    def test_xls2form_convert_xform_mismatch(self, mock_parse_file_to_json):
+        """
+        Tests xls2form_convert loading a XLSX file when XLS is specified.
+        """
+        mock_parse_file_to_json.side_effect = PyXFormError("Error reading .xls file: Excel xlsx file; not supported")
+
+        # Read in XLSX
+        with open("./tests/example_xls/empty.xlsx", "rb") as xlsform:
+            xlsxdata = BytesIO(xlsform.read())
+
+        with self.assertRaises(PyXFormError) as error:
+            xls2xform_convert(
+                xlsform_path="/tmp/form.xls",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+                xlsform_object=xlsxdata,
+            )
+        self.assertEqual(str(error.exception), "Error reading .xls file: Excel xlsx file; not supported")
+
+    @mock.patch('pyxform.xls2json.parse_file_to_json')
+    def test_xls2form_convert_empty_xform(self, mock_parse_file_to_json):
+        """
+        Tests xls2form_convert loading an empty XLSX file.
+
+        This test also covers loading empty XLS files.
+        """
+        mock_parse_file_to_json.side_effect = PyXFormError("The survey sheet is either empty or missing important column headers.")
+
+        with self.assertRaises(PyXFormError) as error:
+            xls2xform_convert(
+                xlsform_path="./tests/example_xls/empty.xlsx",
+                xform_path="/tmp/xform.xml",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+            )
+        self.assertEqual(str(error.exception), "The survey sheet is either empty or missing important column headers.")
+
+    @mock.patch('pyxform.xls2json_backends.xlsx_to_dict')
+    def test_xls2form_convert_corrupt_xlsx_xform(self, mock_xlsx_to_dict):
+        """
+        Tests xls2form_convert loading a corrupted XLSX file.
+        """
+        mock_xlsx_to_dict.side_effect = PyXFormError("Error reading .xlsx file. Is it a valid file?")
+
+        with self.assertRaises(PyXFormError) as error:
+            xls2xform_convert(
+                xlsform_path="./tests/example_xls/corrupt.xlsx",
+                xform_path="/tmp/xform.xml",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+            )
+        self.assertEqual(str(error.exception), "Error reading .xlsx file. Is it a valid file?")
+
+    @mock.patch('pyxform.xls2json_backends.xls_to_dict')
+    def test_xls2form_convert_corrupt_xls_xform(self, mock_xls_to_dict):
+        """
+        Tests xls2form_convert loading a corrupted XLS file.
+        """
+        mock_xls_to_dict.side_effect = PyXFormError("XLS file is empty.")
+        with self.assertRaises(PyXFormError) as error:
+            xls2xform_convert(
+                xlsform_path="/tmp/form.xls",
+                xform_path="/tmp/xform.xml",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+                xlsform_object=BytesIO(b''),
+            )
+        self.assertEqual(str(error.exception), "XLS file is empty.")
+
+        mock_xls_to_dict.side_effect = PyXFormError("Error reading .xls file: Unsupported format, or corrupt file: Expected BOF record; found b'corrupt'")
+        with self.assertRaises(PyXFormError) as error:
+            xls2xform_convert(
+                xlsform_path="./tests/example_xls/corrupt.xls",
+                xform_path="/tmp/xform.xml",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+            )
+        self.assertEqual(str(error.exception), "Error reading .xls file: Unsupported format, or corrupt file: Expected BOF record; found b'corrupt'")
 
     def test_xls2form_convert_xlsx_bytesio(self):
         """
