@@ -190,7 +190,10 @@ def xls_to_dict(path_or_file):
         else:
             file = path_or_file
         with closing(file) as wb_file:
-            workbook = xlrd.open_workbook(file_contents=wb_file.read())
+            data = wb_file.read()
+            if len(data) == 0:
+                raise PyXFormError("XLS file is empty.")
+            workbook = xlrd.open_workbook(file_contents=data)
             try:
                 return process_workbook(wb=workbook)
             finally:
