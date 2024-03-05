@@ -292,7 +292,10 @@ def xlsx_to_dict(path_or_file):
             finally:
                 reader.wb.close()
                 reader.archive.close()
-    except (OSError, BadZipFile, KeyError) as read_err:
+    except BadZipFile as read_err:
+        # Zip files are not accepted, so provide more useful error message
+        raise PyXFormError("Error reading .xlsx file. Is it a valid file?") from read_err
+    except (OSError, KeyError) as read_err:
         raise PyXFormError("Error reading .xlsx file: %s" % read_err) from read_err
 
 
