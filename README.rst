@@ -13,16 +13,27 @@ pyxform
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/python/black
 
-pyxform is a Python library that makes writing forms for ODK Collect and Enketo easy by converting XLSForms (Excel spreadsheets) into ODK XForms. The XLSForms format is used in a `number of tools <http://xlsform.org/en/#tools-that-support-xlsforms>`_.
+``pyxform`` is a Python library that simplifies writing forms for ODK Collect and Enketo by converting spreadsheets that follow the `XLSForm standard <http://xlsform.org/>`_ into `ODK XForms <https://github.com/opendatakit/xforms-spec>`_. The XLSForms format is used in a `number of tools <http://xlsform.org/en/#tools-that-support-xlsforms>`_.
 
-XLS(X) documents used as input must follow to the `XLSForm standard <http://xlsform.org/>`_ and the resulting output follows the `ODK XForms <https://github.com/opendatakit/xforms-spec>`_ standard.
+Project status
+===============
+``pyxform`` was started at the `Sustainable Engineering Lab at Columbia University <https://qsel.columbia.edu/>`_ and was then maintained for many years primarily by `Ona <https://ona.io/>`_. Since 2018, it has been maintained by the `ODK team <https://getodk.org/about/team.html>`_ (primarily by `Lindsay Stevens <https://github.com/lindsay-stevens>`_).
 
+Our current goals are:
 
-pyxform is a major rewrite of `xls2xform <http://github.com/mvpdev/xls2xform/>`_.
+* Enabling more complex workflows through sophisticated XPath expressions and `entities <https://getodk.github.io/xforms-spec/entities>`_
+* Improving error messages and making troubleshooting easier
+* Improving experience for multi-language forms
+
+Using ``pyxform``
+==================
+For support, please start by posting to `the ODK forum <https://forum.getodk.org/c/support/6>`__ where your question will get the most visibility.
+
+Most users use `pyxform` through a form server, some using `the pyxform-http service wrapper <https://github.com/getodk/pyxform-http>`_. The command line utility can be helpful for troubleshooting or as part of a broader form creation pipeline.
 
 Running the latest release of pyxform
-=====================================
-For those who want to convert forms at the command line, the latest official release of pyxform can be installed using `pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_::
+-------------------------------------
+To convert forms at the command line, the latest official release of pyxform can be installed using `pip <https://en.wikipedia.org/wiki/Pip_(package_manager)>`_::
 
     pip install pyxform
 
@@ -33,7 +44,7 @@ The ``xls2xform`` command can then be used::
 The currently supported Python versions for ``pyxform`` are 3.7, 3.8 and 3.9.
 
 Running pyxform from local source
-=================================
+---------------------------------
 
 Note that you must uninstall any globally installed ``pyxform`` instance in order to use local modules. Please install java 8 or newer version.
 
@@ -66,7 +77,7 @@ To leave and return to the virtualenv::
     ~/repos/pyxform/venv/bin/xls2xform
 
 Installing pyxform from remote source
-=====================================
+-------------------------------------
 ``pip`` can install from the GitHub repository. Only do this if you want to install from the master branch, which is likely to have pre-release code. To install the latest release, see above.::
 
     pip install git+https://github.com/XLSForm/pyxform.git@master#egg=pyxform
@@ -91,6 +102,10 @@ Before committing, make sure to format and lint the code using ``ruff``::
     ruff check pyxform tests
 
 If you are using a copy of ``ruff`` outside your virtualenv, make sure it is the same version as listed in ``pyproject.toml``. Use the project configuration for ``ruff` in ``pyproject.toml``, which occurs automatically if ``ruff`` is run from the project root (where ``pyproject.toml`` is).
+
+Contributions
+-------------
+We welcome contributions that have a clearly-stated goal and are tightly focused. In general, successful contributions will first be discussed on `the ODK forum <https://forum.getodk.org/>`__ or in an issue. We prefer discussion threads on the ODK forum because ``pyxform`` issues generally involve considerations for other tools and specifications in ODK and its broader ecosystem. Opening up an issue or a pull request directly may be appropriate if there is a clear bug or an issue that only affects ``pyxform`` developers.
 
 Writing tests
 -------------
@@ -152,3 +167,9 @@ Releases are now automatic. These instructions are provided for forks or for a f
      flit --debug publish --no-use-vcs
 
 6. Tag the GitHub release and publish it.
+
+Related projects
+================
+
+* `xls2xform <https://github.com/mvpdev/xls2xform/>`_: ``pyxform``'s precursor which was rewritten into the library we now know
+* `YAML XLSForms <https://github.com/Sjlver/yxf>`_: useful if you're looking to store XLSForms in version control or automatically format XLSForms
