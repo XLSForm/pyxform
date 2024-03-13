@@ -180,6 +180,7 @@ Related projects
 These projects are not vetted or endorsed but are linked here for reference.
 
 **Converters**
+
 *To XLSForm*
 
 * `cueform <https://github.com/freddieptf/cueform>`_ (Go): from CUE
@@ -207,7 +208,7 @@ These projects are not vetted or endorsed but are linked here for reference.
 * `ipacheckscto <https://github.com/PovertyAction/ipacheckscto>`_ (Stata): check XLSForm for errors or design issues
 * `kobocruncher <https://github.com/Edouard-Legoupil/kobocruncher>`_ (R): generate analysis Rmd from XLSForm
 * `odkmeta <https://github.com/PovertyAction/odkmeta>`_ (Stata): use XLSForm to import ODK data to Stata
-* `odktools <https://github.com/ilri/odktools>_` (C++): convert pyxform internal data model to MySQL
+* `odktools <https://github.com/ilri/odktools>`_ (C++): convert pyxform internal data model to MySQL
 * `pmix <https://github.com/pmaengineering/pmix>`_ (Python): manage XLSForm authoring
 * `pyxform-docker <https://github.com/seadowg/pyxform-docker>`_ (Dockerfile): image for pyxform development
 * `xform-test <https://github.com/PMA-2020/xform-test>`_ (Java): test XLSForms
