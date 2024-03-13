@@ -17,19 +17,24 @@ pyxform
 
 Project status
 ===============
-``pyxform`` was started at the `Sustainable Engineering Lab at Columbia University <https://qsel.columbia.edu/>`_ and was then maintained for many years primarily by `Ona <https://ona.io/>`_. Since 2018, it has been maintained by the `ODK team <https://getodk.org/about/team.html>`_ (primarily by `Lindsay Stevens <https://github.com/lindsay-stevens>`_).
+``pyxform`` is actively maintained by `ODK <https://getodk.org/about/team.html>`_.
 
-Our current goals are:
+Current goals for the project include:
 
-* Enabling more complex workflows through sophisticated XPath expressions and `entities <https://getodk.github.io/xforms-spec/entities>`_
-* Improving error messages and making troubleshooting easier
-* Improving experience for multi-language forms
+* Enable more complex workflows through sophisticated XPath expressions and `entities <https://getodk.github.io/xforms-spec/entities>`_
+* Improve error messages and making troubleshooting easier
+* Improve experience, particularly for multi-language forms
+
+``pyxform`` was started at the `Sustainable Engineering Lab at Columbia University <https://qsel.columbia.edu/>`_, and until 2018 was maintained primarily by `Ona <https://ona.io/>`_.
 
 Using ``pyxform``
 ==================
-For support, please start by posting to `the ODK forum <https://forum.getodk.org/c/support/6>`__ where your question will get the most visibility.
+For user support, please start by posting to `the ODK forum <https://forum.getodk.org/c/support/6>`__ where your question will get the most visibility.
 
-Most users use `pyxform` through a form server, some using `the pyxform-http service wrapper <https://github.com/getodk/pyxform-http>`_. The command line utility can be helpful for troubleshooting or as part of a broader form creation pipeline.
+There are 3 main ways that ``pyxform`` is used:
+* Through a form server, such as the `pyxform-http service wrapper <https://github.com/getodk/pyxform-http>`_, or `ODK Central <https://docs.getodk.org/getting-started/>`_.
+* The command line utility ``xls2xform``, which can be helpful for troubleshooting or as part of a broader form creation pipeline.
+* As a library, meaning that another python project imports functionality from ``pyxform``.
 
 Running the latest release of pyxform
 -------------------------------------
@@ -171,5 +176,36 @@ Releases are now automatic. These instructions are provided for forks or for a f
 Related projects
 ================
 
-* `xls2xform <https://github.com/mvpdev/xls2xform/>`_: ``pyxform``'s precursor which was rewritten into the library we now know
-* `YAML XLSForms <https://github.com/Sjlver/yxf>`_: useful if you're looking to store XLSForms in version control or automatically format XLSForms
+These projects are not vetted or endorsed but are linked here for reference.
+
+**Converters**
+*To XLSForm*
+* `cueform <https://github.com/freddieptf/cueform>`_ (Go): from CUE
+* `md2xlsform <https://github.com/joshuaberetta/md2xlsform>`_ (Python): from MarkDown
+* `xlsform <https://github.com/networkearth/xlsform>`_ (Python): from JSON
+* `yxf <https://github.com/Sjlver/yxf>`_ (Python): from YAML
+
+*From XLSForm*
+* `ODK2Doc <https://github.com/zaeendesouza/ODK2Doc>`_ (R): to Word
+* `OdkGraph <https://github.com/jkpr/OdkGraph>`_ (Python): to a graph
+* `Pureser <https://github.com/SwissTPH/Pureser>`_ (Swift): to HTML
+* `ppp <https://github.com/pmaengineering/ppp>`_ (Python): to HTML, PDF, Word
+* `QuestionnaireHTML <https://github.com/hedibmustapha/QuestionnaireHTML>`_ (R): to HTML
+* `xlsform-converter <https://github.com/wq/xlsform-converter>`_ (Python): to Django modules
+* `xlsform <https://github.com/networkearth/xlsform>`_ (Python): to JSON
+* `xlsform2json <https://github.com/owengrant/xlsform2json>`_ (Java): to JSON
+* `XLSform2PDF <https://github.com/HEDERA-PLATFORM/XLSform2PDF>`_ (Python): to PDF
+* `xlson <https://github.com/opensrp/xlson>`_ (Python): to OpenSRP JSON
+* `yxf <https://github.com/Sjlver/yxf>`_ (Python): to YAML
+
+**Management Tools**
+* `surveydesignr <https://github.com/williameoswald/surveydesignr>`_ (R): compare XLSForms
+* `ipacheckscto <https://github.com/PovertyAction/ipacheckscto>`_ (Stata): check XLSForm for errors or design issues
+* `kobocruncher <https://github.com/Edouard-Legoupil/kobocruncher>`_ (R): generate analysis Rmd from XLSForm
+* `odkmeta <https://github.com/PovertyAction/odkmeta>`_ (Stata): use XLSForm to import ODK data to Stata
+* `odktools <https://github.com/ilri/odktools>_` (C++): convert pyxform internal data model to MySQL
+* `pmix <https://github.com/pmaengineering/pmix>`_ (Python): manage XLSForm authoring
+* `pyxform-docker <https://github.com/seadowg/pyxform-docker>`_ (Dockerfile): image for pyxform development
+* `xform-test <https://github.com/PMA-2020/xform-test>`_ (Java): test XLSForms
+* `xlsformpo <https://github.com/delcroip/xlsformpo>`_ (Python): use .po files for XLSForm translations
+* `XlsFormUtil <https://github.com/unhcr-americas/XlsFormUtil>`_ (R): manage XLSForm authoring
