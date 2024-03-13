@@ -32,6 +32,7 @@ Using ``pyxform``
 For user support, please start by posting to `the ODK forum <https://forum.getodk.org/c/support/6>`__ where your question will get the most visibility.
 
 There are 3 main ways that ``pyxform`` is used:
+
 * Through a form server, such as the `pyxform-http service wrapper <https://github.com/getodk/pyxform-http>`_, or `ODK Central <https://docs.getodk.org/getting-started/>`_.
 * The command line utility ``xls2xform``, which can be helpful for troubleshooting or as part of a broader form creation pipeline.
 * As a library, meaning that another python project imports functionality from ``pyxform``.
@@ -180,12 +181,14 @@ These projects are not vetted or endorsed but are linked here for reference.
 
 **Converters**
 *To XLSForm*
+
 * `cueform <https://github.com/freddieptf/cueform>`_ (Go): from CUE
 * `md2xlsform <https://github.com/joshuaberetta/md2xlsform>`_ (Python): from MarkDown
 * `xlsform <https://github.com/networkearth/xlsform>`_ (Python): from JSON
 * `yxf <https://github.com/Sjlver/yxf>`_ (Python): from YAML
 
 *From XLSForm*
+
 * `ODK2Doc <https://github.com/zaeendesouza/ODK2Doc>`_ (R): to Word
 * `OdkGraph <https://github.com/jkpr/OdkGraph>`_ (Python): to a graph
 * `Pureser <https://github.com/SwissTPH/Pureser>`_ (Swift): to HTML
@@ -199,6 +202,7 @@ These projects are not vetted or endorsed but are linked here for reference.
 * `yxf <https://github.com/Sjlver/yxf>`_ (Python): to YAML
 
 **Management Tools**
+
 * `surveydesignr <https://github.com/williameoswald/surveydesignr>`_ (R): compare XLSForms
 * `ipacheckscto <https://github.com/PovertyAction/ipacheckscto>`_ (Stata): check XLSForm for errors or design issues
 * `kobocruncher <https://github.com/Edouard-Legoupil/kobocruncher>`_ (R): generate analysis Rmd from XLSForm
