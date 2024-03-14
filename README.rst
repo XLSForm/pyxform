@@ -22,7 +22,7 @@ Project status
 Current goals for the project include:
 
 * Enable more complex workflows through sophisticated XPath expressions and `entities <https://getodk.github.io/xforms-spec/entities>`_
-* Improve error messages and making troubleshooting easier
+* Improve error messages and make troubleshooting easier
 * Improve experience, particularly for multi-language forms
 
 ``pyxform`` was started at the `Sustainable Engineering Lab at Columbia University <https://qsel.columbia.edu/>`_, and until 2018 was maintained primarily by `Ona <https://ona.io/>`_.
