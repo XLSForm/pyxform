@@ -1,6 +1,7 @@
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
+
 import csv
 import datetime
 import os
@@ -8,7 +9,7 @@ import re
 from collections import OrderedDict
 from contextlib import closing
 from functools import reduce
-from io import StringIO
+from io import StringIO, BytesIO
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 from zipfile import BadZipFile
 
@@ -189,7 +190,10 @@ def xls_to_dict(path_or_file):
         else:
             file = path_or_file
         with closing(file) as wb_file:
-            workbook = xlrd.open_workbook(file_contents=wb_file.read())
+            data = wb_file.read()
+            if len(data) == 0:
+                raise PyXFormError("XLS file is empty.")
+            workbook = xlrd.open_workbook(file_contents=data)
             try:
                 return process_workbook(wb=workbook)
             finally:
@@ -291,7 +295,10 @@ def xlsx_to_dict(path_or_file):
             finally:
                 reader.wb.close()
                 reader.archive.close()
-    except (OSError, BadZipFile, KeyError) as read_err:
+    except BadZipFile as read_err:
+        # Zip files are not accepted, so provide more useful error message
+        raise PyXFormError("Error reading .xlsx file. Is it a valid file?") from read_err
+    except (OSError, KeyError) as read_err:
         raise PyXFormError("Error reading .xlsx file: %s" % read_err) from read_err
 
 
@@ -359,9 +366,10 @@ def get_cascading_json(sheet_list, prefix, level):
 
 def csv_to_dict(path_or_file):
     if isinstance(path_or_file, str):
-        csv_data = open(path_or_file, encoding="utf-8", newline="")
+        with open(path_or_file, encoding="utf-8", newline="") as csv_file:
+            csv_data = csv_file.readlines()
     else:
-        csv_data = path_or_file
+        csv_data = path_or_file.read().decode("utf-8").splitlines()
 
     _dict = OrderedDict()
 
@@ -404,7 +412,6 @@ def csv_to_dict(path_or_file):
                         # (but the csv reader might already handle that.)
                         _d[str(key)] = str(val.strip())
                 _dict[sheet_name].append(_d)
-    csv_data.close()
     return _dict
 
 

@@ -5,8 +5,10 @@ Test xls2xform module.
 # pyxform.create_survey. We have a test here to make sure no one
 # breaks that function.
 
+import os
 import argparse
 import logging
+from io import BytesIO
 from unittest import TestCase, mock
 
 from pyxform.xls2xform import (
@@ -14,7 +16,9 @@ from pyxform.xls2xform import (
     _validator_args_logic,
     get_xml_path,
     main_cli,
+    xls2xform_convert,
 )
+from pyxform.errors import PyXFormError
 
 from tests.utils import path_to_text_fixture
 
@@ -219,6 +223,297 @@ class XLS2XFormTests(TestCase):
         with mock.patch.object(logger, "error") as mock_debug:
             main_cli()
             self.assertEqual(mock_debug.call_count, 1)
+
+    def test_xls2form_convert_via_api(self):
+        """
+        Tests xls2form_convert directly from API.
+        """
+        # Call the conversion function
+        warnings = xls2xform_convert(
+            xlsform_path="./tests/example_xls/tutorial.xls",
+            xform_path="/tmp/xform.xml",
+            validate=False,
+            pretty_print=False,
+            enketo=False,
+        )
+        # Check if conversion was successful
+        self.assertEqual(
+            warnings,
+            [
+                'On the choices sheet there is a column ("tutorial notes") with an '
+                "illegal header. Headers cannot include spaces."
+            ],
+        )
+
+    def test_xls2form_convert_invalid_input(self):
+        """
+        Tests xls2form_convert cannot be called without xform_path or xlsform_object set.
+        """
+        with self.assertRaises(ValueError):
+            xls2xform_convert(
+                xlsform_path="/tmp/form.xlsx",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+            )
+
+    @mock.patch('pyxform.xls2json.parse_file_to_json')
+    def test_xls2form_convert_xform_mismatch(self, mock_parse_file_to_json):
+        """
+        Tests xls2form_convert loading a XLSX file when XLS is specified.
+        """
+        mock_parse_file_to_json.side_effect = PyXFormError("Error reading .xls file: Excel xlsx file; not supported")
+
+        # Read in XLSX
+        with open("./tests/example_xls/empty.xlsx", "rb") as xlsform:
+            xlsxdata = BytesIO(xlsform.read())
+
+        with self.assertRaises(PyXFormError) as error:
+            xls2xform_convert(
+                xlsform_path="/tmp/form.xls",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+                xlsform_object=xlsxdata,
+            )
+        self.assertEqual(str(error.exception), "Error reading .xls file: Excel xlsx file; not supported")
+
+    @mock.patch('pyxform.xls2json.parse_file_to_json')
+    def test_xls2form_convert_empty_xform(self, mock_parse_file_to_json):
+        """
+        Tests xls2form_convert loading an empty XLSX file.
+
+        This test also covers loading empty XLS files.
+        """
+        mock_parse_file_to_json.side_effect = PyXFormError("The survey sheet is either empty or missing important column headers.")
+
+        with self.assertRaises(PyXFormError) as error:
+            xls2xform_convert(
+                xlsform_path="./tests/example_xls/empty.xlsx",
+                xform_path="/tmp/xform.xml",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+            )
+        self.assertEqual(str(error.exception), "The survey sheet is either empty or missing important column headers.")
+
+    @mock.patch('pyxform.xls2json_backends.xlsx_to_dict')
+    def test_xls2form_convert_corrupt_xlsx_xform(self, mock_xlsx_to_dict):
+        """
+        Tests xls2form_convert loading a corrupted XLSX file.
+        """
+        mock_xlsx_to_dict.side_effect = PyXFormError("Error reading .xlsx file. Is it a valid file?")
+
+        with self.assertRaises(PyXFormError) as error:
+            xls2xform_convert(
+                xlsform_path="./tests/example_xls/corrupt.xlsx",
+                xform_path="/tmp/xform.xml",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+            )
+        self.assertEqual(str(error.exception), "Error reading .xlsx file. Is it a valid file?")
+
+    @mock.patch('pyxform.xls2json_backends.xls_to_dict')
+    def test_xls2form_convert_corrupt_xls_xform(self, mock_xls_to_dict):
+        """
+        Tests xls2form_convert loading a corrupted XLS file.
+        """
+        mock_xls_to_dict.side_effect = PyXFormError("XLS file is empty.")
+        with self.assertRaises(PyXFormError) as error:
+            xls2xform_convert(
+                xlsform_path="/tmp/form.xls",
+                xform_path="/tmp/xform.xml",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+                xlsform_object=BytesIO(b''),
+            )
+        self.assertEqual(str(error.exception), "XLS file is empty.")
+
+        mock_xls_to_dict.side_effect = PyXFormError("Error reading .xls file: Unsupported format, or corrupt file: Expected BOF record; found b'corrupt'")
+        with self.assertRaises(PyXFormError) as error:
+            xls2xform_convert(
+                xlsform_path="./tests/example_xls/corrupt.xls",
+                xform_path="/tmp/xform.xml",
+                validate=False,
+                pretty_print=False,
+                enketo=False,
+            )
+        self.assertEqual(str(error.exception), "Error reading .xls file: Unsupported format, or corrupt file: Expected BOF record; found b'corrupt'")
+
+    def test_xls2form_convert_xlsx_bytesio(self):
+        """
+        Tests xls2form_convert with XLSX BytesIO object instead of file path.
+        """
+        # Read in XLSX
+        with open("./tests/example_xls/yes_or_no_question.xlsx", "rb") as xlsform:
+            xlsxdata = BytesIO(xlsform.read())
+
+        # Call the conversion function
+        xform, warnings = xls2xform_convert(
+            xlsform_path="/tmp/form.xlsx",
+            validate=False,
+            pretty_print=False,
+            enketo=False,
+            xlsform_object=xlsxdata,
+        )
+        # Check if conversion was successful
+        self.assertEqual(
+            warnings,
+            [
+                "The following language declarations do not contain valid machine-readable "
+                "codes: english. Learn more: http://xlsform.org#multiple-language-support"
+            ],
+        )
+        self.assertEqual(type(xform), BytesIO)
+        self.assertEqual(len(xform.getvalue()), 1245)
+
+    def test_xls2form_convert_xls_bytesio(self):
+        """
+        Tests xls2form_convert with XLS BytesIO object instead of file path.
+        """
+        # Read in XLS
+        with open(
+            "./tests/example_xls/choice_name_same_as_select_name.xls", "rb"
+        ) as xlsform:
+            xlsdata = BytesIO(xlsform.read())
+
+        # Call the conversion function
+        xform, warnings = xls2xform_convert(
+            xlsform_path="/tmp/form.xls",
+            validate=False,
+            pretty_print=False,
+            enketo=False,
+            xlsform_object=xlsdata,
+        )
+        # Check if conversion was successful
+        self.assertEqual(warnings, [])
+        self.assertEqual(type(xform), BytesIO)
+        self.assertEqual(len(xform.getvalue()), 879)
+
+    def test_xls2form_convert_csv_bytesio(self):
+        """
+        Tests xls2form_convert with CSV BytesIO object instead of file path.
+        """
+        # Read in CSV
+        with open("./tests/example_xls/yes_or_no_question.csv", "rb") as xlsform:
+            csvdata = BytesIO(xlsform.read())
+
+        # Call the conversion function
+        xform, warnings = xls2xform_convert(
+            xlsform_path="/tmp/form.csv",
+            validate=False,
+            pretty_print=False,
+            enketo=False,
+            xlsform_object=csvdata,
+        )
+        # Check if conversion was successful
+        self.assertEqual(
+            warnings,
+            [
+                "The following language declarations do not contain valid machine-readable "
+                "codes: english. Learn more: http://xlsform.org#multiple-language-support"
+            ],
+        )
+        self.assertEqual(type(xform), BytesIO)
+        self.assertEqual(len(xform.getvalue()), 1245)
+
+    def test_xls2form_convert_xls_select_one_external(self):
+        """
+        Tests xls2form_convert with XLS select one external option.
+        """
+        # Call the conversion function with file input
+        warnings = xls2xform_convert(
+            xlsform_path="./tests/example_xls/select_one_external.xls",
+            xform_path="/tmp/form.xml",
+            validate=False,
+            pretty_print=False,
+            enketo=False,
+        )
+
+        assert os.path.exists(
+            "/tmp/itemsets.csv"
+        ), "itemsets.csv not found in /tmp directory"
+
+        self.assertEqual(
+            warnings,
+            [
+                "The following language declarations do not contain valid machine-readable "
+                "codes: English, French. Learn more: "
+                "http://xlsform.org#multiple-language-support"
+            ],
+        )
+
+        # Check content of written choices file
+        with open("/tmp/itemsets.csv", "r") as choices_csv:
+            data = choices_csv.read()
+        assert len(data) == 759
+        # Check random char
+        assert data[3] == "s"
+        assert data[-3] == "p"
+
+    def test_xls2form_convert_xlsx_select_one_external(self):
+        """
+        Tests xls2form_convert with XLSX select one external option.
+        """
+        # Call the conversion function with file input
+        warnings = xls2xform_convert(
+            xlsform_path="./tests/example_xls/select_one_external.xlsx",
+            xform_path="/tmp/form.xml",
+            validate=False,
+            pretty_print=False,
+            enketo=False,
+        )
+
+        assert os.path.exists(
+            "/tmp/itemsets.csv"
+        ), "itemsets.csv not found in /tmp directory"
+
+        self.assertEqual(
+            warnings,
+            [
+                "The following language declarations do not contain valid machine-readable "
+                "codes: English, French. Learn more: "
+                "http://xlsform.org#multiple-language-support"
+            ],
+        )
+
+        # Check content of written choices file
+        with open("/tmp/itemsets.csv", "r") as choices_csv:
+            data = choices_csv.read()
+        assert len(data) == 791
+        # Check random char
+        assert data[3] == "s"
+        assert data[-3] == "p"
+
+        # Read in XLSX
+        with open("./tests/example_xls/select_one_external.xlsx", "rb") as xlsform:
+            xlsxdata = BytesIO(xlsform.read())
+
+        # Call the conversion function with BytesIO input
+        xform, warnings, choices = xls2xform_convert(
+            xlsform_path="/tmp/form.xlsx",
+            validate=False,
+            pretty_print=False,
+            enketo=False,
+            xlsform_object=xlsxdata,
+        )
+        # Check if conversion was successful
+        self.assertEqual(
+            warnings,
+            [
+                "The following language declarations do not contain valid machine-readable "
+                "codes: English, French. Learn more: "
+                "http://xlsform.org#multiple-language-support"
+            ],
+        )
+        data = choices.getvalue()
+        assert len(data) == 806
+        # Check random char
+        decoded = data.decode("utf-8").strip()
+        assert decoded[3] == "s"
+        assert decoded[-3] == "u"
 
     def test_get_xml_path_function(self):
         """Should return an xml path in the same directory as the xlsx file"""
