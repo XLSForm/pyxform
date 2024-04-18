@@ -2,7 +2,7 @@
 name = "pyxform"
 version = "2.0.3"
 authors = [
-  {name = "github.com/xlsform", email = "info@xlsform.org"},
+  {name = "github.com/xlsform", email = "support@getodk.org"},
 ]
 description = "A Python package to create XForms for ODK Collect."
 readme = "README.rst"
