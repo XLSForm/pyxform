@@ -1,5 +1,11 @@
 Pyxform Changelog
 
+v2.0.3, 2024-04-18
+* Don't use regex to clean up XML following pretty-printing by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/681
+* dev: update dependencies, testing, packaging, and linting/formatting by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/685
+* Address search and pulldata secondary instance conflict by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/697
+* Include project status and related work in readme by @lognaturel in https://github.com/XLSForm/pyxform/pull/700
+
 v2.0.2, 2024-01-26
 * Generate translations for choice list used with search() by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/690
 
