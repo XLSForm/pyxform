@@ -1,11 +1,12 @@
 """
 Survey Element base class for all survey elements.
 """
+
 import json
 import re
 from collections import deque
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from pyxform import aliases as alias
 from pyxform import constants as const
@@ -82,7 +83,7 @@ class SurveyElement(dict):
     """
 
     __name__ = "SurveyElement"
-    FIELDS: ClassVar[Dict[str, Any]] = FIELDS.copy()
+    FIELDS: ClassVar[dict[str, Any]] = FIELDS.copy()
 
     def _default(self):
         # TODO: need way to override question type dictionary
@@ -349,7 +350,7 @@ class SurveyElement(dict):
         @deprected
         I'm leaving this in just in case it has outside references.
         """
-        return {"media": "%s:media" % self.get_xpath()}
+        return {"media": f"{self.get_xpath()}:media"}
 
     def needs_itext_ref(self):
         return isinstance(self.label, dict) or (
@@ -378,7 +379,7 @@ class SurveyElement(dict):
         if self.needs_itext_ref():
             # If there is a dictionary label, or non-empty media dict,
             # then we need to make a label with an itext ref
-            ref = "jr:itext('%s')" % self._translation_path("label")
+            ref = f"""jr:itext('{self._translation_path("label")}')"""
             return node("label", ref=ref)
         else:
             survey = self.get_root()
@@ -388,12 +389,12 @@ class SurveyElement(dict):
     def xml_hint(self):
         if isinstance(self.hint, dict) or self.guidance_hint:
             path = self._translation_path("hint")
-            return node("hint", ref="jr:itext('%s')" % path)
+            return node("hint", ref=f"jr:itext('{path}')")
         else:
             hint, output_inserted = self.get_root().insert_output_values(self.hint, self)
             return node("hint", hint, toParseString=output_inserted)
 
-    def xml_label_and_hint(self) -> List["DetachableElement"]:
+    def xml_label_and_hint(self) -> list["DetachableElement"]:
         """
         Return a list containing one node for the label and if there
         is a hint one node for the hint.
@@ -409,7 +410,7 @@ class SurveyElement(dict):
                 result.append(self.xml_label())
             result.append(self.xml_hint())
 
-        msg = "The survey element named '%s' has no label or hint." % self.name
+        msg = f"The survey element named '{self.name}' has no label or hint."
         if len(result) == 0:
             raise PyXFormError(msg)
 
@@ -451,13 +452,13 @@ class SurveyElement(dict):
                 if k == "jr:constraintMsg" and (
                     isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
                 ):
-                    v = "jr:itext('%s')" % self._translation_path("jr:constraintMsg")
+                    v = f"""jr:itext('{self._translation_path("jr:constraintMsg")}')"""
                 if k == "jr:requiredMsg" and (
                     isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
                 ):
-                    v = "jr:itext('%s')" % self._translation_path("jr:requiredMsg")
+                    v = f"""jr:itext('{self._translation_path("jr:requiredMsg")}')"""
                 if k == "jr:noAppErrorString" and isinstance(v, dict):
-                    v = "jr:itext('%s')" % self._translation_path("jr:noAppErrorString")
+                    v = f"""jr:itext('{self._translation_path("jr:noAppErrorString")}')"""
                 bind_dict[k] = survey.insert_xpaths(v, context=self)
             return [node("bind", nodeset=self.get_xpath(), **bind_dict)]
         return None

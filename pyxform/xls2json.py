@@ -1,12 +1,13 @@
 """
 A Python script to convert excel files into JSON.
 """
+
 import json
 import os
 import re
 import sys
 from collections import Counter
-from typing import IO, Any, Dict, List, Optional, Tuple
+from typing import IO, Any
 
 from pyxform import aliases, constants
 from pyxform.constants import (
@@ -100,18 +101,18 @@ def replace_smart_quotes_in_dict(_d):
 class DealiasAndGroupHeadersResult:
     __slots__ = ("headers", "data")
 
-    def __init__(self, headers: Tuple[Tuple[str, ...], ...], data: List[Dict]):
+    def __init__(self, headers: tuple[tuple[str, ...], ...], data: list[dict]):
         """
         :param headers: Distinct headers seen in the sheet, parsed / split if applicable.
         :param data: Sheet data rows, in grouped dict format.
         """
-        self.headers: Tuple[Tuple[str, ...], ...] = headers
-        self.data: List[Dict] = data
+        self.headers: tuple[tuple[str, ...], ...] = headers
+        self.data: list[dict] = data
 
 
 def dealias_and_group_headers(
-    dict_array: List[Dict],
-    header_aliases: Dict[str, str],
+    dict_array: list[dict],
+    header_aliases: dict[str, str],
     use_double_colons: bool,
     default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
     ignore_case: bool = False,
@@ -292,8 +293,8 @@ def add_flat_annotations(prompt_list, parent_relevant="", name_prefix=""):
 
 
 def process_range_question_type(
-    row: Dict[str, Any], parameters: parameters_generic.PARAMETERS_TYPE
-) -> Dict[str, Any]:
+    row: dict[str, Any], parameters: parameters_generic.PARAMETERS_TYPE
+) -> dict[str, Any]:
     """
     Returns a new row that includes the Range parameters start, end and step.
 
@@ -341,9 +342,9 @@ def process_image_default(default_value):
 
 
 def add_choices_info_to_question(
-    question: Dict[str, Any],
+    question: dict[str, Any],
     list_name: str,
-    choices: Dict[str, list],
+    choices: dict[str, list],
     choice_filter: str,
     file_extension: str,
 ):
@@ -392,11 +393,11 @@ def add_choices_info_to_question(
 
 def workbook_to_json(
     workbook_dict,
-    form_name: Optional[str] = None,
-    fallback_form_name: Optional[str] = None,
+    form_name: str | None = None,
+    fallback_form_name: str | None = None,
     default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
-    warnings: Optional[List[str]] = None,
-) -> Dict[str, Any]:
+    warnings: list[str] | None = None,
+) -> dict[str, Any]:
     """
     workbook_dict -- nested dictionaries representing a spreadsheet.
                     should be similar to those returned by xls_to_dict
@@ -771,10 +772,11 @@ def workbook_to_json(
                     parameters[constants.TRACK_CHANGES] != "true"
                     and parameters[constants.TRACK_CHANGES] != "false"
                 ):
-                    raise PyXFormError(
-                        constants.TRACK_CHANGES + " must be set to true or false: "
-                        "'%s' is an invalid value" % parameters[constants.TRACK_CHANGES]
+                    msg = (
+                        f"{constants.TRACK_CHANGES} must be set to true or false: "
+                        f"'{parameters[constants.TRACK_CHANGES]}' is an invalid value."
                     )
+                    raise PyXFormError(msg)
                 else:
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
@@ -801,10 +803,11 @@ def workbook_to_json(
                     parameters[constants.IDENTIFY_USER] != "true"
                     and parameters[constants.IDENTIFY_USER] != "false"
                 ):
-                    raise PyXFormError(
-                        constants.IDENTIFY_USER + " must be set to true or false: "
-                        "'%s' is an invalid value" % parameters[constants.IDENTIFY_USER]
+                    msg = (
+                        f"{constants.IDENTIFY_USER} must be set to true or false: "
+                        f"'{parameters[constants.IDENTIFY_USER]}' is an invalid value."
                     )
+                    raise PyXFormError(msg)
                 else:
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
@@ -828,13 +831,12 @@ def workbook_to_json(
                         "balanced",
                         "high-accuracy",
                     ]:
-                        raise PyXFormError(
-                            "Parameter "
-                            + constants.LOCATION_PRIORITY
-                            + " must be set to no-power, low-power, balanced,"
-                            " or high-accuracy: '%s' is an invalid value"
-                            % parameters[constants.LOCATION_PRIORITY]
+                        msg = (
+                            f"Parameter {constants.LOCATION_PRIORITY} must be set to "
+                            "no-power, low-power, balanced, or high-accuracy:"
+                            f"'{parameters[constants.LOCATION_PRIORITY]}' is an invalid value"
                         )
+                        raise PyXFormError(msg)
 
                     try:
                         int(parameters[constants.LOCATION_MIN_INTERVAL])
@@ -1016,8 +1018,7 @@ def workbook_to_json(
                     msg_dict = {"name": row.get("name"), "type": row.get("type")}
                     warnings.append(
                         ROW_FORMAT_STRING % row_number
-                        + " %s has no label: " % control_type.capitalize()
-                        + str(msg_dict)
+                        + f" {control_type.capitalize()} has no label: {msg_dict}"
                     )
 
                 new_json_dict = row.copy()
@@ -1122,10 +1123,8 @@ def workbook_to_json(
                     and constants.CHOICE_FILTER not in row
                 ):
                     warnings.append(
-                        ROW_FORMAT_STRING
-                        % row_number
-                        + " select one external is only meant for"
-                        " filtered selects."
+                        ROW_FORMAT_STRING % row_number
+                        + " select one external is only meant for filtered selects."
                     )
                 list_name = parse_dict[constants.LIST_NAME_U]
                 file_extension = os.path.splitext(list_name)[1]
@@ -1226,7 +1225,7 @@ def workbook_to_json(
                     ):
                         raise PyXFormError(
                             "randomize must be set to true or false: "
-                            "'%s' is an invalid value" % parameters["randomize"]
+                            f"""'{parameters["randomize"]}' is an invalid value"""
                         )
 
                     if "seed" in parameters.keys():
@@ -1308,9 +1307,9 @@ def workbook_to_json(
 
                     if constants.CONTROL not in new_json_dict:
                         new_json_dict[constants.CONTROL] = {}
-                    new_json_dict[constants.CONTROL][
-                        constants.APPEARANCE
-                    ] = constants.LIST_NOLABEL
+                    new_json_dict[constants.CONTROL][constants.APPEARANCE] = (
+                        constants.LIST_NOLABEL
+                    )
                 parent_children_array.append(new_json_dict)
                 if specify_other_question:
                     parent_children_array.append(specify_other_question)
@@ -1594,9 +1593,9 @@ def parse_file_to_json(
     path: str,
     default_name: str = "data",
     default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
-    warnings: Optional[List[str]] = None,
-    file_object: Optional[IO] = None,
-) -> Dict[str, Any]:
+    warnings: list[str] | None = None,
+    file_object: IO | None = None,
+) -> dict[str, Any]:
     """
     A wrapper for workbook_to_json
     """

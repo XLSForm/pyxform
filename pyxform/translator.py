@@ -1,6 +1,7 @@
 """
 Translator class module.
 """
+
 from collections import defaultdict
 
 

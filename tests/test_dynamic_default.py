@@ -1,11 +1,11 @@
 """
 Test handling dynamic default in forms
 """
+
 import os
 import unittest
 from dataclasses import dataclass
 from time import perf_counter
-from typing import Optional, Tuple
 from unittest.mock import patch
 
 import psutil
@@ -32,7 +32,7 @@ class Case:
     is_dynamic: bool
     q_type: str
     q_default: str = ""
-    q_value: Optional[str] = None
+    q_value: str | None = None
     q_label_fr: str = ""
 
 
@@ -127,7 +127,7 @@ class XPathHelper:
         """
 
     @staticmethod
-    def body_select1(q_num: int, choices: Tuple[Tuple[str, str], ...]):
+    def body_select1(q_num: int, choices: tuple[tuple[str, str], ...]):
         """Expected structure for body elements for select1 types."""
         choices_xp = "\n              and ".join(
             (

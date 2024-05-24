@@ -1,6 +1,7 @@
 """
 Cleans up error messages from the validators.
 """
+
 import re
 
 
@@ -17,7 +18,7 @@ class ErrorCleaner:
         ) or strmatch.endswith("/item/value"):
             return strmatch
         line = match.group().split("/")
-        return "${%s}" % line[len(line) - 1]
+        return f"${{{line[len(line) - 1]}}}"
 
     @staticmethod
     def _cleanup_errors(error_message):

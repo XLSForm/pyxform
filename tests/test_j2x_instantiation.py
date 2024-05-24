@@ -1,6 +1,7 @@
 """
 Testing the instance object for pyxform.
 """
+
 from unittest import TestCase
 
 from pyxform import Survey, SurveyInstance

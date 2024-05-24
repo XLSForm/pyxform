@@ -1,11 +1,11 @@
 """
 Test validator update cli command.
 """
+
 import os
 import platform
 from datetime import datetime, timedelta
 from stat import S_IXGRP, S_IXUSR
-from typing import Optional
 from unittest import TestCase, skipIf
 from zipfile import ZipFile
 
@@ -77,7 +77,7 @@ class TestTempUtils(TestCase):
 
 
 class TestUpdateHandler(TestCase):
-    server: "Optional[ThreadingServerInThread]" = None
+    server: "ThreadingServerInThread | None" = None
 
     @classmethod
     def setUpClass(cls):
@@ -366,9 +366,10 @@ class TestUpdateHandler(TestCase):
 
     def test_unzip_find_zip_jobs__ok_real_ideal(self):
         """Should return a list of zip jobs same length as search."""
-        with get_temp_dir() as temp_dir, ZipFile(
-            self.zip_file_ideal, mode="r"
-        ) as zip_file:
+        with (
+            get_temp_dir() as temp_dir,
+            ZipFile(self.zip_file_ideal, mode="r") as zip_file,
+        ):
             bin_paths = self.updater._get_bin_paths(
                 update_info=self.update_info, file_path=self.zip_file_ideal
             )
@@ -380,9 +381,10 @@ class TestUpdateHandler(TestCase):
 
     def test_unzip_find_zip_jobs__ok_real_dupes(self):
         """Should return a list of zip jobs same length as search."""
-        with get_temp_dir() as temp_dir, ZipFile(
-            self.zip_file_dupes, mode="r"
-        ) as zip_file:
+        with (
+            get_temp_dir() as temp_dir,
+            ZipFile(self.zip_file_dupes, mode="r") as zip_file,
+        ):
             bin_paths = self.updater._get_bin_paths(
                 update_info=self.update_info, file_path=self.zip_file_dupes
             )
@@ -396,9 +398,11 @@ class TestUpdateHandler(TestCase):
         """Should raise an error if zip jobs isn't same length as search."""
         bin_paths = [(".non_existent", ".non_existent")]
 
-        with get_temp_dir() as temp_dir, ZipFile(
-            self.zip_file, mode="r"
-        ) as zip_file, self.assertRaises(PyXFormError) as ctx:
+        with (
+            get_temp_dir() as temp_dir,
+            ZipFile(self.zip_file, mode="r") as zip_file,
+            self.assertRaises(PyXFormError) as ctx,
+        ):
             self.updater._unzip_find_jobs(
                 open_zip_file=zip_file, bin_paths=bin_paths, out_path=temp_dir
             )
@@ -416,9 +420,11 @@ class TestUpdateHandler(TestCase):
 
     def test_unzip_extract_file__bad_crc_raises(self):
         """Should raise an error if the zip file CRC doesn't match."""
-        with get_temp_dir() as temp_dir, ZipFile(
-            self.zip_file, mode="r"
-        ) as zip_file, self.assertRaises(BadZipFile) as ctx:
+        with (
+            get_temp_dir() as temp_dir,
+            ZipFile(self.zip_file, mode="r") as zip_file,
+            self.assertRaises(BadZipFile) as ctx,
+        ):
             zip_item = next(
                 x for x in zip_file.infolist() if x.filename.endswith("validate")
             )

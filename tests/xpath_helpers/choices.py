@@ -1,5 +1,3 @@
-from typing import Tuple
-
 JR_PREFIXES = {
     "audio": "jr://audio/",
     "image": "jr://images/",
@@ -14,7 +12,7 @@ class XPathHelper:
     """
 
     @staticmethod
-    def model_instance_choices_label(cname: str, choices: Tuple[Tuple[str, str], ...]):
+    def model_instance_choices_label(cname: str, choices: tuple[tuple[str, str], ...]):
         """Model instance has choices elements with name and label."""
         choices_xp = "\n              and ".join(
             (
@@ -29,7 +27,7 @@ class XPathHelper:
         """
 
     @staticmethod
-    def model_instance_choices_itext(cname: str, choices: Tuple[str, ...]):
+    def model_instance_choices_itext(cname: str, choices: tuple[str, ...]):
         """Model instance has choices elements with name but no label."""
         choices_xp = "\n              and ".join(
             (
@@ -67,7 +65,7 @@ class XPathHelper:
         """
 
     @staticmethod
-    def model_itext_choice_text_label_by_pos(lang, cname, choices: Tuple[str, ...]):
+    def model_itext_choice_text_label_by_pos(lang, cname, choices: tuple[str, ...]):
         """Model itext has a text label and no other forms. Lookup by position."""
         choices_xp = "\n              and ".join(
             (
@@ -89,7 +87,7 @@ class XPathHelper:
 
     @staticmethod
     def model_itext_choice_media_by_pos(
-        lang, cname, choices: Tuple[Tuple[Tuple[str, ...]]]
+        lang, cname, choices: tuple[tuple[tuple[str, ...]]]
     ):
         """
         Model itext has a text label and no other forms. Lookup by position.
@@ -118,7 +116,7 @@ class XPathHelper:
 
     @staticmethod
     def model_no_itext_choice_media_by_pos(
-        lang, cname, choices: Tuple[Tuple[Tuple[str, ...]]]
+        lang, cname, choices: tuple[tuple[tuple[str, ...]]]
     ):
         """
         Model itext has a text label and no other forms. Lookup by position.

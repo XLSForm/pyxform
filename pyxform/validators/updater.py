@@ -1,6 +1,7 @@
 """
 pyxform_validator_update - command to update XForm validators.
 """
+
 import argparse
 import fnmatch
 import json
@@ -232,10 +233,8 @@ class _UpdateHandler:
             )
         elif 1 < urls_len:
             raise PyXFormError(
-                "{c} files with the name '{n}' attached to release '{r}'."
-                "\n\n{h}".format(
-                    c=urls_len, n=file_name, r=rel_name, h=update_info.manual_msg
-                )
+                f"{urls_len} files with the name '{file_name}' attached to release '{rel_name}'."
+                f"\n\n{update_info.manual_msg}"
             )
         else:
             return file_urls[0]
@@ -267,9 +266,7 @@ class _UpdateHandler:
             main_bin = "*validate"
         else:
             raise PyXFormError(
-                "Did not find a supported main binary for file: {p}.\n\n{h}".format(
-                    p=file_path, h=update_info.manual_msg
-                )
+                f"Did not find a supported main binary for file: {file_path}.\n\n{update_info.manual_msg}"
             )
         return [
             (main_bin, update_info.validator_basename),

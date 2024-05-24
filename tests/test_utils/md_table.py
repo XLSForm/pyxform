@@ -1,8 +1,8 @@
 """
 Markdown table utility functions.
 """
+
 import re
-from typing import List, Tuple
 
 from openpyxl import Workbook
 
@@ -35,7 +35,7 @@ def _is_null_row(r_arr):
     return True
 
 
-def md_table_to_ss_structure(mdstr: str) -> List[Tuple[str, List[List[str]]]]:
+def md_table_to_ss_structure(mdstr: str) -> list[tuple[str, list[list[str]]]]:
     ss_arr = []
     for item in mdstr.split("\n"):
         arr = _extract_array(item)

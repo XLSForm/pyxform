@@ -2,6 +2,7 @@
 Ensuring that the pyxform_test_case.PyxformTestCase class does some
 internal conversions correctly.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 

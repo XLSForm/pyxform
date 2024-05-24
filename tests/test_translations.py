@@ -1,6 +1,7 @@
 """
 Test translations syntax.
 """
+
 import unittest
 from dataclasses import dataclass
 from time import perf_counter
@@ -372,13 +373,13 @@ class TestTranslations(PyxformTestCase):
         """
         Should find the translations check costs a fraction of a second for large forms.
 
-        Results with Python 3.8.9 on VM with 4CPU 8GB RAM, x questions with 2 choices
-        each, average of 10 runs (seconds), with and without the check, per question:
+        Results with Python 3.10.14 on VM with 2vCPU (i7-7700HQ) 4GB RAM, x questions
+        with 2 choices each, average of 10 runs (seconds), with and without the check,
+        per question:
         | num  | with   | without |
-        |  500 | 1.0192 |  0.9950 |
-        | 1000 | 2.0054 |  2.1026 |
-        | 2000 | 4.0714 |  4.0926 |
-        | 3000 | 6.0266 |  6.2476 |
+        |  500 | 3.0420 |  3.0427 |
+        | 1000 | 9.7641 |  9.6972 |
+        | 2000 | 30.645 |  28.869 |
         """
         survey_header = """
         | survey |                 |        |                |               |

@@ -1,8 +1,8 @@
 """
 Test the "note" question type.
 """
+
 from dataclasses import dataclass
-from typing import Set
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.questions import xpq
@@ -16,7 +16,7 @@ class Case:
 
     label: str
     xpath: str
-    match: Set[str]
+    match: set[str]
 
 
 class TestNotes(PyxformTestCase):

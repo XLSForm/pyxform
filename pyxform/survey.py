@@ -1,14 +1,15 @@
 """
 Survey module with XForm Survey objects and utility functions.
 """
+
 import os
 import re
 import tempfile
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
+from collections.abc import Generator, Iterator
 from datetime import datetime
 from functools import lru_cache
-from typing import Generator, Iterator, List, Optional, Tuple
 
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
@@ -50,16 +51,16 @@ class InstanceInfo:
     def __init__(
         self,
         type: str,
-        context: Optional[str],
+        context: str | None,
         name: str,
-        src: Optional[str],
+        src: str | None,
         instance: "DetachableElement",
     ):
         self.type: str = type
-        self.context: Optional[str] = context
+        self.context: str | None = context
         self.name: str = name
-        self.src: Optional[str] = src
-        self.instance: "DetachableElement" = instance
+        self.src: str | None = src
+        self.instance: DetachableElement = instance
 
 
 def register_nsmap():
@@ -232,15 +233,14 @@ class Survey(Section):
                     if element.name == root_node_name:
                         # The root node name is rarely explictly set; explain
                         # the problem in a more helpful way (#510)
-                        raise PyXFormError(
-                            'The name "%s" is the same as the form name. '
-                            "Use a different section name "
-                            '(or change the form name in the "name" column of '
-                            "the settings sheet)." % element.name
+                        msg = (
+                            f"The name '{element.name}' is the same as the form name. "
+                            "Use a different section name (or change the form name in "
+                            "the 'name' column of the settings sheet)."
                         )
-                    raise PyXFormError(
-                        "There are two sections with the name %s." % element.name
-                    )
+                        raise PyXFormError(msg)
+                    msg = f"There are two sections with the name {element.name}."
+                    raise PyXFormError(msg)
                 section_names.append(element.name)
 
     def get_nsmap(self):
@@ -297,7 +297,7 @@ class Survey(Section):
         )
 
     def get_setvalues_for_question_name(self, question_name):
-        return self.setvalues_by_triggering_ref.get("${%s}" % question_name)
+        return self.setvalues_by_triggering_ref.get(f"${{{question_name}}}")
 
     def _generate_static_instances(self, list_name, choice_list) -> InstanceInfo:
         """
@@ -348,7 +348,7 @@ class Survey(Section):
         )
 
     @staticmethod
-    def _generate_external_instances(element) -> Optional[InstanceInfo]:
+    def _generate_external_instances(element) -> InstanceInfo | None:
         if isinstance(element, ExternalInstance):
             name = element["name"]
             extension = element["type"].split("-")[0]
@@ -394,7 +394,7 @@ class Survey(Section):
             raise ValidationError("\n".join(errors))
 
     @staticmethod
-    def _generate_pulldata_instances(element) -> Optional[List[InstanceInfo]]:
+    def _generate_pulldata_instances(element) -> list[InstanceInfo] | None:
         def get_pulldata_functions(element):
             """
             Returns a list of different pulldata(... function strings if
@@ -444,7 +444,7 @@ class Survey(Section):
         return None
 
     @staticmethod
-    def _generate_from_file_instances(element) -> Optional[InstanceInfo]:
+    def _generate_from_file_instances(element) -> InstanceInfo | None:
         itemset = element.get("itemset")
         file_id, ext = os.path.splitext(itemset)
         if itemset and ext in EXTERNAL_INSTANCE_EXTENSIONS:
@@ -586,13 +586,13 @@ class Survey(Section):
         entity_features = getattr(self, constants.ENTITY_FEATURES, [])
         if len(entity_features) > 0:
             if "update" in entity_features:
-                model_kwargs[
-                    "entities:entities-version"
-                ] = constants.CURRENT_ENTITIES_VERSION
+                model_kwargs["entities:entities-version"] = (
+                    constants.CURRENT_ENTITIES_VERSION
+                )
             else:
-                model_kwargs[
-                    "entities:entities-version"
-                ] = constants.ENTITIES_CREATE_VERSION
+                model_kwargs["entities:entities-version"] = (
+                    constants.ENTITIES_CREATE_VERSION
+                )
 
         model_children = []
         if self._translations:
@@ -701,7 +701,7 @@ class Survey(Section):
 
         def _setup_choice_translations(
             name, choice_value, itext_id
-        ) -> Generator[Tuple[List[str], str], None, None]:
+        ) -> Generator[tuple[list[str], str], None, None]:
             for media_or_lang, value in choice_value.items():
                 if isinstance(value, dict):
                     for language, val in value.items():
@@ -981,12 +981,12 @@ class Survey(Section):
         return self.__unicode__()
 
     def __unicode__(self):
-        return "<pyxform.survey.Survey instance at %s>" % hex(id(self))
+        return f"<pyxform.survey.Survey instance at {hex(id(self))}>"
 
     def _setup_xpath_dictionary(self):
         self._xpath = {}  # pylint: disable=attribute-defined-outside-init
         for element in self.iter_descendants():
-            if isinstance(element, (Question, Section)):
+            if isinstance(element, Question | Section):
                 if element.name in self._xpath:
                     self._xpath[element.name] = None
                 else:
@@ -1022,7 +1022,7 @@ class Survey(Section):
                 return False
             return False
 
-        def _relative_path(ref_name: str, _use_current: bool) -> Optional[str]:
+        def _relative_path(ref_name: str, _use_current: bool) -> str | None:
             """Given name in ${name}, return relative xpath to ${name}."""
             return_path = None
             xpath = self._xpath[ref_name]
@@ -1038,7 +1038,7 @@ class Survey(Section):
                     self, xpath, context_xpath, reference_parent
                 )
                 if steps:
-                    ref_path = ref_path if ref_path.endswith(ref_name) else "/%s" % name
+                    ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
                     prefix = " current()/" if _use_current else " "
                     return_path = prefix + "/".join([".."] * steps) + ref_path + " "
 
@@ -1135,8 +1135,8 @@ class Survey(Section):
     def insert_output_values(
         self,
         text: str,
-        context: Optional[SurveyElement] = None,
-    ) -> Tuple[str, bool]:
+        context: SurveyElement | None = None,
+    ) -> tuple[str, bool]:
         """
         Replace all the ${variables} in text with xpaths.
         Returns that and a boolean indicating if there were any ${variables}

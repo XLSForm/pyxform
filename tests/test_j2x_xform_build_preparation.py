@@ -1,6 +1,7 @@
 """
 Testing preparation of values for XForm exporting
 """
+
 from unittest import TestCase
 
 from pyxform import MultipleChoiceQuestion, Survey

@@ -1,6 +1,7 @@
 """
 Test whitespace around output variables in XForms.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 

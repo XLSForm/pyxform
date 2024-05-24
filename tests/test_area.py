@@ -1,6 +1,7 @@
 """
 AreaTest - test enclosed-area(geo_shape) calculation.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 

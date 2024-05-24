@@ -1,6 +1,7 @@
 """
 Test table list appearance syntax.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 MD = '''

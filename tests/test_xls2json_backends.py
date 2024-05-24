@@ -1,6 +1,7 @@
 """
 Test xls2json_backends module functionality.
 """
+
 import os
 from datetime import datetime
 from unittest import TestCase
@@ -68,8 +69,8 @@ class TestXLS2JSONBackends(TestCase):
             "yes_or_no_question",
         ]
         for fixture in equivalent_fixtures:
-            xls_path = utils.path_to_text_fixture("%s.xls" % fixture)
-            xlsx_path = utils.path_to_text_fixture("%s.xlsx" % fixture)
+            xls_path = utils.path_to_text_fixture(f"{fixture}.xls")
+            xlsx_path = utils.path_to_text_fixture(f"{fixture}.xlsx")
             xls_inp = xls_to_dict(xls_path)
             xlsx_inp = xlsx_to_dict(xlsx_path)
             self.maxDiff = None

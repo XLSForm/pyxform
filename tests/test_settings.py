@@ -38,7 +38,6 @@ class TestSettings(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            debug=True,
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:test_name[@id='my_form']"
             ],

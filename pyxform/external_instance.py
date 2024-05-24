@@ -1,6 +1,7 @@
 """
 ExternalInstance class module
 """
+
 from pyxform.survey_element import SurveyElement
 
 

@@ -2,6 +2,7 @@
 Aliases for elements which could mean the same element in XForm but is represented
 differently on the XLSForm.
 """
+
 from pyxform import constants
 
 # Aliases:

@@ -1,6 +1,7 @@
 """
 Test loop syntax.
 """
+
 from unittest import TestCase
 
 from pyxform.builder import create_survey_from_xls

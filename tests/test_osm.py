@@ -1,6 +1,7 @@
 """
 Test OSM widgets.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 expected_xml_output = """

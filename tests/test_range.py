@@ -1,6 +1,7 @@
 """
 Test range widget.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 

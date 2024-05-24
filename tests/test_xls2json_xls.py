@@ -1,6 +1,7 @@
 """
 Testing simple cases for Xls2Json
 """
+
 import json
 import os
 from unittest import TestCase
@@ -34,9 +35,10 @@ class BasicXls2JsonApiTests(TestCase):
         with open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
         # Compare with the expected output:
-        with open(expected_output_path, encoding="utf-8") as expected, open(
-            output_path, encoding="utf-8"
-        ) as observed:
+        with (
+            open(expected_output_path, encoding="utf-8") as expected,
+            open(output_path, encoding="utf-8") as observed,
+        ):
             self.assertEqual(json.load(expected), json.load(observed))
 
     def test_hidden(self):
@@ -128,9 +130,10 @@ class BasicXls2JsonApiTests(TestCase):
         with open(output_path, mode="w", encoding="utf-8") as fp:
             json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
         # Compare with the expected output:
-        with open(expected_output_path, encoding="utf-8") as expected, open(
-            output_path, encoding="utf-8"
-        ) as observed:
+        with (
+            open(expected_output_path, encoding="utf-8") as expected,
+            open(output_path, encoding="utf-8") as observed,
+        ):
             self.assertEqual(json.load(expected), json.load(observed))
 
     def test_choice_filter_choice_fields(self):
@@ -217,8 +220,8 @@ class CsvReaderEquivalencyTest(TestCase):
             "yes_or_no_question",
         ]
         for fixture in equivalent_fixtures:
-            xls_path = utils.path_to_text_fixture("%s.xls" % fixture)
-            csv_path = utils.path_to_text_fixture("%s.csv" % fixture)
+            xls_path = utils.path_to_text_fixture(f"{fixture}.xls")
+            csv_path = utils.path_to_text_fixture(f"{fixture}.csv")
             xls_inp = xls_to_dict(xls_path)
             csv_inp = csv_to_dict(csv_path)
             self.maxDiff = None

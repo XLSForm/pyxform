@@ -1,6 +1,7 @@
 """
 Test language warnings.
 """
+
 import os
 import tempfile
 

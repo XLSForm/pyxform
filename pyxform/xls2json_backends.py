@@ -1,15 +1,17 @@
 """
 XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 """
+
 import csv
 import datetime
 import os
 import re
 from collections import OrderedDict
+from collections.abc import Callable, Iterator
 from contextlib import closing
 from functools import reduce
 from io import StringIO
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any
 from zipfile import BadZipFile
 
 import xlrd
@@ -25,7 +27,7 @@ from xlrd.xldate import XLDateAmbiguous
 from pyxform import constants
 from pyxform.errors import PyXFormError
 
-aCell = Union[xlrdCell, pyxlCell]
+aCell = xlrdCell | pyxlCell
 XL_DATE_AMBIGOUS_MSG = (
     "The xls file provided has an invalid date on the %s sheet, under"
     " the %s column on row number %s"
@@ -40,7 +42,7 @@ def _list_to_dict_list(list_items):
     if list_items:
         k = OrderedDict()
         for item in list_items:
-            k["%s" % item] = ""
+            k[str(item)] = ""
         return [k]
     return []
 
@@ -55,7 +57,7 @@ def trim_trailing_empty(a_list: list, n_empty: int) -> list:
     return a_list
 
 
-def get_excel_column_headers(first_row: Iterator[Optional[str]]) -> List[Optional[str]]:
+def get_excel_column_headers(first_row: Iterator[str | None]) -> list[str | None]:
     """Get column headers from the first row; stop if there's a run of empty columns."""
     max_adjacent_empty_columns = 20
     column_header_list = []
@@ -72,7 +74,7 @@ def get_excel_column_headers(first_row: Iterator[Optional[str]]) -> List[Optiona
             adjacent_empty_cols = 0
             # Check for duplicate column headers.
             if column_header in column_header_list:
-                raise PyXFormError("Duplicate column header: %s" % column_header)
+                raise PyXFormError(f"Duplicate column header: {column_header}")
             # Strip whitespaces from the header.
             clean_header = re.sub(r"( )+", " ", column_header.strip())
             column_header_list.append(clean_header)
@@ -81,10 +83,10 @@ def get_excel_column_headers(first_row: Iterator[Optional[str]]) -> List[Optiona
 
 
 def get_excel_rows(
-    headers: Iterator[Optional[str]],
-    rows: Iterator[Tuple[aCell, ...]],
+    headers: Iterator[str | None],
+    rows: Iterator[tuple[aCell, ...]],
     cell_func: Callable[[aCell, int, str], Any],
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Get rows of cleaned data; stop if there's a run of empty rows."""
     max_adjacent_empty_rows = 60
     col_header_enum = list(enumerate(headers))
@@ -129,7 +131,7 @@ def xls_to_dict(path_or_file):
 
     def xls_clean_cell(
         wb: xlrdBook, wb_sheet: xlrdSheet, cell: xlrdCell, row_n: int, col_key: str
-    ) -> Optional[str]:
+    ) -> str | None:
         value = cell.value
         if isinstance(value, str):
             value = value.strip()
@@ -153,7 +155,7 @@ def xls_to_dict(path_or_file):
         )
 
         # Inject wb/sheet as closure since functools.partial isn't typing friendly.
-        def clean_func(cell: xlrdCell, row_n: int, col_key: str) -> Optional[str]:
+        def clean_func(cell: xlrdCell, row_n: int, col_key: str) -> str | None:
             return xls_clean_cell(
                 wb=wb, wb_sheet=wb_sheet, cell=cell, row_n=row_n, col_key=col_key
             )
@@ -172,19 +174,19 @@ def xls_to_dict(path_or_file):
                 if len(wb.sheets()) == 1:
                     (
                         result_book[constants.SURVEY],
-                        result_book["%s_header" % constants.SURVEY],
+                        result_book[f"{constants.SURVEY}_header"],
                     ) = xls_to_dict_normal_sheet(wb=wb, wb_sheet=wb_sheet)
                 else:
                     continue
             else:
                 (
                     result_book[wb_sheet.name],
-                    result_book["%s_header" % wb_sheet.name],
+                    result_book[f"{wb_sheet.name}_header"],
                 ) = xls_to_dict_normal_sheet(wb=wb, wb_sheet=wb_sheet)
         return result_book
 
     try:
-        if isinstance(path_or_file, (str, bytes, os.PathLike)):
+        if isinstance(path_or_file, str | bytes | os.PathLike):
             file = open(path_or_file, mode="rb")
         else:
             file = path_or_file
@@ -195,7 +197,7 @@ def xls_to_dict(path_or_file):
             finally:
                 workbook.release_resources()
     except xlrd.XLRDError as read_err:
-        raise PyXFormError("Error reading .xls file: %s" % read_err) from read_err
+        raise PyXFormError(f"Error reading .xls file: {read_err}") from read_err
 
 
 def xls_value_to_unicode(value, value_type, datemode) -> str:
@@ -238,7 +240,7 @@ def xlsx_to_dict(path_or_file):
     All the keys and leaf elements are strings.
     """
 
-    def xlsx_clean_cell(cell: pyxlCell, row_n: int, col_key: str) -> Optional[str]:
+    def xlsx_clean_cell(cell: pyxlCell, row_n: int, col_key: str) -> str | None:
         value = cell.value
         if isinstance(value, str):
             value = value.strip()
@@ -279,7 +281,7 @@ def xlsx_to_dict(path_or_file):
         return result_book
 
     try:
-        if isinstance(path_or_file, (str, bytes, os.PathLike)):
+        if isinstance(path_or_file, str | bytes | os.PathLike):
             file = open(path_or_file, mode="rb")
         else:
             file = path_or_file
@@ -292,7 +294,7 @@ def xlsx_to_dict(path_or_file):
                 reader.wb.close()
                 reader.archive.close()
     except (OSError, BadZipFile, KeyError) as read_err:
-        raise PyXFormError("Error reading .xlsx file: %s" % read_err) from read_err
+        raise PyXFormError(f"Error reading .xlsx file: {read_err}") from read_err
 
 
 def xlsx_value_to_str(value) -> str:
@@ -306,7 +308,7 @@ def xlsx_value_to_str(value) -> str:
     elif isinstance(value, float) and value.is_integer():
         # Try to display as an int if possible.
         return str(int(value))
-    elif isinstance(value, (int, datetime.datetime, datetime.time)):
+    elif isinstance(value, int | datetime.datetime | datetime.time):
         return str(value)
     else:
         # ensure unicode and replace nbsp spaces with normal ones
@@ -394,10 +396,10 @@ def csv_to_dict(path_or_file):
         if content is not None:
             if current_headers is None:
                 current_headers = content
-                _dict["%s_header" % sheet_name] = _list_to_dict_list(current_headers)
+                _dict[f"{sheet_name}_header"] = _list_to_dict_list(current_headers)
             else:
                 _d = OrderedDict()
-                for key, val in zip(current_headers, content):
+                for key, val in zip(current_headers, content, strict=False):
                     if val != "":
                         # Slight modification so values are striped
                         # this is because csvs often spaces following commas

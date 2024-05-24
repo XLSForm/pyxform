@@ -1,12 +1,14 @@
 """
 PyxformTestCase base class using markdown to define the XLSForm.
 """
+
 import logging
 import os
 import re
 import tempfile
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Optional
 from unittest import TestCase
 
 from lxml import etree
@@ -30,7 +32,7 @@ logger.setLevel(logging.DEBUG)
 if TYPE_CHECKING:
     from pyxform.survey import Survey
 
-    NSMAPSubs: "List[Tuple[str, str]]"
+    NSMAPSubs: "list[tuple[str, str]]"
 
 
 class PyxformTestError(Exception):
@@ -40,7 +42,7 @@ class PyxformTestError(Exception):
 @dataclass
 class MatcherContext:
     debug: bool
-    nsmap_xpath: "Dict[str, str]"
+    nsmap_xpath: "dict[str, str]"
     nsmap_subs: "NSMAPSubs"
     content_str: str
 
@@ -51,12 +53,12 @@ class PyxformMarkdown:
     def md_to_pyxform_survey(
         self,
         md_raw: str,
-        name: Optional[str] = None,
-        title: Optional[str] = None,
-        id_string: Optional[str] = None,
+        name: str | None = None,
+        title: str | None = None,
+        id_string: str | None = None,
         debug: bool = False,
         autoname: bool = True,
-        warnings: Optional[List[str]] = None,
+        warnings: list[str] | None = None,
     ):
         if autoname:
             kwargs = self._autoname_inputs(name=name, title=title, id_string=id_string)
@@ -106,11 +108,11 @@ class PyxformMarkdown:
 
     @staticmethod
     def _ss_structure_to_pyxform_survey(
-        ss_structure: Dict,
-        name: Optional[str] = None,
-        title: Optional[str] = None,
-        id_string: Optional[str] = None,
-        warnings: Optional[List[str]] = None,
+        ss_structure: dict,
+        name: str | None = None,
+        title: str | None = None,
+        id_string: str | None = None,
+        warnings: list[str] | None = None,
     ):
         # using existing methods from the builder
         imported_survey_json = workbook_to_json(
@@ -147,10 +149,10 @@ class PyxformMarkdown:
 
     @staticmethod
     def _autoname_inputs(
-        name: Optional[str] = None,
-        title: Optional[str] = None,
-        id_string: Optional[str] = None,
-    ) -> Dict[str, str]:
+        name: str | None = None,
+        title: str | None = None,
+        id_string: str | None = None,
+    ) -> dict[str, str]:
         """
         Fill in any blank inputs with default values.
         """
@@ -167,34 +169,34 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
     def assertPyxformXform(
         self,
         # Survey input
-        md: Optional[str] = None,
-        ss_structure: Optional[Dict] = None,
+        md: str | None = None,
+        ss_structure: dict | None = None,
         survey: Optional["Survey"] = None,
         # XForm assertions
-        xml__xpath_match: Optional[Iterable[str]] = None,
-        xml__xpath_exact: Optional[Iterable[Tuple[str, Set[str]]]] = None,
-        xml__xpath_count: Optional[Iterable[Tuple[str, int]]] = None,
+        xml__xpath_match: Iterable[str] | None = None,
+        xml__xpath_exact: Iterable[tuple[str, set[str]]] | None = None,
+        xml__xpath_count: Iterable[tuple[str, int]] | None = None,
         # XForm assertions - deprecated
-        xml__contains: Optional[Iterable[str]] = None,
-        xml__excludes: Optional[Iterable[str]] = None,
-        model__contains: Optional[Iterable[str]] = None,
-        model__excludes: Optional[Iterable[str]] = None,
-        itext__contains: Optional[Iterable[str]] = None,
-        itext__excludes: Optional[Iterable[str]] = None,
-        instance__contains: Optional[Iterable[str]] = None,
+        xml__contains: Iterable[str] | None = None,
+        xml__excludes: Iterable[str] | None = None,
+        model__contains: Iterable[str] | None = None,
+        model__excludes: Iterable[str] | None = None,
+        itext__contains: Iterable[str] | None = None,
+        itext__excludes: Iterable[str] | None = None,
+        instance__contains: Iterable[str] | None = None,
         # Errors assertions
-        error__contains: Optional[Iterable[str]] = None,
-        error__not_contains: Optional[Iterable[str]] = None,
-        odk_validate_error__contains: Optional[Iterable[str]] = None,
-        warnings__contains: Optional[Iterable[str]] = None,
-        warnings__not_contains: Optional[Iterable[str]] = None,
-        warnings_count: Optional[int] = None,
+        error__contains: Iterable[str] | None = None,
+        error__not_contains: Iterable[str] | None = None,
+        odk_validate_error__contains: Iterable[str] | None = None,
+        warnings__contains: Iterable[str] | None = None,
+        warnings__not_contains: Iterable[str] | None = None,
+        warnings_count: int | None = None,
         errored: bool = False,
         # Optional extras
-        name: Optional[str] = None,
-        id_string: Optional[str] = None,
-        title: Optional[str] = None,
-        warnings: Optional[List[str]] = None,
+        name: str | None = None,
+        id_string: str | None = None,
+        title: str | None = None,
+        warnings: list[str] | None = None,
         run_odk_validate: bool = False,
         debug: bool = False,
     ):
@@ -295,7 +297,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
 
             def _pull_xml_node_from_root(element_selector):
                 _r = root.findall(
-                    ".//n:%s" % element_selector,
+                    f".//n:{element_selector}",
                     namespaces={"n": "http://www.w3.org/2002/xforms"},
                 )
                 if _r:
@@ -455,7 +457,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         else:
             self.assertTrue(
                 real_count != 0,
-                msg_prefix + "Couldn't find %s in content:\n" % text_repr + content,
+                f"{msg_prefix}Couldn't find {text_repr} in content:\n{content}",
             )
 
     def assertNotContains(self, content, text, msg_prefix=""):
@@ -469,7 +471,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         )
 
         self.assertEqual(
-            real_count, 0, msg_prefix + "Response should not contain %s" % text_repr
+            real_count, 0, f"{msg_prefix}Response should not contain {text_repr}"
         )
 
     def assert_xpath_exact(
@@ -477,7 +479,7 @@ class PyxformTestCase(PyxformMarkdown, TestCase):
         matcher_context: "MatcherContext",
         content: "_Element",
         xpath: str,
-        expected: "Set[str]",
+        expected: "set[str]",
         case_num: int,
     ) -> None:
         """
@@ -565,8 +567,8 @@ def reorder_attributes(root):
 
 
 def xpath_clean_result_strings(
-    nsmap_subs: "NSMAPSubs", results: "Set[_Element]"
-) -> "Set[str]":
+    nsmap_subs: "NSMAPSubs", results: "set[_Element]"
+) -> "set[str]":
     """
     Clean XPath results: stringify, remove namespace declarations, clean up whitespace.
 
@@ -589,7 +591,7 @@ def xpath_clean_result_strings(
 
 def xpath_evaluate(
     matcher_context: "MatcherContext", content: "_Element", xpath: str, for_exact=False
-) -> "Union[Set[_Element], Set[str]]":
+) -> "set[_Element] | set[str]":
     """
     Evaluate an XPath and return the results.
 

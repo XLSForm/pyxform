@@ -1,6 +1,7 @@
 """
 Test duplicate survey question field name.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
@@ -193,7 +194,7 @@ class FieldsTests(PyxformTestCase):
             |          | end group   |         |               |
             """,
             errored=True,
-            error__contains=['The name "foo" is the same as the form name'],
+            error__contains=["The name 'foo' is the same as the form name"],
         )
 
     def test_field_name_may_match_form_name(self):

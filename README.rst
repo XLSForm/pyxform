@@ -2,16 +2,13 @@
 pyxform
 ========
 
-|pypi| |python| |black|
+|pypi| |python|
 
 .. |pypi| image:: https://badge.fury.io/py/pyxform.svg
     :target: https://badge.fury.io/py/pyxform
 
-.. |python| image:: https://img.shields.io/badge/python-3.7,3.8,3.9-blue.svg
+.. |python| image:: https://img.shields.io/badge/python-3.10,3.11,3.12-blue.svg
     :target: https://www.python.org/downloads
-
-.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/python/black
 
 ``pyxform`` is a Python library that simplifies writing forms for ODK Collect and Enketo by converting spreadsheets that follow the `XLSForm standard <http://xlsform.org/>`_ into `ODK XForms <https://github.com/opendatakit/xforms-spec>`_. The XLSForms format is used in a `number of tools <http://xlsform.org/en/#tools-that-support-xlsforms>`_.
 
@@ -47,14 +44,14 @@ The ``xls2xform`` command can then be used::
 
     xls2xform path_to_XLSForm [output_path]
 
-The currently supported Python versions for ``pyxform`` are 3.7, 3.8 and 3.9.
+The currently supported Python versions for ``pyxform`` are 3.10, 3.11 and 3.12.
 
 Running pyxform from local source
 ---------------------------------
 
 Note that you must uninstall any globally installed ``pyxform`` instance in order to use local modules. Please install java 8 or newer version.
 
-From the command line, complete the following. These steps use a `virtualenv <https://docs.python.org/3.8/tutorial/venv.html>`_ to make dependency management easier, and to keep the global site-packages directory clean::
+From the command line, complete the following. These steps use a `virtualenv <https://docs.python.org/3.10/tutorial/venv.html>`_ to make dependency management easier, and to keep the global site-packages directory clean::
 
     # Get a copy of the repository.
     mkdir -P ~/repos/pyxform
@@ -62,7 +59,7 @@ From the command line, complete the following. These steps use a `virtualenv <ht
     git clone https://github.com/XLSForm/pyxform.git repo
 
     # Create and activate a virtual environment for the install.
-    /usr/local/bin/python3.8 -m venv venv
+    /usr/local/bin/python3.10 -m venv venv
     . venv/bin/activate
 
     # Install the pyxform and it's production dependencies.
@@ -156,7 +153,7 @@ Releases are now automatic. These instructions are provided for forks or for a f
 1. In a clean new release only directory, check out master.
 2. Create a new virtualenv in this directory to ensure a clean Python environment::
 
-     /usr/local/bin/python3.8 -m venv pyxform-release
+     /usr/local/bin/python3.10 -m venv pyxform-release
      . pyxform-release/bin/activate
 
 3. Install the production and packaging requirements::

@@ -1,17 +1,13 @@
 import unittest
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 from tests.pyxform_test_case import PyxformTestCase
-
-if TYPE_CHECKING:
-    from typing import Set
 
 
 @dataclass
 class CaseData:
     xpath: str
-    exact: "Set[str]"
+    exact: "set[str]"
     count: int
 
     @property

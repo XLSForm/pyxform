@@ -1,6 +1,7 @@
 """
 Testing inlining translation when no translation is specified.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq

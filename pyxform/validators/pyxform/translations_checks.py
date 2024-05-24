@@ -6,10 +6,10 @@ from pyxform import constants as const
 from pyxform.errors import PyXFormError
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Optional, Sequence, Set, Tuple
+    from collections.abc import Sequence
 
-    SheetData = Tuple[Tuple[str, ...]]
-    Warnings = List[str]
+    SheetData = tuple[tuple[str, ...]]
+    Warnings = list[str]
 
 
 OR_OTHER_WARNING = (
@@ -20,8 +20,8 @@ OR_OTHER_WARNING = (
 
 
 def format_missing_translations_msg(
-    _in: "Dict[str, Dict[str, Sequence]]",
-) -> "Optional[str]":
+    _in: "dict[str, dict[str, Sequence]]",
+) -> str | None:
     """
     Format the missing translations data into a warning message.
 
@@ -76,22 +76,22 @@ class Translations:
     def __init__(
         self,
         sheet_data: "SheetData",
-        translatable_columns: "Dict[str, str]",
+        translatable_columns: dict[str, str],
     ):
         """
         :param sheet_data: The survey or choices sheet data.
         :param translatable_columns: The translatable columns for a sheet. The structure
           should be Dict[internal_name, external_name]. See the aliases module.
         """
-        self.seen: "defaultdict[str, List[str]]" = defaultdict(list)
-        self.columns_seen: "Set[str]" = set()
-        self.missing: "defaultdict[str, List[str]]" = defaultdict(list)
+        self.seen: defaultdict[str, list[str]] = defaultdict(list)
+        self.columns_seen: set[str] = set()
+        self.missing: defaultdict[str, list[str]] = defaultdict(list)
 
         self._find_translations(sheet_data, translatable_columns)
         self._find_missing()
 
     def _find_translations(
-        self, sheet_data: "SheetData", translatable_columns: "Dict[str, str]"
+        self, sheet_data: "SheetData", translatable_columns: dict[str, str]
     ):
         def process_header(head):
             if head[0] in translatable_columns.keys():
@@ -134,11 +134,11 @@ class SheetTranslations:
         :param survey_sheet: The survey sheet data.
         :param choices_sheet: The choices sheet data.
         """
-        self.survey: "Translations" = Translations(
+        self.survey: Translations = Translations(
             sheet_data=survey_sheet,
             translatable_columns=aliases.TRANSLATABLE_SURVEY_COLUMNS,
         )
-        self.choices: "Translations" = Translations(
+        self.choices: Translations = Translations(
             sheet_data=choices_sheet,
             translatable_columns=aliases.TRANSLATABLE_CHOICES_COLUMNS,
         )

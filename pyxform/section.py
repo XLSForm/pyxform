@@ -1,6 +1,7 @@
 """
 Section survey element module.
 """
+
 from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.survey_element import SurveyElement

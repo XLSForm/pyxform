@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
@@ -8,8 +8,8 @@ EC = const.EntityColumns
 
 
 def get_entity_declaration(
-    entities_sheet: List[Dict], workbook_dict: Dict[str, List[Dict]], warnings: List[str]
-) -> Dict[str, Any]:
+    entities_sheet: list[dict], workbook_dict: dict[str, list[dict]], warnings: list[str]
+) -> dict[str, Any]:
     if len(entities_sheet) == 0:
         similar = find_sheet_misspellings(key=const.ENTITIES, keys=workbook_dict.keys())
         if similar is not None:
@@ -82,7 +82,7 @@ def get_validated_dataset_name(entity):
 
 
 def validate_entity_saveto(
-    row: Dict, row_number: int, entity_declaration: Dict[str, Any], in_repeat: bool
+    row: dict, row_number: int, entity_declaration: dict[str, Any], in_repeat: bool
 ):
     save_to = row.get(const.BIND, {}).get("entities:saveto", "")
     if not save_to:
@@ -124,7 +124,7 @@ def validate_entity_saveto(
         )
 
 
-def validate_entities_columns(row: Dict):
+def validate_entities_columns(row: dict):
     extra = {k: None for k in row.keys() if k not in EC.value_list()}
     if 0 < len(extra):
         fmt_extra = ", ".join(f"'{k}'" for k in extra.keys())
