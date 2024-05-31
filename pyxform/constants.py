@@ -5,6 +5,7 @@ between X2json and json2Y programs. By putting them in a shared file,
 the literal names can be easily changed, typos can be avoided, and references
 are easier to find.
 """
+
 # TODO: Replace matching strings in the json2xforms code (builder.py,
 # survey.py, survey_element.py, question.py) with these constants
 from pyxform.util.enum import StrEnum

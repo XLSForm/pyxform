@@ -1,13 +1,14 @@
 """
 xform2json module - Transform an XForm to a JSON dictionary.
 """
+
 import copy
 import json
 import logging
 import re
 from collections.abc import Mapping
 from operator import itemgetter
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree.ElementTree import Element
 
 from defusedxml.ElementTree import ParseError, XMLParser, fromstring, parse
@@ -200,7 +201,7 @@ class XFormToDict:
     def get_dict(self):
         json_str = json.dumps(self._dict)
         for uri in NSMAP.values():
-            json_str = json_str.replace("{%s}" % uri, "")
+            json_str = json_str.replace(f"{{{uri}}}", "")
         return json.loads(json_str)
 
 
@@ -325,7 +326,7 @@ class XFormToDictBuilder:
         for item in self._bind_list:
             ref = item["nodeset"]
             name = self._get_name_from_ref(ref)
-            parent_ref = ref[: ref.find("/%s" % name)]
+            parent_ref = ref[: ref.find(f"/{name}")]
             question = self._get_question_params_from_bindings(ref)
             question["name"] = name
             question["__order"] = self._get_question_order(ref)
@@ -562,7 +563,7 @@ class XFormToDictBuilder:
             return QUESTION_TYPES[question_type]
         return question_type
 
-    def _get_translations(self) -> List[Dict]:
+    def _get_translations(self) -> list[dict]:
         if "itext" not in self.model:
             return []
         if "translation" not in self.model["itext"]:
@@ -617,7 +618,7 @@ class XFormToDictBuilder:
                             if value["form"] == "image":
                                 v = v.replace("jr://images/", "")
                             else:
-                                v = v.replace("jr://%s/" % value["form"], "")
+                                v = v.replace(f"jr://{value['form']}/", "")
                             if v == "-":  # skip blank
                                 continue
                             text = {value["form"]: v}
@@ -630,7 +631,7 @@ class XFormToDictBuilder:
                                 if m_type == "image":
                                     v = v.replace("jr://images/", "")
                                 else:
-                                    v = v.replace("jr://%s/" % m_type, "")
+                                    v = v.replace(f"jr://{m_type}/", "")
                                 if v == "-":
                                     continue
                                 if k not in label:
@@ -664,7 +665,7 @@ class XFormToDictBuilder:
                 k, constraint_msg = self._get_text_from_translation(ref)
         return constraint_msg
 
-    def _get_choices(self) -> Dict[str, Any]:
+    def _get_choices(self) -> dict[str, Any]:
         """
         Get all form choices, using the model/instance and model/itext.
         """
@@ -704,7 +705,7 @@ class XFormToDictBuilder:
             return last_item[len(last_item) - 1].strip()
 
         def replace_function(match):
-            return "${%s}" % get_last_item(match.group())
+            return f"${{{get_last_item(match.group())}}}"
 
         # moving re flags into compile for python 2.6 compat
         pattern = "( /[a-z0-9-_]+(?:/[a-z0-9-_]+)+ )"

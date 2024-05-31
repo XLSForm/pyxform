@@ -1,6 +1,7 @@
 """
 SurveyInstance class module.
 """
+
 from pyxform.errors import PyXFormError
 from pyxform.xform_instance_parser import parse_xform_instance
 
@@ -58,7 +59,7 @@ class SurveyInstance:
          pumped out in order, etc)
         """
         open_str = f"""<?xml version='1.0' ?><{self._name} id="{self._id}">"""
-        close_str = """</%s>""" % self._name
+        close_str = f"""</{self._name}>"""
         vals = ""
         for k, v in self._answers.items():
             vals += f"<{k}>{v!s}</{k}>"

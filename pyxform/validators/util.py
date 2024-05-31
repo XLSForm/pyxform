@@ -1,6 +1,7 @@
 """
 The validators utility functions.
 """
+
 import logging
 import os
 import signal
@@ -10,7 +11,7 @@ import threading
 import time
 from contextlib import closing
 from subprocess import PIPE, Popen
-from typing import Dict, List, NamedTuple
+from typing import NamedTuple
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -75,7 +76,7 @@ def run_popen_with_timeout(command, timeout) -> "PopenResult":
     watchdog.start()
     (stdout, stderr) = p.communicate()
     watchdog.cancel()  # if it's still waiting to run
-    timeout = kill_check.isSet()
+    timeout = kill_check.is_set()
     kill_check.clear()
     return PopenResult(
         return_code=p.returncode, timeout=timeout, stdout=stdout, stderr=stderr
@@ -129,8 +130,8 @@ def request_get(url):
 
 
 class _LoggingWatcher(NamedTuple):
-    records: List
-    output: Dict
+    records: list
+    output: dict
 
 
 class CapturingHandler(logging.Handler):

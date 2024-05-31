@@ -1,21 +1,18 @@
 """
 The tests utils module functionality.
 """
+
 import configparser
 import os
 import shutil
 import tempfile
 import textwrap
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
 
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
 
 from tests import example_xls
-
-if TYPE_CHECKING:
-    from typing import Tuple
 
 
 def path_to_text_fixture(filename):
@@ -46,7 +43,7 @@ def prep_class_config(cls, test_dir="tests"):
     cls.cls_name = cls.__name__
 
 
-def prep_for_xml_contains(text: str) -> "Tuple[str]":
+def prep_for_xml_contains(text: str) -> "tuple[str]":
     """Prep string for finding an exact match to formatted XML text."""
     # noinspection PyRedundantParentheses
     return (textwrap.indent(textwrap.dedent(text), "    "),)

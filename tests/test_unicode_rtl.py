@@ -1,6 +1,7 @@
 """
 Test unicode rtl in XLSForms.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 

@@ -1,13 +1,14 @@
 """
 pyxform utils module.
 """
+
 import copy
 import csv
 import json
 import os
 import re
 from json.decoder import JSONDecodeError
-from typing import Dict, List, NamedTuple, Tuple
+from typing import NamedTuple
 from xml.dom import Node
 from xml.dom.minidom import Element, Text, _write_data
 
@@ -53,7 +54,7 @@ class DetachableElement(Element):
         attrs = self._get_attributes()
 
         for a_name in attrs.keys():
-            writer.write(' %s="' % a_name)
+            writer.write(f' {a_name}="')
             _write_data(writer, attrs[a_name].value)
             writer.write('"')
         if self.childNodes:
@@ -136,7 +137,7 @@ def node(*args, **kwargs) -> DetachableElement:
         text_node.data = unicode_args[0]
         result.appendChild(text_node)
     for n in args:
-        if isinstance(n, (int, float, bytes)):
+        if isinstance(n, int | float | bytes):
             text_node = PatchedText()
             text_node.data = str(n)
             result.appendChild(text_node)
@@ -187,7 +188,7 @@ def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
         for row_idx in range(sheet.nrows):
             csv_data = []
             try:
-                for v, m in zip(sheet.row(row_idx), mask):
+                for v, m in zip(sheet.row(row_idx), mask, strict=False):
                     if m:
                         value = v.value
                         value_type = v.ctype
@@ -215,7 +216,7 @@ def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
         for row in sheet.rows:
             csv_data = []
             try:
-                for v, m in zip(row, mask):
+                for v, m in zip(row, mask, strict=False):
                     if m:
                         data = xlsx_value_to_str(v.value)
                         # clean the values of leading and trailing whitespaces
@@ -299,7 +300,7 @@ def default_is_dynamic(element_default, element_type=None):
     return False
 
 
-def has_dynamic_label(choice_list: "List[Dict[str, str]]") -> bool:
+def has_dynamic_label(choice_list: "list[dict[str, str]]") -> bool:
     """
     If the first or second choice label includes a reference, we must use itext.
 
@@ -442,7 +443,7 @@ class ExpLexerToken(NamedTuple):
 EXPRESSION_LEXER = get_expression_lexer()
 
 
-def parse_expression(text: str) -> Tuple[List[ExpLexerToken], str]:
+def parse_expression(text: str) -> tuple[list[ExpLexerToken], str]:
     """
     Parse a "default" expression, well enough to identify dynamic defaults vs. not.
 

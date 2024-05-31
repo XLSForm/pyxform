@@ -3,6 +3,7 @@ Test external instance syntax
 
 See also test_external_instances
 """
+
 import os
 from dataclasses import dataclass, field
 

@@ -1,5 +1,5 @@
 import re
-from typing import KeysView, Optional
+from collections.abc import KeysView
 
 from pyxform import constants
 from pyxform.utils import levenshtein_distance
@@ -10,7 +10,7 @@ TAG_CHAR = r"[a-zA-Z:_0-9\-.]"
 XFORM_TAG_REGEXP = f"{TAG_START_CHAR}{TAG_CHAR}*"
 
 
-def find_sheet_misspellings(key: str, keys: "KeysView") -> "Optional[str]":
+def find_sheet_misspellings(key: str, keys: "KeysView") -> "str | None":
     """
     Find possible sheet name misspellings to warn the user about.
 

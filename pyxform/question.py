@@ -1,6 +1,7 @@
 """
 XForm Survey element classes for different question types.
 """
+
 import os.path
 
 from pyxform.constants import (
@@ -32,7 +33,7 @@ class Question(SurveyElement):
         # make sure that the type of this question exists in the
         # question type dictionary.
         if self.type not in QUESTION_TYPE_DICT:
-            raise PyXFormError("Unknown question type '%s'." % self.type)
+            raise PyXFormError(f"Unknown question type '{self.type}'.")
 
     def xml_instance(self, **kwargs):
         survey = self.get_root()
@@ -74,7 +75,7 @@ class Question(SurveyElement):
             for setvalue in nested_setvalues:
                 setvalue_attrs = {
                     "ref": self.get_root()
-                    .insert_xpaths("${%s}" % setvalue[0], self.get_root())
+                    .insert_xpaths(f"${{{setvalue[0]}}}", self.get_root())
                     .strip(),
                     "event": "xforms-value-changed",
                 }

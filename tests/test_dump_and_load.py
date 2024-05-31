@@ -1,6 +1,7 @@
 """
 Test multiple XLSForm can be generated successfully.
 """
+
 import os
 from unittest import TestCase
 

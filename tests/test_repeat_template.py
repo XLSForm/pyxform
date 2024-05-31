@@ -1,6 +1,7 @@
 """
 Test repeat template and instance structure.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 

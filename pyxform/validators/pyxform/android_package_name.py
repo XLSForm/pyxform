@@ -1,10 +1,9 @@
 import re
-from typing import Optional
 
 PACKAGE_NAME_REGEX = re.compile(r"[^a-zA-Z0-9._]")
 
 
-def validate_android_package_name(name: str) -> Optional[str]:
+def validate_android_package_name(name: str) -> str | None:
     prefix = "Parameter 'app' has an invalid Android package name - "
 
     if not name.strip():

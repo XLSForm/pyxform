@@ -1,6 +1,7 @@
 """
 Test text rows parameter.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 

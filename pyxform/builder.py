@@ -1,10 +1,11 @@
 """
 Survey builder functionality.
 """
+
 import copy
 import os
 import re
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from pyxform import constants as const
 from pyxform import file_utils, utils
@@ -66,7 +67,7 @@ def copy_json_dict(json_dict):
         items = json_dict.items()
 
     for key, value in items:
-        if isinstance(value, (dict, list)):
+        if isinstance(value, dict | list):
             json_dict_copy[key] = copy_json_dict(value)
         else:
             json_dict_copy[key] = value
@@ -79,13 +80,13 @@ class SurveyElementBuilder:
         # I don't know why we would need an explicit none option for
         # select alls
         self._add_none_option = False
-        self._sections: Optional[Dict[str, Dict]] = None
+        self._sections: dict[str, dict] | None = None
         self.set_sections(kwargs.get("sections", {}))
 
         # dictionary of setvalue target and value tuple indexed by triggering element
         self.setvalues_by_triggering_ref = {}
         # For tracking survey-level choices while recursing through the survey.
-        self._choices: Dict[str, Any] = {}
+        self._choices: dict[str, Any] = {}
 
     def set_sections(self, sections):
         """
@@ -98,8 +99,8 @@ class SurveyElementBuilder:
         self._sections = sections
 
     def create_survey_element_from_dict(
-        self, d: Dict[str, Any]
-    ) -> Union["SurveyElement", List["SurveyElement"]]:
+        self, d: dict[str, Any]
+    ) -> Union["SurveyElement", list["SurveyElement"]]:
         """
         Convert from a nested python dictionary/array structure (a json dict I
         call it because it corresponds directly with a json object)
@@ -161,10 +162,10 @@ class SurveyElementBuilder:
 
     @staticmethod
     def _create_question_from_dict(
-        d: Dict[str, Any],
-        question_type_dictionary: Dict[str, Any],
+        d: dict[str, Any],
+        question_type_dictionary: dict[str, Any],
         add_none_option: bool = False,
-    ) -> Union[Question, List[Question]]:
+    ) -> Question | list[Question]:
         question_type_str = d[const.TYPE]
         d_copy = d.copy()
 
@@ -197,7 +198,7 @@ class SurveyElementBuilder:
         return []
 
     @staticmethod
-    def _add_other_option_to_multiple_choice_question(d: Dict[str, Any]) -> None:
+    def _add_other_option_to_multiple_choice_question(d: dict[str, Any]) -> None:
         # ideally, we'd just be pulling from children
         choice_list = d.get(const.CHOICES, d.get(const.CHILDREN, []))
         if len(choice_list) <= 0:
@@ -207,8 +208,8 @@ class SurveyElementBuilder:
 
     @staticmethod
     def _get_or_other_choice(
-        choice_list: List[Dict[str, Any]],
-    ) -> Dict[str, Union[str, Dict]]:
+        choice_list: list[dict[str, Any]],
+    ) -> dict[str, str | dict]:
         """
         If the choices have any translations, return an OR_OTHER choice for each lang.
         """
@@ -257,12 +258,12 @@ class SurveyElementBuilder:
         return QUESTION_CLASSES[control_tag]
 
     @staticmethod
-    def _create_specify_other_question_from_dict(d: Dict[str, Any]) -> InputQuestion:
+    def _create_specify_other_question_from_dict(d: dict[str, Any]) -> InputQuestion:
         kwargs = {
             const.TYPE: "text",
-            const.NAME: "%s_other" % d[const.NAME],
+            const.NAME: f"{d[const.NAME]}_other",
             const.LABEL: "Specify other.",
-            const.BIND: {"relevant": "selected(../%s, 'other')" % d[const.NAME]},
+            const.BIND: {"relevant": f"selected(../{d[const.NAME]}, 'other')"},
         }
         return InputQuestion(**kwargs)
 
@@ -386,11 +387,11 @@ def create_survey_from_xls(path_or_file, default_name=None):
 
 
 def create_survey(
-    name_of_main_section: Optional[str] = None,
-    sections: Optional[Dict[str, Dict]] = None,
-    main_section: Optional[Dict[str, Any]] = None,
-    id_string: Optional[str] = None,
-    title: Optional[str] = None,
+    name_of_main_section: str | None = None,
+    sections: dict[str, dict] | None = None,
+    main_section: dict[str, Any] | None = None,
+    id_string: str | None = None,
+    title: str | None = None,
 ) -> Survey:
     """
     name_of_main_section -- a string key used to find the main section in the

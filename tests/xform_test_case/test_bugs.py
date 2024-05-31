@@ -1,6 +1,7 @@
 """
 Some tests for the new (v0.9) spec is properly implemented.
 """
+
 import os
 from unittest import TestCase
 
@@ -93,9 +94,10 @@ class RepeatDateTest(XFormTestCase):
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with open(expected_output_path, encoding="utf-8") as expected, open(
-            self.output_path, encoding="utf-8"
-        ) as observed:
+        with (
+            open(expected_output_path, encoding="utf-8") as expected,
+            open(self.output_path, encoding="utf-8") as observed,
+        ):
             self.assertXFormEqual(expected.read(), observed.read())
 
 
@@ -118,9 +120,10 @@ class XmlEscaping(XFormTestCase):
         survey.print_xform_to_file(self.output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with open(expected_output_path, encoding="utf-8") as expected, open(
-            self.output_path, encoding="utf-8"
-        ) as observed:
+        with (
+            open(expected_output_path, encoding="utf-8") as expected,
+            open(self.output_path, encoding="utf-8") as observed,
+        ):
             self.assertXFormEqual(expected.read(), observed.read())
 
 
@@ -145,9 +148,10 @@ class DefaultTimeTest(XFormTestCase):
         survey.print_xform_to_file(output_path, warnings=warnings)
         # print warnings
         # Compare with the expected output:
-        with open(expected_output_path, encoding="utf-8") as expected, open(
-            output_path, encoding="utf-8"
-        ) as observed:
+        with (
+            open(expected_output_path, encoding="utf-8") as expected,
+            open(output_path, encoding="utf-8") as observed,
+        ):
             self.assertXFormEqual(expected.read(), observed.read())
 
 

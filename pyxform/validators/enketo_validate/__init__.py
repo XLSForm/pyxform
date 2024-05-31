@@ -1,6 +1,7 @@
 """
 Validate XForms using Enketo validator.
 """
+
 import os
 from typing import TYPE_CHECKING
 

@@ -1,5 +1,5 @@
 import re
-from typing import TYPE_CHECKING, List, Tuple
+from typing import TYPE_CHECKING
 
 from pyxform.utils import BRACKETED_TAG_REGEX, EXPRESSION_LEXER, ExpLexerToken
 
@@ -20,7 +20,7 @@ def instance_func_start(token: ExpLexerToken) -> bool:
     return token.name == "FUNC_CALL" and token.value == "instance("
 
 
-def find_boundaries(xml_text: str) -> List[Tuple[int, int]]:
+def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
     """
     Find token boundaries of any instance() expression.
 
@@ -91,7 +91,7 @@ def find_boundaries(xml_text: str) -> List[Tuple[int, int]]:
 
     # Pair up the boundaries [1, 2, 3, 4] -> [(1, 2), (3, 4)].
     bounds = iter(boundaries)
-    pos_bounds = list(zip(bounds, bounds))
+    pos_bounds = list(zip(bounds, bounds, strict=False))
     return pos_bounds
 
 

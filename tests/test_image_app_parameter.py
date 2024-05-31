@@ -1,6 +1,7 @@
 """
 Test image max-pixels and app parameters.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 

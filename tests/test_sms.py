@@ -1,6 +1,7 @@
 """
 Test sms syntax.
 """
+
 from tests.pyxform_test_case import PyxformTestCase
 
 

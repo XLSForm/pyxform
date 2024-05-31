@@ -1,6 +1,7 @@
 """
 Testing simple cases for pyxform
 """
+
 from unittest import TestCase
 
 from pyxform.builder import create_survey_element_from_dict

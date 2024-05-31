@@ -1,6 +1,7 @@
 """
 Test XForm XML syntax.
 """
+
 from unittest import TestCase
 from xml.dom.minidom import getDOMImplementation
 

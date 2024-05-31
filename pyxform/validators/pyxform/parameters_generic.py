@@ -1,8 +1,9 @@
-from typing import Any, Dict, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from pyxform.errors import PyXFormError
 
-PARAMETERS_TYPE = Dict[str, Any]
+PARAMETERS_TYPE = dict[str, Any]
 
 # Label and value are used to match against user-specified files so case should be preserved.
 CASE_SENSITIVE_VALUES = ["label", "value"]
@@ -32,7 +33,7 @@ def parse(raw_parameters: str) -> PARAMETERS_TYPE:
 def validate(
     parameters: PARAMETERS_TYPE,
     allowed: Sequence[str],
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """
     Raise an error if 'parameters' includes any keys not named in 'allowed'.
     """
