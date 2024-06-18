@@ -2,7 +2,7 @@
 Test the "note" question type.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.questions import xpq
@@ -15,8 +15,8 @@ class Case:
     """
 
     label: str
-    xpath: str
     match: set[str]
+    xpath: str = field(default_factory=lambda: xpq.body_input_label_output_value("note"))
 
 
 class TestNotes(PyxformTestCase):
@@ -77,45 +77,88 @@ class TestNotes(PyxformTestCase):
         |         | c2        | b    | Big   |
         |         | c2        | s    | Small |
         """
+        # It's a bit confusing, but although double quotes are literally HTML in entity
+        # form (i.e. `&quot;`) in the output, for pyxform test comparisons they get
+        # converted back, so the expected output strings are double quotes not `&quot;`.
         cases = [
             # A pyxform token.
             Case(
                 "${text}",
-                xpq.body_input_label_output_value("note"),
                 {" /test_name/text "},
             ),
             # Instance expression with predicate using pyxform token and equals.
             Case(
                 "instance('c1')/root/item[name = ${q1}]/label",
-                xpq.body_input_label_output_value("note"),
                 {"instance('c1')/root/item[name =  /test_name/q1 ]/label"},
+            ),
+            # Instance expression with predicate using pyxform token and equals (double quotes).
+            Case(
+                """instance("c1")/root/item[name = ${q1}]/label""",
+                {"""instance("c1")/root/item[name =  /test_name/q1 ]/label"""},
             ),
             # Instance expression with predicate using pyxform token and function.
             Case(
                 "instance('c2')/root/item[contains(name, ${q2})]/label",
-                xpq.body_input_label_output_value("note"),
                 {"instance('c2')/root/item[contains(name,  /test_name/q2 )]/label"},
+            ),
+            # Instance expression with predicate using pyxform token and function (double quotes).
+            Case(
+                """instance("c2")/root/item[contains("name", ${q2})]/label""",
+                {"""instance("c2")/root/item[contains("name",  /test_name/q2 )]/label"""},
+            ),
+            # Instance expression with predicate using pyxform token and function (mixed quotes).
+            Case(
+                """instance('c2')/root/item[contains("name", ${q2})]/label""",
+                {"""instance('c2')/root/item[contains("name",  /test_name/q2 )]/label"""},
             ),
             # Instance expression with predicate using pyxform token and equals.
             Case(
                 "instance('c2')/root/item[contains(name, instance('c1')/root/item[name = ${q1}]/label)]/label",
-                xpq.body_input_label_output_value("note"),
                 {
                     "instance('c2')/root/item[contains(name, instance('c1')/root/item[name =  /test_name/q1 ]/label)]/label"
+                },
+            ),
+            # Instance expression with predicate using pyxform token and equals (double quotes).
+            Case(
+                """instance("c2")/root/item[contains(name, instance("c1")/root/item[name = ${q1}]/label)]/label""",
+                {
+                    """instance("c2")/root/item[contains(name, instance("c1")/root/item[name =  /test_name/q1 ]/label)]/label"""
+                },
+            ),
+            # Instance expression with predicate using pyxform token and equals (mixed quotes).
+            Case(
+                """instance('c2')/root/item[contains(name, instance("c1")/root/item[name = ${q1}]/label)]/label""",
+                {
+                    """instance('c2')/root/item[contains(name, instance("c1")/root/item[name =  /test_name/q1 ]/label)]/label"""
                 },
             ),
             # Instance expression with predicate not using a pyxform token.
             Case(
                 "instance('c1')/root/item[name = 'y']/label",
-                xpq.body_input_label_output_value("note"),
                 {"instance('c1')/root/item[name = 'y']/label"},
+            ),
+            # Instance expression with predicate not using a pyxform token (double quotes).
+            Case(
+                """instance("c1")/root/item[name = "y"]/label""",
+                {"""instance("c1")/root/item[name = "y"]/label"""},
+            ),
+            # Instance expression with predicate not using a pyxform token (mixed quotes).
+            Case(
+                """instance("c1")/root/item[name = 'y']/label""",
+                {"""instance("c1")/root/item[name = 'y']/label"""},
+            ),
+            # Instance expression with predicate not using a pyxform token (all escaped).
+            Case(
+                """instance("c1")/root/item[name <> 1 and "<>&" = "1"]/label""",
+                {
+                    """instance("c1")/root/item[name &lt;&gt; 1 and "&lt;&gt;&amp;" = "1"]/label"""
+                },
             ),
         ]
         wrap_scenarios = ("{}", "Text {}", "{} text", "Text {} text")
         # All cases together in one.
         combo_case = Case(
             " ".join(c.label for c in cases),
-            xpq.body_input_label_output_value("note"),
             {m for c in cases for m in c.match},
         )
         cases.append(combo_case)

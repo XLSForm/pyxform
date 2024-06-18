@@ -1,7 +1,7 @@
 import re
 from typing import TYPE_CHECKING
 
-from pyxform.utils import BRACKETED_TAG_REGEX, EXPRESSION_LEXER, ExpLexerToken
+from pyxform.utils import BRACKETED_TAG_REGEX, EXPRESSION_LEXER, ExpLexerToken, node
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -116,7 +116,10 @@ def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey
                 lambda m: survey._var_repl_function(m, context),
                 old_str,
             )
-            new_strings.append((start, end, old_str, f'<output value="{new_str}" />'))
+            # Generate a node so that character escapes are applied.
+            new_strings.append(
+                (start, end, old_str, node("output", value=new_str).toxml())
+            )
         # Position-based replacement avoids strings which are substrings of other
         # replacements being inserted incorrectly. Offset tracking deals with changing
         # expression positions due to incremental replacement.
