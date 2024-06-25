@@ -3,19 +3,14 @@ Testing simple cases for Xls2Json
 """
 
 import json
-import os
+from pathlib import Path
 from unittest import TestCase
 
 from pyxform.xls2json import SurveyReader
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
+from pyxform.xls2xform import convert
 
-from tests import example_xls, test_expected_output, test_output, utils
-
-
-# Nothing calls this AFAICT
-def absolute_path(f, file_name):
-    directory = os.path.dirname(f)
-    return os.path.join(directory, file_name)
+from tests import example_xls, test_expected_output, utils
 
 
 class BasicXls2JsonApiTests(TestCase):
@@ -23,23 +18,15 @@ class BasicXls2JsonApiTests(TestCase):
 
     def test_simple_yes_or_no_question(self):
         filename = "yes_or_no_question.xls"
-        path_to_excel_file = os.path.join(example_xls.PATH, filename)
-        # Get the xform output path:
-        root_filename, ext = os.path.splitext(filename)
-        output_path = os.path.join(test_output.PATH, root_filename + ".json")
-        expected_output_path = os.path.join(
-            test_expected_output.PATH, root_filename + ".json"
+        path_to_excel_file = Path(example_xls.PATH) / filename
+        expected_output_path = Path(test_expected_output.PATH) / (
+            path_to_excel_file.stem + ".json"
         )
-        x = SurveyReader(path_to_excel_file, default_name="yes_or_no_question")
-        x_results = x.to_json_dict()
-        with open(output_path, mode="w", encoding="utf-8") as fp:
-            json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
-        # Compare with the expected output:
-        with (
-            open(expected_output_path, encoding="utf-8") as expected,
-            open(output_path, encoding="utf-8") as observed,
-        ):
-            self.assertEqual(json.load(expected), json.load(observed))
+        result = convert(
+            xlsform=path_to_excel_file, warnings=[], form_name=path_to_excel_file.stem
+        )
+        with open(expected_output_path, encoding="utf-8") as expected:
+            self.assertEqual(json.load(expected), result._pyxform)
 
     def test_hidden(self):
         x = SurveyReader(utils.path_to_text_fixture("hidden.xls"), default_name="hidden")
@@ -118,23 +105,15 @@ class BasicXls2JsonApiTests(TestCase):
 
     def test_table(self):
         filename = "simple_loop.xls"
-        path_to_excel_file = os.path.join(example_xls.PATH, filename)
-        # Get the xform output path:
-        root_filename, ext = os.path.splitext(filename)
-        output_path = os.path.join(test_output.PATH, root_filename + ".json")
-        expected_output_path = os.path.join(
-            test_expected_output.PATH, root_filename + ".json"
+        path_to_excel_file = Path(example_xls.PATH) / filename
+        expected_output_path = Path(test_expected_output.PATH) / (
+            path_to_excel_file.stem + ".json"
         )
-        x = SurveyReader(path_to_excel_file, default_name="simple_loop")
-        x_results = x.to_json_dict()
-        with open(output_path, mode="w", encoding="utf-8") as fp:
-            json.dump(x_results, fp=fp, ensure_ascii=False, indent=4)
-        # Compare with the expected output:
-        with (
-            open(expected_output_path, encoding="utf-8") as expected,
-            open(output_path, encoding="utf-8") as observed,
-        ):
-            self.assertEqual(json.load(expected), json.load(observed))
+        result = convert(
+            xlsform=path_to_excel_file, warnings=[], form_name=path_to_excel_file.stem
+        )
+        with open(expected_output_path, encoding="utf-8") as expected:
+            self.assertEqual(json.load(expected), result._pyxform)
 
     def test_choice_filter_choice_fields(self):
         """

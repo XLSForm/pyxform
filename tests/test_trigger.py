@@ -45,7 +45,6 @@ class TriggerSetvalueTests(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             name="trigger-column",
-            id_string="id",
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:b",
@@ -71,7 +70,6 @@ class TriggerSetvalueTests(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             name="trigger-column",
-            id_string="id",
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:c",
@@ -98,7 +96,6 @@ class TriggerSetvalueTests(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             name="trigger-column",
-            id_string="id",
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:b",
@@ -131,7 +128,6 @@ class TriggerSetvalueTests(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             name="trigger-column",
-            id_string="id",
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:d",
@@ -157,7 +153,6 @@ class TriggerSetvalueTests(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             name="trigger-column",
-            id_string="id",
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:e",
@@ -234,7 +229,6 @@ class TriggerSetvalueTests(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             name="trigger-column",
-            id_string="id",
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:a",
                 "/h:html/h:head/x:model/x:instance/x:trigger-column/x:grp",

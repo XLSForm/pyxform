@@ -7,17 +7,16 @@ import csv
 import json
 import os
 import re
+from io import StringIO
 from json.decoder import JSONDecodeError
-from typing import NamedTuple
+from typing import Any, NamedTuple
 from xml.dom import Node
 from xml.dom.minidom import Element, Text, _write_data
 
-import openpyxl
-import xlrd
 from defusedxml.minidom import parseString
 
+from pyxform import constants as const
 from pyxform.errors import PyXFormError
-from pyxform.xls2json_backends import is_empty, xls_value_to_unicode, xlsx_value_to_str
 
 SEP = "_"
 
@@ -167,66 +166,32 @@ def flatten(li):
         yield from subli
 
 
-def sheet_to_csv(workbook_path, csv_path, sheet_name):
-    if workbook_path.endswith(".xls"):
-        return xls_sheet_to_csv(workbook_path, csv_path, sheet_name)
-    else:
-        return xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name)
+def external_choices_to_csv(
+    workbook_dict: dict[str, Any], warnings: list | None = None
+) -> str | None:
+    """
+    Convert the 'external_choices' sheet data to CSV.
 
+    :param workbook_dict: The result from xls2json.workbook_to_json.
+    :param warnings: The conversions warnings list.
+    """
+    warnings = coalesce(warnings, [])
+    if const.EXTERNAL_CHOICES not in workbook_dict:
+        warnings.append(
+            f"Could not export itemsets.csv, the '{const.EXTERNAL_CHOICES}' sheet is missing."
+        )
+        return None
 
-def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
-    wb = xlrd.open_workbook(workbook_path)
+    itemsets = StringIO(newline="")
+    csv_writer = csv.writer(itemsets, quoting=csv.QUOTE_ALL)
     try:
-        sheet = wb.sheet_by_name(sheet_name)
-    except xlrd.biffh.XLRDError:
-        return False
-    if not sheet or sheet.nrows < 2:
-        return False
-    with open(csv_path, mode="w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-        mask = [v and len(v.strip()) > 0 for v in sheet.row_values(0)]
-        for row_idx in range(sheet.nrows):
-            csv_data = []
-            try:
-                for v, m in zip(sheet.row(row_idx), mask, strict=False):
-                    if m:
-                        value = v.value
-                        value_type = v.ctype
-                        data = xls_value_to_unicode(value, value_type, wb.datemode)
-                        # clean the values of leading and trailing whitespaces
-                        data = data.strip()
-                        csv_data.append(data)
-            except TypeError:
-                continue
-            writer.writerow(csv_data)
-
-    return True
-
-
-def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
-    wb = openpyxl.open(workbook_path, read_only=True, data_only=True)
-    try:
-        sheet = wb[sheet_name]
-    except KeyError:
-        return False
-
-    with open(csv_path, mode="w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-        mask = [not is_empty(cell.value) for cell in sheet[1]]
-        for row in sheet.rows:
-            csv_data = []
-            try:
-                for v, m in zip(row, mask, strict=False):
-                    if m:
-                        data = xlsx_value_to_str(v.value)
-                        # clean the values of leading and trailing whitespaces
-                        data = data.strip()
-                        csv_data.append(data)
-            except TypeError:
-                continue
-            writer.writerow(csv_data)
-    wb.close()
-    return True
+        header = workbook_dict["external_choices_header"][0]
+    except (IndexError, KeyError, TypeError):
+        header = {k for d in workbook_dict[const.EXTERNAL_CHOICES] for k in d}
+    csv_writer.writerow(header)
+    for row in workbook_dict[const.EXTERNAL_CHOICES]:
+        csv_writer.writerow(row.values())
+    return itemsets.getvalue()
 
 
 def has_external_choices(json_struct):
@@ -235,7 +200,11 @@ def has_external_choices(json_struct):
     """
     if isinstance(json_struct, dict):
         for k, v in json_struct.items():
-            if k == "type" and isinstance(v, str) and v.startswith("select one external"):
+            if (
+                k == const.TYPE
+                and isinstance(v, str)
+                and v.startswith(const.SELECT_ONE_EXTERNAL)
+            ):
                 return True
             elif has_external_choices(v):
                 return True

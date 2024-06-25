@@ -80,7 +80,7 @@ class XPathHelper:
                 value_cmp = f"""and @value="{q_default_final}" """
             return rf"""
             /h:html/h:head/x:model
-              /x:instance/x:test_name[@id="test_id"]/x:q{q_num}[
+              /x:instance/x:test_name[@id="data"]/x:q{q_num}[
                 not(text())
                 and ancestor::x:model/x:bind[
                   @nodeset='/test_name/q{q_num}'
@@ -102,7 +102,7 @@ class XPathHelper:
                 q_default_cmp = f"""and text()='{q_default_final}' """
             return rf"""
             /h:html/h:head/x:model
-              /x:instance/x:test_name[@id="test_id"]/x:q{q_num}[
+              /x:instance/x:test_name[@id="data"]/x:q{q_num}[
                 ancestor::x:model/x:bind[
                   @nodeset='/test_name/q{q_num}'
                   and @type='{q_bind}'
@@ -169,7 +169,7 @@ class TestDynamicDefault(PyxformTestCase):
                 # Repeat template and first row.
                 """
                 /h:html/h:head/x:model/x:instance/x:test_name[
-                  @id="test_id"
+                  @id="data"
                   and ./x:r1[@jr:template='']
                   and ./x:r1[not(@jr:template)]
                 ]
@@ -178,13 +178,13 @@ class TestDynamicDefault(PyxformTestCase):
                 """
                 /h:html/h:head/x:model[
                   ./x:bind[@nodeset='/test_name/r1/q1' and @type='int']
-                ]/x:instance/x:test_name[@id="test_id"]/x:r1[@jr:template='']/x:q1[text()='12']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[@jr:template='']/x:q1[text()='12']
                 """,
                 # q1 static default value in repeat row.
                 """
                 /h:html/h:head/x:model[
                   ./x:bind[@nodeset='/test_name/r1/q1' and @type='int']
-                ]/x:instance/x:test_name[@id="test_id"]/x:r1[not(@jr:template)]/x:q1[text()='12']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:q1[text()='12']
                 """,
             ],
         )
@@ -200,14 +200,12 @@ class TestDynamicDefault(PyxformTestCase):
         |        | end repeat   | r1   |              |           |
         """
         self.assertPyxformXform(
-            name="test",
-            id_string="test",
             md=md,
             xml__xpath_match=[
                 # Repeat template and first row.
                 """
-                /h:html/h:head/x:model/x:instance/x:test[
-                  @id="test"
+                /h:html/h:head/x:model/x:instance/x:test_name[
+                  @id="data"
                   and ./x:r1[@jr:template='']
                   and ./x:r1[not(@jr:template)]
                 ]
@@ -215,39 +213,39 @@ class TestDynamicDefault(PyxformTestCase):
                 # q0 dynamic default value not in repeat template.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q0' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q0[not(text())]
+                  ./x:bind[@nodeset='/test_name/r1/q0' and @type='int']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[@jr:template='']/x:q0[not(text())]
                 """,
                 # q0 dynamic default value not in repeat row.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q0' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q0[not(text())]
+                  ./x:bind[@nodeset='/test_name/r1/q0' and @type='int']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:q0[not(text())]
                 """,
                 # q0 dynamic default value not in model setvalue.
                 """
-                /h:html/h:head/x:model[not(./x:setvalue[@ref='test/r1/q0'])]
+                /h:html/h:head/x:model[not(./x:setvalue[@ref='data/r1/q0'])]
                 """,
                 # q0 dynamic default value in body group setvalue, with 2 events.
                 """
-                /h:html/h:body/x:group[@ref='/test/r1']/x:repeat[@nodeset='/test/r1']
+                /h:html/h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']
                   /x:setvalue[
                     @event='odk-instance-first-load odk-new-repeat'
-                    and @ref='/test/r1/q0'
+                    and @ref='/test_name/r1/q0'
                     and @value='random()'
                   ]
                 """,
                 # q1 static default value in repeat template.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q1' and @type='string']
-                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q1[text()='not_func$']
+                  ./x:bind[@nodeset='/test_name/r1/q1' and @type='string']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[@jr:template='']/x:q1[text()='not_func$']
                 """,
                 # q1 static default value in repeat row.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q1' and @type='string']
-                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q1[text()='not_func$']
+                  ./x:bind[@nodeset='/test_name/r1/q1' and @type='string']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:q1[text()='not_func$']
                 """,
             ],
         )
@@ -263,29 +261,27 @@ class TestDynamicDefault(PyxformTestCase):
         |        | end group   | g1   |       |         |
         """
         self.assertPyxformXform(
-            name="test",
-            id_string="test",
             md=md,
             xml__xpath_match=[
                 # q0 element in instance.
-                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:q0""",
+                """/h:html/h:head/x:model/x:instance/x:test_name[@id="data"]/x:q0""",
                 # Group element in instance.
-                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:g1""",
+                """/h:html/h:head/x:model/x:instance/x:test_name[@id="data"]/x:g1""",
                 # q1 dynamic default not in instance.
-                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:g1/x:q1[not(text())]""",
+                """/h:html/h:head/x:model/x:instance/x:test_name[@id="data"]/x:g1/x:q1[not(text())]""",
                 # q1 dynamic default value in model setvalue, with 1 event.
                 """
                 /h:html/h:head/x:model/x:setvalue[
                   @event="odk-instance-first-load"
-                  and @ref='/test/g1/q1'
-                  and @value=' /test/q0 '
+                  and @ref='/test_name/g1/q1'
+                  and @value=' /test_name/q0 '
                 ]
                 """,
                 # q1 dynamic default value not in body group setvalue.
                 """
                 /h:html/h:body/x:group[
-                  @ref='/test/g1'
-                  and not(child::setvalue[@ref='/test/g1/q1'])
+                  @ref='/test_name/g1'
+                  and not(child::setvalue[@ref='/test_name/g1/q1'])
                 ]
                 """,
             ],
@@ -302,29 +298,27 @@ class TestDynamicDefault(PyxformTestCase):
         |        | end group    | g1   |       |         |
         """
         self.assertPyxformXform(
-            name="test",
-            id_string="test",
             md=md,
             xml__xpath_match=[
                 # Group element in instance.
-                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:g1""",
+                """/h:html/h:head/x:model/x:instance/x:test_name[@id="data"]/x:g1""",
                 # q0 element in group.
-                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:g1/x:q0""",
+                """/h:html/h:head/x:model/x:instance/x:test_name[@id="data"]/x:g1/x:q0""",
                 # q1 dynamic default not in instance.
-                """/h:html/h:head/x:model/x:instance/x:test[@id="test"]/x:g1/x:q1[not(text())]""",
+                """/h:html/h:head/x:model/x:instance/x:test_name[@id="data"]/x:g1/x:q1[not(text())]""",
                 # q1 dynamic default value in model setvalue, with 1 event.
                 """
                 /h:html/h:head/x:model/x:setvalue[
                   @event="odk-instance-first-load"
-                  and @ref='/test/g1/q1'
-                  and @value=' /test/g1/q0 '
+                  and @ref='/test_name/g1/q1'
+                  and @value=' /test_name/g1/q0 '
                 ]
                 """,
                 # q1 dynamic default value not in body group setvalue.
                 """
                 /h:html/h:body/x:group[
-                  @ref='/test/g1'
-                  and not(child::setvalue[@ref='/test/g1/q1'])
+                  @ref='/test_name/g1'
+                  and not(child::setvalue[@ref='/test_name/g1/q1'])
                 ]
                 """,
             ],
@@ -341,14 +335,12 @@ class TestDynamicDefault(PyxformTestCase):
         |        | end repeat   | r1   |       |         |
         """
         self.assertPyxformXform(
-            name="test",
-            id_string="test",
             md=md,
             xml__xpath_match=[
                 # Repeat template and first row.
                 """
-                /h:html/h:head/x:model/x:instance/x:test[
-                  @id="test"
+                /h:html/h:head/x:model/x:instance/x:test_name[
+                  @id="data"
                   and ./x:r1[@jr:template='']
                   and ./x:r1[not(@jr:template)]
                 ]
@@ -356,25 +348,25 @@ class TestDynamicDefault(PyxformTestCase):
                 # q0 element in repeat template.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q0' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q0
+                  ./x:bind[@nodeset='/test_name/r1/q0' and @type='int']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[@jr:template='']/x:q0
                 """,
                 # q0 element in repeat row.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q0' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q0
+                  ./x:bind[@nodeset='/test_name/r1/q0' and @type='int']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:q0
                 """,
                 # q1 dynamic default value not in model setvalue.
                 """
-                /h:html/h:head/x:model[not(./x:setvalue[@ref='test/r1/q1'])]
+                /h:html/h:head/x:model[not(./x:setvalue[@ref='data/r1/q1'])]
                 """,
                 # q1 dynamic default value in body group setvalue, with 2 events.
                 """
-                /h:html/h:body/x:group[@ref='/test/r1']/x:repeat[@nodeset='/test/r1']
+                /h:html/h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']
                   /x:setvalue[
                     @event='odk-instance-first-load odk-new-repeat'
-                    and @ref='/test/r1/q1'
+                    and @ref='/test_name/r1/q1'
                     and @value=' ../q0 '
                   ]
                 """,
@@ -394,14 +386,12 @@ class TestDynamicDefault(PyxformTestCase):
         |        | end repeat   | r1   |       |         |
         """
         self.assertPyxformXform(
-            name="test",
-            id_string="test",
             md=md,
             xml__xpath_match=[
                 # Repeat template and first row contains the group.
                 """
-                /h:html/h:head/x:model/x:instance/x:test[
-                  @id="test"
+                /h:html/h:head/x:model/x:instance/x:test_name[
+                  @id="data"
                   and ./x:r1[@jr:template='']/x:g1
                   and ./x:r1[not(@jr:template)]/x:g1
                 ]
@@ -409,25 +399,25 @@ class TestDynamicDefault(PyxformTestCase):
                 # q0 element in repeat template.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/g1/q0' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:g1/x:q0
+                  ./x:bind[@nodeset='/test_name/r1/g1/q0' and @type='int']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[@jr:template='']/x:g1/x:q0
                 """,
                 # q0 element in repeat row.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/g1/q0' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:g1/x:q0
+                  ./x:bind[@nodeset='/test_name/r1/g1/q0' and @type='int']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:g1/x:q0
                 """,
                 # q1 dynamic default value not in model setvalue.
                 """
-                /h:html/h:head/x:model[not(./x:setvalue[@ref='test/r1/g1/q1'])]
+                /h:html/h:head/x:model[not(./x:setvalue[@ref='data/r1/g1/q1'])]
                 """,
                 # q1 dynamic default value in body group setvalue, with 2 events.
                 """
-                /h:html/h:body/x:group[@ref='/test/r1']/x:repeat[@nodeset='/test/r1']
+                /h:html/h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']
                   /x:setvalue[
                     @event='odk-instance-first-load odk-new-repeat'
-                    and @ref='/test/r1/g1/q1'
+                    and @ref='/test_name/r1/g1/q1'
                     and @value=' ../q0 '
                   ]
                 """,
@@ -448,14 +438,12 @@ class TestDynamicDefault(PyxformTestCase):
         |        | end repeat   | r1   |       |         |
         """
         self.assertPyxformXform(
-            name="test",
-            id_string="test",
             md=md,
             xml__xpath_match=[
                 # Repeat templates and first rows.
                 """
-                /h:html/h:head/x:model/x:instance/x:test[
-                  @id="test"
+                /h:html/h:head/x:model/x:instance/x:test_name[
+                  @id="data"
                   and ./x:r1[@jr:template='']/x:r2[@jr:template='']
                   and ./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]
                 ]
@@ -463,63 +451,63 @@ class TestDynamicDefault(PyxformTestCase):
                 # q0 element in repeat template.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q0' and @type='date']
-                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q0
+                  ./x:bind[@nodeset='/test_name/r1/q0' and @type='date']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[@jr:template='']/x:q0
                 """,
                 # q0 element in repeat row.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q0' and @type='date']
-                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q0
+                  ./x:bind[@nodeset='/test_name/r1/q0' and @type='date']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:q0
                 """,
                 # q0 dynamic default value not in model setvalue.
                 """
-                /h:html/h:head/x:model[not(./x:setvalue[@ref='test/r1/q0'])]
+                /h:html/h:head/x:model[not(./x:setvalue[@ref='data/r1/q0'])]
                 """,
                 # q0 dynamic default value in body group setvalue, with 2 events.
                 """
-                /h:html/h:body/x:group[@ref='/test/r1']/x:repeat[@nodeset='/test/r1']
+                /h:html/h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']
                   /x:setvalue[
                     @event='odk-instance-first-load odk-new-repeat'
-                    and @ref='/test/r1/q0'
+                    and @ref='/test_name/r1/q0'
                     and @value='now()'
                   ]
                 """,
                 # q1 element in repeat template.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:q1
+                  ./x:bind[@nodeset='/test_name/r1/q1' and @type='int']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[@jr:template='']/x:q1
                 """,
                 # q1 element in repeat row.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:q1
+                  ./x:bind[@nodeset='/test_name/r1/q1' and @type='int']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:q1
                 """,
                 # q2 element in repeat template.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[@jr:template='']/x:r2[@jr:template='']/x:q2
+                  ./x:bind[@nodeset='/test_name/r1/q1' and @type='int']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[@jr:template='']/x:r2[@jr:template='']/x:q2
                 """,
                 # q2 element in repeat row.
                 """
                 /h:html/h:head/x:model[
-                  ./x:bind[@nodeset='/test/r1/q1' and @type='int']
-                ]/x:instance/x:test[@id="test"]/x:r1[not(@jr:template)]/x:r2[not(@jr:template)]/x:q2
+                  ./x:bind[@nodeset='/test_name/r1/q1' and @type='int']
+                ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:r2[not(@jr:template)]/x:q2
                 """,
                 # q2 dynamic default value not in model setvalue.
                 """
-                /h:html/h:head/x:model[not(./x:setvalue[@ref='test/r1/r2/q2'])]
+                /h:html/h:head/x:model[not(./x:setvalue[@ref='data/r1/r2/q2'])]
                 """,
                 # q2 dynamic default value in body group setvalue, with 2 events.
                 """
-                /h:html/h:body/x:group[@ref='/test/r1']/x:repeat[@nodeset='/test/r1']
-                  /x:group[@ref='/test/r1/r2']/x:repeat[@nodeset='/test/r1/r2']
+                /h:html/h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']
+                  /x:group[@ref='/test_name/r1/r2']/x:repeat[@nodeset='/test_name/r1/r2']
                     /x:setvalue[
                       @event='odk-instance-first-load odk-new-repeat'
-                      and @ref='/test/r1/r2/q2'
+                      and @ref='/test_name/r1/r2/q2'
                       and @value=' ../../q1 '
                     ]
                 """,
@@ -548,7 +536,7 @@ class TestDynamicDefault(PyxformTestCase):
             """,
             xml__xpath_match=[
                 xp.model(1, Case(True, "calculate", "random() + 0.5")),
-                xp.model(2, Case(True, "calculate", "if( /test/q1  < 1,'A','B')")),
+                xp.model(2, Case(True, "calculate", "if( /test_name/q1  < 1,'A','B')")),
                 # Nothing in body since both questions are calculations.
                 "/h:html/h:body[not(text) and count(./*) = 0]",
             ],

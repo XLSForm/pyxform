@@ -25,22 +25,24 @@ class GroupTests(TestCase):
                 {
                     "name": "family_name",
                     "type": "text",
-                    "label": {"English": "What's your family name?"},
+                    "label": {"English (en)": "What's your family name?"},
                 },
                 {
                     "name": "father",
                     "type": "group",
-                    "label": {"English": "Father"},
+                    "label": {"English (en)": "Father"},
                     "children": [
                         {
                             "name": "phone_number",
                             "type": "phone number",
-                            "label": {"English": "What's your father's phone number?"},
+                            "label": {
+                                "English (en)": "What's your father's phone number?"
+                            },
                         },
                         {
                             "name": "age",
                             "type": "integer",
-                            "label": {"English": "How old is your father?"},
+                            "label": {"English (en)": "How old is your father?"},
                         },
                     ],
                 },
