@@ -194,19 +194,19 @@ class TestTranslations(PyxformTestCase):
     def test_double_colon_translations(self):
         """Should find translations for a simple form with a label in two languages."""
         md = """
-        | survey |      |      |                |               |
-        |        | type | name | label::english | label::french |
-        |        | note | n1   | hello          | bonjour       |
+        | survey |      |      |                     |                    |
+        |        | type | name | label::english (en) | label::french (fr) |
+        |        | note | n1   | hello               | bonjour            |
         """
         xp = XPathHelper(question_type="input", question_name="n1")
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
                 xp.question_label_references_itext(),
-                xp.question_itext_label("english", "hello"),
-                xp.question_itext_label("french", "bonjour"),
-                xp.language_is_not_default("english"),
-                xp.language_is_not_default("french"),
+                xp.question_itext_label("english (en)", "hello"),
+                xp.question_itext_label("french (fr)", "bonjour"),
+                xp.language_is_not_default("english (en)"),
+                xp.language_is_not_default("french (fr)"),
                 xp.language_no_itext(DEFAULT_LANG),
                 # Expected model binding found.
                 """/h:html/h:head/x:model
@@ -382,15 +382,15 @@ class TestTranslations(PyxformTestCase):
         | 2000 | 30.645 |  28.869 |
         """
         survey_header = """
-        | survey |                 |        |                |               |
-        |        | type            | name   | label::english | label::french |
+        | survey |                 |        |                    |                   |
+        |        | type            | name   | label::english(en) | label::french(fr) |
         """
         question = """
         |        | select_one c{i} | q{i}   | hello          | bonjour       |
         """
         choices_header = """
-        | choices |             |      |                    |
-        |         | list name   | name | label | label::eng |
+        | choices |             |      |                        |
+        |         | list name   | name | label | label::eng(en) |
         """
         choice_list = """
         |         | c{i}        | na   | la-d  | la-e       |
@@ -672,19 +672,19 @@ class TestTranslationsSurvey(PyxformTestCase):
     def test_no_default__one_translation__label_and_hint(self):
         """Should find language translations for label and hint."""
         md = """
-        | survey |      |      |            |            |
-        |        | type | name | label::eng | hint::eng  |
-        |        | note | n1   | hello      | salutation |
+        | survey |      |      |                |               |
+        |        | type | name | label::eng(en) | hint::eng(en) |
+        |        | note | n1   | hello          | salutation    |
         """
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
-                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_itext_label("eng(en)", "hello"),
                 self.xp.question_hint_references_itext(),
-                self.xp.question_itext_hint("eng", "salutation"),
+                self.xp.question_itext_hint("eng(en)", "salutation"),
                 # TODO: is this a bug? Only one language but not marked default.
-                self.xp.language_is_not_default("eng"),
+                self.xp.language_is_not_default("eng(en)"),
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
@@ -693,19 +693,19 @@ class TestTranslationsSurvey(PyxformTestCase):
     def test_no_default__one_translation__label_and_hint_with_image(self):
         """Should find language translations for label, hint, and image."""
         md = """
-        | survey |      |      |            |            |                   |
-        |        | type | name | label::eng | hint::eng  | media::image::eng |
-        |        | note | n1   | hello      | salutation | greeting.jpg      |
+        | survey |      |      |                |               |                       |
+        |        | type | name | label::eng(en) | hint::eng(en) | media::image::eng(en) |
+        |        | note | n1   | hello          | salutation    | greeting.jpg          |
         """
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
-                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_itext_label("eng(en)", "hello"),
                 self.xp.question_hint_references_itext(),
-                self.xp.question_itext_hint("eng", "salutation"),
-                self.xp.question_itext_form("eng", "image", "greeting.jpg"),
-                self.xp.language_is_not_default("eng"),
+                self.xp.question_itext_hint("eng(en)", "salutation"),
+                self.xp.question_itext_form("eng(en)", "image", "greeting.jpg"),
+                self.xp.language_is_not_default("eng(en)"),
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
@@ -714,19 +714,19 @@ class TestTranslationsSurvey(PyxformTestCase):
     def test_no_default__one_translation__label_and_hint_with_guidance(self):
         """Should find default language translation for hint and guidance but not label."""
         md = """
-        | survey |      |      |            |            |                    |
-        |        | type | name | label::eng | hint::eng  | guidance_hint::eng |
-        |        | note | n1   | hello      | salutation | greeting           |
+        | survey |      |      |                |               |                        |
+        |        | type | name | label::eng(en) | hint::eng(en) | guidance_hint::eng(en) |
+        |        | note | n1   | hello          | salutation    | greeting               |
         """
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
-                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_itext_label("eng(en)", "hello"),
                 self.xp.question_hint_references_itext(),
-                self.xp.question_itext_hint("eng", "salutation"),
-                self.xp.question_itext_form("eng", "guidance", "greeting"),
-                self.xp.language_is_not_default("eng"),
+                self.xp.question_itext_hint("eng(en)", "salutation"),
+                self.xp.question_itext_form("eng(en)", "guidance", "greeting"),
+                self.xp.language_is_not_default("eng(en)"),
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
@@ -735,27 +735,27 @@ class TestTranslationsSurvey(PyxformTestCase):
     def test_no_default__one_translation__label_and_hint_all_cols(self):
         """Should find language translation for label, hint, and all translatables."""
         md = """
-        | survey |      |      |            |            |                    |                   |                       |                   |                   |                         |                       |
-        |        | type | name | label::eng | hint::eng  | guidance_hint::eng | media::image::eng | media::big-image::eng | media::video::eng | media::audio::eng | constraint_message::eng | required_message::eng |
-        |        | note | n1   | hello      | salutation | greeting           | greeting.jpg      | greeting.jpg          | greeting.mkv      | greeting.mp3      | check me                | mandatory             |
+        | survey |      |      |                |               |                        |                       |                           |                       |                       |                             |                           |
+        |        | type | name | label::eng(en) | hint::eng(en) | guidance_hint::eng(en) | media::image::eng(en) | media::big-image::eng(en) | media::video::eng(en) | media::audio::eng(en) | constraint_message::eng(en) | required_message::eng(en) |
+        |        | note | n1   | hello          | salutation    | greeting               | greeting.jpg          | greeting.jpg              | greeting.mkv          | greeting.mp3          | check me                    | mandatory                 |
         """
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
-                self.xp.question_itext_label("eng", "hello"),
+                self.xp.question_itext_label("eng(en)", "hello"),
                 self.xp.question_hint_references_itext(),
-                self.xp.question_itext_hint("eng", "salutation"),
-                self.xp.question_itext_form("eng", "guidance", "greeting"),
-                self.xp.question_itext_form("eng", "image", "greeting.jpg"),
-                self.xp.question_itext_form("eng", "big-image", "greeting.jpg"),
-                self.xp.question_itext_form("eng", "video", "greeting.mkv"),
-                self.xp.question_itext_form("eng", "audio", "greeting.mp3"),
+                self.xp.question_itext_hint("eng(en)", "salutation"),
+                self.xp.question_itext_form("eng(en)", "guidance", "greeting"),
+                self.xp.question_itext_form("eng(en)", "image", "greeting.jpg"),
+                self.xp.question_itext_form("eng(en)", "big-image", "greeting.jpg"),
+                self.xp.question_itext_form("eng(en)", "video", "greeting.mkv"),
+                self.xp.question_itext_form("eng(en)", "audio", "greeting.mp3"),
                 self.xp.constraint_msg_references_itext(),
-                self.xp.constraint_msg_itext("eng", "check me"),
+                self.xp.constraint_msg_itext("eng(en)", "check me"),
                 self.xp.required_msg_references_itext(),
-                self.xp.required_msg_itext("eng", "mandatory"),
-                self.xp.language_is_not_default("eng"),
+                self.xp.required_msg_itext("eng(en)", "mandatory"),
+                self.xp.language_is_not_default("eng(en)"),
                 self.xp.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
@@ -764,21 +764,21 @@ class TestTranslationsSurvey(PyxformTestCase):
     def test_missing_translation__one_lang_simple__warn__no_default(self):
         """Should warn if there's a missing translation and no default_language."""
         md = """
-        | survey |      |      |       |            |            |
-        |        | type | name | label | label::eng | hint       |
-        |        | note | n1   | hello | hi there   | salutation |
+        | survey |      |      |       |                |            |
+        |        | type | name | label | label::eng(en) | hint       |
+        |        | note | n1   | hello | hi there       | salutation |
         """
-        warning = format_missing_translations_msg(_in={SURVEY: {"eng": ["hint"]}})
+        warning = format_missing_translations_msg(_in={SURVEY: {"eng(en)": ["hint"]}})
         self.assertPyxformXform(
             md=md,
             warnings__contains=[warning],
             xml__xpath_match=[
                 self.xp.question_label_references_itext(),
                 self.xp.question_itext_label(DEFAULT_LANG, "hello"),
-                self.xp.question_itext_label("eng", "hi there"),
+                self.xp.question_itext_label("eng(en)", "hi there"),
                 self.xp.question_hint_in_body("salutation"),
                 self.xp.language_is_default(DEFAULT_LANG),
-                self.xp.language_is_not_default("eng"),
+                self.xp.language_is_not_default("eng(en)"),
             ],
         )
 

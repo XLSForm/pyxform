@@ -3,6 +3,7 @@ Test multiple XLSForm can be generated successfully.
 """
 
 import os
+from pathlib import Path
 from unittest import TestCase
 
 from pyxform.builder import create_survey_from_path
@@ -41,5 +42,5 @@ class DumpAndLoadTests(TestCase):
 
     def tearDown(self):
         for survey in self.surveys.values():
-            path = survey.name + ".json"
-            os.remove(path)
+            path = Path(survey.name + ".json")
+            path.unlink(missing_ok=True)

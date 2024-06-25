@@ -56,14 +56,13 @@ class XlsFormPyxformSurveyTest(PyxformTestCase):
         When the form id is not set, it should never use python's
         None. Fixing because this messes up other tests.
         """
-        s1 = self.md_to_pyxform_survey(
-            """
+        self.assertPyxformXform(
+            md="""
             | survey |      |      |       |
             |        | type | name | label |
             |        | note | q    | Q     |
             """,
-            autoname=True,
+            xml__xpath_match=[
+                "/h:html/h:head/x:model/x:instance/x:test_name[@id='data']"
+            ],
         )
-
-        if s1.id_string in ["None", None]:
-            self.assertRaises(Exception, lambda: s1.validate())

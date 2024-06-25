@@ -2,9 +2,6 @@
 Test language warnings.
 """
 
-import os
-import tempfile
-
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -39,45 +36,31 @@ class MetadataTest(PyxformTestCase):
         )
 
     def test_simserial_deprecation_warning(self):
-        warnings = []
-        survey = self.md_to_pyxform_survey(
-            """
-            | survey |              |                          |                                            |
-            |        | type         | name                     | label                                      |
-            |        | simserial    | simserial                |                                            |
-            |        | note         | simserial_test_output    | simserial_test_output: ${simserial}        |
+        self.assertPyxformXform(
+            md="""
+            | survey |              |                       |                                     |
+            |        | type         | name                  | label                               |
+            |        | simserial    | simserial             |                                     |
+            |        | note         | simserial_test_output | simserial_test_output: ${simserial} |
             """,
-            warnings=warnings,
+            warnings_count=1,
+            warnings__contains=[
+                "[row : 2] simserial is no longer supported on most devices. "
+                "Only old versions of Collect on Android versions older than 11 still support it."
+            ],
         )
-        tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
-        tmp.close()
-        survey.print_xform_to_file(tmp.name, warnings=warnings)
-        self.assertTrue(len(warnings) == 1)
-        warning_expected = (
-            "[row : 2] simserial is no longer supported on most devices. "
-            "Only old versions of Collect on Android versions older than 11 still support it."
-        )
-        self.assertEqual(warning_expected, warnings[0])
-        os.unlink(tmp.name)
 
     def test_subscriber_id_deprecation_warning(self):
-        warnings = []
-        survey = self.md_to_pyxform_survey(
-            """
+        self.assertPyxformXform(
+            md="""
             | survey |              |                          |                                            |
             |        | type         | name                     | label                                      |
             |        | subscriberid | subscriberid             | sub id - extra warning generated w/o this  |
             |        | note         | subscriberid_test_output | subscriberid_test_output: ${subscriberid}  |
             """,
-            warnings=warnings,
+            warnings_count=1,
+            warnings__contains=[
+                "[row : 2] subscriberid is no longer supported on most devices. "
+                "Only old versions of Collect on Android versions older than 11 still support it."
+            ],
         )
-        tmp = tempfile.NamedTemporaryFile(suffix=".xml", delete=False)
-        tmp.close()
-        survey.print_xform_to_file(tmp.name, warnings=warnings)
-        self.assertTrue(len(warnings) == 1)
-        warning_expected = (
-            "[row : 2] subscriberid is no longer supported on most devices. "
-            "Only old versions of Collect on Android versions older than 11 still support it."
-        )
-        self.assertEqual(warning_expected, warnings[0])
-        os.unlink(tmp.name)

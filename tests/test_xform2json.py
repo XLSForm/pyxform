@@ -4,11 +4,13 @@ Test xform2json module.
 
 import json
 import os
+from pathlib import Path
 from unittest import TestCase
 from xml.etree.ElementTree import ParseError
 
 from pyxform.builder import create_survey_element_from_dict, create_survey_from_path
 from pyxform.xform2json import _try_parse, create_survey_element_from_xml
+from pyxform.xls2xform import convert
 
 from tests import test_output, utils
 from tests.pyxform_test_case import PyxformTestCase
@@ -47,16 +49,14 @@ class DumpAndLoadXForm2JsonTests(XFormTestCase):
         for filename, survey in self.surveys.items():
             with self.subTest(msg=filename):
                 survey.json_dump()
-                survey_from_dump = create_survey_element_from_xml(survey.to_xml())
-                expected = survey.to_xml()
-                observed = survey_from_dump.to_xml()
+                expected = survey.to_xml(pretty_print=False)
+                survey_from_dump = create_survey_element_from_xml(expected)
+                observed = survey_from_dump.to_xml(pretty_print=False)
                 self.assertXFormEqual(expected, observed)
 
     def tearDown(self):
         for survey in self.surveys.values():
-            path = survey.name + ".json"
-            if os.path.exists(path):
-                os.remove(path)
+            Path(survey.name + ".json").unlink(missing_ok=True)
 
 
 class TestXMLParse(TestCase):
@@ -67,7 +67,7 @@ class TestXMLParse(TestCase):
 
     def tearDown(self):
         if self.tidy_file is not None:
-            os.remove(self.tidy_file)
+            Path(self.tidy_file).unlink(missing_ok=True)
 
     def test_try_parse_with_string(self):
         """Should return root node from XML string."""
@@ -125,12 +125,9 @@ class TestXForm2JSON(PyxformTestCase):
         |         | fruits                 | 2     | Orange     | Orange   |
         |         | fruits                 | 3     | Apple      | Pomme    |
         """
-
-        survey = self.md_to_pyxform_survey(md_raw=md)
-        expected = survey.to_xml()
-        generated_json = survey.to_json()
-
+        result = convert(xlsform=md)
+        expected = result.xform
+        generated_json = result._survey.to_json()
         survey_from_builder = create_survey_element_from_dict(json.loads(generated_json))
-        observed = survey_from_builder.to_xml()
-
+        observed = survey_from_builder.to_xml(pretty_print=False)
         self.assertEqual(expected, observed)

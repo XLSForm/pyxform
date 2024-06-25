@@ -9,3 +9,7 @@ class PyXFormError(Exception):
 
 class ValidationError(PyXFormError):
     """Common base class for pyxform validation exceptions."""
+
+
+class PyXFormReadError(PyXFormError):
+    """Common base class for pyxform exceptions occuring during reading XLSForm data."""

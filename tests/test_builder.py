@@ -4,6 +4,7 @@ Test builder module functionality.
 
 import os
 import re
+from pathlib import Path
 from unittest import TestCase
 
 import defusedxml.ElementTree as ETree
@@ -59,8 +60,7 @@ class BuilderTests(TestCase):
 
     def tearDown(self):
         fixture_path = utils.path_to_text_fixture("how_old_are_you.json")
-        if os.path.exists(fixture_path):
-            os.remove(fixture_path)
+        Path(fixture_path).unlink(missing_ok=True)
 
     def test_create_table_from_dict(self):
         d = {
@@ -547,7 +547,7 @@ class BuilderTests(TestCase):
 
     def test_style_not_added_to_body_if_not_present(self):
         survey = utils.create_survey_from_fixture("widgets", filetype=FIXTURE_FILETYPE)
-        xml = survey.to_xml()
+        xml = survey.to_xml(pretty_print=False)
         # find the body tag
         root_elm = ETree.fromstring(xml.encode("utf-8"))
         body_elms = [

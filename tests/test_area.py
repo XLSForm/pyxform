@@ -17,7 +17,6 @@ class AreaTest(PyxformTestCase):
             "38.25146813817506 21.758421137528785"
         )
         self.assertPyxformXform(
-            name="area",
             md=f"""
             | survey |           |           |               |                               |         |
             |        | type      | name      | label         | calculation                   | default |
@@ -25,8 +24,8 @@ class AreaTest(PyxformTestCase):
             |        | calculate | result    |               | enclosed-area(${{geoshape1}}) |         |
             """,
             xml__xpath_match=[
-                "/h:html/h:head/x:model/x:bind[@calculate='enclosed-area( /area/geoshape1 )' "
-                + "  and @nodeset='/area/result' and @type='string']",
-                "/h:html/h:head/x:model/x:instance/x:area[x:geoshape1]",
+                "/h:html/h:head/x:model/x:bind[@calculate='enclosed-area( /test_name/geoshape1 )' "
+                + "  and @nodeset='/test_name/result' and @type='string']",
+                "/h:html/h:head/x:model/x:instance/x:test_name[x:geoshape1]",
             ],
         )

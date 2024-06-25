@@ -10,10 +10,10 @@ from dataclasses import dataclass, field
 from pyxform import aliases
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
 from pyxform.errors import PyXFormError
+from pyxform.xls2json_backends import md_table_to_workbook
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
 
 from tests.pyxform_test_case import PyxformTestCase
-from tests.test_utils.md_table import md_table_to_workbook
 from tests.utils import get_temp_dir
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq

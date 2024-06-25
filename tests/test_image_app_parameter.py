@@ -150,20 +150,19 @@ class TestImageParameters(PyxformTestCase):
         )
 
     def test_image_with_no_max_pixels_should_warn(self):
-        warnings = []
-
-        self.md_to_pyxform_survey(
-            """
+        self.assertPyxformXform(
+            md="""
             | survey |       |            |         |
             |        | type  | name    | label   |
             |        | image | my_image   | Image   |
             |        | image | my_image_1 | Image 1 |
             """,
-            warnings=warnings,
+            warnings_count=2,
+            warnings__contains=[
+                "[row : 2] Use the max-pixels parameter to speed up submission sending and save storage space. Learn more: https://xlsform.org/#image",
+                "[row : 3] Use the max-pixels parameter to speed up submission sending and save storage space. Learn more: https://xlsform.org/#image",
+            ],
         )
-
-        self.assertTrue(len(warnings) == 2)
-        self.assertTrue("max-pixels" in warnings[0] and "max-pixels" in warnings[1])
 
     def test_max_pixels_and_app(self):
         self.assertPyxformXform(

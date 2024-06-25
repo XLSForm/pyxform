@@ -60,66 +60,52 @@ class TypedCalculatesTest(PyxformTestCase):
         )
 
     def test_non_calculate_type_with_calculation_no_warns(self):
-        warnings = []
-
-        self.md_to_pyxform_survey(
-            """
+        self.assertPyxformXform(
+            md="""
             | survey |           |      |             |      |             |
             |        | type      | name | label       | hint | calculation |
             |        | dateTime  | a    |             |      | now()       |
             |        | integer   | b    |             |      | 1 div 1     |
             |        | note      | note | Hello World |      |             |
             """,
-            warnings=warnings,
+            warnings_count=0,
         )
 
-        self.assertTrue(len(warnings) == 0)
-
     def test_non_calculate_type_with_hint_and_no_calculation__no_warning(self):
-        warnings = []
-        self.md_to_pyxform_survey(
-            """
+        self.assertPyxformXform(
+            md="""
             | survey |           |      |             |           |             |
             |        | type      | name | label       | hint      | calculation |
             |        | dateTime  | a    |             |           | now()       |
             |        | integer   | b    |             | Some hint |             |
             |        | note      | note | Hello World |           |             |
             """,
-            warnings=warnings,
+            warnings_count=0,
         )
-        self.assertTrue(len(warnings) == 0)
 
-    def test_non_calculate_type_with_calculation_and_dynamic_default_warns(self):
-        warnings = []
-
-        self.md_to_pyxform_survey(
-            """
+    def test_non_calculate_type_with_calculation_and_dynamic_default_no_warns(self):
+        self.assertPyxformXform(
+            md="""
             | survey |           |      |             |      |             |         |
             |        | type      | name | label       | hint | calculation | default |
             |        | dateTime  | a    |             |      | now()       |         |
             |        | integer   | b    |             |      | 1 div 1     | $(a)    |
             |        | note      | note | Hello World |      |             |         |
             """,
-            warnings=warnings,
+            warnings_count=0,
         )
 
-        self.assertTrue(len(warnings) == 0)
-
     def test_non_calculate_type_with_calculation_and_default_no_warns(self):
-        warnings = []
-
-        self.md_to_pyxform_survey(
-            """
+        self.assertPyxformXform(
+            md="""
             | survey |           |      |             |      |             |         |
             |        | type      | name | label       | hint | calculation | default |
             |        | dateTime  | a    |             |      | now()       |         |
             |        | integer   | b    |             |      | 1 div 1     | 1       |
             |        | note      | note | Hello World |      |             |         |
             """,
-            warnings=warnings,
+            warnings_count=0,
         )
-
-        self.assertTrue(len(warnings) == 0)
 
     def test_select_type_with_calculation_and_no_label_has_no_control(self):
         self.assertPyxformXform(

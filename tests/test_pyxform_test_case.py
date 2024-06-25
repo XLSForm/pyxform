@@ -104,7 +104,7 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         exact={
             (
                 """<instance>\n"""
-                """        <test_name id="test_id">\n"""
+                """        <test_name id="data">\n"""
                 """          <Part_ID/>\n"""
                 """          <Initial/>\n"""
                 """          <meta>\n"""

@@ -72,7 +72,7 @@ def get_validated_dataset_name(entity):
 
     if not is_valid_xml_tag(dataset):
         if isinstance(dataset, bytes):
-            dataset = dataset.encode("utf-8")
+            dataset = dataset.decode("utf-8")
 
         raise PyXFormError(
             f"Invalid entity list name: '{dataset}'. Names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
@@ -117,7 +117,7 @@ def validate_entity_saveto(
 
     if not is_valid_xml_tag(save_to):
         if isinstance(save_to, bytes):
-            save_to = save_to.encode("utf-8")
+            save_to = save_to.decode("utf-8")
 
         raise PyXFormError(
             f"{error_start} '{save_to}'. Entity property names {const.XML_IDENTIFIER_ERROR_MESSAGE}"

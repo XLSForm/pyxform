@@ -8,6 +8,7 @@ import shutil
 import tempfile
 import textwrap
 from contextlib import contextmanager
+from pathlib import Path
 
 from pyxform import file_utils
 from pyxform.builder import create_survey, create_survey_from_path
@@ -57,8 +58,7 @@ def get_temp_file():
         yield temp_file.name
     finally:
         temp_file.close()
-        if os.path.exists(temp_file.name):
-            os.remove(temp_file.name)
+        Path(temp_file.name).unlink(missing_ok=True)
 
 
 @contextmanager

@@ -2,6 +2,8 @@
 SurveyInstance class module.
 """
 
+import os.path
+
 from pyxform.errors import PyXFormError
 from pyxform.xform_instance_parser import parse_xform_instance
 
@@ -76,8 +78,6 @@ class SurveyInstance:
         return self._answers
 
     def import_from_xml(self, xml_string_or_filename):
-        import os.path
-
         if os.path.isfile(xml_string_or_filename):
             xml_str = open(xml_string_or_filename, encoding="utf-8").read()
         else:

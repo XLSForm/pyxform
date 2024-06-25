@@ -22,7 +22,7 @@ from pyxform.entities.entities_parsing import (
 )
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_single_token_expression
-from pyxform.utils import PYXFORM_REFERENCE_REGEX, default_is_dynamic
+from pyxform.utils import PYXFORM_REFERENCE_REGEX, coalesce, default_is_dynamic
 from pyxform.validators.pyxform import parameters_generic, select_from_file
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
@@ -395,7 +395,7 @@ def workbook_to_json(
     workbook_dict,
     form_name: str | None = None,
     fallback_form_name: str | None = None,
-    default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
+    default_language: str | None = None,
     warnings: list[str] | None = None,
 ) -> dict[str, Any]:
     """
@@ -416,8 +416,7 @@ def workbook_to_json(
     returns a nested dictionary equivalent to the format specified in the
     json form spec.
     """
-    if warnings is None:
-        warnings = []
+    warnings = coalesce(warnings, [])
     is_valid = False
     # Sheet names should be case-insensitive
     workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
@@ -441,8 +440,8 @@ def workbook_to_json(
         )
 
     # Make sure the passed in vars are unicode
-    form_name = str(form_name)
-    default_language = str(default_language)
+    form_name = str(coalesce(form_name, constants.DEFAULT_FORM_NAME))
+    default_language = str(coalesce(default_language, constants.DEFAULT_LANGUAGE_VALUE))
 
     # We check for double columns to determine whether to use them
     # or single colons to delimit grouped headers.
@@ -500,7 +499,9 @@ def workbook_to_json(
         )
 
     # Here we create our json dict root with default settings:
-    id_string = settings.get(constants.ID_STRING, fallback_form_name)
+    id_string = settings.get(
+        constants.ID_STRING, coalesce(fallback_form_name, constants.DEFAULT_FORM_NAME)
+    )
     sms_keyword = settings.get(constants.SMS_KEYWORD, id_string)
     json_dict = {
         constants.TYPE: constants.SURVEY,
@@ -970,7 +971,7 @@ def workbook_to_json(
         question_name = str(row[constants.NAME])
         if not is_valid_xml_tag(question_name):
             if isinstance(question_name, bytes):
-                question_name = question_name.encode("utf-8")
+                question_name = question_name.decode("utf-8")
 
             raise PyXFormError(
                 f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
@@ -1591,7 +1592,7 @@ def get_filename(path):
 
 def parse_file_to_json(
     path: str,
-    default_name: str = "data",
+    default_name: str = constants.DEFAULT_FORM_NAME,
     default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
     warnings: list[str] | None = None,
     file_object: IO | None = None,

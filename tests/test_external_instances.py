@@ -6,8 +6,6 @@ See also test_external_instances_for_selects
 
 from textwrap import dedent
 
-from pyxform.errors import PyXFormError
-
 from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
 from tests.xpath_helpers.choices import xpc
 
@@ -249,15 +247,17 @@ class ExternalInstanceTests(PyxformTestCase):
             |         | states                          | 1     | Pass  |                                    |
             |         | states                          | 2     | Fail  |                                    |
             """
-        with self.assertRaises(PyXFormError) as ctx:
-            survey = self.md_to_pyxform_survey(md_raw=md)
-            survey._to_pretty_xml()
-        self.assertIn(
-            "Instance name: 'states', "
-            "Existing type: 'file', Existing URI: 'jr://file-csv/states.csv', "
-            "Duplicate type: 'choice', Duplicate URI: 'None', "
-            "Duplicate context: 'survey'.",
-            repr(ctx.exception),
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                (
+                    "Instance name: 'states', "
+                    "Existing type: 'file', Existing URI: 'jr://file-csv/states.csv', "
+                    "Duplicate type: 'choice', Duplicate URI: 'None', "
+                    "Duplicate context: 'survey'."
+                )
+            ],
         )
 
     def test_cannot__use_different_src_same_id__external_then_pulldata(self):
@@ -273,15 +273,17 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | note         | note   | Fruity! ${f_csv} |                                             |
             |        | end group    | g1     |                  |                                             |
             """
-        with self.assertRaises(PyXFormError) as ctx:
-            survey = self.md_to_pyxform_survey(md_raw=md)
-            survey._to_pretty_xml()
-        self.assertIn(
-            "Instance name: 'fruits', "
-            "Existing type: 'external', Existing URI: 'jr://file/fruits.xml', "
-            "Duplicate type: 'pulldata', Duplicate URI: 'jr://file-csv/fruits.csv', "
-            "Duplicate context: '[type: group, name: g1]'.",
-            repr(ctx.exception),
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                (
+                    "Instance name: 'fruits', "
+                    "Existing type: 'external', Existing URI: 'jr://file/fruits.xml', "
+                    "Duplicate type: 'pulldata', Duplicate URI: 'jr://file-csv/fruits.csv', "
+                    "Duplicate context: '[type: group, name: g1]'."
+                )
+            ],
         )
 
     def test_cannot__use_different_src_same_id__pulldata_then_external(self):
@@ -297,15 +299,17 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | note         | note   | Fruity! ${f_csv} |                                             |
             |        | end group    | g1     |                  |                                             |
             """
-        with self.assertRaises(PyXFormError) as ctx:
-            survey = self.md_to_pyxform_survey(md_raw=md)
-            survey._to_pretty_xml()
-        self.assertIn(
-            "Instance name: 'fruits', "
-            "Existing type: 'pulldata', Existing URI: 'jr://file-csv/fruits.csv', "
-            "Duplicate type: 'external', Duplicate URI: 'jr://file/fruits.xml', "
-            "Duplicate context: '[type: group, name: g1]'.",
-            repr(ctx.exception),
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                (
+                    "Instance name: 'fruits', "
+                    "Existing type: 'pulldata', Existing URI: 'jr://file-csv/fruits.csv', "
+                    "Duplicate type: 'external', Duplicate URI: 'jr://file/fruits.xml', "
+                    "Duplicate context: '[type: group, name: g1]'."
+                )
+            ],
         )
 
     def test_can__reuse_csv__selects_then_pulldata(self):
@@ -320,13 +324,17 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | calculate                                    | f_csv  | pd                                 | pulldata('pain_locations', 'name', 'name', 'arm') |
             |        | note                                         | note   | Arm ${f_csv}                       |                                                   |
             """
-        expected = """
-      <instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>
-"""
-        self.assertPyxformXform(md=md, model__contains=[expected])
-        survey = self.md_to_pyxform_survey(md_raw=md)
-        xml = survey._to_pretty_xml()
-        self.assertEqual(1, xml.count(expected))
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance[
+                  @id='pain_locations'
+                  and @src='jr://file-csv/pain_locations.csv'
+                ]
+                """
+            ],
+        )
 
     def test_can__reuse_csv__pulldata_then_selects(self):
         """Re-using the same csv external data source id and URI is OK."""
@@ -340,10 +348,17 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.csv      | pmonth | Location of worst pain this month. |                                                   |
             |        | select_one_from_file pain_locations.csv      | pyear  | Location of worst pain this year.  |                                                   |
             """
-        expected = (
-            """<instance id="pain_locations" src="jr://file-csv/pain_locations.csv"/>"""
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance[
+                  @id='pain_locations'
+                  and @src='jr://file-csv/pain_locations.csv'
+                ]
+                """
+            ],
         )
-        self.assertPyxformXform(md=md, model__contains=[expected])
 
     def test_can__reuse_xml__selects_then_external(self):
         """Re-using the same xml external data source id and URI is OK."""
@@ -356,12 +371,17 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.xml      | pyear          | Location of worst pain this year.  |
             |        | xml-external                                 | pain_locations |                                    |
             """
-        expected = """
-      <instance id="pain_locations" src="jr://file/pain_locations.xml"/>
-"""
-        survey = self.md_to_pyxform_survey(md_raw=md)
-        xml = survey._to_pretty_xml()
-        self.assertEqual(1, xml.count(expected))
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance[
+                  @id='pain_locations'
+                  and @src='jr://file/pain_locations.xml'
+                ]
+                """
+            ],
+        )
 
     def test_can__reuse_xml__external_then_selects(self):
         """Re-using the same xml external data source id and URI is OK."""
@@ -374,13 +394,17 @@ class ExternalInstanceTests(PyxformTestCase):
             |        | select_one_from_file pain_locations.xml      | pmonth         | Location of worst pain this month. |
             |        | select_one_from_file pain_locations.xml      | pyear          | Location of worst pain this year.  |
             """
-        expected = (
-            """<instance id="pain_locations" src="jr://file/pain_locations.xml"/>"""
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance[
+                  @id='pain_locations'
+                  and @src='jr://file/pain_locations.xml'
+                ]
+                """
+            ],
         )
-        self.assertPyxformXform(md=md, model__contains=[expected])
-        survey = self.md_to_pyxform_survey(md_raw=md)
-        xml = survey._to_pretty_xml()
-        self.assertEqual(1, xml.count(expected))
 
     def test_external_instance_pulldata_constraint(self):
         """
@@ -570,10 +594,17 @@ class ExternalInstanceTests(PyxformTestCase):
         |        | type   | name    | label          | relevant                                                | required                                                | constraint                                              |
         |        | text   | Part_ID | Participant ID | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) | pulldata('ID', 'ParticipantID', 'ParticipantIDValue',.) |
         """
-        node = """<instance id="ID" src="jr://file-csv/ID.csv"/>"""
-        survey = self.md_to_pyxform_survey(md_raw=md)
-        xml = survey._to_pretty_xml()
-        self.assertEqual(1, xml.count(node))
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance[
+                  @id='ID'
+                  and @src='jr://file-csv/ID.csv'
+                ]
+                """
+            ],
+        )
 
     def test_external_instances_multiple_diff_pulldatas(self):
         """
@@ -583,17 +614,27 @@ class ExternalInstanceTests(PyxformTestCase):
         columns but pulling data from different csv files
         """
         md = """
-        | survey |        |         |                |                                                        |                                                             |
-        |        | type   | name    | label          | relevant                                               | required                                                    |
-        |        | text   | Part_ID | Participant ID | pulldata('fruits', 'name', 'name_key', 'mango')        | pulldata('OtherID', 'ParticipantID', ParticipantIDValue',.) |
+        | survey |        |         |                |                                                 |                                                             |
+        |        | type   | name    | label          | relevant                                        | required                                                    |
+        |        | text   | Part_ID | Participant ID | pulldata('fruits', 'name', 'name_key', 'mango') | pulldata('OtherID', 'ParticipantID', ParticipantIDValue',.) |
         """
-        node1 = '<instance id="fruits" src="jr://file-csv/fruits.csv"/>'
-        node2 = '<instance id="OtherID" src="jr://file-csv/OtherID.csv"/>'
-
-        survey = self.md_to_pyxform_survey(md_raw=md)
-        xml = survey._to_pretty_xml()
-        self.assertEqual(1, xml.count(node1))
-        self.assertEqual(1, xml.count(node2))
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance[
+                  @id='fruits'
+                  and @src='jr://file-csv/fruits.csv'
+                ]
+                """,
+                """
+                /h:html/h:head/x:model/x:instance[
+                  @id='OtherID'
+                  and @src='jr://file-csv/OtherID.csv'
+                ]
+                """,
+            ],
+        )
 
     def test_mixed_quotes_and_functions_in_pulldata(self):
         # re: https://github.com/XLSForm/pyxform/issues/398

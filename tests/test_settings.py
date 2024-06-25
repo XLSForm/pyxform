@@ -191,7 +191,7 @@ class TestNamespaces(PyxformTestCase):
                   /h:html/h:head/x:model/x:instance/*[
                     namespace-uri()='http://example.com/xforms'
                     and local-name()='test_name'
-                    and @id='test_id'
+                    and @id='data'
                   ]
                 """
             ],
@@ -211,7 +211,7 @@ class TestNamespaces(PyxformTestCase):
                   /h:html/h:head/x:model/x:instance/*[
                     namespace-uri()='http://www.w3.org/2002/xforms'
                     and local-name()='test_name'
-                    and @id='test_id'
+                    and @id='data'
                   ]
                 """
             ],

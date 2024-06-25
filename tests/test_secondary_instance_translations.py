@@ -24,8 +24,6 @@ class TestSecondaryInstanceTest(PyxformTestCase):
                |         | states            | option b | b          |
                |         | states            | option c | c          |
                """,
-            name="data",
-            id_string="some-id",
             model__contains=[
                 "<label>a</label>",
                 "<label>b</label>",
@@ -58,8 +56,6 @@ class TestSecondaryInstanceTest(PyxformTestCase):
                |         | states            | option b | b                 |
                |         | states            | option c | c                 |
                """,
-            name="data",
-            id_string="some-id",
             model__contains=[
                 '<text id="states-0">',
                 '<text id="states-1">',
@@ -136,8 +132,6 @@ class TestSecondaryInstanceTest(PyxformTestCase):
         |         | list      | c    | C     | c.jpg | Cé            |
         """
         self.assertPyxformXform(
-            name="data",
-            id_string="some-id",
             md=xform_md,
             itext__contains=[
                 '<text id="list-0">',
@@ -145,9 +139,9 @@ class TestSecondaryInstanceTest(PyxformTestCase):
                 '<text id="list-2">',
             ],
             itext__excludes=[
-                '<text id="/data/foo/a:label">',
-                '<text id="/data/foo/b:label">',
-                '<text id="/data/foo/c:label">',
+                '<text id="/test_name/foo/a:label">',
+                '<text id="/test_name/foo/b:label">',
+                '<text id="/test_name/foo/c:label">',
             ],
         )
 
@@ -167,11 +161,10 @@ class TestSecondaryInstanceTest(PyxformTestCase):
             |         | choices   | one  | One - ${txt} |
             """
         self.assertPyxformXform(
-            name="data",
             md=xform_md,
             itext__contains=[
                 '<text id="choices-0">',
-                '<value> One - <output value=" /data/txt "/>',
+                '<value> One - <output value=" /test_name/txt "/>',
             ],
             model__contains=[
                 "<itextId>choices-0</itextId>",
@@ -198,13 +191,12 @@ class TestSecondaryInstanceTest(PyxformTestCase):
             |         | choices   | two  | Two - ${txt} |
             """
         self.assertPyxformXform(
-            name="data",
             md=xform_md,
             itext__contains=[
                 '<text id="choices-0">',
                 "<value>One</value>",
                 '<text id="choices-1">',
-                '<value> Two - <output value=" /data/txt "/>',
+                '<value> Two - <output value=" /test_name/txt "/>',
             ],
             model__contains=[
                 "<itextId>choices-0</itextId>",

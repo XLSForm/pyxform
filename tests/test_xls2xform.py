@@ -1,22 +1,30 @@
 """
 Test xls2xform module.
 """
+
 # The Django application xls2xform uses the function
 # pyxform.create_survey. We have a test here to make sure no one
 # breaks that function.
-
 import argparse
 import logging
+from io import BytesIO
+from itertools import product
+from pathlib import Path
 from unittest import TestCase, mock
 
+from pyxform.errors import PyXFormError
 from pyxform.xls2xform import (
+    ConvertResult,
     _create_parser,
     _validator_args_logic,
+    convert,
     get_xml_path,
     main_cli,
+    xls2xform_convert,
 )
 
-from tests.utils import path_to_text_fixture
+from tests import example_xls
+from tests.utils import get_temp_file, path_to_text_fixture
 
 
 class XLS2XFormTests(TestCase):
@@ -229,3 +237,173 @@ class XLS2XFormTests(TestCase):
         xlsx_path = "/home/user/Desktop/my xlsform.xlsx"
         expected = "/home/user/Desktop/my xlsform.xml"
         self.assertEqual(expected, get_xml_path(xlsx_path))
+
+
+class TestXLS2XFormConvert(TestCase):
+    """
+    Tests for `xls2xform_convert`.
+    """
+
+    def test_xls2xform_convert__ok(self):
+        """Should find the expected output files for the conversion."""
+        xlsforms = (
+            Path(example_xls.PATH) / "group.xlsx",
+            Path(example_xls.PATH) / "group.xls",
+            Path(example_xls.PATH) / "group.csv",
+            Path(example_xls.PATH) / "group.md",
+            Path(example_xls.PATH) / "choice_name_as_type.xls",  # has external choices
+        )
+        kwargs = (
+            ("validate", (True, False)),
+            ("pretty_print", (True, False)),
+        )
+        names, values = zip(*kwargs, strict=False)
+        combos = [dict(zip(names, c, strict=False)) for c in product(*values)]
+        with get_temp_file() as xform:
+            for x in xlsforms:
+                for k in combos:
+                    with self.subTest(msg=f"{x.name}, {k}"):
+                        observed = xls2xform_convert(
+                            xlsform_path=x, xform_path=xform, **k
+                        )
+                        self.assertIsInstance(observed, list)
+                        self.assertEqual(len(observed), 0)
+                        self.assertGreater(len(Path(xform).read_text()), 0)
+                        if x.name == "choice_name_as_type.xls":
+                            self.assertTrue(
+                                (Path(xform).parent / "itemsets.csv").is_file()
+                            )
+
+
+class TestXLS2XFormConvertAPI(TestCase):
+    """
+    Tests for the `convert` library API entrypoint (not xls2xform_convert).
+    """
+
+    @staticmethod
+    def with_xlsform_path_str(**kwargs):
+        return convert(xlsform=kwargs.pop("xlsform").as_posix(), **kwargs)
+
+    @staticmethod
+    def with_xlsform_path_pathlike(**kwargs):
+        return convert(**kwargs)
+
+    @staticmethod
+    def with_xlsform_data_str(**kwargs):
+        return convert(xlsform=kwargs.pop("xlsform").read_text(), **kwargs)
+
+    @staticmethod
+    def with_xlsform_data_bytes(**kwargs):
+        return convert(xlsform=kwargs.pop("xlsform").read_bytes(), **kwargs)
+
+    @staticmethod
+    def with_xlsform_data_bytesio(**kwargs):
+        with open(kwargs.pop("xlsform"), mode="rb") as f:
+            return convert(xlsform=BytesIO(f.read()), **kwargs)
+
+    @staticmethod
+    def with_xlsform_data_binaryio(**kwargs):
+        with open(kwargs.pop("xlsform"), mode="rb") as f:
+            return convert(xlsform=f, **kwargs)
+
+    def test_args_combinations__ok(self):
+        """Should find that generic call patterns return a ConvertResult without error."""
+        funcs = [
+            ("str (path)", self.with_xlsform_path_str),
+            ("PathLike[str]", self.with_xlsform_path_pathlike),
+            ("bytes", self.with_xlsform_data_bytes),
+            ("BytesIO", self.with_xlsform_data_bytesio),
+            ("BinaryIO", self.with_xlsform_data_binaryio),
+            ("str (data)", self.with_xlsform_data_str),  # Only for .csv, .md.
+        ]
+        xlsforms = (
+            (Path(example_xls.PATH) / "group.xlsx", funcs[:4]),
+            (Path(example_xls.PATH) / "group.xls", funcs[:4]),
+            (Path(example_xls.PATH) / "group.csv", funcs),
+            (Path(example_xls.PATH) / "group.md", funcs),
+            (
+                Path(example_xls.PATH) / "choice_name_as_type.xls",
+                funcs[:4],
+            ),  # has external choices
+        )
+        # Not including validate here because it's slow, the test is more about input,
+        # and these same forms are checked with validate=True above via xls2xform_convert.
+        kwargs = (
+            ("warnings", (None, [])),
+            ("pretty_print", (True, False)),
+        )
+        names, values = zip(*kwargs, strict=False)
+        combos = [dict(zip(names, c, strict=False)) for c in product(*values)]
+        for x, fn in xlsforms:
+            for n, f in fn:
+                for k in combos:
+                    with self.subTest(msg=f"{x.name}, {n}, {k}"):
+                        if k["warnings"] is not None:  # Want a new list per iteration.
+                            k["warnings"] = []
+                        observed = f(xlsform=x, **k)
+                        self.assertIsInstance(observed, ConvertResult)
+                        self.assertGreater(len(observed.xform), 0)
+
+    def test_invalid_input_raises(self):
+        """Should raise an error for invalid input or file types."""
+        msg = "Argument 'definition' was not recognized as a supported type"
+        from tests.utils import get_temp_dir, get_temp_file
+
+        with get_temp_file() as empty, get_temp_dir() as td:
+            bad_xls = Path(td) / "bad.xls"
+            bad_xls.write_text("bad")
+            bad_xlsx = Path(td) / "bad.xlsx"
+            bad_xlsx.write_text("bad")
+            bad_type = Path(td) / "bad.txt"
+            bad_type.write_text("bad")
+            cases = (
+                None,
+                "",
+                b"",
+                "ok",
+                b"ok",
+                empty,
+                bad_xls,
+                bad_xlsx,
+                bad_type,
+            )
+            for case in cases:
+                with self.subTest(msg=f"{case}"):
+                    with self.assertRaises(PyXFormError) as err:
+                        convert(xlsform=case)
+                    self.assertTrue(
+                        err.exception.args[0].startswith(msg), msg=str(err.exception)
+                    )
+
+    def test_call_with_dict__ok(self):
+        """Should find that passing in a dict returns a ConvertResult without error."""
+        ss_structure = {
+            "survey": [
+                {
+                    "type": "text",
+                    "name": "family_name",
+                    "label:English (en)": "What's your family name?",
+                },
+                {
+                    "type": "begin group",
+                    "name": "father",
+                    "label:English (en)": "Father",
+                },
+                {
+                    "type": "phone number",
+                    "name": "phone_number",
+                    "label:English (en)": "What's your father's phone number?",
+                },
+                {
+                    "type": "integer",
+                    "name": "age",
+                    "label:English (en)": "How old is your father?",
+                },
+                {
+                    "type": "end group",
+                },
+            ]
+        }
+        observed = convert(xlsform=ss_structure)
+        self.assertIsInstance(observed, ConvertResult)
+        self.assertGreater(len(observed.xform), 0)
