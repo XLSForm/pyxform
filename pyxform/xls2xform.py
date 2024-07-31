@@ -6,12 +6,23 @@ use with ODK Collect.
 import argparse
 import json
 import logging
-import os
+from dataclasses import dataclass
+from io import BytesIO
+from os import PathLike
 from os.path import splitext
+from pathlib import Path
+from typing import TYPE_CHECKING, BinaryIO
 
 from pyxform import builder, xls2json
-from pyxform.utils import has_external_choices, sheet_to_csv
+from pyxform.utils import coalesce, external_choices_to_csv, has_external_choices
 from pyxform.validators.odk_validate import ODKValidateError
+from pyxform.xls2json_backends import (
+    definition_to_dict,
+    get_definition_data,
+)
+
+if TYPE_CHECKING:
+    from pyxform.survey import Survey
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler())
@@ -28,35 +39,117 @@ def get_xml_path(path):
     return splitext(path)[0] + ".xml"
 
 
-def xls2xform_convert(
-    xlsform_path, xform_path, validate=True, pretty_print=True, enketo=False
-):
-    warnings = []
+@dataclass
+class ConvertResult:
+    """
+    Result data from the XLSForm to XForm conversion.
 
-    json_survey = xls2json.parse_file_to_json(xlsform_path, warnings=warnings)
-    survey = builder.create_survey_element_from_dict(json_survey)
-    # Setting validate to false will cause the form not to be processed by
-    # ODK Validate.
-    # This may be desirable since ODK Validate requires launching a subprocess
-    # that runs some java code.
-    survey.print_xform_to_file(
-        xform_path,
+    :param xform: The result XForm
+    :param warnings: Warnings raised during conversion.
+    :param itemsets: If the XLSForm defined external itemsets, a CSV version of them.
+    :param _pyxform: Internal representation of the XForm, may change without notice.
+    :param _survey: Internal representation of the XForm, may change without notice.
+    """
+
+    xform: str
+    warnings: list[str]
+    itemsets: str | None
+    _pyxform: dict
+    _survey: "Survey"
+
+
+def convert(
+    xlsform: str | PathLike[str] | bytes | BytesIO | BinaryIO | dict,
+    warnings: list[str] | None = None,
+    validate: bool = False,
+    pretty_print: bool = False,
+    enketo: bool = False,
+    form_name: str | None = None,
+    default_language: str | None = None,
+    file_type: str | None = None,
+) -> ConvertResult:
+    """
+    Run the XLSForm to XForm conversion.
+
+    This function avoids result file IO so it is more suited to library usage of pyxform.
+
+    If validate=True or Enketo=True, then the XForm will be written to a temporary file
+    to be checked by ODK Validate and/or Enketo Validate. These validators are run as
+    external processes. A recent version of ODK Validate is distributed with pyxform,
+    while Enketo Validate is not. A script to download or update these validators is
+    provided in `validators/updater.py`.
+
+    :param xlsform: The input XLSForm file path or content. If the content is bytes or
+      supports read (a class that has read() -> bytes) it's assumed to relate to the file
+      bytes content, not a path.
+    :param warnings: The conversions warnings list.
+    :param validate: If True, check the XForm with ODK Validate
+    :param pretty_print: If True, format the XForm with spaces, line breaks, etc.
+    :param enketo: If True, check the XForm with Enketo Validate.
+    :param form_name: Used for the main instance root node name.
+    :param default_language: The name of the default language for the form.
+    :param file_type: If provided, attempt parsing the data only as this type. Otherwise,
+      parsing of supported data types will be attempted until one of them succeeds. If the
+      xlsform is provided as a dict, then it is used directly and this argument is ignored.
+    """
+    warnings = coalesce(warnings, [])
+    if isinstance(xlsform, dict):
+        workbook_dict = xlsform
+        fallback_form_name = None
+    else:
+        definition = get_definition_data(definition=xlsform)
+        if file_type is None:
+            file_type = definition.file_type
+        workbook_dict = definition_to_dict(definition=definition, file_type=file_type)
+        fallback_form_name = definition.file_path_stem
+    pyxform_data = xls2json.workbook_to_json(
+        workbook_dict=workbook_dict,
+        form_name=form_name,
+        fallback_form_name=fallback_form_name,
+        default_language=default_language,
+        warnings=warnings,
+    )
+    survey = builder.create_survey_element_from_dict(pyxform_data)
+    xform = survey.to_xml(
         validate=validate,
         pretty_print=pretty_print,
         warnings=warnings,
         enketo=enketo,
     )
-    output_dir = os.path.split(xform_path)[0]
-    if has_external_choices(json_survey):
-        itemsets_csv = os.path.join(output_dir, "itemsets.csv")
-        choices_exported = sheet_to_csv(xlsform_path, itemsets_csv, "external_choices")
-        if not choices_exported:
-            warnings.append(
-                "Could not export itemsets.csv, perhaps the "
-                "external choices sheet is missing."
-            )
-        else:
-            logger.info("External choices csv is located at: %s", itemsets_csv)
+    itemsets = None
+    if has_external_choices(json_struct=pyxform_data):
+        itemsets = external_choices_to_csv(workbook_dict=workbook_dict)
+    return ConvertResult(
+        xform=xform,
+        warnings=warnings,
+        itemsets=itemsets,
+        _pyxform=pyxform_data,
+        _survey=survey,
+    )
+
+
+def xls2xform_convert(
+    xlsform_path: str | PathLike[str],
+    xform_path: str | PathLike[str],
+    validate: bool = True,
+    pretty_print: bool = True,
+    enketo: bool = False,
+) -> list[str]:
+    warnings = []
+    result = convert(
+        xlsform=xlsform_path,
+        validate=validate,
+        pretty_print=pretty_print,
+        enketo=enketo,
+        warnings=warnings,
+    )
+    with open(xform_path, mode="w", encoding="utf-8") as f:
+        f.write(result.xform)
+    if result.itemsets is not None:
+        itemsets_path = Path(xform_path).parent / "itemsets.csv"
+        with open(itemsets_path, mode="w", encoding="utf-8", newline="") as f:
+            f.write(result.itemsets)
+            logger.info("External choices csv is located at: %s", itemsets_path)
     return warnings
 
 
@@ -179,7 +272,7 @@ def main_cli():
             logger.exception("EnvironmentError during conversion")
         except ODKValidateError:
             # Remove output file if there is an error
-            os.remove(args.output_path)
+            Path(args.output_path).unlink(missing_ok=True)
             logger.exception("ODKValidateError during conversion.")
         else:
             if len(warnings) > 0:

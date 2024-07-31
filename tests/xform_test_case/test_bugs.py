@@ -3,6 +3,7 @@ Some tests for the new (v0.9) spec is properly implemented.
 """
 
 import os
+from pathlib import Path
 from unittest import TestCase
 
 import pyxform
@@ -11,148 +12,30 @@ from pyxform.utils import has_external_choices
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
 from pyxform.xls2json_backends import xlsx_to_dict
+from pyxform.xls2xform import convert
 
-from tests import bug_example_xls, example_xls, test_expected_output, test_output
-from tests.xform_test_case.base import XFormTestCase
+from tests import bug_example_xls, example_xls, test_output
 
 
-class GroupNames(TestCase):
+class TestXFormConversion(TestCase):
     maxDiff = None
 
-    def test_conversion(self):
-        filename = "group_name_test.xls"
-        path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
-        # Get the xform output path:
-        root_filename, ext = os.path.splitext(filename)
-        output_path = os.path.join(test_output.PATH, root_filename + ".xml")
-        # Do the conversion:
-        warnings = []
-        with self.assertRaises(PyXFormError):
-            json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, default_name="group_name_test", warnings=warnings
-            )
-            survey = pyxform.create_survey_element_from_dict(json_survey)
-            survey.print_xform_to_file(output_path, warnings=warnings)
-
-
-class NotClosedGroup(TestCase):
-    maxDiff = None
-
-    def test_conversion(self):
-        filename = "not_closed_group_test.xls"
-        path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
-        # Get the xform output path:
-        root_filename, ext = os.path.splitext(filename)
-        output_path = os.path.join(test_output.PATH, root_filename + ".xml")
-        # Do the conversion:
-        warnings = []
-        with self.assertRaises(PyXFormError):
-            json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file,
-                default_name="not_closed_group_test",
-                warnings=warnings,
-            )
-            survey = pyxform.create_survey_element_from_dict(json_survey)
-            survey.print_xform_to_file(output_path, warnings=warnings)
-
-
-class DuplicateColumns(TestCase):
-    maxDiff = None
-
-    def test_conversion(self):
-        filename = "duplicate_columns.xlsx"
-        path_to_excel_file = os.path.join(example_xls.PATH, filename)
-        # Get the xform output path:
-        root_filename, ext = os.path.splitext(filename)
-        output_path = os.path.join(test_output.PATH, root_filename + ".xml")
-        # Do the conversion:
-        warnings = []
-        with self.assertRaises(PyXFormError):
-            json_survey = pyxform.xls2json.parse_file_to_json(
-                path_to_excel_file, default_name="duplicate_columns", warnings=warnings
-            )
-            survey = pyxform.create_survey_element_from_dict(json_survey)
-            survey.print_xform_to_file(output_path, warnings=warnings)
-
-
-class RepeatDateTest(XFormTestCase):
-    maxDiff = None
-
-    def test_conversion(self):
-        filename = "repeat_date_test.xls"
-        self.get_file_path(filename)
-        expected_output_path = os.path.join(
-            test_expected_output.PATH, self.root_filename + ".xml"
+    def test_conversion_raises(self):
+        """Should find that conversion results in an error being raised by pyxform."""
+        cases = (
+            ("group_name_test.xls", "[row : 3] Question or group with no name."),
+            (
+                "not_closed_group_test.xls",
+                "Unmatched begin statement: group (open_group_1)",
+            ),
+            ("duplicate_columns.xlsx", "Duplicate column header: label"),
+            ("calculate_without_calculation.xls", "[row : 34] Missing calculation."),
         )
-
-        # Do the conversion:
-        warnings = []
-        json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, default_name="repeat_date_test", warnings=warnings
-        )
-        survey = pyxform.create_survey_element_from_dict(json_survey)
-        survey.print_xform_to_file(self.output_path, warnings=warnings)
-        # print warnings
-        # Compare with the expected output:
-        with (
-            open(expected_output_path, encoding="utf-8") as expected,
-            open(self.output_path, encoding="utf-8") as observed,
-        ):
-            self.assertXFormEqual(expected.read(), observed.read())
-
-
-class XmlEscaping(XFormTestCase):
-    maxDiff = None
-
-    def test_conversion(self):
-        filename = "xml_escaping.xls"
-        self.get_file_path(filename)
-        expected_output_path = os.path.join(
-            test_expected_output.PATH, self.root_filename + ".xml"
-        )
-
-        # Do the conversion:
-        warnings = []
-        json_survey = pyxform.xls2json.parse_file_to_json(
-            self.path_to_excel_file, default_name="xml_escaping", warnings=warnings
-        )
-        survey = pyxform.create_survey_element_from_dict(json_survey)
-        survey.print_xform_to_file(self.output_path, warnings=warnings)
-        # print warnings
-        # Compare with the expected output:
-        with (
-            open(expected_output_path, encoding="utf-8") as expected,
-            open(self.output_path, encoding="utf-8") as observed,
-        ):
-            self.assertXFormEqual(expected.read(), observed.read())
-
-
-class DefaultTimeTest(XFormTestCase):
-    maxDiff = None
-
-    def test_conversion(self):
-        filename = "default_time_demo.xls"
-        path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
-        # Get the xform output path:
-        root_filename, ext = os.path.splitext(filename)
-        output_path = os.path.join(test_output.PATH, root_filename + ".xml")
-        expected_output_path = os.path.join(
-            test_expected_output.PATH, root_filename + ".xml"
-        )
-        # Do the conversion:
-        warnings = []
-        json_survey = pyxform.xls2json.parse_file_to_json(
-            path_to_excel_file, default_name="default_time_demo", warnings=warnings
-        )
-        survey = pyxform.create_survey_element_from_dict(json_survey)
-        survey.print_xform_to_file(output_path, warnings=warnings)
-        # print warnings
-        # Compare with the expected output:
-        with (
-            open(expected_output_path, encoding="utf-8") as expected,
-            open(output_path, encoding="utf-8") as observed,
-        ):
-            self.assertXFormEqual(expected.read(), observed.read())
+        for i, (case, err_msg) in enumerate(cases):
+            with self.subTest(msg=f"{i}: {case}"):
+                with self.assertRaises(PyXFormError) as err:
+                    convert(xlsform=Path(bug_example_xls.PATH) / case, warnings=[])
+                self.assertIn(err_msg, err.exception.args[0])
 
 
 class ValidateWrapper(TestCase):

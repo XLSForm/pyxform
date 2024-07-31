@@ -10,6 +10,7 @@ from collections import defaultdict
 from collections.abc import Generator, Iterator
 from datetime import datetime
 from functools import lru_cache
+from pathlib import Path
 
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
@@ -970,10 +971,10 @@ class Survey(Section):
         """Returns a date string with the format of %Y_%m_%d."""
         return self._created.strftime("%Y_%m_%d")
 
-    def _to_ugly_xml(self):
+    def _to_ugly_xml(self) -> str:
         return '<?xml version="1.0"?>' + self.xml().toxml()
 
-    def _to_pretty_xml(self):
+    def _to_pretty_xml(self) -> str:
         """Get the XForm with human readable formatting."""
         return '<?xml version="1.0"?>\n' + self.xml().toprettyxml(indent="  ")
 
@@ -1171,10 +1172,9 @@ class Survey(Section):
         else:
             return text, False
 
-    # pylint: disable=too-many-arguments
     def print_xform_to_file(
         self, path=None, validate=True, pretty_print=True, warnings=None, enketo=False
-    ):
+    ) -> str:
         """
         Print the xForm to a file and optionally validate it as well by
         throwing exceptions and adding warnings to the warnings array.
@@ -1183,12 +1183,13 @@ class Survey(Section):
             warnings = []
         if not path:
             path = self._print_name + ".xml"
+        if pretty_print:
+            xml = self._to_pretty_xml()
+        else:
+            xml = self._to_ugly_xml()
         try:
             with open(path, mode="w", encoding="utf-8") as file_obj:
-                if pretty_print:
-                    file_obj.write(self._to_pretty_xml())
-                else:
-                    file_obj.write(self._to_ugly_xml())
+                file_obj.write(xml)
         except Exception:
             if os.path.exists(path):
                 os.unlink(path)
@@ -1210,6 +1211,7 @@ class Survey(Section):
                     + ". "
                     + "Learn more: http://xlsform.org#multiple-language-support"
                 )
+        return xml
 
     def to_xml(self, validate=True, pretty_print=True, warnings=None, enketo=False):
         """
@@ -1227,7 +1229,7 @@ class Survey(Section):
         tmp.close()
         try:
             # this will throw an exception if the xml is not valid
-            self.print_xform_to_file(
+            xml = self.print_xform_to_file(
                 path=tmp.name,
                 validate=validate,
                 pretty_print=pretty_print,
@@ -1235,12 +1237,8 @@ class Survey(Section):
                 enketo=enketo,
             )
         finally:
-            if os.path.exists(tmp.name):
-                os.remove(tmp.name)
-        if pretty_print:
-            return self._to_pretty_xml()
-
-        return self._to_ugly_xml()
+            Path(tmp.name).unlink(missing_ok=True)
+        return xml
 
     def instantiate(self):
         """

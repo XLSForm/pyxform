@@ -7,33 +7,17 @@ from tests.pyxform_test_case import PyxformTestCase
 
 class TestFormName(PyxformTestCase):
     def test_default_to_data_when_no_name(self):
-        """
-        Test no form_name will default to survey name to 'data'.
-        """
-        survey = self.md_to_pyxform_survey(
-            """
+        """Should default to form_name of 'test_name', and form id of 'data'."""
+        self.assertPyxformXform(
+            md="""
             | survey   |           |      |           |
             |          | type      | name | label     |
             |          | text      | city | City Name |
             """,
-            autoname=False,
-        )
-
-        # We're passing autoname false when creating the survey object.
-        self.assertEqual(survey.id_string, None)
-        self.assertEqual(survey.name, "data")
-        self.assertEqual(survey.title, None)
-
-        # Set required fields because we need them if we want to do xml comparison.
-        survey.id_string = "some-id"
-        survey.title = "data"
-
-        self.assertPyxformXform(
-            survey=survey,
-            instance__contains=['<data id="some-id">'],
-            model__contains=['<bind nodeset="/data/city" type="string"/>'],
+            instance__contains=['<test_name id="data">'],
+            model__contains=['<bind nodeset="/test_name/city" type="string"/>'],
             xml__contains=[
-                '<input ref="/data/city">',
+                '<input ref="/test_name/city">',
                 "<label>City Name</label>",
                 "</input>",
             ],
@@ -50,8 +34,7 @@ class TestFormName(PyxformTestCase):
                |        | text | city | City Name |
                """,
             name="data",
-            id_string="some-id",
-            instance__contains=['<data id="some-id">'],
+            instance__contains=['<data id="data">'],
             model__contains=['<bind nodeset="/data/city" type="string"/>'],
             xml__contains=[
                 '<input ref="/data/city">',
@@ -72,8 +55,7 @@ class TestFormName(PyxformTestCase):
                |        | text | city | City Name |
                """,
             name="some-name",
-            id_string="some-id",
-            instance__contains=['<some-name id="some-id">'],
+            instance__contains=['<some-name id="data">'],
             model__contains=['<bind nodeset="/some-name/city" type="string"/>'],
             xml__contains=[
                 '<input ref="/some-name/city">',

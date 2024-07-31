@@ -15,8 +15,6 @@ class TestRepeat(PyxformTestCase):
         Test relative reference in repeats.
         """
         self.assertPyxformXform(
-            name="test_repeat",
-            title="Relative Paths in repeats",
             md="""
                 | survey |              |          |            |                      |
                 |        | type         | name     | relevant   | label                |
@@ -72,27 +70,27 @@ class TestRepeat(PyxformTestCase):
                 "</section>",
             ],
             model__contains=[
-                """<bind nodeset="/test_repeat/section/A" """ """type="string"/>""",
-                """<bind nodeset="/test_repeat/section/B" """
+                """<bind nodeset="/test_name/section/A" """ """type="string"/>""",
+                """<bind nodeset="/test_name/section/B" """
                 """relevant=" ../A ='oat'" """
                 """type="string"/>""",
-                """<bind nodeset="/test_repeat/section2/sectiona/E" """
+                """<bind nodeset="/test_name/section2/sectiona/E" """
                 """relevant=" ../D ='oat'" type="string"/>""",
-                """<bind nodeset="/test_repeat/section3/sectionc/K" """
+                """<bind nodeset="/test_name/section3/sectionc/K" """
                 """relevant=" ../../F ='oat'" type="string"/>""",
-                """<bind nodeset="/test_repeat/section3/sectionc/L" """
+                """<bind nodeset="/test_name/section3/sectionc/L" """
                 """relevant=" ../../sectionb/G ='oat'" """
                 """type="string"/>""",
-                """<bind nodeset="/test_repeat/section3/sectiond/N" """
+                """<bind nodeset="/test_name/section3/sectiond/N" """
                 """relevant=" ../../sectionb/G ='oat'" """
                 """type="string"/>""",
             ],
             xml__contains=[
-                '<group ref="/test_repeat/section">',
+                '<group ref="/test_name/section">',
                 "<label>Section</label>",
                 "</group>",
                 """<label> B w <output value=" ../A "/> </label>""",
-                """<label> E w <output value=" /test_repeat/Z "/> </label>""",
+                """<label> E w <output value=" /test_name/Z "/> </label>""",
                 """<label> Noted <output value=" ../FF "/> w """
                 """<output value=" ../sectionb/H "/> </label>""",
             ],
@@ -100,9 +98,8 @@ class TestRepeat(PyxformTestCase):
 
     def test_calculate_relative_path(self):
         """Test relative paths in calculate column."""
+        # Paths in a calculate within a repeat are relative.
         self.assertPyxformXform(
-            name="data",
-            title="Paths in a calculate within a repeat are relative.",
             md="""
                 | survey  |                      |       |        |                |
                 |         | type                 | name  | label  | calculation    |
@@ -122,17 +119,16 @@ class TestRepeat(PyxformTestCase):
             """,  # pylint: disable=line-too-long
             model__contains=[
                 """<bind calculate="name =  ../crop " """
-                """nodeset="/data/rep/a" type="string"/>""",
+                """nodeset="/test_name/rep/a" type="string"/>""",
                 """<bind calculate="name =  ../../crop " """
-                """nodeset="/data/rep/group/b" type="string"/>""",
+                """nodeset="/test_name/rep/group/b" type="string"/>""",
             ],
         )
 
-    def test_choice_filter_relative_path(self):  # pylint: disable=invalid-name
+    def test_choice_filter_relative_path(self):
         """Test relative paths in choice_filter column."""
+        # Choice filter uses relative path
         self.assertPyxformXform(
-            name="data",
-            title="Choice filter uses relative path",
             md="""
                 | survey  |                      |       |        |                |
                 |         | type                 | name  | label  | choice_filter  |
@@ -158,9 +154,8 @@ class TestRepeat(PyxformTestCase):
 
     def test_indexed_repeat_relative_path(self):
         """Test relative path not used with indexed-repeat()."""
+        # Paths in a calculate within a repeat are relative.
         self.assertPyxformXform(
-            name="data",
-            title="Paths in a calculate within a repeat are relative.",
             md="""
                 | survey  |                      |       |        |                                  |
                 |         | type                 | name  | label  | calculation                      |
@@ -183,7 +178,7 @@ class TestRepeat(PyxformTestCase):
                 |         | crop_list            | kale  | Kale   |                                  |
             """,  # pylint: disable=line-too-long
             model__contains=[
-                """<bind calculate="indexed-repeat( /data/rep/rep2/a ,  /data/rep/rep2 , 1)" nodeset="/data/rep/c1" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate="indexed-repeat( /test_name/rep/rep2/a ,  /test_name/rep/rep2 , 1)" nodeset="/test_name/rep/c1" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -200,7 +195,6 @@ class TestRepeat(PyxformTestCase):
 
         self.assertPyxformXform(
             md=md,
-            name="inside-repeat-relative-path",
             xml__contains=[
                 '<translation lang="English">',
                 '<value> Name of <output value=" ../pos "/> </value>',
@@ -223,7 +217,6 @@ class TestRepeat(PyxformTestCase):
 
         self.assertPyxformXform(
             md=md,
-            name="inside-repeat-relative-path",
             xml__contains=[
                 '<translation lang="English">',
                 '<value> Name of <output value=" ../pos "/> </value>',
@@ -244,7 +237,6 @@ class TestRepeat(PyxformTestCase):
 
         self.assertPyxformXform(
             md=md,
-            name="inside-repeat-relative-path",
             xml__contains=[
                 '<translation lang="English">',
                 '<value> Name of <output value=" ../pos "/> </value>',
@@ -320,10 +312,9 @@ class TestRepeat(PyxformTestCase):
         |         | select one ${name} | choice     | Choose name    |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                "<itemset nodeset=\"/data/rep[./name != '']\">",
+                "<itemset nodeset=\"/test_name/rep[./name != '']\">",
                 '<value ref="name"/>',
                 '<label ref="name"/>',
             ],
@@ -340,10 +331,9 @@ class TestRepeat(PyxformTestCase):
         |         | select one ${answer} | choice     | Choose name    |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                "<itemset nodeset=\"/data/rep[./answer != '']\">",
+                "<itemset nodeset=\"/test_name/rep[./answer != '']\">",
                 '<value ref="answer"/>',
                 '<label ref="answer"/>',
             ],
@@ -369,12 +359,10 @@ class TestRepeat(PyxformTestCase):
         |         | fruits             | mango          | Mango          |                           |
         """
         self.assertPyxformXform(
-            name="data",
-            id_string="some-id",
             md=xlsform_md,
             xml__contains=[
-                '<itemset nodeset="/data/rep[starts-with( ./name , &quot;b&quot;)]">',
-                '<itemset nodeset="/data/rep[ ./demographics/age  &gt; 18]">',
+                '<itemset nodeset="/test_name/rep[starts-with( ./name , &quot;b&quot;)]">',
+                '<itemset nodeset="/test_name/rep[ ./demographics/age  &gt; 18]">',
             ],
         )
 
@@ -396,8 +384,6 @@ class TestRepeat(PyxformTestCase):
         |         | end repeat         | household                 |                                                |                             |
         """
         self.assertPyxformXform(
-            name="data",
-            id_string="some-id",
             md=xlsform_md,
             xml__contains=['<itemset nodeset="../../../member[ ./age  &gt; 18]">'],
         )
@@ -418,8 +404,6 @@ class TestRepeat(PyxformTestCase):
         |         | end repeat         | household                 |                                                |                             |
         """
         self.assertPyxformXform(
-            name="data",
-            id_string="some-id",
             md=xlsform_md,
             xml__contains=['<itemset nodeset="../../person[ ./age  &gt; 18]">'],
         )
@@ -445,8 +429,6 @@ class TestRepeat(PyxformTestCase):
         |         | end repeat         | household_rep             |                                                |                             |
         """
         self.assertPyxformXform(
-            name="data",
-            id_string="some-id",
             md=xlsform_md,
             xml__contains=[
                 '<itemset nodeset="../../household_mem_rep[ ./age  &gt;  current()/../target_min_age ]">',
@@ -465,7 +447,6 @@ class TestRepeat(PyxformTestCase):
         |              | end_repeat                | pet           |                        |                                                      |            |                       |              |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
                 "<itemset nodeset=\"../../pet[position() != current()/../pos and animal_type != '']\">"
@@ -474,9 +455,8 @@ class TestRepeat(PyxformTestCase):
 
     def test_indexed_repeat_regular_calculation_relative_path_exception(self):
         """Test relative path exception (absolute path) in indexed-repeat() using regular calculation."""
+        # regular calculation indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
         self.assertPyxformXform(
-            name="data",
-            title="regular calculation indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |           |                                  |                                              |
                 |         | type           | name      | label                            | calculation                                  |
@@ -487,15 +467,14 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |           |                                  |                                              |
             """,  # pylint: disable=line-too-long
             model__contains=[
-                """<bind calculate="indexed-repeat( /data/person/name ,  /data/person ,  ../pos -1)" nodeset="/data/person/prev_name" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate="indexed-repeat( /test_name/person/name ,  /test_name/person ,  ../pos -1)" nodeset="/test_name/person/prev_name" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
     def test_indexed_repeat_dynamic_default_relative_path_exception(self):
         """Test relative path exception (absolute path) in indexed-repeat() using dynamic default."""
+        # dynamic default indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
         self.assertPyxformXform(
-            name="data",
-            title="dynamic default indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |           |                                  |                                                    |
                 |         | type           | name      | label                            | default                                            |
@@ -505,15 +484,14 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |           |                                  |                                                    |
             """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/person/prev_name" value="indexed-repeat( /data/person/name ,  /data/person , position(..)-1)"/>"""  # pylint: disable=line-too-long
+                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/test_name/person/prev_name" value="indexed-repeat( /test_name/person/name ,  /test_name/person , position(..)-1)"/>"""  # pylint: disable=line-too-long
             ],
         )
 
     def test_indexed_repeat_nested_repeat_relative_path_exception(self):
         """Test relative path exception (absolute path) in indexed-repeat() using nested repeat."""
+        # In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
         self.assertPyxformXform(
-            name="data",
-            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |                |                                                        |                                                     |
                 |         | type           | name           | label                                                  | default                                             |
@@ -526,7 +504,7 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |                |                                                        |                                                     |
             """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/family/person/prev_name" value="indexed-repeat( /data/family/person/name ,  /data/family , 1,  /data/family/person , 2)"/>"""  # pylint: disable=line-too-long
+                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/test_name/family/person/prev_name" value="indexed-repeat( /test_name/family/person/name ,  /test_name/family , 1,  /test_name/family/person , 2)"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -534,9 +512,8 @@ class TestRepeat(PyxformTestCase):
         self,
     ):
         """Test relative path exception (absolute path) in indexed-repeat() with math expression using nested repeat."""
+        # In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
         self.assertPyxformXform(
-            name="data",
-            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |                |                                  |                                                        |
                 |         | type           | name           | label                            | calculation                                            |
@@ -550,7 +527,7 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |                |                                  |                                                        |
             """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<bind calculate="7 * indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" nodeset="/data/family/person/prev_name" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate="7 * indexed-repeat( /test_name/family/person/age ,  /test_name/family , 1,  /test_name/family/person , 2)" nodeset="/test_name/family/person/prev_name" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -558,9 +535,8 @@ class TestRepeat(PyxformTestCase):
         self,
     ):
         """Test relative path exception (absolute path) in multiple indexed-repeat() inside an expression using nested repeat."""
+        # In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
         self.assertPyxformXform(
-            name="data",
-            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |                |                                  |                                                                                                                 |
                 |         | type           | name           | label                            | required                                                                                                        |
@@ -574,7 +550,7 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |                |                                  |                                                                                                                 |
             """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<bind nodeset="/data/family/person/prev_name" required="concat(indexed-repeat( /data/family/person/name ,  /data/family , 1,  /data/family/person , 2), indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2))" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind nodeset="/test_name/family/person/prev_name" required="concat(indexed-repeat( /test_name/family/person/name ,  /test_name/family , 1,  /test_name/family/person , 2), indexed-repeat( /test_name/family/person/age ,  /test_name/family , 1,  /test_name/family/person , 2))" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -582,9 +558,8 @@ class TestRepeat(PyxformTestCase):
         self,
     ):
         """Test relative path exception (absolute path) in an expression contains variables and indexed-repeat() in a text type using nested repeat."""
+        # In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
         self.assertPyxformXform(
-            name="data",
-            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |                |                                  |                                                                                                                 |
                 |         | type           | name           | label                            | calculation                                                                                                        |
@@ -598,7 +573,7 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |                |                                  |                                                                                                                 |
             """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<bind calculate="concat( ../name , indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2),  ../age )" nodeset="/data/family/person/prev_name" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate="concat( ../name , indexed-repeat( /test_name/family/person/age ,  /test_name/family , 1,  /test_name/family/person , 2),  ../age )" nodeset="/test_name/family/person/prev_name" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -606,9 +581,8 @@ class TestRepeat(PyxformTestCase):
         self,
     ):
         """Test relative path exception (absolute path) in an expression contains variables and indexed-repeat() in an integer type using nested repeat."""
+        # In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
         self.assertPyxformXform(
-            name="data",
-            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |          |                        |                                                                             |
                 |         | type           | name     | label                  | default                                                                     |
@@ -622,7 +596,7 @@ class TestRepeat(PyxformTestCase):
                 |         | end group      |          |                        |                                                                             |
             """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/data/page/bp_rg/bp_dia" value="if( ../bp_row  = 1, '', indexed-repeat( /data/page/bp_rg/bp_dia ,  /data/page/bp_rg ,  ../bp_row  - 1))"/>"""  # pylint: disable=line-too-long
+                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/test_name/page/bp_rg/bp_dia" value="if( ../bp_row  = 1, '', indexed-repeat( /test_name/page/bp_rg/bp_dia ,  /test_name/page/bp_rg ,  ../bp_row  - 1))"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -630,9 +604,8 @@ class TestRepeat(PyxformTestCase):
         self,
     ):
         """Test relative path exception (absolute path) in indexed-repeat() with math expression and double variable using nested repeat."""
+        # In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
         self.assertPyxformXform(
-            name="data",
-            title="In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path",
             md="""
                 | survey  |                |                |                                  |                                                             |
                 |         | type           | name           | label                            | relevant                                                    |
@@ -646,7 +619,7 @@ class TestRepeat(PyxformTestCase):
                 |         | end repeat     |                |                                  |                                                             |
             """,  # pylint: disable=line-too-long
             xml__contains=[
-                """<bind nodeset="/data/family/person/prev_name" relevant=" ../age  &gt; indexed-repeat( /data/family/person/age ,  /data/family , 1,  /data/family/person , 2)" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind nodeset="/test_name/family/person/prev_name" relevant=" ../age  &gt; indexed-repeat( /test_name/family/person/age ,  /test_name/family , 1,  /test_name/family/person , 2)" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -674,10 +647,9 @@ class TestRepeat(PyxformTestCase):
         |         | item      | gasoline-diesel  | Gasoline, Diesel  | 3         |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/data/item-repeat/item" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/test_name/item-repeat/item" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -705,10 +677,9 @@ class TestRepeat(PyxformTestCase):
         |         | item      | gasoline-diesel  | Gasoline, Diesel  | 3         |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate=" ../item-counter  + instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/data/item-repeat/item" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate=" ../item-counter  + instance('item')/root/item[itemindex= current()/../item-counter ]/label" nodeset="/test_name/item-repeat/item" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -731,10 +702,9 @@ class TestRepeat(PyxformTestCase):
         |        | end repeat   |       |       |                                                 |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index= current()/../../pos3 ]/label" nodeset="/data/rep3/grp3/item3" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index= current()/../../pos3 ]/label" nodeset="/test_name/rep3/grp3/item3" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -755,10 +725,9 @@ class TestRepeat(PyxformTestCase):
         |        | end repeat   |       |       |                                                                 |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index= current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index= current()/../pos5  and  /test_name/pos1  = 1]/label" nodeset="/test_name/rep5/item5" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -781,12 +750,11 @@ class TestRepeat(PyxformTestCase):
         |        | end repeat   |       |       |                                                                   |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index=  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
-                """<bind calculate="instance('item')/root/item[index = current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item6" type="string"/>""",  # pylint: disable=line-too-long
-                """<bind calculate="instance('item')/root/item[index =  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item7" type="string"/>""",  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index=  current()/../pos5  and  /test_name/pos1  = 1]/label" nodeset="/test_name/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index = current()/../pos5  and  /test_name/pos1  = 1]/label" nodeset="/test_name/rep5/item6" type="string"/>""",  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index =  current()/../pos5  and  /test_name/pos1  = 1]/label" nodeset="/test_name/rep5/item7" type="string"/>""",  # pylint: disable=line-too-long
             ],
         )
 
@@ -807,10 +775,9 @@ class TestRepeat(PyxformTestCase):
         |        | end repeat   |       |       |                                                                           |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index=number(1+  current()/../pos5 ) and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index=number(1+  current()/../pos5 ) and  /test_name/pos1  = 1]/label" nodeset="/test_name/rep5/item5" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -831,10 +798,9 @@ class TestRepeat(PyxformTestCase):
         |        | end repeat   |       |       |                                                                   |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index =  current()/../pos5  and  /data/pos1  = 1]/label" nodeset="/data/rep5/item5" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index =  current()/../pos5  and  /test_name/pos1  = 1]/label" nodeset="/test_name/rep5/item5" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -852,10 +818,9 @@ class TestRepeat(PyxformTestCase):
         |        | calculate    | item1 |       | instance('item')/root/item[index=${pos1}]/label |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index= /data/pos1 ]/label" nodeset="/data/item1" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index= /test_name/pos1 ]/label" nodeset="/test_name/item1" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -875,10 +840,9 @@ class TestRepeat(PyxformTestCase):
         |        | end repeat   |       |       |                                   |
                 """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate=" /data/rep1 [number( ../pos2 )]/label" nodeset="/data/rep1/item2" type="string"/>"""  # pylint: disable=line-too-long
+                """<bind calculate=" /test_name/rep1 [number( ../pos2 )]/label" nodeset="/test_name/rep1/item2" type="string"/>"""  # pylint: disable=line-too-long
             ],
         )
 
@@ -899,10 +863,9 @@ class TestRepeat(PyxformTestCase):
         |        | end repeat   |       |       |                                                                       |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index =  current()/../pos5 ][position()= current()/../pos6 ]/label" nodeset="/data/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index =  current()/../pos5 ][position()= current()/../pos6 ]/label" nodeset="/test_name/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
             ],
         )
 
@@ -925,10 +888,9 @@ class TestRepeat(PyxformTestCase):
         |        | end repeat   |       |       |                                                                                                       |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="instance('item')/root/item[index = current()/../pos5  and selected('1 2 3 4',  /data/pos1 )][position()= current()/../pos6 ]/label" nodeset="/data/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
+                """<bind calculate="instance('item')/root/item[index = current()/../pos5  and selected('1 2 3 4',  /test_name/pos1 )][position()= current()/../pos6 ]/label" nodeset="/test_name/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
             ],
         )
 
@@ -947,14 +909,13 @@ class TestRepeat(PyxformTestCase):
         |        | xml-external | item  |       |                                                                                                |
         |        | begin repeat | rep5  |       |                                                                                                |
         |        | calculate    | pos5  |       | position(..)                                                                                   |
-        |        | calculate    | item5 |       | concat(instance('item')/root/item[index =${pos5}]/label, /data[position()=${pos5}]/text) |
+        |        | calculate    | item5 |       | concat(instance('item')/root/item[index =${pos5}]/label, /test_name[position()=${pos5}]/text) |
         |        | end repeat   |       |       |                                                                                                |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label, /data[position()= current()/../pos5 ]/text)" nodeset="/data/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
+                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label, /test_name[position()= current()/../pos5 ]/text)" nodeset="/test_name/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
             ],
         )
 
@@ -977,10 +938,9 @@ class TestRepeat(PyxformTestCase):
         |        | end repeat   |       |            |                                                                       |
         """
         self.assertPyxformXform(
-            name="data",
             md=xlsform_md,
             xml__contains=[
-                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label,  ../pos5  + 1)" nodeset="/data/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
+                """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label,  ../pos5  + 1)" nodeset="/test_name/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
             ],
         )
 
