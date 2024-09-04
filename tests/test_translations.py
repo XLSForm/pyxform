@@ -216,6 +216,29 @@ class TestTranslations(PyxformTestCase):
             warnings_count=0,
         )
 
+    def test_spaces_adjacent_to_translation_delimiter(self):
+        """Should trim whitespace either side of double-colon '::' delimiter."""
+        md = """
+        | survey |
+        |        | type | name | label::French (fr) | constraint           | constraint_message::French (fr) | constraint_message :: English (en) |
+        |        | text | q1   | Q1                 | string-length(.) > 5 | Trop court!                     | Too short!                         |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:itext/x:translation[@lang='French (fr)']
+                  /x:text[@id='/test_name/q1:jr:constraintMsg']
+                  /x:value[not(@form) and text()='Trop court!']
+                """,
+                """
+                /h:html/h:head/x:model/x:itext/x:translation[@lang='English (en)']
+                  /x:text[@id='/test_name/q1:jr:constraintMsg']
+                  /x:value[not(@form) and text()='Too short!']
+                """,
+            ],
+        )
+
     def test_missing_media_itext(self):
         """Test missing media itext translation
 
