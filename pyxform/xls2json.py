@@ -138,7 +138,7 @@ def dealias_and_group_headers(
                 header = header.lower()
 
             if use_double_colons:
-                tokens = header.split(group_delimiter)
+                tokens = [t.strip() for t in header.split(group_delimiter)]
 
             # else:
             #   We do the initial parse using single colons
@@ -152,7 +152,7 @@ def dealias_and_group_headers(
                 # break if there is something like media:image:english
                 # so maybe a better backwards compatibility hack
                 # is to join any jr token with the next token
-                tokens = header.split(":")
+                tokens = [t.strip() for t in header.split(":")]
                 if "jr" in tokens:
                     jr_idx = tokens.index("jr")
                     tokens[jr_idx] = ":".join(tokens[jr_idx : jr_idx + 2])
