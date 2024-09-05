@@ -1,6 +1,7 @@
 from typing import Any
 
 from pyxform import constants as const
+from pyxform.aliases import yes_no
 from pyxform.errors import PyXFormError
 from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
@@ -28,6 +29,7 @@ def get_entity_declaration(
     create_condition = entity_row.get(EC.CREATE_IF, None)
     update_condition = entity_row.get(EC.UPDATE_IF, None)
     entity_label = entity_row.get(EC.LABEL, None)
+    offline = yes_no.get(entity_row.get(EC.OFFLINE, None), None)
 
     if update_condition and not entity_id:
         raise PyXFormError(
@@ -53,6 +55,7 @@ def get_entity_declaration(
             EC.CREATE_IF: create_condition,
             EC.UPDATE_IF: update_condition,
             EC.LABEL: entity_label,
+            EC.OFFLINE: offline,
         },
     }
 

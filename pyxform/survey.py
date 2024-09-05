@@ -586,9 +586,13 @@ class Survey(Section):
 
         entity_features = getattr(self, constants.ENTITY_FEATURES, [])
         if len(entity_features) > 0:
-            if "update" in entity_features:
+            if "offline" in entity_features:
                 model_kwargs["entities:entities-version"] = (
-                    constants.CURRENT_ENTITIES_VERSION
+                    constants.ENTITIES_OFFLINE_VERSION
+                )
+            elif "update" in entity_features:
+                model_kwargs["entities:entities-version"] = (
+                    constants.ENTITIES_UPDATE_VERSION
                 )
             else:
                 model_kwargs["entities:entities-version"] = (

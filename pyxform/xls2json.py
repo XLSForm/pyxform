@@ -1538,9 +1538,13 @@ def workbook_to_json(
 
     if len(entity_declaration) > 0:
         json_dict[constants.ENTITY_FEATURES] = ["create"]
+        entity_parameters = entity_declaration.get(constants.PARAMETERS, {})
 
-        if entity_declaration.get("parameters", {}).get("entity_id", None):
+        if entity_parameters.get(constants.EntityColumns.ENTITY_ID, None):
             json_dict[constants.ENTITY_FEATURES].append("update")
+
+        if entity_parameters.get(constants.EntityColumns.OFFLINE, None):
+            json_dict[constants.ENTITY_FEATURES].append("offline")
 
         meta_children.append(entity_declaration)
 
