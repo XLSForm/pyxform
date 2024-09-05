@@ -2,8 +2,8 @@
 Test xls2json_backends module functionality.
 """
 
+import datetime
 import os
-from datetime import datetime
 from unittest import TestCase
 
 import openpyxl
@@ -81,9 +81,9 @@ class TestXLS2JSONBackends(TestCase):
         self.maxDiff = None
         # Test fixture produced by adding data at cells IV1 and A19999.
         xls_path = os.path.join(bug_example_xls.PATH, "extra_columns.xls")
-        before = datetime.utcnow()
+        before = datetime.datetime.now(datetime.timezone.utc)
         xls_data = xls_to_dict(xls_path)
-        after = datetime.utcnow()
+        after = datetime.datetime.now(datetime.timezone.utc)
         self.assertLess((after - before).total_seconds(), 5)
         wb = xlrd.open_workbook(filename=xls_path)
 
@@ -105,9 +105,9 @@ class TestXLS2JSONBackends(TestCase):
         self.maxDiff = None
         # Test fixture produced (presumably) by a LibreOffice serialisation bug.
         xlsx_path = os.path.join(bug_example_xls.PATH, "UCL_Biomass_Plot_Form.xlsx")
-        before = datetime.utcnow()
+        before = datetime.datetime.now(datetime.timezone.utc)
         xlsx_data = xlsx_to_dict(xlsx_path)
-        after = datetime.utcnow()
+        after = datetime.datetime.now(datetime.timezone.utc)
         self.assertLess((after - before).total_seconds(), 5)
         wb = openpyxl.open(filename=xlsx_path, read_only=True, data_only=True)
 
