@@ -409,8 +409,7 @@ class XFormToDictBuilder:
         if "label" in obj:
             k, v = self._get_label(obj["label"])
             if isinstance(v, dict) and "label" in v.keys() and "media" in v.keys():
-                for _k, _v in iter(v.items()):
-                    question[_k] = _v
+                question.update(v)
             else:
                 question[k] = v
         if "autoplay" in obj or "appearance" in obj or "count" in obj or "rows" in obj:
@@ -424,8 +423,7 @@ class XFormToDictBuilder:
         question_params = self._get_question_params_from_bindings(ref)
 
         if isinstance(question_params, dict):
-            for k, v in iter(question_params.items()):
-                question[k] = v
+            question.update(question_params)
 
         # Some values set from bindings are incorrect or incomplete. Correct them now.
         if "mediatype" in obj:
