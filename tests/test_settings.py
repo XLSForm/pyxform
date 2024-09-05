@@ -10,7 +10,6 @@ class TestSettings(PyxformTestCase):
     Use the documented setting name, even if it's an alias.
     """
 
-    #
     def test_form_title(self):
         """Should find the title set in the XForm."""
         md = """
