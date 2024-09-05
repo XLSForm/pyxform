@@ -1,3 +1,5 @@
+from pyxform import constants as co
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -436,5 +438,45 @@ class EntitiesCreationTest(PyxformTestCase):
                 "The entities sheet included the following unexpected column(s):",
                 "'what'",
                 "'why'",
+            ],
+        )
+
+    def test_entities_offline_opt_in__yes(self):
+        """Should find offline spec version, if opted-in."""
+        self.assertPyxformXform(
+            md="""
+            | survey   |
+            |          | type | name | label |
+            |          | text | a    | A     |
+            | entities |
+            |          | dataset | label | offline |
+            |          | trees   | a     | yes     |
+            """,
+            xml__xpath_match=[
+                f"""
+                  /h:html/h:head/x:model[
+                    @entities:entities-version = "{co.ENTITIES_OFFLINE_VERSION}"
+                  ]
+                """,
+            ],
+        )
+
+    def test_entities_offline_opt_in__no(self):
+        """Should find create spec version, if not opted-in."""
+        self.assertPyxformXform(
+            md="""
+            | survey   |
+            |          | type      | name  | label |
+            |          | text      | a     | A     |
+            | entities |
+            |          | dataset   | label | offline |
+            |          | trees     | a     | no      |
+            """,
+            xml__xpath_match=[
+                f"""
+                  /h:html/h:head/x:model[
+                    @entities:entities-version = "{co.ENTITIES_CREATE_VERSION}"
+                  ]
+                """,
             ],
         )

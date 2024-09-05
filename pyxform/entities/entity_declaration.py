@@ -24,23 +24,28 @@ class EntityDeclaration(SurveyElement):
     """
 
     def xml_instance(self, **kwargs):
+        parameters = self.get(const.PARAMETERS, {})
+
         attributes = {
-            EC.DATASET.value: self.get(const.PARAMETERS, {}).get(EC.DATASET, ""),
+            EC.DATASET.value: parameters.get(EC.DATASET, ""),
             "id": "",
         }
 
-        entity_id_expression = self.get(const.PARAMETERS, {}).get(EC.ENTITY_ID, None)
-        create_condition = self.get(const.PARAMETERS, {}).get(EC.CREATE_IF, None)
-        update_condition = self.get(const.PARAMETERS, {}).get(EC.UPDATE_IF, None)
+        entity_id_expression = parameters.get(EC.ENTITY_ID, None)
+        create_condition = parameters.get(EC.CREATE_IF, None)
+        update_condition = parameters.get(EC.UPDATE_IF, None)
 
         if entity_id_expression:
             attributes["update"] = "1"
             attributes["baseVersion"] = ""
+            if parameters.get(EC.OFFLINE, None):
+                attributes["trunkVersion"] = ""
+                attributes["branchId"] = ""
 
         if create_condition or (not update_condition and not entity_id_expression):
             attributes["create"] = "1"
 
-        if self.get(const.PARAMETERS, {}).get(EC.LABEL, None):
+        if parameters.get(EC.LABEL, None):
             return node(const.ENTITY, node(const.LABEL), **attributes)
         else:
             return node(const.ENTITY, **attributes)
@@ -50,10 +55,11 @@ class EntityDeclaration(SurveyElement):
         See the class comment for an explanation of the logic for generating bindings.
         """
         survey = self.get_root()
-        entity_id_expression = self.get(const.PARAMETERS, {}).get(EC.ENTITY_ID, None)
-        create_condition = self.get(const.PARAMETERS, {}).get(EC.CREATE_IF, None)
-        update_condition = self.get(const.PARAMETERS, {}).get(EC.UPDATE_IF, None)
-        label_expression = self.get(const.PARAMETERS, {}).get(EC.LABEL, None)
+        parameters = self.get(const.PARAMETERS, {})
+        entity_id_expression = parameters.get(EC.ENTITY_ID, None)
+        create_condition = parameters.get(EC.CREATE_IF, None)
+        update_condition = parameters.get(EC.UPDATE_IF, None)
+        label_expression = parameters.get(EC.LABEL, None)
 
         bind_nodes = []
 
@@ -69,11 +75,20 @@ class EntityDeclaration(SurveyElement):
             bind_nodes.append(self._get_bind_node(survey, update_condition, "/@update"))
 
         if entity_id_expression:
-            dataset_name = self.get(const.PARAMETERS, {}).get(EC.DATASET, "")
-            base_version_expression = f"instance('{dataset_name}')/root/item[name={entity_id_expression}]/__version"
+            dataset_name = parameters.get(EC.DATASET, "")
+            entity = f"instance('{dataset_name}')/root/item[name={entity_id_expression}]"
             bind_nodes.append(
-                self._get_bind_node(survey, base_version_expression, "/@baseVersion")
+                self._get_bind_node(survey, f"{entity}/__version", "/@baseVersion")
             )
+            if parameters.get(EC.OFFLINE, None):
+                bind_nodes.append(
+                    self._get_bind_node(
+                        survey, f"{entity}/__trunkVersion", "/@trunkVersion"
+                    )
+                )
+                bind_nodes.append(
+                    self._get_bind_node(survey, f"{entity}/__branchId", "/@branchId")
+                )
 
         if label_expression:
             bind_nodes.append(self._get_bind_node(survey, label_expression, "/label"))
