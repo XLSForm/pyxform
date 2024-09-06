@@ -1,5 +1,12 @@
 Pyxform Changelog
 
+v2.1.0, 2024-09-05
+* Require Python 3.10, 3.11 or 3.12 by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/706
+* Detect instance expressions with double quotes by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/709
+* Library API for non-path input, accept markdown and dict input by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/712
+* Allow whitespace on either side of main header delimiter by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/718
+* Support offline entities spec v2024.1.0 via opt-in setting by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/719
+
 v2.0.3, 2024-04-18
 * Don't use regex to clean up XML following pretty-printing by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/681
 * dev: update dependencies, testing, packaging, and linting/formatting by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/685
