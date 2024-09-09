@@ -27,7 +27,7 @@ Homepage = "https://pypi.python.org/pypi/pyxform/"
 Repository = "https://github.com/XLSForm/pyxform/"
 
 [project.scripts]
-xlsform = "pyxform.xls2xform:main_cli"
+xls2xform = "pyxform.xls2xform:main_cli"
 pyxform_validator_update = "pyxform.validators.updater:main_cli"
 
 [build-system]
