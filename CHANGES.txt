@@ -6,6 +6,8 @@ v2.1.0, 2024-09-05
 * Library API for non-path input, accept markdown and dict input by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/712
 * Allow whitespace on either side of main header delimiter by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/718
 * Support offline entities spec v2024.1.0 via opt-in setting by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/719
+* Fix installed script name so `xls2xform` can be used by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/722
+* Upgrade Validate for `extract-signed`, `geofence` functions and new `distance` variants by @lognaturel in https://github.com/XLSForm/pyxform/pull/723
 
 v2.0.3, 2024-04-18
 * Don't use regex to clean up XML following pretty-printing by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/681
