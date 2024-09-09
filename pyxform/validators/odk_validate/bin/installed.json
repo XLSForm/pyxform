@@ -1,17 +1,17 @@
 {
   "assets": [
     {
-      "browser_download_url": "https://github.com/getodk/validate/releases/download/v1.19.0/ODK-Validate-v1.19.0.jar",
+      "browser_download_url": "https://github.com/getodk/validate/releases/download/v1.19.1/ODK-Validate-v1.19.1.jar",
       "content_type": "application/java-archive",
-      "created_at": "2024-09-05T21:10:16Z",
+      "created_at": "2024-09-09T20:07:24Z",
       "download_count": 0,
-      "id": 190700570,
+      "id": 191546524,
       "label": null,
-      "name": "ODK-Validate-v1.19.0.jar",
-      "node_id": "RA_kwDOAmc2ms4LXdwa",
-      "size": 13416248,
+      "name": "ODK-Validate-v1.19.1.jar",
+      "node_id": "RA_kwDOAmc2ms4LasSc",
+      "size": 3907275,
       "state": "uploaded",
-      "updated_at": "2024-09-05T21:10:18Z",
+      "updated_at": "2024-09-09T20:07:25Z",
       "uploader": {
         "avatar_url": "https://avatars.githubusercontent.com/u/967540?v=4",
         "events_url": "https://api.github.com/users/lognaturel/events{/privacy}",
@@ -32,10 +32,10 @@
         "type": "User",
         "url": "https://api.github.com/users/lognaturel"
       },
-      "url": "https://api.github.com/repos/getodk/validate/releases/assets/190700570"
+      "url": "https://api.github.com/repos/getodk/validate/releases/assets/191546524"
     }
   ],
-  "assets_url": "https://api.github.com/repos/getodk/validate/releases/173732535/assets",
+  "assets_url": "https://api.github.com/repos/getodk/validate/releases/174204103/assets",
   "author": {
     "avatar_url": "https://avatars.githubusercontent.com/u/967540?v=4",
     "events_url": "https://api.github.com/users/lognaturel/events{/privacy}",
@@ -56,20 +56,20 @@
     "type": "User",
     "url": "https://api.github.com/users/lognaturel"
   },
-  "body": "## What's Changed\r\n* Upgrade [JavaRosa to 4.4.1](https://github.com/getodk/javarosa/releases/tag/v4.4.1) by @lognaturel in https://github.com/getodk/validate/pull/91\r\n\r\n\r\n**Full Changelog**: https://github.com/getodk/validate/compare/v1.18.0...v1.19.0",
-  "created_at": "2024-09-05T21:04:20Z",
+  "body": "## What's Changed\r\n* Exclude unused dependencies to reduce file size by @lognaturel in https://github.com/getodk/validate/pull/93\r\n\r\n\r\n**Full Changelog**: https://github.com/getodk/validate/compare/v1.19.0...v1.19.1",
+  "created_at": "2024-09-09T20:05:28Z",
   "draft": false,
-  "html_url": "https://github.com/getodk/validate/releases/tag/v1.19.0",
-  "id": 173732535,
+  "html_url": "https://github.com/getodk/validate/releases/tag/v1.19.1",
+  "id": 174204103,
   "mentions_count": 1,
-  "name": "v1.19.0",
-  "node_id": "RE_kwDOAmc2ms4KWvK3",
+  "name": "v1.19.1",
+  "node_id": "RE_kwDOAmc2ms4KYiTH",
   "prerelease": false,
-  "published_at": "2024-09-05T21:07:12Z",
-  "tag_name": "v1.19.0",
-  "tarball_url": "https://api.github.com/repos/getodk/validate/tarball/v1.19.0",
+  "published_at": "2024-09-09T20:06:35Z",
+  "tag_name": "v1.19.1",
+  "tarball_url": "https://api.github.com/repos/getodk/validate/tarball/v1.19.1",
   "target_commitish": "master",
-  "upload_url": "https://uploads.github.com/repos/getodk/validate/releases/173732535/assets{?name,label}",
-  "url": "https://api.github.com/repos/getodk/validate/releases/173732535",
-  "zipball_url": "https://api.github.com/repos/getodk/validate/zipball/v1.19.0"
+  "upload_url": "https://uploads.github.com/repos/getodk/validate/releases/174204103/assets{?name,label}",
+  "url": "https://api.github.com/repos/getodk/validate/releases/174204103",
+  "zipball_url": "https://api.github.com/repos/getodk/validate/zipball/v1.19.1"
 }
