@@ -382,4 +382,8 @@ QUESTION_TYPE_DICT = {
         "bind": {"type": "binary"},
         "action": {"name": "odk:recordaudio", "event": "odk-instance-load"},
     },
+    "background-geopoint": {
+        "control": {"tag": "trigger"},
+        "bind": {"type": "geopoint"},
+    },
 }

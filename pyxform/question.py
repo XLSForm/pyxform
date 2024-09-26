@@ -34,6 +34,11 @@ class Question(SurveyElement):
         # question type dictionary.
         if self.type not in QUESTION_TYPE_DICT:
             raise PyXFormError(f"Unknown question type '{self.type}'.")
+        if self.type == "background-geopoint":
+            if not self.trigger:
+                raise PyXFormError(
+                    f"background-geopoint question '{self.name}' must have a non-null trigger."
+                )
 
     def xml_instance(self, **kwargs):
         survey = self.get_root()
@@ -50,7 +55,15 @@ class Question(SurveyElement):
         if self.type == "calculate" or (
             ("calculate" in self.bind or self.trigger) and not (self.label or self.hint)
         ):
-            nested_setvalues = self.get_root().get_setvalues_for_question_name(self.name)
+            if self.type == "background-geopoint":
+                if "calculate" in self.bind:
+                    raise PyXFormError(
+                        f"'{self.name}' is triggered by a geopoint action, so the calculation must be null."
+                    )
+
+            nested_setvalues = self.get_root().get_trigger_values_for_question_name(
+                self.name, "setvalue"
+            )
             if nested_setvalues:
                 for setvalue in nested_setvalues:
                     msg = (
@@ -64,29 +77,36 @@ class Question(SurveyElement):
         xml_node = self.build_xml()
 
         if xml_node:
-            self.nest_setvalues(xml_node)
+            # Get nested setvalue and setgeopoint items
+            setvalue_items = self.get_root().get_trigger_values_for_question_name(
+                self.name, "setvalue"
+            )
+            setgeopoint_items = self.get_root().get_trigger_values_for_question_name(
+                self.name, "setgeopoint"
+            )
+
+            # Only call nest_set_nodes if the respective nested items list is not empty
+            if setvalue_items:
+                self.nest_set_nodes(xml_node, "setvalue", setvalue_items)
+            if setgeopoint_items:
+                self.nest_set_nodes(xml_node, "odk:setgeopoint", setgeopoint_items)
 
         return xml_node
 
-    def nest_setvalues(self, xml_node):
-        nested_setvalues = self.get_root().get_setvalues_for_question_name(self.name)
-
-        if nested_setvalues:
-            for setvalue in nested_setvalues:
-                setvalue_attrs = {
+    def nest_set_nodes(self, xml_node, tag, nested_items):
+        if nested_items:
+            for item in nested_items:
+                node_attrs = {
                     "ref": self.get_root()
-                    .insert_xpaths(f"${{{setvalue[0]}}}", self.get_root())
+                    .insert_xpaths(f"${{{item[0]}}}", self.get_root())
                     .strip(),
                     "event": "xforms-value-changed",
                 }
-                if not setvalue[1] == "":
-                    setvalue_attrs["value"] = self.get_root().insert_xpaths(
-                        setvalue[1], self
-                    )
+                if item[1]:
+                    node_attrs["value"] = self.get_root().insert_xpaths(item[1], self)
 
-                setvalue_node = node("setvalue", **setvalue_attrs)
-
-                xml_node.appendChild(setvalue_node)
+                set_node = node(tag, **node_attrs)
+                xml_node.appendChild(set_node)
 
     def build_xml(self):
         return None

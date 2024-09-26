@@ -85,6 +85,8 @@ class SurveyElementBuilder:
 
         # dictionary of setvalue target and value tuple indexed by triggering element
         self.setvalues_by_triggering_ref = {}
+        # dictionary of setgeopoint target and value tuple indexed by triggering element
+        self.setgeopoint_by_triggering_ref = {}
         # For tracking survey-level choices while recursing through the survey.
         self._choices: dict[str, Any] = {}
 
@@ -117,6 +119,7 @@ class SurveyElementBuilder:
 
             if d[const.TYPE] == const.SURVEY:
                 section.setvalues_by_triggering_ref = self.setvalues_by_triggering_ref
+                section.setgeopoint_by_triggering_ref = self.setgeopoint_by_triggering_ref
                 section.choices = self._choices
 
             return section
@@ -137,28 +140,27 @@ class SurveyElementBuilder:
             return ExternalInstance(**d)
         elif d[const.TYPE] == "entity":
             return EntityDeclaration(**d)
+        elif d[const.TYPE] == "background-geopoint":
+            self._save_trigger_and_remove_calculate(d, self.setgeopoint_by_triggering_ref)
+            return self._create_question_from_dict(
+                d, copy_json_dict(QUESTION_TYPE_DICT), self._add_none_option
+            )
         else:
-            self._save_trigger_as_setvalue_and_remove_calculate(d)
-
+            self._save_trigger_and_remove_calculate(d, self.setvalues_by_triggering_ref)
             return self._create_question_from_dict(
                 d, copy_json_dict(QUESTION_TYPE_DICT), self._add_none_option
             )
 
-    def _save_trigger_as_setvalue_and_remove_calculate(self, d):
+    def _save_trigger_and_remove_calculate(self, d, target_dict):
         if "trigger" in d:
             triggering_ref = re.sub(r"\s+", "", d["trigger"])
             value = ""
             if const.BIND in d and "calculate" in d[const.BIND]:
                 value = d[const.BIND]["calculate"]
-
-            if triggering_ref in self.setvalues_by_triggering_ref:
-                self.setvalues_by_triggering_ref[triggering_ref].append(
-                    (d[const.NAME], value)
-                )
+            if triggering_ref in target_dict:
+                target_dict[triggering_ref].append((d[const.NAME], value))
             else:
-                self.setvalues_by_triggering_ref[triggering_ref] = [
-                    (d[const.NAME], value)
-                ]
+                target_dict[triggering_ref] = [(d[const.NAME], value)]
 
     @staticmethod
     def _create_question_from_dict(

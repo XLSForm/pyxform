@@ -192,6 +192,7 @@ class Survey(Section):
             "_xpath": dict,
             "_created": datetime.now,  # This can't be dumped to json
             "setvalues_by_triggering_ref": dict,
+            "setgeopoint_by_triggering_ref": dict,
             "title": str,
             "id_string": str,
             "sms_keyword": str,
@@ -297,8 +298,13 @@ class Survey(Section):
             **nsmap,
         )
 
-    def get_setvalues_for_question_name(self, question_name):
-        return self.setvalues_by_triggering_ref.get(f"${{{question_name}}}")
+    def get_trigger_values_for_question_name(self, question_name, trigger_type):
+        trigger_map = {
+            "setvalue": self.setvalues_by_triggering_ref,
+            "setgeopoint": self.setgeopoint_by_triggering_ref,
+        }
+
+        return trigger_map.get(trigger_type, {}).get(f"${{{question_name}}}")
 
     def _generate_static_instances(self, list_name, choice_list) -> InstanceInfo:
         """
