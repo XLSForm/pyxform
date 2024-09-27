@@ -306,6 +306,15 @@ class Survey(Section):
 
         return trigger_map.get(trigger_type, {}).get(f"${{{question_name}}}")
 
+    def question_exists(self, question_name: str) -> bool:
+        """
+        Check if a question with the given name exists in the survey.
+        """
+        for element in self.iter_descendants():
+            if isinstance(element, Question) and element.name == question_name:
+                return True
+        return False
+
     def _generate_static_instances(self, list_name, choice_list) -> InstanceInfo:
         """
         Generate <instance> elements for static data (e.g. choices for selects)
