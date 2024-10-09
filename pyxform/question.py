@@ -43,8 +43,7 @@ class Question(SurveyElement):
             trigger_cleaned = self.trigger.strip("${}")
             if not self.get_root().question_exists(trigger_cleaned):
                 raise PyXFormError(
-                    f"Trigger '{trigger_cleaned}' for background-geopoint question '{self.name}' "
-                    "does not correspond to an existing question."
+                    f"background-geopoint question '{self.name}' must have a trigger corresponding to an existing question."
                 )
 
     def xml_instance(self, **kwargs):
@@ -65,7 +64,7 @@ class Question(SurveyElement):
             if self.type == "background-geopoint":
                 if "calculate" in self.bind:
                     raise PyXFormError(
-                        f"'{self.name}' is triggered by a geopoint action, so the calculation must be null."
+                        f"'{self.name}' is triggered by a geopoint action, please remove the calculation from this question."
                     )
 
             nested_setvalues = self.get_root().get_trigger_values_for_question_name(

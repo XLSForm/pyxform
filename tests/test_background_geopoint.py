@@ -8,15 +8,15 @@ class BackgroundGeopointTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey |                    |             |                |
-            |        | type               | name        | label          | trigger   |
-            |        | integer            | temp        | Enter the current temperature |        |
-            |        | background-geopoint| temp_geo    |                | ${temp}   |
-            |        | note               | show_temp_geo | location: ${temp_geo} |        |
+            | survey |                    |               |                               |
+            |        | type               | name          | label                         | trigger   |
+            |        | integer            | temp          | Enter the current temperature |           |
+            |        | background-geopoint| temp_geo      |                               | ${temp}   |
+            |        | note               | show_temp_geo | location: ${temp_geo}         |           |
             """,
-            xml__contains=[
-                '<bind nodeset="/data/temp_geo" type="geopoint"/>',
-                '<odk:setgeopoint event="xforms-value-changed" ref="/data/temp_geo"/>',
+            xml__xpath_match=[
+                '/h:html/h:head/x:model/x:bind[@nodeset="/data/temp_geo" and @type="geopoint"]',
+                '/h:html/h:body//odk:setgeopoint[@event="xforms-value-changed" and @ref="/data/temp_geo"]',
             ],
         )
 
@@ -25,11 +25,11 @@ class BackgroundGeopointTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey |                    |             |                |
-            |        | type               | name        | label          | trigger   |
-            |        | integer            | temp        | Enter the current temperature |        |
-            |        | background-geopoint| temp_geo    |                |  |
-            |        | note               | show_temp_geo | location: ${temp_geo} |        |
+            | survey |                    |               |                               |
+            |        | type               | name          | label                         | trigger   |
+            |        | integer            | temp          | Enter the current temperature |           |
+            |        | background-geopoint| temp_geo      |                               |           |
+            |        | note               | show_temp_geo | location: ${temp_geo}         |           |
             """,
             errored=True,
             error__contains=[
@@ -41,15 +41,15 @@ class BackgroundGeopointTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-                | survey |                    |             |                |
-                |        | type               | name        | label          | trigger   |
-                |        | integer            | temp        | Enter the current temperature |        |
-                |        | background-geopoint| temp_geo    |                | ${invalid_trigger} |
-                |        | note               | show_temp_geo | location: ${temp_geo} |        |
+                | survey |                    |               |                               |
+                |        | type               | name          | label                         | trigger            |
+                |        | integer            | temp          | Enter the current temperature |                    |
+                |        | background-geopoint| temp_geo      |                               | ${invalid_trigger} |
+                |        | note               | show_temp_geo | location: ${temp_geo}         |                    |
                 """,
             errored=True,
             error__contains=[
-                "Trigger 'invalid_trigger' for background-geopoint question 'temp_geo' does not correspond to an existing question"
+                "background-geopoint question 'temp_geo' must have a trigger corresponding to an existing question"
             ],
         )
 
@@ -58,14 +58,14 @@ class BackgroundGeopointTest(PyxformTestCase):
         self.assertPyxformXform(
             name="data",
             md="""
-            | survey |                    |             |                |  |
-            |        | type               | name        | label          | trigger     | calculation |
-            |        | integer            | temp        | Enter the current temperature |        |             |
-            |        | background-geopoint| temp_geo    |                | ${temp}     | 5 * temp |
-            |        | note               | show_temp_geo | location: ${temp_geo} |        |             |
+            | survey |                    |               |                               |             |
+            |        | type               | name          | label                         | trigger     | calculation |
+            |        | integer            | temp          | Enter the current temperature |             |             |
+            |        | background-geopoint| temp_geo      |                               | ${temp}     | 5 * temp    |
+            |        | note               | show_temp_geo | location: ${temp_geo}         |             |             |
             """,
             errored=True,
             error__contains=[
-                "'temp_geo' is triggered by a geopoint action, so the calculation must be null."
+                "'temp_geo' is triggered by a geopoint action, please remove the calculation from this question."
             ],
         )
