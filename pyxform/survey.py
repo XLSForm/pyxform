@@ -224,12 +224,21 @@ class Survey(Section):
         if self.id_string in [None, "None"]:
             raise PyXFormError("Survey cannot have an empty id_string")
         super().validate()
-        self._validate_uniqueness_of_section_names()
+        self._validate_section_and_trigger_names()
 
-    def _validate_uniqueness_of_section_names(self):
+    def _validate_section_and_trigger_names(self):
         root_node_name = self.name
         section_names = []
+        existing_question_names = set()
+        bg_geopoint_elements = []
+
         for element in self.iter_descendants():
+            if "name" in element:
+                existing_question_names.add(element["name"])
+
+            if element["type"] == "background-geopoint":
+                bg_geopoint_elements.append(element)
+
             if isinstance(element, Section):
                 if element.name in section_names:
                     if element.name == root_node_name:
@@ -244,6 +253,14 @@ class Survey(Section):
                     msg = f"There are two sections with the name {element.name}."
                     raise PyXFormError(msg)
                 section_names.append(element.name)
+
+        # Ensure that background-geopoint questions have triggers that correspond to an existing questions
+        for bg_geo in bg_geopoint_elements:
+            trigger_cleaned = bg_geo.get("trigger", "").strip("${}")
+            if trigger_cleaned not in existing_question_names:
+                raise PyXFormError(
+                    f"background-geopoint question '{bg_geo['name']}' must have a trigger corresponding to an existing question."
+                )
 
     def get_nsmap(self):
         """Add additional namespaces"""
@@ -305,15 +322,6 @@ class Survey(Section):
         }
 
         return trigger_map.get(trigger_type, {}).get(f"${{{question_name}}}")
-
-    def question_exists(self, question_name: str) -> bool:
-        """
-        Check if a question with the given name exists in the survey.
-        """
-        for element in self.iter_descendants():
-            if isinstance(element, Question) and element.name == question_name:
-                return True
-        return False
 
     def _generate_static_instances(self, list_name, choice_list) -> InstanceInfo:
         """
