@@ -1,5 +1,8 @@
 Pyxform Changelog
 
+v2.1.1, 2024.10-09
+* Update Validate to fix support for geojson by @lognaturel in https://github.com/XLSForm/pyxform/pull/727
+
 v2.1.0, 2024-09-05
 * Require Python 3.10, 3.11 or 3.12 by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/706
 * Detect instance expressions with double quotes by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/709
