@@ -34,12 +34,8 @@ class Question(SurveyElement):
         # question type dictionary.
         if self.type not in QUESTION_TYPE_DICT:
             raise PyXFormError(f"Unknown question type '{self.type}'.")
-        # ensure that background-geopoint questions have non-null triggers that correspond to an exsisting questions
+        # ensure that background-geopoint questions have triggers that correspond to an existing questions
         if self.type == "background-geopoint":
-            if not self.trigger:
-                raise PyXFormError(
-                    f"background-geopoint question '{self.name}' must have a non-null trigger."
-                )
             trigger_cleaned = self.trigger.strip("${}")
             if not self.get_root().question_exists(trigger_cleaned):
                 raise PyXFormError(
