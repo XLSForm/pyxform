@@ -532,8 +532,7 @@ class EnketoValidateUpdater(_UpdateService):
 class ODKValidateUpdater(_UpdateService):
     def __init__(self):
         self.update_info = _UpdateInfo(
-            api_url="https://api.github.com/repos/getodk/validate/"
-            "releases/latest",
+            api_url="https://api.github.com/repos/getodk/validate/releases/latest",
             repo_url="https://github.com/getodk/validate",
             validate_subfolder="odk_validate",
             install_check=self._install_check,
