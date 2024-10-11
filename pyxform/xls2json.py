@@ -1493,6 +1493,14 @@ def workbook_to_json(
             continue
         # TODO: Consider adding some question_type validation here.
 
+        # Ensure that background-geopoint questions have non-null triggers
+        if question_type == "background-geopoint":
+            new_dict = row.copy()
+            if "trigger" not in new_dict or not new_dict["trigger"]:
+                raise PyXFormError(
+                    f"background-geopoint question '{new_dict['name']}' must have a non-null trigger."
+                )
+
         # Put the row in the json dict as is:
         parent_children_array.append(row)
 
