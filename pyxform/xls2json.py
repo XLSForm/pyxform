@@ -24,6 +24,7 @@ from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_single_token_expression
 from pyxform.utils import PYXFORM_REFERENCE_REGEX, coalesce, default_is_dynamic
 from pyxform.validators.pyxform import parameters_generic, select_from_file
+from pyxform.validators.pyxform import question_types as qt
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
@@ -697,9 +698,11 @@ def workbook_to_json(
 
     # Rows from the survey sheet that should be nested in meta
     survey_meta = []
+    # To check that questions with triggers refer to other questions that exist.
+    question_names = set()
+    trigger_references = []
 
-    # row by row, validate questions, throwing errors and adding warnings
-    # where needed.
+    # row by row, validate questions, throwing errors and adding warnings where needed.
     for row in survey_sheet.data:
         row_number += 1
         if stack[-1] is not None:
@@ -727,6 +730,7 @@ def workbook_to_json(
         # Get question type
         question_type = row.get(constants.TYPE)
         question_name = row.get(constants.NAME)
+        question_names.add(question_name)
 
         if not question_type:
             # if name and label are also missing,
@@ -1493,18 +1497,17 @@ def workbook_to_json(
             continue
         # TODO: Consider adding some question_type validation here.
 
-        # Ensure that background-geopoint questions have non-null triggers
+        # Ensure that
         if question_type == "background-geopoint":
-            new_dict = row.copy()
-            if "trigger" not in new_dict or not new_dict["trigger"]:
-                raise PyXFormError(
-                    f"background-geopoint question '{new_dict['name']}' must have a non-null trigger."
-                )
+            qt.validate_background_geopoint_trigger(row=row, row_num=row_number)
+            qt.validate_background_geopoint_calculation(row=row, row_num=row_number)
+            trigger_references.append((row, row_number))
 
         # Put the row in the json dict as is:
         parent_children_array.append(row)
 
     sheet_translations.or_other_check(warnings=warnings)
+    qt.validate_references(referrers=trigger_references, questions=question_names)
 
     if len(stack) != 1:
         raise PyXFormError(

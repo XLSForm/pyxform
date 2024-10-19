@@ -224,21 +224,12 @@ class Survey(Section):
         if self.id_string in [None, "None"]:
             raise PyXFormError("Survey cannot have an empty id_string")
         super().validate()
-        self._validate_section_and_trigger_names()
+        self._validate_uniqueness_of_section_names()
 
-    def _validate_section_and_trigger_names(self):
+    def _validate_uniqueness_of_section_names(self):
         root_node_name = self.name
-        section_names = []
-        existing_question_names = set()
-        bg_geopoint_elements = []
-
+        section_names = set()
         for element in self.iter_descendants():
-            if "name" in element:
-                existing_question_names.add(element["name"])
-
-            if element["type"] == "background-geopoint":
-                bg_geopoint_elements.append(element)
-
             if isinstance(element, Section):
                 if element.name in section_names:
                     if element.name == root_node_name:
@@ -252,15 +243,7 @@ class Survey(Section):
                         raise PyXFormError(msg)
                     msg = f"There are two sections with the name {element.name}."
                     raise PyXFormError(msg)
-                section_names.append(element.name)
-
-        # Ensure that background-geopoint questions have triggers that correspond to an existing questions
-        for bg_geo in bg_geopoint_elements:
-            trigger_cleaned = bg_geo.get("trigger", "").strip("${}")
-            if trigger_cleaned not in existing_question_names:
-                raise PyXFormError(
-                    f"background-geopoint question '{bg_geo['name']}' must have a trigger corresponding to an existing question."
-                )
+                section_names.add(element.name)
 
     def get_nsmap(self):
         """Add additional namespaces"""

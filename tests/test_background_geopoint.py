@@ -1,243 +1,266 @@
+from pyxform.validators.pyxform import question_types as qt
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
-class BackgroundGeopointTest(PyxformTestCase):
+class TestBackgroundGeopoint(PyxformTestCase):
     """Test background-geopoint question type."""
 
-    def test_background_geopoint(self):
+    def test_error__missing_trigger(self):
+        """Should raise an error if the question trigger is empty."""
+        md = """
+        | survey |
+        |        | type                | name          | label      | trigger |
+        |        | integer             | temp          | Enter temp |         |
+        |        | background-geopoint | temp_geo      |            |         |
+        """
         self.assertPyxformXform(
             name="data",
-            md="""
-            | survey |                     |               |                               |
-            |        | type                | name          | label                         | trigger   |
-            |        | integer             | temp          | Enter the current temperature |           |
-            |        | background-geopoint | temp_geo      |                               | ${temp}   |
-            |        | note                | show_temp_geo | location: ${temp_geo}         |           |
-            """,
-            xml__xpath_match=[
-                '/h:html/h:head/x:model/x:bind[@nodeset="/data/temp_geo" and @type="geopoint"]',
-                '/h:html/h:body//odk:setgeopoint[@event="xforms-value-changed" and @ref="/data/temp_geo"]',
-            ],
-        )
-
-    def test_background_geopoint_missing_trigger(self):
-        """Test that background-geopoint question raises error when trigger is empty."""
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey |                     |               |                               |
-            |        | type                | name          | label                         | trigger   |
-            |        | integer             | temp          | Enter the current temperature |           |
-            |        | background-geopoint | temp_geo      |                               |           |
-            |        | note                | show_temp_geo | location: ${temp_geo}         |           |
-            """,
+            md=md,
             errored=True,
-            error__contains=[
-                "background-geopoint question 'temp_geo' must have a non-null trigger"
-            ],
+            error__contains=[qt.TRIGGER_INVALID.format(r=3, t="background-geopoint")],
         )
 
-    def test_invalid_trigger_background_geopoint(self):
+    def test_error__invalid_trigger(self):
+        """Should raise an error if the question trigger does not refer to a question."""
+        md = """
+        | survey |
+        |        | type                | name     | label      | trigger    |
+        |        | integer             | temp     | Enter temp |            |
+        |        | background-geopoint | temp_geo |            | ${invalid} |
+        """
         self.assertPyxformXform(
             name="data",
-            md="""
-            | survey |                     |               |                               |
-            |        | type                | name          | label                         | trigger            |
-            |        | integer             | temp          | Enter the current temperature |                    |
-            |        | background-geopoint | temp_geo      |                               | ${invalid_trigger} |
-            |        | note                | show_temp_geo | location: ${temp_geo}         |                    |
-            """,
+            md=md,
             errored=True,
-            error__contains=[
-                "background-geopoint question 'temp_geo' must have a trigger corresponding to an existing question"
-            ],
+            error__contains=[qt.TRIGGER_INVALID.format(r=3, t="background-geopoint")],
         )
 
-    def test_background_geopoint_requires_null_calculation(self):
-        """Test that background-geopoint raises an error if there is a calculation."""
+    def test_error__calculation_exists(self):
+        """Should raise an error if a calculation exists for the question."""
+        md = """
+        | survey |
+        |        | type                | name     | label      | trigger | calculation |
+        |        | integer             | temp     | Enter temp |         |             |
+        |        | background-geopoint | temp_geo |            | ${temp} | 5 * temp    |
+        """
         self.assertPyxformXform(
             name="data",
-            md="""
-            | survey |                     |               |                               |             |
-            |        | type                | name          | label                         | trigger     | calculation |
-            |        | integer             | temp          | Enter the current temperature |             |             |
-            |        | background-geopoint | temp_geo      |                               | ${temp}     | 5 * temp    |
-            |        | note                | show_temp_geo | location: ${temp_geo}         |             |             |
-            """,
+            md=md,
             errored=True,
-            error__contains=[
-                "'temp_geo' is triggered by a geopoint action, please remove the calculation from this question."
+            error__contains=[qt.BACKGROUND_GEOPOINT_CALCULATION.format(r=3)],
+        )
+
+    def test_question_no_group__trigger_no_group(self):
+        """Should find geopoint binding, and setgeopoint action on the triggering item."""
+        md = """
+        | survey |
+        |        | type                | name     | label      | trigger |
+        |        | integer             | temp     | Enter temp |         |
+        |        | background-geopoint | temp_geo |            | ${temp} |
+        """
+        self.assertPyxformXform(
+            name="data",
+            md=md,
+            xml__xpath_match=[
+                # background-geopoint bind/control
+                """/h:html/h:head/x:model/x:bind[@nodeset='/data/temp_geo' and @type='geopoint']""",
+                """
+                /h:html/h:body/x:input[@ref='/data/temp']
+                  /odk:setgeopoint[@event='xforms-value-changed' and @ref='/data/temp_geo']
+                """,
             ],
         )
 
-    def test_combined_background_geopoint_and_setvalue(self):
-        """Test a form with both a background-geopoint and setvalue triggered by the same question."""
+    def test_question_no_group__trigger_no_group__with_calculate_same_trigger(self):
+        """Should find the behaviour is unchanged by a calculate question with same trigger."""
+        md = """
+        | survey |
+        |        | type                | name         | label      | trigger | calculation |
+        |        | integer             | temp         | Enter temp |         |             |
+        |        | background-geopoint | temp_geo     |            | ${temp} |             |
+        |        | calculate           | temp_doubled |            | ${temp} | ${temp} * 2 |
+        """
         self.assertPyxformXform(
             name="data",
-            md="""
-            | survey |                     |               |                                |           |
-            |        | type                | name          | label                          | trigger   | calculation |
-            |        | integer             | temp          | Enter the current temperature  |           |             |
-            |        | background-geopoint | temp_geo      |                                | ${temp}   |             |
-            |        | calculate           | temp_doubled  |                                | ${temp}   | ${temp} * 2 |
-            |        | note                | show_temp_geo | location: ${temp_geo}          |           |             |
-            |        | note                | show_temp     | doubled temp: ${temp_doubled}  |           |             |
-            """,
+            md=md,
             xml__xpath_match=[
-                '/h:html/h:body//odk:setgeopoint[@event="xforms-value-changed" and @ref="/data/temp_geo"]',
-                '/h:html/h:body//x:setvalue[@event="xforms-value-changed" and @ref="/data/temp_doubled" and normalize-space(@value)="/data/temp * 2"]',
+                # background-geopoint bind/control
+                """/h:html/h:head/x:model/x:bind[@nodeset='/data/temp_geo' and @type='geopoint']""",
+                """
+                /h:html/h:body/x:input[@ref='/data/temp']
+                  /odk:setgeopoint[@event='xforms-value-changed' and @ref='/data/temp_geo']
+                """,
+                # calculate bind/control
+                """/h:html/h:head/x:model/x:bind[@nodeset='/data/temp_doubled' and @type='string']""",
+                """
+                /h:html/h:body/x:input[@ref='/data/temp']
+                  /x:setvalue[@event='xforms-value-changed'
+                    and @ref='/data/temp_doubled'
+                    and normalize-space(@value)='/data/temp * 2'
+                  ]
+                """,
             ],
         )
 
-    def test_setgeopoint_trigger_target_outside_group(self):
-        """Verify the correct structure for a setgeopoint trigger and target when neither is in a group."""
+    def test_question_in_nonrep_group__trigger_in_same_nonrep_group(self):
+        """Should find the behaviour is unchanged by nesting in a non-repeating group."""
+        md = """
+        | survey |
+        |        | type                | name     | label      | trigger |
+        |        | begin_group         | groupA   |            |         |
+        |        | integer             | temp     | Enter temp |         |
+        |        | background-geopoint | temp_geo |            | ${temp} |
+        |        | end_group           |          |            |         |
+        """
         self.assertPyxformXform(
             name="data",
-            md="""
-            | survey |                     |               |                                |
-            |        | type                | name          | label                          | trigger   |
-            |        | integer             | temp          | Enter the current temperature  |           |
-            |        | background-geopoint | temp_geo      |                                | ${temp}   |
-            |        | note                | show_temp_geo | location: ${temp_geo}          |           |
-            """,
+            md=md,
             xml__xpath_match=[
-                '/h:html/h:body//odk:setgeopoint[@event="xforms-value-changed" and @ref="/data/temp_geo"]',
-                '/h:html/h:body//x:input[@ref="/data/show_temp_geo"]/x:label[contains(text(), "location:")]/x:output[@value=" /data/temp_geo "]',
+                # background-geopoint bind/control
+                """/h:html/h:head/x:model/x:bind[@nodeset='/data/groupA/temp_geo' and @type='geopoint']""",
+                """
+                /h:html/h:body/x:group[@ref='/data/groupA']
+                  /x:input[@ref='/data/groupA/temp']/odk:setgeopoint[
+                    @event='xforms-value-changed' and @ref='/data/groupA/temp_geo'
+                ]
+                """,
             ],
         )
 
-    def test_setgeopoint_trigger_target_in_non_repeating_group(self):
-        """Verify the correct structure for a setgeopoint trigger and target in a non-repeating group."""
+    def test_question_in_nonrep_group__trigger_in_different_nonrep_group(self):
+        """Should find the behaviour is unchanged by nesting in different non-repeating groups."""
+        md = """
+        | survey |
+        |        | type                | name     | label      | trigger |
+        |        | begin_group         | groupA   |            |         |
+        |        | integer             | temp     | Enter temp |         |
+        |        | end_group           |          |            |         |
+        |        | begin_group         | groupB   |            |         |
+        |        | background-geopoint | temp_geo |            | ${temp} |
+        |        | end_group           |          |            |         |
+        """
         self.assertPyxformXform(
             name="data",
-            md="""
-            | survey |                     |               |                                 |
-            |        | type                | name          | label                           | trigger   |
-            |        | begin_group         | groupA        |                                 |           |
-            |        | integer             | temp          | Enter the current temperature   |           |
-            |        | background-geopoint | temp_geo      |                                 | ${temp}   |
-            |        | note                | show_temp_geo | location: ${temp_geo}           |           |
-            |        | end_group           |               |                                 |           |
-            """,
+            md=md,
             xml__xpath_match=[
-                '/h:html/h:body/x:group[@ref="/data/groupA"]',
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:input[@ref="/data/groupA/temp"]//odk:setgeopoint[@event="xforms-value-changed" and @ref="/data/groupA/temp_geo"]',
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:input[@ref="/data/groupA/show_temp_geo"]/x:label[contains(text(), "location:")]/x:output[@value=" /data/groupA/temp_geo "]',
+                # background-geopoint bind/control
+                """/h:html/h:head/x:model/x:bind[@nodeset='/data/groupB/temp_geo' and @type='geopoint']""",
+                """
+                /h:html/h:body/x:group[@ref="/data/groupA"]
+                  /x:input[@ref="/data/groupA/temp"]
+                  /odk:setgeopoint[
+                    @event="xforms-value-changed" and @ref="/data/groupB/temp_geo"
+                  ]
+                """,
             ],
         )
 
-    def test_setgeopoint_trigger_target_separate_groups(self):
-        """Verify the correct structure for a setgeopoint trigger and target in two separate groups."""
+    def test_question_in_rep_group__trigger_in_same_rep_group(self):
+        """Should find the behaviour is unchanged by nesting in a repeating group."""
+        md = """
+        | survey |
+        |        | type                | name     | label      | trigger |
+        |        | begin_repeat        | groupA   |            |         |
+        |        | integer             | temp     | Enter temp |         |
+        |        | background-geopoint | temp_geo |            | ${temp} |
+        |        | end_repeat          |          |            |         |
+        """
         self.assertPyxformXform(
             name="data",
-            md="""
-            | survey |                     |               |                                 |
-            |        | type                | name          | label                           | trigger   |
-            |        | begin_group         | groupA        |                                 |           |
-            |        | integer             | temp          | Enter the current temperature   |           |
-            |        | end_group           |               |                                 |           |
-            |        | begin_group         | groupB        |                                 |           |
-            |        | background-geopoint | temp_geo      |                                 | ${temp}   |
-            |        | note                | show_temp_geo | location: ${temp_geo}           |           |
-            |        | end_group           |               |                                 |           |
-            """,
+            md=md,
             xml__xpath_match=[
-                '/h:html/h:body/x:group[@ref="/data/groupA"]',
-                '/h:html/h:body/x:group[@ref="/data/groupB"]',
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:input[@ref="/data/groupA/temp"]//odk:setgeopoint[@event="xforms-value-changed" and @ref="/data/groupB/temp_geo"]',
-                '/h:html/h:body/x:group[@ref="/data/groupB"]/x:input[@ref="/data/groupB/show_temp_geo"]/x:label/x:output[@value=" /data/groupB/temp_geo "]',
+                # background-geopoint bind/control
+                """/h:html/h:head/x:model/x:bind[@nodeset='/data/groupA/temp_geo' and @type='geopoint']""",
+                """
+                /h:html/h:body/x:group[@ref='/data/groupA']
+                  /x:repeat[@nodeset='/data/groupA']/x:input[@ref='/data/groupA/temp']
+                  /odk:setgeopoint[
+                    @event='xforms-value-changed' and @ref='/data/groupA/temp_geo'
+                ]
+                """,
             ],
         )
 
-    def test_setgeopoint_trigger_target_in_same_repeating_group(self):
-        """Verify the correct structure for a setgeopoint trigger and target in the same repeating group."""
+    def test_question_in_rep_group__trigger_in_different_rep_group(self):
+        """Should find the behaviour is unchanged by nesting in different repeating groups."""
+        md = """
+        | survey |
+        |        | type                | name     | label      | trigger |
+        |        | begin_repeat        | groupA   |            |         |
+        |        | integer             | temp     | Enter temp |         |
+        |        | end_repeat          |          |            |         |
+        |        | begin_repeat        | groupB   |            |         |
+        |        | background-geopoint | temp_geo |            | ${temp} |
+        |        | end_repeat          |          |            |         |
+        """
         self.assertPyxformXform(
             name="data",
-            md="""
-            | survey |                     |               |                                 |
-            |        | type                | name          | label                           | trigger   |
-            |        | begin_repeat        | groupA        |                                 |           |
-            |        | integer             | temp          | Enter the current temperature   |           |
-            |        | background-geopoint | temp_geo      |                                 | ${temp}   |
-            |        | note                | show_temp_geo | location: ${temp_geo}           |           |
-            |        | end_repeat          |               |                                 |           |
-            """,
+            md=md,
             xml__xpath_match=[
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:repeat[@nodeset="/data/groupA"]',
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:repeat[@nodeset="/data/groupA"]/x:input[@ref="/data/groupA/temp"]//odk:setgeopoint[@event="xforms-value-changed" and @ref="/data/groupA/temp_geo"]',
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:repeat[@nodeset="/data/groupA"]/x:input[@ref="/data/groupA/show_temp_geo"]/x:label/x:output[@value=" ../temp_geo "]',
+                # background-geopoint bind/control
+                """/h:html/h:head/x:model/x:bind[@nodeset='/data/groupB/temp_geo' and @type='geopoint']""",
+                """
+                /h:html/h:body/x:group[@ref='/data/groupA']
+                  /x:repeat[@nodeset='/data/groupA']/x:input[@ref='/data/groupA/temp']
+                  /odk:setgeopoint[
+                    @event='xforms-value-changed' and @ref='/data/groupB/temp_geo'
+                ]
+                """,
             ],
         )
 
-    def test_setgeopoint_trigger_target_in_separate_repeating_groups(self):
-        """Verify the correct structure for a setgeopoint trigger and target in separate repeating groups."""
+    def test_question_in_nonrep_group__trigger_in_different_rep_group(self):
+        """Should find the behaviour is unchanged by nesting in different non/repeating groups."""
+        md = """
+        | survey |
+        |        | type                | name     | label      | trigger |
+        |        | begin_repeat        | groupA   |            |         |
+        |        | integer             | temp     | Enter temp |         |
+        |        | end_repeat          |          |            |         |
+        |        | begin_group         | groupB   |            |         |
+        |        | background-geopoint | temp_geo |            | ${temp} |
+        |        | end_group           |          |            |         |
+        """
         self.assertPyxformXform(
             name="data",
-            md="""
-            | survey |                     |               |                                 |
-            |        | type                | name          | label                           | trigger   |
-            |        | begin_repeat        | groupA        |                                 |           |
-            |        | integer             | temp          | Enter the current temperature   |           |
-            |        | end_repeat          |               |                                 |           |
-            |        | begin_repeat        | groupB        |                                 |           |
-            |        | background-geopoint | temp_geo      |                                 | ${temp}   |
-            |        | note                | show_temp_geo | location: ${temp_geo}           |           |
-            |        | end_repeat          |               |                                 |           |
-            """,
+            md=md,
             xml__xpath_match=[
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:repeat[@nodeset="/data/groupA"]',
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:repeat[@nodeset="/data/groupA"]/x:input[@ref="/data/groupA/temp"]//odk:setgeopoint[@event="xforms-value-changed" and @ref="/data/groupB/temp_geo"]',
-                '/h:html/h:body/x:group[@ref="/data/groupB"]/x:repeat[@nodeset="/data/groupB"]',
-                '/h:html/h:body/x:group[@ref="/data/groupB"]/x:repeat[@nodeset="/data/groupB"]/x:input[@ref="/data/groupB/show_temp_geo"]/x:label/x:output[@value=" ../temp_geo "]',
+                # background-geopoint bind/control
+                """/h:html/h:head/x:model/x:bind[@nodeset='/data/groupB/temp_geo' and @type='geopoint']""",
+                """
+                /h:html/h:body/x:group[@ref='/data/groupA']
+                  /x:repeat[@nodeset='/data/groupA']/x:input[@ref='/data/groupA/temp']
+                  /odk:setgeopoint[
+                    @event='xforms-value-changed' and @ref='/data/groupB/temp_geo'
+                ]
+                """,
             ],
         )
 
-    def test_setgeopoint_trigger_in_repeating_group_target_in_non_repeating_groups(
-        self,
-    ):
-        """Verify the correct structure for a setgeopoint trigger in a repeating group and a target in a non-repeating group."""
+    def test_question_in_rep_group__trigger_in_different_nonrep_group(self):
+        """Should find the behaviour is unchanged by nesting in different non/repeating groups."""
+        md = """
+        | survey |
+        |        | type                | name     | label      | trigger |
+        |        | begin_group         | groupA   |            |         |
+        |        | integer             | temp     | Enter temp |         |
+        |        | end_group           |          |            |         |
+        |        | begin_repeat        | groupB   |            |         |
+        |        | background-geopoint | temp_geo |            | ${temp} |
+        |        | end_repeat          |          |            |         |
+        """
         self.assertPyxformXform(
             name="data",
-            md="""
-            | survey |                     |               |                                 |
-            |        | type                | name          | label                           | trigger   |
-            |        | begin_repeat        | groupA        |                                 |           |
-            |        | integer             | temp          | Enter the current temperature   |           |
-            |        | end_repeat          |               |                                 |           |
-            |        | begin_group         | groupB        |                                 |           |
-            |        | background-geopoint | temp_geo      |                                 | ${temp}   |
-            |        | note                | show_temp_geo | location: ${temp_geo}           |           |
-            |        | end_group           |               |                                 |           |
-            """,
+            md=md,
             xml__xpath_match=[
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:repeat[@nodeset="/data/groupA"]',
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:repeat[@nodeset="/data/groupA"]/x:input[@ref="/data/groupA/temp"]//odk:setgeopoint[@event="xforms-value-changed" and @ref="/data/groupB/temp_geo"]',
-                '/h:html/h:body/x:group[@ref="/data/groupB"]',
-                '/h:html/h:body/x:group[@ref="/data/groupB"]/x:input[@ref="/data/groupB/show_temp_geo"]/x:label/x:output[@value=" /data/groupB/temp_geo "]',
-            ],
-        )
-
-    def test_setgeopoint_trigger_in_non_repeating_group_target_in_repeating_group(
-        self,
-    ):
-        """Verify the correct structure for a setgeopoint trigger in a non-repeating group and a target in a repeating group."""
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey |                     |               |                                 |
-            |        | type                | name          | label                           | trigger   |
-            |        | begin_group         | groupA        |                                 |           |
-            |        | integer             | temp          | Enter the current temperature   |           |
-            |        | end_group           |               |                                 |           |
-            |        | begin_repeat        | groupB        |                                 |           |
-            |        | background-geopoint | temp_geo      |                                 | ${temp}   |
-            |        | note                | show_temp_geo | location: ${temp_geo}           |           |
-            |        | end_repeat          |               |                                 |           |
-            """,
-            xml__xpath_match=[
-                '/h:html/h:body/x:group[@ref="/data/groupA"]',
-                '/h:html/h:body/x:group[@ref="/data/groupA"]/x:input[@ref="/data/groupA/temp"]//odk:setgeopoint[@event="xforms-value-changed" and @ref="/data/groupB/temp_geo"]',
-                '/h:html/h:body/x:group[@ref="/data/groupB"]/x:repeat[@nodeset="/data/groupB"]',
-                '/h:html/h:body/x:group[@ref="/data/groupB"]/x:repeat[@nodeset="/data/groupB"]/x:input[@ref="/data/groupB/show_temp_geo"]/x:label/x:output[@value=" ../temp_geo "]',
+                # background-geopoint bind/control
+                """/h:html/h:head/x:model/x:bind[@nodeset='/data/groupB/temp_geo' and @type='geopoint']""",
+                """
+                /h:html/h:body/x:group[@ref='/data/groupA']
+                  /x:input[@ref='/data/groupA/temp']/odk:setgeopoint[
+                    @event='xforms-value-changed' and @ref='/data/groupB/temp_geo'
+                ]
+                """,
             ],
         )
