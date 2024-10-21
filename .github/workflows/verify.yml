@@ -17,7 +17,7 @@ jobs:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Python cache with dependencies.
         id: python-cache
         with:
@@ -52,7 +52,7 @@ jobs:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Python cache with dependencies.
         id: python-cache
         with:
@@ -76,7 +76,7 @@ jobs:
           flit --debug build --no-use-vcs
       - name: Upload sdist and wheel.
         if: success()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pyxform--on-${{ matrix.os }}--py${{ matrix.python }}
           path: ${{ github.workspace }}/dist/pyxform*

@@ -19,7 +19,7 @@ jobs:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Python cache with dependencies.
         id: python-cache
         with:

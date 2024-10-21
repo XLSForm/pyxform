@@ -192,6 +192,7 @@ class Survey(Section):
             "_xpath": dict,
             "_created": datetime.now,  # This can't be dumped to json
             "setvalues_by_triggering_ref": dict,
+            "setgeopoint_by_triggering_ref": dict,
             "title": str,
             "id_string": str,
             "sms_keyword": str,
@@ -227,7 +228,7 @@ class Survey(Section):
 
     def _validate_uniqueness_of_section_names(self):
         root_node_name = self.name
-        section_names = []
+        section_names = set()
         for element in self.iter_descendants():
             if isinstance(element, Section):
                 if element.name in section_names:
@@ -242,7 +243,7 @@ class Survey(Section):
                         raise PyXFormError(msg)
                     msg = f"There are two sections with the name {element.name}."
                     raise PyXFormError(msg)
-                section_names.append(element.name)
+                section_names.add(element.name)
 
     def get_nsmap(self):
         """Add additional namespaces"""
@@ -297,8 +298,13 @@ class Survey(Section):
             **nsmap,
         )
 
-    def get_setvalues_for_question_name(self, question_name):
-        return self.setvalues_by_triggering_ref.get(f"${{{question_name}}}")
+    def get_trigger_values_for_question_name(self, question_name, trigger_type):
+        trigger_map = {
+            "setvalue": self.setvalues_by_triggering_ref,
+            "setgeopoint": self.setgeopoint_by_triggering_ref,
+        }
+
+        return trigger_map.get(trigger_type, {}).get(f"${{{question_name}}}")
 
     def _generate_static_instances(self, list_name, choice_list) -> InstanceInfo:
         """

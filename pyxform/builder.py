@@ -4,7 +4,7 @@ Survey builder functionality.
 
 import copy
 import os
-import re
+from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Union
 
 from pyxform import constants as const
@@ -84,7 +84,9 @@ class SurveyElementBuilder:
         self.set_sections(kwargs.get("sections", {}))
 
         # dictionary of setvalue target and value tuple indexed by triggering element
-        self.setvalues_by_triggering_ref = {}
+        self.setvalues_by_triggering_ref = defaultdict(list)
+        # dictionary of setgeopoint target and value tuple indexed by triggering element
+        self.setgeopoint_by_triggering_ref = defaultdict(list)
         # For tracking survey-level choices while recursing through the survey.
         self._choices: dict[str, Any] = {}
 
@@ -117,6 +119,7 @@ class SurveyElementBuilder:
 
             if d[const.TYPE] == const.SURVEY:
                 section.setvalues_by_triggering_ref = self.setvalues_by_triggering_ref
+                section.setgeopoint_by_triggering_ref = self.setgeopoint_by_triggering_ref
                 section.choices = self._choices
 
             return section
@@ -138,27 +141,22 @@ class SurveyElementBuilder:
         elif d[const.TYPE] == "entity":
             return EntityDeclaration(**d)
         else:
-            self._save_trigger_as_setvalue_and_remove_calculate(d)
-
+            self._save_trigger(d=d)
             return self._create_question_from_dict(
                 d, copy_json_dict(QUESTION_TYPE_DICT), self._add_none_option
             )
 
-    def _save_trigger_as_setvalue_and_remove_calculate(self, d):
+    def _save_trigger(self, d: dict) -> None:
         if "trigger" in d:
-            triggering_ref = re.sub(r"\s+", "", d["trigger"])
+            triggering_ref = d["trigger"].strip()
             value = ""
             if const.BIND in d and "calculate" in d[const.BIND]:
                 value = d[const.BIND]["calculate"]
-
-            if triggering_ref in self.setvalues_by_triggering_ref:
-                self.setvalues_by_triggering_ref[triggering_ref].append(
-                    (d[const.NAME], value)
-                )
+            question_ref = (d[const.NAME], value)
+            if d[const.TYPE] == "background-geopoint":
+                self.setgeopoint_by_triggering_ref[triggering_ref].append(question_ref)
             else:
-                self.setvalues_by_triggering_ref[triggering_ref] = [
-                    (d[const.NAME], value)
-                ]
+                self.setvalues_by_triggering_ref[triggering_ref].append(question_ref)
 
     @staticmethod
     def _create_question_from_dict(
