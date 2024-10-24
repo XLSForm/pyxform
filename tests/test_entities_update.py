@@ -26,7 +26,29 @@ class EntitiesUpdateTest(PyxformTestCase):
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@id" and @type = "string" and @readonly = "true()" and @calculate = " /data/id "]',
                 '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@baseVersion = ""]',
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@baseVersion" and @type = "string" and @readonly = "true()" and @calculate = "instance(\'trees\')/root/item[name= /data/id ]/__version"]',
-                '/h:html/h:head/x:model[@entities:entities-version = "2023.1.0"]',
+                f"""/h:html/h:head/x:model[@entities:entities-version = '{co.ENTITIES_OFFLINE_VERSION}']""",
+                """
+                  /h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[
+                    @trunkVersion = ''
+                    and @branchId = ''
+                  ]
+                """,
+                """
+                  /h:html/h:head/x:model/x:bind[
+                    @nodeset = '/data/meta/entity/@trunkVersion'
+                    and @calculate = "instance('trees')/root/item[name= /data/id ]/__trunkVersion"
+                    and @type = 'string'
+                    and @readonly = 'true()'
+                  ]
+                """,
+                """
+                  /h:html/h:head/x:model/x:bind[
+                    @nodeset = '/data/meta/entity/@branchId'
+                    and @calculate = "instance('trees')/root/item[name= /data/id ]/__branchId"
+                    and @type = 'string'
+                    and @readonly = 'true()'
+                  ]
+                """,
             ],
             xml__xpath_count=[
                 ("/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label", 0),
@@ -176,95 +198,3 @@ class EntitiesUpdateTest(PyxformTestCase):
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/a" and @entities:saveto = "foo"]'
             ],
         )
-
-    def test_entities_offline_opt_in__yes(self):
-        """Should find offline spec version and trunk/branch props/binds, if opted-in."""
-        self.assertPyxformXform(
-            md="""
-            | survey   |
-            |          | type | name | label   |
-            |          | text | id   | Tree id |
-            |          | text | q1   | Q1      |
-            | entities |
-            |          | dataset | entity_id | offline |
-            |          | trees   | ${id}     | yes     |
-            """,
-            xml__xpath_match=[
-                f"""
-                  /h:html/h:head/x:model[
-                    @entities:entities-version = "{co.ENTITIES_OFFLINE_VERSION}"
-                  ]
-                """,
-                """
-                  /h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[
-                    @trunkVersion = ''
-                    and @branchId = ''
-                  ]
-                """,
-                """
-                  /h:html/h:head/x:model/x:bind[
-                    @nodeset = '/test_name/meta/entity/@trunkVersion'
-                    and @calculate = "instance('trees')/root/item[name= /test_name/id ]/__trunkVersion"
-                    and @type = 'string'
-                    and @readonly = 'true()'
-                  ]
-                """,
-                """
-                  /h:html/h:head/x:model/x:bind[
-                    @nodeset = '/test_name/meta/entity/@branchId'
-                    and @calculate = "instance('trees')/root/item[name= /test_name/id ]/__branchId"
-                    and @type = 'string'
-                    and @readonly = 'true()'
-                  ]
-                """,
-            ],
-        )
-
-    def test_entities_offline_opt_in__no(self):
-        """Should not find update spec version and trunk/branch props/binds, if not opted-in."""
-        cases = (
-            """
-            | entities |
-            |          | dataset | entity_id |
-            |          | trees   | ${id}     |
-            """,
-            """
-            | entities |
-            |          | dataset | entity_id | offline |
-            |          | trees   | ${id}     | no      |
-            """,
-        )
-        survey = """
-        | survey   |
-        |          | type | name | label   |
-        |          | text | id   | Tree id |
-        |          | text | q1   | Q1      |
-        """
-        for i, case in enumerate(cases):
-            with self.subTest(msg=i):
-                self.assertPyxformXform(
-                    md=survey + case,
-                    xml__xpath_match=[
-                        f"""
-                          /h:html/h:head/x:model[
-                            @entities:entities-version = "{co.ENTITIES_UPDATE_VERSION}"
-                          ]
-                        """,
-                        """
-                          /h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[
-                            not(@trunkVersion)
-                            and not(@branchId)
-                          ]
-                        """,
-                        """
-                          /h:html/h:head/x:model[
-                            not(x:bind[@nodeset = '/test_name/meta/entity/@trunkVersion'])
-                          ]
-                        """,
-                        """
-                          /h:html/h:head/x:model[
-                            not(x:bind[@nodeset = '/test_name/meta/entity/@branchId'])
-                          ]
-                        """,
-                    ],
-                )

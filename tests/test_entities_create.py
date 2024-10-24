@@ -25,7 +25,7 @@ class EntitiesCreationTest(PyxformTestCase):
                 '/h:html/h:head/x:model/x:setvalue[@event = "odk-instance-first-load" and @type = "string" and @ref = "/data/meta/entity/@id" and @value = "uuid()"]',
                 "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label",
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/label" and @type = "string" and @readonly = "true()" and @calculate = "a"]',
-                '/h:html/h:head/x:model[@entities:entities-version = "2022.1.0"]',
+                f"""/h:html/h:head/x:model[@entities:entities-version = '{co.ENTITIES_OFFLINE_VERSION}']""",
             ],
             xml__xpath_count=[
                 ("/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/@update", 0),
@@ -438,45 +438,5 @@ class EntitiesCreationTest(PyxformTestCase):
                 "The entities sheet included the following unexpected column(s):",
                 "'what'",
                 "'why'",
-            ],
-        )
-
-    def test_entities_offline_opt_in__yes(self):
-        """Should find offline spec version, if opted-in."""
-        self.assertPyxformXform(
-            md="""
-            | survey   |
-            |          | type | name | label |
-            |          | text | a    | A     |
-            | entities |
-            |          | dataset | label | offline |
-            |          | trees   | a     | yes     |
-            """,
-            xml__xpath_match=[
-                f"""
-                  /h:html/h:head/x:model[
-                    @entities:entities-version = "{co.ENTITIES_OFFLINE_VERSION}"
-                  ]
-                """,
-            ],
-        )
-
-    def test_entities_offline_opt_in__no(self):
-        """Should find create spec version, if not opted-in."""
-        self.assertPyxformXform(
-            md="""
-            | survey   |
-            |          | type      | name  | label |
-            |          | text      | a     | A     |
-            | entities |
-            |          | dataset   | label | offline |
-            |          | trees     | a     | no      |
-            """,
-            xml__xpath_match=[
-                f"""
-                  /h:html/h:head/x:model[
-                    @entities:entities-version = "{co.ENTITIES_CREATE_VERSION}"
-                  ]
-                """,
             ],
         )

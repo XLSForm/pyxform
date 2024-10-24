@@ -60,9 +60,8 @@ class EntityDeclaration(SurveyElement):
         if entity_id_expression:
             attributes["update"] = "1"
             attributes["baseVersion"] = ""
-            if parameters.get(EC.OFFLINE, None):
-                attributes["trunkVersion"] = ""
-                attributes["branchId"] = ""
+            attributes["trunkVersion"] = ""
+            attributes["branchId"] = ""
 
         if create_condition or (not update_condition and not entity_id_expression):
             attributes["create"] = "1"
@@ -101,15 +100,12 @@ class EntityDeclaration(SurveyElement):
             bind_nodes.append(
                 self._get_bind_node(survey, f"{entity}/__version", "/@baseVersion")
             )
-            if parameters.get(EC.OFFLINE, None):
-                bind_nodes.append(
-                    self._get_bind_node(
-                        survey, f"{entity}/__trunkVersion", "/@trunkVersion"
-                    )
-                )
-                bind_nodes.append(
-                    self._get_bind_node(survey, f"{entity}/__branchId", "/@branchId")
-                )
+            bind_nodes.append(
+                self._get_bind_node(survey, f"{entity}/__trunkVersion", "/@trunkVersion")
+            )
+            bind_nodes.append(
+                self._get_bind_node(survey, f"{entity}/__branchId", "/@branchId")
+            )
 
         if label_expression:
             bind_nodes.append(self._get_bind_node(survey, label_expression, "/label"))
