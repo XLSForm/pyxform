@@ -1,6 +1,10 @@
 Pyxform Changelog
 
-v2.1.1, 2024.10-09
+v2.2.0, 2024-10-29
+* Add `background-geopoint` question type which exposes `xforms-value-changed` event with `odk:setgeopoint` action by @RuthShryock in https://github.com/XLSForm/pyxform/pull/726
+* 724: raise an error if a `${}` pyxform reference is malformed by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/734
+
+v2.1.1, 2024-10-09
 * Update Validate to fix support for geojson by @lognaturel in https://github.com/XLSForm/pyxform/pull/727
 
 v2.1.0, 2024-09-05
