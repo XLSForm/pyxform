@@ -26,11 +26,14 @@ from pyxform.utils import PYXFORM_REFERENCE_REGEX, coalesce, default_is_dynamic
 from pyxform.validators.pyxform import parameters_generic, select_from_file
 from pyxform.validators.pyxform import question_types as qt
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
+from pyxform.validators.pyxform.pyxform_reference import validate_pyxform_reference_syntax
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
 from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
+RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
+RE_WHITESPACE = re.compile(r"( )+")
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -85,18 +88,6 @@ def list_to_nested_dict(lst):
         return {lst[0]: list_to_nested_dict(lst[1:])}
     else:
         return lst[0]
-
-
-def replace_smart_quotes_in_dict(_d):
-    for key, value in _d.items():
-        _changed = False
-        for smart_quote, dumb_quote in SMART_QUOTES.items():
-            if isinstance(value, str):
-                if smart_quote in value:
-                    value = value.replace(smart_quote, dumb_quote)
-                    _changed = True
-        if _changed:
-            _d[key] = value
 
 
 class DealiasAndGroupHeadersResult:
@@ -184,42 +175,24 @@ def dealias_types(dict_array):
     return dict_array
 
 
-def clean_text_values(dict_array):
+def clean_text_values(sheet_name: str, data: list[dict], strip_whitespace: bool = False):
     """
     Go though the dict array and strips all text values.
     Also replaces multiple spaces with single spaces.
     """
-    for row in dict_array:
-        replace_smart_quotes_in_dict(row)
+    for row_number, row in enumerate(data, start=2):
         for key, value in row.items():
             if isinstance(value, str):
-                row[key] = re.sub(r"( )+", " ", value.strip())
-    return dict_array
-
-
-# This is currently unused because name uniqueness is checked in json2xform.
-def check_name_uniqueness(dict_array):
-    """
-    Make sure all names are unique
-    Raises and exception if a duplicate is found
-    """
-    # This set is used to validate the uniqueness of names.
-    name_set = set()
-    row_number = 0  # TODO: There might be a bug with row numbers...
-    for row in dict_array:
-        row_number += 1
-        name = row.get(constants.NAME)
-        if name:
-            if name in name_set:
-                raise PyXFormError(
-                    "Question name is not unique: "
-                    + str(name)
-                    + " Row: "
-                    + str(row_number)
+                # Remove extraneous whitespace characters.
+                if strip_whitespace:
+                    value = RE_WHITESPACE.sub(" ", value.strip())
+                # Replace "smart" quotes with regular quotes.
+                row[key] = RE_SMART_QUOTES.sub(lambda m: SMART_QUOTES[m.group(0)], value)
+                # Check cross reference syntax.
+                validate_pyxform_reference_syntax(
+                    value=value, sheet_name=sheet_name, row_number=row_number, key=key
                 )
-            else:
-                name_set.add(name)
-    return dict_array
+    return data
 
 
 def group_dictionaries_by_key(list_of_dicts, key, remove_key=True):
@@ -487,7 +460,10 @@ def workbook_to_json(
         use_double_colons=use_double_colons,
     )
     settings = settings_sheet.data[0] if len(settings_sheet.data) > 0 else {}
-    replace_smart_quotes_in_dict(settings)
+    settings = clean_text_values(sheet_name=constants.SETTINGS, data=[settings])[0]
+    clean_text_values_enabled = aliases.yes_no.get(
+        settings.get("clean_text_values", "true()")
+    )
 
     default_language = settings.get(constants.DEFAULT_LANGUAGE_KEY, default_language)
 
@@ -522,9 +498,9 @@ def workbook_to_json(
 
     # ########## External Choices sheet ##########
     external_choices_sheet = workbook_dict.get(constants.EXTERNAL_CHOICES, [])
-    for choice_item in external_choices_sheet:
-        replace_smart_quotes_in_dict(choice_item)
-
+    external_choices_sheet = clean_text_values(
+        sheet_name=constants.EXTERNAL_CHOICES, data=external_choices_sheet
+    )
     external_choices_sheet = dealias_and_group_headers(
         dict_array=external_choices_sheet,
         header_aliases=aliases.list_header,
@@ -537,8 +513,7 @@ def workbook_to_json(
 
     # ########## Choices sheet ##########
     choices_sheet = workbook_dict.get(constants.CHOICES, [])
-    for choice_item in choices_sheet:
-        replace_smart_quotes_in_dict(choice_item)
+    choices_sheet = clean_text_values(sheet_name=constants.CHOICES, data=choices_sheet)
     choices_sheet = dealias_and_group_headers(
         dict_array=choices_sheet,
         header_aliases=aliases.list_header,
@@ -617,6 +592,7 @@ def workbook_to_json(
 
     # ########## Entities sheet ###########
     entities_sheet = workbook_dict.get(constants.ENTITIES, [])
+    entities_sheet = clean_text_values(sheet_name=constants.ENTITIES, data=entities_sheet)
     entities_sheet = dealias_and_group_headers(
         dict_array=entities_sheet,
         header_aliases=aliases.entities_header,
@@ -629,11 +605,10 @@ def workbook_to_json(
     # ########## Survey sheet ###########
     survey_sheet = workbook_dict[constants.SURVEY]
     # Process the headers:
-    clean_text_values_enabled = aliases.yes_no.get(
-        settings.get("clean_text_values", "true()")
-    )
     if clean_text_values_enabled:
-        survey_sheet = clean_text_values(survey_sheet)
+        survey_sheet = clean_text_values(
+            sheet_name=constants.SURVEY, data=survey_sheet, strip_whitespace=True
+        )
     survey_sheet = dealias_and_group_headers(
         dict_array=survey_sheet,
         header_aliases=aliases.survey_header,
@@ -662,8 +637,6 @@ def workbook_to_json(
     # #################################
 
     # Parse the survey sheet while generating a survey in our json format:
-    row_number = 1  # We start at 1 because the column header row is not
-    #                 included in the survey sheet (presumably).
     # A stack is used to keep track of begin/end expressions
     stack = [
         {
@@ -703,8 +676,7 @@ def workbook_to_json(
     trigger_references = []
 
     # row by row, validate questions, throwing errors and adding warnings where needed.
-    for row in survey_sheet.data:
-        row_number += 1
+    for row_number, row in enumerate(survey_sheet.data, start=2):
         if stack[-1] is not None:
             prev_control_type = stack[-1]["control_type"]
             parent_children_array = stack[-1]["parent_children"]
@@ -730,7 +702,6 @@ def workbook_to_json(
         # Get question type
         question_type = row.get(constants.TYPE)
         question_name = row.get(constants.NAME)
-        question_names.add(question_name)
 
         if not question_type:
             # if name and label are also missing,
@@ -1116,6 +1087,9 @@ def workbook_to_json(
                     }
                 )
                 continue
+
+        # Assuming a question is anything not processed above as a loop/repeat/group.
+        question_names.add(question_name)
 
         # Try to parse question as a select:
         select_parse = select_regexp.search(question_type)
