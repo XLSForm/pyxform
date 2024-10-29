@@ -7,7 +7,7 @@ from pyxform.utils import levenshtein_distance
 # http://www.w3.org/TR/REC-xml/
 TAG_START_CHAR = r"[a-zA-Z:_]"
 TAG_CHAR = r"[a-zA-Z:_0-9\-.]"
-XFORM_TAG_REGEXP = f"{TAG_START_CHAR}{TAG_CHAR}*"
+XFORM_TAG_REGEXP = re.compile(rf"^{TAG_START_CHAR}{TAG_CHAR}*$")
 
 
 def find_sheet_misspellings(key: str, keys: "KeysView") -> "str | None":
@@ -42,4 +42,4 @@ def is_valid_xml_tag(tag):
     """
     Use a regex to see if there are any invalid characters (i.e. spaces).
     """
-    return re.search(r"^" + XFORM_TAG_REGEXP + r"$", tag)
+    return re.search(XFORM_TAG_REGEXP, tag)

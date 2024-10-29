@@ -4,6 +4,8 @@ Cleans up error messages from the validators.
 
 import re
 
+ERROR_MESSAGE_REGEX = re.compile(r"(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)", flags=re.I)
+
 
 class ErrorCleaner:
     """Cleans up raw error messages from XForm validators for end users."""
@@ -22,9 +24,9 @@ class ErrorCleaner:
 
     @staticmethod
     def _cleanup_errors(error_message):
-        pattern = r"(/[a-z0-9\-_]+(?:/[a-z0-9\-_]+)+)"
-        error_message = re.sub(
-            pattern, ErrorCleaner._replace_xpath_with_tokens, error_message, flags=re.I
+        error_message = ERROR_MESSAGE_REGEX.sub(
+            ErrorCleaner._replace_xpath_with_tokens,
+            error_message,
         )
         lines = str(error_message).strip().splitlines()
         no_dupes = [

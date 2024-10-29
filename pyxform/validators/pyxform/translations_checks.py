@@ -8,7 +8,7 @@ from pyxform.errors import PyXFormError
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    SheetData = tuple[tuple[str, ...]]
+    SheetData = tuple[tuple[str, ...], ...]
     Warnings = list[str]
 
 

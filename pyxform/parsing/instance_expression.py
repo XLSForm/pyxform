@@ -1,7 +1,7 @@
-import re
 from typing import TYPE_CHECKING
 
-from pyxform.utils import BRACKETED_TAG_REGEX, EXPRESSION_LEXER, ExpLexerToken, node
+from pyxform.parsing.expression import ExpLexerToken, parse_expression
+from pyxform.utils import BRACKETED_TAG_REGEX, node
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -37,7 +37,7 @@ def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
     path_enter = False
     pred_enter = False
     last_token = None
-    tokens, _ = EXPRESSION_LEXER.scan(xml_text)
+    tokens, _ = parse_expression(xml_text)
     boundaries = []
 
     for t in tokens:
@@ -111,8 +111,7 @@ def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey
             old_str = xml_text[start:end]
             # Pass the new string through the pyxform reference replacer.
             # noinspection PyProtectedMember
-            new_str = re.sub(
-                BRACKETED_TAG_REGEX,
+            new_str = BRACKETED_TAG_REGEX.sub(
                 lambda m: survey._var_repl_function(m, context),
                 old_str,
             )

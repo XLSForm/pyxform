@@ -2,8 +2,6 @@
 Validations for question types.
 """
 
-import re
-
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_single_token_expression
 from pyxform.utils import PYXFORM_REFERENCE_REGEX
@@ -37,7 +35,7 @@ def validate_background_geopoint_trigger(row: dict, row_num: int) -> bool:
 def validate_references(referrers: list[tuple[dict, int]], questions: set[str]) -> bool:
     """Triggers must refer to a question that exists."""
     for row, row_num in referrers:
-        matches = re.match(PYXFORM_REFERENCE_REGEX, row["trigger"])
+        matches = PYXFORM_REFERENCE_REGEX.match(row["trigger"])
         if matches is not None:
             trigger = matches.groups()[0]
             if trigger not in questions:
