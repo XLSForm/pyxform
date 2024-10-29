@@ -195,31 +195,6 @@ def clean_text_values(sheet_name: str, data: list[dict], strip_whitespace: bool 
     return data
 
 
-# This is currently unused because name uniqueness is checked in json2xform.
-def check_name_uniqueness(dict_array):
-    """
-    Make sure all names are unique
-    Raises and exception if a duplicate is found
-    """
-    # This set is used to validate the uniqueness of names.
-    name_set = set()
-    row_number = 0  # TODO: There might be a bug with row numbers...
-    for row in dict_array:
-        row_number += 1
-        name = row.get(constants.NAME)
-        if name:
-            if name in name_set:
-                raise PyXFormError(
-                    "Question name is not unique: "
-                    + str(name)
-                    + " Row: "
-                    + str(row_number)
-                )
-            else:
-                name_set.add(name)
-    return dict_array
-
-
 def group_dictionaries_by_key(list_of_dicts, key, remove_key=True):
     """
     Takes a list of dictionaries and returns a
