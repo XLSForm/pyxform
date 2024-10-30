@@ -520,13 +520,14 @@ def workbook_to_json(
         use_double_colons=use_double_colons,
         default_language=default_language,
     )
-    combined_lists = group_dictionaries_by_key(
+    choices = group_dictionaries_by_key(
         list_of_dicts=choices_sheet.data, key=constants.LIST_NAME_S
     )
+    if 0 < len(choices):
+        json_dict[constants.CHOICES] = choices
     # To combine the warning into one message, the check for missing choices translation
     # columns is run with Survey sheet below.
 
-    choices = combined_lists
     # Make sure all the options have the required properties:
     warnedabout = set()
     for list_name, options in choices.items():
@@ -1242,16 +1243,6 @@ def workbook_to_json(
                     choice_filter=row.get(constants.CHOICE_FILTER),
                     file_extension=file_extension,
                 )
-                # Add the choice to the survey choices if it's being used in an itemset.
-                if (
-                    constants.ITEMSET in new_json_dict
-                    and new_json_dict[constants.ITEMSET] == list_name
-                    and list_name in choices
-                ):
-                    # Initialise choices output if none added already.
-                    if constants.CHOICES not in json_dict:
-                        json_dict[constants.CHOICES] = {}
-                    json_dict[constants.CHOICES][list_name] = choices[list_name]
 
                 # Code to deal with table_list appearance flags
                 # (for groups of selects)

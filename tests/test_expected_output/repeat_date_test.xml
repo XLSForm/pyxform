@@ -3,6 +3,22 @@
   <h:head>
     <h:title>repeat_date_test</h:title>
     <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation lang="default" default="true()">
+          <text id="a_b-0">
+            <value form="image">jr://images/a.jpg</value>
+          </text>
+          <text id="a_b-1">
+            <value form="image">jr://images/b.jpg</value>
+          </text>
+          <text id="happy_sad-0">
+            <value form="image">jr://images/happy.jpg</value>
+          </text>
+          <text id="happy_sad-1">
+            <value form="image">jr://images/sad.jpg</value>
+          </text>
+        </translation>
+      </itext>
       <instance>
         <repeat_date_test id="repeat_date_test">
           <generated_note_name_2/>
@@ -21,15 +37,95 @@
           </meta>
         </repeat_date_test>
       </instance>
+      <instance id="list">
+        <root>
+          <item>
+            <name>a</name>
+            <label>option a</label>
+          </item>
+          <item>
+            <name>b</name>
+            <label>option b</label>
+          </item>
+          <item>
+            <name>c</name>
+            <label>option c</label>
+          </item>
+          <item>
+            <name>d</name>
+            <label>option d</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="list2">
+        <root>
+          <item>
+            <name>1</name>
+            <label>option 1</label>
+          </item>
+          <item>
+            <name>2</name>
+            <label>option 2</label>
+          </item>
+          <item>
+            <name>3</name>
+            <label>option 3</label>
+          </item>
+          <item>
+            <name>4</name>
+            <label>option 4</label>
+          </item>
+          <item>
+            <name>5</name>
+            <label>option 5</label>
+          </item>
+          <item>
+            <name>6</name>
+            <label>option 6</label>
+          </item>
+          <item>
+            <name>7</name>
+            <label>option 7</label>
+          </item>
+          <item>
+            <name>8</name>
+            <label>option 8</label>
+          </item>
+        </root>
+      </instance>
       <instance id="yes_no">
         <root>
           <item>
-            <label>Yes</label>
             <name>yes</name>
+            <label>Yes</label>
           </item>
           <item>
-            <label>No</label>
             <name>no</name>
+            <label>No</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="a_b">
+        <root>
+          <item>
+            <itextId>a_b-0</itextId>
+            <name>a</name>
+          </item>
+          <item>
+            <itextId>a_b-1</itextId>
+            <name>b</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="happy_sad">
+        <root>
+          <item>
+            <itextId>happy_sad-0</itextId>
+            <name>happy</name>
+          </item>
+          <item>
+            <itextId>happy_sad-1</itextId>
+            <name>sad</name>
           </item>
         </root>
       </instance>

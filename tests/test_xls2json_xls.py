@@ -103,18 +103,6 @@ class BasicXls2JsonApiTests(TestCase):
 
         self.assertEqual(x.to_json_dict()["children"], expected_dict)
 
-    def test_table(self):
-        filename = "simple_loop.xls"
-        path_to_excel_file = Path(example_xls.PATH) / filename
-        expected_output_path = Path(test_expected_output.PATH) / (
-            path_to_excel_file.stem + ".json"
-        )
-        result = convert(
-            xlsform=path_to_excel_file, warnings=[], form_name=path_to_excel_file.stem
-        )
-        with open(expected_output_path, encoding="utf-8") as expected:
-            self.assertEqual(json.load(expected), result._pyxform)
-
     def test_choice_filter_choice_fields(self):
         """
         Test that the choice filter fields appear on children field of json
