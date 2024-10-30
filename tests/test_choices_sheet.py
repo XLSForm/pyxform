@@ -133,3 +133,24 @@ class ChoicesSheetTest(PyxformTestCase):
                 """,
             ],
         )
+
+    def test_unreferenced_lists_included_in_output(self):
+        """Should find all specified choice lists in the output, even if unreferenced."""
+        md = """
+        | survey  |
+        |         | type               | name | label |
+        |         | select_one choices | a    | A     |
+        | choices |
+        |         | list_name | name | label |
+        |         | choices   | 1    | Y     |
+        |         | choices   | 2    | N     |
+        |         | choices2  | 1    | Y     |
+        |         | choices2  | 2    | N     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_instance_choices_label("choices", (("1", "Y"), ("2", "N"))),
+                xpc.model_instance_choices_label("choices2", (("1", "Y"), ("2", "N"))),
+            ],
+        )

@@ -4,18 +4,71 @@ Test loop syntax.
 
 from unittest import TestCase
 
-from pyxform.builder import create_survey_from_xls
+from pyxform.xls2xform import convert
 
 from tests import utils
 
 
-class LoopTests(TestCase):
+class TestLoop(TestCase):
+    maxDiff = None
+
+    def test_table(self):
+        path = utils.path_to_text_fixture("simple_loop.xls")
+        observed = convert(xlsform=path)._pyxform
+
+        expected = {
+            "name": "data",
+            "title": "simple_loop",
+            "sms_keyword": "simple_loop",
+            "default_language": "default",
+            "id_string": "simple_loop",
+            "type": "survey",
+            "children": [
+                {
+                    "children": [
+                        {
+                            "type": "integer",
+                            "name": "count",
+                            "label": {"English": "How many are there in this group?"},
+                        }
+                    ],
+                    "type": "loop",
+                    "name": "my_table",
+                    "columns": [
+                        {"name": "col1", "label": {"English": "Column 1"}},
+                        {"name": "col2", "label": {"English": "Column 2"}},
+                    ],
+                    "label": {"English": "My Table"},
+                },
+                {
+                    "control": {"bodyless": True},
+                    "type": "group",
+                    "name": "meta",
+                    "children": [
+                        {
+                            "bind": {"readonly": "true()", "jr:preload": "uid"},
+                            "type": "calculate",
+                            "name": "instanceID",
+                        }
+                    ],
+                },
+            ],
+            "choices": {
+                "my_columns": [
+                    {"label": {"English": "Column 1"}, "name": "col1"},
+                    {"label": {"English": "Column 2"}, "name": "col2"},
+                ]
+            },
+        }
+        self.assertEqual(expected, observed)
+
     def test_loop(self):
         path = utils.path_to_text_fixture("another_loop.xls")
-        survey = create_survey_from_xls(path, "another_loop")
-        self.maxDiff = None
-        expected_dict = {
-            "name": "another_loop",
+        observed = convert(xlsform=path)._survey.to_json_dict()
+        observed.pop("_translations", None)
+        observed.pop("_xpath", None)
+        expected = {
+            "name": "data",
             "id_string": "another_loop",
             "sms_keyword": "another_loop",
             "default_language": "default",
@@ -89,5 +142,14 @@ class LoopTests(TestCase):
                     "type": "group",
                 },
             ],
+            "choices": {
+                "types": [
+                    {"label": {"English": "Car", "French": "Voiture"}, "name": "car"},
+                    {
+                        "label": {"English": "Motorcycle", "French": "Moto"},
+                        "name": "motor_cycle",
+                    },
+                ]
+            },
         }
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+        self.assertEqual(expected, observed)
