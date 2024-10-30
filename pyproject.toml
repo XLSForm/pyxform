@@ -18,8 +18,8 @@ dependencies = [
 dev = [
   "formencode==2.1.0",  # Compare XML
   "lxml==5.3.0",        # XPath test expressions
-  "psutil==6.0.0",      # Process info for performance tests
-  "ruff==0.6.4",        # Format and lint
+  "psutil==6.1.0",      # Process info for performance tests
+  "ruff==0.7.1",        # Format and lint
 ]
 
 [project.urls]
