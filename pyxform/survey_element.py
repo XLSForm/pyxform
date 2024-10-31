@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from pyxform import aliases as alias
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
+from pyxform.parsing.expression import is_xml_tag
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.utils import (
     BRACKETED_TAG_REGEX,
@@ -19,7 +20,6 @@ from pyxform.utils import (
     node,
 )
 from pyxform.xls2json import print_pyobj_to_json
-from pyxform.xlsparseutils import is_valid_xml_tag
 
 if TYPE_CHECKING:
     from pyxform.utils import DetachableElement
@@ -140,7 +140,7 @@ class SurveyElement(dict):
     SUPPORTED_MEDIA = ("image", "big-image", "audio", "video")
 
     def validate(self):
-        if not is_valid_xml_tag(self.name):
+        if not is_xml_tag(self.name):
             invalid_char = re.search(INVALID_XFORM_TAG_REGEXP, self.name)
             raise PyXFormError(
                 f"The name '{self.name}' contains an invalid character '{invalid_char.group(0)}'. Names {const.XML_IDENTIFIER_ERROR_MESSAGE}"

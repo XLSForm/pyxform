@@ -6,7 +6,6 @@ import json
 import os
 import re
 import sys
-from collections import Counter
 from typing import IO, Any
 
 from pyxform import aliases, constants
@@ -21,15 +20,16 @@ from pyxform.entities.entities_parsing import (
     validate_entity_saveto,
 )
 from pyxform.errors import PyXFormError
-from pyxform.parsing.expression import is_single_token_expression
+from pyxform.parsing.expression import is_pyxform_reference, is_xml_tag
 from pyxform.utils import PYXFORM_REFERENCE_REGEX, coalesce, default_is_dynamic
+from pyxform.validators.pyxform import choices as vc
 from pyxform.validators.pyxform import parameters_generic, select_from_file
 from pyxform.validators.pyxform import question_types as qt
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.pyxform_reference import validate_pyxform_reference_syntax
+from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
 from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
-from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
@@ -175,7 +175,12 @@ def dealias_types(dict_array):
     return dict_array
 
 
-def clean_text_values(sheet_name: str, data: list[dict], strip_whitespace: bool = False):
+def clean_text_values(
+    sheet_name: str,
+    data: list[dict],
+    strip_whitespace: bool = False,
+    add_row_number: bool = False,
+) -> list[dict]:
     """
     Go though the dict array and strips all text values.
     Also replaces multiple spaces with single spaces.
@@ -192,6 +197,8 @@ def clean_text_values(sheet_name: str, data: list[dict], strip_whitespace: bool 
                 validate_pyxform_reference_syntax(
                     value=value, sheet_name=sheet_name, row_number=row_number, key=key
                 )
+        if add_row_number:
+            row["__row"] = row_number
     return data
 
 
@@ -513,7 +520,11 @@ def workbook_to_json(
 
     # ########## Choices sheet ##########
     choices_sheet = workbook_dict.get(constants.CHOICES, [])
-    choices_sheet = clean_text_values(sheet_name=constants.CHOICES, data=choices_sheet)
+    choices_sheet = clean_text_values(
+        sheet_name=constants.CHOICES,
+        data=choices_sheet,
+        add_row_number=True,
+    )
     choices_sheet = dealias_and_group_headers(
         dict_array=choices_sheet,
         header_aliases=aliases.list_header,
@@ -523,73 +534,27 @@ def workbook_to_json(
     choices = group_dictionaries_by_key(
         list_of_dicts=choices_sheet.data, key=constants.LIST_NAME_S
     )
-    if 0 < len(choices):
-        json_dict[constants.CHOICES] = choices
     # To combine the warning into one message, the check for missing choices translation
     # columns is run with Survey sheet below.
 
-    # Make sure all the options have the required properties:
-    warnedabout = set()
-    for list_name, options in choices.items():
+    # Warn and remove invalid headers in case the form uses headers for notes.
+    invalid_headers = vc.validate_headers(choices_sheet.headers, warnings)
+    allow_duplicates = aliases.yes_no.get(
+        settings.get("allow_choice_duplicates", False), False
+    )
+    for options in choices.values():
+        vc.validate_choices(
+            options=options,
+            warnings=warnings,
+            allow_duplicates=allow_duplicates,
+        )
         for option in options:
-            if "name" not in option:
-                info = "[list_name : " + list_name + "]"
-                raise PyXFormError(
-                    "On the choices sheet there is a option with no name. " + info
-                )
-            if "label" not in option:
-                info = "[list_name : " + list_name + "]"
-                warnings.append(
-                    "On the choices sheet there is a option with no label. " + info
-                )
-            # chrislrobert's fix for a cryptic error message:
-            # see: https://code.google.com/p/opendatakit/issues/detail?id=833&start=200
-            option_keys = list(option.keys())
-            for headername in option_keys:
-                # Using warnings and removing the bad columns
-                # instead of throwing errors because some forms
-                # use choices column headers for notes.
-                if " " in headername:
-                    if headername not in warnedabout:
-                        warnedabout.add(headername)
-                        warnings.append(
-                            "On the choices sheet there is "
-                            + 'a column ("'
-                            + headername
-                            + '") with an illegal header. '
-                            + "Headers cannot include spaces."
-                        )
-                    del option[headername]
-                elif headername == "":
-                    warnings.append(
-                        "On the choices sheet there is a value"
-                        + " in a column with no header."
-                    )
-                    del option[headername]
-        list_name_choices = [option.get("name") for option in options]
-        if len(list_name_choices) != len(set(list_name_choices)):
-            duplicate_setting = settings.get("allow_choice_duplicates")
-            for v in Counter(list_name_choices).values():
-                if v > 1:
-                    if not duplicate_setting or duplicate_setting.capitalize() != "Yes":
-                        choice_duplicates = [
-                            item
-                            for item, count in Counter(list_name_choices).items()
-                            if count > 1
-                        ]
+            for invalid_header in invalid_headers:
+                option.pop(invalid_header, None)
+            del option["__row"]
 
-                        if choice_duplicates:
-                            raise PyXFormError(
-                                "The name column for the '{}' choice list contains these duplicates: {}. Duplicate names "
-                                "will be impossible to identify in analysis unless a previous value in a cascading "
-                                "select differentiates them. If this is intentional, you can set the "
-                                "allow_choice_duplicates setting to 'yes'. Learn more: https://xlsform.org/#choice-names.".format(
-                                    list_name,
-                                    ", ".join(
-                                        [f"'{dupe}'" for dupe in choice_duplicates]
-                                    ),
-                                )
-                            )
+    if 0 < len(choices):
+        json_dict[constants.CHOICES] = choices
 
     # ########## Entities sheet ###########
     entities_sheet = workbook_dict.get(constants.ENTITIES, [])
@@ -945,7 +910,7 @@ def workbook_to_json(
                     ROW_FORMAT_STRING % row_number + " Question or group with no name."
                 )
         question_name = str(row[constants.NAME])
-        if not is_valid_xml_tag(question_name):
+        if not is_xml_tag(question_name):
             if isinstance(question_name, bytes):
                 question_name = question_name.decode("utf-8")
 
@@ -1022,10 +987,7 @@ def workbook_to_json(
                 repeat_count_expression = new_json_dict.get("control", {}).get("jr:count")
                 if repeat_count_expression:
                     # Simple expressions don't require a new node, they can reference directly.
-                    simple_expression = is_single_token_expression(
-                        expression=repeat_count_expression, token_types=["PYXFORM_REF"]
-                    )
-                    if not simple_expression:
+                    if not is_pyxform_reference(value=repeat_count_expression):
                         generated_node_name = new_json_dict["name"] + "_count"
                         parent_children_array.append(
                             {

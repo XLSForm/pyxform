@@ -37,9 +37,9 @@ def get_expression_lexer() -> re.Scanner:
         "TIME": time_regex,
         "NUMBER": r"-?\d+\.\d*|-?\.\d+|-?\d+",
         # https://www.w3.org/TR/1999/REC-xpath-19991116/#exprlex
-        "OPS_MATH": r"[\*\+\-]|mod|div",
+        "OPS_MATH": r"[\*\+\-]| mod | div ",
         "OPS_COMP": r"\=|\!\=|\<|\>|\<=|>=",
-        "OPS_BOOL": r"and|or",
+        "OPS_BOOL": r" and | or ",
         "OPS_UNION": r"\|",
         "OPEN_PAREN": r"\(",
         "CLOSE_PAREN": r"\)",
@@ -107,3 +107,17 @@ def is_single_token_expression(expression: str, token_types: Iterable[str]) -> b
         return True
     else:
         return False
+
+
+def is_pyxform_reference(value: str) -> bool:
+    """
+    Does the input string contain only a valid Pyxform reference? e.g. ${my_question}
+    """
+    return is_single_token_expression(expression=value, token_types=("PYXFORM_REF",))
+
+
+def is_xml_tag(value: str) -> bool:
+    """
+    Does the input string contain only a valid XML tag / element name?
+    """
+    return is_single_token_expression(expression=value, token_types=("NAME",))

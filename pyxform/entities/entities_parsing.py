@@ -3,7 +3,8 @@ from typing import Any
 from pyxform import constants as const
 from pyxform.aliases import yes_no
 from pyxform.errors import PyXFormError
-from pyxform.xlsparseutils import find_sheet_misspellings, is_valid_xml_tag
+from pyxform.parsing.expression import is_xml_tag
+from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 
 EC = const.EntityColumns
 
@@ -73,7 +74,7 @@ def get_validated_dataset_name(entity):
             f"Invalid entity list name: '{dataset}'. Names may not include periods."
         )
 
-    if not is_valid_xml_tag(dataset):
+    if not is_xml_tag(dataset):
         if isinstance(dataset, bytes):
             dataset = dataset.decode("utf-8")
 
@@ -118,7 +119,7 @@ def validate_entity_saveto(
             f"{error_start} the entity property name '{save_to}' starts with reserved prefix {const.ENTITIES_RESERVED_PREFIX}."
         )
 
-    if not is_valid_xml_tag(save_to):
+    if not is_xml_tag(save_to):
         if isinstance(save_to, bytes):
             save_to = save_to.decode("utf-8")
 
