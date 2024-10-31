@@ -1,3 +1,5 @@
+from pyxform.validators.pyxform import choices as vc
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -61,10 +63,10 @@ class TestWarnings(PyxformTestCase):
         )
         self.maxDiff = 2000
         expected = [
-            "On the choices sheet there is a option with no label. [list_name : a_b]",
-            "On the choices sheet there is a option with no label. [list_name : a_b]",
-            "On the choices sheet there is a option with no label. [list_name : animals]",
-            "On the choices sheet there is a option with no label. [list_name : animals]",
+            vc.INVALID_LABEL.format(row=4),
+            vc.INVALID_LABEL.format(row=5),
+            vc.INVALID_LABEL.format(row=6),
+            vc.INVALID_LABEL.format(row=7),
             "[row : 9] Repeat has no label: {'name': 'repeat_test', 'type': 'begin repeat'}",
             "[row : 10] Group has no label: {'name': 'group_test', 'type': 'begin group'}",
             "[row : 17] Group has no label: {'name': 'name', 'type': 'begin group'}",

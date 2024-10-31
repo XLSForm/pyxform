@@ -2,6 +2,8 @@
 Test XLSForm sheet names.
 """
 
+from pyxform.validators.pyxform import choices as vc
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.utils import prep_for_xml_contains
 from tests.xpath_helpers.choices import xpc
@@ -156,7 +158,7 @@ class InvalidChoiceSheetColumnsTests(PyxformTestCase):
                 ]
             ),
             errored=True,
-            error__contains=["option with no name"],
+            error__contains=[vc.INVALID_NAME.format(row=2)],
         )
 
     def test_missing_list_name(self):

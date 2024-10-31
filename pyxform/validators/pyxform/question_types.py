@@ -3,7 +3,7 @@ Validations for question types.
 """
 
 from pyxform.errors import PyXFormError
-from pyxform.parsing.expression import is_single_token_expression
+from pyxform.parsing.expression import is_pyxform_reference
 from pyxform.utils import PYXFORM_REFERENCE_REGEX
 
 BACKGROUND_GEOPOINT_CALCULATION = "[row : {r}] For 'background-geopoint' questions, the 'calculation' column must be empty."
@@ -25,9 +25,7 @@ def validate_background_geopoint_calculation(row: dict, row_num: int) -> bool:
 
 def validate_background_geopoint_trigger(row: dict, row_num: int) -> bool:
     """A background-geopoint must have a trigger."""
-    if not row.get("trigger", False) or not is_single_token_expression(
-        expression=row["trigger"], token_types=["PYXFORM_REF"]
-    ):
+    if not row.get("trigger", False) or not is_pyxform_reference(value=row["trigger"]):
         raise PyXFormError(TRIGGER_INVALID.format(r=row_num, t=row["type"]))
     return True
 

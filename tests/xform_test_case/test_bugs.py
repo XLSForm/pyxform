@@ -10,6 +10,7 @@ import pyxform
 from pyxform.errors import PyXFormError
 from pyxform.utils import has_external_choices
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
+from pyxform.validators.pyxform import choices as vc
 from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
 from pyxform.xls2json_backends import xlsx_to_dict
 from pyxform.xls2xform import convert
@@ -79,7 +80,11 @@ class BadChoicesSheetHeaders(TestCase):
         )
         # The "column with no header" warning is probably not reachable since XLS/X
         # pre-processing ignores any columns without a header.
-        observed = [w for w in warnings if "Headers cannot include spaces" in w]
+        observed = [
+            w
+            for w in warnings
+            if w == vc.INVALID_HEADER.format(column="header with spaces")
+        ]
         self.assertEqual(1, len(observed), warnings)
 
     def test_values_with_spaces_are_cleaned(self):
