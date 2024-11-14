@@ -52,29 +52,6 @@ SECTION_CLASSES = {
 }
 
 
-def copy_json_dict(json_dict):
-    """
-    Returns a deep copy of the input json_dict
-    """
-    json_dict_copy = None
-    items = None
-
-    if isinstance(json_dict, list):
-        json_dict_copy = [None] * len(json_dict)
-        items = enumerate(json_dict)
-    elif isinstance(json_dict, dict):
-        json_dict_copy = {}
-        items = json_dict.items()
-
-    for key, value in items:
-        if isinstance(value, dict | list):
-            json_dict_copy[key] = copy_json_dict(value)
-        else:
-            json_dict_copy[key] = value
-
-    return json_dict_copy
-
-
 class SurveyElementBuilder:
     def __init__(self, **kwargs):
         # I don't know why we would need an explicit none option for
@@ -143,7 +120,7 @@ class SurveyElementBuilder:
         else:
             self._save_trigger(d=d)
             return self._create_question_from_dict(
-                d, copy_json_dict(QUESTION_TYPE_DICT), self._add_none_option
+                d, copy.deepcopy(QUESTION_TYPE_DICT), self._add_none_option
             )
 
     def _save_trigger(self, d: dict) -> None:

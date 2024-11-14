@@ -17,6 +17,7 @@ from pyxform.survey_element import SurveyElement
 from pyxform.utils import (
     PYXFORM_REFERENCE_REGEX,
     DetachableElement,
+    combine_lists,
     default_is_dynamic,
     node,
 )
@@ -189,21 +190,17 @@ class Option(SurveyElement):
 
 class MultipleChoiceQuestion(Question):
     def __init__(self, **kwargs):
-        kwargs_copy = kwargs.copy()
         # Notice that choices can be specified under choices or children.
         # I'm going to try to stick to just choices.
         # Aliases in the json format will make it more difficult
         # to use going forward.
-        choices = list(kwargs_copy.pop("choices", [])) + list(
-            kwargs_copy.pop("children", [])
-        )
-        Question.__init__(self, **kwargs_copy)
-        for choice in choices:
-            self.add_choice(**choice)
-
-    def add_choice(self, **kwargs):
-        option = Option(**kwargs)
-        self.add_child(option)
+        kwargs["children"] = [
+            Option(**c)
+            for c in combine_lists(
+                a=kwargs.pop("choices", None), b=kwargs.pop("children", None)
+            )
+        ]
+        super().__init__(**kwargs)
 
     def validate(self):
         Question.validate(self)
@@ -320,23 +317,19 @@ class MultipleChoiceQuestion(Question):
 
 class SelectOneQuestion(MultipleChoiceQuestion):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
         self._dict[self.TYPE] = "select one"
+        super().__init__(**kwargs)
 
 
 class Tag(SurveyElement):
     def __init__(self, **kwargs):
-        kwargs_copy = kwargs.copy()
-        choices = kwargs_copy.pop("choices", []) + kwargs_copy.pop("children", [])
-
-        super().__init__(**kwargs_copy)
-
-        if choices:
-            self.children = []
-
-            for choice in choices:
-                option = Option(**choice)
-                self.add_child(option)
+        kwargs["children"] = [
+            Option(**c)
+            for c in combine_lists(
+                a=kwargs.pop("choices", None), b=kwargs.pop("children", None)
+            )
+        ]
+        super().__init__(**kwargs)
 
     def xml(self):
         result = node("tag", key=self.name)
@@ -356,20 +349,13 @@ class Tag(SurveyElement):
 
 class OsmUploadQuestion(UploadQuestion):
     def __init__(self, **kwargs):
-        kwargs_copy = kwargs.copy()
-        tags = kwargs_copy.pop("tags", []) + kwargs_copy.pop("children", [])
-
-        super().__init__(**kwargs_copy)
-
-        if tags:
-            self.children = []
-
-            for tag in tags:
-                self.add_tag(**tag)
-
-    def add_tag(self, **kwargs):
-        tag = Tag(**kwargs)
-        self.add_child(tag)
+        kwargs["children"] = [
+            Tag(**c)
+            for c in combine_lists(
+                a=kwargs.pop("tags", None), b=kwargs.pop("children", None)
+            )
+        ]
+        super().__init__(**kwargs)
 
     def build_xml(self):
         control_dict = self.control

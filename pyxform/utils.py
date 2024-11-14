@@ -335,3 +335,19 @@ def levenshtein_distance(a: str, b: str) -> int:
 
 def coalesce(*args):
     return next((a for a in args if a is not None), None)
+
+
+def combine_lists(
+    a: list[dict] | None = None,
+    b: list[dict] | None = None,
+) -> list[dict]:
+    """Get the list that is not None, or both lists combined, or an empty list."""
+    if a is None and b is None:
+        combined = []
+    elif a is None:
+        combined = b
+    elif b is None:
+        combined = a
+    else:
+        combined = a + b
+    return combined

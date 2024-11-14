@@ -75,6 +75,13 @@ def any_repeat(survey_element: "SurveyElement", parent_xpath: str) -> bool:
     return False
 
 
+SURVEY_ELEMENT_LOCAL_KEYS =  {
+    "_survey_element_default_type",
+    "_survey_element_repeats",
+    "_survey_element_xpath",
+}
+
+
 class SurveyElement(dict):
     """
     SurveyElement is the base class we'll looks for the following keys
@@ -85,31 +92,40 @@ class SurveyElement(dict):
     __name__ = "SurveyElement"
     FIELDS: ClassVar[dict[str, Any]] = FIELDS.copy()
 
-    def _default(self):
-        # TODO: need way to override question type dictionary
-        defaults = QUESTION_TYPE_DICT
-        return defaults.get(self.get("type"), {})
+    def _dict_get(self, key):
+        """Built-in dict.get to bypass __getattr__"""
+        return dict.get(self, key)
 
     def __getattr__(self, key):
         """
         Get attributes from FIELDS rather than the class.
         """
         if key in self.FIELDS:
-            question_type_dict = self._default()
-            under = question_type_dict.get(key, None)
-            over = self.get(key)
+            under = None
+            default = self._dict_get("_survey_element_default_type")
+            if default is not None:
+                under = default.get(key, None)
             if not under:
-                return over
-            return _overlay(over, under)
+                return self._dict_get(key)
+            return _overlay(self._dict_get(key), under)
         raise AttributeError(key)
 
     def __hash__(self):
         return hash(id(self))
 
     def __setattr__(self, key, value):
+        if key == "parent":
+            # Object graph local changes invalidate these cached facts.
+            self._survey_element_repeats = {}
+            self._survey_element_xpath = None
         self[key] = value
 
     def __init__(self, **kwargs):
+        self._survey_element_default_type: dict = kwargs.get(
+            "question_type_dict", QUESTION_TYPE_DICT
+        ).get(kwargs.get("type"), {})
+        self._survey_element_xpath: str | None = None
+        self._survey_element_repeats: dict = {}
         for key, default in self.FIELDS.items():
             self[key] = kwargs.get(key, default())
         self._link_children()
@@ -120,6 +136,7 @@ class SurveyElement(dict):
         # themselves.
         if self.control.get("appearance") == "label" and not self.label:
             self["label"] = " "
+        super().__init__()
 
     def _link_children(self):
         for child in self.children:
@@ -161,7 +178,12 @@ class SurveyElement(dict):
 
     def any_repeat(self, parent_xpath: str) -> bool:
         """Return True if there ia any repeat in `parent_xpath`."""
-        return any_repeat(survey_element=self, parent_xpath=parent_xpath)
+        current_value = self._dict_get("_survey_element_repeats")
+        if parent_xpath not in current_value:
+            new_value = any_repeat(survey_element=self, parent_xpath=parent_xpath)
+            current_value[parent_xpath] = new_value
+            return new_value
+        return current_value[parent_xpath]
 
     def get_lineage(self):
         """
@@ -184,7 +206,12 @@ class SurveyElement(dict):
         """
         Return the xpath of this survey element.
         """
-        return "/".join([""] + [n.name for n in self.get_lineage()])
+        current_value = self._dict_get("_survey_element_xpath")
+        if current_value is None:
+            new_value = f'/{"/".join(n.name for n in self.get_lineage())}'
+            self._survey_element_xpath = new_value
+            return new_value
+        return current_value
 
     def get_abbreviated_xpath(self):
         lineage = self.get_lineage()
@@ -213,7 +240,12 @@ class SurveyElement(dict):
         """
         self.validate()
         result = self.copy()
-        to_delete = ["parent", "question_type_dictionary", "_created"]
+        to_delete = [
+            "parent",
+            "question_type_dictionary",
+            "_created",
+            *SURVEY_ELEMENT_LOCAL_KEYS,
+        ]
         # Delete all keys that may cause a "Circular Reference"
         # error while converting the result to JSON
         self._delete_keys_from_dict(result, to_delete)
