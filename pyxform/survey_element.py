@@ -5,8 +5,8 @@ Survey Element base class for all survey elements.
 import json
 import re
 from collections import deque
-from functools import lru_cache
-from typing import TYPE_CHECKING, Any, ClassVar
+from collections.abc import Generator
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 from pyxform import aliases as alias
 from pyxform import constants as const
@@ -65,19 +65,8 @@ def _overlay(over, under):
     return over if over else under
 
 
-@lru_cache(maxsize=65536)
-def any_repeat(survey_element: "SurveyElement", parent_xpath: str) -> bool:
-    """Return True if there ia any repeat in `parent_xpath`."""
-    for item in survey_element.iter_descendants():
-        if item.get_xpath() == parent_xpath and item.type == const.REPEAT:
-            return True
-
-    return False
-
-
-SURVEY_ELEMENT_LOCAL_KEYS =  {
+SURVEY_ELEMENT_LOCAL_KEYS = {
     "_survey_element_default_type",
-    "_survey_element_repeats",
     "_survey_element_xpath",
 }
 
@@ -115,8 +104,7 @@ class SurveyElement(dict):
 
     def __setattr__(self, key, value):
         if key == "parent":
-            # Object graph local changes invalidate these cached facts.
-            self._survey_element_repeats = {}
+            # If object graph position changes then invalidate cached.
             self._survey_element_xpath = None
         self[key] = value
 
@@ -125,7 +113,6 @@ class SurveyElement(dict):
             "question_type_dict", QUESTION_TYPE_DICT
         ).get(kwargs.get("type"), {})
         self._survey_element_xpath: str | None = None
-        self._survey_element_repeats: dict = {}
         for key, default in self.FIELDS.items():
             self[key] = kwargs.get(key, default())
         self._link_children()
@@ -176,14 +163,65 @@ class SurveyElement(dict):
         for e in self.children:
             yield from e.iter_descendants()
 
-    def any_repeat(self, parent_xpath: str) -> bool:
-        """Return True if there ia any repeat in `parent_xpath`."""
-        current_value = self._dict_get("_survey_element_repeats")
-        if parent_xpath not in current_value:
-            new_value = any_repeat(survey_element=self, parent_xpath=parent_xpath)
-            current_value[parent_xpath] = new_value
-            return new_value
-        return current_value[parent_xpath]
+    def iter_ancestors(self) -> Generator[tuple["SurveyElement", int], None, None]:
+        """Get each self.parent with their distance from self (starting at 1)."""
+        distance = 1
+        current = self.parent
+        while current is not None:
+            yield current, distance
+            current = current.parent
+            distance += 1
+
+    def has_common_repeat_parent(
+        self, other: "SurveyElement"
+    ) -> tuple[str, int | None, Optional["SurveyElement"]]:
+        """
+        Get the relation type, steps (generations), and the common ancestor.
+        """
+        # Quick check for immediate relation.
+        if self.parent is other:
+            return "Parent (other)", 1, other
+        elif other.parent is self:
+            return "Parent (self)", 1, self
+
+        # Traversal tracking
+        self_ancestors = {}
+        other_ancestors = {}
+        self_current = self
+        other_current = other
+        self_distance = 0
+        other_distance = 0
+
+        # Traverse up both ancestor chains as far as necessary.
+        while self_current or other_current:
+            # Step up the self chain
+            if self_current:
+                self_distance += 1
+                self_current = self_current.parent
+                if self_current:
+                    self_ancestors[self_current] = self_distance
+                    if (
+                        self_current.type == const.REPEAT
+                        and self_current in other_ancestors
+                    ):
+                        max_steps = max(self_distance, other_ancestors[self_current])
+                        return "Common Ancestor Repeat", max_steps, self_current
+
+            # Step up the other chain
+            if other_current:
+                other_distance += 1
+                other_current = other_current.parent
+                if other_current:
+                    other_ancestors[other_current] = other_distance
+                    if (
+                        other_current.type == const.REPEAT
+                        and other_current in self_ancestors
+                    ):
+                        max_steps = max(other_distance, self_ancestors[other_current])
+                        return "Common Ancestor Repeat", max_steps, other_current
+
+        # No common ancestor found.
+        return "Unrelated", None, None
 
     def get_lineage(self):
         """
@@ -244,6 +282,7 @@ class SurveyElement(dict):
             "parent",
             "question_type_dictionary",
             "_created",
+            "_xpath",
             *SURVEY_ELEMENT_LOCAL_KEYS,
         ]
         # Delete all keys that may cause a "Circular Reference"

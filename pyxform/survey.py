@@ -84,8 +84,9 @@ def is_parent_a_repeat(survey, xpath):
     if not parent_xpath:
         return False
 
-    if survey.any_repeat(parent_xpath):
-        return parent_xpath
+    for item in survey.iter_descendants():
+        if item.type == constants.REPEAT and item.get_xpath() == parent_xpath:
+            return parent_xpath
 
     return is_parent_a_repeat(survey, parent_xpath)
 
@@ -98,7 +99,7 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
     parent.
 
     For example,
-        xpath = /data/repeat_a/group_a/name
+        xpath =         /data/repeat_a/group_a/name
         context_xpath = /data/repeat_a/group_b/age
 
         returns (2, '/group_a/name')'
@@ -995,13 +996,13 @@ class Survey(Section):
         return f"<pyxform.survey.Survey instance at {hex(id(self))}>"
 
     def _setup_xpath_dictionary(self):
-        self._xpath = {}  # pylint: disable=attribute-defined-outside-init
+        self._xpath: dict[str, SurveyElement | None] = {}  # pylint: disable=attribute-defined-outside-init
         for element in self.iter_descendants():
             if isinstance(element, Question | Section):
                 if element.name in self._xpath:
                     self._xpath[element.name] = None
                 else:
-                    self._xpath[element.name] = element.get_xpath()
+                    self._xpath[element.name] = element
 
     def _var_repl_function(
         self, matchobj, context, use_current=False, reference_parent=False
@@ -1036,7 +1037,7 @@ class Survey(Section):
         def _relative_path(ref_name: str, _use_current: bool) -> str | None:
             """Given name in ${name}, return relative xpath to ${name}."""
             return_path = None
-            xpath = self._xpath[ref_name]
+            xpath = self._xpath[ref_name].get_xpath()
             context_xpath = context.get_xpath()
             # share same root i.e repeat_a from /data/repeat_a/...
             if (
@@ -1045,13 +1046,17 @@ class Survey(Section):
             ):
                 # if context xpath and target xpath fall under the same
                 # repeat use relative xpath referencing.
-                steps, ref_path = share_same_repeat_parent(
-                    self, xpath, context_xpath, reference_parent
-                )
-                if steps:
-                    ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
-                    prefix = " current()/" if _use_current else " "
-                    return_path = prefix + "/".join([".."] * steps) + ref_path + " "
+                relation = context.has_common_repeat_parent(self._xpath[ref_name])
+                if relation[0] == "Unrelated":
+                    return return_path
+                else:
+                    steps, ref_path = share_same_repeat_parent(
+                        self, xpath, context_xpath, reference_parent
+                    )
+                    if steps:
+                        ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
+                        prefix = " current()/" if _use_current else " "
+                        return_path = prefix + "/".join([".."] * steps) + ref_path + " "
 
             return return_path
 
@@ -1122,7 +1127,7 @@ class Survey(Section):
         last_saved_prefix = (
             "instance('" + LAST_SAVED_INSTANCE_NAME + "')" if last_saved else ""
         )
-        return " " + last_saved_prefix + self._xpath[name] + " "
+        return " " + last_saved_prefix + self._xpath[name].get_xpath() + " "
 
     def insert_xpaths(self, text, context, use_current=False, reference_parent=False):
         """

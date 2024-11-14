@@ -22,7 +22,7 @@ class SurveyInstance:
         # get xpaths
         #  - prep for xpaths.
         self._survey.xml()
-        self._xpaths = self._survey._xpath.values()
+        self._xpaths = [x.get_xpath() for x in self._survey._xpath.values()]
 
         # see "answers(self):" below for explanation of this dict
         self._answers = {}
