@@ -2,6 +2,8 @@
 XForm survey question type mapping dictionary module.
 """
 
+from types import MappingProxyType
+
 from pyxform.xls2json import QuestionTypesReader, print_pyobj_to_json
 
 
@@ -16,7 +18,7 @@ def generate_new_dict():
     print_pyobj_to_json(json_dict, "new_question_type_dict.json")
 
 
-QUESTION_TYPE_DICT = {
+_QUESTION_TYPE_DICT = {
     "q picture": {
         "control": {"tag": "upload", "mediatype": "image/*"},
         "bind": {"type": "binary"},
@@ -387,3 +389,6 @@ QUESTION_TYPE_DICT = {
         "bind": {"type": "geopoint"},
     },
 }
+
+# Read-only view of the types.
+QUESTION_TYPE_DICT = MappingProxyType(_QUESTION_TYPE_DICT)

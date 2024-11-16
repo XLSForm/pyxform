@@ -78,19 +78,28 @@ class SurveyElementBuilder:
         self._sections = sections
 
     def create_survey_element_from_dict(
-        self, d: dict[str, Any]
+        self, d: dict[str, Any], deep_copy: bool = True
     ) -> Union["SurveyElement", list["SurveyElement"]]:
         """
         Convert from a nested python dictionary/array structure (a json dict I
         call it because it corresponds directly with a json object)
         to a survey object
+
+        :param d: data to use for constructing SurveyElements.
+        :param deep_copy: Take a copy.deepcopy() of the input data, to avoid changing the
+          original objects during processing. All methods private to this Builder class
+          should use "False" since the data is already copied by its public methods.
         """
+        # TODO: ideally avoid copying entirely, but at least try to only copy once.
+        if deep_copy:
+            d = copy.deepcopy(d)
+
         if "add_none_option" in d:
             self._add_none_option = d["add_none_option"]
 
         if d[const.TYPE] in SECTION_CLASSES:
             if d[const.TYPE] == const.SURVEY:
-                self._choices = copy.deepcopy(d.get(const.CHOICES, {}))
+                self._choices = d.get(const.CHOICES, {})
 
             section = self._create_section_from_dict(d)
 
@@ -111,7 +120,7 @@ class SurveyElementBuilder:
                     self._sections.keys(),
                 )
             d = self._sections[section_name]
-            full_survey = self.create_survey_element_from_dict(d)
+            full_survey = self.create_survey_element_from_dict(d=d, deep_copy=False)
             return full_survey.children
         elif d[const.TYPE] in ["xml-external", "csv-external"]:
             return ExternalInstance(**d)
@@ -120,7 +129,7 @@ class SurveyElementBuilder:
         else:
             self._save_trigger(d=d)
             return self._create_question_from_dict(
-                d, copy.deepcopy(QUESTION_TYPE_DICT), self._add_none_option
+                d, QUESTION_TYPE_DICT, self._add_none_option
             )
 
     def _save_trigger(self, d: dict) -> None:
@@ -142,23 +151,22 @@ class SurveyElementBuilder:
         add_none_option: bool = False,
     ) -> Question | list[Question]:
         question_type_str = d[const.TYPE]
-        d_copy = d.copy()
 
         # TODO: Keep add none option?
         if add_none_option and question_type_str.startswith(const.SELECT_ALL_THAT_APPLY):
-            SurveyElementBuilder._add_none_option_to_select_all_that_apply(d_copy)
+            SurveyElementBuilder._add_none_option_to_select_all_that_apply(d)
 
         # Handle or_other on select type questions
         or_other_len = len(const.SELECT_OR_OTHER_SUFFIX)
         if question_type_str.endswith(const.SELECT_OR_OTHER_SUFFIX):
             question_type_str = question_type_str[: len(question_type_str) - or_other_len]
-            d_copy[const.TYPE] = question_type_str
-            SurveyElementBuilder._add_other_option_to_multiple_choice_question(d_copy)
+            d[const.TYPE] = question_type_str
+            SurveyElementBuilder._add_other_option_to_multiple_choice_question(d)
             return [
                 SurveyElementBuilder._create_question_from_dict(
-                    d_copy, question_type_dictionary, add_none_option
+                    d, question_type_dictionary, add_none_option
                 ),
-                SurveyElementBuilder._create_specify_other_question_from_dict(d_copy),
+                SurveyElementBuilder._create_specify_other_question_from_dict(d),
             ]
 
         question_class = SurveyElementBuilder._get_question_class(
@@ -166,9 +174,9 @@ class SurveyElementBuilder:
         )
 
         # todo: clean up this spaghetti code
-        d_copy["question_type_dictionary"] = question_type_dictionary
+        d["question_type_dictionary"] = question_type_dictionary
         if question_class:
-            return question_class(**d_copy)
+            return question_class(**d)
 
         return []
 
@@ -243,18 +251,19 @@ class SurveyElementBuilder:
         return InputQuestion(**kwargs)
 
     def _create_section_from_dict(self, d):
-        d_copy = d.copy()
-        children = d_copy.pop(const.CHILDREN, [])
-        section_class = SECTION_CLASSES[d_copy[const.TYPE]]
+        children = d.pop(const.CHILDREN, [])
+        section_class = SECTION_CLASSES[d[const.TYPE]]
         if d[const.TYPE] == const.SURVEY and const.TITLE not in d:
-            d_copy[const.TITLE] = d[const.NAME]
-        result = section_class(**d_copy)
+            d[const.TITLE] = d[const.NAME]
+        result = section_class(**d)
         for child in children:
             # Deep copying the child is a hacky solution to the or_other bug.
             # I don't know why it works.
             # And I hope it doesn't break something else.
             # I think the good solution would be to rewrite this class.
-            survey_element = self.create_survey_element_from_dict(copy.deepcopy(child))
+            survey_element = self.create_survey_element_from_dict(
+                d=child, deep_copy=False
+            )
             if child[const.TYPE].endswith(const.SELECT_OR_OTHER_SUFFIX):
                 select_question = survey_element[0]
                 itemset_choices = self._choices.get(select_question[const.ITEMSET], None)
@@ -279,10 +288,9 @@ class SurveyElementBuilder:
         Takes a json_dict of "loop" type
         Returns a GroupedSection
         """
-        d_copy = d.copy()
-        children = d_copy.pop(const.CHILDREN, [])
-        columns = d_copy.pop(const.COLUMNS, [])
-        result = GroupedSection(**d_copy)
+        children = d.pop(const.CHILDREN, [])
+        columns = d.pop(const.COLUMNS, [])
+        result = GroupedSection(**d)
 
         # columns is a left over from when this was
         # create_table_from_dict, I will need to clean this up
@@ -295,7 +303,9 @@ class SurveyElementBuilder:
             column = GroupedSection(**column_dict)
             for child in children:
                 question_dict = self._name_and_label_substitutions(child, column_dict)
-                question = self.create_survey_element_from_dict(question_dict)
+                question = self.create_survey_element_from_dict(
+                    d=question_dict, deep_copy=False
+                )
                 column.add_child(question)
             result.add_child(column)
         if result.name != "":
@@ -333,7 +343,8 @@ class SurveyElementBuilder:
 
     def create_survey_element_from_json(self, str_or_path):
         d = utils.get_pyobj_from_json(str_or_path)
-        return self.create_survey_element_from_dict(d)
+        # Loading JSON creates a new dictionary structure so no need to re-copy.
+        return self.create_survey_element_from_dict(d=d, deep_copy=False)
 
 
 def create_survey_element_from_dict(d, sections=None):
