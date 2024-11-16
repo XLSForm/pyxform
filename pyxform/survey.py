@@ -7,7 +7,7 @@ import re
 import tempfile
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
-from collections.abc import Generator, Iterator
+from collections.abc import Generator
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -230,21 +230,20 @@ class Survey(Section):
     def _validate_uniqueness_of_section_names(self):
         root_node_name = self.name
         section_names = set()
-        for element in self.iter_descendants():
-            if isinstance(element, Section):
-                if element.name in section_names:
-                    if element.name == root_node_name:
-                        # The root node name is rarely explictly set; explain
-                        # the problem in a more helpful way (#510)
-                        msg = (
-                            f"The name '{element.name}' is the same as the form name. "
-                            "Use a different section name (or change the form name in "
-                            "the 'name' column of the settings sheet)."
-                        )
-                        raise PyXFormError(msg)
-                    msg = f"There are two sections with the name {element.name}."
+        for element in self.iter_descendants(condition=lambda i: isinstance(i, Section)):
+            if element.name in section_names:
+                if element.name == root_node_name:
+                    # The root node name is rarely explictly set; explain
+                    # the problem in a more helpful way (#510)
+                    msg = (
+                        f"The name '{element.name}' is the same as the form name. "
+                        "Use a different section name (or change the form name in "
+                        "the 'name' column of the settings sheet)."
+                    )
                     raise PyXFormError(msg)
-                section_names.add(element.name)
+                msg = f"There are two sections with the name {element.name}."
+                raise PyXFormError(msg)
+            section_names.add(element.name)
 
     def get_nsmap(self):
         """Add additional namespaces"""
@@ -295,7 +294,7 @@ class Survey(Section):
         return node(
             "h:html",
             node("h:head", node("h:title", self.title), self.xml_model()),
-            node("h:body", *self.xml_control(), **body_kwargs),
+            node("h:body", *self.xml_control(survey=self), **body_kwargs),
             **nsmap,
         )
 
@@ -500,7 +499,7 @@ class Survey(Section):
             instance=node("instance", id=name, src=uri),
         )
 
-    def _generate_instances(self) -> Iterator[DetachableElement]:
+    def _generate_instances(self) -> Generator[DetachableElement, None, None]:
         """
         Get instances from all the different ways that they may be generated.
 
@@ -581,6 +580,32 @@ class Survey(Section):
                 yield i.instance
             seen[i.name] = i
 
+    def xml_descendent_bindings(self) -> Generator["DetachableElement", None, None]:
+        """
+        Yield bindings for this node and all its descendants.
+        """
+        for e in self.iter_descendants():
+            xml_bindings = e.xml_bindings(survey=self)
+            if xml_bindings is not None:
+                yield from xml_bindings
+
+            # dynamic defaults for repeats go in the body. All other dynamic defaults (setvalue actions) go in the model
+            if not next(
+                e.iter_ancestors(condition=lambda i: i.type == constants.REPEAT), False
+            ):
+                dynamic_default = e.get_setvalue_node_for_dynamic_default(survey=self)
+                if dynamic_default:
+                    yield dynamic_default
+
+    def xml_actions(self) -> Generator[DetachableElement, None, None]:
+        """
+        Yield xml_actions for this node and all its descendants.
+        """
+        for e in self.iter_descendants(condition=lambda i: isinstance(i, Question)):
+            xml_action = e.xml_action()
+            if xml_action is not None:
+                yield xml_action
+
     def xml_model(self):
         """
         Generate the xform <model> element
@@ -609,10 +634,9 @@ class Survey(Section):
         model_children = []
         if self._translations:
             model_children.append(self.itext())
-        model_children += [node("instance", self.xml_instance())]
-        model_children += list(self._generate_instances())
-        model_children += self.xml_descendent_bindings()
-        model_children += self.xml_actions()
+        model_children.append(
+            node("instance", self.xml_instance()),
+        )
 
         if self.submission_url or self.public_key or self.auto_send or self.auto_delete:
             submission_attrs = {}
@@ -628,10 +652,16 @@ class Survey(Section):
             submission_node = node("submission", **submission_attrs)
             model_children.insert(0, submission_node)
 
-        return node("model", *model_children, **model_kwargs)
+        def model_children_generator():
+            yield from model_children
+            yield from self._generate_instances()
+            yield from self.xml_descendent_bindings()
+            yield from self.xml_actions()
+
+        return node("model", model_children_generator(), **model_kwargs)
 
     def xml_instance(self, **kwargs):
-        result = Section.xml_instance(self, **kwargs)
+        result = Section.xml_instance(self, survey=self, **kwargs)
 
         # set these first to prevent overwriting id and version
         for key, value in self.attribute.items():
@@ -890,17 +920,18 @@ class Survey(Section):
 
                     translations_trans_key[media_type] = media
 
-        for survey_element in self.iter_descendants():
+        for survey_element in self.iter_descendants(
+            condition=lambda i: not isinstance(i, Option)
+        ):
             # Skip set up of media for choices in selects. Translations for their media
             # content should have been set up in _setup_translations, with one copy of
             # each choice translation per language (after _add_empty_translations).
-            if not isinstance(survey_element, Option):
-                media_dict = survey_element.get("media")
-                if isinstance(media_dict, dict) and 0 < len(media_dict):
-                    translation_key = survey_element.get_xpath() + ":label"
-                    _set_up_media_translations(media_dict, translation_key)
+            media_dict = survey_element.get("media")
+            if isinstance(media_dict, dict) and 0 < len(media_dict):
+                translation_key = survey_element.get_xpath() + ":label"
+                _set_up_media_translations(media_dict, translation_key)
 
-    def itext(self):
+    def itext(self) -> DetachableElement:
         """
         This function creates the survey's itext nodes from _translations
         @see _setup_media _setup_translations
@@ -997,12 +1028,11 @@ class Survey(Section):
 
     def _setup_xpath_dictionary(self):
         self._xpath: dict[str, SurveyElement | None] = {}  # pylint: disable=attribute-defined-outside-init
-        for element in self.iter_descendants():
-            if isinstance(element, Question | Section):
-                if element.name in self._xpath:
-                    self._xpath[element.name] = None
-                else:
-                    self._xpath[element.name] = element
+        for element in self.iter_descendants(lambda i: isinstance(i, Question | Section)):
+            if element.name in self._xpath:
+                self._xpath[element.name] = None
+            else:
+                self._xpath[element.name] = element
 
     def _var_repl_function(
         self, matchobj, context, use_current=False, reference_parent=False

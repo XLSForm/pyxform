@@ -1,6 +1,12 @@
+from typing import TYPE_CHECKING
+
 from pyxform import constants as const
 from pyxform.survey_element import SurveyElement
 from pyxform.utils import node
+
+if TYPE_CHECKING:
+    from pyxform.survey import Survey
+
 
 EC = const.EntityColumns
 
@@ -50,11 +56,10 @@ class EntityDeclaration(SurveyElement):
         else:
             return node(const.ENTITY, **attributes)
 
-    def xml_bindings(self):
+    def xml_bindings(self, survey: "Survey"):
         """
         See the class comment for an explanation of the logic for generating bindings.
         """
-        survey = self.get_root()
         parameters = self.get(const.PARAMETERS, {})
         entity_id_expression = parameters.get(EC.ENTITY_ID, None)
         create_condition = parameters.get(EC.CREATE_IF, None)
@@ -125,5 +130,5 @@ class EntityDeclaration(SurveyElement):
 
         return node(const.BIND, nodeset=self.get_xpath() + destination, **bind_attrs)
 
-    def xml_control(self):
+    def xml_control(self, survey: "Survey"):
         raise NotImplementedError()

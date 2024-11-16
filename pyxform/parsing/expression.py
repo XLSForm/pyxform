@@ -1,7 +1,6 @@
 import re
 from collections.abc import Iterable
 from functools import lru_cache
-from typing import NamedTuple
 
 
 def get_expression_lexer() -> re.Scanner:
@@ -74,11 +73,14 @@ def get_expression_lexer() -> re.Scanner:
 
 
 # Scanner takes a few 100ms to compile so use this shared instance.
-class ExpLexerToken(NamedTuple):
-    name: str
-    value: str
-    start: int
-    end: int
+class ExpLexerToken:
+    __slots__ = ("name", "value", "start", "end")
+
+    def __init__(self, name: str, value: str, start: int, end: int) -> None:
+        self.name: str = name
+        self.value: str = value
+        self.start: int = start
+        self.end: int = end
 
 
 _EXPRESSION_LEXER = get_expression_lexer()

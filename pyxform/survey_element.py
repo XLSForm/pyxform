@@ -4,8 +4,8 @@ Survey Element base class for all survey elements.
 
 import json
 import re
-from collections import deque
-from collections.abc import Generator
+from collections.abc import Callable, Generator
+from itertools import chain
 from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 from pyxform import aliases as alias
@@ -22,6 +22,7 @@ from pyxform.utils import (
 from pyxform.xls2json import print_pyobj_to_json
 
 if TYPE_CHECKING:
+    from pyxform.survey import Survey
     from pyxform.utils import DetachableElement
 
 # The following are important keys for the underlying dict that describes SurveyElement
@@ -151,24 +152,39 @@ class SurveyElement(dict):
             )
 
     # TODO: Make sure renaming this doesn't cause any problems
-    def iter_descendants(self):
+    def iter_descendants(
+        self, condition: Callable[["SurveyElement"], bool] | None = None
+    ) -> Generator["SurveyElement", None, None]:
         """
-        A survey_element is a dictionary of survey_elements
-        This method does a preorder traversal over them.
-        For the time being this survery_element is included among its
-        descendants
+        Get each of self.children.
+
+        :param condition: If this evaluates to True, yield the element.
         """
         # it really seems like this method should not yield self
-        yield self
+        if condition is not None:
+            if condition(self):
+                yield self
+        else:
+            yield self
         for e in self.children:
-            yield from e.iter_descendants()
+            yield from e.iter_descendants(condition=condition)
 
-    def iter_ancestors(self) -> Generator[tuple["SurveyElement", int], None, None]:
-        """Get each self.parent with their distance from self (starting at 1)."""
+    def iter_ancestors(
+        self, condition: Callable[["SurveyElement"], bool] | None = None
+    ) -> Generator[tuple["SurvekyElement", int], None, None]:
+        """
+        Get each self.parent with their distance from self (starting at 1).
+
+        :param condition: If this evaluates to True, yield the element.
+        """
         distance = 1
         current = self.parent
         while current is not None:
-            yield current, distance
+            if condition is not None:
+                if condition(current):
+                    yield current, distance
+            else:
+                yield current, distance
             current = current.parent
             distance += 1
 
@@ -223,40 +239,34 @@ class SurveyElement(dict):
         # No common ancestor found.
         return "Unrelated", None, None
 
-    def get_lineage(self):
-        """
-        Return a the list [root, ..., self._parent, self]
-        """
-        result = deque((self,))
-        current_element = self
-        while current_element.parent:
-            current_element = current_element.parent
-            result.appendleft(current_element)
-        # For some reason the root element has a True flat property...
-        output = [result.popleft()]
-        output.extend([i for i in result if not i.get("flat")])
-        return output
-
-    def get_root(self):
-        return self.get_lineage()[0]
-
     def get_xpath(self):
         """
         Return the xpath of this survey element.
         """
+        # Imported here to avoid circular references.
+        from pyxform.survey import Survey
+
+        def condition(e):
+            # The "flat" setting was added in 2013 to support ODK Tables, and results in
+            # a data instance with no element nesting. Not sure if still needed.
+            return isinstance(e, Survey) or (
+                not isinstance(e, Survey) and not e.get("flat")
+            )
+
         current_value = self._dict_get("_survey_element_xpath")
         if current_value is None:
-            new_value = f'/{"/".join(n.name for n in self.get_lineage())}'
+            if condition(self):
+                self_element = (self,)
+            else:
+                self_element = ()
+            lineage = chain(
+                reversed(tuple(i[0] for i in self.iter_ancestors(condition=condition))),
+                self_element,
+            )
+            new_value = f'/{"/".join(n.name for n in lineage)}'
             self._survey_element_xpath = new_value
             return new_value
         return current_value
-
-    def get_abbreviated_xpath(self):
-        lineage = self.get_lineage()
-        if len(lineage) >= 2:
-            return "/".join([str(n.name) for n in lineage[1:]])
-        else:
-            return lineage[0].name
 
     def _delete_keys_from_dict(self, dictionary: dict, keys: list):
         """
@@ -416,23 +426,16 @@ class SurveyElement(dict):
                         "text": text,
                     }
 
-    def get_media_keys(self):
-        """
-        @deprected
-        I'm leaving this in just in case it has outside references.
-        """
-        return {"media": f"{self.get_xpath()}:media"}
-
     def needs_itext_ref(self):
         return isinstance(self.label, dict) or (
             isinstance(self.media, dict) and len(self.media) > 0
         )
 
-    def get_setvalue_node_for_dynamic_default(self, in_repeat=False):
+    def get_setvalue_node_for_dynamic_default(self, survey: "Survey", in_repeat=False):
         if not self.default or not default_is_dynamic(self.default, self.type):
             return None
 
-        default_with_xpath_paths = self.get_root().insert_xpaths(self.default, self)
+        default_with_xpath_paths = survey.insert_xpaths(self.default, self)
 
         triggering_events = "odk-instance-first-load"
         if in_repeat:
@@ -446,26 +449,25 @@ class SurveyElement(dict):
         )
 
     # XML generating functions, these probably need to be moved around.
-    def xml_label(self):
+    def xml_label(self, survey: "Survey"):
         if self.needs_itext_ref():
             # If there is a dictionary label, or non-empty media dict,
             # then we need to make a label with an itext ref
             ref = f"""jr:itext('{self._translation_path("label")}')"""
             return node("label", ref=ref)
         else:
-            survey = self.get_root()
             label, output_inserted = survey.insert_output_values(self.label, self)
             return node("label", label, toParseString=output_inserted)
 
-    def xml_hint(self):
+    def xml_hint(self, survey: "Survey"):
         if isinstance(self.hint, dict) or self.guidance_hint:
             path = self._translation_path("hint")
             return node("hint", ref=f"jr:itext('{path}')")
         else:
-            hint, output_inserted = self.get_root().insert_output_values(self.hint, self)
+            hint, output_inserted = survey.insert_output_values(self.hint, self)
             return node("hint", hint, toParseString=output_inserted)
 
-    def xml_label_and_hint(self) -> list["DetachableElement"]:
+    def xml_label_and_hint(self, survey: "Survey") -> list["DetachableElement"]:
         """
         Return a list containing one node for the label and if there
         is a hint one node for the hint.
@@ -473,13 +475,13 @@ class SurveyElement(dict):
         result = []
         label_appended = False
         if self.label or self.media:
-            result.append(self.xml_label())
+            result.append(self.xml_label(survey=survey))
             label_appended = True
 
         if self.hint or self.guidance_hint:
             if not label_appended:
-                result.append(self.xml_label())
-            result.append(self.xml_hint())
+                result.append(self.xml_label(survey=survey))
+            result.append(self.xml_hint(survey=survey))
 
         msg = f"The survey element named '{self.name}' has no label or hint."
         if len(result) == 0:
@@ -497,11 +499,10 @@ class SurveyElement(dict):
 
         return result
 
-    def xml_bindings(self):
+    def xml_bindings(self, survey: "Survey"):
         """
         Return the binding(s) for this survey element.
         """
-        survey = self.get_root()
         bind_dict = self.bind.copy()
         if self.get("flat"):
             # Don't generate bind element for flat groups.
@@ -520,47 +521,21 @@ class SurveyElement(dict):
                     and k in const.CONVERTIBLE_BIND_ATTRIBUTES
                 ):
                     v = alias.BINDING_CONVERSIONS[v]
-                if k == "jr:constraintMsg" and (
+                elif k == "jr:constraintMsg" and (
                     isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
                 ):
                     v = f"""jr:itext('{self._translation_path("jr:constraintMsg")}')"""
-                if k == "jr:requiredMsg" and (
+                elif k == "jr:requiredMsg" and (
                     isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
                 ):
                     v = f"""jr:itext('{self._translation_path("jr:requiredMsg")}')"""
-                if k == "jr:noAppErrorString" and isinstance(v, dict):
+                elif k == "jr:noAppErrorString" and isinstance(v, dict):
                     v = f"""jr:itext('{self._translation_path("jr:noAppErrorString")}')"""
                 bind_dict[k] = survey.insert_xpaths(v, context=self)
             return [node("bind", nodeset=self.get_xpath(), **bind_dict)]
         return None
 
-    def xml_descendent_bindings(self):
-        """
-        Return a list of bindings for this node and all its descendants.
-        """
-        result = []
-        for e in self.iter_descendants():
-            xml_bindings = e.xml_bindings()
-            if xml_bindings is not None:
-                result.extend(xml_bindings)
-
-            # dynamic defaults for repeats go in the body. All other dynamic defaults (setvalue actions) go in the model
-            if (
-                len(
-                    [
-                        ancestor
-                        for ancestor in e.get_lineage()
-                        if ancestor.type == "repeat"
-                    ]
-                )
-                == 0
-            ):
-                dynamic_default = e.get_setvalue_node_for_dynamic_default()
-                if dynamic_default:
-                    result.append(dynamic_default)
-        return result
-
-    def xml_control(self):
+    def xml_control(self, survey: "Survey"):
         """
         The control depends on what type of question we're asking, it
         doesn't make sense to implement here in the base class.
@@ -573,23 +548,9 @@ class SurveyElement(dict):
         """
         if self.action:
             action_dict = self.action.copy()
-            if action_dict:
-                name = action_dict["name"]
-                del action_dict["name"]
-                return node(name, ref=self.get_xpath(), **action_dict)
+            return node(action_dict.pop("name"), ref=self.get_xpath(), **action_dict)
 
         return None
-
-    def xml_actions(self):
-        """
-        Return a list of actions for this node and all its descendants.
-        """
-        result = []
-        for e in self.iter_descendants():
-            xml_action = e.xml_action()
-            if xml_action is not None:
-                result.append(xml_action)
-        return result
 
 
 def hashable(v):

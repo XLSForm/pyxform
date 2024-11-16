@@ -7,6 +7,7 @@ import csv
 import json
 import os
 import re
+from collections.abc import Generator
 from io import StringIO
 from json.decoder import JSONDecodeError
 from typing import Any
@@ -139,6 +140,9 @@ def node(*args, **kwargs) -> DetachableElement:
             text_node = PatchedText()
             text_node.data = str(n)
             result.appendChild(text_node)
+        elif isinstance(n, Generator):
+            for e in n:
+                result.appendChild(e)
         elif not isinstance(n, str):
             result.appendChild(n)
     return result

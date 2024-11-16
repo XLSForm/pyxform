@@ -1,23 +1,11 @@
 from typing import TYPE_CHECKING
 
-from pyxform.parsing.expression import ExpLexerToken, parse_expression
+from pyxform.parsing.expression import parse_expression
 from pyxform.utils import BRACKETED_TAG_REGEX, node
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
     from pyxform.survey_element import SurveyElement
-
-
-def instance_func_start(token: ExpLexerToken) -> bool:
-    """
-    Determine if the token is the start of an instance expression.
-
-    :param token: The token to examine.
-    :return: If True, the token is the start of an instance expression.
-    """
-    if token is None:
-        return False
-    return token.name == "FUNC_CALL" and token.value == "instance("
 
 
 def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
@@ -43,14 +31,18 @@ def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
     for t in tokens:
         emit = False
         # If an instance expression had started, note the string position boundary.
-        if instance_func_start(token=t) and not instance_enter:
+        if not instance_enter and t.name == "FUNC_CALL" and t.value == "instance(":
             instance_enter = True
             emit = True
             boundaries.append(t.start)
         # Tokens that are part of an instance expression.
         elif instance_enter:
             # Tokens that are part of the instance call.
-            if instance_func_start(token=last_token) and t.name == "SYSTEM_LITERAL":
+            if (
+                t.name == "SYSTEM_LITERAL"
+                and last_token.name == "FUNC_CALL"
+                and last_token.value == "instance("
+            ):
                 emit = True
             elif last_token.name == "SYSTEM_LITERAL" and t.name == "CLOSE_PAREN":
                 emit = True
