@@ -5,7 +5,6 @@ XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 import csv
 import datetime
 import re
-from collections import OrderedDict
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from enum import Enum
@@ -16,16 +15,17 @@ from pathlib import Path
 from typing import Any
 from zipfile import BadZipFile
 
-import openpyxl
-import xlrd
+from openpyxl import open as pyxl_open
 from openpyxl.cell import Cell as pyxlCell
 from openpyxl.reader.excel import ExcelReader
 from openpyxl.workbook import Workbook as pyxlWorkbook
 from openpyxl.worksheet.worksheet import Worksheet as pyxlWorksheet
+from xlrd import XL_CELL_BOOLEAN, XL_CELL_DATE, XL_CELL_NUMBER, XLRDError
+from xlrd import open_workbook as xlrd_open
 from xlrd.book import Book as xlrdBook
 from xlrd.sheet import Cell as xlrdCell
 from xlrd.sheet import Sheet as xlrdSheet
-from xlrd.xldate import XLDateAmbiguous
+from xlrd.xldate import XLDateAmbiguous, xldate_as_tuple
 
 from pyxform import constants
 from pyxform.errors import PyXFormError, PyXFormReadError
@@ -43,10 +43,7 @@ def _list_to_dict_list(list_items):
     Returns a list of the created dict or an empty list
     """
     if list_items:
-        k = OrderedDict()
-        for item in list_items:
-            k[str(item)] = ""
-        return [k]
+        return [{str(i): "" for i in list_items}]
     return []
 
 
@@ -96,7 +93,7 @@ def get_excel_rows(
     adjacent_empty_rows = 0
     result_rows = []
     for row_n, row in enumerate(rows):
-        row_dict = OrderedDict()
+        row_dict = {}
         for col_n, key in col_header_enum:
             if key is None:
                 continue
@@ -168,7 +165,7 @@ def xls_to_dict(path_or_file):
         return rows, _list_to_dict_list(column_header_list)
 
     def process_workbook(wb: xlrdBook):
-        result_book = OrderedDict()
+        result_book = {}
         for wb_sheet in wb.sheets():
             # Note that the sheet exists but do no further processing here.
             result_book[wb_sheet.name] = []
@@ -190,12 +187,12 @@ def xls_to_dict(path_or_file):
 
     try:
         wb_file = get_definition_data(definition=path_or_file)
-        workbook = xlrd.open_workbook(file_contents=wb_file.data.getvalue())
+        workbook = xlrd_open(file_contents=wb_file.data.getvalue())
         try:
             return process_workbook(wb=workbook)
         finally:
             workbook.release_resources()
-    except (AttributeError, TypeError, xlrd.XLRDError) as read_err:
+    except (AttributeError, TypeError, XLRDError) as read_err:
         raise PyXFormReadError(f"Error reading .xls file: {read_err}") from read_err
 
 
@@ -203,21 +200,21 @@ def xls_value_to_unicode(value, value_type, datemode) -> str:
     """
     Take a xls formatted value and try to make a unicode string representation.
     """
-    if value_type == xlrd.XL_CELL_BOOLEAN:
+    if value_type == XL_CELL_BOOLEAN:
         return "TRUE" if value else "FALSE"
-    elif value_type == xlrd.XL_CELL_NUMBER:
+    elif value_type == XL_CELL_NUMBER:
         # Try to display as an int if possible.
         int_value = int(value)
         if int_value == value:
             return str(int_value)
         else:
             return str(value)
-    elif value_type is xlrd.XL_CELL_DATE:
+    elif value_type is XL_CELL_DATE:
         # Warn that it is better to single quote as a string.
         # error_location = cellFormatString % (ss_row_idx, ss_col_idx)
         # raise Exception(
         #   "Cannot handle excel formatted date at " + error_location)
-        datetime_or_time_only = xlrd.xldate_as_tuple(value, datemode)
+        datetime_or_time_only = xldate_as_tuple(value, datemode)
         if datetime_or_time_only[:3] == (0, 0, 0):
             # must be time only
             return str(datetime.time(*datetime_or_time_only[3:]))
@@ -258,7 +255,7 @@ def xlsx_to_dict(path_or_file):
         return rows, _list_to_dict_list(column_header_list)
 
     def process_workbook(wb: pyxlWorkbook):
-        result_book = OrderedDict()
+        result_book = {}
         for sheetname in wb.sheetnames:
             wb_sheet = wb[sheetname]
             # Note that the sheet exists but do no further processing here.
@@ -372,7 +369,7 @@ def csv_to_dict(path_or_file):
             return s_or_c, content
 
     def process_csv_data(rd):
-        _dict = OrderedDict()
+        _dict = {}
         sheet_name = None
         current_headers = None
         for row in rd:
@@ -387,7 +384,7 @@ def csv_to_dict(path_or_file):
                     current_headers = content
                     _dict[f"{sheet_name}_header"] = _list_to_dict_list(current_headers)
                 else:
-                    _d = OrderedDict()
+                    _d = {}
                     for key, val in zip(current_headers, content, strict=False):
                         if val != "":
                             # Slight modification so values are striped
@@ -468,10 +465,10 @@ def sheet_to_csv(workbook_path, csv_path, sheet_name):
 
 
 def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
-    wb = xlrd.open_workbook(workbook_path)
+    wb = xlrd_open(workbook_path)
     try:
         sheet = wb.sheet_by_name(sheet_name)
-    except xlrd.biffh.XLRDError:
+    except XLRDError:
         return False
     if not sheet or sheet.nrows < 2:
         return False
@@ -497,7 +494,7 @@ def xls_sheet_to_csv(workbook_path, csv_path, sheet_name):
 
 
 def xlsx_sheet_to_csv(workbook_path, csv_path, sheet_name):
-    wb = openpyxl.open(workbook_path, read_only=True, data_only=True)
+    wb = pyxl_open(workbook_path, read_only=True, data_only=True)
     try:
         sheet = wb[sheet_name]
     except KeyError:
