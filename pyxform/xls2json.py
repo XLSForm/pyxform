@@ -538,20 +538,15 @@ def workbook_to_json(
     # columns is run with Survey sheet below.
 
     # Warn and remove invalid headers in case the form uses headers for notes.
-    invalid_headers = vc.validate_headers(choices_sheet.headers, warnings)
     allow_duplicates = aliases.yes_no.get(
         settings.get("allow_choice_duplicates", False), False
     )
-    for options in choices.values():
-        vc.validate_choices(
-            options=options,
-            warnings=warnings,
-            allow_duplicates=allow_duplicates,
-        )
-        for option in options:
-            for invalid_header in invalid_headers:
-                option.pop(invalid_header, None)
-            del option["__row"]
+    vc.validate_choices(
+        choices=choices,
+        warnings=warnings,
+        headers=choices_sheet.headers,
+        allow_duplicates=allow_duplicates,
+    )
 
     if 0 < len(choices):
         json_dict[constants.CHOICES] = choices
