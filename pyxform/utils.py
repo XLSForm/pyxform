@@ -5,7 +5,6 @@ pyxform utils module.
 import copy
 import csv
 import json
-import os
 import re
 from collections.abc import Generator
 from io import StringIO
@@ -216,27 +215,6 @@ def has_external_choices(json_struct):
             if has_external_choices(v):
                 return True
     return False
-
-
-def get_languages_with_bad_tags(languages):
-    """
-    Returns languages with invalid or missing IANA subtags.
-    """
-    path = os.path.join(os.path.dirname(__file__), "iana_subtags.txt")
-    with open(path, encoding="utf-8") as f:
-        iana_subtags = f.read().splitlines()
-
-    lang_code_regex = re.compile(r"\((.*)\)$")
-
-    languages_with_bad_tags = []
-    for lang in languages:
-        lang_code = re.search(lang_code_regex, lang)
-
-        if lang != "default" and (
-            not lang_code or lang_code.group(1) not in iana_subtags
-        ):
-            languages_with_bad_tags.append(lang)
-    return languages_with_bad_tags
 
 
 def default_is_dynamic(element_default, element_type=None):

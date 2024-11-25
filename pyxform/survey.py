@@ -27,11 +27,11 @@ from pyxform.utils import (
     LAST_SAVED_REGEX,
     DetachableElement,
     PatchedText,
-    get_languages_with_bad_tags,
     has_dynamic_label,
     node,
 )
 from pyxform.validators import enketo_validate, odk_validate
+from pyxform.validators.pyxform.iana_subtags.validation import get_languages_with_bad_tags
 
 RE_BRACKET = re.compile(r"\[([^]]+)\]")
 RE_FUNCTION_ARGS = re.compile(r"\b[^()]+\((.*)\)$")
