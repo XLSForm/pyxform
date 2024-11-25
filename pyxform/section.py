@@ -2,12 +2,13 @@
 Section survey element module.
 """
 
+from collections.abc import Generator
 from typing import TYPE_CHECKING
 
 from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.survey_element import SurveyElement
-from pyxform.utils import node
+from pyxform.utils import DetachableElement, node
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -121,9 +122,7 @@ class RepeatingSection(Section):
         for n in Section.xml_control(self, survey=survey):
             repeat_node.appendChild(n)
 
-        setvalue_nodes = self._get_setvalue_nodes_for_dynamic_defaults(survey=survey)
-
-        for setvalue_node in setvalue_nodes:
+        for setvalue_node in self._dynamic_defaults_helper(current=self, survey=survey):
             repeat_node.appendChild(setvalue_node)
 
         label = self.xml_label(survey=survey)
@@ -132,20 +131,19 @@ class RepeatingSection(Section):
         return node("group", repeat_node, ref=self.get_xpath(), **self.control)
 
     # Get setvalue nodes for all descendants of this repeat that have dynamic defaults and aren't nested in other repeats.
-    def _get_setvalue_nodes_for_dynamic_defaults(self, survey: "Survey"):
-        setvalue_nodes = []
-        self._dynamic_defaults_helper(current=self, nodes=setvalue_nodes, survey=survey)
-        return setvalue_nodes
-
-    def _dynamic_defaults_helper(self, current: "Section", nodes: list, survey: "Survey"):
+    def _dynamic_defaults_helper(
+        self, current: "Section", survey: "Survey"
+    ) -> Generator[DetachableElement, None, None]:
+        if not isinstance(current, Section):
+            return
         for e in current.children:
             if e.type != "repeat":  # let nested repeats handle their own defaults
                 dynamic_default = e.get_setvalue_node_for_dynamic_default(
                     in_repeat=True, survey=survey
                 )
                 if dynamic_default:
-                    nodes.append(dynamic_default)
-                self._dynamic_defaults_helper(current=e, nodes=nodes, survey=survey)
+                    yield dynamic_default
+                yield from self._dynamic_defaults_helper(current=e, survey=survey)
 
     # I'm anal about matching function signatures when overriding a function,
     # but there's no reason for kwargs to be an argument
