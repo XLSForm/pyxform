@@ -32,8 +32,8 @@ class BuilderTests(TestCase):
     #            self.assertTrue(xml_compare(expected, result))
 
     def test_unknown_question_type(self):
-        survey = utils.build_survey("unknown_question_type.xls")
-        self.assertRaises(PyXFormError, survey.to_xml)
+        with self.assertRaises(PyXFormError):
+            utils.build_survey("unknown_question_type.xls")
 
     def test_uniqueness_of_section_names(self):
         # Looking at the xls file, I think this test might be broken.
@@ -43,9 +43,7 @@ class BuilderTests(TestCase):
     def setUp(self):
         self.this_directory = os.path.dirname(__file__)
         survey_out = Survey(name="age", sms_keyword="age", type="survey")
-        question = InputQuestion(name="age")
-        question.type = "integer"
-        question.label = "How old are you?"
+        question = InputQuestion(name="age", type="integer", label="How old are you?")
         survey_out.add_child(question)
         self.survey_out_dict = survey_out.to_json_dict()
         print_pyobj_to_json(

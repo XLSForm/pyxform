@@ -2,6 +2,7 @@
 Testing creation of Surveys using verbose methods
 """
 
+from collections.abc import Generator
 from unittest import TestCase
 
 from pyxform import Survey
@@ -19,6 +20,8 @@ def ctw(control):
     """
     if isinstance(control, list) and len(control) == 1:
         control = control[0]
+    elif isinstance(control, Generator):
+        control = next(control)
     return control.toxml()
 
 
@@ -188,7 +191,8 @@ class Json2XformQuestionValidationTests(TestCase):
             "type": "string",
             "constraint": r"regex(., '^\d*$')",
         }
-        observed = {k: v for k, v in q.xml_bindings(survey=self.s)[0].attributes.items()}  # noqa: C416
+        binding = next(q.xml_bindings(survey=self.s))
+        observed = {k: v for k, v in binding.attributes.items()}  # noqa: C416
         self.assertDictEqual(expected, observed)
 
     def test_simple_select_all_question_multilingual(self):

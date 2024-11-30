@@ -2,19 +2,76 @@
 Section survey element module.
 """
 
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
+from itertools import chain
 from typing import TYPE_CHECKING
 
+from pyxform import constants
 from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
-from pyxform.survey_element import SurveyElement
+from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import DetachableElement, node
 
 if TYPE_CHECKING:
+    from pyxform.question import Question
     from pyxform.survey import Survey
 
 
+SECTION_EXTRA_FIELDS = (
+    constants.BIND,
+    constants.CHILDREN,
+    constants.CONTROL,
+    constants.HINT,
+    constants.MEDIA,
+    constants.TYPE,
+    "instance",
+    "flat",
+    "sms_field",
+)
+SECTION_FIELDS = (*SURVEY_ELEMENT_FIELDS, *SECTION_EXTRA_FIELDS)
+
+
 class Section(SurveyElement):
+    __slots__ = SECTION_EXTRA_FIELDS
+
+    @staticmethod
+    def get_slot_names() -> tuple[str, ...]:
+        return SECTION_FIELDS
+
+    def __init__(
+        self,
+        name: str,
+        type: str,
+        label: str | dict | None = None,
+        hint: str | dict | None = None,
+        bind: dict | None = None,
+        control: dict | None = None,
+        instance: dict | None = None,
+        media: dict | None = None,
+        flat: bool | None = None,
+        sms_field: str | None = None,
+        fields: tuple[str, ...] | None = None,
+        **kwargs,
+    ):
+        # Structure
+        self.bind: dict | None = bind
+        self.children: list[Section | Question] | None = None
+        self.control: dict | None = control
+        # instance is for custom instance attrs from survey e.g. instance::abc:xyz
+        self.instance: dict | None = instance
+        # TODO: is media valid for groups? No tests for it, but it behaves like Questions.
+        self.media: dict | None = media
+        self.type: str | None = type
+
+        # Group settings are generally put in bind/control dicts.
+        self.hint: str | dict | None = hint
+        self.flat: bool | None = flat
+        self.sms_field: str | None = sms_field
+
+        # Recursively creating child objects currently handled by the builder module.
+        kwargs.pop(constants.CHILDREN, None)
+        super().__init__(name=name, label=label, fields=fields, **kwargs)
+
     def validate(self):
         super().validate()
         for element in self.children:
@@ -42,7 +99,8 @@ class Section(SurveyElement):
 
         attributes = {}
         attributes.update(kwargs)
-        attributes.update(self.get("instance", {}))
+        if self.instance:
+            attributes.update(self.instance)
         # Resolve field references in attributes
         for key, value in attributes.items():
             attributes[key] = survey.insert_xpaths(value, self)
@@ -50,7 +108,7 @@ class Section(SurveyElement):
 
         for child in self.children:
             repeating_template = None
-            if child.get("flat"):
+            if hasattr(child, "flat") and child.get("flat"):
                 for grandchild in child.xml_instance_array(survey=survey):
                     result.appendChild(grandchild)
             elif isinstance(child, ExternalInstance):
@@ -82,7 +140,7 @@ class Section(SurveyElement):
         This method is used for generating flat instances.
         """
         for child in self.children:
-            if child.get("flat"):
+            if hasattr(child, "flat") and child.get("flat"):
                 yield from child.xml_instance_array(survey=survey)
             else:
                 yield child.xml_instance(survey=survey)
@@ -113,11 +171,15 @@ class RepeatingSection(Section):
         </repeat>
         </group>
         """
-        control_dict = self.control.copy()
         # Resolve field references in attributes
-        for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value, self)
-        repeat_node = node("repeat", nodeset=self.get_xpath(), **control_dict)
+        if self.control:
+            control_dict = {
+                key: survey.insert_xpaths(value, self)
+                for key, value in self.control.items()
+            }
+            repeat_node = node("repeat", nodeset=self.get_xpath(), **control_dict)
+        else:
+            repeat_node = node("repeat", nodeset=self.get_xpath())
 
         for n in Section.xml_control(self, survey=survey):
             repeat_node.appendChild(n)
@@ -128,7 +190,10 @@ class RepeatingSection(Section):
         label = self.xml_label(survey=survey)
         if label:
             return node("group", label, repeat_node, ref=self.get_xpath())
-        return node("group", repeat_node, ref=self.get_xpath(), **self.control)
+        if self.control:
+            return node("group", repeat_node, ref=self.get_xpath(), **self.control)
+        else:
+            return node("group", repeat_node, ref=self.get_xpath())
 
     # Get setvalue nodes for all descendants of this repeat that have dynamic defaults and aren't nested in other repeats.
     def _dynamic_defaults_helper(
@@ -165,38 +230,38 @@ class GroupedSection(Section):
     #        super(GroupedSection, self).__init__(kwargs)
 
     def xml_control(self, survey: "Survey"):
-        control_dict = self.control
-
-        if control_dict.get("bodyless"):
+        if self.control and self.control.get("bodyless"):
             return None
 
         children = []
-        attributes = {}
-        attributes.update(self.control)
 
         # Resolve field references in attributes
-        for key, value in attributes.items():
-            attributes[key] = survey.insert_xpaths(value, self)
+        if self.control:
+            attributes = {
+                key: survey.insert_xpaths(value, self)
+                for key, value in self.control.items()
+            }
+            if "appearance" in self.control:
+                attributes["appearance"] = self.control["appearance"]
+        else:
+            attributes = {}
 
         if not self.get("flat"):
             attributes["ref"] = self.get_xpath()
 
-        if "label" in self and len(self["label"]) > 0:
+        if "label" in self and self.label is not None and len(self["label"]) > 0:
             children.append(self.xml_label(survey=survey))
         for n in Section.xml_control(self, survey=survey):
             children.append(n)
 
-        if "appearance" in control_dict:
-            attributes["appearance"] = control_dict["appearance"]
-
-        if "intent" in control_dict:
-            attributes["intent"] = survey.insert_xpaths(control_dict["intent"], self)
-
         return node("group", *children, **attributes)
 
-    def to_json_dict(self):
+    def to_json_dict(self, delete_keys: Iterable[str] | None = None) -> dict:
+        to_delete = (constants.BIND,)
+        if delete_keys is not None:
+            to_delete = chain(to_delete, delete_keys)
+        result = super().to_json_dict(delete_keys=to_delete)
         # This is quite hacky, might want to think about a smart way
         # to approach this problem.
-        result = super().to_json_dict()
         result["type"] = "group"
         return result

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from pyxform import constants as const
-from pyxform.survey_element import SurveyElement
+from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import node
 
 if TYPE_CHECKING:
@@ -9,6 +9,11 @@ if TYPE_CHECKING:
 
 
 EC = const.EntityColumns
+ENTITY_EXTRA_FIELDS = (
+    const.TYPE,
+    const.PARAMETERS,
+)
+ENTITY_FIELDS = (*SURVEY_ELEMENT_FIELDS, *ENTITY_EXTRA_FIELDS)
 
 
 class EntityDeclaration(SurveyElement):
@@ -28,6 +33,17 @@ class EntityDeclaration(SurveyElement):
         0     1       0       create based on condition
         0     1       1       error, need id to update
     """
+
+    __slots__ = ENTITY_EXTRA_FIELDS
+
+    @staticmethod
+    def get_slot_names() -> tuple[str, ...]:
+        return ENTITY_FIELDS
+
+    def __init__(self, name: str, type: str, parameters: dict, **kwargs):
+        self.parameters: dict = parameters
+        self.type: str = type
+        super().__init__(name=name, **kwargs)
 
     def xml_instance(self, **kwargs):
         parameters = self.get(const.PARAMETERS, {})

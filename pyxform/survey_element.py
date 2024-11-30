@@ -4,18 +4,18 @@ Survey Element base class for all survey elements.
 
 import json
 import re
-from collections.abc import Callable, Generator
+from collections.abc import Callable, Generator, Iterable, Mapping
 from itertools import chain
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Optional
 
 from pyxform import aliases as alias
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_xml_tag
-from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.utils import (
     BRACKETED_TAG_REGEX,
     INVALID_XFORM_TAG_REGEXP,
+    DetachableElement,
     default_is_dynamic,
     node,
 )
@@ -23,56 +23,21 @@ from pyxform.xls2json import print_pyobj_to_json
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
-    from pyxform.utils import DetachableElement
+
 
 # The following are important keys for the underlying dict that describes SurveyElement
-FIELDS = {
-    "name": str,
-    const.COMPACT_TAG: str,  # used for compact (sms) representation
-    "sms_field": str,
-    "sms_option": str,
-    "label": str,
-    "hint": str,
-    "guidance_hint": str,
-    "default": str,
-    "type": str,
-    "appearance": str,
-    "parameters": dict,
-    "intent": str,
-    "jr:count": str,
-    "bind": dict,
-    "instance": dict,
-    "control": dict,
-    "media": dict,
+SURVEY_ELEMENT_FIELDS = (
+    "name",
+    "label",
     # this node will also have a parent and children, like a tree!
-    "parent": lambda: None,
-    "children": list,
-    "itemset": str,
-    "choice_filter": str,
-    "query": str,
-    "autoplay": str,
-    "flat": lambda: False,
-    "action": str,
-    const.LIST_NAME_U: str,
-    "trigger": str,
-}
+    "parent",
+    "extra_data",
+)
+SURVEY_ELEMENT_EXTRA_FIELDS = ("_survey_element_xpath",)
+SURVEY_ELEMENT_SLOTS = (*SURVEY_ELEMENT_FIELDS, *SURVEY_ELEMENT_EXTRA_FIELDS)
 
 
-def _overlay(over, under):
-    if isinstance(under, dict):
-        result = under.copy()
-        result.update(over)
-        return result
-    return over if over else under
-
-
-SURVEY_ELEMENT_LOCAL_KEYS = {
-    "_survey_element_default_type",
-    "_survey_element_xpath",
-}
-
-
-class SurveyElement(dict):
+class SurveyElement(Mapping):
     """
     SurveyElement is the base class we'll looks for the following keys
     in kwargs: name, label, hint, type, bind, control, parent,
@@ -80,69 +45,94 @@ class SurveyElement(dict):
     """
 
     __name__ = "SurveyElement"
-    FIELDS: ClassVar[dict[str, Any]] = FIELDS.copy()
-
-    def _dict_get(self, key):
-        """Built-in dict.get to bypass __getattr__"""
-        return dict.get(self, key)
-
-    def __getattr__(self, key):
-        """
-        Get attributes from FIELDS rather than the class.
-        """
-        if key in self.FIELDS:
-            under = None
-            default = self._dict_get("_survey_element_default_type")
-            if default is not None:
-                under = default.get(key, None)
-            if not under:
-                return self._dict_get(key)
-            return _overlay(self._dict_get(key), under)
-        raise AttributeError(key)
+    __slots__ = SURVEY_ELEMENT_SLOTS
 
     def __hash__(self):
         return hash(id(self))
+
+    def __getitem__(self, key):
+        return self.__getattribute__(key)
+
+    @staticmethod
+    def get_slot_names() -> tuple[str, ...]:
+        """Each subclass must provide a list of slots from itself and all parents."""
+        return SURVEY_ELEMENT_SLOTS
+
+    def __len__(self):
+        return len(self.get_slot_names())
+
+    def __iter__(self):
+        return iter(self.get_slot_names())
+
+    def __setitem__(self, key, value):
+        self.__setattr__(key, value)
 
     def __setattr__(self, key, value):
         if key == "parent":
             # If object graph position changes then invalidate cached.
             self._survey_element_xpath = None
-        self[key] = value
+        super().__setattr__(key, value)
 
-    def __init__(self, **kwargs):
-        self._survey_element_default_type: dict = kwargs.get(
-            "question_type_dict", QUESTION_TYPE_DICT
-        ).get(kwargs.get("type"), {})
+    def __init__(
+        self,
+        name: str,
+        label: str | dict | None = None,
+        fields: tuple[str, ...] | None = None,
+        **kwargs,
+    ):
+        # Internals
         self._survey_element_xpath: str | None = None
-        for key, default in self.FIELDS.items():
-            self[key] = kwargs.get(key, default())
-        self._link_children()
+
+        # Structure
+        self.parent: SurveyElement | None = None
+        self.extra_data: dict | None = None
+
+        # Settings
+        self.name: str = name
+        self.label: str | dict | None = label
+
+        if fields is not None:
+            for key in fields:
+                if key not in SURVEY_ELEMENT_FIELDS:
+                    value = kwargs.pop(key, None)
+                    if value or not hasattr(self, key):
+                        self[key] = value
+        if len(kwargs) > 0:
+            self.extra_data = kwargs
+
+        if hasattr(self, const.CHILDREN):
+            self._link_children()
 
         # Create a space label for unlabeled elements with the label
         # appearance tag. # This is because such elements are used to label the
         # options for selects in a field-list and might want blank labels for
         # themselves.
-        if self.control.get("appearance") == "label" and not self.label:
-            self["label"] = " "
+        if (
+            hasattr(self, "control")
+            and self.control
+            and self.control.get("appearance") == "label"
+            and not self.label
+        ):
+            self.label = " "
         super().__init__()
 
     def _link_children(self):
-        for child in self.children:
-            child.parent = self
+        if self.children is not None:
+            for child in self.children:
+                child.parent = self
 
     def add_child(self, child):
+        if self.children is None:
+            self.children = []
         self.children.append(child)
         child.parent = self
 
     def add_children(self, children):
-        if isinstance(children, list):
+        if isinstance(children, list | tuple):
             for child in children:
                 self.add_child(child)
         else:
             self.add_child(children)
-
-    # Supported media types for attaching to questions
-    SUPPORTED_MEDIA = ("image", "big-image", "audio", "video")
 
     def validate(self):
         if not is_xml_tag(self.name):
@@ -166,12 +156,13 @@ class SurveyElement(dict):
                 yield self
         else:
             yield self
-        for e in self.children:
-            yield from e.iter_descendants(condition=condition)
+        if hasattr(self, const.CHILDREN) and self.children is not None:
+            for e in self.children:
+                yield from e.iter_descendants(condition=condition)
 
     def iter_ancestors(
         self, condition: Callable[["SurveyElement"], bool] | None = None
-    ) -> Generator[tuple["SurvekyElement", int], None, None]:
+    ) -> Generator[tuple["SurveyElement", int], None, None]:
         """
         Get each self.parent with their distance from self (starting at 1).
 
@@ -250,10 +241,10 @@ class SurveyElement(dict):
             # The "flat" setting was added in 2013 to support ODK Tables, and results in
             # a data instance with no element nesting. Not sure if still needed.
             return isinstance(e, Survey) or (
-                not isinstance(e, Survey) and not e.get("flat")
+                not isinstance(e, Survey) and not (hasattr(e, "flat") and e.get("flat"))
             )
 
-        current_value = self._dict_get("_survey_element_xpath")
+        current_value = self._survey_element_xpath
         if current_value is None:
             if condition(self):
                 self_element = (self,)
@@ -268,7 +259,7 @@ class SurveyElement(dict):
             return new_value
         return current_value
 
-    def _delete_keys_from_dict(self, dictionary: dict, keys: list):
+    def _delete_keys_from_dict(self, dictionary: dict, keys: Iterable[str]):
         """
         Deletes a list of keys from a dictionary.
         Credits: https://stackoverflow.com/a/49723101
@@ -281,27 +272,33 @@ class SurveyElement(dict):
             if isinstance(value, dict):
                 self._delete_keys_from_dict(value, keys)
 
-    def to_json_dict(self):
+    def copy(self):
+        return {k: self[k] for k in self}
+
+    def to_json_dict(self, delete_keys: Iterable[str] | None = None) -> dict:
         """
         Create a dict copy of this survey element by removing inappropriate
         attributes and converting its children to dicts
         """
         self.validate()
         result = self.copy()
-        to_delete = [
-            "parent",
-            "question_type_dictionary",
-            "_created",
-            "_xpath",
-            *SURVEY_ELEMENT_LOCAL_KEYS,
-        ]
+        to_delete = chain(SURVEY_ELEMENT_EXTRA_FIELDS, ("extra_data",))
+        if delete_keys is not None:
+            to_delete = chain(to_delete, delete_keys)
         # Delete all keys that may cause a "Circular Reference"
         # error while converting the result to JSON
         self._delete_keys_from_dict(result, to_delete)
-        children = result.pop("children")
-        result["children"] = []
-        for child in children:
-            result["children"].append(child.to_json_dict())
+        children = result.pop("children", None)
+        if children:
+            result["children"] = [
+                c.to_json_dict(delete_keys=("parent",)) for c in children
+            ]
+        choices = result.pop("choices", None)
+        if choices:
+            result["choices"] = {
+                list_name: [o.to_json_dict(delete_keys=("parent",)) for o in options]
+                for list_name, options in choices.items()
+            }
         # Translation items with "output_context" have circular references.
         if "_translations" in result:
             for lang in result["_translations"].values():
@@ -386,7 +383,9 @@ class SurveyElement(dict):
                     }
 
         for display_element in ["label", "hint", "guidance_hint"]:
-            label_or_hint = self[display_element]
+            label_or_hint = None
+            if hasattr(self, display_element):
+                label_or_hint = self[display_element]
 
             if (
                 display_element == "label"
@@ -400,6 +399,7 @@ class SurveyElement(dict):
             # how they're defined - https://opendatakit.github.io/xforms-spec/#languages
             if (
                 display_element == "guidance_hint"
+                and label_or_hint is not None
                 and not isinstance(label_or_hint, dict)
                 and len(label_or_hint) > 0
             ):
@@ -409,8 +409,11 @@ class SurveyElement(dict):
             if (
                 display_element == "hint"
                 and not isinstance(label_or_hint, dict)
+                and hasattr(self, "hint")
+                and self.get("hint") is not None
                 and len(label_or_hint) > 0
-                and "guidance_hint" in self.keys()
+                and hasattr(self, "guidance_hint")
+                and self.get("guidance_hint") is not None
                 and len(self["guidance_hint"]) > 0
             ):
                 label_or_hint = {default_language: label_or_hint}
@@ -428,11 +431,15 @@ class SurveyElement(dict):
 
     def needs_itext_ref(self):
         return isinstance(self.label, dict) or (
-            isinstance(self.media, dict) and len(self.media) > 0
+            hasattr(self, const.MEDIA) and isinstance(self.media, dict) and self.media
         )
 
     def get_setvalue_node_for_dynamic_default(self, survey: "Survey", in_repeat=False):
-        if not self.default or not default_is_dynamic(self.default, self.type):
+        if (
+            not hasattr(self, "default")
+            or not self.default
+            or not default_is_dynamic(self.default, self.type)
+        ):
             return None
 
         default_with_xpath_paths = survey.insert_xpaths(self.default, self)
@@ -455,17 +462,21 @@ class SurveyElement(dict):
             # then we need to make a label with an itext ref
             ref = f"""jr:itext('{self._translation_path("label")}')"""
             return node("label", ref=ref)
-        else:
+        elif self.label:
             label, output_inserted = survey.insert_output_values(self.label, self)
             return node("label", label, toParseString=output_inserted)
+        else:
+            return node("label")
 
     def xml_hint(self, survey: "Survey"):
         if isinstance(self.hint, dict) or self.guidance_hint:
             path = self._translation_path("hint")
             return node("hint", ref=f"jr:itext('{path}')")
-        else:
+        elif self.hint:
             hint, output_inserted = survey.insert_output_values(self.hint, self)
             return node("hint", hint, toParseString=output_inserted)
+        else:
+            return node("hint")
 
     def xml_label_and_hint(self, survey: "Survey") -> list["DetachableElement"]:
         """
@@ -492,48 +503,54 @@ class SurveyElement(dict):
             raise PyXFormError(msg)
 
         # big-image must combine with image
-        if "image" not in self.media and "big-image" in self.media:
+        if (
+            self.media is not None
+            and "image" not in self.media
+            and "big-image" in self.media
+        ):
             raise PyXFormError(
                 "To use big-image, you must also specify an image for the survey element named {self.name}."
             )
 
         return result
 
-    def xml_bindings(self, survey: "Survey"):
+    def xml_bindings(
+        self, survey: "Survey"
+    ) -> Generator[DetachableElement | None, None, None]:
         """
         Return the binding(s) for this survey element.
         """
-        bind_dict = self.bind.copy()
-        if self.get("flat"):
+        if not hasattr(self, "bind") or self.get("bind") is None:
+            return None
+        if hasattr(self, "flat") and self.get("flat"):
             # Don't generate bind element for flat groups.
             return None
-        if bind_dict:
-            # the expression goes in a setvalue action
-            if self.trigger and "calculate" in self.bind:
-                del bind_dict["calculate"]
 
-            for k, v in bind_dict.items():
-                # I think all the binding conversions should be happening on
-                # the xls2json side.
-                if (
-                    hashable(v)
-                    and v in alias.BINDING_CONVERSIONS
-                    and k in const.CONVERTIBLE_BIND_ATTRIBUTES
-                ):
-                    v = alias.BINDING_CONVERSIONS[v]
-                elif k == "jr:constraintMsg" and (
-                    isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
-                ):
-                    v = f"""jr:itext('{self._translation_path("jr:constraintMsg")}')"""
-                elif k == "jr:requiredMsg" and (
-                    isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
-                ):
-                    v = f"""jr:itext('{self._translation_path("jr:requiredMsg")}')"""
-                elif k == "jr:noAppErrorString" and isinstance(v, dict):
-                    v = f"""jr:itext('{self._translation_path("jr:noAppErrorString")}')"""
-                bind_dict[k] = survey.insert_xpaths(v, context=self)
-            return [node("bind", nodeset=self.get_xpath(), **bind_dict)]
-        return None
+        bind_dict = {}
+        for k, v in self.bind.items():
+            # the expression goes in a setvalue action
+            if hasattr(self, "trigger") and self.trigger and k == "calculate":
+                continue
+            # I think all the binding conversions should be happening on
+            # the xls2json side.
+            if (
+                hashable(v)
+                and v in alias.BINDING_CONVERSIONS
+                and k in const.CONVERTIBLE_BIND_ATTRIBUTES
+            ):
+                v = alias.BINDING_CONVERSIONS[v]
+            elif k == "jr:constraintMsg" and (
+                isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
+            ):
+                v = f"""jr:itext('{self._translation_path("jr:constraintMsg")}')"""
+            elif k == "jr:requiredMsg" and (
+                isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
+            ):
+                v = f"""jr:itext('{self._translation_path("jr:requiredMsg")}')"""
+            elif k == "jr:noAppErrorString" and isinstance(v, dict):
+                v = f"""jr:itext('{self._translation_path("jr:noAppErrorString")}')"""
+            bind_dict[k] = survey.insert_xpaths(v, context=self)
+        yield node("bind", nodeset=self.get_xpath(), **bind_dict)
 
     def xml_control(self, survey: "Survey"):
         """
@@ -541,16 +558,6 @@ class SurveyElement(dict):
         doesn't make sense to implement here in the base class.
         """
         raise NotImplementedError("Control not implemented")
-
-    def xml_action(self):
-        """
-        Return the action for this survey element.
-        """
-        if self.action:
-            action_dict = self.action.copy()
-            return node(action_dict.pop("name"), ref=self.get_xpath(), **action_dict)
-
-        return None
 
 
 def hashable(v):

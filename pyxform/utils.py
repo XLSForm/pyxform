@@ -6,8 +6,9 @@ import copy
 import csv
 import json
 import re
-from collections.abc import Generator
+from collections.abc import Generator, Iterable
 from io import StringIO
+from itertools import chain
 from json.decoder import JSONDecodeError
 from typing import Any
 from xml.dom import Node
@@ -116,9 +117,7 @@ def node(*args, **kwargs) -> DetachableElement:
                 # Move node's children to the result Element
                 # discarding node's root
                 for child in parsed_node.childNodes:
-                    # No tests seem to involve moving elements with children.
-                    # Deep clone used anyway in case of unknown edge cases.
-                    result.appendChild(child.cloneNode(deep=True))
+                    result.appendChild(child.cloneNode(deep=False))
         else:
             result.setAttribute(k, v)
 
@@ -313,16 +312,16 @@ def coalesce(*args):
 
 
 def combine_lists(
-    a: list[dict] | None = None,
-    b: list[dict] | None = None,
-) -> list[dict]:
+    a: Iterable | None = None,
+    b: Iterable | None = None,
+) -> Iterable | None:
     """Get the list that is not None, or both lists combined, or an empty list."""
-    if a is None and b is None:
-        combined = []
+    if b is None:
+        if a is None:
+            return None
+        else:
+            return a
     elif a is None:
-        combined = b
-    elif b is None:
-        combined = a
+        return b
     else:
-        combined = a + b
-    return combined
+        return chain(a, b)
