@@ -80,7 +80,6 @@ class FieldsTests(PyxformTestCase):
                 vc.INVALID_DUPLICATE.format(row=3),
                 vc.INVALID_DUPLICATE.format(row=5),
             ],
-            debug=True,
         )
 
     def test_duplicate_choices_with_setting_not_set_to_yes(self):

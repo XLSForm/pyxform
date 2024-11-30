@@ -113,8 +113,7 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-
-        self.assertEqual(g.to_json_dict(), expected_dict)
+        self.assertEqual(expected_dict, g.to_json_dict())
 
     def test_specify_other(self):
         survey = utils.create_survey_from_fixture(
@@ -169,7 +168,6 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-        self.maxDiff = None
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_select_one_question_with_identical_choice_name(self):
@@ -211,8 +209,7 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-        self.maxDiff = None
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+        self.assertEqual(expected_dict, survey.to_json_dict())
 
     def test_loop(self):
         survey = utils.create_survey_from_fixture("loop", filetype=FIXTURE_FILETYPE)
@@ -351,8 +348,7 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-        self.maxDiff = None
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+        self.assertEqual(expected_dict, survey.to_json_dict())
 
     def test_sms_columns(self):
         survey = utils.create_survey_from_fixture("sms_info", filetype=FIXTURE_FILETYPE)
@@ -502,7 +498,7 @@ class BuilderTests(TestCase):
                 ],
             },
         }
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+        self.assertEqual(expected_dict, survey.to_json_dict())
 
     def test_style_column(self):
         survey = utils.create_survey_from_fixture(
@@ -541,7 +537,7 @@ class BuilderTests(TestCase):
             "title": "My Survey",
             "type": "survey",
         }
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+        self.assertEqual(expected_dict, survey.to_json_dict())
 
     STRIP_NS_FROM_TAG_RE = re.compile(r"\{.+\}")
 

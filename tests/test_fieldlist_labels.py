@@ -44,6 +44,13 @@ class FieldListLabels(PyxformTestCase):
             |        | end_group    |           |         |            |
             """,
             warnings_count=0,
+            xml__xpath_match=[
+                """
+                /h:html/h:body/x:group[
+                  @ref = '/test_name/my-group' and @appearance='field-list'
+                ]
+                """
+            ],
         )
 
     def test_unlabeled_group_fieldlist_alternate_syntax(self):
