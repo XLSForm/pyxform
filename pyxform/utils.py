@@ -58,7 +58,7 @@ class DetachableElement(Element):
         if self.childNodes:
             writer.write(">")
             # For text or mixed content, write without adding indents or newlines.
-            if 0 < len([c for c in self.childNodes if c.nodeType in NODE_TYPE_TEXT]):
+            if any(c.nodeType in NODE_TYPE_TEXT for c in self.childNodes):
                 # Conditions to match old Survey.py regex for remaining whitespace.
                 child_nodes = len(self.childNodes)
                 for idx, cnode in enumerate(self.childNodes):
@@ -94,32 +94,24 @@ def node(*args, **kwargs) -> DetachableElement:
     kwargs -- attributes
     returns a xml.dom.minidom.Element
     """
-    blocked_attributes = ["tag"]
+    blocked_attributes = {"tag"}
     tag = args[0] if len(args) > 0 else kwargs["tag"]
     args = args[1:]
     result = DetachableElement(tag)
-    unicode_args = [u for u in args if isinstance(u, str)]
+    unicode_args = tuple(u for u in args if isinstance(u, str))
     if len(unicode_args) > 1:
         raise PyXFormError("""Invalid value for `unicode_args`.""")
     parsed_string = False
 
     # Convert the kwargs xml attribute dictionary to a xml.dom.minidom.Element.
-    for k, v in iter(kwargs.items()):
+    for k, v in kwargs.items():
         if k in blocked_attributes:
             continue
         if k == "toParseString":
             if v is True and len(unicode_args) == 1:
                 parsed_string = True
                 # Add this header string so parseString can be used?
-                s = (
-                    '<?xml version="1.0" ?><'
-                    + tag
-                    + ">"
-                    + unicode_args[0]
-                    + "</"
-                    + tag
-                    + ">"
-                )
+                s = f"""<?xml version="1.0" ?><{tag}>{unicode_args[0]}</{tag}>"""
                 parsed_node = parseString(s.encode("utf-8")).documentElement
                 # Move node's children to the result Element
                 # discarding node's root
@@ -141,7 +133,8 @@ def node(*args, **kwargs) -> DetachableElement:
             result.appendChild(text_node)
         elif isinstance(n, Generator):
             for e in n:
-                result.appendChild(e)
+                if e is not None:
+                    result.appendChild(e)
         elif not isinstance(n, str):
             result.appendChild(n)
     return result
