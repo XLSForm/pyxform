@@ -430,7 +430,7 @@ class PyxformTestCase(TestCase):
             xpath=xpath,
         )
         msg = (
-            f"XPath did not find the expected number of matches (test case {case_num}):\n{xpath}"
+            f"XPath did not find the expected number of matches ({expected}, test case {case_num}):\n{xpath}"
             f"\n\nXForm content:\n{matcher_context.content_str}"
         )
         self.assertEqual(expected, len(observed), msg=msg)
