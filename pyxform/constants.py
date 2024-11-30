@@ -87,17 +87,17 @@ OSM_TYPE = "binary"
 NAMESPACES = "namespaces"
 
 # The following are the possible sheet names:
-SUPPORTED_SHEET_NAMES = [
+SUPPORTED_SHEET_NAMES = {
     SURVEY,
     CHOICES,
     SETTINGS,
     EXTERNAL_CHOICES,
     OSM,
     ENTITIES,
-]
-XLS_EXTENSIONS = [".xls"]
-XLSX_EXTENSIONS = [".xlsx", ".xlsm"]
-SUPPORTED_FILE_EXTENSIONS = XLS_EXTENSIONS + XLSX_EXTENSIONS
+}
+XLS_EXTENSIONS = {".xls"}
+XLSX_EXTENSIONS = {".xlsx", ".xlsm"}
+SUPPORTED_FILE_EXTENSIONS = {*XLS_EXTENSIONS, *XLSX_EXTENSIONS}
 
 LOCATION_PRIORITY = "location-priority"
 LOCATION_MIN_INTERVAL = "location-min-interval"
@@ -107,7 +107,7 @@ IDENTIFY_USER = "identify-user"
 TRACK_CHANGES_REASONS = "track-changes-reasons"
 
 # supported bind keywords for which external instances will be created for pulldata function
-EXTERNAL_INSTANCES = ["calculate", "constraint", "readonly", "required", "relevant"]
+EXTERNAL_INSTANCES = {"calculate", "constraint", "readonly", "required", "relevant"}
 
 # The ODK XForms version that generated forms comply to
 CURRENT_XFORMS_VERSION = "1.0.0"
@@ -130,14 +130,14 @@ class EntityColumns(StrEnum):
     OFFLINE = "offline"
 
 
-DEPRECATED_DEVICE_ID_METADATA_FIELDS = ["subscriberid", "simserial"]
+DEPRECATED_DEVICE_ID_METADATA_FIELDS = {"subscriberid", "simserial"}
 
 AUDIO_QUALITY_VOICE_ONLY = "voice-only"
 AUDIO_QUALITY_LOW = "low"
 AUDIO_QUALITY_NORMAL = "normal"
 AUDIO_QUALITY_EXTERNAL = "external"
 
-EXTERNAL_INSTANCE_EXTENSIONS = [".xml", ".csv", ".geojson"]
+EXTERNAL_INSTANCE_EXTENSIONS = {".xml", ".csv", ".geojson"}
 
 EXTERNAL_CHOICES_ITEMSET_REF_LABEL = "label"
 EXTERNAL_CHOICES_ITEMSET_REF_VALUE = "name"
@@ -153,13 +153,13 @@ _MSG_SUPPRESS_SPELLING = (
     "becomes '_setting'."
 )
 
-CONVERTIBLE_BIND_ATTRIBUTES = (
+CONVERTIBLE_BIND_ATTRIBUTES = {
     "readonly",
     "required",
     "relevant",
     "constraint",
     "calculate",
-)
+}
 NSMAP = {
     "xmlns": "http://www.w3.org/2002/xforms",
     "xmlns:h": "http://www.w3.org/1999/xhtml",
