@@ -88,7 +88,7 @@ class TestImageParameters(PyxformTestCase):
                     name="data",
                     md=md.format(case=case),
                     xml__xpath_match=[
-                        "/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image']"
+                        f"/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image' and @appearance='{case}']"
                     ],
                 )
 
@@ -105,7 +105,7 @@ class TestImageParameters(PyxformTestCase):
                     name="data",
                     md=md.format(case=case),
                     xml__xpath_match=[
-                        "/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image']"
+                        f"/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image' and @appearance='{case}']"
                     ],
                 )
 

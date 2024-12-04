@@ -1,8 +1,19 @@
+from typing import TYPE_CHECKING
+
 from pyxform import constants as const
-from pyxform.survey_element import SurveyElement
+from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import node
 
+if TYPE_CHECKING:
+    from pyxform.survey import Survey
+
+
 EC = const.EntityColumns
+ENTITY_EXTRA_FIELDS = (
+    const.TYPE,
+    const.PARAMETERS,
+)
+ENTITY_FIELDS = (*SURVEY_ELEMENT_FIELDS, *ENTITY_EXTRA_FIELDS)
 
 
 class EntityDeclaration(SurveyElement):
@@ -22,6 +33,17 @@ class EntityDeclaration(SurveyElement):
         0     1       0       create based on condition
         0     1       1       error, need id to update
     """
+
+    __slots__ = ENTITY_EXTRA_FIELDS
+
+    @staticmethod
+    def get_slot_names() -> tuple[str, ...]:
+        return ENTITY_FIELDS
+
+    def __init__(self, name: str, type: str, parameters: dict, **kwargs):
+        self.parameters: dict = parameters
+        self.type: str = type
+        super().__init__(name=name, **kwargs)
 
     def xml_instance(self, **kwargs):
         parameters = self.get(const.PARAMETERS, {})
@@ -50,11 +72,10 @@ class EntityDeclaration(SurveyElement):
         else:
             return node(const.ENTITY, **attributes)
 
-    def xml_bindings(self):
+    def xml_bindings(self, survey: "Survey"):
         """
         See the class comment for an explanation of the logic for generating bindings.
         """
-        survey = self.get_root()
         parameters = self.get(const.PARAMETERS, {})
         entity_id_expression = parameters.get(EC.ENTITY_ID, None)
         create_condition = parameters.get(EC.CREATE_IF, None)
@@ -125,5 +146,5 @@ class EntityDeclaration(SurveyElement):
 
         return node(const.BIND, nodeset=self.get_xpath() + destination, **bind_attrs)
 
-    def xml_control(self):
+    def xml_control(self, survey: "Survey"):
         raise NotImplementedError()

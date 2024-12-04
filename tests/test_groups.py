@@ -50,3 +50,24 @@ class GroupsTests(PyxformTestCase):
                 '<group intent="ex:org.redcross.openmapkit.action.QUERY(osm_file= /intent_test/pregrp )" ref="/intent_test/xgrp">'  # nopep8
             ],
         )
+
+    def test_group_relevant_included_in_bind(self):
+        """Should find the group relevance expression in the group binding."""
+        md = """
+        | survey |
+        |        | type        | name | label | relevant  |
+        |        | integer     | q1   | Q1    |           |
+        |        | begin group | g1   | G1    | ${q1} = 1 |
+        |        | text        | q2   | Q2    |           |
+        |        | end group   |      |       |           |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:bind[
+                  @nodeset = '/test_name/g1' and @relevant=' /test_name/q1  = 1'
+                ]
+                """
+            ],
+        )

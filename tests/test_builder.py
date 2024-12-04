@@ -32,8 +32,8 @@ class BuilderTests(TestCase):
     #            self.assertTrue(xml_compare(expected, result))
 
     def test_unknown_question_type(self):
-        survey = utils.build_survey("unknown_question_type.xls")
-        self.assertRaises(PyXFormError, survey.to_xml)
+        with self.assertRaises(PyXFormError):
+            utils.build_survey("unknown_question_type.xls")
 
     def test_uniqueness_of_section_names(self):
         # Looking at the xls file, I think this test might be broken.
@@ -43,9 +43,7 @@ class BuilderTests(TestCase):
     def setUp(self):
         self.this_directory = os.path.dirname(__file__)
         survey_out = Survey(name="age", sms_keyword="age", type="survey")
-        question = InputQuestion(name="age")
-        question.type = "integer"
-        question.label = "How old are you?"
+        question = InputQuestion(name="age", type="integer", label="How old are you?")
         survey_out.add_child(question)
         self.survey_out_dict = survey_out.to_json_dict()
         print_pyobj_to_json(
@@ -113,8 +111,7 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-
-        self.assertEqual(g.to_json_dict(), expected_dict)
+        self.assertEqual(expected_dict, g.to_json_dict())
 
     def test_specify_other(self):
         survey = utils.create_survey_from_fixture(
@@ -169,7 +166,6 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-        self.maxDiff = None
         self.assertEqual(survey.to_json_dict(), expected_dict)
 
     def test_select_one_question_with_identical_choice_name(self):
@@ -211,8 +207,7 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-        self.maxDiff = None
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+        self.assertEqual(expected_dict, survey.to_json_dict())
 
     def test_loop(self):
         survey = utils.create_survey_from_fixture("loop", filetype=FIXTURE_FILETYPE)
@@ -351,8 +346,7 @@ class BuilderTests(TestCase):
                 },
             ],
         }
-        self.maxDiff = None
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+        self.assertEqual(expected_dict, survey.to_json_dict())
 
     def test_sms_columns(self):
         survey = utils.create_survey_from_fixture("sms_info", filetype=FIXTURE_FILETYPE)
@@ -502,7 +496,7 @@ class BuilderTests(TestCase):
                 ],
             },
         }
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+        self.assertEqual(expected_dict, survey.to_json_dict())
 
     def test_style_column(self):
         survey = utils.create_survey_from_fixture(
@@ -541,7 +535,7 @@ class BuilderTests(TestCase):
             "title": "My Survey",
             "type": "survey",
         }
-        self.assertEqual(survey.to_json_dict(), expected_dict)
+        self.assertEqual(expected_dict, survey.to_json_dict())
 
     STRIP_NS_FROM_TAG_RE = re.compile(r"\{.+\}")
 

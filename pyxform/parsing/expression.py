@@ -1,10 +1,9 @@
 import re
 from collections.abc import Iterable
 from functools import lru_cache
-from typing import NamedTuple
 
 
-def get_expression_lexer() -> re.Scanner:
+def get_expression_lexer(name_only: bool = False) -> re.Scanner:
     """
     Get a expression lexer (scanner) for parsing.
     """
@@ -62,7 +61,9 @@ def get_expression_lexer() -> re.Scanner:
     }
 
     def get_tokenizer(name):
-        def tokenizer(scan, value):
+        def tokenizer(scan, value) -> ExpLexerToken | str:
+            if name_only:
+                return name
             return ExpLexerToken(name, value, scan.match.start(), scan.match.end())
 
         return tokenizer
@@ -74,17 +75,21 @@ def get_expression_lexer() -> re.Scanner:
 
 
 # Scanner takes a few 100ms to compile so use this shared instance.
-class ExpLexerToken(NamedTuple):
-    name: str
-    value: str
-    start: int
-    end: int
+class ExpLexerToken:
+    __slots__ = ("name", "value", "start", "end")
+
+    def __init__(self, name: str, value: str, start: int, end: int) -> None:
+        self.name: str = name
+        self.value: str = value
+        self.start: int = start
+        self.end: int = end
 
 
 _EXPRESSION_LEXER = get_expression_lexer()
+_TOKEN_NAME_LEXER = get_expression_lexer(name_only=True)
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=128)
 def parse_expression(text: str) -> tuple[list[ExpLexerToken], str]:
     """
     Parse an expression.
@@ -102,8 +107,10 @@ def is_single_token_expression(expression: str, token_types: Iterable[str]) -> b
     """
     Does the expression contain single token of one of the provided token types?
     """
-    tokens, _ = parse_expression(expression.strip())
-    if 1 == len(tokens) and tokens[0].name in token_types:
+    if not expression:
+        return False
+    tokens, _ = _TOKEN_NAME_LEXER.scan(expression.strip())
+    if 1 == len(tokens) and tokens[0] in token_types:
         return True
     else:
         return False
@@ -113,6 +120,8 @@ def is_pyxform_reference(value: str) -> bool:
     """
     Does the input string contain only a valid Pyxform reference? e.g. ${my_question}
     """
+    if not value or len(value) <= 3:  # Needs 3 characters for "${}", plus a name inside.
+        return False
     return is_single_token_expression(expression=value, token_types=("PYXFORM_REF",))
 
 
@@ -120,4 +129,6 @@ def is_xml_tag(value: str) -> bool:
     """
     Does the input string contain only a valid XML tag / element name?
     """
+    if not value:
+        return False
     return is_single_token_expression(expression=value, token_types=("NAME",))

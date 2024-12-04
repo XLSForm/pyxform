@@ -538,20 +538,15 @@ def workbook_to_json(
     # columns is run with Survey sheet below.
 
     # Warn and remove invalid headers in case the form uses headers for notes.
-    invalid_headers = vc.validate_headers(choices_sheet.headers, warnings)
     allow_duplicates = aliases.yes_no.get(
         settings.get("allow_choice_duplicates", False), False
     )
-    for options in choices.values():
-        vc.validate_choices(
-            options=options,
-            warnings=warnings,
-            allow_duplicates=allow_duplicates,
-        )
-        for option in options:
-            for invalid_header in invalid_headers:
-                option.pop(invalid_header, None)
-            del option["__row"]
+    vc.validate_choices(
+        choices=choices,
+        warnings=warnings,
+        headers=choices_sheet.headers,
+        allow_duplicates=allow_duplicates,
+    )
 
     if 0 < len(choices):
         json_dict[constants.CHOICES] = choices
@@ -1137,13 +1132,57 @@ def workbook_to_json(
                 specify_other_question = None
                 if parse_dict.get("specify_other") is not None:
                     sheet_translations.or_other_seen = True
-                    select_type += constants.SELECT_OR_OTHER_SUFFIX
                     if row.get(constants.CHOICE_FILTER):
                         msg = (
                             ROW_FORMAT_STRING % row_number
                             + " Choice filter not supported with or_other."
                         )
                         raise PyXFormError(msg)
+                    itemset_choices = choices.get(list_name, None)
+                    if not itemset_choices:
+                        msg = (
+                            ROW_FORMAT_STRING % row_number
+                            + " Please specify choices for this 'or other' question."
+                        )
+                        raise PyXFormError(msg)
+                    if (
+                        itemset_choices is not None
+                        and isinstance(itemset_choices, list)
+                        and not any(
+                            c[constants.NAME] == constants.OR_OTHER_CHOICE[constants.NAME]
+                            for c in itemset_choices
+                        )
+                    ):
+                        if any(
+                            isinstance(c.get(constants.LABEL), dict)
+                            for c in itemset_choices
+                        ):
+                            itemset_choices.append(
+                                {
+                                    constants.NAME: constants.OR_OTHER_CHOICE[
+                                        constants.NAME
+                                    ],
+                                    constants.LABEL: {
+                                        lang: constants.OR_OTHER_CHOICE[constants.LABEL]
+                                        for lang in {
+                                            lang
+                                            for c in itemset_choices
+                                            for lang in c[constants.LABEL]
+                                            if isinstance(c.get(constants.LABEL), dict)
+                                        }
+                                    },
+                                }
+                            )
+                        else:
+                            itemset_choices.append(constants.OR_OTHER_CHOICE)
+                    specify_other_question = {
+                        constants.TYPE: "text",
+                        constants.NAME: f"{row[constants.NAME]}_other",
+                        constants.LABEL: "Specify other.",
+                        constants.BIND: {
+                            "relevant": f"selected(../{row[constants.NAME]}, 'other')"
+                        },
+                    }
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type

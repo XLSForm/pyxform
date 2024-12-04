@@ -161,12 +161,14 @@ class PyxformTestCase(TestCase):
             if survey is None:
                 result = convert(
                     xlsform=coalesce(md, ss_structure),
+                    pretty_print=True,
                     form_name=coalesce(name, "test_name"),
                     warnings=warnings,
                 )
                 survey = result._survey
-
-            xml = survey._to_pretty_xml()
+                xml = result.xform
+            else:
+                xml = survey._to_pretty_xml()
             root = etree.fromstring(xml.encode("utf-8"))
 
             # Ensure all namespaces are present, even if unused
@@ -428,7 +430,7 @@ class PyxformTestCase(TestCase):
             xpath=xpath,
         )
         msg = (
-            f"XPath found no matches (test case {case_num}):\n{xpath}"
+            f"XPath did not find the expected number of matches ({expected}, test case {case_num}):\n{xpath}"
             f"\n\nXForm content:\n{matcher_context.content_str}"
         )
         self.assertEqual(expected, len(observed), msg=msg)

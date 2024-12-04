@@ -7,31 +7,33 @@ import re
 import tempfile
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
-from collections.abc import Generator, Iterator
+from collections.abc import Generator, Iterable
 from datetime import datetime
 from functools import lru_cache
+from itertools import chain
 from pathlib import Path
 
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
+from pyxform.entities.entity_declaration import EntityDeclaration
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
 from pyxform.parsing import instance_expression
-from pyxform.question import Option, Question
-from pyxform.section import Section
-from pyxform.survey_element import SurveyElement
+from pyxform.question import MultipleChoiceQuestion, Option, Question, Tag
+from pyxform.section import SECTION_EXTRA_FIELDS, Section
+from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
     BRACKETED_TAG_REGEX,
     LAST_SAVED_INSTANCE_NAME,
     LAST_SAVED_REGEX,
     DetachableElement,
     PatchedText,
-    get_languages_with_bad_tags,
     has_dynamic_label,
     node,
 )
 from pyxform.validators import enketo_validate, odk_validate
+from pyxform.validators.pyxform.iana_subtags.validation import get_languages_with_bad_tags
 
 RE_BRACKET = re.compile(r"\[([^]]+)\]")
 RE_FUNCTION_ARGS = re.compile(r"\b[^()]+\((.*)\)$")
@@ -74,7 +76,7 @@ def register_nsmap():
 register_nsmap()
 
 
-@lru_cache(maxsize=65536)  # 2^16
+@lru_cache(maxsize=128)
 def is_parent_a_repeat(survey, xpath):
     """
     Returns the XPATH of the first repeat of the given xpath in the survey,
@@ -84,13 +86,14 @@ def is_parent_a_repeat(survey, xpath):
     if not parent_xpath:
         return False
 
-    if survey.any_repeat(parent_xpath):
-        return parent_xpath
+    for item in survey.iter_descendants(condition=lambda i: isinstance(i, Section)):
+        if item.type == constants.REPEAT and item.get_xpath() == parent_xpath:
+            return parent_xpath
 
     return is_parent_a_repeat(survey, parent_xpath)
 
 
-@lru_cache(maxsize=65536)  # 2^16
+@lru_cache(maxsize=128)
 def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=False):
     """
     Returns a tuple of the number of steps from the context xpath to the shared
@@ -98,7 +101,7 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
     parent.
 
     For example,
-        xpath = /data/repeat_a/group_a/name
+        xpath =         /data/repeat_a/group_a/name
         context_xpath = /data/repeat_a/group_b/age
 
         returns (2, '/group_a/name')'
@@ -168,7 +171,7 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
     return (None, None)
 
 
-@lru_cache(maxsize=65536)  # 2^16
+@lru_cache(maxsize=128)
 def is_label_dynamic(label: str) -> bool:
     return (
         label is not None
@@ -181,44 +184,117 @@ def recursive_dict():
     return defaultdict(recursive_dict)
 
 
+SURVEY_EXTRA_FIELDS = (
+    "_created",
+    "_search_lists",
+    "_translations",
+    "_xpath",
+    "add_none_option",
+    "clean_text_values",
+    "attribute",
+    "auto_delete",
+    "auto_send",
+    "choices",
+    "default_language",
+    "file_name",
+    "id_string",
+    "instance_name",
+    "instance_xmlns",
+    "namespaces",
+    "omit_instanceID",
+    "public_key",
+    "setgeopoint_by_triggering_ref",
+    "setvalues_by_triggering_ref",
+    "sms_allow_media",
+    "sms_date_format",
+    "sms_datetime_format",
+    "sms_keyword",
+    "sms_response",
+    "sms_separator",
+    "style",
+    "submission_url",
+    "title",
+    "version",
+    constants.ALLOW_CHOICE_DUPLICATES,
+    constants.COMPACT_DELIMITER,
+    constants.COMPACT_PREFIX,
+    constants.ENTITY_FEATURES,
+)
+SURVEY_FIELDS = (*SURVEY_ELEMENT_FIELDS, *SECTION_EXTRA_FIELDS, *SURVEY_EXTRA_FIELDS)
+
+
 class Survey(Section):
     """
     Survey class - represents the full XForm XML.
     """
 
-    FIELDS = Section.FIELDS.copy()
-    FIELDS.update(
-        {
-            "_xpath": dict,
-            "_created": datetime.now,  # This can't be dumped to json
-            "setvalues_by_triggering_ref": dict,
-            "setgeopoint_by_triggering_ref": dict,
-            "title": str,
-            "id_string": str,
-            "sms_keyword": str,
-            "sms_separator": str,
-            "sms_allow_media": bool,
-            "sms_date_format": str,
-            "sms_datetime_format": str,
-            "sms_response": str,
-            constants.COMPACT_PREFIX: str,
-            constants.COMPACT_DELIMITER: str,
-            "file_name": str,
-            "default_language": str,
-            "_translations": recursive_dict,
-            "submission_url": str,
-            "auto_send": str,
-            "auto_delete": str,
-            "public_key": str,
-            "instance_xmlns": str,
-            "version": str,
-            "choices": dict,
-            "style": str,
-            "attribute": dict,
-            "namespaces": str,
-            constants.ENTITY_FEATURES: list,
-        }
-    )
+    __slots__ = SURVEY_EXTRA_FIELDS
+
+    @staticmethod
+    def get_slot_names() -> tuple[str, ...]:
+        return SURVEY_FIELDS
+
+    def __init__(self, **kwargs):
+        # Internals
+        self._created: datetime.now = datetime.now()
+        self._search_lists: set = set()
+        self._translations: recursive_dict = recursive_dict()
+        self._xpath: dict[str, SurveyElement | None] = {}
+
+        # Structure
+        # attribute is for custom instance attrs from settings e.g. attribute::abc:xyz
+        self.attribute: dict | None = None
+        self.choices: dict[str, tuple[Option, ...]] | None = None
+        self.entity_features: list[str] | None = None
+        self.setgeopoint_by_triggering_ref: dict[str, list[str]] = {}
+        self.setvalues_by_triggering_ref: dict[str, list[str]] = {}
+
+        # Common / template settings
+        self.default_language: str = ""
+        self.id_string: str = ""
+        self.instance_name: str = ""
+        self.style: str | None = None
+        self.title: str = ""
+        self.version: str = ""
+
+        # Other settings
+        self.add_none_option: bool = False
+        self.allow_choice_duplicates: bool = False
+        self.auto_delete: str | None = None
+        self.auto_send: str | None = None
+        self.clean_text_values: bool = False
+        self.instance_xmlns: str | None = None
+        self.namespaces: str | None = None
+        self.omit_instanceID: bool = False
+        self.public_key: str | None = None
+        self.submission_url: str | None = None
+
+        # SMS / compact settings
+        self.delimiter: str | None = None
+        self.prefix: str | None = None
+        self.sms_allow_media: bool | None = None
+        self.sms_date_format: str | None = None
+        self.sms_datetime_format: str | None = None
+        self.sms_keyword: str | None = None
+        self.sms_response: str | None = None
+        self.sms_separator: str | None = None
+
+        choices = kwargs.pop("choices", None)
+        if choices is not None:
+            self.choices = {
+                list_name: tuple(
+                    c if isinstance(c, Option) else Option(**c) for c in values
+                )
+                for list_name, values in choices.items()
+            }
+        kwargs[constants.TYPE] = constants.SURVEY
+        super().__init__(fields=SURVEY_EXTRA_FIELDS, **kwargs)
+
+    def to_json_dict(self, delete_keys: Iterable[str] | None = None) -> dict:
+        to_delete = (k for k in self.get_slot_names() if k.startswith("_"))
+        if delete_keys is not None:
+            to_delete = chain(to_delete, delete_keys)
+        return super().to_json_dict(delete_keys=to_delete)
 
     def validate(self):
         if self.id_string in [None, "None"]:
@@ -229,32 +305,34 @@ class Survey(Section):
     def _validate_uniqueness_of_section_names(self):
         root_node_name = self.name
         section_names = set()
-        for element in self.iter_descendants():
-            if isinstance(element, Section):
-                if element.name in section_names:
-                    if element.name == root_node_name:
-                        # The root node name is rarely explictly set; explain
-                        # the problem in a more helpful way (#510)
-                        msg = (
-                            f"The name '{element.name}' is the same as the form name. "
-                            "Use a different section name (or change the form name in "
-                            "the 'name' column of the settings sheet)."
-                        )
-                        raise PyXFormError(msg)
-                    msg = f"There are two sections with the name {element.name}."
+        for element in self.iter_descendants(condition=lambda i: isinstance(i, Section)):
+            if element.name in section_names:
+                if element.name == root_node_name:
+                    # The root node name is rarely explictly set; explain
+                    # the problem in a more helpful way (#510)
+                    msg = (
+                        f"The name '{element.name}' is the same as the form name. "
+                        "Use a different section name (or change the form name in "
+                        "the 'name' column of the settings sheet)."
+                    )
                     raise PyXFormError(msg)
-                section_names.add(element.name)
+                msg = f"There are two sections with the name {element.name}."
+                raise PyXFormError(msg)
+            section_names.add(element.name)
 
     def get_nsmap(self):
         """Add additional namespaces"""
-        namespaces = getattr(self, constants.NAMESPACES, "")
-        if len(getattr(self, constants.ENTITY_FEATURES, [])) > 0:
-            namespaces += " entities=http://www.opendatakit.org/xforms/entities"
+        if self.entity_features:
+            entities_ns = " entities=http://www.opendatakit.org/xforms/entities"
+            if self.namespaces is None:
+                self.namespaces = entities_ns
+            else:
+                self.namespaces += entities_ns
 
-        if namespaces and isinstance(namespaces, str):
+        if self.namespaces:
             nslist = [
                 ns.split("=")
-                for ns in namespaces.split()
+                for ns in self.namespaces.split()
                 if len(ns.split("=")) == 2 and ns.split("=")[0] != ""
             ]
             xmlns = "xmlns:"
@@ -287,24 +365,22 @@ class Survey(Section):
             self.insert_xpaths(triggering_reference, self)
 
         body_kwargs = {}
-        if hasattr(self, constants.STYLE) and getattr(self, constants.STYLE):
-            body_kwargs["class"] = getattr(self, constants.STYLE)
+        if self.style:
+            body_kwargs["class"] = self.style
         nsmap = self.get_nsmap()
 
         return node(
             "h:html",
             node("h:head", node("h:title", self.title), self.xml_model()),
-            node("h:body", *self.xml_control(), **body_kwargs),
+            node("h:body", *self.xml_control(survey=self), **body_kwargs),
             **nsmap,
         )
 
-    def get_trigger_values_for_question_name(self, question_name, trigger_type):
-        trigger_map = {
-            "setvalue": self.setvalues_by_triggering_ref,
-            "setgeopoint": self.setgeopoint_by_triggering_ref,
-        }
-
-        return trigger_map.get(trigger_type, {}).get(f"${{{question_name}}}")
+    def get_trigger_values_for_question_name(self, question_name: str, trigger_type: str):
+        if trigger_type == "setvalue":
+            return self.setvalues_by_triggering_ref.get(f"${{{question_name}}}")
+        elif trigger_type == "setgeopoint":
+            return self.setgeopoint_by_triggering_ref.get(f"${{{question_name}}}")
 
     def _generate_static_instances(self, list_name, choice_list) -> InstanceInfo:
         """
@@ -315,34 +391,42 @@ class Survey(Section):
         has_dyn_label = has_dynamic_label(choice_list)
         multi_language = False
         if isinstance(self._translations, dict):
-            choices = tuple(
-                k
+            choices = (
+                True
                 for items in self._translations.values()
                 for k, v in items.items()
                 if v.get(constants.TYPE, "") == constants.CHOICE
                 and "-".join(k.split("-")[:-1]) == list_name
             )
-            if 0 < len(choices):
-                multi_language = True
+            try:
+                if next(choices):
+                    multi_language = True
+            except StopIteration:
+                pass
 
         for idx, choice in enumerate(choice_list):
             choice_element_list = []
             # Add a unique id to the choice element in case there are itext references
             if multi_language or has_media or has_dyn_label:
-                itext_id = "-".join([list_name, str(idx)])
+                itext_id = f"{list_name}-{idx}"
                 choice_element_list.append(node("itextId", itext_id))
 
             for name, value in choice.items():
-                if isinstance(value, str) and name != "label":
-                    choice_element_list.append(node(name, str(value)))
-                if (
+                if not value:
+                    continue
+                elif name != "label" and isinstance(value, str):
+                    choice_element_list.append(node(name, value))
+                elif name == "extra_data" and isinstance(value, dict):
+                    for k, v in value.items():
+                        choice_element_list.append(node(k, v))
+                elif (
                     not multi_language
                     and not has_media
                     and not has_dyn_label
                     and isinstance(value, str)
                     and name == "label"
                 ):
-                    choice_element_list.append(node(name, str(value)))
+                    choice_element_list.append(node(name, value))
 
             instance_element_list.append(node("item", *choice_element_list))
 
@@ -355,7 +439,7 @@ class Survey(Section):
         )
 
     @staticmethod
-    def _generate_external_instances(element) -> InstanceInfo | None:
+    def _generate_external_instances(element: SurveyElement) -> InstanceInfo | None:
         if isinstance(element, ExternalInstance):
             name = element["name"]
             extension = element["type"].split("-")[0]
@@ -401,7 +485,7 @@ class Survey(Section):
             raise ValidationError("\n".join(errors))
 
     @staticmethod
-    def _generate_pulldata_instances(element) -> list[InstanceInfo] | None:
+    def _generate_pulldata_instances(element: SurveyElement) -> list[InstanceInfo] | None:
         def get_pulldata_functions(element):
             """
             Returns a list of different pulldata(... function strings if
@@ -412,11 +496,23 @@ class Survey(Section):
             """
             functions_present = []
             for formula_name in constants.EXTERNAL_INSTANCES:
-                if "pulldata(" in str(element["bind"].get(formula_name)):
+                if (
+                    hasattr(element, "bind")
+                    and element.bind is not None
+                    and "pulldata(" in str(element["bind"].get(formula_name))
+                ):
                     functions_present.append(element["bind"][formula_name])
-            if "pulldata(" in str(element["choice_filter"]):
-                functions_present.append(element["choice_filter"])
-            if "pulldata(" in str(element["default"]):
+            if (
+                hasattr(element, constants.CHOICE_FILTER)
+                and element.choice_filter is not None
+                and "pulldata(" in str(element[constants.CHOICE_FILTER])
+            ):
+                functions_present.append(element[constants.CHOICE_FILTER])
+            if (
+                hasattr(element, "default")
+                and element.default is not None
+                and "pulldata(" in str(element["default"])
+            ):
                 functions_present.append(element["default"])
 
             return functions_present
@@ -434,6 +530,8 @@ class Survey(Section):
                 instance=node("instance", id=file_id, src=uri),
             )
 
+        if isinstance(element, Option | ExternalInstance | Tag | Survey):
+            return None
         pulldata_usages = get_pulldata_functions(element)
         if len(pulldata_usages) > 0:
             pulldata_instances = []
@@ -451,7 +549,9 @@ class Survey(Section):
         return None
 
     @staticmethod
-    def _generate_from_file_instances(element) -> InstanceInfo | None:
+    def _generate_from_file_instances(element: SurveyElement) -> InstanceInfo | None:
+        if not isinstance(element, MultipleChoiceQuestion) or element.itemset is None:
+            return None
         itemset = element.get("itemset")
         file_id, ext = os.path.splitext(itemset)
         if itemset and ext in EXTERNAL_INSTANCE_EXTENSIONS:
@@ -474,16 +574,21 @@ class Survey(Section):
         """
         True if a last-saved instance should be generated, false otherwise.
         """
+        if not hasattr(element, "bind") or element.bind is None:
+            return False
         for expression_type in constants.EXTERNAL_INSTANCES:
             last_saved_expression = re.search(
                 LAST_SAVED_REGEX, str(element["bind"].get(expression_type))
             )
             if last_saved_expression:
                 return True
-
         return bool(
-            re.search(LAST_SAVED_REGEX, str(element["choice_filter"]))
-            or re.search(LAST_SAVED_REGEX, str(element["default"]))
+            hasattr(element, constants.CHOICE_FILTER)
+            and element.choice_filter is not None
+            and re.search(LAST_SAVED_REGEX, str(element.choice_filter))
+            or hasattr(element, "default")
+            and element.default is not None
+            and re.search(LAST_SAVED_REGEX, str(element.default))
         )
 
     @staticmethod
@@ -499,7 +604,7 @@ class Survey(Section):
             instance=node("instance", id=name, src=uri),
         )
 
-    def _generate_instances(self) -> Iterator[DetachableElement]:
+    def _generate_instances(self) -> Generator[DetachableElement, None, None]:
         """
         Get instances from all the different ways that they may be generated.
 
@@ -550,10 +655,12 @@ class Survey(Section):
             instances += [self._get_last_saved_instance()]
 
         # Append last so the choice instance is excluded on a name clash.
-        for name, value in self.choices.items():
-            instances += [
-                self._generate_static_instances(list_name=name, choice_list=value)
-            ]
+        if self.choices:
+            for name, value in self.choices.items():
+                if name not in self._search_lists:
+                    instances += [
+                        self._generate_static_instances(list_name=name, choice_list=value)
+                    ]
 
         # Check that external instances have unique names.
         if instances:
@@ -580,6 +687,32 @@ class Survey(Section):
                 yield i.instance
             seen[i.name] = i
 
+    def xml_descendent_bindings(self) -> Generator[DetachableElement | None, None, None]:
+        """
+        Yield bindings for this node and all its descendants.
+        """
+        for e in self.iter_descendants(
+            condition=lambda i: not isinstance(i, Option | Tag)
+        ):
+            yield from e.xml_bindings(survey=self)
+
+            # dynamic defaults for repeats go in the body. All other dynamic defaults (setvalue actions) go in the model
+            if not next(
+                e.iter_ancestors(condition=lambda i: i.type == constants.REPEAT), False
+            ):
+                dynamic_default = e.get_setvalue_node_for_dynamic_default(survey=self)
+                if dynamic_default:
+                    yield dynamic_default
+
+    def xml_actions(self) -> Generator[DetachableElement, None, None]:
+        """
+        Yield xml_actions for this node and all its descendants.
+        """
+        for e in self.iter_descendants(condition=lambda i: isinstance(i, Question)):
+            xml_action = e.xml_action()
+            if xml_action is not None:
+                yield xml_action
+
     def xml_model(self):
         """
         Generate the xform <model> element
@@ -590,13 +723,12 @@ class Survey(Section):
 
         model_kwargs = {"odk:xforms-version": constants.CURRENT_XFORMS_VERSION}
 
-        entity_features = getattr(self, constants.ENTITY_FEATURES, [])
-        if len(entity_features) > 0:
-            if "offline" in entity_features:
+        if self.entity_features:
+            if "offline" in self.entity_features:
                 model_kwargs["entities:entities-version"] = (
                     constants.ENTITIES_OFFLINE_VERSION
                 )
-            elif "update" in entity_features:
+            elif "update" in self.entity_features:
                 model_kwargs["entities:entities-version"] = (
                     constants.ENTITIES_UPDATE_VERSION
                 )
@@ -608,10 +740,9 @@ class Survey(Section):
         model_children = []
         if self._translations:
             model_children.append(self.itext())
-        model_children += [node("instance", self.xml_instance())]
-        model_children += list(self._generate_instances())
-        model_children += self.xml_descendent_bindings()
-        model_children += self.xml_actions()
+        model_children.append(
+            node("instance", self.xml_instance()),
+        )
 
         if self.submission_url or self.public_key or self.auto_send or self.auto_delete:
             submission_attrs = {}
@@ -627,14 +758,21 @@ class Survey(Section):
             submission_node = node("submission", **submission_attrs)
             model_children.insert(0, submission_node)
 
-        return node("model", *model_children, **model_kwargs)
+        def model_children_generator():
+            yield from model_children
+            yield from self._generate_instances()
+            yield from self.xml_descendent_bindings()
+            yield from self.xml_actions()
+
+        return node("model", model_children_generator(), **model_kwargs)
 
     def xml_instance(self, **kwargs):
-        result = Section.xml_instance(self, **kwargs)
+        result = Section.xml_instance(self, survey=self, **kwargs)
 
         # set these first to prevent overwriting id and version
-        for key, value in self.attribute.items():
-            result.setAttribute(str(key), value)
+        if self.attribute:
+            for key, value in self.attribute.items():
+                result.setAttribute(str(key), value)
 
         result.setAttribute("id", self.id_string)
 
@@ -665,7 +803,7 @@ class Survey(Section):
             dicty[path[0]] = {}
         self._add_to_nested_dict(dicty[path[0]], path[1:], value)
 
-    def _redirect_is_search_itext(self, element: SurveyElement) -> bool:
+    def _redirect_is_search_itext(self, element: Question) -> bool:
         """
         For selects using the "search()" function, redirect itext for in-line items.
 
@@ -697,11 +835,12 @@ class Survey(Section):
                     "Remove the 'search()' usage, or change the select type."
                 )
                 raise PyXFormError(msg)
-            itemset = element[constants.ITEMSET]
-            self.choices.pop(itemset, None)
-            element[constants.ITEMSET] = ""
-            for i, opt in enumerate(element.get(constants.CHILDREN, [])):
-                opt["_choice_itext_id"] = f"{element[constants.LIST_NAME_U]}-{i}"
+            if self.choices:
+                element.children = self.choices.get(element[constants.ITEMSET], None)
+                element[constants.ITEMSET] = ""
+                if element.children is not None:
+                    for i, opt in enumerate(element.children):
+                        opt["_choice_itext_id"] = f"{element[constants.LIST_NAME_U]}-{i}"
         return is_search
 
     def _setup_translations(self):
@@ -735,15 +874,19 @@ class Survey(Section):
                 for idx, choice in enumerate(choice_list):
                     for col_name, choice_value in choice.items():
                         lang_choice = None
+                        if not choice_value:
+                            continue
                         if col_name == constants.MEDIA:
                             has_media = True
-                        if isinstance(choice_value, dict):
                             lang_choice = choice_value
-                            multi_language = True
                         elif col_name == constants.LABEL:
-                            lang_choice = {self.default_language: choice_value}
-                            if is_label_dynamic(choice_value):
-                                dyn_label = True
+                            if isinstance(choice_value, dict):
+                                lang_choice = choice_value
+                                multi_language = True
+                            else:
+                                lang_choice = {self.default_language: choice_value}
+                                if is_label_dynamic(choice_value):
+                                    dyn_label = True
                         if lang_choice is not None:
                             # e.g. (label, {"default": "Yes"}, "consent", 0)
                             choices.append((col_name, lang_choice, list_name, idx))
@@ -759,27 +902,33 @@ class Survey(Section):
                             c[0], c[1], f"{c[2]}-{c[3]}"
                         )
 
-        for path, value in get_choices():
-            last_path = path.pop()
-            leaf_value = {last_path: value, constants.TYPE: constants.CHOICE}
-            self._add_to_nested_dict(self._translations, path, leaf_value)
+        if self.choices:
+            for path, value in get_choices():
+                last_path = path.pop()
+                leaf_value = {last_path: value, constants.TYPE: constants.CHOICE}
+                self._add_to_nested_dict(self._translations, path, leaf_value)
 
         select_types = set(aliases.select.keys())
         search_lists = set()
         non_search_lists = set()
-        for element in self.iter_descendants():
-            itemset = element.get("itemset")
-            if itemset is not None:
-                element._itemset_multi_language = itemset in itemsets_multi_language
-                element._itemset_has_media = itemset in itemsets_has_media
-                element._itemset_dyn_label = itemset in itemsets_has_dyn_label
+        for element in self.iter_descendants(
+            condition=lambda i: isinstance(i, Question | Section)
+        ):
+            if isinstance(element, MultipleChoiceQuestion):
+                if element.itemset is not None:
+                    element._itemset_multi_language = (
+                        element.itemset in itemsets_multi_language
+                    )
+                    element._itemset_has_media = element.itemset in itemsets_has_media
+                    element._itemset_dyn_label = element.itemset in itemsets_has_dyn_label
 
-            if element[constants.TYPE] in select_types:
-                select_ref = (element[constants.NAME], element[constants.LIST_NAME_U])
-                if self._redirect_is_search_itext(element=element):
-                    search_lists.add(select_ref)
-                else:
-                    non_search_lists.add(select_ref)
+                if element.type in select_types:
+                    select_ref = (element[constants.NAME], element[constants.LIST_NAME_U])
+                    if self._redirect_is_search_itext(element=element):
+                        search_lists.add(select_ref)
+                        self._search_lists.add(element[constants.LIST_NAME_U])
+                    else:
+                        non_search_lists.add(select_ref)
 
             # Skip creation of translations for choices in selects. The creation of these
             # translations is done above in this function.
@@ -860,7 +1009,7 @@ class Survey(Section):
                 media_dict = media_dict_default
 
             for media_type, possibly_localized_media in media_dict.items():
-                if media_type not in SurveyElement.SUPPORTED_MEDIA:
+                if media_type not in constants.SUPPORTED_MEDIA_TYPES:
                     raise PyXFormError("Media type: " + media_type + " not supported")
 
                 if isinstance(possibly_localized_media, dict):
@@ -889,17 +1038,20 @@ class Survey(Section):
 
                     translations_trans_key[media_type] = media
 
-        for survey_element in self.iter_descendants():
+        for survey_element in self.iter_descendants(
+            condition=lambda i: not isinstance(
+                i, Survey | EntityDeclaration | ExternalInstance | Tag | Option
+            )
+        ):
             # Skip set up of media for choices in selects. Translations for their media
             # content should have been set up in _setup_translations, with one copy of
             # each choice translation per language (after _add_empty_translations).
-            if not isinstance(survey_element, Option):
-                media_dict = survey_element.get("media")
-                if isinstance(media_dict, dict) and 0 < len(media_dict):
-                    translation_key = survey_element.get_xpath() + ":label"
-                    _set_up_media_translations(media_dict, translation_key)
+            media_dict = survey_element.get("media")
+            if isinstance(media_dict, dict) and 0 < len(media_dict):
+                translation_key = survey_element.get_xpath() + ":label"
+                _set_up_media_translations(media_dict, translation_key)
 
-    def itext(self):
+    def itext(self) -> DetachableElement:
         """
         This function creates the survey's itext nodes from _translations
         @see _setup_media _setup_translations
@@ -995,13 +1147,11 @@ class Survey(Section):
         return f"<pyxform.survey.Survey instance at {hex(id(self))}>"
 
     def _setup_xpath_dictionary(self):
-        self._xpath = {}  # pylint: disable=attribute-defined-outside-init
-        for element in self.iter_descendants():
-            if isinstance(element, Question | Section):
-                if element.name in self._xpath:
-                    self._xpath[element.name] = None
-                else:
-                    self._xpath[element.name] = element.get_xpath()
+        for element in self.iter_descendants(lambda i: isinstance(i, Question | Section)):
+            if element.name in self._xpath:
+                self._xpath[element.name] = None
+            else:
+                self._xpath[element.name] = element
 
     def _var_repl_function(
         self, matchobj, context, use_current=False, reference_parent=False
@@ -1036,7 +1186,7 @@ class Survey(Section):
         def _relative_path(ref_name: str, _use_current: bool) -> str | None:
             """Given name in ${name}, return relative xpath to ${name}."""
             return_path = None
-            xpath = self._xpath[ref_name]
+            xpath = self._xpath[ref_name].get_xpath()
             context_xpath = context.get_xpath()
             # share same root i.e repeat_a from /data/repeat_a/...
             if (
@@ -1045,13 +1195,17 @@ class Survey(Section):
             ):
                 # if context xpath and target xpath fall under the same
                 # repeat use relative xpath referencing.
-                steps, ref_path = share_same_repeat_parent(
-                    self, xpath, context_xpath, reference_parent
-                )
-                if steps:
-                    ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
-                    prefix = " current()/" if _use_current else " "
-                    return_path = prefix + "/".join([".."] * steps) + ref_path + " "
+                relation = context.has_common_repeat_parent(self._xpath[ref_name])
+                if relation[0] == "Unrelated":
+                    return return_path
+                else:
+                    steps, ref_path = share_same_repeat_parent(
+                        self, xpath, context_xpath, reference_parent
+                    )
+                    if steps:
+                        ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
+                        prefix = " current()/" if _use_current else " "
+                        return_path = prefix + "/".join([".."] * steps) + ref_path + " "
 
             return return_path
 
@@ -1109,7 +1263,7 @@ class Survey(Section):
             raise PyXFormError(intro + " There is no survey element with this name.")
         if self._xpath[name] is None:
             raise PyXFormError(
-                intro + " There are multiple survey elements" " with this name."
+                intro + " There are multiple survey elements with this name."
             )
 
         if _is_return_relative_path():
@@ -1122,9 +1276,15 @@ class Survey(Section):
         last_saved_prefix = (
             "instance('" + LAST_SAVED_INSTANCE_NAME + "')" if last_saved else ""
         )
-        return " " + last_saved_prefix + self._xpath[name] + " "
+        return " " + last_saved_prefix + self._xpath[name].get_xpath() + " "
 
-    def insert_xpaths(self, text, context, use_current=False, reference_parent=False):
+    def insert_xpaths(
+        self,
+        text: str,
+        context: SurveyElement,
+        use_current: bool = False,
+        reference_parent: bool = False,
+    ):
         """
         Replace all instances of ${var} with the xpath to var.
         """
@@ -1134,6 +1294,7 @@ class Survey(Section):
                 matchobj, context, use_current, reference_parent
             )
 
+        # "text" may actually be a dict, e.g. for custom attributes.
         return re.sub(BRACKETED_TAG_REGEX, _var_repl_function, str(text))
 
     def _var_repl_output_function(self, matchobj, context):
@@ -1192,7 +1353,7 @@ class Survey(Section):
         if warnings is None:
             warnings = []
         if not path:
-            path = self._print_name + ".xml"
+            path = self.id_string + ".xml"
         if pretty_print:
             xml = self._to_pretty_xml()
         else:
@@ -1237,17 +1398,18 @@ class Survey(Section):
         # So it must be explicitly created, opened, closed, and removed.
         tmp = tempfile.NamedTemporaryFile(delete=False)
         tmp.close()
+        tmp_path = Path(tmp.name)
         try:
             # this will throw an exception if the xml is not valid
             xml = self.print_xform_to_file(
-                path=tmp.name,
+                path=tmp_path,
                 validate=validate,
                 pretty_print=pretty_print,
                 warnings=warnings,
                 enketo=enketo,
             )
         finally:
-            Path(tmp.name).unlink(missing_ok=True)
+            tmp_path.unlink(missing_ok=True)
         return xml
 
     def instantiate(self):

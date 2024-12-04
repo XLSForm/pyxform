@@ -121,14 +121,14 @@ class ChoicesSheetTest(PyxformTestCase):
             xml__xpath_match=[
                 """
                 /h:html/h:head/x:model/x:instance[@id='choices']/x:root/x:item[
-                  ./x:name = ./x:*[position() = 1 and text() = '1']
-                  and ./x:geometry = ./x:*[position() = 2 and text() = '46.5841618 7.0801379 0 0']
+                  ./x:name = ./x:*[text() = '1']
+                  and ./x:geometry = ./x:*[text() = '46.5841618 7.0801379 0 0']
                 ]
                 """,
                 """
                 /h:html/h:head/x:model/x:instance[@id='choices']/x:root/x:item[
-                  ./x:name = ./x:*[position() = 1 and text() = '2']
-                  and ./x:geometry = ./x:*[position() = 2 and text() = '35.8805082 76.515057 0 0']
+                  ./x:name = ./x:*[text() = '2']
+                  and ./x:geometry = ./x:*[text() = '35.8805082 76.515057 0 0']
                 ]
                 """,
             ],

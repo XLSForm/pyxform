@@ -35,8 +35,8 @@ class TestXFormConversion(XFormTestCase):
                 )
                 xlsform = Path(self.path_to_excel_file)
                 if set_name:
-                    result = convert(xlsform=xlsform, warnings=[], form_name=xlsform.stem)
+                    result = convert(xlsform=xlsform, form_name=xlsform.stem)
                 else:
-                    result = convert(xlsform=xlsform, warnings=[])
+                    result = convert(xlsform=xlsform)
                 with open(expected_output_path, encoding="utf-8") as expected:
                     self.assertXFormEqual(expected.read(), result.xform)

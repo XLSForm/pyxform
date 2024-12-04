@@ -49,3 +49,19 @@ class TestSurvey(PyxformTestCase):
                 n="\n".join(tmpl_n.format(i) for i in range(1, 250)),
             ),
         )
+
+    def test_autoplay_attribute_added_to_question_body_control(self):
+        """Should add the autoplay attribute when specified for a question."""
+        md = """
+        | survey |
+        |        | type  | name | label      | audio       | autoplay |
+        |        | text  | feel | Song feel? | amazing.mp3 | audio    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:body/x:input[@ref='/test_name/feel' and @autoplay='audio']
+                """
+            ],
+        )

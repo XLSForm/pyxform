@@ -1711,9 +1711,9 @@ class TestTranslationsOrOther(PyxformTestCase):
         """Should add an "other" choice to the itemset instance and an itext label."""
         # xls2json validation would raise an error if a choice has no label at all.
         md = """
-        | survey  |                        |       |            |            |          |
-        |         | type                   | name  | label      | label::eng | label:fr |
-        |         | select_one c1 or_other | q1    | Question 1 | Question A | QA fr    |
+        | survey  |                        |       |            |            |           |
+        |         | type                   | name  | label      | label::eng | label::fr |
+        |         | select_one c1 or_other | q1    | Question 1 | Question A | QA fr     |
         | choices |           |      |       |            |           |
         |         | list name | name | label | label::eng | label::fr |
         |         | c1        | na   | la    | la-e       | la-f      |

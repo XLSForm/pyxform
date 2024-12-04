@@ -37,7 +37,7 @@ def validate_headers(
     return list(check())
 
 
-def validate_choices(
+def validate_choice_list(
     options: list[dict], warnings: list[str], allow_duplicates: bool = False
 ) -> None:
     seen_options = set()
@@ -57,3 +57,22 @@ def validate_choices(
 
     if 0 < len(duplicate_errors):
         raise PyXFormError("\n".join(duplicate_errors))
+
+
+def validate_choices(
+    choices: dict[str, list[dict]],
+    warnings: list[str],
+    headers: tuple[tuple[str, ...], ...],
+    allow_duplicates: bool = False,
+):
+    invalid_headers = validate_headers(headers, warnings)
+    for options in choices.values():
+        validate_choice_list(
+            options=options,
+            warnings=warnings,
+            allow_duplicates=allow_duplicates,
+        )
+        for option in options:
+            for invalid_header in invalid_headers:
+                option.pop(invalid_header, None)
+            del option["__row"]

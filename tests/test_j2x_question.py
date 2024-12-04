@@ -2,6 +2,7 @@
 Testing creation of Surveys using verbose methods
 """
 
+from collections.abc import Generator
 from unittest import TestCase
 
 from pyxform import Survey
@@ -19,6 +20,8 @@ def ctw(control):
     """
     if isinstance(control, list) and len(control) == 1:
         control = control[0]
+    elif isinstance(control, Generator):
+        control = next(control)
     return control.toxml()
 
 
@@ -55,10 +58,12 @@ class Json2XformQuestionValidationTests(TestCase):
         )
 
         self.s.add_child(q)
-        self.assertEqual(ctw(q.xml_control()), expected_string_control_xml)
+        self.assertEqual(ctw(q.xml_control(survey=self.s)), expected_string_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_bindings()), expected_string_binding_xml)
+            self.assertEqual(
+                ctw(q.xml_bindings(survey=self.s)), expected_string_binding_xml
+            )
 
     def test_select_one_question_multilingual(self):
         """
@@ -86,10 +91,14 @@ class Json2XformQuestionValidationTests(TestCase):
 
         q = create_survey_element_from_dict(simple_select_one_json)
         self.s.add_child(q)
-        self.assertEqual(ctw(q.xml_control()), expected_select_one_control_xml)
+        self.assertEqual(
+            ctw(q.xml_control(survey=self.s)), expected_select_one_control_xml
+        )
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_bindings()), expected_select_one_binding_xml)
+            self.assertEqual(
+                ctw(q.xml_bindings(survey=self.s)), expected_select_one_binding_xml
+            )
 
     def test_simple_integer_question_type_multilingual(self):
         """
@@ -114,10 +123,12 @@ class Json2XformQuestionValidationTests(TestCase):
 
         self.s.add_child(q)
 
-        self.assertEqual(ctw(q.xml_control()), expected_integer_control_xml)
+        self.assertEqual(ctw(q.xml_control(survey=self.s)), expected_integer_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_bindings()), expected_integer_binding_xml)
+            self.assertEqual(
+                ctw(q.xml_bindings(survey=self.s)), expected_integer_binding_xml
+            )
 
     def test_simple_date_question_type_multilingual(self):
         """
@@ -140,10 +151,12 @@ class Json2XformQuestionValidationTests(TestCase):
 
         q = create_survey_element_from_dict(simple_date_question)
         self.s.add_child(q)
-        self.assertEqual(ctw(q.xml_control()), expected_date_control_xml)
+        self.assertEqual(ctw(q.xml_control(survey=self.s)), expected_date_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_bindings()), expected_date_binding_xml)
+            self.assertEqual(
+                ctw(q.xml_bindings(survey=self.s)), expected_date_binding_xml
+            )
 
     def test_simple_phone_number_question_type_multilingual(self):
         """
@@ -159,7 +172,7 @@ class Json2XformQuestionValidationTests(TestCase):
         self.s.add_child(q)
 
         # Inspect XML Control
-        observed = q.xml_control()
+        observed = q.xml_control(survey=self.s)
         self.assertEqual("input", observed.nodeName)
         self.assertEqual("/test/phone_number_q", observed.attributes["ref"].nodeValue)
         observed_label = observed.childNodes[0]
@@ -178,7 +191,8 @@ class Json2XformQuestionValidationTests(TestCase):
             "type": "string",
             "constraint": r"regex(., '^\d*$')",
         }
-        observed = {k: v for k, v in q.xml_bindings()[0].attributes.items()}  # noqa: C416
+        binding = next(q.xml_bindings(survey=self.s))
+        observed = {k: v for k, v in binding.attributes.items()}  # noqa: C416
         self.assertDictEqual(expected, observed)
 
     def test_simple_select_all_question_multilingual(self):
@@ -206,10 +220,14 @@ class Json2XformQuestionValidationTests(TestCase):
 
         q = create_survey_element_from_dict(simple_select_all_question)
         self.s.add_child(q)
-        self.assertEqual(ctw(q.xml_control()), expected_select_all_control_xml)
+        self.assertEqual(
+            ctw(q.xml_control(survey=self.s)), expected_select_all_control_xml
+        )
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_bindings()), expected_select_all_binding_xml)
+            self.assertEqual(
+                ctw(q.xml_bindings(survey=self.s)), expected_select_all_binding_xml
+            )
 
     def test_simple_decimal_question_multilingual(self):
         """
@@ -232,7 +250,9 @@ class Json2XformQuestionValidationTests(TestCase):
 
         q = create_survey_element_from_dict(simple_decimal_question)
         self.s.add_child(q)
-        self.assertEqual(ctw(q.xml_control()), expected_decimal_control_xml)
+        self.assertEqual(ctw(q.xml_control(survey=self.s)), expected_decimal_control_xml)
 
         if TESTING_BINDINGS:
-            self.assertEqual(ctw(q.xml_bindings()), expected_decimal_binding_xml)
+            self.assertEqual(
+                ctw(q.xml_bindings(survey=self.s)), expected_decimal_binding_xml
+            )

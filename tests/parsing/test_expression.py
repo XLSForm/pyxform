@@ -31,6 +31,9 @@ negative = [
     ("name with space", "Invalid character (space)"),
     ("na@me", "Invalid character (@)"),
     ("na#me", "Invalid character (#)"),
+    ("name:.name", "Invalid character (in local name)"),
+    ("-name:name", "Invalid character (in namespace)"),
+    ("$name:@name", "Invalid character (in both names)"),
     ("name:name:name", "Invalid structure (multiple colons)"),
 ]
 

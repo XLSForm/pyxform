@@ -5,9 +5,10 @@ pyxform utils module.
 import copy
 import csv
 import json
-import os
 import re
+from collections.abc import Generator, Iterable
 from io import StringIO
+from itertools import chain
 from json.decoder import JSONDecodeError
 from typing import Any
 from xml.dom import Node
@@ -58,7 +59,7 @@ class DetachableElement(Element):
         if self.childNodes:
             writer.write(">")
             # For text or mixed content, write without adding indents or newlines.
-            if 0 < len([c for c in self.childNodes if c.nodeType in NODE_TYPE_TEXT]):
+            if any(c.nodeType in NODE_TYPE_TEXT for c in self.childNodes):
                 # Conditions to match old Survey.py regex for remaining whitespace.
                 child_nodes = len(self.childNodes)
                 for idx, cnode in enumerate(self.childNodes):
@@ -94,39 +95,29 @@ def node(*args, **kwargs) -> DetachableElement:
     kwargs -- attributes
     returns a xml.dom.minidom.Element
     """
-    blocked_attributes = ["tag"]
+    blocked_attributes = {"tag"}
     tag = args[0] if len(args) > 0 else kwargs["tag"]
     args = args[1:]
     result = DetachableElement(tag)
-    unicode_args = [u for u in args if isinstance(u, str)]
+    unicode_args = tuple(u for u in args if isinstance(u, str))
     if len(unicode_args) > 1:
         raise PyXFormError("""Invalid value for `unicode_args`.""")
     parsed_string = False
 
     # Convert the kwargs xml attribute dictionary to a xml.dom.minidom.Element.
-    for k, v in iter(kwargs.items()):
+    for k, v in kwargs.items():
         if k in blocked_attributes:
             continue
         if k == "toParseString":
             if v is True and len(unicode_args) == 1:
                 parsed_string = True
                 # Add this header string so parseString can be used?
-                s = (
-                    '<?xml version="1.0" ?><'
-                    + tag
-                    + ">"
-                    + unicode_args[0]
-                    + "</"
-                    + tag
-                    + ">"
-                )
+                s = f"""<?xml version="1.0" ?><{tag}>{unicode_args[0]}</{tag}>"""
                 parsed_node = parseString(s.encode("utf-8")).documentElement
                 # Move node's children to the result Element
                 # discarding node's root
                 for child in parsed_node.childNodes:
-                    # No tests seem to involve moving elements with children.
-                    # Deep clone used anyway in case of unknown edge cases.
-                    result.appendChild(child.cloneNode(deep=True))
+                    result.appendChild(child.cloneNode(deep=False))
         else:
             result.setAttribute(k, v)
 
@@ -139,6 +130,10 @@ def node(*args, **kwargs) -> DetachableElement:
             text_node = PatchedText()
             text_node.data = str(n)
             result.appendChild(text_node)
+        elif isinstance(n, Generator):
+            for e in n:
+                if e is not None:
+                    result.appendChild(e)
         elif not isinstance(n, str):
             result.appendChild(n)
     return result
@@ -212,27 +207,6 @@ def has_external_choices(json_struct):
             if has_external_choices(v):
                 return True
     return False
-
-
-def get_languages_with_bad_tags(languages):
-    """
-    Returns languages with invalid or missing IANA subtags.
-    """
-    path = os.path.join(os.path.dirname(__file__), "iana_subtags.txt")
-    with open(path, encoding="utf-8") as f:
-        iana_subtags = f.read().splitlines()
-
-    lang_code_regex = re.compile(r"\((.*)\)$")
-
-    languages_with_bad_tags = []
-    for lang in languages:
-        lang_code = re.search(lang_code_regex, lang)
-
-        if lang != "default" and (
-            not lang_code or lang_code.group(1) not in iana_subtags
-        ):
-            languages_with_bad_tags.append(lang)
-    return languages_with_bad_tags
 
 
 def default_is_dynamic(element_default, element_type=None):
@@ -335,3 +309,19 @@ def levenshtein_distance(a: str, b: str) -> int:
 
 def coalesce(*args):
     return next((a for a in args if a is not None), None)
+
+
+def combine_lists(
+    a: Iterable | None = None,
+    b: Iterable | None = None,
+) -> Iterable | None:
+    """Get the list that is not None, or both lists combined, or an empty list."""
+    if b is None:
+        if a is None:
+            return None
+        else:
+            return a
+    elif a is None:
+        return b
+    else:
+        return chain(a, b)
