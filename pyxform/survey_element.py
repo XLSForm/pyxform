@@ -141,24 +141,24 @@ class SurveyElement(Mapping):
                 f"The name '{self.name}' contains an invalid character '{invalid_char.group(0)}'. Names {const.XML_IDENTIFIER_ERROR_MESSAGE}"
             )
 
-    # TODO: Make sure renaming this doesn't cause any problems
     def iter_descendants(
-        self, condition: Callable[["SurveyElement"], bool] | None = None
+        self,
+        condition: Callable[["SurveyElement"], bool] | None = None,
+        iter_into_section_items: bool = False,
     ) -> Generator["SurveyElement", None, None]:
         """
-        Get each of self.children.
+        Iterate the object, and it's children (if applicable).
 
-        :param condition: If this evaluates to True, yield the element.
+        :param condition: If provided, the element will only be returned if this callable
+          evaluates to True. Can be used to filter by class/type or other properties.
+        :param iter_into_section_items: If False, only iterate into the children of
+          sections (survey or group), e.g. to get Sections, Questions, etc. If True, also
+          iterate into the children of those children, e.g. to get Options and Tags.
         """
-        # it really seems like this method should not yield self
-        if condition is not None:
-            if condition(self):
-                yield self
-        else:
+        if condition is None:
             yield self
-        if hasattr(self, const.CHILDREN) and self.children is not None:
-            for e in self.children:
-                yield from e.iter_descendants(condition=condition)
+        elif condition(self):
+            yield self
 
     def iter_ancestors(
         self, condition: Callable[["SurveyElement"], bool] | None = None

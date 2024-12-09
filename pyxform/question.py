@@ -3,7 +3,7 @@ XForm Survey element classes for different question types.
 """
 
 import os.path
-from collections.abc import Iterable
+from collections.abc import Callable, Generator, Iterable
 from itertools import chain
 from typing import TYPE_CHECKING
 
@@ -391,6 +391,22 @@ class MultipleChoiceQuestion(Question):
             for child in self.children:
                 child.validate()
 
+    def iter_descendants(
+        self,
+        condition: Callable[["SurveyElement"], bool] | None = None,
+        iter_into_section_items: bool = False,
+    ) -> Generator["SurveyElement", None, None]:
+        if condition is None:
+            yield self
+        elif condition(self):
+            yield self
+        if iter_into_section_items and self.children:
+            for e in self.children:
+                yield from e.iter_descendants(
+                    condition=condition,
+                    iter_into_section_items=iter_into_section_items,
+                )
+
     def build_xml(self, survey: "Survey"):
         if self.bind["type"] not in {"string", "odk:rank"}:
             raise PyXFormError("""Invalid value for `self.bind["type"]`.""")
@@ -514,6 +530,22 @@ class Tag(SurveyElement):
             )
         super().__init__(name=name, label=label, **kwargs)
 
+    def iter_descendants(
+        self,
+        condition: Callable[["SurveyElement"], bool] | None = None,
+        iter_into_section_items: bool = False,
+    ) -> Generator["SurveyElement", None, None]:
+        if condition is None:
+            yield self
+        elif condition(self):
+            yield self
+        if iter_into_section_items and self.children:
+            for e in self.children:
+                yield from e.iter_descendants(
+                    condition=condition,
+                    iter_into_section_items=iter_into_section_items,
+                )
+
     def xml(self, survey: "Survey"):
         result = node("tag", key=self.name)
         result.appendChild(self.xml_label(survey=survey))
@@ -547,6 +579,22 @@ class OsmUploadQuestion(UploadQuestion):
             self.children = tuple(Tag(**c) for c in choices)
 
         super().__init__(**kwargs)
+
+    def iter_descendants(
+        self,
+        condition: Callable[["SurveyElement"], bool] | None = None,
+        iter_into_section_items: bool = False,
+    ) -> Generator["SurveyElement", None, None]:
+        if condition is None:
+            yield self
+        elif condition(self):
+            yield self
+        if iter_into_section_items and self.children:
+            for e in self.children:
+                yield from e.iter_descendants(
+                    condition=condition,
+                    iter_into_section_items=iter_into_section_items,
+                )
 
     def build_xml(self, survey: "Survey"):
         control_dict = self.control

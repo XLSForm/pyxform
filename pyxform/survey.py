@@ -15,7 +15,6 @@ from pathlib import Path
 
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
-from pyxform.entities.entity_declaration import EntityDeclaration
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -239,7 +238,7 @@ class Survey(Section):
         self._created: datetime.now = datetime.now()
         self._search_lists: set = set()
         self._translations: recursive_dict = recursive_dict()
-        self._xpath: dict[str, SurveyElement | None] = {}
+        self._xpath: dict[str, Section | Question | None] = {}
 
         # Structure
         # attribute is for custom instance attrs from settings e.g. attribute::abc:xyz
@@ -1027,17 +1026,15 @@ class Survey(Section):
 
                     translations_trans_key[media_type] = media
 
-        for survey_element in self.iter_descendants(
-            condition=lambda i: not isinstance(
-                i, Survey | EntityDeclaration | ExternalInstance | Tag | Option
-            )
+        for item in self.iter_descendants(
+            condition=lambda i: isinstance(i, Section | Question)
         ):
             # Skip set up of media for choices in selects. Translations for their media
             # content should have been set up in _setup_translations, with one copy of
             # each choice translation per language (after _add_empty_translations).
-            media_dict = survey_element.get("media")
-            if isinstance(media_dict, dict) and 0 < len(media_dict):
-                translation_key = survey_element.get_xpath() + ":label"
+            media_dict = item.media
+            if isinstance(media_dict, dict) and media_dict:
+                translation_key = f"{item.get_xpath()}:label"
                 _set_up_media_translations(media_dict, translation_key)
 
     def itext(self) -> DetachableElement:
@@ -1137,10 +1134,11 @@ class Survey(Section):
 
     def _setup_xpath_dictionary(self):
         for element in self.iter_descendants(lambda i: isinstance(i, Question | Section)):
-            if element.name in self._xpath:
-                self._xpath[element.name] = None
+            element_name = element.name
+            if element_name in self._xpath:
+                self._xpath[element_name] = None
             else:
-                self._xpath[element.name] = element
+                self._xpath[element_name] = element
 
     def _var_repl_function(
         self, matchobj, context, use_current=False, reference_parent=False

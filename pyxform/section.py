@@ -2,7 +2,7 @@
 Section survey element module.
 """
 
-from collections.abc import Generator, Iterable
+from collections.abc import Callable, Generator, Iterable
 from itertools import chain
 from typing import TYPE_CHECKING
 
@@ -77,6 +77,22 @@ class Section(SurveyElement):
         for element in self.children:
             element.validate()
         self._validate_uniqueness_of_element_names()
+
+    def iter_descendants(
+        self,
+        condition: Callable[["SurveyElement"], bool] | None = None,
+        iter_into_section_items: bool = False,
+    ) -> Generator["SurveyElement", None, None]:
+        if condition is None:
+            yield self
+        elif condition(self):
+            yield self
+        if self.children:
+            for e in self.children:
+                yield from e.iter_descendants(
+                    condition=condition,
+                    iter_into_section_items=iter_into_section_items,
+                )
 
     # there's a stronger test of this when creating the xpath
     # dictionary for a survey.
