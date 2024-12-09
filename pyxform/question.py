@@ -21,6 +21,7 @@ from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
     PYXFORM_REFERENCE_REGEX,
     DetachableElement,
+    coalesce,
     combine_lists,
     default_is_dynamic,
     node,
@@ -376,12 +377,14 @@ class MultipleChoiceQuestion(Question):
         # I'm going to try to stick to just choices.
         # Aliases in the json format will make it more difficult
         # to use going forward.
-        choices = combine_lists(
-            a=kwargs.pop(constants.CHOICES, None), b=kwargs.pop(constants.CHILDREN, None)
-        )
-        if choices:
+        kw_choices = kwargs.pop(constants.CHOICES, None)
+        kw_children = kwargs.pop(constants.CHILDREN, None)
+        choices = coalesce(kw_choices, kw_children)
+        if isinstance(choices, tuple) and isinstance(next(iter(choices)), Option):
+            self.children = choices
+        elif choices:
             self.children = tuple(
-                c if isinstance(c, Option) else Option(**c) for c in choices
+                Option(**c) for c in combine_lists(kw_choices, kw_children)
             )
         super().__init__(**kwargs)
 
@@ -521,12 +524,14 @@ class Tag(SurveyElement):
     def __init__(self, name: str, label: str | dict | None = None, **kwargs):
         self.children: tuple[Option, ...] | None = None
 
-        choices = combine_lists(
-            a=kwargs.pop(constants.CHOICES, None), b=kwargs.pop(constants.CHILDREN, None)
-        )
-        if choices:
+        kw_choices = kwargs.pop(constants.CHOICES, None)
+        kw_children = kwargs.pop(constants.CHILDREN, None)
+        choices = coalesce(kw_choices, kw_children)
+        if isinstance(choices, tuple) and isinstance(next(iter(choices)), Option):
+            self.children = choices
+        elif choices:
             self.children = tuple(
-                c if isinstance(c, Option) else Option(**c) for c in choices
+                Option(**c) for c in combine_lists(kw_choices, kw_children)
             )
         super().__init__(name=name, label=label, **kwargs)
 
