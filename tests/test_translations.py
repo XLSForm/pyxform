@@ -13,6 +13,7 @@ from pyxform.validators.pyxform.translations_checks import (
     OR_OTHER_WARNING,
     format_missing_translations_msg,
 )
+from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
@@ -396,13 +397,15 @@ class TestTranslations(PyxformTestCase):
         """
         Should find the translations check costs a fraction of a second for large forms.
 
-        Results with Python 3.10.14 on VM with 2vCPU (i7-7700HQ) 4GB RAM, x questions
+        Results with Python 3.10.14 on VM with 2vCPU (i7-7700HQ) 1GB RAM, x questions
         with 2 choices each, average of 10 runs (seconds), with and without the check,
         per question:
-        | num  | with   | without |
-        |  500 | 3.0420 |  3.0427 |
-        | 1000 | 9.7641 |  9.6972 |
-        | 2000 | 30.645 |  28.869 |
+        | num   | with   | without | peak RSS MB |
+        |   500 | 1.0235 |  0.9831 |          74 |
+        |  1000 | 2.3025 |  2.6332 |         101 |
+        |  2000 | 5.6960 |  6.2805 |         157 |
+        |  5000 | 23.439 |  25.327 |         265 |
+        | 10000 | 80.396 |  75.165 |         480 |
         """
         survey_header = """
         | survey |                 |        |                    |                   |
@@ -429,10 +432,10 @@ class TestTranslations(PyxformTestCase):
                 results = []
                 while runs < 10:
                     start = perf_counter()
-                    self.assertPyxformXform(md=case)
+                    convert(xlsform=case)
                     results.append(perf_counter() - start)
                     runs += 1
-                print(name, sum(results) / len(results))
+                print(name, round(sum(results) / len(results), 4))
 
             run(name=f"questions={count}, with check (seconds):", case=md)
 

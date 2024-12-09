@@ -13,9 +13,9 @@ class LanguageWarningTest(PyxformTestCase):
     def test_label_with_valid_subtag_should_not_warn(self):
         self.assertPyxformXform(
             md="""
-            | survey |      |         |                     |
-            |        | type | name    | label::English (en) |
-            |        | note | my_note | My note             |
+            | survey |
+            |        | type | name    | label::English (en) | label::Acoli (ach) |
+            |        | note | my_note | My note             | coc na             |
             """,
             warnings_count=0,
         )
@@ -35,16 +35,17 @@ class LanguageWarningTest(PyxformTestCase):
         )
 
     def test_label_with_unknown_subtag_should_warn(self):
+        # Bosnian has a short code "bs" so "bos" is not correct per RFC5646.
         self.assertPyxformXform(
             md="""
             | survey |      |         |                       |
-            |        | type | name    | label::English (schm) |
-            |        | note | my_note | My note               |
+            |        | type | name    | label::English (schm) | label::Bosnian (bos) |
+            |        | note | my_note | My note               | Moja napomena        |
             """,
             warnings_count=1,
             warnings__contains=[
                 "The following language declarations do not contain valid machine-readable "
-                "codes: English (schm). Learn more: http://xlsform.org#multiple-language-support"
+                "codes: English (schm), Bosnian (bos). Learn more: http://xlsform.org#multiple-language-support"
             ],
         )
 
