@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import psutil
 from pyxform import utils
+from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
@@ -774,13 +775,14 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         """
         Should find the dynamic default check costs little extra relative time large forms.
 
-        Results with Python 3.9.10 on VM with 4CPU 8GB RAM, x questions each, average of
-        10 runs (seconds), with and without the check, per question:
-        | num  | with   | without |
-        |  500 | 0.4599 |  0.4535 |
-        | 1000 | 0.9234 |  0.9195 |
-        | 2000 | 2.1118 |  1.9917 |
-        | 5000 | 4.9563 |  4.8714 |
+        Results with Python 3.10.14 on VM with 2vCPU (i7-7700HQ) 1GB RAM, x questions
+        each, average of 10 runs (seconds), with and without the check, per question:
+        | num   | with   | without | peak RSS MB |
+        |   500 | 0.2415 |  0.2512 |          58 |
+        |  1000 | 0.4754 |  0.5199 |          63 |
+        |  2000 | 0.9866 |  1.2936 |          67 |
+        |  5000 | 3.1041 |  2.7132 |          96 |
+        | 10000 | 5.4795 |  5.3229 |         133 |
         """
         survey_header = """
         | survey |            |          |          |               |
@@ -798,7 +800,7 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
                 results = []
                 while runs < 10:
                     start = perf_counter()
-                    self.assertPyxformXform(md=case)
+                    convert(xlsform=case)
                     results.append(perf_counter() - start)
                     runs += 1
                 print(name, round(sum(results) / len(results), 4))
