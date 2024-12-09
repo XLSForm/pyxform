@@ -74,7 +74,6 @@ def get_expression_lexer(name_only: bool = False) -> re.Scanner:
     return re.Scanner(lexicon)
 
 
-# Scanner takes a few 100ms to compile so use this shared instance.
 class ExpLexerToken:
     __slots__ = ("name", "value", "start", "end")
 
@@ -85,6 +84,7 @@ class ExpLexerToken:
         self.end: int = end
 
 
+# Scanner takes a few 100ms to compile so use these shared instances.
 _EXPRESSION_LEXER = get_expression_lexer()
 _TOKEN_NAME_LEXER = get_expression_lexer(name_only=True)
 
