@@ -48,14 +48,13 @@ class DetachableElement(Element):
         # indent = current indentation
         # addindent = indentation to add to higher levels
         # newl = newline string
-        writer.write(indent + "<" + self.tagName)
+        writer.write(f"{indent}<{self.tagName}")
 
-        attrs = self._get_attributes()
-
-        for a_name in attrs.keys():
-            writer.write(f' {a_name}="')
-            _write_data(writer, attrs[a_name].value)
-            writer.write('"')
+        if self._attrs:
+            for k, v in self._attrs.items():
+                writer.write(f' {k}="')
+                _write_data(writer, v.value)
+                writer.write('"')
         if self.childNodes:
             writer.write(">")
             # For text or mixed content, write without adding indents or newlines.
@@ -71,7 +70,7 @@ class DetachableElement(Element):
             else:
                 writer.write(newl)
                 for cnode in self.childNodes:
-                    cnode.writexml(writer, indent + addindent, addindent, newl)
+                    cnode.writexml(writer, f"{indent}{addindent}", addindent, newl)
                 writer.write(indent)
             writer.write(f"</{self.tagName}>{newl}")
         else:
@@ -81,7 +80,7 @@ class DetachableElement(Element):
 class PatchedText(Text):
     def writexml(self, writer, indent="", addindent="", newl=""):
         """Same as original but no replacing double quotes with '&quot;'."""
-        data = "".join((indent, self.data, newl))
+        data = f"{indent}{self.data}{newl}"
         if data:
             data = data.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         writer.write(data)

@@ -131,7 +131,7 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
                 steps = len(context_parts[index - 1 :])
                 parts = xpath_parts[index - 1 :]
                 break
-        return (steps, "/" + "/".join(parts) if parts else remainder_xpath)
+        return (steps, f"""/{"/".join(parts)}""" if parts else remainder_xpath)
 
     context_parent = is_parent_a_repeat(survey, context_xpath)
     xpath_parent = is_parent_a_repeat(survey, xpath)
@@ -334,13 +334,12 @@ class Survey(Section):
                 for ns in self.namespaces.split()
                 if len(ns.split("=")) == 2 and ns.split("=")[0] != ""
             ]
-            xmlns = "xmlns:"
             nsmap = NSMAP.copy()
             nsmap.update(
                 {
-                    xmlns + k: v.replace('"', "").replace("'", "")
+                    f"xmlns:{k}": v.replace('"', "").replace("'", "")
                     for k, v in nslist
-                    if xmlns + k not in nsmap
+                    if f"xmlns:{k}" not in nsmap
                 }
             )
             return nsmap
@@ -998,7 +997,7 @@ class Survey(Section):
 
             for media_type, possibly_localized_media in media_dict.items():
                 if media_type not in constants.SUPPORTED_MEDIA_TYPES:
-                    raise PyXFormError("Media type: " + media_type + " not supported")
+                    raise PyXFormError(f"Media type: {media_type} not supported")
 
                 if isinstance(possibly_localized_media, dict):
                     # media is localized
@@ -1096,7 +1095,7 @@ class Survey(Section):
                             itext_nodes.append(
                                 node(
                                     "value",
-                                    "jr://images/" + value,
+                                    f"jr://images/{value}",
                                     form=media_type,
                                     toParseString=output_inserted,
                                 )
@@ -1105,7 +1104,7 @@ class Survey(Section):
                         itext_nodes.append(
                             node(
                                 "value",
-                                "jr://" + media_type + "/" + value,
+                                f"jr://{media_type}/{value}",
                                 form=media_type,
                                 toParseString=output_inserted,
                             )
@@ -1120,11 +1119,11 @@ class Survey(Section):
         return self._created.strftime("%Y_%m_%d")
 
     def _to_ugly_xml(self) -> str:
-        return '<?xml version="1.0"?>' + self.xml().toxml()
+        return f"""<?xml version="1.0"?>{self.xml().toxml()}"""
 
     def _to_pretty_xml(self) -> str:
         """Get the XForm with human readable formatting."""
-        return '<?xml version="1.0"?>\n' + self.xml().toprettyxml(indent="  ")
+        return f"""<?xml version="1.0"?>\n{self.xml().toprettyxml(indent="  ")}"""
 
     def __repr__(self):
         return self.__unicode__()
@@ -1192,7 +1191,7 @@ class Survey(Section):
                     if steps:
                         ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
                         prefix = " current()/" if _use_current else " "
-                        return_path = prefix + "/".join([".."] * steps) + ref_path + " "
+                        return_path = f"""{prefix}{"/".join(".." for _ in range(steps))}{ref_path} """
 
             return return_path
 
@@ -1261,9 +1260,9 @@ class Survey(Section):
                 return relative_path
 
         last_saved_prefix = (
-            "instance('" + LAST_SAVED_INSTANCE_NAME + "')" if last_saved else ""
+            f"instance('{LAST_SAVED_INSTANCE_NAME}')" if last_saved else ""
         )
-        return " " + last_saved_prefix + self._xpath[name].get_xpath() + " "
+        return f" {last_saved_prefix}{self._xpath[name].get_xpath()} "
 
     def insert_xpaths(
         self,
@@ -1289,7 +1288,7 @@ class Survey(Section):
         A regex substitution function that will replace
         ${varname} with an output element that has the xpath to varname.
         """
-        return '<output value="' + self._var_repl_function(matchobj, context) + '" />'
+        return f"""<output value="{self._var_repl_function(matchobj, context)}" />"""
 
     def insert_output_values(
         self,
@@ -1340,7 +1339,7 @@ class Survey(Section):
         if warnings is None:
             warnings = []
         if not path:
-            path = self.id_string + ".xml"
+            path = f"{self.id_string}.xml"
         if pretty_print:
             xml = self._to_pretty_xml()
         else:

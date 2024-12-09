@@ -116,6 +116,6 @@ def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey
         # expression positions due to incremental replacement.
         offset = 0
         for s, e, o, n in new_strings:
-            xml_text = xml_text[: s + offset] + n + xml_text[e + offset :]
+            xml_text = f"{xml_text[: s + offset]}{n}{xml_text[e + offset :]}"
             offset += len(n) - len(o)
     return xml_text
