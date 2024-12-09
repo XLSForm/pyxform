@@ -2,9 +2,9 @@
 Test translations syntax.
 """
 
-import unittest
 from dataclasses import dataclass
 from time import perf_counter
+from unittest import skip
 from unittest.mock import patch
 
 from pyxform.constants import CHOICES, SURVEY
@@ -392,7 +392,7 @@ class TestTranslations(PyxformTestCase):
             ],
         )
 
-    @unittest.skip("Slow performance test. Un-skip to run as needed.")
+    @skip("Slow performance test. Un-skip to run as needed.")
     def test_missing_translations_check_performance(self):
         """
         Should find the translations check costs a fraction of a second for large forms.
@@ -401,11 +401,11 @@ class TestTranslations(PyxformTestCase):
         with 2 choices each, average of 10 runs (seconds), with and without the check,
         per question:
         | num   | with   | without | peak RSS MB |
-        |   500 | 1.0235 |  0.9831 |          74 |
-        |  1000 | 2.3025 |  2.6332 |         101 |
-        |  2000 | 5.6960 |  6.2805 |         157 |
-        |  5000 | 23.439 |  25.327 |         265 |
-        | 10000 | 80.396 |  75.165 |         480 |
+        |   500 | 0.7427 |  0.7448 |          76 |
+        |  1000 | 1.7647 |  1.8032 |          97 |
+        |  2000 | 5.2996 |  5.0266 |         139 |
+        |  5000 | 22.862 |  21.334 |         253 |
+        | 10000 | 69.730 |  68.568 |         437 |
         """
         survey_header = """
         | survey |                 |        |                    |                   |
@@ -423,8 +423,8 @@ class TestTranslations(PyxformTestCase):
         |         | c{i}        | nb   | lb-d  | lb-e       |
         """
         for count in (500, 1000, 2000):
-            questions = "\n".join(question.format(i=i) for i in range(1, count))
-            choice_lists = "\n".join(choice_list.format(i=i) for i in range(1, count))
+            questions = "\n".join(question.format(i=i) for i in range(count))
+            choice_lists = "\n".join(choice_list.format(i=i) for i in range(count))
             md = "".join((survey_header, questions, choices_header, choice_lists))
 
             def run(name, case):

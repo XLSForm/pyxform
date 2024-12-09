@@ -7,6 +7,7 @@ import csv
 import json
 import re
 from collections.abc import Generator, Iterable
+from functools import lru_cache
 from io import StringIO
 from itertools import chain
 from json.decoder import JSONDecodeError
@@ -26,7 +27,10 @@ LAST_SAVED_INSTANCE_NAME = "__last-saved"
 BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
 LAST_SAVED_REGEX = re.compile(r"\${last-saved#(.*?)}")
 PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
-NODE_TYPE_TEXT = (Node.TEXT_NODE, Node.CDATA_SECTION_NODE)
+NODE_TYPE_TEXT = {Node.TEXT_NODE, Node.CDATA_SECTION_NODE}
+XML_TEXT_SUBS = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
+XML_TEXT_SUBS_KEYS = set(XML_TEXT_SUBS)
+XML_TEXT_TABLE = str.maketrans(XML_TEXT_SUBS)
 
 
 class DetachableElement(Element):
@@ -77,12 +81,20 @@ class DetachableElement(Element):
             writer.write(f"/>{newl}")
 
 
+@lru_cache(maxsize=64)
+def escape_text_for_xml(text: str) -> str:
+    if any(c in set(text) for c in XML_TEXT_SUBS_KEYS):
+        return text.translate(XML_TEXT_TABLE)
+    else:
+        return text
+
+
 class PatchedText(Text):
     def writexml(self, writer, indent="", addindent="", newl=""):
         """Same as original but no replacing double quotes with '&quot;'."""
         data = f"{indent}{self.data}{newl}"
         if data:
-            data = data.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            data = escape_text_for_xml(text=data)
         writer.write(data)
 
 

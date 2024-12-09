@@ -27,7 +27,7 @@ from pyxform.utils import (
     LAST_SAVED_INSTANCE_NAME,
     LAST_SAVED_REGEX,
     DetachableElement,
-    PatchedText,
+    escape_text_for_xml,
     has_dynamic_label,
     node,
 )
@@ -1304,6 +1304,8 @@ class Survey(Section):
         :param context: The document node that the text belongs to.
         :return: The output text, and a flag indicating whether any changes were made.
         """
+        if text == "-":
+            return text, False
 
         def _var_repl_output_function(matchobj):
             return self._var_repl_output_function(matchobj, context)
@@ -1313,9 +1315,7 @@ class Survey(Section):
         # For exampke, `${name} < 3` causes an error but `< 3` does not.
         # This is my hacky fix for it, which does string escaping prior to
         # variable replacement:
-        text_node = PatchedText()
-        text_node.data = text
-        original_xml = text_node.toxml()
+        original_xml = escape_text_for_xml(text=text)
 
         # need to make sure we have reason to replace
         # since at this point < is &lt,
