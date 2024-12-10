@@ -724,18 +724,7 @@ class Survey(Section):
         model_kwargs = {"odk:xforms-version": constants.CURRENT_XFORMS_VERSION}
 
         if self.entity_features:
-            if "offline" in self.entity_features:
-                model_kwargs["entities:entities-version"] = (
-                    constants.ENTITIES_OFFLINE_VERSION
-                )
-            elif "update" in self.entity_features:
-                model_kwargs["entities:entities-version"] = (
-                    constants.ENTITIES_UPDATE_VERSION
-                )
-            else:
-                model_kwargs["entities:entities-version"] = (
-                    constants.ENTITIES_CREATE_VERSION
-                )
+            model_kwargs["entities:entities-version"] = constants.ENTITIES_OFFLINE_VERSION
 
         model_children = []
         if self._translations:
