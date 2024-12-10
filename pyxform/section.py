@@ -262,10 +262,10 @@ class GroupedSection(Section):
         else:
             attributes = {}
 
-        if not self.get("flat"):
+        if not self.flat:
             attributes["ref"] = self.get_xpath()
 
-        if "label" in self and self.label is not None and len(self["label"]) > 0:
+        if self.label:
             children.append(self.xml_label(survey=survey))
         for n in Section.xml_control(self, survey=survey):
             children.append(n)

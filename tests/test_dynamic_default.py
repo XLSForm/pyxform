@@ -778,11 +778,11 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         Results with Python 3.10.14 on VM with 2vCPU (i7-7700HQ) 1GB RAM, x questions
         each, average of 10 runs (seconds), with and without the check, per question:
         | num   | with   | without | peak RSS MB |
-        |   500 | 0.2371 |  0.2459 |          58 |
-        |  1000 | 0.3819 |  0.3724 |          63 |
-        |  2000 | 0.7198 |  0.7539 |          67 |
-        |  5000 | 1.7854 |  1.8953 |          92 |
-        | 10000 | 3.8543 |  3.8675 |         128 |
+        |   500 | 0.1903 |  0.1977 |          58 |
+        |  1000 | 0.4010 |  0.3913 |          63 |
+        |  2000 | 0.6860 |  0.6813 |          67 |
+        |  5000 | 1.7119 |  1.7421 |          90 |
+        | 10000 | 3.5399 |  3.4963 |         136 |
         """
         survey_header = """
         | survey |            |          |          |               |

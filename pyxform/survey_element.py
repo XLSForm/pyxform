@@ -318,7 +318,7 @@ class SurveyElement(Mapping):
 
     def json_dump(self, path=""):
         if not path:
-            path = self.name + ".json"
+            path = f"{self.name}.json"
         print_pyobj_to_json(self.to_json_dict(), path)
 
     def __eq__(self, y):
@@ -330,14 +330,14 @@ class SurveyElement(Mapping):
 
     def _translation_path(self, display_element: str) -> str:
         """Get an itextId based on the element XPath and display type."""
-        return self.get_xpath() + ":" + display_element
+        return f"{self.get_xpath()}:{display_element}"
 
     def get_translations(self, default_language):
         """
         Returns translations used by this element so they can be included in
         the <itext> block. @see survey._setup_translations
         """
-        bind_dict = self.get("bind")
+        bind_dict = self.bind
         if bind_dict and isinstance(bind_dict, dict):
             constraint_msg = bind_dict.get("jr:constraintMsg")
             if isinstance(constraint_msg, dict):
@@ -410,11 +410,11 @@ class SurveyElement(Mapping):
                 display_element == "hint"
                 and not isinstance(label_or_hint, dict)
                 and hasattr(self, "hint")
-                and self.get("hint") is not None
+                and self.hint is not None
                 and len(label_or_hint) > 0
                 and hasattr(self, "guidance_hint")
-                and self.get("guidance_hint") is not None
-                and len(self["guidance_hint"]) > 0
+                and self.guidance_hint is not None
+                and len(self.guidance_hint) > 0
             ):
                 label_or_hint = {default_language: label_or_hint}
 
