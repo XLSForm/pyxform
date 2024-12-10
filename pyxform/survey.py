@@ -15,7 +15,6 @@ from pathlib import Path
 
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
-from pyxform.entities.entity_declaration import EntityDeclaration
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -28,7 +27,7 @@ from pyxform.utils import (
     LAST_SAVED_INSTANCE_NAME,
     LAST_SAVED_REGEX,
     DetachableElement,
-    PatchedText,
+    escape_text_for_xml,
     has_dynamic_label,
     node,
 )
@@ -132,7 +131,7 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
                 steps = len(context_parts[index - 1 :])
                 parts = xpath_parts[index - 1 :]
                 break
-        return (steps, "/" + "/".join(parts) if parts else remainder_xpath)
+        return (steps, f"""/{"/".join(parts)}""" if parts else remainder_xpath)
 
     context_parent = is_parent_a_repeat(survey, context_xpath)
     xpath_parent = is_parent_a_repeat(survey, xpath)
@@ -239,7 +238,7 @@ class Survey(Section):
         self._created: datetime.now = datetime.now()
         self._search_lists: set = set()
         self._translations: recursive_dict = recursive_dict()
-        self._xpath: dict[str, SurveyElement | None] = {}
+        self._xpath: dict[str, Section | Question | None] = {}
 
         # Structure
         # attribute is for custom instance attrs from settings e.g. attribute::abc:xyz
@@ -335,13 +334,12 @@ class Survey(Section):
                 for ns in self.namespaces.split()
                 if len(ns.split("=")) == 2 and ns.split("=")[0] != ""
             ]
-            xmlns = "xmlns:"
             nsmap = NSMAP.copy()
             nsmap.update(
                 {
-                    xmlns + k: v.replace('"', "").replace("'", "")
+                    f"xmlns:{k}": v.replace('"', "").replace("'", "")
                     for k, v in nslist
-                    if xmlns + k not in nsmap
+                    if f"xmlns:{k}" not in nsmap
                 }
             )
             return nsmap
@@ -999,7 +997,7 @@ class Survey(Section):
 
             for media_type, possibly_localized_media in media_dict.items():
                 if media_type not in constants.SUPPORTED_MEDIA_TYPES:
-                    raise PyXFormError("Media type: " + media_type + " not supported")
+                    raise PyXFormError(f"Media type: {media_type} not supported")
 
                 if isinstance(possibly_localized_media, dict):
                     # media is localized
@@ -1027,17 +1025,15 @@ class Survey(Section):
 
                     translations_trans_key[media_type] = media
 
-        for survey_element in self.iter_descendants(
-            condition=lambda i: not isinstance(
-                i, Survey | EntityDeclaration | ExternalInstance | Tag | Option
-            )
+        for item in self.iter_descendants(
+            condition=lambda i: isinstance(i, Section | Question)
         ):
             # Skip set up of media for choices in selects. Translations for their media
             # content should have been set up in _setup_translations, with one copy of
             # each choice translation per language (after _add_empty_translations).
-            media_dict = survey_element.get("media")
-            if isinstance(media_dict, dict) and 0 < len(media_dict):
-                translation_key = survey_element.get_xpath() + ":label"
+            media_dict = item.media
+            if isinstance(media_dict, dict) and media_dict:
+                translation_key = f"{item.get_xpath()}:label"
                 _set_up_media_translations(media_dict, translation_key)
 
     def itext(self) -> DetachableElement:
@@ -1099,7 +1095,7 @@ class Survey(Section):
                             itext_nodes.append(
                                 node(
                                     "value",
-                                    "jr://images/" + value,
+                                    f"jr://images/{value}",
                                     form=media_type,
                                     toParseString=output_inserted,
                                 )
@@ -1108,7 +1104,7 @@ class Survey(Section):
                         itext_nodes.append(
                             node(
                                 "value",
-                                "jr://" + media_type + "/" + value,
+                                f"jr://{media_type}/{value}",
                                 form=media_type,
                                 toParseString=output_inserted,
                             )
@@ -1123,11 +1119,11 @@ class Survey(Section):
         return self._created.strftime("%Y_%m_%d")
 
     def _to_ugly_xml(self) -> str:
-        return '<?xml version="1.0"?>' + self.xml().toxml()
+        return f"""<?xml version="1.0"?>{self.xml().toxml()}"""
 
     def _to_pretty_xml(self) -> str:
         """Get the XForm with human readable formatting."""
-        return '<?xml version="1.0"?>\n' + self.xml().toprettyxml(indent="  ")
+        return f"""<?xml version="1.0"?>\n{self.xml().toprettyxml(indent="  ")}"""
 
     def __repr__(self):
         return self.__unicode__()
@@ -1137,10 +1133,11 @@ class Survey(Section):
 
     def _setup_xpath_dictionary(self):
         for element in self.iter_descendants(lambda i: isinstance(i, Question | Section)):
-            if element.name in self._xpath:
-                self._xpath[element.name] = None
+            element_name = element.name
+            if element_name in self._xpath:
+                self._xpath[element_name] = None
             else:
-                self._xpath[element.name] = element
+                self._xpath[element_name] = element
 
     def _var_repl_function(
         self, matchobj, context, use_current=False, reference_parent=False
@@ -1194,7 +1191,7 @@ class Survey(Section):
                     if steps:
                         ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
                         prefix = " current()/" if _use_current else " "
-                        return_path = prefix + "/".join([".."] * steps) + ref_path + " "
+                        return_path = f"""{prefix}{"/".join(".." for _ in range(steps))}{ref_path} """
 
             return return_path
 
@@ -1263,9 +1260,9 @@ class Survey(Section):
                 return relative_path
 
         last_saved_prefix = (
-            "instance('" + LAST_SAVED_INSTANCE_NAME + "')" if last_saved else ""
+            f"instance('{LAST_SAVED_INSTANCE_NAME}')" if last_saved else ""
         )
-        return " " + last_saved_prefix + self._xpath[name].get_xpath() + " "
+        return f" {last_saved_prefix}{self._xpath[name].get_xpath()} "
 
     def insert_xpaths(
         self,
@@ -1291,7 +1288,7 @@ class Survey(Section):
         A regex substitution function that will replace
         ${varname} with an output element that has the xpath to varname.
         """
-        return '<output value="' + self._var_repl_function(matchobj, context) + '" />'
+        return f"""<output value="{self._var_repl_function(matchobj, context)}" />"""
 
     def insert_output_values(
         self,
@@ -1307,6 +1304,8 @@ class Survey(Section):
         :param context: The document node that the text belongs to.
         :return: The output text, and a flag indicating whether any changes were made.
         """
+        if text == "-":
+            return text, False
 
         def _var_repl_output_function(matchobj):
             return self._var_repl_output_function(matchobj, context)
@@ -1316,9 +1315,7 @@ class Survey(Section):
         # For exampke, `${name} < 3` causes an error but `< 3` does not.
         # This is my hacky fix for it, which does string escaping prior to
         # variable replacement:
-        text_node = PatchedText()
-        text_node.data = text
-        original_xml = text_node.toxml()
+        original_xml = escape_text_for_xml(text=text)
 
         # need to make sure we have reason to replace
         # since at this point < is &lt,
@@ -1342,7 +1339,7 @@ class Survey(Section):
         if warnings is None:
             warnings = []
         if not path:
-            path = self.id_string + ".xml"
+            path = f"{self.id_string}.xml"
         if pretty_print:
             xml = self._to_pretty_xml()
         else:

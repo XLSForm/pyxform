@@ -46,7 +46,7 @@ class EntityDeclaration(SurveyElement):
         super().__init__(name=name, **kwargs)
 
     def xml_instance(self, **kwargs):
-        parameters = self.get(const.PARAMETERS, {})
+        parameters = self.parameters
 
         attributes = {
             EC.DATASET.value: parameters.get(EC.DATASET, ""),
@@ -75,7 +75,7 @@ class EntityDeclaration(SurveyElement):
         """
         See the class comment for an explanation of the logic for generating bindings.
         """
-        parameters = self.get(const.PARAMETERS, {})
+        parameters = self.parameters
         entity_id_expression = parameters.get(EC.ENTITY_ID, None)
         create_condition = parameters.get(EC.CREATE_IF, None)
         update_condition = parameters.get(EC.UPDATE_IF, None)
