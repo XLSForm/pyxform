@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+v3.0.0, 2024-12-09
+* Include all choice lists in output by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/736
+* Improve complex forms performance (includes changes to JSON representation) by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/740, https://github.com/XLSForm/pyxform/pull/742
+* Always produce entity forms with the offline entities spec version by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/732
+
 v2.2.0, 2024-10-29
 * Add `background-geopoint` question type which exposes `xforms-value-changed` event with `odk:setgeopoint` action by @RuthShryock in https://github.com/XLSForm/pyxform/pull/726
 * 724: raise an error if a `${}` pyxform reference is malformed by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/734
