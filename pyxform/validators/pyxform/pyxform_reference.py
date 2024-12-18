@@ -11,15 +11,18 @@ PYXFORM_REFERENCE_INVALID = (
 def validate_pyxform_reference_syntax(
     value: str, sheet_name: str, row_number: int, key: str
 ) -> None:
+    # Needs 3 characters for "${}" plus a name inside, but need to catch ${ for warning.
+    if not value or len(value) <= 2 or "${" not in value:
+        return
     # Skip columns in potentially large sheets where references are not allowed.
-    if sheet_name == co.SURVEY:
-        if key in (co.TYPE, co.NAME):
+    elif sheet_name == co.SURVEY:
+        if key in {co.TYPE, co.NAME}:
             return
     elif sheet_name == co.CHOICES:
-        if key in (co.LIST_NAME_S, co.LIST_NAME_U, co.NAME):
+        if key in {co.LIST_NAME_S, co.LIST_NAME_U, co.NAME}:
             return
     elif sheet_name == co.ENTITIES:
-        if key == (co.LIST_NAME_S, co.LIST_NAME_U):
+        if key in {co.LIST_NAME_S, co.LIST_NAME_U}:
             return
 
     tokens, _ = parse_expression(value)

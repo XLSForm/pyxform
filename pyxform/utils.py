@@ -7,6 +7,7 @@ import csv
 import json
 import re
 from collections.abc import Generator, Iterable
+from functools import lru_cache
 from io import StringIO
 from itertools import chain
 from json.decoder import JSONDecodeError
@@ -24,9 +25,11 @@ SEP = "_"
 INVALID_XFORM_TAG_REGEXP = re.compile(r"[^a-zA-Z:_][^a-zA-Z:_0-9\-.]*")
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
 BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
-LAST_SAVED_REGEX = re.compile(r"\${last-saved#(.*?)}")
 PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
-NODE_TYPE_TEXT = (Node.TEXT_NODE, Node.CDATA_SECTION_NODE)
+NODE_TYPE_TEXT = {Node.TEXT_NODE, Node.CDATA_SECTION_NODE}
+XML_TEXT_SUBS = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
+XML_TEXT_SUBS_KEYS = set(XML_TEXT_SUBS)
+XML_TEXT_TABLE = str.maketrans(XML_TEXT_SUBS)
 
 
 class DetachableElement(Element):
@@ -48,14 +51,13 @@ class DetachableElement(Element):
         # indent = current indentation
         # addindent = indentation to add to higher levels
         # newl = newline string
-        writer.write(indent + "<" + self.tagName)
+        writer.write(f"{indent}<{self.tagName}")
 
-        attrs = self._get_attributes()
-
-        for a_name in attrs.keys():
-            writer.write(f' {a_name}="')
-            _write_data(writer, attrs[a_name].value)
-            writer.write('"')
+        if self._attrs:
+            for k, v in self._attrs.items():
+                writer.write(f' {k}="')
+                _write_data(writer, v.value)
+                writer.write('"')
         if self.childNodes:
             writer.write(">")
             # For text or mixed content, write without adding indents or newlines.
@@ -71,19 +73,27 @@ class DetachableElement(Element):
             else:
                 writer.write(newl)
                 for cnode in self.childNodes:
-                    cnode.writexml(writer, indent + addindent, addindent, newl)
+                    cnode.writexml(writer, f"{indent}{addindent}", addindent, newl)
                 writer.write(indent)
             writer.write(f"</{self.tagName}>{newl}")
         else:
             writer.write(f"/>{newl}")
 
 
+@lru_cache(maxsize=64)
+def escape_text_for_xml(text: str) -> str:
+    if any(c in set(text) for c in XML_TEXT_SUBS_KEYS):
+        return text.translate(XML_TEXT_TABLE)
+    else:
+        return text
+
+
 class PatchedText(Text):
     def writexml(self, writer, indent="", addindent="", newl=""):
         """Same as original but no replacing double quotes with '&quot;'."""
-        data = "".join((indent, self.data, newl))
+        data = f"{indent}{self.data}{newl}"
         if data:
-            data = data.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            data = escape_text_for_xml(text=data)
         writer.write(data)
 
 
