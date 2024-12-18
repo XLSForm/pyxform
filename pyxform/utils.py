@@ -25,7 +25,6 @@ SEP = "_"
 INVALID_XFORM_TAG_REGEXP = re.compile(r"[^a-zA-Z:_][^a-zA-Z:_0-9\-.]*")
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
 BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
-LAST_SAVED_REGEX = re.compile(r"\${last-saved#(.*?)}")
 PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
 NODE_TYPE_TEXT = {Node.TEXT_NODE, Node.CDATA_SECTION_NODE}
 XML_TEXT_SUBS = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}

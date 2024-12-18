@@ -18,14 +18,14 @@ from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
-from pyxform.parsing import instance_expression
+from pyxform.parsing.expression import has_last_saved
+from pyxform.parsing.instance_expression import replace_with_output
 from pyxform.question import MultipleChoiceQuestion, Option, Question, Tag
 from pyxform.section import SECTION_EXTRA_FIELDS, Section
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
     BRACKETED_TAG_REGEX,
     LAST_SAVED_INSTANCE_NAME,
-    LAST_SAVED_REGEX,
     DetachableElement,
     escape_text_for_xml,
     has_dynamic_label,
@@ -568,26 +568,22 @@ class Survey(Section):
         return None
 
     @staticmethod
-    def _generate_last_saved_instance(element) -> bool:
+    def _generate_last_saved_instance(element: SurveyElement) -> bool:
         """
         True if a last-saved instance should be generated, false otherwise.
         """
-        if not hasattr(element, "bind") or element.bind is None:
+        if not isinstance(element, Question):
             return False
-        for expression_type in constants.EXTERNAL_INSTANCES:
-            last_saved_expression = re.search(
-                LAST_SAVED_REGEX, str(element["bind"].get(expression_type))
-            )
-            if last_saved_expression:
-                return True
-        return bool(
-            hasattr(element, constants.CHOICE_FILTER)
-            and element.choice_filter is not None
-            and re.search(LAST_SAVED_REGEX, str(element.choice_filter))
-            or hasattr(element, "default")
-            and element.default is not None
-            and re.search(LAST_SAVED_REGEX, str(element.default))
-        )
+        if has_last_saved(element.default):
+            return True
+        if has_last_saved(element.choice_filter):
+            return True
+        if element.bind:
+            # Assuming average len(bind) < 10 and len(EXTERNAL_INSTANCES) = 5 and the
+            # current has_last_saved implementation, iterating bind keys is fastest.
+            for k, v in element.bind.items():
+                if k in constants.EXTERNAL_INSTANCES and has_last_saved(v):
+                    return True
 
     @staticmethod
     def _get_last_saved_instance() -> InstanceInfo:
@@ -1320,7 +1316,7 @@ class Survey(Section):
         # need to make sure we have reason to replace
         # since at this point < is &lt,
         # the net effect &lt gets translated again to &amp;lt;
-        xml_text = instance_expression.replace_with_output(original_xml, context, self)
+        xml_text = replace_with_output(original_xml, context, self)
         if "{" in xml_text:
             xml_text = re.sub(BRACKETED_TAG_REGEX, _var_repl_output_function, xml_text)
         changed = xml_text != original_xml
