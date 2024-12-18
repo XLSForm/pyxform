@@ -3,10 +3,12 @@ Test translations syntax.
 """
 
 from dataclasses import dataclass
+from os import getpid
 from time import perf_counter
 from unittest import skip
 from unittest.mock import patch
 
+from psutil import Process
 from pyxform.constants import CHOICES, SURVEY
 from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
 from pyxform.validators.pyxform.translations_checks import (
@@ -401,11 +403,11 @@ class TestTranslations(PyxformTestCase):
         with 2 choices each, average of 10 runs (seconds), with and without the check,
         per question:
         | num   | with   | without | peak RSS MB |
-        |   500 | 0.8251 |  0.8473 |          76 |
-        |  1000 | 1.8430 |  1.8612 |          97 |
-        |  2000 | 5.0824 |  5.1167 |         140 |
-        |  5000 | 19.921 |  21.390 |         249 |
-        | 10000 | 78.382 |  74.223 |         435 |
+        |   500 | 0.7427 |  0.8133 |          77 |
+        |  1000 | 1.7908 |  1.7777 |          94 |
+        |  2000 | 5.6719 |  4.8387 |         141 |
+        |  5000 | 20.452 |  19.502 |         239 |
+        | 10000 | 70.871 |  62.106 |         416 |
         """
         survey_header = """
         | survey |                 |        |                    |                   |
@@ -422,6 +424,7 @@ class TestTranslations(PyxformTestCase):
         |         | c{i}        | na   | la-d  | la-e       |
         |         | c{i}        | nb   | lb-d  | lb-e       |
         """
+        process = Process(getpid())
         for count in (500, 1000, 2000):
             questions = "\n".join(question.format(i=i) for i in range(count))
             choice_lists = "\n".join(choice_list.format(i=i) for i in range(count))
@@ -430,12 +433,18 @@ class TestTranslations(PyxformTestCase):
             def run(name, case):
                 runs = 0
                 results = []
+                peak_memory_usage = process.memory_info().rss
                 while runs < 10:
                     start = perf_counter()
                     convert(xlsform=case)
                     results.append(perf_counter() - start)
+                    peak_memory_usage = max(process.memory_info().rss, peak_memory_usage)
                     runs += 1
-                print(name, round(sum(results) / len(results), 4))
+                print(
+                    name,
+                    round(sum(results) / len(results), 4),
+                    f"| Peak RSS: {peak_memory_usage}",
+                )
 
             run(name=f"questions={count}, with check (seconds):", case=md)
 

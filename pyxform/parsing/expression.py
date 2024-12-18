@@ -109,14 +109,14 @@ def is_pyxform_reference(value: str) -> bool:
     Does the input string contain only a valid Pyxform reference? e.g. ${my_question}
     """
     # Needs 3 characters for "${}", plus a name inside.
-    return value and len(value) > 3 and bool(RE_ONLY_PYXFORM_REF.fullmatch(value))
+    return value and len(value) > 3 and bool(RE_ONLY_PYXFORM_REF.match(value))
 
 
 def is_xml_tag(value: str) -> bool:
     """
     Does the input string contain only a valid XML tag / element name?
     """
-    return value and bool(RE_ONLY_NCNAME.fullmatch(value))
+    return value and bool(RE_ONLY_NCNAME.match(value))
 
 
 def has_last_saved(value: str) -> bool:
