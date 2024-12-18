@@ -39,7 +39,7 @@ class UnicodeStrings(PyxformTestCase):
                         "type": "integer",
                         "name": "my_default_is_123",
                         "label": "my default is 123",
-                        "default": 123,
+                        "default": "123",
                     },
                 ],
                 "choices": [
