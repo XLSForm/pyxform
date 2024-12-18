@@ -46,7 +46,6 @@ QUESTION_EXTRA_FIELDS = (
     "trigger",
     constants.BIND,
     constants.CHOICE_FILTER,
-    constants.COMPACT_TAG,  # used for compact (sms) representation
     constants.CONTROL,
     constants.HINT,
     constants.MEDIA,
@@ -107,7 +106,6 @@ class Question(SurveyElement):
         self.trigger: str | None = None
 
         # SMS / compact settings
-        self.compact_tag: str | None = None
         self.sms_field: str | None = None
 
         qtd = kwargs.pop("question_type_dictionary", QUESTION_TYPE_DICT)
