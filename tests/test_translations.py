@@ -2,11 +2,13 @@
 Test translations syntax.
 """
 
-import unittest
 from dataclasses import dataclass
+from os import getpid
 from time import perf_counter
+from unittest import skip
 from unittest.mock import patch
 
+from psutil import Process
 from pyxform.constants import CHOICES, SURVEY
 from pyxform.constants import DEFAULT_LANGUAGE_VALUE as DEFAULT_LANG
 from pyxform.validators.pyxform.translations_checks import (
@@ -392,7 +394,7 @@ class TestTranslations(PyxformTestCase):
             ],
         )
 
-    @unittest.skip("Slow performance test. Un-skip to run as needed.")
+    @skip("Slow performance test. Un-skip to run as needed.")
     def test_missing_translations_check_performance(self):
         """
         Should find the translations check costs a fraction of a second for large forms.
@@ -401,11 +403,11 @@ class TestTranslations(PyxformTestCase):
         with 2 choices each, average of 10 runs (seconds), with and without the check,
         per question:
         | num   | with   | without | peak RSS MB |
-        |   500 | 1.0235 |  0.9831 |          74 |
-        |  1000 | 2.3025 |  2.6332 |         101 |
-        |  2000 | 5.6960 |  6.2805 |         157 |
-        |  5000 | 23.439 |  25.327 |         265 |
-        | 10000 | 80.396 |  75.165 |         480 |
+        |   500 | 0.7427 |  0.8133 |          77 |
+        |  1000 | 1.7908 |  1.7777 |          94 |
+        |  2000 | 5.6719 |  4.8387 |         141 |
+        |  5000 | 20.452 |  19.502 |         239 |
+        | 10000 | 70.871 |  62.106 |         416 |
         """
         survey_header = """
         | survey |                 |        |                    |                   |
@@ -422,20 +424,27 @@ class TestTranslations(PyxformTestCase):
         |         | c{i}        | na   | la-d  | la-e       |
         |         | c{i}        | nb   | lb-d  | lb-e       |
         """
+        process = Process(getpid())
         for count in (500, 1000, 2000):
-            questions = "\n".join(question.format(i=i) for i in range(1, count))
-            choice_lists = "\n".join(choice_list.format(i=i) for i in range(1, count))
+            questions = "\n".join(question.format(i=i) for i in range(count))
+            choice_lists = "\n".join(choice_list.format(i=i) for i in range(count))
             md = "".join((survey_header, questions, choices_header, choice_lists))
 
             def run(name, case):
                 runs = 0
                 results = []
+                peak_memory_usage = process.memory_info().rss
                 while runs < 10:
                     start = perf_counter()
                     convert(xlsform=case)
                     results.append(perf_counter() - start)
+                    peak_memory_usage = max(process.memory_info().rss, peak_memory_usage)
                     runs += 1
-                print(name, round(sum(results) / len(results), 4))
+                print(
+                    name,
+                    round(sum(results) / len(results), 4),
+                    f"| Peak RSS: {peak_memory_usage}",
+                )
 
             run(name=f"questions={count}, with check (seconds):", case=md)
 

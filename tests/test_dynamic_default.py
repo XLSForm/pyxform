@@ -2,13 +2,13 @@
 Test handling dynamic default in forms
 """
 
-import os
-import unittest
 from dataclasses import dataclass
+from os import getpid
 from time import perf_counter
+from unittest import skip
 from unittest.mock import patch
 
-import psutil
+from psutil import Process
 from pyxform import utils
 from pyxform.xls2xform import convert
 
@@ -770,7 +770,7 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
             ],
         )
 
-    @unittest.skip("Slow performance test. Un-skip to run as needed.")
+    @skip("Slow performance test. Un-skip to run as needed.")
     def test_dynamic_default_performance__time(self):
         """
         Should find the dynamic default check costs little extra relative time large forms.
@@ -778,11 +778,11 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         Results with Python 3.10.14 on VM with 2vCPU (i7-7700HQ) 1GB RAM, x questions
         each, average of 10 runs (seconds), with and without the check, per question:
         | num   | with   | without | peak RSS MB |
-        |   500 | 0.2415 |  0.2512 |          58 |
-        |  1000 | 0.4754 |  0.5199 |          63 |
-        |  2000 | 0.9866 |  1.2936 |          67 |
-        |  5000 | 3.1041 |  2.7132 |          96 |
-        | 10000 | 5.4795 |  5.3229 |         133 |
+        |   500 | 0.1626 |  0.1886 |          60 |
+        |  1000 | 0.3330 |  0.3916 |          63 |
+        |  2000 | 0.8675 |  0.7823 |          70 |
+        |  5000 | 1.7051 |  1.5653 |          91 |
+        | 10000 | 3.1097 |  3.8525 |         137 |
         """
         survey_header = """
         | survey |            |          |          |               |
@@ -791,19 +791,26 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         question = """
         |        | text       | q{i}     | Q{i}     | if(../t2 = 'test', 1, 2) + 15 - int(1.2) |
         """
+        process = Process(getpid())
         for count in (500, 1000, 2000):
-            questions = "\n".join(question.format(i=i) for i in range(1, count))
+            questions = "\n".join(question.format(i=i) for i in range(count))
             md = "".join((survey_header, questions))
 
             def run(name, case):
                 runs = 0
                 results = []
+                peak_memory_usage = process.memory_info().rss
                 while runs < 10:
                     start = perf_counter()
                     convert(xlsform=case)
                     results.append(perf_counter() - start)
+                    peak_memory_usage = max(process.memory_info().rss, peak_memory_usage)
                     runs += 1
-                print(name, round(sum(results) / len(results), 4))
+                print(
+                    name,
+                    round(sum(results) / len(results), 4),
+                    f"| Peak RSS: {peak_memory_usage}",
+                )
 
             run(name=f"questions={count}, with check (seconds):", case=md)
 
@@ -828,7 +835,7 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         """
         questions = "\n".join(question.format(i=i) for i in range(1, 2000))
         md = "".join((survey_header, questions))
-        process = psutil.Process(os.getpid())
+        process = Process(getpid())
         pre_mem = process.memory_info().rss
         self.assertPyxformXform(md=md)
         post_mem = process.memory_info().rss

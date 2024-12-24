@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+from itertools import chain
 from typing import IO, Any
 
 from pyxform import aliases, constants
@@ -55,9 +56,9 @@ def merge_dicts(dict_a, dict_b, default_key="default"):
     a recursive call to this function,
     otherwise they are just added to the output dict.
     """
-    if dict_a is None or dict_a == {}:
+    if not dict_a:
         return dict_b
-    if dict_b is None or dict_b == {}:
+    if not dict_b:
         return dict_a
 
     if not isinstance(dict_a, dict):
@@ -71,8 +72,7 @@ def merge_dicts(dict_a, dict_b, default_key="default"):
 
     # Union keys but retain order (as opposed to set()), preferencing dict_a then dict_b.
     # E.g. {"a": 1, "b": 2} + {"c": 3, "a": 4} -> {"a": None, "b": None, "c": None}
-    all_keys = {k: None for k in dict_a.keys()}
-    all_keys.update({k: None for k in dict_b.keys()})
+    all_keys = {k: None for k in (chain(dict_a.keys(), dict_b.keys()))}
 
     out_dict = {}
     for key in all_keys.keys():

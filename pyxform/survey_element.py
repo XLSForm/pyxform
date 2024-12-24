@@ -141,24 +141,24 @@ class SurveyElement(Mapping):
                 f"The name '{self.name}' contains an invalid character '{invalid_char.group(0)}'. Names {const.XML_IDENTIFIER_ERROR_MESSAGE}"
             )
 
-    # TODO: Make sure renaming this doesn't cause any problems
     def iter_descendants(
-        self, condition: Callable[["SurveyElement"], bool] | None = None
+        self,
+        condition: Callable[["SurveyElement"], bool] | None = None,
+        iter_into_section_items: bool = False,
     ) -> Generator["SurveyElement", None, None]:
         """
-        Get each of self.children.
+        Iterate the object, and it's children (if applicable).
 
-        :param condition: If this evaluates to True, yield the element.
+        :param condition: If provided, the element will only be returned if this callable
+          evaluates to True. Can be used to filter by class/type or other properties.
+        :param iter_into_section_items: If False, only iterate into the children of
+          sections (survey or group), e.g. to get Sections, Questions, etc. If True, also
+          iterate into the children of those children, e.g. to get Options and Tags.
         """
-        # it really seems like this method should not yield self
-        if condition is not None:
-            if condition(self):
-                yield self
-        else:
+        if condition is None:
             yield self
-        if hasattr(self, const.CHILDREN) and self.children is not None:
-            for e in self.children:
-                yield from e.iter_descendants(condition=condition)
+        elif condition(self):
+            yield self
 
     def iter_ancestors(
         self, condition: Callable[["SurveyElement"], bool] | None = None
@@ -318,7 +318,7 @@ class SurveyElement(Mapping):
 
     def json_dump(self, path=""):
         if not path:
-            path = self.name + ".json"
+            path = f"{self.name}.json"
         print_pyobj_to_json(self.to_json_dict(), path)
 
     def __eq__(self, y):
@@ -330,14 +330,14 @@ class SurveyElement(Mapping):
 
     def _translation_path(self, display_element: str) -> str:
         """Get an itextId based on the element XPath and display type."""
-        return self.get_xpath() + ":" + display_element
+        return f"{self.get_xpath()}:{display_element}"
 
     def get_translations(self, default_language):
         """
         Returns translations used by this element so they can be included in
         the <itext> block. @see survey._setup_translations
         """
-        bind_dict = self.get("bind")
+        bind_dict = self.bind
         if bind_dict and isinstance(bind_dict, dict):
             constraint_msg = bind_dict.get("jr:constraintMsg")
             if isinstance(constraint_msg, dict):
@@ -410,11 +410,11 @@ class SurveyElement(Mapping):
                 display_element == "hint"
                 and not isinstance(label_or_hint, dict)
                 and hasattr(self, "hint")
-                and self.get("hint") is not None
+                and self.hint is not None
                 and len(label_or_hint) > 0
                 and hasattr(self, "guidance_hint")
-                and self.get("guidance_hint") is not None
-                and len(self["guidance_hint"]) > 0
+                and self.guidance_hint is not None
+                and len(self.guidance_hint) > 0
             ):
                 label_or_hint = {default_language: label_or_hint}
 

@@ -21,11 +21,13 @@ def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
     :param xml_text: XML text that may contain an instance expression.
     :return: Tokens in instance expression, and the string position boundaries.
     """
+    tokens, _ = parse_expression(xml_text)
+    if not tokens:
+        return []
     instance_enter = False
     path_enter = False
     pred_enter = False
     last_token = None
-    tokens, _ = parse_expression(xml_text)
     boundaries = []
 
     for t in tokens:
@@ -96,8 +98,11 @@ def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey
     :param survey: The Survey that the context is in.
     :return: The possibly modified string.
     """
+    # 9 = len("instance(")
+    if 9 >= len(xml_text):
+        return xml_text
     boundaries = find_boundaries(xml_text=xml_text)
-    if 0 < len(boundaries):
+    if boundaries:
         new_strings = []
         for start, end in boundaries:
             old_str = xml_text[start:end]
@@ -116,6 +121,6 @@ def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey
         # expression positions due to incremental replacement.
         offset = 0
         for s, e, o, n in new_strings:
-            xml_text = xml_text[: s + offset] + n + xml_text[e + offset :]
+            xml_text = f"{xml_text[: s + offset]}{n}{xml_text[e + offset :]}"
             offset += len(n) - len(o)
     return xml_text

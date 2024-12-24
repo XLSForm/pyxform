@@ -3,7 +3,7 @@ XForm Survey element classes for different question types.
 """
 
 import os.path
-from collections.abc import Iterable
+from collections.abc import Callable, Generator, Iterable
 from itertools import chain
 from typing import TYPE_CHECKING
 
@@ -21,6 +21,7 @@ from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
     PYXFORM_REFERENCE_REGEX,
     DetachableElement,
+    coalesce,
     combine_lists,
     default_is_dynamic,
     node,
@@ -45,7 +46,6 @@ QUESTION_EXTRA_FIELDS = (
     "trigger",
     constants.BIND,
     constants.CHOICE_FILTER,
-    constants.COMPACT_TAG,  # used for compact (sms) representation
     constants.CONTROL,
     constants.HINT,
     constants.MEDIA,
@@ -106,7 +106,6 @@ class Question(SurveyElement):
         self.trigger: str | None = None
 
         # SMS / compact settings
-        self.compact_tag: str | None = None
         self.sms_field: str | None = None
 
         qtd = kwargs.pop("question_type_dictionary", QUESTION_TYPE_DICT)
@@ -149,27 +148,20 @@ class Question(SurveyElement):
             raise PyXFormError(f"Unknown question type '{self.type}'.")
 
     def xml_instance(self, survey: "Survey", **kwargs):
-        attributes = self.get("instance")
+        attributes = self.instance
         if attributes is None:
             attributes = {}
         else:
             for key, value in attributes.items():
                 attributes[key] = survey.insert_xpaths(value, self)
 
-        if self.get("default") and not default_is_dynamic(self.default, self.type):
-            return node(self.name, str(self.get("default")), **attributes)
+        if self.default and not default_is_dynamic(self.default, self.type):
+            return node(self.name, str(self.default), **attributes)
         return node(self.name, **attributes)
 
     def xml_control(self, survey: "Survey"):
         if self.type == "calculate" or (
-            (
-                (
-                    hasattr(self, "bind")
-                    and self.bind is not None
-                    and "calculate" in self.bind
-                )
-                or self.trigger
-            )
+            (self.bind is not None and "calculate" in self.bind or self.trigger)
             and not (self.label or self.hint)
         ):
             nested_setvalues = survey.get_trigger_values_for_question_name(
@@ -268,13 +260,13 @@ class InputQuestion(Question):
                     result.appendChild(element)
 
         # Input types are used for selects with external choices sheets.
-        if self["query"]:
-            choice_filter = self.get(constants.CHOICE_FILTER)
+        if self.query:
+            choice_filter = self.choice_filter
             if choice_filter is not None:
                 pred = survey.insert_xpaths(choice_filter, self, True)
-                query = f"""instance('{self["query"]}')/root/item[{pred}]"""
+                query = f"""instance('{self.query}')/root/item[{pred}]"""
             else:
-                query = f"""instance('{self["query"]}')/root/item"""
+                query = f"""instance('{self.query}')/root/item"""
             result.setAttribute("query", query)
         return result
 
@@ -376,12 +368,14 @@ class MultipleChoiceQuestion(Question):
         # I'm going to try to stick to just choices.
         # Aliases in the json format will make it more difficult
         # to use going forward.
-        choices = combine_lists(
-            a=kwargs.pop(constants.CHOICES, None), b=kwargs.pop(constants.CHILDREN, None)
-        )
-        if choices:
+        kw_choices = kwargs.pop(constants.CHOICES, None)
+        kw_children = kwargs.pop(constants.CHILDREN, None)
+        choices = coalesce(kw_choices, kw_children)
+        if isinstance(choices, tuple) and isinstance(next(iter(choices)), Option):
+            self.children = choices
+        elif choices:
             self.children = tuple(
-                c if isinstance(c, Option) else Option(**c) for c in choices
+                Option(**c) for c in combine_lists(kw_choices, kw_children)
             )
         super().__init__(**kwargs)
 
@@ -390,6 +384,22 @@ class MultipleChoiceQuestion(Question):
         if self.children:
             for child in self.children:
                 child.validate()
+
+    def iter_descendants(
+        self,
+        condition: Callable[["SurveyElement"], bool] | None = None,
+        iter_into_section_items: bool = False,
+    ) -> Generator["SurveyElement", None, None]:
+        if condition is None:
+            yield self
+        elif condition(self):
+            yield self
+        if iter_into_section_items and self.children:
+            for e in self.children:
+                yield from e.iter_descendants(
+                    condition=condition,
+                    iter_into_section_items=iter_into_section_items,
+                )
 
     def build_xml(self, survey: "Survey"):
         if self.bind["type"] not in {"string", "odk:rank"}:
@@ -408,8 +418,8 @@ class MultipleChoiceQuestion(Question):
 
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
-        if self["itemset"] and isinstance(self["itemset"], str):
-            itemset, file_extension = os.path.splitext(self["itemset"])
+        if self.itemset and isinstance(self.itemset, str):
+            itemset, file_extension = os.path.splitext(self.itemset)
 
             if file_extension == ".geojson":
                 itemset_value_ref = EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON
@@ -417,33 +427,31 @@ class MultipleChoiceQuestion(Question):
             else:
                 itemset_value_ref = EXTERNAL_CHOICES_ITEMSET_REF_VALUE
                 itemset_label_ref = EXTERNAL_CHOICES_ITEMSET_REF_LABEL
-            if hasattr(self, "parameters") and self.parameters is not None:
+            if self.parameters is not None:
                 itemset_value_ref = self.parameters.get("value", itemset_value_ref)
                 itemset_label_ref = self.parameters.get("label", itemset_label_ref)
 
-            multi_language = self.get("_itemset_multi_language", False)
-            has_media = self.get("_itemset_has_media", False)
-            has_dyn_label = self.get("_itemset_dyn_label", False)
-            is_previous_question = bool(
-                PYXFORM_REFERENCE_REGEX.search(self.get("itemset"))
-            )
+            multi_language = self._itemset_multi_language
+            has_media = self._itemset_has_media
+            has_dyn_label = self._itemset_dyn_label
+            is_previous_question = bool(PYXFORM_REFERENCE_REGEX.search(self.itemset))
 
             if file_extension in EXTERNAL_INSTANCE_EXTENSIONS:
                 pass
             elif not multi_language and not has_media and not has_dyn_label:
-                itemset = self["itemset"]
+                itemset = self.itemset
             else:
-                itemset = self["itemset"]
+                itemset = self.itemset
                 itemset_label_ref = "jr:itext(itextId)"
 
-            choice_filter = self.get(constants.CHOICE_FILTER)
+            choice_filter = self.choice_filter
             if choice_filter is not None:
                 choice_filter = survey.insert_xpaths(
                     choice_filter, self, True, is_previous_question
                 )
             if is_previous_question:
                 path = (
-                    survey.insert_xpaths(self["itemset"], self, reference_parent=True)
+                    survey.insert_xpaths(self.itemset, self, reference_parent=True)
                     .strip()
                     .split("/")
                 )
@@ -452,7 +460,7 @@ class MultipleChoiceQuestion(Question):
                 itemset_label_ref = path[-1]
                 if choice_filter:
                     choice_filter = choice_filter.replace(
-                        "current()/" + nodeset, "."
+                        f"current()/{nodeset}", "."
                     ).replace(nodeset, ".")
                 else:
                     # Choices must have a value. Filter out repeat instances without
@@ -465,21 +473,18 @@ class MultipleChoiceQuestion(Question):
             if choice_filter:
                 nodeset += f"[{choice_filter}]"
 
-            if self["parameters"]:
-                params = self["parameters"]
+            if self.parameters:
+                params = self.parameters
 
                 if "randomize" in params and params["randomize"] == "true":
-                    nodeset = "randomize(" + nodeset
+                    nodeset = f"randomize({nodeset}"
 
                     if "seed" in params:
                         if params["seed"].startswith("${"):
-                            nodeset = (
-                                nodeset
-                                + ", "
-                                + survey.insert_xpaths(params["seed"], self).strip()
-                            )
+                            seed = survey.insert_xpaths(params["seed"], self).strip()
+                            nodeset = f"{nodeset}, {seed}"
                         else:
-                            nodeset = nodeset + ", " + params["seed"]
+                            nodeset = f"""{nodeset}, {params["seed"]}"""
 
                     nodeset += ")"
 
@@ -505,14 +510,32 @@ class Tag(SurveyElement):
     def __init__(self, name: str, label: str | dict | None = None, **kwargs):
         self.children: tuple[Option, ...] | None = None
 
-        choices = combine_lists(
-            a=kwargs.pop(constants.CHOICES, None), b=kwargs.pop(constants.CHILDREN, None)
-        )
-        if choices:
+        kw_choices = kwargs.pop(constants.CHOICES, None)
+        kw_children = kwargs.pop(constants.CHILDREN, None)
+        choices = coalesce(kw_choices, kw_children)
+        if isinstance(choices, tuple) and isinstance(next(iter(choices)), Option):
+            self.children = choices
+        elif choices:
             self.children = tuple(
-                c if isinstance(c, Option) else Option(**c) for c in choices
+                Option(**c) for c in combine_lists(kw_choices, kw_children)
             )
         super().__init__(name=name, label=label, **kwargs)
+
+    def iter_descendants(
+        self,
+        condition: Callable[["SurveyElement"], bool] | None = None,
+        iter_into_section_items: bool = False,
+    ) -> Generator["SurveyElement", None, None]:
+        if condition is None:
+            yield self
+        elif condition(self):
+            yield self
+        if iter_into_section_items and self.children:
+            for e in self.children:
+                yield from e.iter_descendants(
+                    condition=condition,
+                    iter_into_section_items=iter_into_section_items,
+                )
 
     def xml(self, survey: "Survey"):
         result = node("tag", key=self.name)
@@ -548,6 +571,22 @@ class OsmUploadQuestion(UploadQuestion):
 
         super().__init__(**kwargs)
 
+    def iter_descendants(
+        self,
+        condition: Callable[["SurveyElement"], bool] | None = None,
+        iter_into_section_items: bool = False,
+    ) -> Generator["SurveyElement", None, None]:
+        if condition is None:
+            yield self
+        elif condition(self):
+            yield self
+        if iter_into_section_items and self.children:
+            for e in self.children:
+                yield from e.iter_descendants(
+                    condition=condition,
+                    iter_into_section_items=iter_into_section_items,
+                )
+
     def build_xml(self, survey: "Survey"):
         control_dict = self.control
         control_dict["ref"] = self.get_xpath()
@@ -569,8 +608,9 @@ class RangeQuestion(Question):
         for key, value in control_dict.items():
             control_dict[key] = survey.insert_xpaths(value, self)
         control_dict["ref"] = self.get_xpath()
-        params = self.get("parameters", {})
-        control_dict.update(params)
+        params = self.parameters
+        if params:
+            control_dict.update(params)
         result = node(**control_dict)
         if label_and_hint:
             for element in self.xml_label_and_hint(survey=survey):
