@@ -306,7 +306,11 @@ def xlsx_value_to_str(value) -> str:
         # ensure unicode and replace nbsp spaces with normal ones
         # to avoid this issue:
         # https://github.com/modilabs/pyxform/issues/83
-        return str(value).replace(chr(160), " ")
+        value = str(value)
+        if chr(160) in value:
+            return value.replace(chr(160), " ")
+        else:
+            return value
 
 
 def is_empty(value):
@@ -582,7 +586,7 @@ def md_to_dict(md: str | BytesIO):
         out_dict = {}
         for i in range(len(row)):
             col = row[i]
-            if col not in [None, ""]:
+            if col not in {None, ""}:
                 out_dict[headers[i]] = col
         return out_dict
 

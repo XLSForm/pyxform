@@ -27,6 +27,7 @@ from pyxform.validators.pyxform import choices as vc
 from pyxform.validators.pyxform import parameters_generic, select_from_file
 from pyxform.validators.pyxform import question_types as qt
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
+from pyxform.validators.pyxform.choices import validate_and_clean_choices
 from pyxform.validators.pyxform.pyxform_reference import validate_pyxform_reference_syntax
 from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
@@ -170,7 +171,7 @@ def dealias_types(dict_array):
     """
     for row in dict_array:
         found_type = row.get(constants.TYPE)
-        if found_type in aliases._type_alias_map.keys():
+        if found_type in aliases._type_alias_map:
             row[constants.TYPE] = aliases._type_alias_map[found_type]
     return dict_array
 
@@ -401,10 +402,9 @@ def workbook_to_json(
     is_valid = False
     # Sheet names should be case-insensitive
     workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
-    workbook_keys = workbook_dict.keys()
     if constants.SURVEY not in workbook_dict:
         msg = f"You must have a sheet named '{constants.SURVEY}'. "
-        similar = find_sheet_misspellings(key=constants.SURVEY, keys=workbook_keys)
+        similar = find_sheet_misspellings(key=constants.SURVEY, keys=workbook_dict)
         if similar is not None:
             msg += similar
         raise PyXFormError(msg)
@@ -436,7 +436,7 @@ def workbook_to_json(
     # ########## Settings sheet ##########
     k = constants.SETTINGS
     if k not in workbook_dict:
-        similar = find_sheet_misspellings(key=k, keys=workbook_keys)
+        similar = find_sheet_misspellings(key=k, keys=workbook_dict)
         if similar is not None:
             warnings.append(similar + _MSG_SUPPRESS_SPELLING)
     settings_sheet_headers = workbook_dict.get(constants.SETTINGS, [])
@@ -444,8 +444,8 @@ def workbook_to_json(
         if (
             sum(
                 [
-                    element in [constants.ID_STRING, "form_id"]
-                    for element in settings_sheet_headers[0].keys()
+                    element in {constants.ID_STRING, "form_id"}
+                    for element in settings_sheet_headers[0]
                 ]
             )
             == 2
@@ -541,14 +541,14 @@ def workbook_to_json(
     allow_duplicates = aliases.yes_no.get(
         settings.get("allow_choice_duplicates", False), False
     )
-    vc.validate_choices(
+    choices = validate_and_clean_choices(
         choices=choices,
         warnings=warnings,
         headers=choices_sheet.headers,
         allow_duplicates=allow_duplicates,
     )
 
-    if 0 < len(choices):
+    if choices:
         json_dict[constants.CHOICES] = choices
 
     # ########## Entities sheet ###########
@@ -599,7 +599,7 @@ def workbook_to_json(
 
     # Parse the survey sheet while generating a survey in our json format:
     # A stack is used to keep track of begin/end expressions
-    stack = [
+    stack: list[dict[str, Any]] = [
         {
             "control_type": None,
             "control_name": None,
@@ -613,25 +613,25 @@ def workbook_to_json(
     # For efficiency we compile all the regular expressions
     # that will be used to parse types:
     end_control_regex = re.compile(
-        r"^(?P<end>end)(\s|_)(?P<type>(" + "|".join(aliases.control.keys()) + r"))$"
+        r"^(?P<end>end)(\s|_)(?P<type>(" + "|".join(aliases.control) + r"))$"
     )
     begin_control_regex = re.compile(
         r"^(?P<begin>begin)(\s|_)(?P<type>("
-        + "|".join(aliases.control.keys())
+        + "|".join(aliases.control)
         + r"))( (over )?(?P<list_name>\S+))?$"
     )
     select_regexp = re.compile(
         r"^(?P<select_command>("
-        + "|".join(aliases.select.keys())
+        + "|".join(aliases.select)
         + r")) (?P<list_name>\S+)"
         + "( (?P<specify_other>(or specify other|or_other|or other)))?$"
     )
     osm_regexp = re.compile(
-        r"(?P<osm_command>(" + "|".join(aliases.osm.keys()) + r")) (?P<list_name>\S+)"
+        r"(?P<osm_command>(" + "|".join(aliases.osm) + r")) (?P<list_name>\S+)"
     )
 
     # Rows from the survey sheet that should be nested in meta
-    survey_meta = []
+    meta_children = []
     # To check that questions with triggers refer to other questions that exist.
     question_names = set()
     trigger_references = []
@@ -657,7 +657,7 @@ def workbook_to_json(
                 continue
 
         # skip empty rows
-        if len(row) == 0:
+        if not row:
             continue
 
         # Get question type
@@ -683,7 +683,7 @@ def workbook_to_json(
         # Pull out questions that will go in meta block
         if question_type == "audit":
             # Force audit name to always be "audit" to follow XForms spec
-            if "name" in row and row["name"] not in [None, "", "audit"]:
+            if "name" in row and row["name"] not in {None, "", "audit"}:
                 raise PyXFormError(
                     ROW_FORMAT_STRING % row_number
                     + " Audits must always be named 'audit.'"
@@ -704,7 +704,7 @@ def workbook_to_json(
                 ),
             )
 
-            if constants.TRACK_CHANGES in parameters.keys():
+            if constants.TRACK_CHANGES in parameters:
                 if (
                     parameters[constants.TRACK_CHANGES] != "true"
                     and parameters[constants.TRACK_CHANGES] != "false"
@@ -724,7 +724,7 @@ def workbook_to_json(
                         }
                     )
 
-            if constants.TRACK_CHANGES_REASONS in parameters.keys():
+            if constants.TRACK_CHANGES_REASONS in parameters:
                 if parameters[constants.TRACK_CHANGES_REASONS] != "on-form-edit":
                     raise PyXFormError(
                         constants.TRACK_CHANGES_REASONS + " must be set to on-form-edit"
@@ -735,7 +735,7 @@ def workbook_to_json(
                         {"odk:" + constants.TRACK_CHANGES_REASONS: "on-form-edit"}
                     )
 
-            if constants.IDENTIFY_USER in parameters.keys():
+            if constants.IDENTIFY_USER in parameters:
                 if (
                     parameters[constants.IDENTIFY_USER] != "true"
                     and parameters[constants.IDENTIFY_USER] != "false"
@@ -755,19 +755,19 @@ def workbook_to_json(
                         }
                     )
 
-            location_parameters = (
+            location_parameters = {
                 constants.LOCATION_PRIORITY,
                 constants.LOCATION_MIN_INTERVAL,
                 constants.LOCATION_MAX_AGE,
-            )
-            if any(k in parameters.keys() for k in location_parameters):
-                if all(k in parameters.keys() for k in location_parameters):
-                    if parameters[constants.LOCATION_PRIORITY] not in [
+            }
+            if any(k in parameters for k in location_parameters):
+                if all(k in parameters for k in location_parameters):
+                    if parameters[constants.LOCATION_PRIORITY] not in {
                         "no-power",
                         "low-power",
                         "balanced",
                         "high-accuracy",
-                    ]:
+                    }:
                         msg = (
                             f"Parameter {constants.LOCATION_PRIORITY} must be set to "
                             "no-power, low-power, balanced, or high-accuracy:"
@@ -843,7 +843,7 @@ def workbook_to_json(
                         + " parameters."
                     )
 
-            survey_meta.append(new_dict)
+            meta_children.append(new_dict)
             continue
 
         if question_type == "calculate":
@@ -983,7 +983,7 @@ def workbook_to_json(
                 if repeat_count_expression:
                     # Simple expressions don't require a new node, they can reference directly.
                     if not is_pyxform_reference(value=repeat_count_expression):
-                        generated_node_name = new_json_dict["name"] + "_count"
+                        generated_node_name = f"""{new_json_dict["name"]}_count"""
                         parent_children_array.append(
                             {
                                 "name": generated_node_name,
@@ -996,7 +996,7 @@ def workbook_to_json(
                         )
                         # This re-directs the body/repeat ref to the above generated node.
                         new_json_dict["control"]["jr:count"] = (
-                            "${" + generated_node_name + "}"
+                            f"${{{generated_node_name}}}"
                         )
 
                 # Code to deal with table_list appearance flags
@@ -1072,7 +1072,7 @@ def workbook_to_json(
                     if not external_choices:
                         k = constants.EXTERNAL_CHOICES
                         msg = "There should be an external_choices sheet in this xlsform."
-                        similar = find_sheet_misspellings(key=k, keys=workbook_keys)
+                        similar = find_sheet_misspellings(key=k, keys=workbook_dict)
                         if similar is not None:
                             msg = msg + " " + similar
                         raise PyXFormError(
@@ -1099,11 +1099,11 @@ def workbook_to_json(
                     if not choices:
                         k = constants.CHOICES
                         msg = "There should be a choices sheet in this xlsform."
-                        similar = find_sheet_misspellings(key=k, keys=workbook_keys)
+                        similar = find_sheet_misspellings(key=k, keys=workbook_dict)
                         if similar is not None:
-                            msg = msg + " " + similar
+                            msg = f"{msg} {similar}"
                         raise PyXFormError(
-                            msg + " Please ensure that the choices sheet has the"
+                            f"{msg} Please ensure that the choices sheet has the"
                             " mandatory columns 'list_name', 'name', and 'label'."
                         )
                     raise PyXFormError(
@@ -1188,10 +1188,10 @@ def workbook_to_json(
                 new_json_dict[constants.TYPE] = select_type
 
                 select_params_allowed = ["randomize", "seed"]
-                if parse_dict["select_command"] in (
+                if parse_dict["select_command"] in {
                     "select_one_from_file",
                     "select_multiple_from_file",
-                ):
+                }:
                     select_params_allowed += ["value", "label"]
 
                 # Look at parameters column for select parameters
@@ -1199,7 +1199,7 @@ def workbook_to_json(
                     parameters=parameters, allowed=select_params_allowed
                 )
 
-                if "randomize" in parameters.keys():
+                if "randomize" in parameters:
                     if (
                         parameters["randomize"] != "true"
                         and parameters["randomize"] != "false"
@@ -1209,7 +1209,7 @@ def workbook_to_json(
                             f"""'{parameters["randomize"]}' is an invalid value"""
                         )
 
-                    if "seed" in parameters.keys():
+                    if "seed" in parameters:
                         if not parameters["seed"].startswith("${"):
                             try:
                                 float(parameters["seed"])
@@ -1217,18 +1217,18 @@ def workbook_to_json(
                                 raise PyXFormError(
                                     "seed value must be a number or a reference to another field."
                                 ) from seed_err
-                elif "seed" in parameters.keys():
+                elif "seed" in parameters:
                     raise PyXFormError(
                         "Parameters must include randomize=true to use a seed."
                     )
 
-                if "value" in parameters.keys():
+                if "value" in parameters:
                     select_from_file.value_or_label_check(
                         name="value",
                         value=parameters["value"],
                         row_number=row_number,
                     )
-                if "label" in parameters.keys():
+                if "label" in parameters:
                     select_from_file.value_or_label_check(
                         name="label",
                         value=parameters["label"],
@@ -1314,7 +1314,7 @@ def workbook_to_json(
             new_dict = row.copy()
             parameters_generic.validate(parameters=parameters, allowed=("rows",))
 
-            if "rows" in parameters.keys():
+            if "rows" in parameters:
                 try:
                     int(parameters["rows"])
                 except ValueError as rows_err:
@@ -1341,7 +1341,7 @@ def workbook_to_json(
                     "app",
                 ),
             )
-            if "max-pixels" in parameters.keys():
+            if "max-pixels" in parameters:
                 try:
                     int(parameters["max-pixels"])
                 except ValueError as mp_err:
@@ -1357,7 +1357,7 @@ def workbook_to_json(
                     + " Use the max-pixels parameter to speed up submission sending and save storage space. Learn more: https://xlsform.org/#image"
                 )
 
-            if "app" in parameters.keys():
+            if "app" in parameters:
                 appearance = row.get("control", {}).get("appearance")
                 if appearance is None or appearance == "annotate":
                     app_package_name = str(parameters["app"])
@@ -1377,13 +1377,13 @@ def workbook_to_json(
             new_dict = row.copy()
             parameters_generic.validate(parameters=parameters, allowed=("quality",))
 
-            if "quality" in parameters.keys():
-                if parameters["quality"] not in [
+            if "quality" in parameters:
+                if parameters["quality"] not in {
                     constants.AUDIO_QUALITY_VOICE_ONLY,
                     constants.AUDIO_QUALITY_LOW,
                     constants.AUDIO_QUALITY_NORMAL,
                     constants.AUDIO_QUALITY_EXTERNAL,
-                ]:
+                }:
                     raise PyXFormError("Invalid value for quality.")
 
                 new_dict["bind"] = new_dict.get("bind", {})
@@ -1396,12 +1396,12 @@ def workbook_to_json(
             new_dict = row.copy()
             parameters_generic.validate(parameters=parameters, allowed=("quality",))
 
-            if "quality" in parameters.keys():
-                if parameters["quality"] not in [
+            if "quality" in parameters:
+                if parameters["quality"] not in {
                     constants.AUDIO_QUALITY_VOICE_ONLY,
                     constants.AUDIO_QUALITY_LOW,
                     constants.AUDIO_QUALITY_NORMAL,
-                ]:
+                }:
                     raise PyXFormError("Invalid value for quality.")
 
                 new_dict["action"] = new_dict.get("action", {})
@@ -1410,7 +1410,7 @@ def workbook_to_json(
             parent_children_array.append(new_dict)
             continue
 
-        if question_type in ["geopoint", "geoshape", "geotrace"]:
+        if question_type in {"geopoint", "geoshape", "geotrace"}:
             new_dict = row.copy()
 
             if question_type == "geopoint":
@@ -1427,8 +1427,8 @@ def workbook_to_json(
                     parameters=parameters, allowed=("allow-mock-accuracy",)
                 )
 
-            if "allow-mock-accuracy" in parameters.keys():
-                if parameters["allow-mock-accuracy"] not in ["true", "false"]:
+            if "allow-mock-accuracy" in parameters:
+                if parameters["allow-mock-accuracy"] not in {"true", "false"}:
                     raise PyXFormError("Invalid value for allow-mock-accuracy.")
 
                 new_dict["bind"] = new_dict.get("bind", {})
@@ -1437,7 +1437,7 @@ def workbook_to_json(
                 )
 
             new_dict["control"] = new_dict.get("control", {})
-            if "capture-accuracy" in parameters.keys():
+            if "capture-accuracy" in parameters:
                 try:
                     float(parameters["capture-accuracy"])
                     new_dict["control"].update(
@@ -1448,7 +1448,7 @@ def workbook_to_json(
                         "Parameter capture-accuracy must have a numeric value"
                     ) from ca_err
 
-            if "warning-accuracy" in parameters.keys():
+            if "warning-accuracy" in parameters:
                 try:
                     float(parameters["warning-accuracy"])
                     new_dict["control"].update(
@@ -1484,8 +1484,6 @@ def workbook_to_json(
     if settings.get("flat", False):
         # print "Generating flattened instance..."
         add_flat_annotations(stack[0]["parent_children"])
-
-    meta_children = [*survey_meta]
 
     if aliases.yes_no.get(settings.get("omit_instanceID")):
         if settings.get("public_key"):

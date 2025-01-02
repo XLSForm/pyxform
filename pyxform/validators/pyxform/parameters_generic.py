@@ -37,7 +37,7 @@ def validate(
     """
     Raise an error if 'parameters' includes any keys not named in 'allowed'.
     """
-    extras = set(parameters.keys()) - (set(allowed))
+    extras = set(parameters) - (set(allowed))
     if 0 < len(extras):
         msg = (
             "Accepted parameters are '{a}'. "

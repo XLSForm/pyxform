@@ -26,7 +26,7 @@ INVALID_DUPLICATE = (
 
 def validate_headers(
     headers: tuple[tuple[str, ...], ...], warnings: list[str]
-) -> list[str]:
+) -> tuple[str, ...]:
     def check():
         for header in headers:
             header = header[0]
@@ -34,7 +34,7 @@ def validate_headers(
                 warnings.append(INVALID_HEADER.format(column=header))
                 yield header
 
-    return list(check())
+    return tuple(check())
 
 
 def validate_choice_list(
@@ -43,28 +43,38 @@ def validate_choice_list(
     seen_options = set()
     duplicate_errors = []
     for option in options:
-        if "name" not in option:
+        if constants.NAME not in option:
             raise PyXFormError(INVALID_NAME.format(row=option["__row"]))
-        elif "label" not in option:
+        elif constants.LABEL not in option:
             warnings.append(INVALID_LABEL.format(row=option["__row"]))
 
         if not allow_duplicates:
-            name = option["name"]
+            name = option[constants.NAME]
             if name in seen_options:
                 duplicate_errors.append(INVALID_DUPLICATE.format(row=option["__row"]))
             else:
                 seen_options.add(name)
 
-    if 0 < len(duplicate_errors):
+    if duplicate_errors:
         raise PyXFormError("\n".join(duplicate_errors))
 
 
-def validate_choices(
+def validate_and_clean_choices(
     choices: dict[str, list[dict]],
     warnings: list[str],
     headers: tuple[tuple[str, ...], ...],
     allow_duplicates: bool = False,
-):
+) -> dict[str, list[dict]]:
+    """
+    Warn about invalid or duplicate choices, and remove choices with invalid headers.
+
+    Choices columns are output as XML elements so they must be valid XML tags.
+
+    :param choices: Choices data from the XLSForm.
+    :param warnings: Warnings list.
+    :param headers: choices data headers i.e. unique dict keys.
+    :param allow_duplicates: If True, duplicate choice names are allowed in the XLSForm.
+    """
     invalid_headers = validate_headers(headers, warnings)
     for options in choices.values():
         validate_choice_list(
@@ -76,3 +86,4 @@ def validate_choices(
             for invalid_header in invalid_headers:
                 option.pop(invalid_header, None)
             del option["__row"]
+    return choices

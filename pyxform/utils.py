@@ -28,7 +28,6 @@ BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
 PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
 NODE_TYPE_TEXT = {Node.TEXT_NODE, Node.CDATA_SECTION_NODE}
 XML_TEXT_SUBS = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
-XML_TEXT_SUBS_KEYS = set(XML_TEXT_SUBS)
 XML_TEXT_TABLE = str.maketrans(XML_TEXT_SUBS)
 
 
@@ -82,7 +81,7 @@ class DetachableElement(Element):
 
 @lru_cache(maxsize=64)
 def escape_text_for_xml(text: str) -> str:
-    if any(c in set(text) for c in XML_TEXT_SUBS_KEYS):
+    if any(c in set(text) for c in XML_TEXT_SUBS):
         return text.translate(XML_TEXT_TABLE)
     else:
         return text
@@ -233,7 +232,7 @@ def default_is_dynamic(element_default, element_type=None):
     tokens, _ = parse_expression(element_default)
     for t in tokens:
         # Data types which are likely to have non-dynamic defaults containing a hyphen.
-        if element_type in ("date", "dateTime", "geopoint", "geotrace", "geoshape"):
+        if element_type in {"date", "dateTime", "geopoint", "geotrace", "geoshape"}:
             # Nested to avoid extra string comparisons if not a relevant data type.
             if t.name == "OPS_MATH" and t.value == "-":
                 return False
