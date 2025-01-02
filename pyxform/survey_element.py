@@ -36,6 +36,7 @@ SURVEY_ELEMENT_FIELDS = (
 )
 SURVEY_ELEMENT_EXTRA_FIELDS = ("_survey_element_xpath",)
 SURVEY_ELEMENT_SLOTS = (*SURVEY_ELEMENT_FIELDS, *SURVEY_ELEMENT_EXTRA_FIELDS)
+_SURVEY_ELEMENT_FIELDS_SET = set(SURVEY_ELEMENT_FIELDS)
 _GET_SENTINEL = object()
 
 
@@ -111,7 +112,7 @@ class SurveyElement(Mapping):
 
         if fields is not None:
             for key in fields:
-                if key not in SURVEY_ELEMENT_FIELDS:
+                if key not in _SURVEY_ELEMENT_FIELDS_SET:
                     value = kwargs.pop(key, None)
                     if value or not hasattr(self, key):
                         self[key] = value

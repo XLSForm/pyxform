@@ -33,7 +33,7 @@ def format_missing_translations_msg(
 
     def get_sheet_msg(name, sheet):
         if sheet is not None:
-            langs = sorted(sheet.keys())
+            langs = sorted(sheet)
             if 0 < len(langs):
                 lang_msgs = []
                 for lang in langs:
@@ -94,7 +94,7 @@ class Translations:
         self, sheet_data: "SheetData", translatable_columns: dict[str, str]
     ):
         def process_header(head):
-            if head[0] in translatable_columns.keys():
+            if head[0] in translatable_columns:
                 name = translatable_columns[head[0]]
                 if len(head) == 1:
                     self.seen[const.DEFAULT_LANGUAGE_VALUE].append(name)
@@ -103,7 +103,7 @@ class Translations:
                 self.columns_seen.add(name)
 
         for header in sheet_data:
-            if 1 < len(header) and header[0] in (const.MEDIA, const.BIND):
+            if 1 < len(header) and header[0] in {const.MEDIA, const.BIND}:
                 process_header(head=header[1:])
             else:
                 process_header(head=header)

@@ -259,16 +259,16 @@ class SurveyElementBuilder:
                     const.NAME: column_headers[const.NAME],
                     const.LABEL: column_headers[const.LABEL][lang],
                 }
-                for lang in column_headers[const.LABEL].keys()
+                for lang in column_headers[const.LABEL]
             }
 
         result = question_template.copy()
-        for key in result.keys():
+        for key in result:
             if isinstance(result[key], str):
                 result[key] %= column_headers
             elif isinstance(result[key], dict):
                 result[key] = result[key].copy()
-                for key2 in result[key].keys():
+                for key2 in result[key]:
                     if info_by_lang and isinstance(column_headers[const.LABEL], dict):
                         result[key][key2] %= info_by_lang.get(key2, column_headers)
                     else:

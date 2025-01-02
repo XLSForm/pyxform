@@ -296,7 +296,7 @@ class Survey(Section):
         return super().to_json_dict(delete_keys=to_delete)
 
     def validate(self):
-        if self.id_string in [None, "None"]:
+        if self.id_string in {None, "None"}:
             raise PyXFormError("Survey cannot have an empty id_string")
         super().validate()
         self._validate_uniqueness_of_section_names()
@@ -353,7 +353,7 @@ class Survey(Section):
         self.validate()
         self._setup_xpath_dictionary()
 
-        for triggering_reference in self.setvalues_by_triggering_ref.keys():
+        for triggering_reference in self.setvalues_by_triggering_ref:
             if not re.search(BRACKETED_TAG_REGEX, triggering_reference):
                 raise PyXFormError(
                     "Only references to other fields are allowed in the 'trigger' column."
@@ -663,7 +663,7 @@ class Survey(Section):
 
         seen = {}
         for i in instances:
-            if i.name in seen.keys() and seen[i.name].src != i.src:
+            if i.name in seen and seen[i.name].src != i.src:
                 # Instance id exists with different src URI -> error.
                 msg = (
                     "The same instance id will be generated for different "
@@ -673,7 +673,7 @@ class Survey(Section):
                     f"Duplicate URI: '{i.src}', Duplicate context: '{i.context}'."
                 )
                 raise PyXFormError(msg)
-            elif i.name in seen.keys() and seen[i.name].src == i.src:
+            elif i.name in seen and seen[i.name].src == i.src:
                 # Instance id exists with same src URI -> ok, don't duplicate.
                 continue
             else:
@@ -891,7 +891,7 @@ class Survey(Section):
                 leaf_value = {last_path: value, constants.TYPE: constants.CHOICE}
                 self._add_to_nested_dict(self._translations, path, leaf_value)
 
-        select_types = set(aliases.select.keys())
+        select_types = set(aliases.select)
         search_lists = set()
         non_search_lists = set()
         for element in self.iter_descendants(
@@ -962,7 +962,7 @@ class Survey(Section):
         paths = {}
         for translation in self._translations.values():
             for path, content in translation.items():
-                paths[path] = paths.get(path, set()).union(content.keys())
+                paths[path] = paths.get(path, set()).union(content)
 
         for lang in self._translations:
             for path, content_types in paths.items():
@@ -1353,7 +1353,7 @@ class Survey(Section):
             warnings.extend(enketo_validate.check_xform(path))
 
         # Warn if one or more translation is missing a valid IANA subtag
-        translations = self._translations.keys()
+        translations = self._translations
         if translations:
             bad_languages = get_languages_with_bad_tags(translations)
             if bad_languages:

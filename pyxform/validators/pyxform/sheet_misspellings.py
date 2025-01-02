@@ -1,10 +1,10 @@
-from collections.abc import KeysView
+from collections.abc import Iterable
 
 from pyxform import constants
 from pyxform.utils import levenshtein_distance
 
 
-def find_sheet_misspellings(key: str, keys: "KeysView") -> "str | None":
+def find_sheet_misspellings(key: str, keys: Iterable) -> "str | None":
     """
     Find possible sheet name misspellings to warn the user about.
 

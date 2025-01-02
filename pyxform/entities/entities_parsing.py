@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Any
 
 from pyxform import constants as const
@@ -9,10 +10,12 @@ EC = const.EntityColumns
 
 
 def get_entity_declaration(
-    entities_sheet: list[dict], workbook_dict: dict[str, list[dict]], warnings: list[str]
+    entities_sheet: Sequence[dict],
+    workbook_dict: dict[str, list[dict]],
+    warnings: list[str],
 ) -> dict[str, Any]:
     if len(entities_sheet) == 0:
-        similar = find_sheet_misspellings(key=const.ENTITIES, keys=workbook_dict.keys())
+        similar = find_sheet_misspellings(key=const.ENTITIES, keys=workbook_dict)
         if similar is not None:
             warnings.append(similar + const._MSG_SUPPRESS_SPELLING)
         return {}
@@ -126,9 +129,9 @@ def validate_entity_saveto(
 
 
 def validate_entities_columns(row: dict):
-    extra = {k: None for k in row.keys() if k not in EC.value_list()}
+    extra = {k: None for k in row if k not in EC.value_list()}
     if 0 < len(extra):
-        fmt_extra = ", ".join(f"'{k}'" for k in extra.keys())
+        fmt_extra = ", ".join(f"'{k}'" for k in extra)
         msg = (
             f"The entities sheet included the following unexpected column(s): {fmt_extra}. "
             f"These columns are not supported by this version of pyxform. Please either: "
