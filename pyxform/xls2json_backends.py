@@ -5,7 +5,7 @@ XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 import csv
 import datetime
 import re
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from enum import Enum
 from functools import reduce
@@ -29,6 +29,7 @@ from xlrd.xldate import XLDateAmbiguous, xldate_as_tuple
 
 from pyxform import constants
 from pyxform.errors import PyXFormError, PyXFormReadError
+from pyxform.utils import RE_WHITESPACE
 
 aCell = xlrdCell | pyxlCell
 XL_DATE_AMBIGOUS_MSG = (
@@ -57,7 +58,7 @@ def trim_trailing_empty(a_list: list, n_empty: int) -> list:
     return a_list
 
 
-def get_excel_column_headers(first_row: Iterator[str | None]) -> list[str | None]:
+def get_excel_column_headers(first_row: Iterable[str | None]) -> list[str | None]:
     """Get column headers from the first row; stop if there's a run of empty columns."""
     max_adjacent_empty_columns = 20
     column_header_list = []
@@ -76,15 +77,15 @@ def get_excel_column_headers(first_row: Iterator[str | None]) -> list[str | None
             if column_header in column_header_list:
                 raise PyXFormError(f"Duplicate column header: {column_header}")
             # Strip whitespaces from the header.
-            clean_header = re.sub(r"( )+", " ", column_header.strip())
+            clean_header = RE_WHITESPACE.sub(" ", column_header.strip())
             column_header_list.append(clean_header)
 
     return trim_trailing_empty(column_header_list, adjacent_empty_cols)
 
 
 def get_excel_rows(
-    headers: Iterator[str | None],
-    rows: Iterator[tuple[aCell, ...]],
+    headers: Iterable[str | None],
+    rows: Iterable[tuple[aCell, ...]],
     cell_func: Callable[[aCell, int, str], Any],
 ) -> list[dict[str, Any]]:
     """Get rows of cleaned data; stop if there's a run of empty rows."""

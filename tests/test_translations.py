@@ -303,18 +303,18 @@ class TestTranslations(PyxformTestCase):
                 DEFAULT_LANG: (
                     "hint",
                     "guidance_hint",
-                    "media::image",
-                    "media::video",
-                    "media::audio",
+                    "image",
+                    "video",
+                    "audio",
                     "constraint_message",
                     "required_message",
                 )
             },
             CHOICES: {
                 DEFAULT_LANG: (
-                    "media::image",
-                    "media::video",
-                    "media::audio",
+                    "image",
+                    "video",
+                    "audio",
                 )
             },
         }
@@ -854,10 +854,10 @@ class TestTranslationsSurvey(PyxformTestCase):
                 DEFAULT_LANG: (
                     "hint",
                     "guidance_hint",
-                    "media::image",
-                    "media::big-image",
-                    "media::video",
-                    "media::audio",
+                    "image",
+                    "big-image",
+                    "video",
+                    "audio",
                     "constraint_message",
                     "required_message",
                 )
@@ -1055,7 +1055,7 @@ class TestTranslationsSurvey(PyxformTestCase):
             _in={
                 SURVEY: {
                     "default": ("hint", "label"),
-                    "french": ("media::image",),
+                    "french": ("image",),
                 }
             }
         )
@@ -1087,7 +1087,7 @@ class TestTranslationsSurvey(PyxformTestCase):
         |        | note | n1   | bonjour       | salutation   | greeting.jpg |
         """
         warning = format_missing_translations_msg(
-            _in={SURVEY: {"default": ("hint", "label"), "french": ("media::image",)}}
+            _in={SURVEY: {"default": ("hint", "label"), "french": ("image",)}}
         )
         self.assertPyxformXform(
             md=md,
@@ -1234,9 +1234,7 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la-d  | la-e       | la-d.mp3     |
         |         | c1        | nb   | lb-d  | lb-e       | lb-d.mp3     |
         """
-        warning = format_missing_translations_msg(
-            _in={CHOICES: {"eng": ("media::audio",)}}
-        )
+        warning = format_missing_translations_msg(_in={CHOICES: {"eng": ("audio",)}})
         self.assertPyxformXform(
             md=md,
             warnings__contains=[warning],
@@ -1271,7 +1269,7 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la-e       | la-d.mp3     |
         |         | c1        | nb   | lb-e       | lb-d.mp3     |
         """
-        cols = {CHOICES: {"default": ("label",), "eng": ("media::audio",)}}
+        cols = {CHOICES: {"default": ("label",), "eng": ("audio",)}}
         warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
             md=md,
@@ -1299,16 +1297,7 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la-d  | la-e       | la-d.mp3          | la-d.jpg          | la-d.jpg              | la-d.mkv          |
         |         | c1        | nb   | lb-d  | lb-e       | lb-d.mp3          | lb-d.jpg          | lb-d.jpg              | lb-d.mkv          |
         """
-        cols = {
-            CHOICES: {
-                DEFAULT_LANG: (
-                    "media::image",
-                    "media::big-image",
-                    "media::video",
-                    "media::audio",
-                )
-            }
-        }
+        cols = {CHOICES: {DEFAULT_LANG: ("image", "big-image", "video", "audio")}}
         warning = format_missing_translations_msg(_in=cols)
         self.assertPyxformXform(
             md=md,
@@ -1430,7 +1419,7 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | nb   | lb-e       | lb-d.mp3     |
         """
         warning = format_missing_translations_msg(
-            _in={CHOICES: {"eng": ("media::audio",), "default": ("label",)}}
+            _in={CHOICES: {"eng": ("audio",), "default": ("label",)}}
         )
         self.assertPyxformXform(
             md=md,
@@ -1467,7 +1456,7 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | nb   | lb-e       | lb-d.mp3     |
         """
         warning = format_missing_translations_msg(
-            _in={CHOICES: {"eng": ("media::audio",), "default": ("label",)}}
+            _in={CHOICES: {"eng": ("audio",), "default": ("label",)}}
         )
         self.assertPyxformXform(
             md=md,
@@ -1495,9 +1484,7 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la-e       | la-f          | la-d.mp3          |
         |         | c1        | nb   | lb-e       | lb-f          | lb-d.mp3          |
         """
-        warning = format_missing_translations_msg(
-            _in={CHOICES: {"french": ("media::audio",)}}
-        )
+        warning = format_missing_translations_msg(_in={CHOICES: {"french": ("audio",)}})
         self.assertPyxformXform(
             md=md,
             warnings__contains=[warning],
@@ -1533,9 +1520,7 @@ class TestTranslationsChoices(PyxformTestCase):
         |         | c1        | na   | la-e       | la-f          | la-d.mp3          |
         |         | c1        | nb   | lb-e       | lb-f          | lb-d.mp3          |
         """
-        warning = format_missing_translations_msg(
-            _in={CHOICES: {"french": ("media::audio",)}}
-        )
+        warning = format_missing_translations_msg(_in={CHOICES: {"french": ("audio",)}})
         self.assertPyxformXform(
             md=md,
             warnings__contains=[warning],
@@ -1950,7 +1935,7 @@ class TestTranslationsOrOther(PyxformTestCase):
         md = """
         | survey  |                        |       |            |
         |         | type                   | name  | label      | choice_filter |
-        |         | input                  | q0    | Question 0 |               |
+        |         | text                   | q0    | Question 0 |               |
         |         | select_one c1 or_other | q1    | Question 1 | ${q0} = cf    |
         | choices |           |      |       |
         |         | list name | name | label | cf |

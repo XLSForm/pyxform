@@ -96,6 +96,8 @@ class Translations:
         def process_header(head):
             if head[0] in translatable_columns:
                 name = translatable_columns[head[0]]
+                if isinstance(name, tuple):
+                    name = head[0]
                 if len(head) == 1:
                     self.seen[const.DEFAULT_LANGUAGE_VALUE].append(name)
                 elif len(head) == 2:
