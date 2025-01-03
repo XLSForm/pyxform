@@ -11,11 +11,11 @@ EC = const.EntityColumns
 
 def get_entity_declaration(
     entities_sheet: Sequence[dict],
-    workbook_dict: dict[str, list[dict]],
     warnings: list[str],
+    sheet_names: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     if len(entities_sheet) == 0:
-        similar = find_sheet_misspellings(key=const.ENTITIES, keys=workbook_dict)
+        similar = find_sheet_misspellings(key=const.ENTITIES, keys=sheet_names)
         if similar is not None:
             warnings.append(similar + const._MSG_SUPPRESS_SPELLING)
         return {}

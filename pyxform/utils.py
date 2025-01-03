@@ -11,7 +11,6 @@ from functools import lru_cache
 from io import StringIO
 from itertools import chain
 from json.decoder import JSONDecodeError
-from typing import Any
 from xml.dom import Node
 from xml.dom.minidom import Element, Text, _write_data
 
@@ -20,13 +19,13 @@ from defusedxml.minidom import parseString
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import parse_expression
+from pyxform.xls2json_backends import DefinitionData
 
 BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
 INVALID_XFORM_TAG_REGEXP = re.compile(r"[^a-zA-Z:_][^a-zA-Z:_0-9\-.]*")
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
 NODE_TYPE_TEXT = {Node.TEXT_NODE, Node.CDATA_SECTION_NODE}
 PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
-RE_WHITESPACE = re.compile(r"( )+")
 SPACE_TRANS_TABLE = str.maketrans({" ": "_"})
 XML_TEXT_SUBS = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
 XML_TEXT_TABLE = str.maketrans(XML_TEXT_SUBS)
@@ -171,7 +170,7 @@ def flatten(li):
 
 
 def external_choices_to_csv(
-    workbook_dict: dict[str, Any], warnings: list | None = None
+    workbook_dict: DefinitionData, warnings: list | None = None
 ) -> str | None:
     """
     Convert the 'external_choices' sheet data to CSV.
@@ -180,7 +179,7 @@ def external_choices_to_csv(
     :param warnings: The conversions warnings list.
     """
     warnings = coalesce(warnings, [])
-    if const.EXTERNAL_CHOICES not in workbook_dict:
+    if not workbook_dict.external_choices:
         warnings.append(
             f"Could not export itemsets.csv, the '{const.EXTERNAL_CHOICES}' sheet is missing."
         )
@@ -189,11 +188,11 @@ def external_choices_to_csv(
     itemsets = StringIO(newline="")
     csv_writer = csv.writer(itemsets, quoting=csv.QUOTE_ALL)
     try:
-        header = workbook_dict["external_choices_header"][0]
+        header = workbook_dict.external_choices_header[0]
     except (IndexError, KeyError, TypeError):
-        header = {k for d in workbook_dict[const.EXTERNAL_CHOICES] for k in d}
+        header = {k for d in workbook_dict.external_choices for k in d}
     csv_writer.writerow(header)
-    for row in workbook_dict[const.EXTERNAL_CHOICES]:
+    for row in workbook_dict.external_choices:
         csv_writer.writerow(row.values())
     return itemsets.getvalue()
 
