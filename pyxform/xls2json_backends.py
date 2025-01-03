@@ -5,14 +5,13 @@ XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 import csv
 import datetime
 import re
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from enum import Enum
-from functools import reduce
 from io import BytesIO, IOBase, StringIO
 from os import PathLike
 from pathlib import Path
-from typing import Any
+from typing import Any, BinaryIO
 from zipfile import BadZipFile
 
 from openpyxl import open as pyxl_open
@@ -29,13 +28,35 @@ from xlrd.xldate import XLDateAmbiguous, xldate_as_tuple
 
 from pyxform import constants
 from pyxform.errors import PyXFormError, PyXFormReadError
-from pyxform.utils import RE_WHITESPACE
 
 aCell = xlrdCell | pyxlCell
 XL_DATE_AMBIGOUS_MSG = (
     "The xls file provided has an invalid date on the %s sheet, under"
     " the %s column on row number %s"
 )
+RE_WHITESPACE = re.compile(r"( )+")
+
+
+@dataclass(slots=True)
+class DefinitionData:
+    # XLSForm definition sheets.
+    # survey is optional to allow processing to proceed to warnings / spell checks.
+    survey: Sequence[dict[str, str]] | None = None
+    survey_header: Sequence[dict[str, Any]] | None = None
+    choices: Sequence[dict[str, str]] | None = None
+    choices_header: Sequence[dict[str, Any]] | None = None
+    settings: Sequence[dict[str, str]] | None = None
+    settings_header: Sequence[dict[str, Any]] | None = None
+    external_choices: Sequence[dict[str, str]] | None = None
+    external_choices_header: Sequence[dict[str, Any]] | None = None
+    entities: Sequence[dict[str, str]] | None = None
+    entities_header: Sequence[dict[str, Any]] | None = None
+    osm: Sequence[dict[str, str]] | None = None
+    osm_header: Sequence[dict[str, Any]] | None = None
+
+    # Extra metadata.
+    sheet_names: Sequence[str] | None = None
+    fallback_form_name: str | None = None
 
 
 def _list_to_dict_list(list_items):
@@ -44,7 +65,7 @@ def _list_to_dict_list(list_items):
     Returns a list of the created dict or an empty list
     """
     if list_items:
-        return [{str(i): "" for i in list_items}]
+        return [{str(i): None for i in list_items}]
     return []
 
 
@@ -166,12 +187,13 @@ def xls_to_dict(path_or_file):
         return rows, _list_to_dict_list(column_header_list)
 
     def process_workbook(wb: xlrdBook):
-        result_book = {}
+        result_book = {"sheet_names": []}
         for wb_sheet in wb.sheets():
-            # Note that the sheet exists but do no further processing here.
-            result_book[wb_sheet.name] = []
+            # Note original in sheet_names for spelling check.
+            result_book["sheet_names"].append(wb_sheet.name)
+            sheet_name = wb_sheet.name.lower()
             # Do not process sheets that have nothing to do with XLSForm.
-            if wb_sheet.name not in constants.SUPPORTED_SHEET_NAMES:
+            if sheet_name not in constants.SUPPORTED_SHEET_NAMES:
                 if len(wb.sheets()) == 1:
                     (
                         result_book[constants.SURVEY],
@@ -181,8 +203,8 @@ def xls_to_dict(path_or_file):
                     continue
             else:
                 (
-                    result_book[wb_sheet.name],
-                    result_book[f"{wb_sheet.name}_header"],
+                    result_book[sheet_name],
+                    result_book[f"{sheet_name}_header"],
                 ) = xls_to_dict_normal_sheet(wb=wb, wb_sheet=wb_sheet)
         return result_book
 
@@ -256,25 +278,25 @@ def xlsx_to_dict(path_or_file):
         return rows, _list_to_dict_list(column_header_list)
 
     def process_workbook(wb: pyxlWorkbook):
-        result_book = {}
+        result_book = {"sheet_names": []}
         for sheetname in wb.sheetnames:
-            wb_sheet = wb[sheetname]
-            # Note that the sheet exists but do no further processing here.
-            result_book[sheetname] = []
+            # Note original in sheet_names for spelling check.
+            result_book["sheet_names"].append(sheetname)
+            sheet_name = sheetname.lower()
             # Do not process sheets that have nothing to do with XLSForm.
-            if sheetname not in constants.SUPPORTED_SHEET_NAMES:
+            if sheet_name not in constants.SUPPORTED_SHEET_NAMES:
                 if len(wb.sheetnames) == 1:
                     (
                         result_book[constants.SURVEY],
                         result_book[f"{constants.SURVEY}_header"],
-                    ) = xlsx_to_dict_normal_sheet(wb_sheet)
+                    ) = xlsx_to_dict_normal_sheet(wb[sheetname])
                 else:
                     continue
             else:
                 (
-                    result_book[sheetname],
-                    result_book[f"{sheetname}_header"],
-                ) = xlsx_to_dict_normal_sheet(wb_sheet)
+                    result_book[sheet_name],
+                    result_book[f"{sheet_name}_header"],
+                ) = xlsx_to_dict_normal_sheet(wb[sheetname])
         return result_book
 
     try:
@@ -368,13 +390,13 @@ def csv_to_dict(path_or_file):
             if s_or_c == "":
                 s_or_c = None
             # concatenate all the strings in content
-            if reduce(lambda x, y: x + y, content) == "":
+            if "".join(content) == "":
                 # content is a list of empty strings
                 content = None
             return s_or_c, content
 
     def process_csv_data(rd):
-        _dict = {}
+        _dict = {"sheet_names": []}
         sheet_name = None
         current_headers = None
         for row in rd:
@@ -383,6 +405,7 @@ def csv_to_dict(path_or_file):
                 sheet_name = survey_or_choices
                 if sheet_name not in _dict:
                     _dict[str(sheet_name)] = []
+                    _dict["sheet_names"].append(sheet_name)
                 current_headers = None
             if content is not None:
                 if current_headers is None:
@@ -445,6 +468,8 @@ def convert_file_to_csv_string(path):
     foo = StringIO(newline="")
     writer = csv.writer(foo, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
     for sheet_name, rows in imported_sheets.items():
+        if sheet_name == "sheet_names":
+            continue
         writer.writerow([sheet_name])
         out_keys = []
         out_rows = []
@@ -606,10 +631,25 @@ def md_to_dict(md: str | BytesIO):
             else:
                 _md.append(line.strip())
         md_ = "\n".join(_md)
-        sheets = {}
-        for sheet, contents in _md_table_to_ss_structure(md_):
-            sheets[sheet] = list_to_dicts(contents)
-        return sheets
+        result_book = {"sheet_names": []}
+        ss_structure = _md_table_to_ss_structure(md_)
+        for sheet, contents in ss_structure:
+            # Note original in sheet_names for spelling check.
+            result_book["sheet_names"].append(sheet)
+            sheet_name = sheet.lower()
+            # Do not process sheets that have nothing to do with XLSForm.
+            if sheet_name not in constants.SUPPORTED_SHEET_NAMES:
+                if len(ss_structure) == 1:
+                    result_book[constants.SURVEY] = list_to_dicts(contents)
+                    result_book[f"{constants.SURVEY}_header"] = _list_to_dict_list(
+                        contents[0]
+                    )
+                else:
+                    continue
+            else:
+                result_book[sheet_name] = list_to_dicts(contents)
+                result_book[f"{sheet_name}_header"] = _list_to_dict_list(contents[0])
+        return result_book
 
     try:
         md_data = get_definition_data(definition=md)
@@ -690,6 +730,7 @@ class SupportedFileTypes(Enum):
     def get_processors():
         return {
             SupportedFileTypes.xlsx: xlsx_to_dict,
+            SupportedFileTypes.xlsm: xlsx_to_dict,
             SupportedFileTypes.xls: xls_to_dict,
             SupportedFileTypes.md: md_to_dict,
             SupportedFileTypes.csv: csv_to_dict,
@@ -706,7 +747,7 @@ class Definition:
 def definition_to_dict(
     definition: str | PathLike[str] | bytes | BytesIO | IOBase | Definition,
     file_type: str | None = None,
-) -> dict:
+) -> DefinitionData:
     """
     Convert raw definition data to a dict ready for conversion to a XForm.
 
@@ -729,7 +770,9 @@ def definition_to_dict(
 
     for func in processors.values():
         try:
-            return func(definition)
+            return DefinitionData(
+                fallback_form_name=definition.file_path_stem, **func(definition)
+            )
         except PyXFormReadError:  # noqa: PERF203
             continue
 
@@ -795,3 +838,17 @@ def get_definition_data(
         file_type=file_type,
         file_path_stem=file_path_stem,
     )
+
+
+def get_xlsform(
+    xlsform: str | PathLike[str] | bytes | BytesIO | BinaryIO | dict,
+    file_type: str | None = None,
+) -> DefinitionData:
+    if isinstance(xlsform, dict):
+        workbook_dict = DefinitionData(**xlsform)
+    else:
+        definition = get_definition_data(definition=xlsform)
+        if file_type is None:
+            file_type = definition.file_type
+        workbook_dict = definition_to_dict(definition=definition, file_type=file_type)
+    return workbook_dict

@@ -11,15 +11,17 @@ from io import BytesIO
 from os import PathLike
 from os.path import splitext
 from pathlib import Path
-from typing import TYPE_CHECKING, BinaryIO
+from typing import TYPE_CHECKING, BinaryIO, Optional
 
-from pyxform import builder, xls2json
-from pyxform.utils import coalesce, external_choices_to_csv, has_external_choices
-from pyxform.validators.odk_validate import ODKValidateError
-from pyxform.xls2json_backends import (
-    definition_to_dict,
-    get_definition_data,
+from pyxform.builder import create_survey_element_from_dict
+from pyxform.utils import (
+    coalesce,
+    external_choices_to_csv,
+    has_external_choices,
 )
+from pyxform.validators.odk_validate import ODKValidateError
+from pyxform.xls2json import workbook_to_json
+from pyxform.xls2json_backends import get_xlsform
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -54,8 +56,8 @@ class ConvertResult:
     xform: str
     warnings: list[str]
     itemsets: str | None
-    _pyxform: dict
-    _survey: "Survey"
+    _pyxform: dict | None
+    _survey: Optional["Survey"]
 
 
 def convert(
@@ -93,32 +95,25 @@ def convert(
       xlsform is provided as a dict, then it is used directly and this argument is ignored.
     """
     warnings = coalesce(warnings, [])
-    if isinstance(xlsform, dict):
-        workbook_dict = xlsform
-        fallback_form_name = None
-    else:
-        definition = get_definition_data(definition=xlsform)
-        if file_type is None:
-            file_type = definition.file_type
-        workbook_dict = definition_to_dict(definition=definition, file_type=file_type)
-        fallback_form_name = definition.file_path_stem
-    pyxform_data = xls2json.workbook_to_json(
+    workbook_dict = get_xlsform(xlsform=xlsform, file_type=file_type)
+    pyxform_data = workbook_to_json(
         workbook_dict=workbook_dict,
         form_name=form_name,
-        fallback_form_name=fallback_form_name,
+        fallback_form_name=workbook_dict.fallback_form_name,
         default_language=default_language,
         warnings=warnings,
     )
-    survey = builder.create_survey_element_from_dict(pyxform_data)
+    itemsets = None
+    if has_external_choices(json_struct=pyxform_data):
+        itemsets = external_choices_to_csv(workbook_dict=workbook_dict)
+
+    survey = create_survey_element_from_dict(pyxform_data)
     xform = survey.to_xml(
         validate=validate,
         pretty_print=pretty_print,
         warnings=warnings,
         enketo=enketo,
     )
-    itemsets = None
-    if has_external_choices(json_struct=pyxform_data):
-        itemsets = external_choices_to_csv(workbook_dict=workbook_dict)
     return ConvertResult(
         xform=xform,
         warnings=warnings,

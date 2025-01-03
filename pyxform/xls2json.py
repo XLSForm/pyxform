@@ -24,7 +24,6 @@ from pyxform.parsing.expression import is_pyxform_reference, is_xml_tag
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
 from pyxform.utils import (
     PYXFORM_REFERENCE_REGEX,
-    RE_WHITESPACE,
     coalesce,
     default_is_dynamic,
 )
@@ -35,7 +34,11 @@ from pyxform.validators.pyxform.choices import validate_and_clean_choices
 from pyxform.validators.pyxform.pyxform_reference import validate_pyxform_reference_syntax
 from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
-from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
+from pyxform.xls2json_backends import (
+    RE_WHITESPACE,
+    DefinitionData,
+    get_xlsform,
+)
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
@@ -248,7 +251,7 @@ def add_choices_info_to_question(
 
 
 def workbook_to_json(
-    workbook_dict,
+    workbook_dict: DefinitionData,
     form_name: str | None = None,
     fallback_form_name: str | None = None,
     default_language: str | None = None,
@@ -273,11 +276,11 @@ def workbook_to_json(
     json form spec.
     """
     warnings = coalesce(warnings, [])
-    # Sheet names should be case-insensitive
-    workbook_dict = {x.lower(): y for x, y in workbook_dict.items()}
-    if constants.SURVEY not in workbook_dict:
+    if not workbook_dict.survey and not workbook_dict.survey_header:
         msg = f"You must have a sheet named '{constants.SURVEY}'. "
-        similar = find_sheet_misspellings(key=constants.SURVEY, keys=workbook_dict)
+        similar = find_sheet_misspellings(
+            key=constants.SURVEY, keys=workbook_dict.sheet_names
+        )
         if similar is not None:
             msg += similar
         raise PyXFormError(msg)
@@ -290,11 +293,12 @@ def workbook_to_json(
     # (settings, choices, survey_sheet):
     # ########## Settings sheet ##########
     k = constants.SETTINGS
-    if k not in workbook_dict:
-        similar = find_sheet_misspellings(key=k, keys=workbook_dict)
+    if not workbook_dict.settings:
+        similar = find_sheet_misspellings(key=k, keys=workbook_dict.sheet_names)
         if similar is not None:
             warnings.append(similar + _MSG_SUPPRESS_SPELLING)
-    settings_sheet_headers = workbook_dict.get(constants.SETTINGS, [])
+    settings_sheet_headers = workbook_dict.settings_header or []
+    settings_sheet = workbook_dict.settings or []
     try:
         if (
             sum(
@@ -306,21 +310,22 @@ def workbook_to_json(
             == 2
         ):
             settings_sheet_headers[0].pop(constants.ID_STRING, None)
+            settings_sheet[0].pop(constants.ID_STRING, None)
             warnings.append(
-                "The form_id and id_sting column headers are both"
+                "The form_id and id_string column headers are both"
                 " specified in the settings sheet provided."
                 " This may cause errors during conversion."
                 " In future, its best to avoid specifying both"
                 " column headers in the settings sheet."
             )
     except IndexError:  # In case there is no settings sheet
-        settings_sheet_headers = []
+        pass
 
     from pyxform.survey import Survey
 
     settings_sheet = dealias_and_group_headers(
         sheet_name=constants.SETTINGS,
-        dict_array=settings_sheet_headers,
+        dict_array=settings_sheet,
         header_aliases=aliases.settings_header,
         header_columns=set(Survey.get_slot_names()),
     )
@@ -365,7 +370,7 @@ def workbook_to_json(
     option_fields = set(Option.get_slot_names())
 
     # ########## External Choices sheet ##########
-    external_choices = workbook_dict.get(constants.EXTERNAL_CHOICES)
+    external_choices = workbook_dict.external_choices
     if external_choices:
         external_choices = clean_text_values(
             sheet_name=constants.EXTERNAL_CHOICES, data=external_choices
@@ -382,7 +387,7 @@ def workbook_to_json(
         )
 
     # ########## Choices sheet ##########
-    choices_sheet = workbook_dict.get(constants.CHOICES, [])
+    choices_sheet = workbook_dict.choices or []
     choices_sheet = clean_text_values(
         sheet_name=constants.CHOICES,
         data=choices_sheet,
@@ -419,7 +424,7 @@ def workbook_to_json(
     # ########## Entities sheet ###########
     from pyxform.entities.entity_declaration import EntityDeclaration
 
-    entities_sheet = workbook_dict.get(constants.ENTITIES, [])
+    entities_sheet = workbook_dict.entities or []
     entities_sheet = clean_text_values(sheet_name=constants.ENTITIES, data=entities_sheet)
     entities_sheet = dealias_and_group_headers(
         sheet_name=constants.ENTITIES,
@@ -428,11 +433,13 @@ def workbook_to_json(
         header_columns=set(EntityDeclaration.get_slot_names()),
     )
     entity_declaration = get_entity_declaration(
-        entities_sheet=entities_sheet.data, workbook_dict=workbook_dict, warnings=warnings
+        entities_sheet=entities_sheet.data,
+        warnings=warnings,
+        sheet_names=workbook_dict.sheet_names,
     )
 
     # ########## Survey sheet ###########
-    survey_sheet = workbook_dict[constants.SURVEY]
+    survey_sheet = workbook_dict.survey
     # Process the headers:
     if clean_text_values_enabled:
         survey_sheet = clean_text_values(
@@ -459,7 +466,7 @@ def workbook_to_json(
     sheet_translations.missing_check(warnings=warnings)
 
     # No spell check for OSM sheet (infrequently used, many spurious matches).
-    osm_sheet = workbook_dict.get(constants.OSM, None)
+    osm_sheet = workbook_dict.osm
     osm_tags = None
     if osm_sheet:
         osm_sheet = dealias_and_group_headers(
@@ -945,7 +952,9 @@ def workbook_to_json(
                     if not external_choices:
                         k = constants.EXTERNAL_CHOICES
                         msg = "There should be an external_choices sheet in this xlsform."
-                        similar = find_sheet_misspellings(key=k, keys=workbook_dict)
+                        similar = find_sheet_misspellings(
+                            key=k, keys=workbook_dict.sheet_names
+                        )
                         if similar is not None:
                             msg = msg + " " + similar
                         raise PyXFormError(
@@ -973,7 +982,9 @@ def workbook_to_json(
                     if not choices:
                         k = constants.CHOICES
                         msg = "There should be a choices sheet in this xlsform."
-                        similar = find_sheet_misspellings(key=k, keys=workbook_dict)
+                        similar = find_sheet_misspellings(
+                            key=k, keys=workbook_dict.sheet_names
+                        )
                         if similar is not None:
                             msg = f"{msg} {similar}"
                         raise PyXFormError(
@@ -1403,38 +1414,6 @@ def workbook_to_json(
     return json_dict
 
 
-def parse_file_to_workbook_dict(path, file_object=None):
-    """
-    Given a xls or csv workbook file use xls2json_backends to create
-    a python workbook_dict.
-    workbook_dicts are organized as follows:
-    {sheetname : [{column_header : column_value_in_array_indexed_row}]}
-    """
-
-    (filepath, filename) = os.path.split(path)
-    if not filename:
-        raise PyXFormError("No filename.")
-    (shortname, extension) = os.path.splitext(filename)
-    if not extension:
-        raise PyXFormError("No extension.")
-
-    if extension in constants.XLS_EXTENSIONS:
-        return xls_to_dict(file_object if file_object is not None else path)
-    elif extension in constants.XLSX_EXTENSIONS:
-        return xlsx_to_dict(file_object if file_object is not None else path)
-    elif extension == ".csv":
-        return csv_to_dict(file_object if file_object is not None else path)
-    else:
-        raise PyXFormError("File was not recognized")
-
-
-def get_filename(path):
-    """
-    Get the extensionless filename from a path
-    """
-    return os.path.splitext(os.path.basename(path))[0]
-
-
 def parse_file_to_json(
     path: str,
     default_name: str = constants.DEFAULT_FORM_NAME,
@@ -1447,12 +1426,11 @@ def parse_file_to_json(
     """
     if warnings is None:
         warnings = []
-    workbook_dict = parse_file_to_workbook_dict(path, file_object)
-    fallback_form_name = str(get_filename(path))
+    workbook_dict = get_xlsform(xlsform=coalesce(path, file_object))
     return workbook_to_json(
         workbook_dict=workbook_dict,
         form_name=default_name,
-        fallback_form_name=fallback_form_name,
+        fallback_form_name=workbook_dict.fallback_form_name,
         default_language=default_language,
         warnings=warnings,
     )
@@ -1485,9 +1463,9 @@ class SpreadsheetReader:
             path = path.name
         except AttributeError:
             pass
-        self._dict = parse_file_to_workbook_dict(path)
+        self._dict = get_xlsform(xlsform=path)
         self._path = path
-        self._id = str(get_filename(path))
+        self._id = str(os.path.splitext(os.path.basename(path))[0])
         self._name = self._print_name = self._title = self._id
 
     def to_json_dict(self):

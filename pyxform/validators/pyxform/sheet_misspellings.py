@@ -15,6 +15,8 @@ def find_sheet_misspellings(key: str, keys: Iterable) -> "str | None":
     :param key: The sheet name to look for.
     :param keys: The workbook sheet names.
     """
+    if not keys:
+        return None
     candidates = tuple(
         _k  # thanks to black
         for _k in keys
