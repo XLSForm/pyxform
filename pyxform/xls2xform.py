@@ -39,7 +39,7 @@ def get_xml_path(path):
     return splitext(path)[0] + ".xml"
 
 
-@dataclass
+@dataclass(slots=True)
 class ConvertResult:
     """
     Result data from the XLSForm to XForm conversion.

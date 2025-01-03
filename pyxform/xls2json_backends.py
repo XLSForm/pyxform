@@ -696,7 +696,7 @@ class SupportedFileTypes(Enum):
         }
 
 
-@dataclass
+@dataclass(slots=True)
 class Definition:
     data: BytesIO
     file_type: SupportedFileTypes | None

@@ -347,7 +347,7 @@ class TestHeaderProcessing(PyxformTestCase):
     def test_process_header(self):
         """Should find the header input is processed per each case expectation."""
 
-        @dataclass()
+        @dataclass(slots=True)
         class Case:
             header: str
             use_double_colon: bool

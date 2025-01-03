@@ -17,7 +17,7 @@ from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
 
 
-@dataclass()
+@dataclass(slots=True)
 class Case:
     """
     A test case spec for dynamic default scenarios.
