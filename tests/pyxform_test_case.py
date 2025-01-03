@@ -35,7 +35,7 @@ class PyxformTestError(Exception):
     pass
 
 
-@dataclass
+@dataclass(slots=True)
 class MatcherContext:
     debug: bool
     nsmap_xpath: "dict[str, str]"

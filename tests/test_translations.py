@@ -22,7 +22,7 @@ from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
 
 
-@dataclass()
+@dataclass(slots=True)
 class XPathHelper:
     """
     XPath expressions for translations-related assertions.
