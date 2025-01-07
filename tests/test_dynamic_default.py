@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from psutil import Process
 from pyxform import utils
+from pyxform.xls2json_backends import SupportedFileTypes
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -802,7 +803,7 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
                 peak_memory_usage = process.memory_info().rss
                 while runs < 10:
                     start = perf_counter()
-                    convert(xlsform=case)
+                    convert(xlsform=case, file_type=SupportedFileTypes.md.value)
                     results.append(perf_counter() - start)
                     peak_memory_usage = max(process.memory_info().rss, peak_memory_usage)
                     runs += 1

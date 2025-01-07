@@ -15,6 +15,7 @@ from pyxform.validators.pyxform.translations_checks import (
     OR_OTHER_WARNING,
     format_missing_translations_msg,
 )
+from pyxform.xls2json_backends import SupportedFileTypes
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -436,7 +437,7 @@ class TestTranslations(PyxformTestCase):
                 peak_memory_usage = process.memory_info().rss
                 while runs < 10:
                     start = perf_counter()
-                    convert(xlsform=case)
+                    convert(xlsform=case, file_type=SupportedFileTypes.md.value)
                     results.append(perf_counter() - start)
                     peak_memory_usage = max(process.memory_info().rss, peak_memory_usage)
                     runs += 1
