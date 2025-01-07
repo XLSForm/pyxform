@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+from collections.abc import Sequence
 from typing import IO, Any
 
 from pyxform import aliases, constants
@@ -42,6 +43,23 @@ from pyxform.xls2json_backends import (
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
+RE_BEGIN_CONTROL = re.compile(
+    r"^(?P<begin>begin)(\s|_)(?P<type>("
+    + "|".join(aliases.control)
+    + r"))( (over )?(?P<list_name>\S+))?$"
+)
+RE_END_CONTROL = re.compile(
+    r"^(?P<end>end)(\s|_)(?P<type>(" + "|".join(aliases.control) + r"))$"
+)
+RE_SELECT = re.compile(
+    r"^(?P<select_command>("
+    + "|".join(aliases.select)
+    + r")) (?P<list_name>\S+)"
+    + "( (?P<specify_other>(or specify other|or_other|or other)))?$"
+)
+RE_OSM = re.compile(
+    r"(?P<osm_command>(" + "|".join(aliases.osm) + r")) (?P<list_name>\S+)"
+)
 
 
 def print_pyobj_to_json(pyobj, path=None):
@@ -70,10 +88,10 @@ def dealias_types(dict_array):
 
 def clean_text_values(
     sheet_name: str,
-    data: list[dict],
+    data: Sequence[dict],
     strip_whitespace: bool = False,
     add_row_number: bool = False,
-) -> list[dict]:
+) -> Sequence[dict]:
     """
     Go though the dict array and strips all text values.
     Also replaces multiple spaces with single spaces.
@@ -276,11 +294,10 @@ def workbook_to_json(
     json form spec.
     """
     warnings = coalesce(warnings, [])
+    sheet_names = workbook_dict.sheet_names
     if not workbook_dict.survey and not workbook_dict.survey_header:
         msg = f"You must have a sheet named '{constants.SURVEY}'. "
-        similar = find_sheet_misspellings(
-            key=constants.SURVEY, keys=workbook_dict.sheet_names
-        )
+        similar = find_sheet_misspellings(key=constants.SURVEY, keys=sheet_names)
         if similar is not None:
             msg += similar
         raise PyXFormError(msg)
@@ -291,58 +308,61 @@ def workbook_to_json(
 
     # Break the spreadsheet dict into easier to access objects
     # (settings, choices, survey_sheet):
+
     # ########## Settings sheet ##########
-    k = constants.SETTINGS
-    if not workbook_dict.settings:
-        similar = find_sheet_misspellings(key=k, keys=workbook_dict.sheet_names)
+    settings = {}
+    if workbook_dict.settings:
+        settings_sheet_headers = workbook_dict.settings_header or []
+        settings_sheet = workbook_dict.settings or []
+        try:
+            if (
+                sum(
+                    [
+                        element in {constants.ID_STRING, "form_id"}
+                        for element in settings_sheet_headers[0]
+                    ]
+                )
+                == 2
+            ):
+                settings_sheet_headers[0].pop(constants.ID_STRING, None)
+                settings_sheet[0].pop(constants.ID_STRING, None)
+                warnings.append(
+                    "The form_id and id_string column headers are both"
+                    " specified in the settings sheet provided."
+                    " This may cause errors during conversion."
+                    " In future, its best to avoid specifying both"
+                    " column headers in the settings sheet."
+                )
+        except IndexError:  # In case there is no settings sheet
+            pass
+
+        from pyxform.survey import Survey
+
+        settings_sheet = dealias_and_group_headers(
+            sheet_name=constants.SETTINGS,
+            sheet_data=settings_sheet,
+            sheet_header=settings_sheet_headers,
+            header_aliases=aliases.settings_header,
+            header_columns=set(Survey.get_slot_names()),
+        )
+        settings = clean_text_values(
+            sheet_name=constants.SETTINGS, data=[settings_sheet.data[0]]
+        )[0]
+    else:
+        similar = find_sheet_misspellings(key=constants.SETTINGS, keys=sheet_names)
         if similar is not None:
             warnings.append(similar + _MSG_SUPPRESS_SPELLING)
-    settings_sheet_headers = workbook_dict.settings_header or []
-    settings_sheet = workbook_dict.settings or []
-    try:
-        if (
-            sum(
-                [
-                    element in {constants.ID_STRING, "form_id"}
-                    for element in settings_sheet_headers[0]
-                ]
-            )
-            == 2
-        ):
-            settings_sheet_headers[0].pop(constants.ID_STRING, None)
-            settings_sheet[0].pop(constants.ID_STRING, None)
-            warnings.append(
-                "The form_id and id_string column headers are both"
-                " specified in the settings sheet provided."
-                " This may cause errors during conversion."
-                " In future, its best to avoid specifying both"
-                " column headers in the settings sheet."
-            )
-    except IndexError:  # In case there is no settings sheet
-        pass
 
-    from pyxform.survey import Survey
-
-    settings_sheet = dealias_and_group_headers(
-        sheet_name=constants.SETTINGS,
-        dict_array=settings_sheet,
-        header_aliases=aliases.settings_header,
-        header_columns=set(Survey.get_slot_names()),
-    )
-    settings = settings_sheet.data[0] if len(settings_sheet.data) > 0 else {}
-    settings = clean_text_values(sheet_name=constants.SETTINGS, data=[settings])[0]
     clean_text_values_enabled = aliases.yes_no.get(
-        settings.get("clean_text_values", "true()")
+        settings.get("clean_text_values", "yes"), True
     )
-
     default_language = settings.get(constants.DEFAULT_LANGUAGE_KEY, default_language)
-
     # add_none_option is a boolean that when true,
     # indicates a none option should automatically be added to selects.
     # It should probably be deprecated but I haven't checked yet.
     if "add_none_option" in settings:
         settings["add_none_option"] = aliases.yes_no.get(
-            settings["add_none_option"], False
+            settings.get("add_none_option", "no"), False
         )
 
     # Here we create our json dict root with default settings:
@@ -377,7 +397,8 @@ def workbook_to_json(
         )
         external_choices = dealias_and_group_headers(
             sheet_name=constants.EXTERNAL_CHOICES,
-            dict_array=external_choices,
+            sheet_data=external_choices,
+            sheet_header=workbook_dict.external_choices_header,
             header_aliases=aliases.list_header,
             header_columns=option_fields,
             default_language=default_language,
@@ -387,69 +408,76 @@ def workbook_to_json(
         )
 
     # ########## Choices sheet ##########
-    choices_sheet = workbook_dict.choices or []
-    choices_sheet = clean_text_values(
-        sheet_name=constants.CHOICES,
-        data=choices_sheet,
-        add_row_number=True,
-    )
-    choices_sheet = dealias_and_group_headers(
-        sheet_name=constants.CHOICES,
-        dict_array=choices_sheet,
-        header_aliases=aliases.list_header,
-        header_columns=option_fields,
-        headers_required={constants.NAME},
-        default_language=default_language,
-    )
-    choices = group_dictionaries_by_key(
-        list_of_dicts=choices_sheet.data, key=constants.LIST_NAME_S
-    )
-    # To combine the warning into one message, the check for missing choices translation
-    # columns is run with Survey sheet below.
+    choices_sheet = workbook_dict.choices
+    choices = {}
+    if choices_sheet:
+        if clean_text_values_enabled:
+            choices_sheet = clean_text_values(
+                sheet_name=constants.CHOICES,
+                data=choices_sheet,
+                add_row_number=True,
+            )
+        choices_sheet = dealias_and_group_headers(
+            sheet_name=constants.CHOICES,
+            sheet_data=choices_sheet,
+            sheet_header=workbook_dict.choices_header,
+            header_aliases=aliases.list_header,
+            header_columns=option_fields,
+            headers_required={constants.NAME},
+            default_language=default_language,
+        )
+        choices = group_dictionaries_by_key(
+            list_of_dicts=choices_sheet.data, key=constants.LIST_NAME_S
+        )
+        # To combine the warning into one message, the check for missing choices translation
+        # columns is run with Survey sheet below.
 
-    # Warn and remove invalid headers in case the form uses headers for notes.
-    allow_duplicates = aliases.yes_no.get(
-        settings.get("allow_choice_duplicates", False), False
-    )
-    choices = validate_and_clean_choices(
-        choices=choices,
-        warnings=warnings,
-        headers=choices_sheet.headers,
-        allow_duplicates=allow_duplicates,
-    )
-
-    if choices:
-        json_dict[constants.CHOICES] = choices
+        # Warn and remove invalid headers in case the form uses headers for notes.
+        choices = validate_and_clean_choices(
+            choices=choices,
+            warnings=warnings,
+            headers=choices_sheet.headers,
+            allow_duplicates=aliases.yes_no.get(
+                settings.get("allow_choice_duplicates", "no"), False
+            ),
+        )
+        if choices:
+            json_dict[constants.CHOICES] = choices
 
     # ########## Entities sheet ###########
-    from pyxform.entities.entity_declaration import EntityDeclaration
+    entity_declaration = None
+    if workbook_dict.entities:
+        entities_sheet = clean_text_values(
+            sheet_name=constants.ENTITIES, data=workbook_dict.entities
+        )
+        from pyxform.entities.entity_declaration import EntityDeclaration
 
-    entities_sheet = workbook_dict.entities or []
-    entities_sheet = clean_text_values(sheet_name=constants.ENTITIES, data=entities_sheet)
-    entities_sheet = dealias_and_group_headers(
-        sheet_name=constants.ENTITIES,
-        dict_array=entities_sheet,
-        header_aliases=aliases.entities_header,
-        header_columns=set(EntityDeclaration.get_slot_names()),
-    )
-    entity_declaration = get_entity_declaration(
-        entities_sheet=entities_sheet.data,
-        warnings=warnings,
-        sheet_names=workbook_dict.sheet_names,
-    )
+        entities_sheet = dealias_and_group_headers(
+            sheet_name=constants.ENTITIES,
+            sheet_data=entities_sheet,
+            sheet_header=workbook_dict.entities_header,
+            header_aliases=aliases.entities_header,
+            header_columns=set(EntityDeclaration.get_slot_names()),
+        )
+        entity_declaration = get_entity_declaration(entities_sheet=entities_sheet.data)
+    else:
+        similar = find_sheet_misspellings(key=constants.ENTITIES, keys=sheet_names)
+        if similar is not None:
+            warnings.append(similar + constants._MSG_SUPPRESS_SPELLING)
 
     # ########## Survey sheet ###########
     survey_sheet = workbook_dict.survey
     # Process the headers:
     if clean_text_values_enabled:
         survey_sheet = clean_text_values(
-            sheet_name=constants.SURVEY, data=survey_sheet, strip_whitespace=True
+            sheet_name=constants.SURVEY, data=workbook_dict.survey, strip_whitespace=True
         )
     from pyxform.question import MultipleChoiceQuestion
 
     survey_sheet = dealias_and_group_headers(
         sheet_name=constants.SURVEY,
-        dict_array=survey_sheet,
+        sheet_data=survey_sheet,
+        sheet_header=workbook_dict.survey_header,
         header_aliases=aliases.survey_header,
         header_columns=set(MultipleChoiceQuestion.get_slot_names()),
         headers_required={constants.TYPE},
@@ -459,25 +487,33 @@ def workbook_to_json(
 
     # Check for missing translations. The choices sheet is checked here so that the
     # warning can be combined into one message.
+    if not choices_sheet:
+        choices_headers = ()
+    else:
+        choices_headers = choices_sheet.headers
     sheet_translations = SheetTranslations(
         survey_sheet=survey_sheet.headers,
-        choices_sheet=choices_sheet.headers,
+        choices_sheet=choices_headers,
     )
     sheet_translations.missing_check(warnings=warnings)
 
+    # ########## OSM sheet ###########
     # No spell check for OSM sheet (infrequently used, many spurious matches).
-    osm_sheet = workbook_dict.osm
     osm_tags = None
-    if osm_sheet:
+    if workbook_dict.osm:
         osm_sheet = dealias_and_group_headers(
-            dict_array=osm_sheet,
+            sheet_data=workbook_dict.osm,
             sheet_name=constants.OSM,
+            sheet_header=workbook_dict.osm_header,
             header_aliases=aliases.list_header,
             header_columns=option_fields,
         )
         osm_tags = group_dictionaries_by_key(
             list_of_dicts=osm_sheet.data, key=constants.LIST_NAME_S
         )
+
+    # Clear references to original data for garbage collection.
+    del workbook_dict
     # #################################
 
     # Parse the survey sheet while generating a survey in our json format:
@@ -492,26 +528,6 @@ def workbook_to_json(
     # If a group has a table-list appearance flag
     # this will be set to the name of the list
     table_list = None
-
-    # For efficiency we compile all the regular expressions
-    # that will be used to parse types:
-    end_control_regex = re.compile(
-        r"^(?P<end>end)(\s|_)(?P<type>(" + "|".join(aliases.control) + r"))$"
-    )
-    begin_control_regex = re.compile(
-        r"^(?P<begin>begin)(\s|_)(?P<type>("
-        + "|".join(aliases.control)
-        + r"))( (over )?(?P<list_name>\S+))?$"
-    )
-    select_regexp = re.compile(
-        r"^(?P<select_command>("
-        + "|".join(aliases.select)
-        + r")) (?P<list_name>\S+)"
-        + "( (?P<specify_other>(or specify other|or_other|or other)))?$"
-    )
-    osm_regexp = re.compile(
-        r"(?P<osm_command>(" + "|".join(aliases.osm) + r")) (?P<list_name>\S+)"
-    )
 
     # Rows from the survey sheet that should be nested in meta
     meta_children = []
@@ -755,7 +771,7 @@ def workbook_to_json(
 
         # Try to parse question as a end control statement
         # (i.e. end loop/repeat/group):
-        end_control_parse = end_control_regex.search(question_type)
+        end_control_parse = RE_END_CONTROL.search(question_type)
         if end_control_parse:
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
@@ -797,11 +813,11 @@ def workbook_to_json(
             )
 
         in_repeat = any(ancestor["control_type"] == "repeat" for ancestor in stack)
-        validate_entity_saveto(row, row_number, entity_declaration, in_repeat)
+        validate_entity_saveto(row, row_number, in_repeat, entity_declaration)
 
         # Try to parse question as begin control statement
         # (i.e. begin loop/repeat/group):
-        begin_control_parse = begin_control_regex.search(question_type)
+        begin_control_parse = RE_BEGIN_CONTROL.search(question_type)
         if begin_control_parse:
             parse_dict = begin_control_parse.groupdict()
             if parse_dict.get("begin") and "type" in parse_dict:
@@ -933,7 +949,7 @@ def workbook_to_json(
         question_names.add(question_name)
 
         # Try to parse question as a select:
-        select_parse = select_regexp.search(question_type)
+        select_parse = RE_SELECT.search(question_type)
         if select_parse:
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
@@ -952,9 +968,7 @@ def workbook_to_json(
                     if not external_choices:
                         k = constants.EXTERNAL_CHOICES
                         msg = "There should be an external_choices sheet in this xlsform."
-                        similar = find_sheet_misspellings(
-                            key=k, keys=workbook_dict.sheet_names
-                        )
+                        similar = find_sheet_misspellings(key=k, keys=sheet_names)
                         if similar is not None:
                             msg = msg + " " + similar
                         raise PyXFormError(
@@ -982,9 +996,7 @@ def workbook_to_json(
                     if not choices:
                         k = constants.CHOICES
                         msg = "There should be a choices sheet in this xlsform."
-                        similar = find_sheet_misspellings(
-                            key=k, keys=workbook_dict.sheet_names
-                        )
+                        similar = find_sheet_misspellings(key=k, keys=sheet_names)
                         if similar is not None:
                             msg = f"{msg} {similar}"
                         raise PyXFormError(
@@ -1172,7 +1184,7 @@ def workbook_to_json(
                 continue
 
         # Try to parse question as osm:
-        osm_parse = osm_regexp.search(question_type)
+        osm_parse = RE_OSM.search(question_type)
         if osm_parse:
             parse_dict = osm_parse.groupdict()
             new_dict = row.copy()
@@ -1396,7 +1408,7 @@ def workbook_to_json(
             }
         )
 
-    if len(entity_declaration) > 0:
+    if entity_declaration:
         json_dict[constants.ENTITY_FEATURES] = ["create", "update", "offline"]
         meta_children.append(entity_declaration)
 
@@ -1524,7 +1536,7 @@ class QuestionTypesReader(SpreadsheetReader):
         self._dict = self._dict[types_sheet]
         self._dict = dealias_and_group_headers(
             sheet_name=types_sheet,
-            dict_array=self._dict,
+            sheet_data=self._dict,
             header_aliases={},
             header_columns=set(),
             default_language=constants.DEFAULT_LANGUAGE_VALUE,

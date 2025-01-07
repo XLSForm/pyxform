@@ -85,5 +85,5 @@ def validate_and_clean_choices(
         for option in options:
             for invalid_header in invalid_headers:
                 option.pop(invalid_header, None)
-            del option["__row"]
+            option.pop("__row", None)
     return choices

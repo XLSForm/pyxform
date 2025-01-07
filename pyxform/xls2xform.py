@@ -106,6 +106,7 @@ def convert(
     itemsets = None
     if has_external_choices(json_struct=pyxform_data):
         itemsets = external_choices_to_csv(workbook_dict=workbook_dict)
+    del workbook_dict
 
     survey = create_survey_element_from_dict(pyxform_data)
     xform = survey.to_xml(

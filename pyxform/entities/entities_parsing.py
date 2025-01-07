@@ -4,22 +4,14 @@ from typing import Any
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_xml_tag
-from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 
 EC = const.EntityColumns
 
 
 def get_entity_declaration(
     entities_sheet: Sequence[dict],
-    warnings: list[str],
-    sheet_names: Sequence[str] | None = None,
 ) -> dict[str, Any]:
-    if len(entities_sheet) == 0:
-        similar = find_sheet_misspellings(key=const.ENTITIES, keys=sheet_names)
-        if similar is not None:
-            warnings.append(similar + const._MSG_SUPPRESS_SPELLING)
-        return {}
-    elif len(entities_sheet) > 1:
+    if len(entities_sheet) > 1:
         raise PyXFormError(
             "Currently, you can only declare a single entity per form. Please make sure your entities sheet only declares one entity."
         )
@@ -86,13 +78,16 @@ def get_validated_dataset_name(entity):
 
 
 def validate_entity_saveto(
-    row: dict, row_number: int, entity_declaration: dict[str, Any], in_repeat: bool
+    row: dict,
+    row_number: int,
+    in_repeat: bool,
+    entity_declaration: dict[str, Any] | None = None,
 ):
     save_to = row.get(const.BIND, {}).get("entities:saveto", "")
     if not save_to:
         return
 
-    if len(entity_declaration) == 0:
+    if not entity_declaration:
         raise PyXFormError(
             "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
         )
