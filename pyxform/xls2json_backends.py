@@ -340,7 +340,7 @@ def is_empty(value):
     if value is None:
         return True
     elif isinstance(value, str):
-        if value.strip() == "":
+        if not value or value.isspace():
             return True
 
     return False
@@ -556,84 +556,55 @@ MD_SEPARATOR = re.compile(r"^[\|-]+$")
 MD_PIPE_OR_ESCAPE = re.compile(r"(?<!\\)\|")
 
 
-def _md_strp_cell(cell):
-    val = cell.strip()
-    if val == "":
+def _md_strp_cell(cell: str) -> str:
+    if not cell or cell.isspace():
         return None
-    val = val.replace(r"\|", "|")
-    return val
+    return cell.strip().replace(r"\|", "|")
 
 
-def _md_extract_array(mdtablerow):
-    match = re.match(MD_CELL, mdtablerow)
-    if match:
-        mtchstr = match.groups()[0]
-        if re.match(MD_SEPARATOR, mtchstr):
-            return False
-        else:
-            return [_md_strp_cell(c) for c in re.split(MD_PIPE_OR_ESCAPE, mtchstr)]
-
-    return False
-
-
-def _md_is_null_row(r_arr):
-    for cell in r_arr:
-        if cell is not None:
-            return False
-
-    return True
-
-
-def _md_table_to_ss_structure(mdstr: str) -> list[tuple[str, list[list[str]]]]:
-    ss_arr = []
-    for item in mdstr.split("\n"):
-        arr = _md_extract_array(item)
-        if arr:
-            ss_arr.append(arr)
+def _md_table_to_ss_structure(mdstr: str) -> dict[str, list[tuple[str, ...]]]:
     sheet_name = False
     sheet_arr = False
-    sheets = []
-    for row in ss_arr:
-        if row[0] is not None:
-            if sheet_arr:
-                sheets.append((sheet_name, sheet_arr))
-            sheet_arr = []
-            sheet_name = row[0]
-        excluding_first_col = row[1:]
-        if sheet_name and not _md_is_null_row(excluding_first_col):
-            sheet_arr.append(excluding_first_col)
-    sheets.append((sheet_name, sheet_arr))
+    sheets = {}
+    for line in mdstr.split("\n"):
+        if re.match(MD_COMMENT, line):
+            # ignore lines which start with pound sign
+            continue
+        elif re.match(MD_COMMENT_INLINE, line):
+            # keep everything before the # outside of the last occurrence of |
+            line = re.match(MD_COMMENT_INLINE, line).groups()[0]
+        match = re.match(MD_CELL, line)
+        if match:
+            mtchstr = match.groups()[0]
+            if not re.match(MD_SEPARATOR, mtchstr):
+                row_split = re.split(MD_PIPE_OR_ESCAPE, mtchstr)
+                first_col = _md_strp_cell(row_split[0])
+                row = tuple(_md_strp_cell(c) for c in row_split[1:])
+                if first_col is None and row is None:
+                    continue
+                if first_col is not None:
+                    if sheet_arr:
+                        sheets[sheet_name] = sheet_arr
+                    sheet_arr = []
+                    sheet_name = first_col
+                if sheet_name and any(c is not None for c in row):
+                    sheet_arr.append(row)
+            sheets[sheet_name] = sheet_arr
 
     return sheets
 
 
 def md_to_dict(md: str | BytesIO):
-    def _row_to_dict(row, headers):
-        out_dict = {}
-        for i in range(len(row)):
-            col = row[i]
-            if col not in {None, ""}:
-                out_dict[headers[i]] = col
-        return out_dict
-
     def list_to_dicts(arr):
-        return [_row_to_dict(r, arr[0]) for r in arr[1:]]
+        return [
+            {arr[0][i]: v for i, v in enumerate(row) if v not in {None, ""}}
+            for row in arr[1:]
+        ]
 
     def process_md_data(md_: str):
-        _md = []
-        for line in md_.split("\n"):
-            if re.match(MD_COMMENT, line):
-                # ignore lines which start with pound sign
-                continue
-            elif re.match(MD_COMMENT_INLINE, line):
-                # keep everything before the # outside of the last occurrence of |
-                _md.append(re.match(MD_COMMENT_INLINE, line).groups()[0].strip())
-            else:
-                _md.append(line.strip())
-        md_ = "\n".join(_md)
         result_book = {"sheet_names": []}
         ss_structure = _md_table_to_ss_structure(md_)
-        for sheet, contents in ss_structure:
+        for sheet, contents in ss_structure.items():
             # Note original in sheet_names for spelling check.
             result_book["sheet_names"].append(sheet)
             sheet_name = sheet.lower()
@@ -667,7 +638,7 @@ def md_table_to_workbook(mdstr: str) -> pyxlWorkbook:
     """
     md_data = _md_table_to_ss_structure(mdstr=mdstr)
     wb = pyxlWorkbook(write_only=True)
-    for key, rows in md_data:
+    for key, rows in md_data.items():
         sheet = wb.create_sheet(title=key)
         for r in rows:
             sheet.append(r)
