@@ -4,13 +4,21 @@ Test XLSForm sheet names.
 
 from collections.abc import Container
 from dataclasses import dataclass
+from unittest import skip
 
+from pyxform import constants
+from pyxform.errors import PyXFormError
 from pyxform.parsing.sheet_headers import (
+    INVALID_DUPLICATE,
+    INVALID_HEADER,
+    INVALID_MISSING_REQUIRED,
     dealias_and_group_headers,
     process_header,
+    process_row,
     to_snake_case,
 )
 from pyxform.validators.pyxform import choices as vc
+from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.utils import prep_for_xml_contains
@@ -142,7 +150,7 @@ class TestSurveyColumns(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "The 'survey' sheet is missing one or more required column headers: 'type'."
+                INVALID_MISSING_REQUIRED.format(sheet_name="survey", missing="'type'")
             ],
         )
 
@@ -201,7 +209,7 @@ class TestChoicesColumns(PyxformTestCase):
             ),
             errored=True,
             error__contains=[
-                "The 'choices' sheet is missing one or more required column headers: 'name'."
+                INVALID_MISSING_REQUIRED.format(sheet_name="choices", missing="'name'")
             ],
         )
 
@@ -250,7 +258,7 @@ class TestChoicesColumns(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "The 'choices' sheet is missing one or more required column headers: 'name'."
+                INVALID_MISSING_REQUIRED.format(sheet_name="choices", missing="'name'")
             ],
         )
 
@@ -296,8 +304,25 @@ class TestColumnAliases(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "While processing the 'survey' sheet, columns which are different names "
-                "for the same column were found: 'name', 'value'"
+                INVALID_DUPLICATE.format(
+                    sheet_name="survey", other="name", header="value"
+                )
+            ],
+        )
+
+    # TODO: should warn about duplicate headers but requires xls2json_backends refactoring.
+    @skip
+    def test_duplicate_header_raises_error(self):
+        """Should find that specifying a column more than once raises an error."""
+        self.assertPyxformXform(
+            md="""
+            | survey |      |        |         |            |
+            |        | type | name   | name    | label      |
+            |        | text | q_name | q_value | Question 1 |
+            """,
+            errored=True,
+            error__contains=[
+                INVALID_DUPLICATE.format(sheet_name="survey", other="name", header="name")
             ],
         )
 
@@ -359,7 +384,7 @@ class TestHeaderProcessing(PyxformTestCase):
             # # # # # # # # # #
             # No delimiter.
             # # # # # # # # # #
-            ("my_col", ("my_col",), False): (
+            ("my_col", ("my_col",)): (
                 Case("my_col", False, {}, {"my_col"}),
                 Case("my col", False, {}, {"my_col"}),
                 Case("my_Col", False, {}, {"my_col"}),
@@ -375,23 +400,24 @@ class TestHeaderProcessing(PyxformTestCase):
                 Case("jr:MY Col", False, {"jr:my_col": "my_col"}, {}),
             ),
             # header_aliases is a tuple.
-            (("bind", "my_col"), ("bind", "my_col"), False): (
+            (("bind", "my_col"), ("bind", "my_col")): (
                 Case("my_col", False, {"my_col": ("bind", "my_col")}, {}),
                 Case("my_Col", False, {"my_col": ("bind", "my_col")}, {}),
                 Case("my col", False, {"my_col": ("bind", "my_col")}, {}),
                 Case("MY Col", False, {"my_col": ("bind", "my_col")}, {}),
             ),
             # jr: prefix is an expected column.
-            ("jr:my_col", ("jr:my_col",), False): (
+            ("jr:my_col", ("jr:my_col",)): (
                 Case("jr:my_col", False, {}, {"jr:my_col"}),
                 Case("jr:my_Col", False, {}, {"jr:my_col"}),
                 Case("jr:my col", False, {}, {"jr:my_col"}),
                 Case("jr:MY Col", False, {}, {"jr:my_col"}),
             ),
             # # # # # # # # # #
-            # Has :: delimiter.
+            # Has delimiter.
             # # # # # # # # # #
-            ("my_col", ("my_col", "English (en)"), True): (
+            ("my_col", ("my_col", "English (en)")): (
+                # Has :: delimiter
                 Case("my_col::English (en)", False, {}, {"my_col"}),
                 Case("my col::English (en)", False, {}, {"my_col"}),
                 Case("my_Col::English (en)", False, {}, {"my_col"}),
@@ -400,30 +426,12 @@ class TestHeaderProcessing(PyxformTestCase):
                 Case("my col::English (en)", False, {"my_col": "my_col"}, {}),
                 Case("my_Col::English (en)", False, {"my_col": "my_col"}, {}),
                 Case("MY Col::English (en)", False, {"my_col": "my_col"}, {}),
-                # has jr: prefix is an alias.
+                # + has jr: prefix is an alias.
                 Case("jr:my_col::English (en)", False, {"jr:my_col": "my_col"}, {}),
                 Case("jr:my_Col::English (en)", False, {"jr:my_col": "my_col"}, {}),
                 Case("jr:my col::English (en)", False, {"jr:my_col": "my_col"}, {}),
                 Case("jr:MY Col::English (en)", False, {"jr:my_col": "my_col"}, {}),
-            ),
-            # header_aliases is a tuple.
-            (("bind", "my_col"), ("bind", "my_col", "English (en)"), True): (
-                Case("my_col::English (en)", False, {"my_col": ("bind", "my_col")}, {}),
-                Case("my_Col::English (en)", False, {"my_col": ("bind", "my_col")}, {}),
-                Case("my col::English (en)", False, {"my_col": ("bind", "my_col")}, {}),
-                Case("MY Col::English (en)", False, {"my_col": ("bind", "my_col")}, {}),
-            ),
-            # jr: prefix is an expected column.
-            ("jr:my_col", ("jr:my_col", "English (en)"), True): (
-                Case("jr:my_col::English (en)", False, {}, {"jr:my_col"}),
-                Case("jr:my_Col::English (en)", False, {}, {"jr:my_col"}),
-                Case("jr:my col::English (en)", False, {}, {"jr:my_col"}),
-                Case("jr:MY Col::English (en)", False, {}, {"jr:my_col"}),
-            ),
-            # # # # # # # # # #
-            # Has : delimiter.
-            # # # # # # # # # #
-            ("my_col", ("my_col", "English (en)"), False): (
+                # Has : delimiter
                 Case("my_col:English (en)", False, {}, {"my_col"}),
                 Case("my col:English (en)", False, {}, {"my_col"}),
                 Case("my_Col:English (en)", False, {}, {"my_col"}),
@@ -432,21 +440,33 @@ class TestHeaderProcessing(PyxformTestCase):
                 Case("my col:English (en)", False, {"my_col": "my_col"}, {}),
                 Case("my_Col:English (en)", False, {"my_col": "my_col"}, {}),
                 Case("MY Col:English (en)", False, {"my_col": "my_col"}, {}),
-                # has jr: prefix is an alias.
+                # + has jr: prefix is an alias.
                 Case("jr:my_col:English (en)", False, {"jr:my_col": "my_col"}, {}),
                 Case("jr:my_Col:English (en)", False, {"jr:my_col": "my_col"}, {}),
                 Case("jr:my col:English (en)", False, {"jr:my_col": "my_col"}, {}),
                 Case("jr:MY Col:English (en)", False, {"jr:my_col": "my_col"}, {}),
             ),
             # header_aliases is a tuple.
-            (("bind", "my_col"), ("bind", "my_col", "English (en)"), False): (
+            (("bind", "my_col"), ("bind", "my_col", "English (en)")): (
+                # Has :: delimiter
+                Case("my_col::English (en)", False, {"my_col": ("bind", "my_col")}, {}),
+                Case("my_Col::English (en)", False, {"my_col": ("bind", "my_col")}, {}),
+                Case("my col::English (en)", False, {"my_col": ("bind", "my_col")}, {}),
+                Case("MY Col::English (en)", False, {"my_col": ("bind", "my_col")}, {}),
+                # Has : delimiter
                 Case("my_col:English (en)", False, {"my_col": ("bind", "my_col")}, {}),
                 Case("my_Col:English (en)", False, {"my_col": ("bind", "my_col")}, {}),
                 Case("my col:English (en)", False, {"my_col": ("bind", "my_col")}, {}),
                 Case("MY Col:English (en)", False, {"my_col": ("bind", "my_col")}, {}),
             ),
             # jr: prefix is an expected column.
-            ("jr:my_col", ("jr:my_col", "English (en)"), False): (
+            ("jr:my_col", ("jr:my_col", "English (en)")): (
+                # Has :: delimiter
+                Case("jr:my_col::English (en)", False, {}, {"jr:my_col"}),
+                Case("jr:my_Col::English (en)", False, {}, {"jr:my_col"}),
+                Case("jr:my col::English (en)", False, {}, {"jr:my_col"}),
+                Case("jr:MY Col::English (en)", False, {}, {"jr:my_col"}),
+                # Has : delimiter
                 Case("jr:my_col:English (en)", False, {}, {"jr:my_col"}),
                 Case("jr:my_Col:English (en)", False, {}, {"jr:my_col"}),
                 Case("jr:my col:English (en)", False, {}, {"jr:my_col"}),
@@ -456,33 +476,33 @@ class TestHeaderProcessing(PyxformTestCase):
             # Unknown columns.
             # # # # # # # # # #
             # No delimiter.
-            ("NAME", ("NAME",), False): (Case("NAME", False, {}, {}),),
-            ("NA_ME", ("NA_ME",), False): (Case("NA_ME", False, {}, {}),),
-            ("NA Me", ("NA Me",), False): (Case("NA Me", False, {}, {}),),
+            ("NAME", ("NAME",)): (Case("NAME", False, {}, {}),),
+            ("NA_ME", ("NA_ME",)): (Case("NA_ME", False, {}, {}),),
+            ("NA Me", ("NA Me",)): (Case("NA Me", False, {}, {}),),
             # Has :: delimiter.
-            ("name::English (en)", ("name", "English (en)"), True): (
+            ("name::English (en)", ("name", "English (en)")): (
                 Case("name::English (en)", False, {}, {}),
             ),
-            ("NA_ME::English (en)", ("NA_ME", "English (en)"), True): (
+            ("NA_ME::English (en)", ("NA_ME", "English (en)")): (
                 Case("NA_ME::English (en)", False, {}, {}),
             ),
-            ("NA Me::English (en)", ("NA Me", "English (en)"), True): (
+            ("NA Me::English (en)", ("NA Me", "English (en)")): (
                 Case("NA Me::English (en)", False, {}, {}),
             ),
             # Has : delimiter.
-            ("name:English (en)", ("name", "English (en)"), False): (
+            ("name:English (en)", ("name", "English (en)")): (
                 Case("name:English (en)", False, {}, {}),
             ),
-            ("NA_ME:English (en)", ("NA_ME", "English (en)"), False): (
+            ("NA_ME:English (en)", ("NA_ME", "English (en)")): (
                 Case("NA_ME:English (en)", False, {}, {}),
             ),
-            ("NA Me:English (en)", ("NA Me", "English (en)"), False): (
+            ("NA Me:English (en)", ("NA Me", "English (en)")): (
                 Case("NA Me:English (en)", False, {}, {}),
             ),
             # Has jr: prefix.
-            ("jr:NAME", ("jr:NAME",), False): (Case("jr:NAME", False, {}, {}),),
-            ("jr:NA_ME", ("jr:NA_ME",), False): (Case("jr:NA_ME", False, {}, {}),),
-            ("jr:NA Me", ("jr:NA Me",), False): (Case("jr:NA Me", False, {}, {}),),
+            ("jr:NAME", ("jr:NAME",)): (Case("jr:NAME", False, {}, {}),),
+            ("jr:NA_ME", ("jr:NA_ME",)): (Case("jr:NA_ME", False, {}, {}),),
+            ("jr:NA Me", ("jr:NA Me",)): (Case("jr:NA Me", False, {}, {}),),
         }
         for expected, cases in case_groups.items():
             for case in cases:
@@ -536,7 +556,6 @@ class TestHeaderProcessing(PyxformTestCase):
 
     def test_dealias_and_group_headers__use_double_colon_modes(self):
         """Should find headers are split based on whether a double colon is found."""
-        # TODO: inconsistency, single-colon encountered before double-colon splits both.
         cases = (
             # No delimiter
             (
@@ -569,8 +588,8 @@ class TestHeaderProcessing(PyxformTestCase):
             # Single colon before/after double
             (
                 [{"col1:sep1": "val1", "col2::sep2": "val2"}],
-                (("col1", "sep1"), ("col2", "sep2")),
-                ({"col1": {"sep1": "val1"}, "col2": {"sep2": "val2"}},),
+                (("col1:sep1",), ("col2", "sep2")),
+                ({"col1:sep1": "val1", "col2": {"sep2": "val2"}},),
             ),
             (
                 [{"col1::sep1": "val1", "col2:sep2": "val2"}],
@@ -611,8 +630,8 @@ class TestHeaderProcessing(PyxformTestCase):
             ),
             (
                 [{"col1:sep1": "val1", "jr:col2::sep2": "val2"}],
-                (("col1", "sep1"), ("jr:col2", "sep2")),
-                ({"col1": {"sep1": "val1"}, "jr:col2": {"sep2": "val2"}},),
+                (("col1:sep1",), ("jr:col2", "sep2")),
+                ({"col1:sep1": "val1", "jr:col2": {"sep2": "val2"}},),
             ),
             (
                 [{"jr:col2::sep2": "val2", "col1:sep1": "val1"}],
@@ -627,8 +646,8 @@ class TestHeaderProcessing(PyxformTestCase):
             ),
             (
                 [{"jr:col2:sep2": "val2", "col1::sep1": "val1"}],
-                (("jr:col2", "sep2"), ("col1", "sep1")),
-                ({"jr:col2": {"sep2": "val2"}, "col1": {"sep1": "val1"}},),
+                (("jr:col2:sep2",), ("col1", "sep1")),
+                ({"jr:col2:sep2": "val2", "col1": {"sep1": "val1"}},),
             ),
             (
                 [{"col1::sep1": "val1", "jr:col2::sep2": "val2"}],
@@ -645,9 +664,73 @@ class TestHeaderProcessing(PyxformTestCase):
             with self.subTest((i, case[0])):
                 observed = dealias_and_group_headers(
                     sheet_name="test",
-                    dict_array=case[0],
+                    sheet_data=case[0],
+                    sheet_header=[{k: None for k in case[0][0]}],
                     header_aliases={},
                     header_columns=set(),
                 )
                 self.assertEqual(case[1], observed.headers)
                 self.assertEqual(case[2], observed.data)
+
+    def test_process_row__bad_header_info__unit(self):
+        """Should raise an error if incomplete header info is provided."""
+        # Unit test for bad sheet_header info received.
+        with self.assertRaises(PyXFormError) as err:
+            process_row(
+                sheet_name="survey",
+                row={"a": "b", "c": "d", "e": "f"},
+                header_key={"a": ("a",), "c": ("b", "z")},
+                default_language=constants.DEFAULT_LANGUAGE_VALUE,
+            )
+        self.assertEqual(
+            INVALID_HEADER.format(sheet_name="survey", header="e"),
+            err.exception.args[0],
+        )
+
+    def test_process_row__bad_header_info__dict(self):
+        """Should raise an error if incomplete header info is provided."""
+        # For dict input, sheet_header guess takes first 100 rows, so additional keys in
+        # rows beyond that would trigger the error.
+        survey_data = [
+            {"type": "text", "name": f"q{i}", "label": f"Q{i}"} for i in range(100)
+        ]
+        survey_data.append({"type": "text", "name": "q101", "label": "Q101", "e": "?"})
+        with self.assertRaises(PyXFormError) as err:
+            convert(xlsform={"survey": survey_data})
+        self.assertEqual(
+            INVALID_HEADER.format(sheet_name="survey", header="e"),
+            err.exception.args[0],
+        )
+
+    def test_process_row__bad_header_info__markdown(self):
+        """Should raise an error if incomplete header info is provided."""
+        # For markdown (or other) input, could get an error if no header is provided. The
+        # expected error "None" is due to the first empty cell: "|        |".
+        header = """
+        | survey |
+        """
+        question = """
+        |        | text | q{i} | Q{i}  | {e} |
+        """
+        questions = "\n".join(question.format(i=i, e="") for i in range(100))
+        md = "".join((header, questions, question.format(i=101, e="?")))
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=INVALID_HEADER.format(sheet_name="survey", header="None"),
+        )
+
+    def test_process_row__bad_header_info__happy_path(self):
+        """Should not raise an error if complete header info is provided."""
+        # For markdown (or other) input, normally no error due to header gathered during
+        # backend processing of properly formatted XLSForms.
+        header = """
+        | survey |
+        |        | type | name | label | e   |
+        """
+        question = """
+        |        | text | q{i} | Q{i}  | {e} |
+        """
+        questions = "\n".join(question.format(i=i, e="") for i in range(100))
+        md = "".join((header, questions, question.format(i=101, e="?")))
+        self.assertPyxformXform(md=md)
