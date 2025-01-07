@@ -18,6 +18,7 @@ from pyxform.constants import NSMAP
 from pyxform.errors import PyXFormError
 from pyxform.utils import coalesce
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
+from pyxform.xls2json_backends import SupportedFileTypes
 from pyxform.xls2xform import ConvertResult, convert
 
 logger = logging.getLogger(__name__)
@@ -164,6 +165,7 @@ class PyxformTestCase(TestCase):
                     pretty_print=True,
                     form_name=coalesce(name, "test_name"),
                     warnings=warnings,
+                    file_type=SupportedFileTypes.md.value,
                 )
                 survey = result._survey
                 xml = result.xform
