@@ -77,6 +77,9 @@ class SurveyElement(Mapping):
         """Each subclass must provide a list of slots from itself and all parents."""
         return SURVEY_ELEMENT_SLOTS
 
+    def __bool__(self):
+        return True
+
     def __len__(self):
         return len(self.get_slot_names())
 
