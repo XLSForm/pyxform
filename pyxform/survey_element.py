@@ -317,10 +317,18 @@ class SurveyElement(Mapping):
             ]
         choices = result.pop("choices", None)
         if choices:
-            result["choices"] = {
-                list_name: [o.to_json_dict(delete_keys=("parent",)) for o in options]
-                for list_name, options in choices.items()
-            }
+            if isinstance(choices, dict):
+                result["choices"] = {
+                    list_name: [
+                        o.to_json_dict(delete_keys=("parent",)) for o in itemset.options
+                    ]
+                    for list_name, itemset in choices.items()
+                }
+            else:
+                result["children"] = [
+                    o.to_json_dict(delete_keys=("parent",)) for o in choices.options
+                ]
+
         # Translation items with "output_context" have circular references.
         if "_translations" in result:
             for lang in result["_translations"].values():

@@ -779,11 +779,11 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         Results with Python 3.10.14 on VM with 2vCPU (i7-7700HQ) 1GB RAM, x questions
         each, average of 10 runs (seconds), with and without the check, per question:
         | num   | with   | without | peak RSS MB |
-        |   500 | 0.1626 |  0.1886 |          60 |
-        |  1000 | 0.3330 |  0.3916 |          63 |
-        |  2000 | 0.8675 |  0.7823 |          70 |
-        |  5000 | 1.7051 |  1.5653 |          91 |
-        | 10000 | 3.1097 |  3.8525 |         137 |
+        |   500 | 0.2203 |  0.1610 |          59 |
+        |  1000 | 0.2851 |  0.2580 |          63 |
+        |  2000 | 0.5001 |  0.5330 |          71 |
+        |  5000 | 1.2762 |  1.2931 |          92 |
+        | 10000 | 2.6226 |  2.6001 |         132 |
         """
         survey_header = """
         | survey |            |          |          |               |
@@ -793,7 +793,7 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         |        | text       | q{i}     | Q{i}     | if(../t2 = 'test', 1, 2) + 15 - int(1.2) |
         """
         process = Process(getpid())
-        for count in (500, 1000, 2000):
+        for count in (500, 1000, 2000, 5000, 10000):
             questions = "\n".join(question.format(i=i) for i in range(count))
             md = "".join((survey_header, questions))
 

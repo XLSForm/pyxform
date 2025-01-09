@@ -43,7 +43,7 @@ class DetachableElement(Element):
     """
 
     def __init__(self, *args, **kwargs):
-        Element.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.ownerDocument = None
 
     def writexml(self, writer, indent="", addindent="", newl=""):
@@ -226,7 +226,7 @@ def default_is_dynamic(element_default, element_type=None):
     * Contains arithmetic operator, including 'div' and 'mod' (except '-' for 'date' type).
     * Contains brackets, parentheses or braces.
     """
-    if not isinstance(element_default, str):
+    if not element_default or not isinstance(element_default, str):
         return False
 
     tokens, _ = parse_expression(element_default)
@@ -248,23 +248,6 @@ def default_is_dynamic(element_default, element_type=None):
             return True
 
     # Otherwise assume not dynamic.
-    return False
-
-
-def has_dynamic_label(choice_list: "list[dict[str, str]]") -> bool:
-    """
-    If the first or second choice label includes a reference, we must use itext.
-
-    Check the first two choices in case first is something like "Other".
-    """
-    for c in choice_list[:2]:
-        choice_label = c.get("label")
-        if (
-            choice_label is not None
-            and isinstance(choice_label, str)
-            and re.search(BRACKETED_TAG_REGEX, choice_label) is not None
-        ):
-            return True
     return False
 
 
