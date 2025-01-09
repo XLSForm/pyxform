@@ -110,8 +110,7 @@ class Question(SurveyElement):
 
         qtd = kwargs.pop("question_type_dictionary", QUESTION_TYPE_DICT)
         type_arg = kwargs.get("type")
-        default_type = qtd.get(type_arg)
-        if default_type is None:
+        if type_arg not in qtd:
             raise PyXFormError(f"Unknown question type '{type_arg}'.")
 
         # Keeping original qtd_kwargs is only needed if output of QTD data is not
@@ -138,14 +137,6 @@ class Question(SurveyElement):
         else:
             fields = chain(QUESTION_EXTRA_FIELDS, fields)
         super().__init__(fields=fields, **kwargs)
-
-    def validate(self):
-        SurveyElement.validate(self)
-
-        # make sure that the type of this question exists in the
-        # question type dictionary.
-        if self.type not in QUESTION_TYPE_DICT:
-            raise PyXFormError(f"Unknown question type '{self.type}'.")
 
     def xml_instance(self, survey: "Survey", **kwargs):
         if self.default and not default_is_dynamic(self.default, self.type):
