@@ -146,16 +146,20 @@ class SurveyElementBuilder:
         )
 
         if question_class:
-            if const.CHOICES in d and choices:
-                return question_class(
-                    question_type_dictionary=question_type_dictionary,
-                    choices=choices.get(d[const.ITEMSET], d[const.CHOICES]),
-                    **{k: v for k, v in d.items() if k != const.CHOICES},
-                )
-            else:
-                return question_class(
-                    question_type_dictionary=question_type_dictionary, **d
-                )
+            if choices:
+                d_choices = d.get(const.CHOICES, d.get(const.CHILDREN))
+                if d_choices:
+                    return question_class(
+                        question_type_dictionary=question_type_dictionary,
+                        **{
+                            k: v
+                            for k, v in d.items()
+                            if k not in {const.CHOICES, const.CHILDREN}
+                        },
+                        choices=choices.get(d[const.ITEMSET], d_choices),
+                    )
+
+            return question_class(question_type_dictionary=question_type_dictionary, **d)
 
         return ()
 

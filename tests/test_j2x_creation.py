@@ -11,30 +11,27 @@ from tests import utils
 
 class Json2XformVerboseSurveyCreationTests(TestCase):
     def test_survey_can_be_created_in_a_slightly_less_verbose_manner(self):
-        option_dict_array = [
-            {"name": "red", "label": "Red"},
-            {"name": "blue", "label": "Blue"},
-        ]
-
+        choices = {
+            "test": [
+                {"name": "red", "label": "Red"},
+                {"name": "blue", "label": "Blue"},
+            ]
+        }
+        s = Survey(name="Roses_are_Red", choices=choices)
         q = MultipleChoiceQuestion(
-            name="Favorite_Color", type="select one", choices=option_dict_array
+            name="Favorite_Color",
+            type="select one",
+            list_name="test",
         )
-        s = Survey(name="Roses_are_Red")
         s.add_child(q)
 
         expected_dict = {
             "name": "Roses_are_Red",
             "type": "survey",
             "children": [
-                {
-                    "name": "Favorite_Color",
-                    "type": "select one",
-                    "children": [
-                        {"label": "Red", "name": "red"},
-                        {"label": "Blue", "name": "blue"},
-                    ],
-                }
+                {"name": "Favorite_Color", "type": "select one", "list_name": "test"}
             ],
+            "choices": choices,
         }
 
         self.assertEqual(expected_dict, s.to_json_dict())

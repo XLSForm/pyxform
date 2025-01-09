@@ -404,11 +404,11 @@ class TestTranslations(PyxformTestCase):
         with 2 choices each, average of 10 runs (seconds), with and without the check,
         per question:
         | num   | with   | without | peak RSS MB |
-        |   500 | 0.7427 |  0.8133 |          77 |
-        |  1000 | 1.7908 |  1.7777 |          94 |
-        |  2000 | 5.6719 |  4.8387 |         141 |
-        |  5000 | 20.452 |  19.502 |         239 |
-        | 10000 | 70.871 |  62.106 |         416 |
+        |   500 | 0.6467 |  0.5648 |          77 |
+        |  1000 | 1.1448 |  1.2868 |          94 |
+        |  2000 | 2.3626 |  2.1485 |         129 |
+        |  5000 | 5.9631 |  5.7911 |         247 |
+        | 10000 | 11.404 |  11.399 |         423 |
         """
         survey_header = """
         | survey |                 |        |                    |                   |
@@ -426,7 +426,7 @@ class TestTranslations(PyxformTestCase):
         |         | c{i}        | nb   | lb-d  | lb-e       |
         """
         process = Process(getpid())
-        for count in (500, 1000, 2000):
+        for count in (500, 1000, 2000, 5000, 10000):
             questions = "\n".join(question.format(i=i) for i in range(count))
             choice_lists = "\n".join(choice_list.format(i=i) for i in range(count))
             md = "".join((survey_header, questions, choices_header, choice_lists))
