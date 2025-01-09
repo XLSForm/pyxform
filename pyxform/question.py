@@ -148,16 +148,15 @@ class Question(SurveyElement):
             raise PyXFormError(f"Unknown question type '{self.type}'.")
 
     def xml_instance(self, survey: "Survey", **kwargs):
-        attributes = self.instance
-        if attributes is None:
-            attributes = {}
-        else:
-            for key, value in attributes.items():
-                attributes[key] = survey.insert_xpaths(value, self)
-
         if self.default and not default_is_dynamic(self.default, self.type):
-            return node(self.name, str(self.default), **attributes)
-        return node(self.name, **attributes)
+            result = node(self.name, str(self.default))
+        else:
+            result = node(self.name)
+        attributes = self.instance
+        if attributes:
+            for k, v in attributes.items():
+                result.setAttribute(k, survey.insert_xpaths(v, self))
+        return result
 
     def xml_control(self, survey: "Survey"):
         if self.type == "calculate" or (
@@ -198,18 +197,16 @@ class Question(SurveyElement):
 
         return xml_node
 
-    def xml_action(self):
+    def xml_action(self) -> DetachableElement | None:
         """
         Return the action for this survey element.
         """
         if self.action:
-            return node(
-                self.action["name"],
-                ref=self.get_xpath(),
-                **{k: v for k, v in self.action.items() if k != "name"},
-            )
-
-        return None
+            result = node(self.action["name"], ref=self.get_xpath())
+            for k, v in self.action.items():
+                if k != "name":
+                    result.setAttribute(k, v)
+            return result
 
     def nest_set_nodes(self, survey, xml_node, tag, nested_items):
         for item in nested_items:
@@ -221,6 +218,24 @@ class Question(SurveyElement):
                 node_attrs["value"] = survey.insert_xpaths(item[1], self)
             set_node = node(tag, **node_attrs)
             xml_node.appendChild(set_node)
+
+    def _build_xml(self, survey: "Survey") -> DetachableElement | None:
+        """
+        Initial control node result for further processing depending on Question type.
+        """
+        control_dict = self.control
+        result = node(
+            control_dict["tag"],
+            *self.xml_label_and_hint(survey=survey),
+            ref=self.get_xpath(),
+        )
+        # Resolve field references in attributes
+        for k, v in control_dict.items():
+            # "tag" is from the question type dict so it can't include references. Also,
+            # if it did include references, then the node element name would be invalid.
+            if k != "tag":
+                result.setAttribute(k, survey.insert_xpaths(v, self))
+        return result
 
     def build_xml(self, survey: "Survey") -> DetachableElement | None:
         return None
@@ -246,23 +261,12 @@ class InputQuestion(Question):
     """
 
     def build_xml(self, survey: "Survey"):
-        control_dict = self.control
-        label_and_hint = self.xml_label_and_hint(survey=survey)
-        # Resolve field references in attributes
-        for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value, self)
-        control_dict["ref"] = self.get_xpath()
-
-        result = node(**control_dict)
-        if label_and_hint:
-            for element in self.xml_label_and_hint(survey=survey):
-                if element:
-                    result.appendChild(element)
+        result = self._build_xml(survey=survey)
 
         # Input types are used for selects with external choices sheets.
         if self.query:
             choice_filter = self.choice_filter
-            if choice_filter is not None:
+            if choice_filter:
                 pred = survey.insert_xpaths(choice_filter, self, True)
                 query = f"""instance('{self.query}')/root/item[{pred}]"""
             else:
@@ -273,26 +277,12 @@ class InputQuestion(Question):
 
 class TriggerQuestion(Question):
     def build_xml(self, survey: "Survey"):
-        control_dict = self.control
-        # Resolve field references in attributes
-        for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value, self)
-        control_dict["ref"] = self.get_xpath()
-        return node("trigger", *self.xml_label_and_hint(survey=survey), **control_dict)
+        return self._build_xml(survey=survey)
 
 
 class UploadQuestion(Question):
-    def _get_media_type(self):
-        return self.control["mediatype"]
-
     def build_xml(self, survey: "Survey"):
-        control_dict = self.control
-        # Resolve field references in attributes
-        for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value, self)
-        control_dict["ref"] = self.get_xpath()
-        control_dict["mediatype"] = self._get_media_type()
-        return node("upload", *self.xml_label_and_hint(survey=survey), **control_dict)
+        return self._build_xml(survey=survey)
 
 
 class Option(SurveyElement):
@@ -405,16 +395,7 @@ class MultipleChoiceQuestion(Question):
         if self.bind["type"] not in {"string", "odk:rank"}:
             raise PyXFormError("""Invalid value for `self.bind["type"]`.""")
 
-        # Resolve field references in attributes
-        control_dict = {
-            key: survey.insert_xpaths(value, self) for key, value in self.control.items()
-        }
-        control_dict["ref"] = self.get_xpath()
-
-        result = node(**control_dict)
-        for element in self.xml_label_and_hint(survey=survey):
-            if element:
-                result.appendChild(element)
+        result = self._build_xml(survey=survey)
 
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
@@ -588,32 +569,18 @@ class OsmUploadQuestion(UploadQuestion):
                 )
 
     def build_xml(self, survey: "Survey"):
-        control_dict = self.control
-        control_dict["ref"] = self.get_xpath()
-        control_dict["mediatype"] = self._get_media_type()
-        result = node("upload", *self.xml_label_and_hint(survey=survey), **control_dict)
-
+        result = self._build_xml(survey=survey)
         if self.children:
             for osm_tag in self.children:
                 result.appendChild(osm_tag.xml(survey=survey))
-
         return result
 
 
 class RangeQuestion(Question):
     def build_xml(self, survey: "Survey"):
-        control_dict = self.control
-        label_and_hint = self.xml_label_and_hint(survey=survey)
-        # Resolve field references in attributes
-        for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value, self)
-        control_dict["ref"] = self.get_xpath()
+        result = self._build_xml(survey=survey)
         params = self.parameters
         if params:
-            control_dict.update(params)
-        result = node(**control_dict)
-        if label_and_hint:
-            for element in self.xml_label_and_hint(survey=survey):
-                result.appendChild(element)
-
+            for k, v in params.items():
+                result.setAttribute(k, v)
         return result
