@@ -9,6 +9,8 @@ from unittest import TestCase
 import openpyxl
 import xlrd
 from pyxform.xls2json_backends import (
+    csv_to_dict,
+    md_to_dict,
     xls_to_dict,
     xls_value_to_unicode,
     xlsx_to_dict,
@@ -22,6 +24,8 @@ class TestXLS2JSONBackends(TestCase):
     """
     Test xls2json_backends module.
     """
+
+    maxDiff = None
 
     def test_xls_value_to_unicode(self):
         """
@@ -59,26 +63,28 @@ class TestXLS2JSONBackends(TestCase):
         self.assertTrue(openpyxl.DEFUSEDXML)
 
     def test_equivalency(self):
+        """Should get the same data from equivalent files using each file type reader."""
         equivalent_fixtures = [
             "group",
+            "include",
+            "include_json",
             "loop",
             "specify_other",
-            "include",
             "text_and_integer",
-            "include_json",
             "yes_or_no_question",
         ]
         for fixture in equivalent_fixtures:
-            xls_path = utils.path_to_text_fixture(f"{fixture}.xls")
-            xlsx_path = utils.path_to_text_fixture(f"{fixture}.xlsx")
-            xls_inp = xls_to_dict(xls_path)
-            xlsx_inp = xlsx_to_dict(xlsx_path)
-            self.maxDiff = None
-            self.assertEqual(xls_inp, xlsx_inp)
+            xlsx_inp = xlsx_to_dict(utils.path_to_text_fixture(f"{fixture}.xlsx"))
+            xls_inp = xls_to_dict(utils.path_to_text_fixture(f"{fixture}.xls"))
+            csv_inp = csv_to_dict(utils.path_to_text_fixture(f"{fixture}.csv"))
+            md_inp = md_to_dict(utils.path_to_text_fixture(f"{fixture}.md"))
+
+            self.assertEqual(xlsx_inp, xls_inp)
+            self.assertEqual(xlsx_inp, csv_inp)
+            self.assertEqual(xlsx_inp, md_inp)
 
     def test_xls_with_many_empty_cells(self):
         """Should quickly produce expected data, and find large input sheet dimensions."""
-        self.maxDiff = None
         # Test fixture produced by adding data at cells IV1 and A19999.
         xls_path = os.path.join(bug_example_xls.PATH, "extra_columns.xls")
         before = datetime.datetime.now(datetime.timezone.utc)
@@ -102,7 +108,6 @@ class TestXLS2JSONBackends(TestCase):
 
     def test_xlsx_with_many_empty_cells(self):
         """Should quickly produce expected data, and find large input sheet dimensions."""
-        self.maxDiff = None
         # Test fixture produced (presumably) by a LibreOffice serialisation bug.
         xlsx_path = os.path.join(bug_example_xls.PATH, "UCL_Biomass_Plot_Form.xlsx")
         before = datetime.datetime.now(datetime.timezone.utc)
