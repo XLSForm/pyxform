@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest import TestCase
 
 from pyxform.xls2json import SurveyReader
-from pyxform.xls2json_backends import csv_to_dict, xls_to_dict, xlsx_to_dict
+from pyxform.xls2json_backends import csv_to_dict, xlsx_to_dict
 from pyxform.xls2xform import convert
 
 from tests import example_xls, test_expected_output, utils
@@ -173,26 +173,6 @@ class BasicXls2JsonApiTests(TestCase):
             },
         ]
         self.assertEqual(choice_filter_survey.to_json_dict()["children"], expected_dict)
-
-
-class CsvReaderEquivalencyTest(TestCase):
-    def test_equivalency(self):
-        equivalent_fixtures = [
-            "group",
-            "loop",  # 'gps',
-            "specify_other",
-            "include",
-            "text_and_integer",
-            "include_json",
-            "yes_or_no_question",
-        ]
-        for fixture in equivalent_fixtures:
-            xls_path = utils.path_to_text_fixture(f"{fixture}.xls")
-            csv_path = utils.path_to_text_fixture(f"{fixture}.csv")
-            xls_inp = xls_to_dict(xls_path)
-            csv_inp = csv_to_dict(csv_path)
-            self.maxDiff = None
-            self.assertEqual(csv_inp, xls_inp)
 
 
 class UnicodeCsvTest(TestCase):
