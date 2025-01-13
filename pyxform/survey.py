@@ -227,7 +227,7 @@ class Survey(Section):
         # Internals
         self._created: datetime.now = datetime.now()
         self._translations: recursive_dict = recursive_dict()
-        self._xpath: dict[str, Section | Question | None] = {}
+        self._xpath: dict[str, Section | Question | None] | None = None
 
         # Structure
         # attribute is for custom instance attrs from settings e.g. attribute::abc:xyz
@@ -1057,12 +1057,16 @@ class Survey(Section):
         return f"<pyxform.survey.Survey instance at {hex(id(self))}>"
 
     def _setup_xpath_dictionary(self):
+        if self._xpath:
+            return
+        xpaths = {}
         for element in self.iter_descendants(lambda i: isinstance(i, Question | Section)):
             element_name = element.name
-            if element_name in self._xpath:
-                self._xpath[element_name] = None
+            if element_name in xpaths:
+                xpaths[element_name] = None
             else:
-                self._xpath[element_name] = element
+                xpaths[element_name] = element
+        self._xpath = xpaths
 
     def _var_repl_function(
         self, matchobj, context, use_current=False, reference_parent=False

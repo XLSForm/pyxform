@@ -1,3 +1,6 @@
+from pyxform.question import InputQuestion
+from pyxform.survey import Survey
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -65,3 +68,20 @@ class TestSurvey(PyxformTestCase):
                 """
             ],
         )
+
+    def test_xpath_dict_initialised_once(self):
+        """Should be able to convert a valid form to XML repeatedly with the same result."""
+        s = Survey(name="guest_list")
+        s.add_children(
+            [
+                InputQuestion(name="q1", type="text", label="Your first name?"),
+                InputQuestion(name="q2", type="text", label="${q1}, last name?"),
+            ]
+        )
+        s._setup_xpath_dictionary()
+        # If the dict is re-initialised, "duplicate" elements will be found, which
+        # results in the value being set to None.
+        self.assertFalse(any(i for i in s._xpath.values() if i is None))
+        # Due to the pyxform reference, _var_repl_function() raises an error for None,
+        # so calling to_xml() twice would trigger a "duplicates" error.
+        self.assertEqual(s.to_xml(validate=False), s.to_xml(validate=False))
