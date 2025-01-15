@@ -385,40 +385,38 @@ def csv_to_dict(path_or_file):
         elif len(row) == 1:
             return row[0], None
         else:
-            s_or_c = row[0]
-            content = row[1:]
-            if s_or_c == "":
-                s_or_c = None
-            # concatenate all the strings in content
-            if "".join(content) == "":
+            sheet_name = row[0].strip()
+            content = [str(v).strip() for v in row[1:]]
+            if sheet_name == "":
+                sheet_name = None
+            if not any(c != "" for c in content):
                 # content is a list of empty strings
                 content = None
-            return s_or_c, content
+            return sheet_name, content
 
     def process_csv_data(rd):
         _dict = {"sheet_names": []}
         sheet_name = None
         current_headers = None
         for row in rd:
-            survey_or_choices, content = first_column_as_sheet_name(row)
-            if survey_or_choices is not None:
-                sheet_name = survey_or_choices
-                if sheet_name not in _dict:
-                    _dict[str(sheet_name)] = []
+            maybe_sheet_name, content = first_column_as_sheet_name(row)
+            if maybe_sheet_name is not None:
+                sheet_name = maybe_sheet_name
+                if sheet_name and sheet_name not in _dict:
                     _dict["sheet_names"].append(sheet_name)
+                    sheet_name = sheet_name.lower()
+                    _dict[str(sheet_name)] = []
                 current_headers = None
             if content is not None:
                 if current_headers is None:
                     current_headers = content
                     _dict[f"{sheet_name}_header"] = _list_to_dict_list(current_headers)
                 else:
-                    _d = {}
-                    for key, val in zip(current_headers, content, strict=False):
-                        if val != "":
-                            # Slight modification so values are striped
-                            # this is because csvs often spaces following commas
-                            # (but the csv reader might already handle that.)
-                            _d[str(key)] = str(val.strip())
+                    _d = {
+                        k: v
+                        for k, v in zip(current_headers, content, strict=False)
+                        if v != ""
+                    }
                     _dict[sheet_name].append(_d)
         return _dict
 
