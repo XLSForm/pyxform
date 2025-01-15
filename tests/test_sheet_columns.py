@@ -24,6 +24,7 @@ from tests.pyxform_test_case import PyxformTestCase
 from tests.utils import prep_for_xml_contains
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
+from tests.xpath_helpers.settings import xps
 
 
 class TestSettingsColumns(PyxformTestCase):
@@ -41,10 +42,7 @@ class TestSettingsColumns(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            xml__xpath_match=[
-                """/h:html/h:head/h:title[./text()='Welcome!']""",
-                """/h:html/h:head/x:model/x:instance/x:test_name[@id='My Form']""",
-            ],
+            xml__xpath_match=[xps.form_title("Welcome!"), xps.form_id("My Form")],
         )
 
 

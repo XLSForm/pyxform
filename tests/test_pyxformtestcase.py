@@ -4,6 +4,7 @@ internal conversions correctly.
 """
 
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.settings import xps
 
 
 class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
@@ -63,6 +64,6 @@ class XlsFormPyxformSurveyTest(PyxformTestCase):
             |        | note | q    | Q     |
             """,
             xml__xpath_match=[
-                "/h:html/h:head/x:model/x:instance/x:test_name[@id='data']"
+                xps.form_id("data"),
             ],
         )

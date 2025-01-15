@@ -1,12 +1,12 @@
 from pyxform import constants as co
 
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.entities import xpe
 
 
 class EntitiesUpdateTest(PyxformTestCase):
     def test_basic_entity_update_building_blocks(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |              |            |         |
             |          | type         | name       | label   |
@@ -18,41 +18,46 @@ class EntitiesUpdateTest(PyxformTestCase):
             |          | trees        | ${id}      |         |
             """,
             xml__xpath_match=[
-                "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity",
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@dataset = "trees"]',
+                xpe.model_instance_dataset("trees"),
                 # defaults to always updating if an entity_id is specified
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@update = "1"]',
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@id = ""]',
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@id" and @type = "string" and @readonly = "true()" and @calculate = " /data/id "]',
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@baseVersion = ""]',
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@baseVersion" and @type = "string" and @readonly = "true()" and @calculate = "instance(\'trees\')/root/item[name= /data/id ]/__version"]',
+                '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@update = "1"]',
+                '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@id = ""]',
+                '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@id" and @type = "string" and @readonly = "true()" and @calculate = " /test_name/id "]',
+                '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@baseVersion = ""]',
+                '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@baseVersion" and @type = "string" and @readonly = "true()" and @calculate = "instance(\'trees\')/root/item[name= /test_name/id ]/__version"]',
                 f"""/h:html/h:head/x:model[@entities:entities-version = '{co.ENTITIES_OFFLINE_VERSION}']""",
                 """
-                  /h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[
+                  /h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[
                     @trunkVersion = ''
                     and @branchId = ''
                   ]
                 """,
                 """
                   /h:html/h:head/x:model/x:bind[
-                    @nodeset = '/data/meta/entity/@trunkVersion'
-                    and @calculate = "instance('trees')/root/item[name= /data/id ]/__trunkVersion"
+                    @nodeset = '/test_name/meta/entity/@trunkVersion'
+                    and @calculate = "instance('trees')/root/item[name= /test_name/id ]/__trunkVersion"
                     and @type = 'string'
                     and @readonly = 'true()'
                   ]
                 """,
                 """
                   /h:html/h:head/x:model/x:bind[
-                    @nodeset = '/data/meta/entity/@branchId'
-                    and @calculate = "instance('trees')/root/item[name= /data/id ]/__branchId"
+                    @nodeset = '/test_name/meta/entity/@branchId'
+                    and @calculate = "instance('trees')/root/item[name= /test_name/id ]/__branchId"
                     and @type = 'string'
                     and @readonly = 'true()'
                   ]
                 """,
             ],
             xml__xpath_count=[
-                ("/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label", 0),
-                ("/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/@create", 0),
+                (
+                    "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/x:label",
+                    0,
+                ),
+                (
+                    "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/@create",
+                    0,
+                ),
                 ("/h:html/h:head/x:model/x:setvalue", 0),
             ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
@@ -164,7 +169,6 @@ class EntitiesUpdateTest(PyxformTestCase):
 
     def test_entity_id_and_label__updates_label(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |              |            |         |
             |          | type         | name       | label   |
@@ -176,8 +180,8 @@ class EntitiesUpdateTest(PyxformTestCase):
             |          | trees        | ${id}      | a       |
             """,
             xml__xpath_match=[
-                "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label",
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/label" and @type = "string" and @readonly = "true()" and @calculate = "a"]',
+                "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/x:label",
+                xpe.model_bind_label("a"),
             ],
         )
 

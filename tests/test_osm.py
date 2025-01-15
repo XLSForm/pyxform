@@ -84,33 +84,16 @@ class OSMWidgetsTest(PyxformTestCase):
                 # q1 has secondary choices instance with inline labels.
                 xpc.model_instance_choices_label("c1", (("n1", "l1"), ("n2", "l2"))),
                 # osm_road has data binding and control
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name[@id='data']/x:osm_road
-                """,
-                """
-                /h:html/h:head/x:model/x:bind[@nodeset='/test_name/osm_road' and @type='binary']
-                """,
-                """
-                /h:html/h:body/x:upload[
-                  @mediatype='osm/*' and @ref='/test_name/osm_road' and ./x:label[text()='Road']
-                ]
-                """,
+                xpq.model_instance_item("osm_road"),
+                xpq.model_instance_bind("osm_road", "binary"),
+                xpq.body_label_inline("upload", "osm_road", "Road"),
                 # osm_build has data binding and control with tags from building_tags
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name[@id='data']/x:osm_build
-                """,
-                """
-                /h:html/h:head/x:model/x:bind[@nodeset='/test_name/osm_build' and @type='binary']
-                """,
-                """
-                /h:html/h:body/x:upload[
-                  @mediatype='osm/*'
-                  and @ref='/test_name/osm_build'
-                  and ./x:label[text()='Building']
-                  and ./x:tag[@key='name' and ./x:label/text()='Name']
-                  and ./x:tag[@key='addr:city' and ./x:label/text()='City']
-                ]
-                """,
+                xpq.model_instance_item("osm_build"),
+                xpq.model_instance_bind("osm_build", "binary"),
+                xpq.body_label_inline("upload", "osm_build", "Building"),
+                xpq.body_upload_tags(
+                    "osm_build", (("name", "Name"), ("addr:city", "City"))
+                ),
             ],
             # The OSM list names aren't output anywhere (tags copied inline).
             xml__excludes=["room_tags"],
@@ -135,49 +118,23 @@ class OSMWidgetsTest(PyxformTestCase):
             md=md,
             xml__xpath_match=[
                 # osm_road has data binding and control
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name[@id='data']/x:osm_road
-                """,
-                """
-                /h:html/h:head/x:model/x:bind[@nodeset='/test_name/osm_road' and @type='binary']
-                """,
-                """
-                /h:html/h:body/x:upload[
-                  @mediatype='osm/*' and @ref='/test_name/osm_road' and ./x:label[text()='Road']
-                ]
-                """,
+                xpq.model_instance_item("osm_road"),
+                xpq.model_instance_bind("osm_road", "binary"),
+                xpq.body_label_inline("upload", "osm_road", "Road"),
                 # osm_build has data binding and control with tags from building_tags
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name[@id='data']/x:osm_build
-                """,
-                """
-                /h:html/h:head/x:model/x:bind[@nodeset='/test_name/osm_build' and @type='binary']
-                """,
-                """
-                /h:html/h:body/x:upload[
-                  @mediatype='osm/*'
-                  and @ref='/test_name/osm_build'
-                  and ./x:label[text()='Building']
-                  and ./x:tag[@key='name' and ./x:label/text()='Name']
-                  and ./x:tag[@key='addr:city' and ./x:label/text()='City']
-                ]
-                """,
+                xpq.model_instance_item("osm_build"),
+                xpq.model_instance_bind("osm_build", "binary"),
+                xpq.body_label_inline("upload", "osm_build", "Building"),
+                xpq.body_upload_tags(
+                    "osm_build", (("name", "Name"), ("addr:city", "City"))
+                ),
                 # osm_room has data binding and control with tags from room_tags
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name[@id='data']/x:osm_room
-                """,
-                """
-                /h:html/h:head/x:model/x:bind[@nodeset='/test_name/osm_room' and @type='binary']
-                """,
-                """
-                /h:html/h:body/x:upload[
-                  @mediatype='osm/*'
-                  and @ref='/test_name/osm_room'
-                  and ./x:label[text()='Room']
-                  and ./x:tag[@key='room:type' and ./x:label/text()='Type']
-                  and ./x:tag[@key='habitable' and ./x:label/text()='Habitable']
-                ]
-                """,
+                xpq.model_instance_item("osm_room"),
+                xpq.model_instance_bind("osm_room", "binary"),
+                xpq.body_label_inline("upload", "osm_room", "Room"),
+                xpq.body_upload_tags(
+                    "osm_room", (("room:type", "Type"), ("habitable", "Habitable"))
+                ),
             ],
             # The OSM list names aren't output anywhere (tags copied inline).
             xml__excludes=["building_tags", "room_tags"],
@@ -199,37 +156,19 @@ class OSMWidgetsTest(PyxformTestCase):
             md=md,
             xml__xpath_match=[
                 # osm_resi has data binding and control with tags from room_tags
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name[@id='data']/x:osm_resi
-                """,
-                """
-                /h:html/h:head/x:model/x:bind[@nodeset='/test_name/osm_resi' and @type='binary']
-                """,
-                """
-                /h:html/h:body/x:upload[
-                  @mediatype='osm/*'
-                  and @ref='/test_name/osm_resi'
-                  and ./x:label[text()='Residential']
-                  and ./x:tag[@key='room:type' and ./x:label/text()='Type']
-                  and ./x:tag[@key='habitable' and ./x:label/text()='Habitable']
-                ]
-                """,
+                xpq.model_instance_item("osm_resi"),
+                xpq.model_instance_bind("osm_resi", "binary"),
+                xpq.body_label_inline("upload", "osm_resi", "Residential"),
+                xpq.body_upload_tags(
+                    "osm_resi", (("room:type", "Type"), ("habitable", "Habitable"))
+                ),
                 # osm_office has data binding and control with tags from room_tags
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name[@id='data']/x:osm_office
-                """,
-                """
-                /h:html/h:head/x:model/x:bind[@nodeset='/test_name/osm_office' and @type='binary']
-                """,
-                """
-                /h:html/h:body/x:upload[
-                  @mediatype='osm/*'
-                  and @ref='/test_name/osm_office'
-                  and ./x:label[text()='Office']
-                  and ./x:tag[@key='room:type' and ./x:label/text()='Type']
-                  and ./x:tag[@key='habitable' and ./x:label/text()='Habitable']
-                ]
-                """,
+                xpq.model_instance_item("osm_office"),
+                xpq.model_instance_bind("osm_office", "binary"),
+                xpq.body_label_inline("upload", "osm_office", "Office"),
+                xpq.body_upload_tags(
+                    "osm_office", (("room:type", "Type"), ("habitable", "Habitable"))
+                ),
             ],
             # The OSM list names aren't output anywhere (tags copied inline).
             xml__excludes=["room_tags"],

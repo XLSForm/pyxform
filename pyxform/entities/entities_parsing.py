@@ -44,11 +44,11 @@ def get_entity_declaration(
         const.NAME: const.ENTITY,
         const.TYPE: const.ENTITY,
         const.PARAMETERS: {
-            EC.DATASET: dataset_name,
-            EC.ENTITY_ID: entity_id,
-            EC.CREATE_IF: create_condition,
-            EC.UPDATE_IF: update_condition,
-            EC.LABEL: entity_label,
+            EC.DATASET.value: dataset_name,
+            EC.ENTITY_ID.value: entity_id,
+            EC.CREATE_IF.value: create_condition,
+            EC.UPDATE_IF.value: update_condition,
+            EC.LABEL.value: entity_label,
         },
     }
 

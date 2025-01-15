@@ -21,6 +21,7 @@ from pyxform.xls2xform import convert
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
+from tests.xpath_helpers.settings import xps
 
 
 @dataclass(slots=True)
@@ -31,27 +32,6 @@ class XPathHelper:
 
     question_type: str
     question_name: str
-
-    @staticmethod
-    def language_is_default(lang):
-        """The language translation has itext and is marked as the default."""
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[@default='true()' and @lang='{lang}']
-        """
-
-    @staticmethod
-    def language_is_not_default(lang):
-        """The language translation has itext and is not marked as the default."""
-        return f"""
-        /h:html/h:head/x:model/x:itext/x:translation[not(@default='true()') and @lang='{lang}']
-        """
-
-    @staticmethod
-    def language_no_itext(lang):
-        """The language translation has no itext."""
-        return f"""
-        /h:html/h:head/x:model/x:itext[not(descendant::x:translation[@lang='{lang}'])]
-        """
 
     def question_label_in_body(self, label):
         """The Question label value is in the body."""
@@ -209,9 +189,9 @@ class TestTranslations(PyxformTestCase):
                 xp.question_label_references_itext(),
                 xp.question_itext_label("english (en)", "hello"),
                 xp.question_itext_label("french (fr)", "bonjour"),
-                xp.language_is_not_default("english (en)"),
-                xp.language_is_not_default("french (fr)"),
-                xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_not_default("english (en)"),
+                xps.language_is_not_default("french (fr)"),
+                xps.language_no_itext(DEFAULT_LANG),
                 # Expected model binding found.
                 """/h:html/h:head/x:model
                      /x:bind[@nodeset='/test_name/n1' and @readonly='true()' and @type='string']
@@ -277,9 +257,9 @@ class TestTranslations(PyxformTestCase):
                 xpc.model_itext_choice_text_label_by_pos(
                     "Kyrgyz", "yn", ("Нет (ky)", "Да (ky)")
                 ),
-                xp.language_is_default(DEFAULT_LANG),
-                xp.language_is_not_default("Russian"),
-                xp.language_is_not_default("Kyrgyz"),
+                xps.language_is_default(DEFAULT_LANG),
+                xps.language_is_not_default("Russian"),
+                xps.language_is_not_default("Kyrgyz"),
             ],
         )
 
@@ -379,8 +359,8 @@ class TestTranslations(PyxformTestCase):
                         ),
                     ),
                 ),
-                xp.language_is_default(DEFAULT_LANG),
-                xp.language_is_not_default("eng"),
+                xps.language_is_default(DEFAULT_LANG),
+                xps.language_is_not_default("eng"),
             ],
         )
         # default_language set case
@@ -390,8 +370,8 @@ class TestTranslations(PyxformTestCase):
             # warnings__contains=[warning],
             xml__xpath_match=[
                 *common_xpaths,
-                xp.language_is_default("eng"),
-                xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_default("eng"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -637,7 +617,7 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_hint_in_body("salutation"),
                 self.xp.question_no_itext_hint(DEFAULT_LANG, "salutation"),
                 self.xp.question_itext_form(DEFAULT_LANG, "image", "greeting.jpg"),
-                self.xp.language_is_default(DEFAULT_LANG),
+                xps.language_is_default(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -658,7 +638,7 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_hint_references_itext(),
                 self.xp.question_itext_hint(DEFAULT_LANG, "salutation"),
                 self.xp.question_itext_form(DEFAULT_LANG, "guidance", "greeting"),
-                self.xp.language_is_default(DEFAULT_LANG),
+                xps.language_is_default(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -683,7 +663,7 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_itext_form(DEFAULT_LANG, "audio", "greeting.mp3"),
                 self.xp.constraint_msg_in_bind("check me"),
                 self.xp.required_msg_in_bind("mandatory"),
-                self.xp.language_is_default(DEFAULT_LANG),
+                xps.language_is_default(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -700,7 +680,7 @@ class TestTranslationsSurvey(PyxformTestCase):
             xml__xpath_match=[
                 self.xp.question_itext_form(DEFAULT_LANG, "image", "greeting.jpg"),
                 self.xp.question_itext_form(DEFAULT_LANG, "big-image", "greeting.jpg"),
-                self.xp.language_is_default(DEFAULT_LANG),
+                xps.language_is_default(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -720,8 +700,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_hint_references_itext(),
                 self.xp.question_itext_hint("eng(en)", "salutation"),
                 # TODO: is this a bug? Only one language but not marked default.
-                self.xp.language_is_not_default("eng(en)"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_not_default("eng(en)"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -741,8 +721,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_hint_references_itext(),
                 self.xp.question_itext_hint("eng(en)", "salutation"),
                 self.xp.question_itext_form("eng(en)", "image", "greeting.jpg"),
-                self.xp.language_is_not_default("eng(en)"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_not_default("eng(en)"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -762,8 +742,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_hint_references_itext(),
                 self.xp.question_itext_hint("eng(en)", "salutation"),
                 self.xp.question_itext_form("eng(en)", "guidance", "greeting"),
-                self.xp.language_is_not_default("eng(en)"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_not_default("eng(en)"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -791,8 +771,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.constraint_msg_itext("eng(en)", "check me"),
                 self.xp.required_msg_references_itext(),
                 self.xp.required_msg_itext("eng(en)", "mandatory"),
-                self.xp.language_is_not_default("eng(en)"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_not_default("eng(en)"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
             warnings_count=0,
         )
@@ -813,8 +793,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_itext_label(DEFAULT_LANG, "hello"),
                 self.xp.question_itext_label("eng(en)", "hi there"),
                 self.xp.question_hint_in_body("salutation"),
-                self.xp.language_is_default(DEFAULT_LANG),
-                self.xp.language_is_not_default("eng(en)"),
+                xps.language_is_default(DEFAULT_LANG),
+                xps.language_is_not_default("eng(en)"),
             ],
         )
 
@@ -837,9 +817,9 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_itext_label("eng", "hi there"),
                 self.xp.question_hint_in_body("salutation"),
                 self.xp.question_no_itext_hint("eng", "salutation"),
-                self.xp.language_is_default("eng"),
+                xps.language_is_default("eng"),
                 # TODO: bug - missing default lang translatable/itext values.
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -891,8 +871,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.required_msg_references_itext(),
                 self.xp.required_msg_itext("eng", "mandatory"),
                 self.xp.required_msg_itext(DEFAULT_LANG, "-"),
-                self.xp.language_is_default(DEFAULT_LANG),
-                self.xp.language_is_not_default("eng"),
+                xps.language_is_default(DEFAULT_LANG),
+                xps.language_is_not_default("eng"),
             ],
         )
 
@@ -933,12 +913,12 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_itext_form("eng", "image", "greeting.jpg"),
                 self.xp.question_itext_form("eng", "video", "greeting.mkv"),
                 self.xp.question_itext_form("eng", "audio", "greeting.mp3"),
-                self.xp.language_is_default("eng"),
+                xps.language_is_default("eng"),
                 self.xp.constraint_msg_references_itext(),
                 self.xp.constraint_msg_itext("eng", "check me"),
                 self.xp.required_msg_references_itext(),
                 self.xp.required_msg_itext("eng", "mandatory"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -961,8 +941,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_hint_in_body("salutation"),
                 self.xp.question_no_itext_hint("eng", "salutation"),
                 self.xp.question_no_itext_hint(DEFAULT_LANG, "salutation"),
-                self.xp.language_is_not_default("eng"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_not_default("eng"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -987,8 +967,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_hint_in_body("salutation"),
                 self.xp.question_no_itext_hint(DEFAULT_LANG, "salutation"),
                 self.xp.question_no_itext_hint("eng", "salutation"),
-                self.xp.language_is_default("eng"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_default("eng"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -1012,9 +992,9 @@ class TestTranslationsSurvey(PyxformTestCase):
                 # Output of a dash for empty translation is not a bug, it's a reminder /
                 # placeholder since XForms spec requires a value for every translation.
                 self.xp.question_itext_hint("french", "-"),
-                self.xp.language_is_not_default("eng"),
-                self.xp.language_is_not_default("french"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_not_default("eng"),
+                xps.language_is_not_default("french"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -1039,9 +1019,9 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_hint_references_itext(),
                 self.xp.question_itext_hint("eng", "salutation"),
                 self.xp.question_itext_hint("french", "-"),
-                self.xp.language_is_default("eng"),
-                self.xp.language_is_not_default("french"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_default("eng"),
+                xps.language_is_not_default("french"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -1072,8 +1052,8 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_itext_hint(DEFAULT_LANG, "-"),
                 self.xp.question_no_itext_form("french", "audio", "greeting.mp3"),
                 self.xp.question_itext_form(DEFAULT_LANG, "image", "greeting.jpg"),
-                self.xp.language_is_not_default("french"),
-                self.xp.language_is_default(DEFAULT_LANG),
+                xps.language_is_not_default("french"),
+                xps.language_is_default(DEFAULT_LANG),
             ],
         )
 
@@ -1099,9 +1079,9 @@ class TestTranslationsSurvey(PyxformTestCase):
                 self.xp.question_hint_references_itext(),
                 self.xp.question_itext_hint("french", "salutation"),
                 self.xp.question_itext_form("french", "image", "greeting.jpg"),
-                self.xp.language_is_default("french"),
+                xps.language_is_default("french"),
                 # TODO: bug - missing default lang translatable/itext values.
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
             warnings__not_contains=[OR_OTHER_WARNING],
         )
@@ -1251,8 +1231,8 @@ class TestTranslationsChoices(PyxformTestCase):
                     DEFAULT_LANG, "c1", self.forms__l_audio
                 ),
                 xpc.model_no_itext_choice_media_by_pos("eng", "c1", self.forms__l_audio),
-                self.xp.language_is_default(DEFAULT_LANG),
-                self.xp.language_is_not_default("eng"),
+                xps.language_is_default(DEFAULT_LANG),
+                xps.language_is_not_default("eng"),
             ],
         )
 
@@ -1281,9 +1261,9 @@ class TestTranslationsChoices(PyxformTestCase):
                 xpc.model_instance_choices_itext("c1", ("na", "nb")),
                 xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
                 xpc.model_itext_choice_media_by_pos("eng", "c1", self.forms__l_audio),
-                self.xp.language_is_default("eng"),
+                xps.language_is_default("eng"),
                 # TODO: bug - missing default lang translatable/itext values.
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -1347,8 +1327,8 @@ class TestTranslationsChoices(PyxformTestCase):
                         ),
                     ),
                 ),
-                self.xp.language_is_default(DEFAULT_LANG),
-                self.xp.language_is_not_default("eng"),
+                xps.language_is_default(DEFAULT_LANG),
+                xps.language_is_not_default("eng"),
             ],
         )
 
@@ -1403,8 +1383,8 @@ class TestTranslationsChoices(PyxformTestCase):
                         ),
                     ),
                 ),
-                self.xp.language_is_default("eng"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_default("eng"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -1437,8 +1417,8 @@ class TestTranslationsChoices(PyxformTestCase):
                     DEFAULT_LANG, "c1", self.forms__l_audio
                 ),
                 xpc.model_no_itext_choice_media_by_pos("eng", "c1", self.forms__l_audio),
-                self.xp.language_is_default(DEFAULT_LANG),
-                self.xp.language_is_not_default("eng"),
+                xps.language_is_default(DEFAULT_LANG),
+                xps.language_is_not_default("eng"),
             ],
         )
 
@@ -1469,8 +1449,8 @@ class TestTranslationsChoices(PyxformTestCase):
                 xpc.model_itext_choice_text_label_by_pos("eng", "c1", ("la-e", "lb-e")),
                 # TODO: is this a bug? Default audio gets merged into eng hint.
                 xpc.model_itext_choice_media_by_pos("eng", "c1", self.forms__l_audio),
-                self.xp.language_is_default("eng"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_default("eng"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -1501,9 +1481,9 @@ class TestTranslationsChoices(PyxformTestCase):
                 xpc.model_no_itext_choice_media_by_pos(
                     "french", "c1", self.forms__l_audio
                 ),
-                self.xp.language_is_not_default("eng"),
-                self.xp.language_is_not_default("french"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_not_default("eng"),
+                xps.language_is_not_default("french"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
         )
 
@@ -1537,9 +1517,9 @@ class TestTranslationsChoices(PyxformTestCase):
                 xpc.model_no_itext_choice_media_by_pos(
                     "french", "c1", self.forms__l_audio
                 ),
-                self.xp.language_is_default("eng"),
-                self.xp.language_is_not_default("french"),
-                self.xp.language_no_itext(DEFAULT_LANG),
+                xps.language_is_default("eng"),
+                xps.language_is_not_default("french"),
+                xps.language_no_itext(DEFAULT_LANG),
             ],
             warnings__not_contains=[OR_OTHER_WARNING],
         )
