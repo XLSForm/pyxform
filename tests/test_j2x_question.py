@@ -3,14 +3,14 @@ Testing creation of Surveys using verbose methods
 """
 
 from collections.abc import Generator
-from unittest import TestCase
 
 from pyxform import Survey
 from pyxform.builder import create_survey_element_from_dict
 
+from tests.pyxform_test_case import PyxformTestCase
 from tests.utils import prep_class_config
-
-TESTING_BINDINGS = True
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 def ctw(control):
@@ -25,7 +25,7 @@ def ctw(control):
     return control.toxml()
 
 
-class Json2XformQuestionValidationTests(TestCase):
+class Json2XformQuestionValidationTests(PyxformTestCase):
     maxDiff = None
     config = None
     cls_name = None
@@ -59,46 +59,90 @@ class Json2XformQuestionValidationTests(TestCase):
 
         self.s.add_child(q)
         self.assertEqual(ctw(q.xml_control(survey=self.s)), expected_string_control_xml)
-
-        if TESTING_BINDINGS:
-            self.assertEqual(
-                ctw(q.xml_bindings(survey=self.s)), expected_string_binding_xml
-            )
+        self.assertEqual(ctw(q.xml_bindings(survey=self.s)), expected_string_binding_xml)
 
     def test_select_one_question_multilingual(self):
-        """
-        Test the lowest common denominator of question types.
-        """
-        simple_select_one_json = {
-            "label": {"f": "ftext", "e": "etext"},
-            "type": "select one",
-            "name": "qname",
-            "choices": [
-                {"label": {"f": "fa", "e": "ea"}, "name": "a"},
-                {"label": {"f": "fb", "e": "eb"}, "name": "b"},
+        """Should be able to build a valid XForm from a dict with a multi-language select."""
+        survey = {
+            "type": "survey",
+            "name": "test_name",
+            "id_string": "data",
+            "children": [
+                {
+                    "label": {"f": "ftext", "e": "etext"},
+                    "type": "select one",
+                    "name": "q1",
+                    "itemset": "c1",
+                }
             ],
+            "choices": {
+                "c1": [
+                    {"label": {"f": "fa", "e": "ea"}, "name": "a"},
+                    {"label": {"f": "fb", "e": "eb"}, "name": "b"},
+                ]
+            },
         }
-
-        # I copied the response in, since this is not our method of testing
-        # valid return values.
-        expected_select_one_control_xml = self.config.get(
-            self.cls_name, "test_select_one_question_multilingual_control"
+        self.assertPyxformXform(
+            survey=create_survey_element_from_dict(survey),
+            xml__xpath_match=[
+                # question has data binding, control, and itemset reference.
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.body_label_itext("select1", "q1"),
+                # itext has secondary choices instance, and labels for each language.
+                xpq.model_instance_exists("c1"),
+                xpq.model_itext_label("q1", "f", "ftext"),
+                xpq.model_itext_label("q1", "e", "etext"),
+                xpc.model_instance_choices_itext("c1", ("a", "b")),
+                xpc.model_itext_choice_text_label_by_pos("f", "c1", ("fa", "fb")),
+                xpc.model_itext_choice_text_label_by_pos("e", "c1", ("ea", "eb")),
+            ],
         )
 
-        expected_select_one_binding_xml = self.config.get(
-            self.cls_name, "test_select_one_question_multilingual_binding"
+    def test_select_one_question_multilingual__common_choices(self):
+        """Should be able to build a valid XForm from a dict where 2 questions use 1 choice list."""
+        survey = {
+            "type": "survey",
+            "name": "test_name",
+            "id_string": "data",
+            "children": [
+                {
+                    "label": "Q1",
+                    "type": "select one",
+                    "name": "q1",
+                    "itemset": "c1",
+                },
+                {
+                    "label": "Q2",
+                    "type": "select one",
+                    "name": "q2",
+                    "itemset": "c1",
+                },
+            ],
+            "choices": {
+                "c1": [
+                    {"label": {"f": "fa", "e": "ea"}, "name": "a"},
+                    {"label": {"f": "fb", "e": "eb"}, "name": "b"},
+                ]
+            },
+        }
+        self.assertPyxformXform(
+            survey=create_survey_element_from_dict(survey),
+            xml__xpath_match=[
+                # question has data binding, control, and itemset reference.
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.body_label_inline("select1", "q1", "Q1"),
+                xpq.model_instance_item("q2"),
+                xpq.model_instance_bind("q2", "string"),
+                xpq.body_label_inline("select1", "q2", "Q2"),
+                # itext has secondary choices instance, and labels for each language.
+                xpq.model_instance_exists("c1"),
+                xpc.model_instance_choices_itext("c1", ("a", "b")),
+                xpc.model_itext_choice_text_label_by_pos("f", "c1", ("fa", "fb")),
+                xpc.model_itext_choice_text_label_by_pos("e", "c1", ("ea", "eb")),
+            ],
         )
-
-        q = create_survey_element_from_dict(simple_select_one_json)
-        self.s.add_child(q)
-        self.assertEqual(
-            ctw(q.xml_control(survey=self.s)), expected_select_one_control_xml
-        )
-
-        if TESTING_BINDINGS:
-            self.assertEqual(
-                ctw(q.xml_bindings(survey=self.s)), expected_select_one_binding_xml
-            )
 
     def test_simple_integer_question_type_multilingual(self):
         """
@@ -124,11 +168,7 @@ class Json2XformQuestionValidationTests(TestCase):
         self.s.add_child(q)
 
         self.assertEqual(ctw(q.xml_control(survey=self.s)), expected_integer_control_xml)
-
-        if TESTING_BINDINGS:
-            self.assertEqual(
-                ctw(q.xml_bindings(survey=self.s)), expected_integer_binding_xml
-            )
+        self.assertEqual(ctw(q.xml_bindings(survey=self.s)), expected_integer_binding_xml)
 
     def test_simple_date_question_type_multilingual(self):
         """
@@ -152,11 +192,7 @@ class Json2XformQuestionValidationTests(TestCase):
         q = create_survey_element_from_dict(simple_date_question)
         self.s.add_child(q)
         self.assertEqual(ctw(q.xml_control(survey=self.s)), expected_date_control_xml)
-
-        if TESTING_BINDINGS:
-            self.assertEqual(
-                ctw(q.xml_bindings(survey=self.s)), expected_date_binding_xml
-            )
+        self.assertEqual(ctw(q.xml_bindings(survey=self.s)), expected_date_binding_xml)
 
     def test_simple_phone_number_question_type_multilingual(self):
         """
@@ -199,35 +235,41 @@ class Json2XformQuestionValidationTests(TestCase):
         """
         not sure how select all questions should show up...
         """
-        simple_select_all_question = {
-            "label": {"f": "f choisit", "e": "e choose"},
-            "type": "select all that apply",
-            "name": "select_all_q",
-            "choices": [
-                {"label": {"f": "ff", "e": "ef"}, "name": "f"},
-                {"label": {"f": "fg", "e": "eg"}, "name": "g"},
-                {"label": {"f": "fh", "e": "eh"}, "name": "h"},
+        survey = {
+            "type": "survey",
+            "name": "test_name",
+            "id_string": "data",
+            "children": [
+                {
+                    "label": {"f": "ftext", "e": "etext"},
+                    "type": "select all that apply",
+                    "name": "q1",
+                    "itemset": "c1",
+                }
             ],
+            "choices": {
+                "c1": [
+                    {"label": {"f": "fa", "e": "ea"}, "name": "a"},
+                    {"label": {"f": "fb", "e": "eb"}, "name": "b"},
+                ]
+            },
         }
-
-        expected_select_all_control_xml = self.config.get(
-            self.cls_name, "test_simple_select_all_question_multilingual_control"
+        self.assertPyxformXform(
+            survey=create_survey_element_from_dict(survey),
+            xml__xpath_match=[
+                # question has data binding, control, and itemset reference.
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.body_label_itext("select", "q1"),
+                # itext has secondary choices instance, and labels for each language.
+                xpq.model_instance_exists("c1"),
+                xpq.model_itext_label("q1", "f", "ftext"),
+                xpq.model_itext_label("q1", "e", "etext"),
+                xpc.model_instance_choices_itext("c1", ("a", "b")),
+                xpc.model_itext_choice_text_label_by_pos("f", "c1", ("fa", "fb")),
+                xpc.model_itext_choice_text_label_by_pos("e", "c1", ("ea", "eb")),
+            ],
         )
-
-        expected_select_all_binding_xml = self.config.get(
-            self.cls_name, "test_simple_select_all_question_multilingual_binding"
-        )
-
-        q = create_survey_element_from_dict(simple_select_all_question)
-        self.s.add_child(q)
-        self.assertEqual(
-            ctw(q.xml_control(survey=self.s)), expected_select_all_control_xml
-        )
-
-        if TESTING_BINDINGS:
-            self.assertEqual(
-                ctw(q.xml_bindings(survey=self.s)), expected_select_all_binding_xml
-            )
 
     def test_simple_decimal_question_multilingual(self):
         """
@@ -251,8 +293,4 @@ class Json2XformQuestionValidationTests(TestCase):
         q = create_survey_element_from_dict(simple_decimal_question)
         self.s.add_child(q)
         self.assertEqual(ctw(q.xml_control(survey=self.s)), expected_decimal_control_xml)
-
-        if TESTING_BINDINGS:
-            self.assertEqual(
-                ctw(q.xml_bindings(survey=self.s)), expected_decimal_binding_xml
-            )
+        self.assertEqual(ctw(q.xml_bindings(survey=self.s)), expected_decimal_binding_xml)

@@ -1,7 +1,7 @@
 import os
 
 import psutil
-from pyxform.xls2json_backends import md_table_to_workbook, xlsx_to_dict
+from pyxform.xls2json_backends import get_xlsform, md_table_to_workbook
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
 
 from tests import example_xls, test_output
@@ -40,6 +40,9 @@ SURVEY = """
 | {name}   |           |           |       |
 |          | type      | name      | label |
 |          | text      | q1        | Q1    |
+| settings |
+|          | form_title |
+|          | My Form    |
 """
 
 
@@ -330,7 +333,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 self.err_survey_required,
                 self.err_similar_found,
                 "'surveys'",
-                "'surve'",
+                "'Surve'",
             ],
         )
 
@@ -612,8 +615,8 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
 
     def test_xlsx_to_dict__extra_sheet_names_are_returned_by_parser(self):
         """Should return all sheet names so that later steps can do spellcheck."""
-        d = xlsx_to_dict(os.path.join(example_xls.PATH, "extra_sheet_names.xlsx"))
-        self.assertIn("survey", d)
-        self.assertIn("my_sheet", d)
-        self.assertIn("stettings", d)
-        self.assertIn("choices", d)
+        d = get_xlsform(os.path.join(example_xls.PATH, "extra_sheet_names.xlsx"))
+        self.assertIn("survey", d.sheet_names)
+        self.assertIn("my_sheet", d.sheet_names)
+        self.assertIn("stettings", d.sheet_names)
+        self.assertIn("choices", d.sheet_names)

@@ -11,7 +11,6 @@ from functools import lru_cache
 from io import StringIO
 from itertools import chain
 from json.decoder import JSONDecodeError
-from typing import Any
 from xml.dom import Node
 from xml.dom.minidom import Element, Text, _write_data
 
@@ -20,15 +19,15 @@ from defusedxml.minidom import parseString
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import parse_expression
+from pyxform.xls2json_backends import DefinitionData
 
-SEP = "_"
+BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
 INVALID_XFORM_TAG_REGEXP = re.compile(r"[^a-zA-Z:_][^a-zA-Z:_0-9\-.]*")
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
-BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
-PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
 NODE_TYPE_TEXT = {Node.TEXT_NODE, Node.CDATA_SECTION_NODE}
+PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
+SPACE_TRANS_TABLE = str.maketrans({" ": "_"})
 XML_TEXT_SUBS = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
-XML_TEXT_SUBS_KEYS = set(XML_TEXT_SUBS)
 XML_TEXT_TABLE = str.maketrans(XML_TEXT_SUBS)
 
 
@@ -44,7 +43,7 @@ class DetachableElement(Element):
     """
 
     def __init__(self, *args, **kwargs):
-        Element.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.ownerDocument = None
 
     def writexml(self, writer, indent="", addindent="", newl=""):
@@ -82,7 +81,7 @@ class DetachableElement(Element):
 
 @lru_cache(maxsize=64)
 def escape_text_for_xml(text: str) -> str:
-    if any(c in set(text) for c in XML_TEXT_SUBS_KEYS):
+    if any(c in set(text) for c in XML_TEXT_SUBS):
         return text.translate(XML_TEXT_TABLE)
     else:
         return text
@@ -171,7 +170,7 @@ def flatten(li):
 
 
 def external_choices_to_csv(
-    workbook_dict: dict[str, Any], warnings: list | None = None
+    workbook_dict: DefinitionData, warnings: list | None = None
 ) -> str | None:
     """
     Convert the 'external_choices' sheet data to CSV.
@@ -180,7 +179,7 @@ def external_choices_to_csv(
     :param warnings: The conversions warnings list.
     """
     warnings = coalesce(warnings, [])
-    if const.EXTERNAL_CHOICES not in workbook_dict:
+    if not workbook_dict.external_choices:
         warnings.append(
             f"Could not export itemsets.csv, the '{const.EXTERNAL_CHOICES}' sheet is missing."
         )
@@ -189,11 +188,11 @@ def external_choices_to_csv(
     itemsets = StringIO(newline="")
     csv_writer = csv.writer(itemsets, quoting=csv.QUOTE_ALL)
     try:
-        header = workbook_dict["external_choices_header"][0]
+        header = workbook_dict.external_choices_header[0]
     except (IndexError, KeyError, TypeError):
-        header = {k for d in workbook_dict[const.EXTERNAL_CHOICES] for k in d}
+        header = {k for d in workbook_dict.external_choices for k in d}
     csv_writer.writerow(header)
-    for row in workbook_dict[const.EXTERNAL_CHOICES]:
+    for row in workbook_dict.external_choices:
         csv_writer.writerow(row.values())
     return itemsets.getvalue()
 
@@ -227,13 +226,13 @@ def default_is_dynamic(element_default, element_type=None):
     * Contains arithmetic operator, including 'div' and 'mod' (except '-' for 'date' type).
     * Contains brackets, parentheses or braces.
     """
-    if not isinstance(element_default, str):
+    if not element_default or not isinstance(element_default, str):
         return False
 
     tokens, _ = parse_expression(element_default)
     for t in tokens:
         # Data types which are likely to have non-dynamic defaults containing a hyphen.
-        if element_type in ("date", "dateTime", "geopoint", "geotrace", "geoshape"):
+        if element_type in {"date", "dateTime", "geopoint", "geotrace", "geoshape"}:
             # Nested to avoid extra string comparisons if not a relevant data type.
             if t.name == "OPS_MATH" and t.value == "-":
                 return False
@@ -249,23 +248,6 @@ def default_is_dynamic(element_default, element_type=None):
             return True
 
     # Otherwise assume not dynamic.
-    return False
-
-
-def has_dynamic_label(choice_list: "list[dict[str, str]]") -> bool:
-    """
-    If the first or second choice label includes a reference, we must use itext.
-
-    Check the first two choices in case first is something like "Other".
-    """
-    for c in choice_list[:2]:
-        choice_label = c.get("label")
-        if (
-            choice_label is not None
-            and isinstance(choice_label, str)
-            and re.search(BRACKETED_TAG_REGEX, choice_label) is not None
-        ):
-            return True
     return False
 
 

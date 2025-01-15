@@ -38,7 +38,7 @@ def validate_pyxform_reference_syntax(
                 continue
             elif t.name == "PYXFORM_REF_END":
                 start_token = None
-            elif t.name in ("PYXFORM_REF_START", "PYXFORM_REF"):
+            elif t.name in {"PYXFORM_REF_START", "PYXFORM_REF"}:
                 msg = PYXFORM_REFERENCE_INVALID.format(
                     sheet=sheet_name, row_number=row_number, column=key
                 )

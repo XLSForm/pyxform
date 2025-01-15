@@ -1,6 +1,7 @@
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
+from tests.xpath_helpers.settings import xps
 
 
 class TestSettings(PyxformTestCase):
@@ -22,7 +23,7 @@ class TestSettings(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            xml__xpath_match=["/h:html/h:head/h:title[.='My Form']"],
+            xml__xpath_match=[xps.form_title("My Form")],
         )
 
     def test_form_id(self):
@@ -37,9 +38,7 @@ class TestSettings(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            xml__xpath_match=[
-                "/h:html/h:head/x:model/x:instance/x:test_name[@id='my_form']"
-            ],
+            xml__xpath_match=[xps.form_id("my_form")],
         )
 
     def test_clean_text_values__yes(self):

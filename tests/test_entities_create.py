@@ -1,12 +1,12 @@
 from pyxform import constants as co
 
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.entities import xpe
 
 
 class EntitiesCreationTest(PyxformTestCase):
     def test_basic_entity_creation_building_blocks(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |         |       |       |
             |          | type    | name  | label |
@@ -16,19 +16,21 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | trees   | a     |       |
             """,
             xml__xpath_match=[
-                "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity",
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@dataset = "trees"]',
+                xpe.model_instance_dataset("trees"),
                 # defaults to always creating
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@create = "1"]',
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@id = ""]',
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@id" and @type = "string" and @readonly = "true()"]',
-                '/h:html/h:head/x:model/x:setvalue[@event = "odk-instance-first-load" and @type = "string" and @ref = "/data/meta/entity/@id" and @value = "uuid()"]',
-                "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/x:label",
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/label" and @type = "string" and @readonly = "true()" and @calculate = "a"]',
+                '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@create = "1"]',
+                '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@id = ""]',
+                '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@id" and @type = "string" and @readonly = "true()"]',
+                '/h:html/h:head/x:model/x:setvalue[@event = "odk-instance-first-load" and @type = "string" and @ref = "/test_name/meta/entity/@id" and @value = "uuid()"]',
+                "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/x:label",
+                xpe.model_bind_label("a"),
                 f"""/h:html/h:head/x:model[@entities:entities-version = '{co.ENTITIES_OFFLINE_VERSION}']""",
             ],
             xml__xpath_count=[
-                ("/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity/@update", 0),
+                (
+                    "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/@update",
+                    0,
+                ),
             ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
@@ -137,7 +139,6 @@ class EntitiesCreationTest(PyxformTestCase):
 
     def test_label_and_create_if_in_entities_sheet__expand_node_selectors_to_xpath(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |         |       |                         |
             |          | type    | name  | label                   |
@@ -147,8 +148,8 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | trees   | ${a}  | string-length(${a}) > 3 |
             """,
             xml__xpath_match=[
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@create" and @calculate = "string-length( /data/a ) > 3"]',
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/label" and @type = "string" and @readonly = "true()" and @calculate = " /data/a "]',
+                '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@create" and @calculate = "string-length( /test_name/a ) > 3"]',
+                xpe.model_bind_label(" /test_name/a "),
             ],
         )
 
@@ -377,7 +378,6 @@ class EntitiesCreationTest(PyxformTestCase):
 
     def test_list_name_alias_to_dataset(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |           |       |       |
             |          | type      | name  | label |
@@ -386,10 +386,7 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | list_name | label |       |
             |          | trees     | a     |       |
             """,
-            xml__xpath_match=[
-                "/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity",
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@dataset = "trees"]',
-            ],
+            xml__xpath_match=[xpe.model_instance_dataset("trees")],
         )
 
     def test_entities_columns__all_expected(self):

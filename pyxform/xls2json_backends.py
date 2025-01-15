@@ -5,14 +5,13 @@ XLS-to-dict and csv-to-dict are essentially backends for xls2json.
 import csv
 import datetime
 import re
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from enum import Enum
-from functools import reduce
 from io import BytesIO, IOBase, StringIO
 from os import PathLike
 from pathlib import Path
-from typing import Any
+from typing import Any, BinaryIO
 from zipfile import BadZipFile
 
 from openpyxl import open as pyxl_open
@@ -35,6 +34,29 @@ XL_DATE_AMBIGOUS_MSG = (
     "The xls file provided has an invalid date on the %s sheet, under"
     " the %s column on row number %s"
 )
+RE_WHITESPACE = re.compile(r"( )+")
+
+
+@dataclass(slots=True)
+class DefinitionData:
+    # XLSForm definition sheets.
+    # survey is optional to allow processing to proceed to warnings / spell checks.
+    survey: Sequence[dict[str, str]] | None = None
+    survey_header: Sequence[dict[str, Any]] | None = None
+    choices: Sequence[dict[str, str]] | None = None
+    choices_header: Sequence[dict[str, Any]] | None = None
+    settings: Sequence[dict[str, str]] | None = None
+    settings_header: Sequence[dict[str, Any]] | None = None
+    external_choices: Sequence[dict[str, str]] | None = None
+    external_choices_header: Sequence[dict[str, Any]] | None = None
+    entities: Sequence[dict[str, str]] | None = None
+    entities_header: Sequence[dict[str, Any]] | None = None
+    osm: Sequence[dict[str, str]] | None = None
+    osm_header: Sequence[dict[str, Any]] | None = None
+
+    # Extra metadata.
+    sheet_names: Sequence[str] | None = None
+    fallback_form_name: str | None = None
 
 
 def _list_to_dict_list(list_items):
@@ -43,7 +65,7 @@ def _list_to_dict_list(list_items):
     Returns a list of the created dict or an empty list
     """
     if list_items:
-        return [{str(i): "" for i in list_items}]
+        return [{str(i): None for i in list_items}]
     return []
 
 
@@ -57,7 +79,7 @@ def trim_trailing_empty(a_list: list, n_empty: int) -> list:
     return a_list
 
 
-def get_excel_column_headers(first_row: Iterator[str | None]) -> list[str | None]:
+def get_excel_column_headers(first_row: Iterable[str | None]) -> list[str | None]:
     """Get column headers from the first row; stop if there's a run of empty columns."""
     max_adjacent_empty_columns = 20
     column_header_list = []
@@ -76,15 +98,15 @@ def get_excel_column_headers(first_row: Iterator[str | None]) -> list[str | None
             if column_header in column_header_list:
                 raise PyXFormError(f"Duplicate column header: {column_header}")
             # Strip whitespaces from the header.
-            clean_header = re.sub(r"( )+", " ", column_header.strip())
+            clean_header = RE_WHITESPACE.sub(" ", column_header.strip())
             column_header_list.append(clean_header)
 
     return trim_trailing_empty(column_header_list, adjacent_empty_cols)
 
 
 def get_excel_rows(
-    headers: Iterator[str | None],
-    rows: Iterator[tuple[aCell, ...]],
+    headers: Iterable[str | None],
+    rows: Iterable[tuple[aCell, ...]],
     cell_func: Callable[[aCell, int, str], Any],
 ) -> list[dict[str, Any]]:
     """Get rows of cleaned data; stop if there's a run of empty rows."""
@@ -165,12 +187,13 @@ def xls_to_dict(path_or_file):
         return rows, _list_to_dict_list(column_header_list)
 
     def process_workbook(wb: xlrdBook):
-        result_book = {}
+        result_book = {"sheet_names": []}
         for wb_sheet in wb.sheets():
-            # Note that the sheet exists but do no further processing here.
-            result_book[wb_sheet.name] = []
+            # Note original in sheet_names for spelling check.
+            result_book["sheet_names"].append(wb_sheet.name)
+            sheet_name = wb_sheet.name.lower()
             # Do not process sheets that have nothing to do with XLSForm.
-            if wb_sheet.name not in constants.SUPPORTED_SHEET_NAMES:
+            if sheet_name not in constants.SUPPORTED_SHEET_NAMES:
                 if len(wb.sheets()) == 1:
                     (
                         result_book[constants.SURVEY],
@@ -180,8 +203,8 @@ def xls_to_dict(path_or_file):
                     continue
             else:
                 (
-                    result_book[wb_sheet.name],
-                    result_book[f"{wb_sheet.name}_header"],
+                    result_book[sheet_name],
+                    result_book[f"{sheet_name}_header"],
                 ) = xls_to_dict_normal_sheet(wb=wb, wb_sheet=wb_sheet)
         return result_book
 
@@ -255,25 +278,25 @@ def xlsx_to_dict(path_or_file):
         return rows, _list_to_dict_list(column_header_list)
 
     def process_workbook(wb: pyxlWorkbook):
-        result_book = {}
+        result_book = {"sheet_names": []}
         for sheetname in wb.sheetnames:
-            wb_sheet = wb[sheetname]
-            # Note that the sheet exists but do no further processing here.
-            result_book[sheetname] = []
+            # Note original in sheet_names for spelling check.
+            result_book["sheet_names"].append(sheetname)
+            sheet_name = sheetname.lower()
             # Do not process sheets that have nothing to do with XLSForm.
-            if sheetname not in constants.SUPPORTED_SHEET_NAMES:
+            if sheet_name not in constants.SUPPORTED_SHEET_NAMES:
                 if len(wb.sheetnames) == 1:
                     (
                         result_book[constants.SURVEY],
                         result_book[f"{constants.SURVEY}_header"],
-                    ) = xlsx_to_dict_normal_sheet(wb_sheet)
+                    ) = xlsx_to_dict_normal_sheet(wb[sheetname])
                 else:
                     continue
             else:
                 (
-                    result_book[sheetname],
-                    result_book[f"{sheetname}_header"],
-                ) = xlsx_to_dict_normal_sheet(wb_sheet)
+                    result_book[sheet_name],
+                    result_book[f"{sheet_name}_header"],
+                ) = xlsx_to_dict_normal_sheet(wb[sheetname])
         return result_book
 
     try:
@@ -306,14 +329,18 @@ def xlsx_value_to_str(value) -> str:
         # ensure unicode and replace nbsp spaces with normal ones
         # to avoid this issue:
         # https://github.com/modilabs/pyxform/issues/83
-        return str(value).replace(chr(160), " ")
+        value = str(value)
+        if chr(160) in value:
+            return value.replace(chr(160), " ")
+        else:
+            return value
 
 
 def is_empty(value):
     if value is None:
         return True
     elif isinstance(value, str):
-        if value.strip() == "":
+        if not value or value.isspace():
             return True
 
     return False
@@ -358,25 +385,26 @@ def csv_to_dict(path_or_file):
         elif len(row) == 1:
             return row[0], None
         else:
-            s_or_c = row[0]
-            content = row[1:]
-            if s_or_c == "":
-                s_or_c = None
-            # concatenate all the strings in content
-            if reduce(lambda x, y: x + y, content) == "":
+            sheet_name = row[0].strip()
+            content = [str(v).strip() for v in row[1:]]
+            if sheet_name == "":
+                sheet_name = None
+            if not any(c != "" for c in content):
                 # content is a list of empty strings
                 content = None
-            return s_or_c, content
+            return sheet_name, content
 
     def process_csv_data(rd):
-        _dict = {}
+        _dict = {"sheet_names": []}
         sheet_name = None
         current_headers = None
         for row in rd:
-            survey_or_choices, content = first_column_as_sheet_name(row)
-            if survey_or_choices is not None:
-                sheet_name = survey_or_choices
-                if sheet_name not in _dict:
+            maybe_sheet_name, content = first_column_as_sheet_name(row)
+            if maybe_sheet_name is not None:
+                sheet_name = maybe_sheet_name
+                if sheet_name and sheet_name not in _dict:
+                    _dict["sheet_names"].append(sheet_name)
+                    sheet_name = sheet_name.lower()
                     _dict[str(sheet_name)] = []
                 current_headers = None
             if content is not None:
@@ -384,13 +412,11 @@ def csv_to_dict(path_or_file):
                     current_headers = content
                     _dict[f"{sheet_name}_header"] = _list_to_dict_list(current_headers)
                 else:
-                    _d = {}
-                    for key, val in zip(current_headers, content, strict=False):
-                        if val != "":
-                            # Slight modification so values are striped
-                            # this is because csvs often spaces following commas
-                            # (but the csv reader might already handle that.)
-                            _d[str(key)] = str(val.strip())
+                    _d = {
+                        k: v
+                        for k, v in zip(current_headers, content, strict=False)
+                        if v != ""
+                    }
                     _dict[sheet_name].append(_d)
         return _dict
 
@@ -440,6 +466,8 @@ def convert_file_to_csv_string(path):
     foo = StringIO(newline="")
     writer = csv.writer(foo, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
     for sheet_name, rows in imported_sheets.items():
+        if sheet_name == "sheet_names":
+            continue
         writer.writerow([sheet_name])
         out_keys = []
         out_rows = []
@@ -526,85 +554,71 @@ MD_SEPARATOR = re.compile(r"^[\|-]+$")
 MD_PIPE_OR_ESCAPE = re.compile(r"(?<!\\)\|")
 
 
-def _md_strp_cell(cell):
-    val = cell.strip()
-    if val == "":
+def _md_strp_cell(cell: str) -> str:
+    if not cell or cell.isspace():
         return None
-    val = val.replace(r"\|", "|")
-    return val
+    return cell.strip().replace(r"\|", "|")
 
 
-def _md_extract_array(mdtablerow):
-    match = re.match(MD_CELL, mdtablerow)
-    if match:
-        mtchstr = match.groups()[0]
-        if re.match(MD_SEPARATOR, mtchstr):
-            return False
-        else:
-            return [_md_strp_cell(c) for c in re.split(MD_PIPE_OR_ESCAPE, mtchstr)]
-
-    return False
-
-
-def _md_is_null_row(r_arr):
-    for cell in r_arr:
-        if cell is not None:
-            return False
-
-    return True
-
-
-def _md_table_to_ss_structure(mdstr: str) -> list[tuple[str, list[list[str]]]]:
-    ss_arr = []
-    for item in mdstr.split("\n"):
-        arr = _md_extract_array(item)
-        if arr:
-            ss_arr.append(arr)
+def _md_table_to_ss_structure(mdstr: str) -> dict[str, list[tuple[str, ...]]]:
     sheet_name = False
     sheet_arr = False
-    sheets = []
-    for row in ss_arr:
-        if row[0] is not None:
-            if sheet_arr:
-                sheets.append((sheet_name, sheet_arr))
-            sheet_arr = []
-            sheet_name = row[0]
-        excluding_first_col = row[1:]
-        if sheet_name and not _md_is_null_row(excluding_first_col):
-            sheet_arr.append(excluding_first_col)
-    sheets.append((sheet_name, sheet_arr))
+    sheets = {}
+    for line in mdstr.split("\n"):
+        if re.match(MD_COMMENT, line):
+            # ignore lines which start with pound sign
+            continue
+        elif re.match(MD_COMMENT_INLINE, line):
+            # keep everything before the # outside of the last occurrence of |
+            line = re.match(MD_COMMENT_INLINE, line).groups()[0]
+        match = re.match(MD_CELL, line)
+        if match:
+            mtchstr = match.groups()[0]
+            if not re.match(MD_SEPARATOR, mtchstr):
+                row_split = re.split(MD_PIPE_OR_ESCAPE, mtchstr)
+                first_col = _md_strp_cell(row_split[0])
+                row = tuple(_md_strp_cell(c) for c in row_split[1:])
+                if first_col is None and row is None:
+                    continue
+                if first_col is not None:
+                    if sheet_arr:
+                        sheets[sheet_name] = sheet_arr
+                    sheet_arr = []
+                    sheet_name = first_col
+                if sheet_name and any(c is not None for c in row):
+                    sheet_arr.append(row)
+            sheets[sheet_name] = sheet_arr
 
     return sheets
 
 
 def md_to_dict(md: str | BytesIO):
-    def _row_to_dict(row, headers):
-        out_dict = {}
-        for i in range(len(row)):
-            col = row[i]
-            if col not in [None, ""]:
-                out_dict[headers[i]] = col
-        return out_dict
-
     def list_to_dicts(arr):
-        return [_row_to_dict(r, arr[0]) for r in arr[1:]]
+        return [
+            {arr[0][i]: v for i, v in enumerate(row) if v not in {None, ""}}
+            for row in arr[1:]
+        ]
 
     def process_md_data(md_: str):
-        _md = []
-        for line in md_.split("\n"):
-            if re.match(MD_COMMENT, line):
-                # ignore lines which start with pound sign
-                continue
-            elif re.match(MD_COMMENT_INLINE, line):
-                # keep everything before the # outside of the last occurrence of |
-                _md.append(re.match(MD_COMMENT_INLINE, line).groups()[0].strip())
+        result_book = {"sheet_names": []}
+        ss_structure = _md_table_to_ss_structure(md_)
+        for sheet, contents in ss_structure.items():
+            # Note original in sheet_names for spelling check.
+            result_book["sheet_names"].append(sheet)
+            sheet_name = sheet.lower()
+            # Do not process sheets that have nothing to do with XLSForm.
+            if sheet_name not in constants.SUPPORTED_SHEET_NAMES:
+                if len(ss_structure) == 1:
+                    result_book[constants.SURVEY] = list_to_dicts(contents)
+                    result_book[f"{constants.SURVEY}_header"] = _list_to_dict_list(
+                        contents[0]
+                    )
+                else:
+                    continue
             else:
-                _md.append(line.strip())
-        md_ = "\n".join(_md)
-        sheets = {}
-        for sheet, contents in _md_table_to_ss_structure(md_):
-            sheets[sheet] = list_to_dicts(contents)
-        return sheets
+                result_book[sheet_name] = list_to_dicts(contents)
+                result_book[f"{sheet_name}_header"] = _list_to_dict_list(contents[0])
+        return result_book
 
     try:
         md_data = get_definition_data(definition=md)
@@ -622,7 +636,7 @@ def md_table_to_workbook(mdstr: str) -> pyxlWorkbook:
     """
     md_data = _md_table_to_ss_structure(mdstr=mdstr)
     wb = pyxlWorkbook(write_only=True)
-    for key, rows in md_data:
+    for key, rows in md_data.items():
         sheet = wb.create_sheet(title=key)
         for r in rows:
             sheet.append(r)
@@ -685,13 +699,14 @@ class SupportedFileTypes(Enum):
     def get_processors():
         return {
             SupportedFileTypes.xlsx: xlsx_to_dict,
+            SupportedFileTypes.xlsm: xlsx_to_dict,
             SupportedFileTypes.xls: xls_to_dict,
             SupportedFileTypes.md: md_to_dict,
             SupportedFileTypes.csv: csv_to_dict,
         }
 
 
-@dataclass
+@dataclass(slots=True)
 class Definition:
     data: BytesIO
     file_type: SupportedFileTypes | None
@@ -701,7 +716,7 @@ class Definition:
 def definition_to_dict(
     definition: str | PathLike[str] | bytes | BytesIO | IOBase | Definition,
     file_type: str | None = None,
-) -> dict:
+) -> DefinitionData:
     """
     Convert raw definition data to a dict ready for conversion to a XForm.
 
@@ -724,7 +739,9 @@ def definition_to_dict(
 
     for func in processors.values():
         try:
-            return func(definition)
+            return DefinitionData(
+                fallback_form_name=definition.file_path_stem, **func(definition)
+            )
         except PyXFormReadError:  # noqa: PERF203
             continue
 
@@ -790,3 +807,17 @@ def get_definition_data(
         file_type=file_type,
         file_path_stem=file_path_stem,
     )
+
+
+def get_xlsform(
+    xlsform: str | PathLike[str] | bytes | BytesIO | BinaryIO | dict,
+    file_type: str | None = None,
+) -> DefinitionData:
+    if isinstance(xlsform, dict):
+        workbook_dict = DefinitionData(**xlsform)
+    else:
+        definition = get_definition_data(definition=xlsform)
+        if file_type is None:
+            file_type = definition.file_type
+        workbook_dict = definition_to_dict(definition=definition, file_type=file_type)
+    return workbook_dict

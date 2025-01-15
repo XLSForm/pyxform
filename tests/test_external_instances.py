@@ -476,7 +476,7 @@ class ExternalInstanceTests(PyxformTestCase):
                         "label": "QD",
                         "calculate": dedent(qd),
                     },
-                ]
+                ],
             },
             xml__contains=[
                 """<instance id="my_data_b" src="jr://file-csv/my_data_b.csv"/>""",

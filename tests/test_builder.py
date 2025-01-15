@@ -225,7 +225,7 @@ class BuilderTests(TestCase):
                         "name": "pit_latrine_with_slab",
                     },
                     {
-                        "label": {"english": "Pit latrine without " "slab/open pit"},
+                        "label": {"english": "Pit latrine without slab/open pit"},
                         "name": "open_pit_latrine",
                     },
                     {"label": {"english": "Bucket system"}, "name": "bucket_system"},

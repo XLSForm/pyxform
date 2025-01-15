@@ -1,22 +1,17 @@
+from collections.abc import Sequence
 from typing import Any
 
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_xml_tag
-from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 
 EC = const.EntityColumns
 
 
 def get_entity_declaration(
-    entities_sheet: list[dict], workbook_dict: dict[str, list[dict]], warnings: list[str]
+    entities_sheet: Sequence[dict],
 ) -> dict[str, Any]:
-    if len(entities_sheet) == 0:
-        similar = find_sheet_misspellings(key=const.ENTITIES, keys=workbook_dict.keys())
-        if similar is not None:
-            warnings.append(similar + const._MSG_SUPPRESS_SPELLING)
-        return {}
-    elif len(entities_sheet) > 1:
+    if len(entities_sheet) > 1:
         raise PyXFormError(
             "Currently, you can only declare a single entity per form. Please make sure your entities sheet only declares one entity."
         )
@@ -49,11 +44,11 @@ def get_entity_declaration(
         const.NAME: const.ENTITY,
         const.TYPE: const.ENTITY,
         const.PARAMETERS: {
-            EC.DATASET: dataset_name,
-            EC.ENTITY_ID: entity_id,
-            EC.CREATE_IF: create_condition,
-            EC.UPDATE_IF: update_condition,
-            EC.LABEL: entity_label,
+            EC.DATASET.value: dataset_name,
+            EC.ENTITY_ID.value: entity_id,
+            EC.CREATE_IF.value: create_condition,
+            EC.UPDATE_IF.value: update_condition,
+            EC.LABEL.value: entity_label,
         },
     }
 
@@ -83,13 +78,16 @@ def get_validated_dataset_name(entity):
 
 
 def validate_entity_saveto(
-    row: dict, row_number: int, entity_declaration: dict[str, Any], in_repeat: bool
+    row: dict,
+    row_number: int,
+    in_repeat: bool,
+    entity_declaration: dict[str, Any] | None = None,
 ):
     save_to = row.get(const.BIND, {}).get("entities:saveto", "")
     if not save_to:
         return
 
-    if len(entity_declaration) == 0:
+    if not entity_declaration:
         raise PyXFormError(
             "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
         )
@@ -126,9 +124,9 @@ def validate_entity_saveto(
 
 
 def validate_entities_columns(row: dict):
-    extra = {k: None for k in row.keys() if k not in EC.value_list()}
+    extra = {k: None for k in row if k not in EC.value_list()}
     if 0 < len(extra):
-        fmt_extra = ", ".join(f"'{k}'" for k in extra.keys())
+        fmt_extra = ", ".join(f"'{k}'" for k in extra)
         msg = (
             f"The entities sheet included the following unexpected column(s): {fmt_extra}. "
             f"These columns are not supported by this version of pyxform. Please either: "

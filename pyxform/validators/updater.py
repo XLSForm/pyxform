@@ -302,9 +302,9 @@ class _UpdateHandler:
                         if maybe_existing_match.CRC == zip_item.CRC:
                             continue
                     zip_jobs[file_out_path] = zip_item
-        if len(bin_paths) != len(zip_jobs.keys()):
+        if len(bin_paths) != len(zip_jobs):
             raise PyXFormError(
-                f"Expected {len(bin_paths)} zip job files, found: {len(zip_jobs.keys())}"
+                f"Expected {len(bin_paths)} zip job files, found: {len(zip_jobs)}"
             )
         return zip_jobs
 

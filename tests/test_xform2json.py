@@ -49,9 +49,9 @@ class DumpAndLoadXForm2JsonTests(XFormTestCase):
         for filename, survey in self.surveys.items():
             with self.subTest(msg=filename):
                 survey.json_dump()
-                expected = survey.to_xml(pretty_print=False)
+                expected = survey.to_xml(validate=False, pretty_print=False)
                 survey_from_dump = create_survey_element_from_xml(expected)
-                observed = survey_from_dump.to_xml(pretty_print=False)
+                observed = survey_from_dump.to_xml(validate=False, pretty_print=False)
                 self.assertXFormEqual(expected, observed)
 
     def tearDown(self):

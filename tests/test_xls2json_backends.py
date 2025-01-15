@@ -4,11 +4,15 @@ Test xls2json_backends module functionality.
 
 import datetime
 import os
-from unittest import TestCase
 
 import openpyxl
 import xlrd
+from pyxform.builder import create_survey_element_from_dict
+from pyxform.xls2json import workbook_to_json
 from pyxform.xls2json_backends import (
+    csv_to_dict,
+    get_xlsform,
+    md_to_dict,
     xls_to_dict,
     xls_value_to_unicode,
     xlsx_to_dict,
@@ -16,12 +20,19 @@ from pyxform.xls2json_backends import (
 )
 
 from tests import bug_example_xls, utils
+from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.entities import xpe
+from tests.xpath_helpers.questions import xpq
+from tests.xpath_helpers.settings import xps
 
 
-class TestXLS2JSONBackends(TestCase):
+class TestXLS2JSONBackends(PyxformTestCase):
     """
     Test xls2json_backends module.
     """
+
+    maxDiff = None
 
     def test_xls_value_to_unicode(self):
         """
@@ -58,27 +69,115 @@ class TestXLS2JSONBackends(TestCase):
     def test_defusedxml_enabled(self):
         self.assertTrue(openpyxl.DEFUSEDXML)
 
+    def test_case_insensitivity(self):
+        """Should find all input types are case-insensitive for sheet names and headers."""
+        # Exhaustive matches for XLSForm content to check all sheets / headers work.
+        xml__xpath_match = [
+            # survey
+            xpq.model_instance_item("q1"),
+            xpq.model_itext_label("q1", "EN", "Are you good?"),
+            xpq.body_control("q1", "select1"),
+            xpq.model_instance_item("q2"),
+            xpq.model_itext_label("q2", "EN", "Where are you?"),
+            xpq.body_control("q2", "input"),
+            xpq.model_instance_item("q3"),
+            xpq.model_itext_label("q3", "EN", "Where exactly?"),
+            xpq.body_control("q3", "upload"),
+            # choices
+            xpc.model_instance_choices_itext("c1", ("n1-c", "n2-c")),
+            xpc.model_itext_choice_text_label_by_pos("EN", "c1", ("l1-c", "l2-c")),
+            # settings
+            xps.form_title("Yes or no"),
+            xps.form_id("YesNo"),
+            xps.language_is_default("EN"),
+            # external choices
+            """
+            /h:html/h:body/x:input[
+            @ref='/test_name/q2'
+            and @query="instance('c1')/root/item[YES_NO= /test_name/q1 ]"
+            ]
+            """,
+            # entities
+            xpe.model_instance_dataset("e1"),
+            xpe.model_bind_label("l1"),
+            # osm
+            xpq.body_upload_tags("q3", (("n1-o", "l1-o"), ("n2-o", "l2-o"))),
+        ]
+        file_types = [".xlsx", ".xls", ".csv", ".md"]
+        for file_type in file_types:
+            with self.subTest(msg=file_type):
+                data = get_xlsform(
+                    xlsform=utils.path_to_text_fixture(f"case_insensitivity{file_type}"),
+                )
+                # All sheets recognised.
+                for attr in data.__slots__:
+                    self.assertIsNotNone(getattr(data, attr))
+                # Expected original sheet_names - needed for spellchecks.
+                self.assertEqual(
+                    [
+                        "SURVEY",
+                        "CHOICES",
+                        "SETTINGS",
+                        "EXTERNAL_CHOICES",
+                        "ENTITIES",
+                        "OSM",
+                    ],
+                    data.sheet_names,
+                )
+                # Headers stripped, but not split or lower-cased yet, since this requires
+                # more complex logic that is part of workbook_to_json.
+                self.assertEqual(
+                    ["TYPE", "NAME", "LABEL::EN", "CHOICE_FILTER"],
+                    list(data.survey_header[0].keys()),
+                )
+                self.assertEqual(
+                    ["LIST_NAME", "NAME", "LABEL::EN"],
+                    list(data.choices_header[0].keys()),
+                )
+                self.assertEqual(
+                    ["FORM_TITLE", "FORM_ID", "DEFAULT_LANGUAGE"],
+                    list(data.settings_header[0].keys()),
+                )
+                self.assertEqual(
+                    ["LIST_NAME", "NAME", "LABEL", "YES_NO"],
+                    list(data.external_choices_header[0].keys()),
+                )
+                self.assertEqual(
+                    ["DATASET", "LABEL"], list(data.entities_header[0].keys())
+                )
+                self.assertEqual(
+                    ["LIST_NAME", "NAME", "LABEL"], list(data.osm_header[0].keys())
+                )
+                # All columns recognised.
+                pyxform = workbook_to_json(workbook_dict=data, form_name="test_name")
+                self.assertPyxformXform(
+                    survey=create_survey_element_from_dict(pyxform),
+                    xml__xpath_match=xml__xpath_match,
+                )
+
     def test_equivalency(self):
+        """Should get the same data from equivalent files using each file type reader."""
         equivalent_fixtures = [
             "group",
+            "include",
+            "include_json",
             "loop",
             "specify_other",
-            "include",
             "text_and_integer",
-            "include_json",
             "yes_or_no_question",
         ]
         for fixture in equivalent_fixtures:
-            xls_path = utils.path_to_text_fixture(f"{fixture}.xls")
-            xlsx_path = utils.path_to_text_fixture(f"{fixture}.xlsx")
-            xls_inp = xls_to_dict(xls_path)
-            xlsx_inp = xlsx_to_dict(xlsx_path)
-            self.maxDiff = None
-            self.assertEqual(xls_inp, xlsx_inp)
+            xlsx_inp = xlsx_to_dict(utils.path_to_text_fixture(f"{fixture}.xlsx"))
+            xls_inp = xls_to_dict(utils.path_to_text_fixture(f"{fixture}.xls"))
+            csv_inp = csv_to_dict(utils.path_to_text_fixture(f"{fixture}.csv"))
+            md_inp = md_to_dict(utils.path_to_text_fixture(f"{fixture}.md"))
+
+            self.assertEqual(xlsx_inp, xls_inp)
+            self.assertEqual(xlsx_inp, csv_inp)
+            self.assertEqual(xlsx_inp, md_inp)
 
     def test_xls_with_many_empty_cells(self):
         """Should quickly produce expected data, and find large input sheet dimensions."""
-        self.maxDiff = None
         # Test fixture produced by adding data at cells IV1 and A19999.
         xls_path = os.path.join(bug_example_xls.PATH, "extra_columns.xls")
         before = datetime.datetime.now(datetime.timezone.utc)
@@ -102,7 +201,6 @@ class TestXLS2JSONBackends(TestCase):
 
     def test_xlsx_with_many_empty_cells(self):
         """Should quickly produce expected data, and find large input sheet dimensions."""
-        self.maxDiff = None
         # Test fixture produced (presumably) by a LibreOffice serialisation bug.
         xlsx_path = os.path.join(bug_example_xls.PATH, "UCL_Biomass_Plot_Form.xlsx")
         before = datetime.datetime.now(datetime.timezone.utc)

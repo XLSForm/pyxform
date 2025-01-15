@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from tests.pyxform_test_case import PyxformTestCase
 
 
-@dataclass
+@dataclass(slots=True)
 class CaseData:
     xpath: str
     exact: "set[str]"
