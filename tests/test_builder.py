@@ -8,9 +8,14 @@ from pathlib import Path
 from unittest import TestCase
 
 import defusedxml.ElementTree as ETree
-from pyxform import InputQuestion, Survey
-from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
+from pyxform import InputQuestion, MultipleChoiceQuestion, Survey
+from pyxform.builder import (
+    SurveyElementBuilder,
+    create_survey_element_from_dict,
+    create_survey_from_xls,
+)
 from pyxform.errors import PyXFormError
+from pyxform.question import Option
 from pyxform.xls2json import print_pyobj_to_json
 
 from tests import utils
@@ -562,3 +567,120 @@ class BuilderTests(TestCase):
         ]
         self.assertEqual(len(body_elms), 1)
         self.assertEqual(body_elms[0].get("class"), "ltr")
+
+    def test_options_has_correct_parent(self):
+        survey_dict = {
+            "type": "survey",
+            "name": "data",
+            "title": "empty_cell",
+            "id_string": "empty_cell",
+            "sms_keyword": "empty_cell",
+            "default_language": "default",
+            "children": [
+                {
+                    "type": "group",
+                    "name": "a",
+                    "label": "Group A",
+                    "children": [
+                        {
+                            "type": "select one",
+                            "name": "fruita",
+                            "label": "Fruit A",
+                            "parameters": {},
+                            "itemset": "fruits",
+                            "list_name": "fruits",
+                            "choices": [
+                                {"name": "orange", "label": "Orange"},
+                                {"name": "mango", "label": "Mango"},
+                            ],
+                        },
+                        {
+                            "type": "select one",
+                            "name": "fruity",
+                            "label": "Fruit Y",
+                            "parameters": {},
+                            "itemset": "fruity",
+                            "list_name": "fruity",
+                            "choices": [
+                                {"name": "orange", "label": "Orange"},
+                                {"name": "mango", "label": "Mango"},
+                            ],
+                        },
+                    ],
+                },
+                {
+                    "type": "group",
+                    "name": "b",
+                    "label": "Group B",
+                    "children": [
+                        {
+                            "type": "select one",
+                            "name": "fruitz",
+                            "label": "Fruit Z",
+                            "parameters": {},
+                            "itemset": "fruits",
+                            "list_name": "fruits",
+                            "choices": [
+                                {"name": "orange", "label": "Orange"},
+                                {"name": "mango", "label": "Mango"},
+                            ],
+                        },
+                        {
+                            "type": "select all that apply",
+                            "name": "fruitb",
+                            "label": "Fruit B",
+                            "parameters": {},
+                            "itemset": "fruity",
+                            "list_name": "fruity",
+                            "choices": [
+                                {"name": "orange", "label": "Orange"},
+                                {"name": "mango", "label": "Mango"},
+                            ],
+                        },
+                    ],
+                },
+                {
+                    "name": "meta",
+                    "type": "group",
+                    "control": {"bodyless": True},
+                    "children": [
+                        {
+                            "name": "instanceID",
+                            "bind": {"readonly": "true()", "jr:preload": "uid"},
+                            "type": "calculate",
+                        }
+                    ],
+                },
+            ],
+            "choices": {
+                "fruits": [
+                    {"name": "orange", "label": "Orange"},
+                    {"name": "mango", "label": "Mango"},
+                ],
+                "fruity": [
+                    {"name": "orange", "label": "Orange"},
+                    {"name": "mango", "label": "Mango"},
+                ],
+            },
+        }
+        survey = create_survey_element_from_dict(survey_dict)
+
+        fruita = survey.children[0].children[0]
+        self.assertTrue(isinstance(fruita, MultipleChoiceQuestion))
+        self.assertEqual(fruita.name, "fruita")
+
+        fruita_orange = fruita.children[0]
+        self.assertTrue(isinstance(fruita_orange, Option))
+        self.assertEqual(fruita_orange.name, "orange")
+        self.assertEqual(fruita_orange.parent, fruita)
+        self.assertEqual(fruita_orange.get_xpath(), "/data/a/fruita/orange")
+
+        fruitz = survey.children[1].children[0]
+        self.assertTrue(isinstance(fruitz, MultipleChoiceQuestion))
+        self.assertEqual(fruitz.name, "fruitz")
+
+        fruitz_orange = fruitz.children[0]
+        self.assertTrue(isinstance(fruitz_orange, Option))
+        self.assertEqual(fruitz_orange.name, "orange")
+        self.assertEqual(fruitz_orange.parent, fruitz)
+        self.assertEqual(fruitz_orange.get_xpath(), "/data/b/fruitz/orange")

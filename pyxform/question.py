@@ -2,6 +2,7 @@
 XForm Survey element classes for different question types.
 """
 
+import copy
 import os.path
 from collections.abc import Callable, Generator, Iterable
 from itertools import chain
@@ -372,7 +373,7 @@ class MultipleChoiceQuestion(Question):
         kw_children = kwargs.pop(constants.CHILDREN, None)
         choices = coalesce(kw_choices, kw_children)
         if isinstance(choices, tuple) and isinstance(next(iter(choices)), Option):
-            self.children = choices
+            self.children = copy.deepcopy(choices)
         elif choices:
             self.children = tuple(
                 Option(**c) for c in combine_lists(kw_choices, kw_children)
