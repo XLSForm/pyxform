@@ -53,6 +53,13 @@ class SurveyElement(Mapping):
     def __getitem__(self, key):
         return self.__getattribute__(key)
 
+    def get(self, key, default=None):
+        # override `get` to catch AttributeErrors instead of KeyErrors
+        try:
+            return self.__getattribute__(key)
+        except AttributeError:
+            return default
+
     @staticmethod
     def get_slot_names() -> tuple[str, ...]:
         """Each subclass must provide a list of slots from itself and all parents."""
