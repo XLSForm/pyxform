@@ -4,6 +4,7 @@ Survey Element base class for all survey elements.
 
 import json
 import re
+import warnings
 from collections.abc import Callable, Generator, Iterable, Mapping
 from itertools import chain
 from typing import TYPE_CHECKING, Optional
@@ -35,6 +36,7 @@ SURVEY_ELEMENT_FIELDS = (
 )
 SURVEY_ELEMENT_EXTRA_FIELDS = ("_survey_element_xpath",)
 SURVEY_ELEMENT_SLOTS = (*SURVEY_ELEMENT_FIELDS, *SURVEY_ELEMENT_EXTRA_FIELDS)
+_GET_SENTINEL = object()
 
 
 class SurveyElement(Mapping):
@@ -52,6 +54,22 @@ class SurveyElement(Mapping):
 
     def __getitem__(self, key):
         return self.__getattribute__(key)
+
+    def get(self, key, default=_GET_SENTINEL):
+        try:
+            return self.__getattribute__(key)
+        except AttributeError:
+            # Sentinel used rather than None since caller may write `default=None`.
+            if default is _GET_SENTINEL:
+                raise
+            warnings.warn(
+                "The `obj.get(key, default)` usage pattern will be removed in a future "
+                "version of pyxform. Please check the object type to ensure the "
+                "attribute will exist, or use `hasattr(obj, key, default)` instead.",
+                DeprecationWarning,
+                stacklevel=2,  # level 1 = here, 2 = caller.
+            )
+            return default
 
     @staticmethod
     def get_slot_names() -> tuple[str, ...]:
