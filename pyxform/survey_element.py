@@ -530,6 +530,16 @@ class SurveyElement(Mapping):
                 "To use big-image, you must also specify an image for the survey element named {self.name}."
             )
 
+        # image-description must be associated with an image
+        if (
+            self.media is not None
+            and "image" not in self.media
+            and "image-description" in self.media
+        ):
+            raise PyXFormError(
+                "To use image-description, you must also specify an image for the survey element named {self.name}."
+            )
+
         return result
 
     def xml_bindings(

@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<h:html
+    xmlns="http://www.w3.org/2002/xforms"
+    xmlns:h="http://www.w3.org/1999/xhtml"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:jr="http://openrosa.org/javarosa"
+    xmlns:orx="http://openrosa.org/xforms"
+    xmlns:odk="http://www.opendatakit.org/xforms">
+    <h:head>
+        <h:title>image-description_translated</h:title>
+        <model odk:xforms-version="1.0.0">
+            <itext>
+                <translation lang="English (en)" default="true()">
+                    <text id="animals-0">
+                        <value>whale</value>
+                        <value form="image">jr://images/a.jpg</value>
+                        <value form="image-description">whale silhouette</value>
+                    </text>
+                    <text id="animals-1">
+                        <value>frog</value>
+                        <value form="image">jr://images/b.jpg</value>
+                        <value form="image-description">frog silhouette</value>
+                    </text>
+                    <text id="animals-2">
+                        <value>crocodile</value>
+                        <value form="image">jr://images/c.jpg</value>
+                        <value form="image-description">crocodile silhouette</value>
+                    </text>
+                    <text id="animals-3">
+                        <value>eagle</value>
+                        <value form="image">jr://images/d.jpg</value>
+                        <value form="image-description">eagle silhouette</value>
+                    </text>
+                    <text id="/data/name:label">
+                        <value>What is your name</value>
+                        <value form="image">jr://images/small.jpg</value>
+                        <value form="image-description">small car</value>
+                    </text>
+                    <text id="/data/animal:label">
+                        <value>Pick your favorite animal</value>
+                    </text>
+                </translation>
+                <translation lang="French (fr)">
+                    <text id="animals-0">
+                        <value>baleine</value>
+                        <value form="image">jr://images/a.jpg</value>
+                        <value form="image-description">silhouette de baleine</value>
+                    </text>
+                    <text id="animals-1">
+                        <value>grenouille</value>
+                        <value form="image">jr://images/b.jpg</value>
+                        <value form="image-description">silhouette de grenouille</value>
+                    </text>
+                    <text id="animals-2">
+                        <value>crocodile</value>
+                        <value form="image">jr://images/c.jpg</value>
+                        <value form="image-description">silhouette de crocodile</value>
+                    </text>
+                    <text id="animals-3">
+                        <value>aigle</value>
+                        <value form="image">jr://images/d.jpg</value>
+                        <value form="image-description">silhouette d'aigle</value>
+                    </text>
+                    <text id="/data/name:label">
+                        <value>Quel est ton nom</value>
+                        <value form="image">jr://images/small.jpg</value>
+                        <value form="image-description">petite voiture</value>
+                    </text>
+                    <text id="/data/animal:label">
+                        <value>Choisissez votre animal préféré</value>
+                    </text>
+                </translation>
+            </itext>
+            <instance>
+                <data id="image-description_translated">
+                    <name/>
+                    <animal/>
+                    <meta>
+                        <instanceID/>
+                    </meta>
+                </data>
+            </instance>
+            <instance id="animals">
+                <root>
+                    <item>
+                        <itextId>animals-0</itextId>
+                        <name>a</name>
+                    </item>
+                    <item>
+                        <itextId>animals-1</itextId>
+                        <name>b</name>
+                    </item>
+                    <item>
+                        <itextId>animals-2</itextId>
+                        <name>c</name>
+                    </item>
+                    <item>
+                        <itextId>animals-3</itextId>
+                        <name>d</name>
+                    </item>
+                </root>
+            </instance>
+            <bind nodeset="/data/name" type="string"/>
+            <bind nodeset="/data/animal" type="string"/>
+            <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+        </model>
+    </h:head>
+    <h:body>
+        <input ref="/data/name">
+            <label ref="jr:itext('/data/name:label')"/>
+        </input>
+        <select1 ref="/data/animal">
+            <label ref="jr:itext('/data/animal:label')"/>
+            <itemset nodeset="instance('animals')/root/item">
+                <value ref="name"/>
+                <label ref="jr:itext(itextId)"/>
+            </itemset>
+        </select1>
+    </h:body>
+</h:html>

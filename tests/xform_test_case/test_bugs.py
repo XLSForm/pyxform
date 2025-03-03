@@ -31,6 +31,22 @@ class TestXFormConversion(TestCase):
             ),
             ("duplicate_columns.xlsx", "Duplicate column header: label"),
             ("calculate_without_calculation.xls", "[row : 34] Missing calculation."),
+            (
+                "big-image_survey_missing_image.xlsx",
+                "To use big-image, you must also specify an image for the survey element",
+            ),
+            (
+                "big-image_choice_missing_image.xlsx",
+                "On the 'choices' sheet, an 'image' has not been specified.",
+            ),
+            (
+                "image-description_survey_missing_image.xlsx",
+                "To use image-description, you must also specify an image for the survey element",
+            ),
+            (
+                "image-description_choice_missing_image.xlsx",
+                "On the 'choices' sheet, an 'image' has not been specified.",
+            ),
         )
         for i, (case, err_msg) in enumerate(cases):
             with self.subTest(msg=f"{i}: {case}"):

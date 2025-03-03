@@ -96,6 +96,7 @@ survey_header = {
     "big-image": "media::big-image",
     "audio": "media::audio",
     "video": "media::video",
+    "image-description": "media::image-description",
     "count": "control::jr:count",
     "repeat_count": "control::jr:count",
     "jr:count": "control::jr:count",
@@ -142,6 +143,7 @@ list_header = {
     "big-image": "media::big-image",
     "audio": "media::audio",
     "video": "media::video",
+    "image-description": "media::image-description",
 }
 # Note that most of the type aliasing happens in all.xls
 _type_alias_map = {

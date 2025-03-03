@@ -26,6 +26,10 @@ class TestXFormConversion(XFormTestCase):
             ("xlsform_spec_test.xlsx", True),
             ("xml_escaping.xls", True),
             ("default_time_demo.xls", True),
+            ("image-description.xlsx", False),
+            ("media-image-description.xlsx", False),
+            ("image-description_translated.xlsx", False),
+            ("media-image-description_translated.xlsx", False),
         )
         for i, (case, set_name) in enumerate(cases):
             with self.subTest(msg=f"{i}: {case}"):
