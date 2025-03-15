@@ -1,5 +1,9 @@
 Pyxform Changelog
 
+v3.0.1, 2025-02-25
+* More performance improvements by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/743
+* Handle obj.get(k, default) call pattern for backward compatibility by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/755
+
 v3.0.0, 2024-12-09
 * Include all choice lists in output by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/736
 * Improve complex forms performance (includes changes to JSON representation) by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/740, https://github.com/XLSForm/pyxform/pull/742
