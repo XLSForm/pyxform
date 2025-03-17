@@ -170,6 +170,16 @@
 									"type" : "string",
 									"description" : "A key value pair where the key is a language, and the value is the content uri in that language."
 								}
+							},
+							"image-description" :
+							{
+								"type" : ["object", "string"],
+								"description" : "Optional string description of the image; eg to use for accessibility."
+								"additionalProperties":
+								{
+									"type" : "string",
+									"description" : "A key value pair where the key is a language, and the value is the content in that language."
+								}
 							}
 						}
 					},

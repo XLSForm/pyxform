@@ -1096,6 +1096,15 @@ class Survey(Section):
                                     toParseString=output_inserted,
                                 )
                             )
+                    elif media_type == "image-description":
+                        itext_nodes.append(
+                            node(
+                                "value",
+                                value,
+                                form=media_type,
+                                toParseString=output_inserted,
+                            )
+                        )
                     elif value != "-":
                         itext_nodes.append(
                             node(

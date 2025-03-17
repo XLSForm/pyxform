@@ -22,6 +22,11 @@ INVALID_DUPLICATE = (
     "If this is intentional, use the setting 'allow_choice_duplicates'. "
     "Learn more: https://xlsform.org/#choice-names."
 )
+MISSING_IMAGE = (
+    "[row : {row}] On the 'choices' sheet, an 'image' has not been specified. "
+    "Choices with 'big-image' or 'image-description' require a corresponding image. "
+    "Learn more: https://xlsform.org/en/#the-choices-worksheet"
+)
 
 
 def validate_headers(
@@ -54,6 +59,14 @@ def validate_choice_list(
                 duplicate_errors.append(INVALID_DUPLICATE.format(row=option["__row"]))
             else:
                 seen_options.add(name)
+
+        # Check the option's media, if specified, is mutually consistent
+        if "media" in option:
+            media = option["media"]
+            if "image" not in media and (
+                "big-image" in media or "image-description" in media
+            ):
+                duplicate_errors.append(MISSING_IMAGE.format(row=option["__row"]))
 
     if 0 < len(duplicate_errors):
         raise PyXFormError("\n".join(duplicate_errors))
