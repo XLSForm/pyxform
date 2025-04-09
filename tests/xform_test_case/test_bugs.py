@@ -11,8 +11,8 @@ from pyxform.errors import PyXFormError
 from pyxform.utils import has_external_choices
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
 from pyxform.validators.pyxform import choices as vc
-from pyxform.xls2json import SurveyReader, parse_file_to_workbook_dict
-from pyxform.xls2json_backends import xlsx_to_dict
+from pyxform.xls2json import SurveyReader
+from pyxform.xls2json_backends import DefinitionData, get_xlsform, xlsx_to_dict
 from pyxform.xls2xform import convert
 
 from tests import bug_example_xls, example_xls, test_output
@@ -61,11 +61,10 @@ class ValidateWrapper(TestCase):
 class EmptyStringOnRelevantColumnTest(TestCase):
     def test_conversion(self):
         filename = "ict_survey_fails.xls"
-        path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
-        workbook_dict = pyxform.xls2json.parse_file_to_workbook_dict(path_to_excel_file)
+        workbook_dict = get_xlsform(xlsform=os.path.join(bug_example_xls.PATH, filename))
         with self.assertRaises(KeyError):
             # bind:relevant should not be part of workbook_dict
-            workbook_dict["survey"][0]["bind: relevant"].strip()
+            workbook_dict.survey[0]["bind: relevant"].strip()
 
 
 class BadChoicesSheetHeaders(TestCase):
@@ -153,9 +152,8 @@ class TestSpreadSheetFilesWithMacrosAreAllowed(TestCase):
 
     def test_xlsm_files_are_allowed(self):
         filename = "excel_with_macros.xlsm"
-        path_to_excel_file = os.path.join(bug_example_xls.PATH, filename)
-        result = parse_file_to_workbook_dict(path_to_excel_file)
-        self.assertIsInstance(result, dict)
+        result = get_xlsform(xlsform=os.path.join(bug_example_xls.PATH, filename))
+        self.assertIsInstance(result, DefinitionData)
 
 
 class TestBadCalculation(TestCase):

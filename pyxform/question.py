@@ -3,6 +3,7 @@ XForm Survey element classes for different question types.
 """
 
 import os.path
+import re
 from collections.abc import Callable, Generator, Iterable
 from itertools import chain
 from typing import TYPE_CHECKING
@@ -16,12 +17,12 @@ from pyxform.constants import (
     EXTERNAL_INSTANCE_EXTENSIONS,
 )
 from pyxform.errors import PyXFormError
+from pyxform.parsing.expression import RE_ANY_PYXFORM_REF
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
     PYXFORM_REFERENCE_REGEX,
     DetachableElement,
-    coalesce,
     combine_lists,
     default_is_dynamic,
     node,
@@ -32,9 +33,6 @@ if TYPE_CHECKING:
 
 
 QUESTION_EXTRA_FIELDS = (
-    "_itemset_dyn_label",
-    "_itemset_has_media",
-    "_itemset_multi_language",
     "_qtd_defaults",
     "_qtd_kwargs",
     "action",
@@ -55,7 +53,7 @@ QUESTION_EXTRA_FIELDS = (
 QUESTION_FIELDS = (*SURVEY_ELEMENT_FIELDS, *QUESTION_EXTRA_FIELDS)
 
 SELECT_QUESTION_EXTRA_FIELDS = (
-    constants.CHILDREN,
+    constants.CHOICES,
     constants.ITEMSET,
     constants.LIST_NAME_U,
 )
@@ -65,14 +63,11 @@ OSM_QUESTION_EXTRA_FIELDS = (constants.CHILDREN,)
 OSM_QUESTION_FIELDS = (*QUESTION_FIELDS, *SELECT_QUESTION_EXTRA_FIELDS)
 
 OPTION_EXTRA_FIELDS = (
-    "_choice_itext_id",
+    "_choice_itext_ref",
     constants.MEDIA,
     "sms_option",
 )
 OPTION_FIELDS = (*SURVEY_ELEMENT_FIELDS, *OPTION_EXTRA_FIELDS)
-
-TAG_EXTRA_FIELDS = (constants.CHILDREN,)
-TAG_FIELDS = (*SURVEY_ELEMENT_FIELDS, *TAG_EXTRA_FIELDS)
 
 
 class Question(SurveyElement):
@@ -110,8 +105,7 @@ class Question(SurveyElement):
 
         qtd = kwargs.pop("question_type_dictionary", QUESTION_TYPE_DICT)
         type_arg = kwargs.get("type")
-        default_type = qtd.get(type_arg)
-        if default_type is None:
+        if type_arg not in qtd:
             raise PyXFormError(f"Unknown question type '{type_arg}'.")
 
         # Keeping original qtd_kwargs is only needed if output of QTD data is not
@@ -139,25 +133,16 @@ class Question(SurveyElement):
             fields = chain(QUESTION_EXTRA_FIELDS, fields)
         super().__init__(fields=fields, **kwargs)
 
-    def validate(self):
-        SurveyElement.validate(self)
-
-        # make sure that the type of this question exists in the
-        # question type dictionary.
-        if self.type not in QUESTION_TYPE_DICT:
-            raise PyXFormError(f"Unknown question type '{self.type}'.")
-
     def xml_instance(self, survey: "Survey", **kwargs):
-        attributes = self.instance
-        if attributes is None:
-            attributes = {}
-        else:
-            for key, value in attributes.items():
-                attributes[key] = survey.insert_xpaths(value, self)
-
         if self.default and not default_is_dynamic(self.default, self.type):
-            return node(self.name, str(self.default), **attributes)
-        return node(self.name, **attributes)
+            result = node(self.name, str(self.default))
+        else:
+            result = node(self.name)
+        attributes = self.instance
+        if attributes:
+            for k, v in attributes.items():
+                result.setAttribute(k, survey.insert_xpaths(v, self))
+        return result
 
     def xml_control(self, survey: "Survey"):
         if self.type == "calculate" or (
@@ -198,18 +183,16 @@ class Question(SurveyElement):
 
         return xml_node
 
-    def xml_action(self):
+    def xml_action(self) -> DetachableElement | None:
         """
         Return the action for this survey element.
         """
         if self.action:
-            return node(
-                self.action["name"],
-                ref=self.get_xpath(),
-                **{k: v for k, v in self.action.items() if k != "name"},
-            )
-
-        return None
+            result = node(self.action["name"], ref=self.get_xpath())
+            for k, v in self.action.items():
+                if k != "name":
+                    result.setAttribute(k, v)
+            return result
 
     def nest_set_nodes(self, survey, xml_node, tag, nested_items):
         for item in nested_items:
@@ -221,6 +204,24 @@ class Question(SurveyElement):
                 node_attrs["value"] = survey.insert_xpaths(item[1], self)
             set_node = node(tag, **node_attrs)
             xml_node.appendChild(set_node)
+
+    def _build_xml(self, survey: "Survey") -> DetachableElement | None:
+        """
+        Initial control node result for further processing depending on Question type.
+        """
+        control_dict = self.control
+        result = node(
+            control_dict["tag"],
+            *self.xml_label_and_hint(survey=survey),
+            ref=self.get_xpath(),
+        )
+        # Resolve field references in attributes
+        for k, v in control_dict.items():
+            # "tag" is from the question type dict so it can't include references. Also,
+            # if it did include references, then the node element name would be invalid.
+            if k != "tag":
+                result.setAttribute(k, survey.insert_xpaths(v, self))
+        return result
 
     def build_xml(self, survey: "Survey") -> DetachableElement | None:
         return None
@@ -246,23 +247,12 @@ class InputQuestion(Question):
     """
 
     def build_xml(self, survey: "Survey"):
-        control_dict = self.control
-        label_and_hint = self.xml_label_and_hint(survey=survey)
-        # Resolve field references in attributes
-        for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value, self)
-        control_dict["ref"] = self.get_xpath()
-
-        result = node(**control_dict)
-        if label_and_hint:
-            for element in self.xml_label_and_hint(survey=survey):
-                if element:
-                    result.appendChild(element)
+        result = self._build_xml(survey=survey)
 
         # Input types are used for selects with external choices sheets.
         if self.query:
             choice_filter = self.choice_filter
-            if choice_filter is not None:
+            if choice_filter:
                 pred = survey.insert_xpaths(choice_filter, self, True)
                 query = f"""instance('{self.query}')/root/item[{pred}]"""
             else:
@@ -273,26 +263,12 @@ class InputQuestion(Question):
 
 class TriggerQuestion(Question):
     def build_xml(self, survey: "Survey"):
-        control_dict = self.control
-        # Resolve field references in attributes
-        for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value, self)
-        control_dict["ref"] = self.get_xpath()
-        return node("trigger", *self.xml_label_and_hint(survey=survey), **control_dict)
+        return self._build_xml(survey=survey)
 
 
 class UploadQuestion(Question):
-    def _get_media_type(self):
-        return self.control["mediatype"]
-
     def build_xml(self, survey: "Survey"):
-        control_dict = self.control
-        # Resolve field references in attributes
-        for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value, self)
-        control_dict["ref"] = self.get_xpath()
-        control_dict["mediatype"] = self._get_media_type()
-        return node("upload", *self.xml_label_and_hint(survey=survey), **control_dict)
+        return self._build_xml(survey=survey)
 
 
 class Option(SurveyElement):
@@ -310,21 +286,11 @@ class Option(SurveyElement):
         sms_option: str | None = None,
         **kwargs,
     ):
-        self._choice_itext_id: str | None = None
+        self._choice_itext_ref: str | None = None
         self.media: dict | None = media
         self.sms_option: str | None = sms_option
 
         super().__init__(name=name, label=label, **kwargs)
-
-    def xml_value(self):
-        return node("value", self.name)
-
-    def xml(self, survey: "Survey"):
-        item = node("item")
-        item.appendChild(self.xml_label(survey=survey))
-        item.appendChild(self.xml_value())
-
-        return item
 
     def validate(self):
         pass
@@ -332,16 +298,46 @@ class Option(SurveyElement):
     def xml_control(self, survey: "Survey"):
         raise NotImplementedError()
 
-    def _translation_path(self, display_element):
-        if self._choice_itext_id is not None:
-            return self._choice_itext_id
-        return super()._translation_path(display_element=display_element)
-
     def to_json_dict(self, delete_keys: Iterable[str] | None = None) -> dict:
         to_delete = (k for k in self.get_slot_names() if k.startswith("_"))
         if delete_keys is not None:
             to_delete = chain(to_delete, delete_keys)
         return super().to_json_dict(delete_keys=to_delete)
+
+
+class Itemset:
+    """Itemset details and metadata detection."""
+
+    __slots__ = ("name", "options", "requires_itext", "used_by_search")
+
+    def __init__(self, name: str, choices: Iterable[dict]):
+        self.requires_itext: bool = False
+        self.used_by_search: bool = False
+        self.name: str = name
+        self.options: tuple[Option, ...] = tuple(o for o in self.get_options(choices))
+
+    def get_options(self, choices: Iterable[dict]) -> Generator[Option, None, None]:
+        requires_itext = False
+        for c in choices:
+            option = Option(**c)
+            if not requires_itext:
+                # Media: dict of image, audio, etc. Defaults to None.
+                if option.media:
+                    requires_itext = True
+                else:
+                    choice_label = option.label
+                    label_is_dict = isinstance(choice_label, dict)
+                    # Multi-language: dict of labels etc per language. Can be just a string.
+                    if label_is_dict:
+                        requires_itext = True
+                    # Dynamic label: string contains a pyxform reference.
+                    elif (
+                        choice_label
+                        and re.search(RE_ANY_PYXFORM_REF, choice_label) is not None
+                    ):
+                        requires_itext = True
+            yield option
+        self.requires_itext = requires_itext
 
 
 class MultipleChoiceQuestion(Question):
@@ -354,67 +350,26 @@ class MultipleChoiceQuestion(Question):
     def __init__(
         self, itemset: str | None = None, list_name: str | None = None, **kwargs
     ):
-        # Internals
-        self._itemset_dyn_label: bool = False
-        self._itemset_has_media: bool = False
-        self._itemset_multi_language: bool = False
+        if not itemset and not list_name:
+            raise PyXFormError(
+                "Arguments 'itemset' and 'list_name' must not both be None or empty."
+            )
 
         # Structure
-        self.children: tuple[Option, ...] | None = None
+        self.choices: Itemset | None = None
         self.itemset: str | None = itemset
         self.list_name: str | None = list_name
 
-        # Notice that choices can be specified under choices or children.
-        # I'm going to try to stick to just choices.
-        # Aliases in the json format will make it more difficult
-        # to use going forward.
-        kw_choices = kwargs.pop(constants.CHOICES, None)
-        kw_children = kwargs.pop(constants.CHILDREN, None)
-        choices = coalesce(kw_choices, kw_children)
-        if isinstance(choices, tuple) and isinstance(next(iter(choices)), Option):
-            self.children = choices
-        elif choices:
-            self.children = tuple(
-                Option(**c) for c in combine_lists(kw_choices, kw_children)
-            )
+        choices = kwargs.pop(constants.CHOICES, None)
+        if isinstance(choices, Itemset):
+            self.choices = choices
         super().__init__(**kwargs)
-
-    def validate(self):
-        Question.validate(self)
-        if self.children:
-            for child in self.children:
-                child.validate()
-
-    def iter_descendants(
-        self,
-        condition: Callable[["SurveyElement"], bool] | None = None,
-        iter_into_section_items: bool = False,
-    ) -> Generator["SurveyElement", None, None]:
-        if condition is None:
-            yield self
-        elif condition(self):
-            yield self
-        if iter_into_section_items and self.children:
-            for e in self.children:
-                yield from e.iter_descendants(
-                    condition=condition,
-                    iter_into_section_items=iter_into_section_items,
-                )
 
     def build_xml(self, survey: "Survey"):
         if self.bind["type"] not in {"string", "odk:rank"}:
             raise PyXFormError("""Invalid value for `self.bind["type"]`.""")
 
-        # Resolve field references in attributes
-        control_dict = {
-            key: survey.insert_xpaths(value, self) for key, value in self.control.items()
-        }
-        control_dict["ref"] = self.get_xpath()
-
-        result = node(**control_dict)
-        for element in self.xml_label_and_hint(survey=survey):
-            if element:
-                result.appendChild(element)
+        result = self._build_xml(survey=survey)
 
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
@@ -431,21 +386,18 @@ class MultipleChoiceQuestion(Question):
                 itemset_value_ref = self.parameters.get("value", itemset_value_ref)
                 itemset_label_ref = self.parameters.get("label", itemset_label_ref)
 
-            multi_language = self._itemset_multi_language
-            has_media = self._itemset_has_media
-            has_dyn_label = self._itemset_dyn_label
             is_previous_question = bool(PYXFORM_REFERENCE_REGEX.search(self.itemset))
 
             if file_extension in EXTERNAL_INSTANCE_EXTENSIONS:
                 pass
-            elif not multi_language and not has_media and not has_dyn_label:
-                itemset = self.itemset
-            else:
+            elif self.choices and self.choices.requires_itext:
                 itemset = self.itemset
                 itemset_label_ref = "jr:itext(itextId)"
+            else:
+                itemset = self.itemset
 
             choice_filter = self.choice_filter
-            if choice_filter is not None:
+            if choice_filter:
                 choice_filter = survey.insert_xpaths(
                     choice_filter, self, True, is_previous_question
                 )
@@ -488,63 +440,43 @@ class MultipleChoiceQuestion(Question):
 
                     nodeset += ")"
 
-            itemset_children = [
-                node("value", ref=itemset_value_ref),
-                node("label", ref=itemset_label_ref),
-            ]
-            result.appendChild(node("itemset", *itemset_children, nodeset=nodeset))
-        elif self.children:
-            for child in self.children:
-                result.appendChild(child.xml(survey=survey))
+            result.appendChild(
+                node(
+                    "itemset",
+                    node("value", ref=itemset_value_ref),
+                    node("label", ref=itemset_label_ref),
+                    nodeset=nodeset,
+                )
+            )
+        elif self.choices:
+            # Options processing specific to XLSForms using the "search()" function.
+            # The _choice_itext_ref is prepared by Survey._redirect_is_search_itext.
+            itemset = self.choices
+            if itemset.used_by_search:
+                for option in itemset.options:
+                    if itemset.requires_itext:
+                        label_node = node("label", ref=option._choice_itext_ref)
+                    elif self.label:
+                        label, output_inserted = survey.insert_output_values(
+                            option.label, option
+                        )
+                        label_node = node("label", label, toParseString=output_inserted)
+                    else:
+                        label_node = node("label")
+                    result.appendChild(
+                        node("item", label_node, node("value", option.name))
+                    )
 
         return result
 
 
 class Tag(SurveyElement):
-    __slots__ = TAG_EXTRA_FIELDS
-
     @staticmethod
     def get_slot_names() -> tuple[str, ...]:
-        return TAG_FIELDS
-
-    def __init__(self, name: str, label: str | dict | None = None, **kwargs):
-        self.children: tuple[Option, ...] | None = None
-
-        kw_choices = kwargs.pop(constants.CHOICES, None)
-        kw_children = kwargs.pop(constants.CHILDREN, None)
-        choices = coalesce(kw_choices, kw_children)
-        if isinstance(choices, tuple) and isinstance(next(iter(choices)), Option):
-            self.children = choices
-        elif choices:
-            self.children = tuple(
-                Option(**c) for c in combine_lists(kw_choices, kw_children)
-            )
-        super().__init__(name=name, label=label, **kwargs)
-
-    def iter_descendants(
-        self,
-        condition: Callable[["SurveyElement"], bool] | None = None,
-        iter_into_section_items: bool = False,
-    ) -> Generator["SurveyElement", None, None]:
-        if condition is None:
-            yield self
-        elif condition(self):
-            yield self
-        if iter_into_section_items and self.children:
-            for e in self.children:
-                yield from e.iter_descendants(
-                    condition=condition,
-                    iter_into_section_items=iter_into_section_items,
-                )
+        return SURVEY_ELEMENT_FIELDS
 
     def xml(self, survey: "Survey"):
-        result = node("tag", key=self.name)
-        result.appendChild(self.xml_label(survey=survey))
-        if self.children:
-            for choice in self.children:
-                result.appendChild(choice.xml(survey=survey))
-
-        return result
+        return node("tag", self.xml_label(survey=survey), key=self.name)
 
     def validate(self):
         pass
@@ -588,32 +520,18 @@ class OsmUploadQuestion(UploadQuestion):
                 )
 
     def build_xml(self, survey: "Survey"):
-        control_dict = self.control
-        control_dict["ref"] = self.get_xpath()
-        control_dict["mediatype"] = self._get_media_type()
-        result = node("upload", *self.xml_label_and_hint(survey=survey), **control_dict)
-
+        result = self._build_xml(survey=survey)
         if self.children:
             for osm_tag in self.children:
                 result.appendChild(osm_tag.xml(survey=survey))
-
         return result
 
 
 class RangeQuestion(Question):
     def build_xml(self, survey: "Survey"):
-        control_dict = self.control
-        label_and_hint = self.xml_label_and_hint(survey=survey)
-        # Resolve field references in attributes
-        for key, value in control_dict.items():
-            control_dict[key] = survey.insert_xpaths(value, self)
-        control_dict["ref"] = self.get_xpath()
+        result = self._build_xml(survey=survey)
         params = self.parameters
         if params:
-            control_dict.update(params)
-        result = node(**control_dict)
-        if label_and_hint:
-            for element in self.xml_label_and_hint(survey=survey):
-                result.appendChild(element)
-
+            for k, v in params.items():
+                result.setAttribute(k, v)
         return result

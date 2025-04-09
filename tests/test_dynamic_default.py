@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from psutil import Process
 from pyxform import utils
+from pyxform.xls2json_backends import SupportedFileTypes
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -17,7 +18,7 @@ from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
 
 
-@dataclass()
+@dataclass(slots=True)
 class Case:
     """
     A test case spec for dynamic default scenarios.
@@ -778,11 +779,11 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         Results with Python 3.10.14 on VM with 2vCPU (i7-7700HQ) 1GB RAM, x questions
         each, average of 10 runs (seconds), with and without the check, per question:
         | num   | with   | without | peak RSS MB |
-        |   500 | 0.1626 |  0.1886 |          60 |
-        |  1000 | 0.3330 |  0.3916 |          63 |
-        |  2000 | 0.8675 |  0.7823 |          70 |
-        |  5000 | 1.7051 |  1.5653 |          91 |
-        | 10000 | 3.1097 |  3.8525 |         137 |
+        |   500 | 0.2203 |  0.1610 |          59 |
+        |  1000 | 0.2851 |  0.2580 |          63 |
+        |  2000 | 0.5001 |  0.5330 |          71 |
+        |  5000 | 1.2762 |  1.2931 |          92 |
+        | 10000 | 2.6226 |  2.6001 |         132 |
         """
         survey_header = """
         | survey |            |          |          |               |
@@ -792,7 +793,7 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
         |        | text       | q{i}     | Q{i}     | if(../t2 = 'test', 1, 2) + 15 - int(1.2) |
         """
         process = Process(getpid())
-        for count in (500, 1000, 2000):
+        for count in (500, 1000, 2000, 5000, 10000):
             questions = "\n".join(question.format(i=i) for i in range(count))
             md = "".join((survey_header, questions))
 
@@ -802,7 +803,7 @@ class TestDynamicDefaultSimpleInput(PyxformTestCase):
                 peak_memory_usage = process.memory_info().rss
                 while runs < 10:
                     start = perf_counter()
-                    convert(xlsform=case)
+                    convert(xlsform=case, file_type=SupportedFileTypes.md.value)
                     results.append(perf_counter() - start)
                     peak_memory_usage = max(process.memory_info().rss, peak_memory_usage)
                     runs += 1

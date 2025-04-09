@@ -36,6 +36,7 @@ SURVEY_ELEMENT_FIELDS = (
 )
 SURVEY_ELEMENT_EXTRA_FIELDS = ("_survey_element_xpath",)
 SURVEY_ELEMENT_SLOTS = (*SURVEY_ELEMENT_FIELDS, *SURVEY_ELEMENT_EXTRA_FIELDS)
+_SURVEY_ELEMENT_FIELDS_SET = set(SURVEY_ELEMENT_FIELDS)
 _GET_SENTINEL = object()
 
 
@@ -76,6 +77,9 @@ class SurveyElement(Mapping):
         """Each subclass must provide a list of slots from itself and all parents."""
         return SURVEY_ELEMENT_SLOTS
 
+    def __bool__(self):
+        return True
+
     def __len__(self):
         return len(self.get_slot_names())
 
@@ -111,7 +115,7 @@ class SurveyElement(Mapping):
 
         if fields is not None:
             for key in fields:
-                if key not in SURVEY_ELEMENT_FIELDS:
+                if key not in _SURVEY_ELEMENT_FIELDS_SET:
                     value = kwargs.pop(key, None)
                     if value or not hasattr(self, key):
                         self[key] = value
@@ -313,10 +317,18 @@ class SurveyElement(Mapping):
             ]
         choices = result.pop("choices", None)
         if choices:
-            result["choices"] = {
-                list_name: [o.to_json_dict(delete_keys=("parent",)) for o in options]
-                for list_name, options in choices.items()
-            }
+            if isinstance(choices, dict):
+                result["choices"] = {
+                    list_name: [
+                        o.to_json_dict(delete_keys=("parent",)) for o in itemset.options
+                    ]
+                    for list_name, itemset in choices.items()
+                }
+            else:
+                result["children"] = [
+                    o.to_json_dict(delete_keys=("parent",)) for o in choices.options
+                ]
+
         # Translation items with "output_context" have circular references.
         if "_translations" in result:
             for lang in result["_translations"].values():

@@ -8,7 +8,7 @@ from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.questions import xpq
 
 
-@dataclass()
+@dataclass(slots=True)
 class Case:
     """
     A test case spec for note output scenarios.
