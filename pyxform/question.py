@@ -370,6 +370,11 @@ class MultipleChoiceQuestion(Question):
             raise PyXFormError("""Invalid value for `self.bind["type"]`.""")
 
         result = self._build_xml(survey=survey)
+        choices = None
+        if survey.choices:
+            choices = survey.choices.get(self.itemset, None)
+        if not choices:
+            choices = self.choices
 
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
@@ -390,7 +395,7 @@ class MultipleChoiceQuestion(Question):
 
             if file_extension in EXTERNAL_INSTANCE_EXTENSIONS:
                 pass
-            elif self.choices and self.choices.requires_itext:
+            elif choices and choices.requires_itext:
                 itemset = self.itemset
                 itemset_label_ref = "jr:itext(itextId)"
             else:
@@ -448,13 +453,12 @@ class MultipleChoiceQuestion(Question):
                     nodeset=nodeset,
                 )
             )
-        elif self.choices:
+        elif choices:
             # Options processing specific to XLSForms using the "search()" function.
             # The _choice_itext_ref is prepared by Survey._redirect_is_search_itext.
-            itemset = self.choices
-            if itemset.used_by_search:
-                for option in itemset.options:
-                    if itemset.requires_itext:
+            if choices.used_by_search:
+                for option in choices.options:
+                    if choices.requires_itext:
                         label_node = node("label", ref=option._choice_itext_ref)
                     elif self.label:
                         label, output_inserted = survey.insert_output_values(
