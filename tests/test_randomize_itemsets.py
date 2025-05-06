@@ -3,6 +3,8 @@ Test randomize itemsets.
 """
 
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 class RandomizeItemsetsTest(PyxformTestCase):
@@ -202,4 +204,69 @@ class RandomizeItemsetsTest(PyxformTestCase):
 
             """,
             error__contains=["Parameters must include randomize=true to use a seed."],
+        )
+
+    def test_randomized_select_one_translated(self):
+        """Should find itemset label refers to itext func for randomized select1."""
+        md = """
+        | survey  |
+        |         | type          | name | label::English (en) | parameters     |
+        |         | select_one c1 | q1   | Q1 en               | randomize=True |
+        | choices |
+        |         | list_name | name | label::English (en) |
+        |         | c1        | a    | A                   |
+        |         | c1        | b    | B                   |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.body_select1_itemset("q1"),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "English (en)",
+                    "c1",
+                    ("A", "B"),
+                ),
+                # Nodeset ref to choices instance wrapped in randomize().
+                """
+                /h:html/h:body/x:select1[@ref='/test_name/q1']
+                  /x:itemset[
+                    @nodeset="randomize(instance('c1')/root/item)"
+                      and child::x:label[@ref='jr:itext(itextId)']
+                      and child::x:value[@ref='name']
+                  ]
+                """,
+            ],
+        )
+
+    def test_randomized_select_one_translated_filtered(self):
+        """Should find itemset label refers to itext func for randomized select1 + filter."""
+        md = """
+        | survey  |
+        |         | type          | name | label::English (en) | parameters     | choice_filter |
+        |         | text          | q0   | Question 0          |                |               |
+        |         | select_one c1 | q1   | Question 1          | randomize=True | ${q0} = cf    |
+        | choices |           |      |       |
+        |         | list_name | name | label::English (en) | cf |
+        |         | c1        | a    | A                   | 1  |
+        |         | c1        | b    | B                   | 2  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.body_select1_itemset("q1"),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "English (en)",
+                    "c1",
+                    ("A", "B"),
+                ),
+                # Nodeset ref to choices instance + filter predicate wrapped in randomize().
+                """
+                /h:html/h:body/x:select1[@ref='/test_name/q1']
+                  /x:itemset[
+                    @nodeset="randomize(instance('c1')/root/item[ /test_name/q0  = cf])"
+                      and child::x:label[@ref='jr:itext(itextId)']
+                      and child::x:value[@ref='name']
+                  ]
+                """,
+            ],
         )

@@ -783,12 +783,16 @@ class Survey(Section):
                 )
                 raise PyXFormError(msg)
 
+            choices = None
+            if self.choices:
+                choices = self.choices.get(element.itemset, None)
+            if not choices:
+                choices = element.choices
             element.itemset = ""
-            itemset = element.choices
-            if not itemset.used_by_search:
-                itemset.used_by_search = True
-                for i, opt in enumerate(itemset.options):
-                    opt._choice_itext_ref = f"jr:itext('{itemset.name}-{i}')"
+            if not choices.used_by_search:
+                choices.used_by_search = True
+                for i, opt in enumerate(choices.options):
+                    opt._choice_itext_ref = f"jr:itext('{choices.name}-{i}')"
         return is_search
 
     def _setup_translations(self):
