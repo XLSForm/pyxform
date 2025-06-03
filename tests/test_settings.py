@@ -291,3 +291,71 @@ class TestNamespaces(PyxformTestCase):
                 """,
             ],
         )
+
+    def test_client_editable_setting__active(self):
+        """Should find the odk:client-editable attribute in the submission config."""
+        # Set to an alias of True.
+        md1 = """
+        | settings |
+        |          | client_editable |
+        |          | yes             |
+        | survey |       |      |       |
+        |        | type  | name | label |
+        |        | text  | q1   | hello |
+        """
+        # Set the same way as another submission setting (e.g. auto_send).
+        md2 = """
+        | settings |
+        |          | client_editable |
+        |          | true            |
+        | survey |       |      |       |
+        |        | type  | name | label |
+        |        | text  | q1   | hello |
+        """
+        for md in (md1, md2):
+            self.assertPyxformXform(
+                md=md,
+                xml__xpath_match=[
+                    """/h:html/h:head/x:model/x:submission[@odk:client-editable = 'true']""",
+                ],
+            )
+
+    def test_client_editable_setting__inactive(self):
+        """Should not find the odk:client-editable attribute in the submission config."""
+        # Set to an alias of False.
+        md1 = """
+        | settings |
+        |          | client_editable |
+        |          | no              |
+        | survey |       |      |       |
+        |        | type  | name | label |
+        |        | text  | q1   | hello |
+        """
+        # Not set.
+        md2 = """
+        | survey |       |      |       |
+        |        | type  | name | label |
+        |        | text  | q1   | hello |
+        """
+        for md in (md1, md2):
+            self.assertPyxformXform(
+                md=md,
+                xml__xpath_match=[
+                    """/h:html/h:head/x:model[not(./x:submission/@odk:client-editable)]""",
+                ],
+            )
+        # Set to false, with other setting that triggers `submission` element.
+        md3 = """
+        | settings |
+        |          | client_editable | auto_send |
+        |          | false           | true      |
+        | survey |       |      |       |
+        |        | type  | name | label |
+        |        | text  | q1   | hello |
+        """
+        self.assertPyxformXform(
+            md=md3,
+            xml__xpath_match=[
+                """/h:html/h:head/x:model/x:submission[not(@odk:client-editable)]""",
+            ],
+        )
