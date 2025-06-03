@@ -215,6 +215,7 @@ SURVEY_EXTRA_FIELDS = (
     "title",
     "version",
     constants.ALLOW_CHOICE_DUPLICATES,
+    constants.CLIENT_EDITABLE,
     constants.COMPACT_DELIMITER,
     constants.COMPACT_PREFIX,
     constants.ENTITY_FEATURES,
@@ -262,6 +263,7 @@ class Survey(Section):
         self.auto_delete: str | None = None
         self.auto_send: str | None = None
         self.clean_text_values: bool = False
+        self.client_editable: bool = False
         self.instance_xmlns: str | None = None
         self.namespaces: str | None = None
         self.omit_instanceID: bool = False
@@ -727,7 +729,15 @@ class Survey(Section):
             node("instance", self.xml_instance()),
         )
 
-        if self.submission_url or self.public_key or self.auto_send or self.auto_delete:
+        if any(
+            (
+                self.submission_url,
+                self.public_key,
+                self.auto_send,
+                self.auto_delete,
+                self.client_editable,
+            )
+        ):
             submission_attrs = {}
             if self.submission_url:
                 submission_attrs["action"] = self.submission_url
@@ -738,6 +748,8 @@ class Survey(Section):
                 submission_attrs["orx:auto-send"] = self.auto_send
             if self.auto_delete:
                 submission_attrs["orx:auto-delete"] = self.auto_delete
+            if self.client_editable:
+                submission_attrs["odk:client-editable"] = "true"
             submission_node = node("submission", **submission_attrs)
             model_children.insert(0, submission_node)
 

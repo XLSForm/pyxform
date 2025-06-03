@@ -481,6 +481,10 @@ def workbook_to_json(
         settings["add_none_option"] = aliases.yes_no.get(
             settings["add_none_option"], False
         )
+    if constants.CLIENT_EDITABLE in settings:
+        settings[constants.CLIENT_EDITABLE] = aliases.yes_no.get(
+            settings.get(constants.CLIENT_EDITABLE, "no"), False
+        )
 
     # Here we create our json dict root with default settings:
     id_string = settings.get(
