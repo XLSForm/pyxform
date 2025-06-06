@@ -7,7 +7,7 @@ pyxform
 .. |pypi| image:: https://badge.fury.io/py/pyxform.svg
     :target: https://badge.fury.io/py/pyxform
 
-.. |python| image:: https://img.shields.io/badge/python-3.10,3.11,3.12-blue.svg
+.. |python| image:: https://img.shields.io/badge/python-3.10,3.11,3.12,3.13-blue.svg
     :target: https://www.python.org/downloads
 
 ``pyxform`` is a Python library that simplifies writing forms for ODK Collect and Enketo by converting spreadsheets that follow the `XLSForm standard <http://xlsform.org/>`_ into `ODK XForms <https://github.com/opendatakit/xforms-spec>`_. The XLSForms format is used in a `number of tools <http://xlsform.org/en/#tools-that-support-xlsforms>`_.
@@ -44,7 +44,7 @@ The ``xls2xform`` command can then be used::
 
     xls2xform path_to_XLSForm [output_path]
 
-The currently supported Python versions for ``pyxform`` are 3.10, 3.11 and 3.12.
+The currently supported Python versions for ``pyxform`` are 3.10, 3.11, 3.12, and 3.13.
 
 Running pyxform from local source
 ---------------------------------

@@ -2,6 +2,7 @@
 Test XForm XML syntax.
 """
 
+from sys import version_info
 from unittest import TestCase
 from xml.dom.minidom import getDOMImplementation
 
@@ -86,20 +87,30 @@ class XMLTests(XFormTestCase):
 
 
 class MinidomTextWriterMonkeyPatchTest(TestCase):
+    maxDiff = None
+
     def test_patch_lets_node_func_escape_only_necessary(self):
-        """Should only escape text chars that should be: ["<", ">", "&"]."""
-        text = "' \" & < >"
-        expected = "<root>' \" &amp; &lt; &gt;</root>"
-        observed = node("root", text).toprettyxml(indent="", newl="")
+        """Should find that pyxform escapes ["&<>\r\n\t] in attrs and [&<>] in text."""
+        replaceable_chars = "' \" & < > \r \n \t"
+        expected = """<root attr="' &quot; &amp; &lt; &gt; &#13; &#10; &#9;">' " &amp; &lt; &gt; \r \n \t</root>"""
+        observed = node("root", replaceable_chars, attr=replaceable_chars).toprettyxml(
+            indent="", newl=""
+        )
         self.assertEqual(expected, observed)
 
     def test_original_escape_escapes_more_than_necessary(self):
         """Should fail if the original is updated (the patch can be removed)."""
-        text = "' \" & < >"
-        expected = "<root>' &quot; &amp; &lt; &gt;</root>"
+        replaceable_chars = "' \" & < > \r \n \t"
         document = getDOMImplementation().createDocument(None, "root", None)
         root = document.documentElement
-        text_node = document.createTextNode(text)
-        root.appendChild(text_node)
+        root.appendChild(document.createTextNode(replaceable_chars))
+        root.setAttribute("attr", replaceable_chars)
         observed = root.toprettyxml(indent="", newl="")
-        self.assertEqual(expected, observed)
+        if version_info.major == 3 and version_info.minor >= 13:
+            # In 3.13, minidom was updated to only escape " in attrs, and also escape \r\n\t.
+            expected = """<root attr="' &quot; &amp; &lt; &gt; &#13; &#10; &#9;">' " &amp; &lt; &gt; \r \n \t</root>"""
+            self.assertEqual(expected, observed)
+        else:
+            # Prior to 3.13 " was escaped in text unnecessarily, and \r\n\t not escaped in attrs.
+            expected = """<root attr="' &quot; &amp; &lt; &gt; \r \n \t">' &quot; &amp; &lt; &gt; \r \n \t</root>"""
+            self.assertEqual(expected, observed)
