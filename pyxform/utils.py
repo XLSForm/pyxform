@@ -12,7 +12,7 @@ from io import StringIO
 from itertools import chain
 from json.decoder import JSONDecodeError
 from xml.dom import Node
-from xml.dom.minidom import Element, Text, _write_data
+from xml.dom.minidom import Element, Text
 
 from defusedxml.minidom import parseString
 
@@ -29,6 +29,8 @@ PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
 SPACE_TRANS_TABLE = str.maketrans({" ": "_"})
 XML_TEXT_SUBS = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
 XML_TEXT_TABLE = str.maketrans(XML_TEXT_SUBS)
+XML_ATTR_SUBS = {'"': "&quot;", "\r": "&#13;", "\n": "&#10;", "\t": "&#9;"}
+XML_ATTR_TABLE = str.maketrans(XML_ATTR_SUBS)
 
 
 class DetachableElement(Element):
@@ -54,9 +56,8 @@ class DetachableElement(Element):
 
         if self._attrs:
             for k, v in self._attrs.items():
-                writer.write(f' {k}="')
-                _write_data(writer, v.value)
-                writer.write('"')
+                # First space prefix separates attr from tagName, then it separates attrs.
+                writer.write(f' {k}="{escape_text_for_xml(v.value, attribute=True)}"')
         if self.childNodes:
             writer.write(">")
             # For text or mixed content, write without adding indents or newlines.
@@ -80,11 +81,13 @@ class DetachableElement(Element):
 
 
 @lru_cache(maxsize=64)
-def escape_text_for_xml(text: str) -> str:
-    if any(c in set(text) for c in XML_TEXT_SUBS):
-        return text.translate(XML_TEXT_TABLE)
-    else:
-        return text
+def escape_text_for_xml(text: str, attribute: bool = False) -> str:
+    chars = set(text)
+    if any(c in chars for c in XML_TEXT_SUBS):
+        text = text.translate(XML_TEXT_TABLE)
+    if attribute and any(c in chars for c in XML_ATTR_SUBS):
+        text = text.translate(XML_ATTR_TABLE)
+    return text
 
 
 class PatchedText(Text):
