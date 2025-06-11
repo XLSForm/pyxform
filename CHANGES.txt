@@ -1,5 +1,8 @@
 Pyxform Changelog
 
+v3.1.0, 2025-06-10
+* Add client_editable setting by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/766
+
 v3.0.1, 2025-02-25
 * More performance improvements by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/743
 * Handle obj.get(k, default) call pattern for backward compatibility by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/755
