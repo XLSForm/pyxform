@@ -29,8 +29,6 @@ PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
 SPACE_TRANS_TABLE = str.maketrans({" ": "_"})
 XML_TEXT_SUBS = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
 XML_TEXT_TABLE = str.maketrans(XML_TEXT_SUBS)
-XML_ATTR_SUBS = {'"': "&quot;", "\r": "&#13;", "\n": "&#10;", "\t": "&#9;"}
-XML_ATTR_TABLE = str.maketrans(XML_ATTR_SUBS)
 
 
 class DetachableElement(Element):
@@ -85,8 +83,8 @@ def escape_text_for_xml(text: str, attribute: bool = False) -> str:
     chars = set(text)
     if any(c in chars for c in XML_TEXT_SUBS):
         text = text.translate(XML_TEXT_TABLE)
-    if attribute and any(c in chars for c in XML_ATTR_SUBS):
-        text = text.translate(XML_ATTR_TABLE)
+    if attribute and '"' in chars:
+        text = text.replace('"', "&quot;")
     return text
 
 
