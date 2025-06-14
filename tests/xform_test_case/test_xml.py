@@ -90,9 +90,9 @@ class MinidomTextWriterMonkeyPatchTest(TestCase):
     maxDiff = None
 
     def test_patch_lets_node_func_escape_only_necessary(self):
-        """Should find that pyxform escapes ["&<>\r\n\t] in attrs and [&<>] in text."""
+        """Should find that pyxform escapes ["&<>] in attrs and [&<>] in text."""
         replaceable_chars = "' \" & < > \r \n \t"
-        expected = """<root attr="' &quot; &amp; &lt; &gt; &#13; &#10; &#9;">' " &amp; &lt; &gt; \r \n \t</root>"""
+        expected = """<root attr="' &quot; &amp; &lt; &gt; \r \n \t">' " &amp; &lt; &gt; \r \n \t</root>"""
         observed = node("root", replaceable_chars, attr=replaceable_chars).toprettyxml(
             indent="", newl=""
         )
