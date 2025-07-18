@@ -75,6 +75,7 @@ ignore = [
   "F821",  # undefined-name (doesn't work well with type hints, ruff 0.1.11).
   "PERF401",  # manual-list-comprehension (false positives on selective transforms)
   "PERF402",  # manual-list-copy (false positives on selective transforms)
+  "PLC0415",  # import-outside-top-level (pyxform has a few to avoid circular imports)
   "PLR0911",  # too-many-return-statements (complexity not useful to warn every time)
   "PLR0912",  # too-many-branches (complexity not useful to warn every time)
   "PLR0913",  # too-many-arguments (complexity not useful to warn every time)
@@ -83,7 +84,6 @@ ignore = [
   "PLW2901",  # redefined-loop-name (usually not a bug)
   "RUF001",  # ambiguous-unicode-character-string (false positives on unicode tests)
   "S310",  # suspicious-url-open-usage (prone to false positives, ruff 0.1.11)
-  "S320",  # suspicious-xmle-tree-usage (according to defusedxml author lxml is safe)
   "S603",  # subprocess-without-shell-equals-true (prone to false positives, ruff 0.1.11)
   "TRY003",  # raise-vanilla-args (reasonable lint but would require large refactor)
 ]

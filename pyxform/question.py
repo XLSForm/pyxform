@@ -146,7 +146,7 @@ class Question(SurveyElement):
 
     def xml_control(self, survey: "Survey"):
         if self.type == "calculate" or (
-            (self.bind is not None and "calculate" in self.bind or self.trigger)
+            ((self.bind is not None and "calculate" in self.bind) or self.trigger)
             and not (self.label or self.hint)
         ):
             nested_setvalues = survey.get_trigger_values_for_question_name(

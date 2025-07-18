@@ -24,7 +24,7 @@ from pyxform.xls2xform import (
 )
 
 from tests import example_xls
-from tests.utils import get_temp_file, path_to_text_fixture
+from tests.utils import get_temp_dir, get_temp_file, path_to_text_fixture
 
 
 class XLS2XFormTests(TestCase):
@@ -347,7 +347,6 @@ class TestXLS2XFormConvertAPI(TestCase):
     def test_invalid_input_raises(self):
         """Should raise an error for invalid input or file types."""
         msg = "Argument 'definition' was not recognized as a supported type"
-        from tests.utils import get_temp_dir, get_temp_file
 
         with get_temp_file() as empty, get_temp_dir() as td:
             bad_xls = Path(td) / "bad.xls"

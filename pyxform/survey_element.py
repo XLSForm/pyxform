@@ -276,7 +276,7 @@ class SurveyElement(Mapping):
                 reversed(tuple(i[0] for i in self.iter_ancestors(condition=condition))),
                 self_element,
             )
-            new_value = f'/{"/".join(n.name for n in lineage)}'
+            new_value = f"/{'/'.join(n.name for n in lineage)}"
             self._survey_element_xpath = new_value
             return new_value
         return current_value
@@ -287,8 +287,7 @@ class SurveyElement(Mapping):
         Credits: https://stackoverflow.com/a/49723101
         """
         for key in keys:
-            if key in dictionary:
-                del dictionary[key]
+            dictionary.pop(key, None)
 
         for value in dictionary.values():
             if isinstance(value, dict):

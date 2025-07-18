@@ -48,7 +48,7 @@ SELECT_TYPES = set(aliases.select)
 class InstanceInfo:
     """Standardise Instance details relevant during XML generation."""
 
-    __slots__ = ("type", "context", "name", "src", "instance")
+    __slots__ = ("context", "instance", "name", "src", "type")
 
     def __init__(
         self,

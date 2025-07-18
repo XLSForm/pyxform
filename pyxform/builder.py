@@ -335,9 +335,7 @@ def create_survey(
 
     # assert name_of_main_section in sections, name_of_main_section
     if "id_string" not in main_section:
-        main_section["id_string"] = (
-            name_of_main_section if id_string is None else name_of_main_section
-        )
+        main_section["id_string"] = name_of_main_section
     survey = builder.create_survey_element_from_dict(main_section)
 
     # not sure where to do this without repeating ourselves,

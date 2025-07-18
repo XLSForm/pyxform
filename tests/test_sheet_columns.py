@@ -718,7 +718,7 @@ class TestHeaderProcessing(PyxformTestCase):
                 observed = dealias_and_group_headers(
                     sheet_name="test",
                     sheet_data=case[0],
-                    sheet_header=[{k: None for k in case[0][0]}],
+                    sheet_header=[dict.fromkeys(case[0][0])],
                     header_aliases={},
                     header_columns=set(),
                 )

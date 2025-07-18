@@ -77,7 +77,7 @@ def get_expression_lexer() -> re.Scanner:
 
 
 class ExpLexerToken:
-    __slots__ = ("name", "value", "start", "end")
+    __slots__ = ("end", "name", "start", "value")
 
     def __init__(self, name: str, value: str, start: int, end: int) -> None:
         self.name: str = name

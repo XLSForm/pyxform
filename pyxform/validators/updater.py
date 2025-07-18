@@ -87,7 +87,7 @@ class _UpdateHandler:
     @staticmethod
     def _check_path(file_path):
         if not os.path.exists(file_path):
-            raise PyXFormError(f"Expected path does not exist: {file_path}" "")
+            raise PyXFormError(f"Expected path does not exist: {file_path}")
         else:
             return True
 
@@ -463,7 +463,7 @@ class _UpdateHandler:
         :type update_info: _UpdateInfo
         """
         if not os.path.exists(update_info.installed_path):
-            message = "\nCheck failed!\n\n" "No installed release found."
+            message = "\nCheck failed!\n\nNo installed release found."
             raise PyXFormError(message)
 
         installed = _UpdateHandler._read_json(file_path=update_info.installed_path)
@@ -512,8 +512,7 @@ class _UpdateService:
 class EnketoValidateUpdater(_UpdateService):
     def __init__(self):
         self.update_info = _UpdateInfo(
-            api_url="https://api.github.com/repos/enketo/enketo-validate/"
-            "releases/latest",
+            api_url="https://api.github.com/repos/enketo/enketo-validate/releases/latest",
             repo_url="https://github.com/enketo/enketo-validate",
             validate_subfolder="enketo_validate",
             install_check=self._install_check,

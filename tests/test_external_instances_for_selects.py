@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pyxform import aliases
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
 from pyxform.errors import PyXFormError
+from pyxform.validators.pyxform import select_from_file
 from pyxform.xls2json_backends import md_table_to_workbook
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
 
@@ -204,8 +205,6 @@ class TestSelectFromFile(PyxformTestCase):
         |        | type          | name    | label   | parameters |
         |        | {q} cities{e} | city    | City    | {p}        |
         """
-        from pyxform.validators.pyxform import select_from_file
-
         q_types = ("select_one_from_file", "select_multiple_from_file")
         good_params = (
             "value=val",
