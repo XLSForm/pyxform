@@ -90,8 +90,4 @@ class SurveyInstance:
         orphan_count = len(self._orphan_answers.keys())
         placed_count = len(self._answers.keys())
         answer_count = orphan_count + placed_count
-        return "<Instance (%d answers: %d placed. %d orphans)>" % (
-            answer_count,
-            placed_count,
-            orphan_count,
-        )
+        return f"<Instance ({answer_count} answers: {placed_count} placed. {orphan_count} orphans)>"

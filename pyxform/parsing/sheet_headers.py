@@ -50,7 +50,7 @@ def merge_dicts(
     # Union keys but retain order (as opposed to set()), preferencing dict_a then dict_b.
     # E.g. {"a": 1, "b": 2} + {"c": 3, "a": 4} -> {"a": None, "b": None, "c": None}
     out_dict = dict_a
-    for key in {k: None for k in (chain(dict_a, dict_b))}:
+    for key in dict.fromkeys(chain(dict_a, dict_b)):
         out_dict[key] = merge_dicts(dict_a.get(key), dict_b.get(key), default_key)
     return out_dict
 
@@ -66,7 +66,7 @@ def list_to_nested_dict(lst: Sequence) -> dict:
 
 
 class DealiasAndGroupHeadersResult:
-    __slots__ = ("headers", "data")
+    __slots__ = ("data", "headers")
 
     def __init__(self, headers: tuple[tuple[str, ...], ...], data: Sequence[dict]):
         """

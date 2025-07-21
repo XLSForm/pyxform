@@ -347,8 +347,7 @@ class PyxformTestCase(TestCase):
             self.assertEqual(
                 real_count,
                 count,
-                msg_prefix + "Found %d instances of %s in content"
-                " (expected %d)" % (real_count, text_repr, count),
+                f"{msg_prefix}Found {real_count} instances of {text_repr} in content (expected {count})",
             )
         else:
             self.assertTrue(

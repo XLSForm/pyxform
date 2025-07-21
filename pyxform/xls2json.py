@@ -1067,15 +1067,15 @@ def workbook_to_json(
                                     constants.NAME: constants.OR_OTHER_CHOICE[
                                         constants.NAME
                                     ],
-                                    constants.LABEL: {
-                                        lang: constants.OR_OTHER_CHOICE[constants.LABEL]
-                                        for lang in {
+                                    constants.LABEL: dict.fromkeys(
+                                        {
                                             lang
                                             for c in itemset_choices
                                             for lang in c[constants.LABEL]
                                             if isinstance(c.get(constants.LABEL), dict)
-                                        }
-                                    },
+                                        },
+                                        constants.OR_OTHER_CHOICE[constants.LABEL],
+                                    ),
                                 }
                             )
                         else:

@@ -44,14 +44,14 @@ The ``xls2xform`` command can then be used::
 
     xls2xform path_to_XLSForm [output_path]
 
-The currently supported Python versions for ``pyxform`` are 3.10, 3.11, 3.12, and 3.13.
+The currently supported Python versions for ``pyxform`` are 3.10 to 3.13 (the primary development version is 3.12). If this is different from the version you use for other projects, consider using `pyenv <https://github.com/pyenv/pyenv>`_ to manage multiple versions of Python.
 
 Running pyxform from local source
 ---------------------------------
 
 Note that you must uninstall any globally installed ``pyxform`` instance in order to use local modules. Please install java 8 or newer version.
 
-From the command line, complete the following. These steps use a `virtualenv <https://docs.python.org/3.10/tutorial/venv.html>`_ to make dependency management easier, and to keep the global site-packages directory clean::
+From the command line, complete the following. These steps use a virtualenv to make dependency management easier, and to keep the global site-packages directory clean::
 
     # Get a copy of the repository.
     mkdir -P ~/repos/pyxform
@@ -59,7 +59,7 @@ From the command line, complete the following. These steps use a `virtualenv <ht
     git clone https://github.com/XLSForm/pyxform.git repo
 
     # Create and activate a virtual environment for the install.
-    /usr/local/bin/python3.10 -m venv venv
+    /usr/local/bin/python -m venv venv
     . venv/bin/activate
 
     # Install the pyxform and it's production dependencies.
@@ -154,7 +154,7 @@ Releases are now automatic. These instructions are provided for forks or for a f
 1. In a clean new release only directory, check out master.
 2. Create a new virtualenv in this directory to ensure a clean Python environment::
 
-     /usr/local/bin/python3.10 -m venv pyxform-release
+     /usr/local/bin/python -m venv pyxform-release
      . pyxform-release/bin/activate
 
 3. Install the production and packaging requirements::

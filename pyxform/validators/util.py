@@ -125,7 +125,7 @@ def request_get(url):
         ) from http_err
     except URLError as url_err:
         raise PyXFormError(
-            f"Unable to reach a server. Reason: {url_err.reason}. " f"URL: {url}"
+            f"Unable to reach a server. Reason: {url_err.reason}. URL: {url}"
         ) from url_err
 
 
