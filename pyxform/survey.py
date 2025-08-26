@@ -349,7 +349,7 @@ class Survey(Section):
                 )
 
             # try to resolve reference and fail if can't
-            self.insert_xpaths(triggering_reference, self)
+            self.insert_xpaths(text=triggering_reference, context=self)
 
         body_kwargs = {}
         if self.style:

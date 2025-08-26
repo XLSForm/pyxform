@@ -119,7 +119,7 @@ class Section(SurveyElement):
             attributes.update(self.instance)
         # Resolve field references in attributes
         for key, value in attributes.items():
-            attributes[key] = survey.insert_xpaths(value, self)
+            attributes[key] = survey.insert_xpaths(text=value, context=self)
         result = node(self.name, **attributes)
 
         for child in self.children:
@@ -190,7 +190,7 @@ class RepeatingSection(Section):
         # Resolve field references in attributes
         if self.control:
             control_dict = {
-                key: survey.insert_xpaths(value, self)
+                key: survey.insert_xpaths(text=value, context=self)
                 for key, value in self.control.items()
             }
             repeat_node = node("repeat", nodeset=self.get_xpath(), **control_dict)
@@ -254,7 +254,7 @@ class GroupedSection(Section):
         # Resolve field references in attributes
         if self.control:
             attributes = {
-                key: survey.insert_xpaths(value, self)
+                key: survey.insert_xpaths(text=value, context=self)
                 for key, value in self.control.items()
             }
             if "appearance" in self.control:

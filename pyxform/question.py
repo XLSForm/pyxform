@@ -141,7 +141,7 @@ class Question(SurveyElement):
         attributes = self.instance
         if attributes:
             for k, v in attributes.items():
-                result.setAttribute(k, survey.insert_xpaths(v, self))
+                result.setAttribute(k, survey.insert_xpaths(text=v, context=self))
         return result
 
     def xml_control(self, survey: "Survey"):
@@ -197,11 +197,13 @@ class Question(SurveyElement):
     def nest_set_nodes(self, survey, xml_node, tag, nested_items):
         for item in nested_items:
             node_attrs = {
-                "ref": survey.insert_xpaths(f"${{{item[0]}}}", survey).strip(),
+                "ref": survey.insert_xpaths(
+                    text=f"${{{item[0]}}}", context=survey
+                ).strip(),
                 "event": "xforms-value-changed",
             }
             if item[1]:
-                node_attrs["value"] = survey.insert_xpaths(item[1], self)
+                node_attrs["value"] = survey.insert_xpaths(text=item[1], context=self)
             set_node = node(tag, **node_attrs)
             xml_node.appendChild(set_node)
 
@@ -220,7 +222,7 @@ class Question(SurveyElement):
             # "tag" is from the question type dict so it can't include references. Also,
             # if it did include references, then the node element name would be invalid.
             if k != "tag":
-                result.setAttribute(k, survey.insert_xpaths(v, self))
+                result.setAttribute(k, survey.insert_xpaths(text=v, context=self))
         return result
 
     def build_xml(self, survey: "Survey") -> DetachableElement | None:
@@ -253,7 +255,9 @@ class InputQuestion(Question):
         if self.query:
             choice_filter = self.choice_filter
             if choice_filter:
-                pred = survey.insert_xpaths(choice_filter, self, True)
+                pred = survey.insert_xpaths(
+                    text=choice_filter, context=self, use_current=True
+                )
                 query = f"""instance('{self.query}')/root/item[{pred}]"""
             else:
                 query = f"""instance('{self.query}')/root/item"""
@@ -404,11 +408,16 @@ class MultipleChoiceQuestion(Question):
             choice_filter = self.choice_filter
             if choice_filter:
                 choice_filter = survey.insert_xpaths(
-                    choice_filter, self, True, is_previous_question
+                    text=choice_filter,
+                    context=self,
+                    use_current=True,
+                    reference_parent=is_previous_question,
                 )
             if is_previous_question:
                 path = (
-                    survey.insert_xpaths(self.itemset, self, reference_parent=True)
+                    survey.insert_xpaths(
+                        text=self.itemset, context=self, reference_parent=True
+                    )
                     .strip()
                     .split("/")
                 )
@@ -438,7 +447,9 @@ class MultipleChoiceQuestion(Question):
 
                     if "seed" in params:
                         if params["seed"].startswith("${"):
-                            seed = survey.insert_xpaths(params["seed"], self).strip()
+                            seed = survey.insert_xpaths(
+                                text=params["seed"], context=self
+                            ).strip()
                             nodeset = f"{nodeset}, {seed}"
                         else:
                             nodeset = f"""{nodeset}, {params["seed"]}"""

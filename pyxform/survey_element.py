@@ -471,7 +471,7 @@ class SurveyElement(Mapping):
         ):
             return None
 
-        default_with_xpath_paths = survey.insert_xpaths(self.default, self)
+        default_with_xpath_paths = survey.insert_xpaths(text=self.default, context=self)
 
         triggering_events = "odk-instance-first-load"
         if in_repeat:
@@ -578,7 +578,7 @@ class SurveyElement(Mapping):
                 v = f"""jr:itext('{self._translation_path("jr:requiredMsg")}')"""
             elif k == "jr:noAppErrorString" and isinstance(v, dict):
                 v = f"""jr:itext('{self._translation_path("jr:noAppErrorString")}')"""
-            bind_dict[k] = survey.insert_xpaths(v, context=self)
+            bind_dict[k] = survey.insert_xpaths(text=v, context=self)
         yield node("bind", nodeset=self.get_xpath(), **bind_dict)
 
     def xml_control(self, survey: "Survey"):
