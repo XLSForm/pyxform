@@ -13,12 +13,9 @@ from pyxform import aliases as alias
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_xml_tag
-from pyxform.utils import (
-    BRACKETED_TAG_REGEX,
-    INVALID_XFORM_TAG_REGEXP,
-    DetachableElement,
-    default_is_dynamic,
-    node,
+from pyxform.utils import INVALID_XFORM_TAG_REGEXP, DetachableElement, node
+from pyxform.validators.pyxform.pyxform_reference import (
+    has_pyxform_reference,
 )
 from pyxform.xls2json import print_pyobj_to_json
 
@@ -377,7 +374,7 @@ class SurveyElement(Mapping):
                         "text": text,
                         "output_context": self,
                     }
-            elif constraint_msg and re.search(BRACKETED_TAG_REGEX, constraint_msg):
+            elif constraint_msg and has_pyxform_reference(constraint_msg):
                 yield {
                     "path": self._translation_path("jr:constraintMsg"),
                     "lang": default_language,
@@ -394,7 +391,7 @@ class SurveyElement(Mapping):
                         "text": text,
                         "output_context": self,
                     }
-            elif required_msg and re.search(BRACKETED_TAG_REGEX, required_msg):
+            elif required_msg and has_pyxform_reference(required_msg):
                 yield {
                     "path": self._translation_path("jr:requiredMsg"),
                     "lang": default_language,
@@ -463,26 +460,10 @@ class SurveyElement(Mapping):
             hasattr(self, const.MEDIA) and isinstance(self.media, dict) and self.media
         )
 
-    def get_setvalue_node_for_dynamic_default(self, survey: "Survey", in_repeat=False):
-        if (
-            not hasattr(self, "default")
-            or not self.default
-            or not default_is_dynamic(self.default, self.type)
-        ):
-            return None
-
-        default_with_xpath_paths = survey.insert_xpaths(self.default, self)
-
-        triggering_events = "odk-instance-first-load"
-        if in_repeat:
-            triggering_events += " odk-new-repeat"
-
-        return node(
-            "setvalue",
-            ref=self.get_xpath(),
-            value=default_with_xpath_paths,
-            event=triggering_events,
-        )
+    def get_setvalue_node_for_dynamic_default(
+        self, survey: "Survey", in_repeat=False
+    ) -> DetachableElement | None:
+        return None
 
     # XML generating functions, these probably need to be moved around.
     def xml_label(self, survey: "Survey"):
@@ -563,17 +544,17 @@ class SurveyElement(Mapping):
             # I think all the binding conversions should be happening on
             # the xls2json side.
             if (
-                hashable(v)
+                k in const.CONVERTIBLE_BIND_ATTRIBUTES
+                and hashable(v)
                 and v in alias.BINDING_CONVERSIONS
-                and k in const.CONVERTIBLE_BIND_ATTRIBUTES
             ):
                 v = alias.BINDING_CONVERSIONS[v]
             elif k == "jr:constraintMsg" and (
-                isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
+                isinstance(v, dict) or has_pyxform_reference(v)
             ):
                 v = f"""jr:itext('{self._translation_path("jr:constraintMsg")}')"""
             elif k == "jr:requiredMsg" and (
-                isinstance(v, dict) or re.search(BRACKETED_TAG_REGEX, v)
+                isinstance(v, dict) or has_pyxform_reference(v)
             ):
                 v = f"""jr:itext('{self._translation_path("jr:requiredMsg")}')"""
             elif k == "jr:noAppErrorString" and isinstance(v, dict):

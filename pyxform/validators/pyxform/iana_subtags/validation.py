@@ -2,6 +2,8 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
+from pyxform.parsing.expression import maybe_strip
+
 LANG_CODE_REGEX = re.compile(r"\((.*)\)$")
 HERE = Path(__file__).parent
 
@@ -10,7 +12,7 @@ HERE = Path(__file__).parent
 def read_tags(file_name: str) -> set[str]:
     path = HERE / file_name
     with open(path, encoding="utf-8") as f:
-        return {line.strip() for line in f}
+        return {maybe_strip(line) for line in f}
 
 
 def get_languages_with_bad_tags(languages):

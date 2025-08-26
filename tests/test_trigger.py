@@ -2,6 +2,8 @@
 Test handling setvalue of 'trigger' column in forms
 """
 
+from pyxform.errors import ErrorCode
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -16,8 +18,9 @@ class TriggerSetvalueTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "There has been a problem trying to replace ${a} with the XPath to the "
-                + "survey element named 'a'. There is no survey element with this name."
+                ErrorCode.PYREF_003.value.format(
+                    sheet="survey", column="trigger", row=2, q="a"
+                )
             ],
         )
 
@@ -31,7 +34,9 @@ class TriggerSetvalueTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Only references to other fields are allowed in the 'trigger' column."
+                ErrorCode.PYREF_001.value.format(
+                    sheet="survey", column="trigger", row=2, q="6"
+                )
             ],
         )
 
@@ -319,3 +324,68 @@ class TriggerSetvalueTests(PyxformTestCase):
                 + "  and @value='string-length( ../one )']",
             ],
         )
+
+    def test_multiple_triggers__with_comma_delimiter_ok(self):
+        """Should find setvalue elements added for each trigger reference question."""
+        md = """
+        | survey |          |      |             |             |         |
+        |        | type     | name | label       | calculation | trigger |
+        |        | text     | a    | Enter text  |             |         |
+        |        | text     | b    | Enter text  |             |         |
+        |        | dateTime | c    |             | now()       | {case}  |
+        """
+        cases = (
+            "${a},${b}",  # single comma
+            "${a},,${b}",  # double comma
+            "${a},${b},",  # trailing comma
+            "${a},${b},,",  # trailing double comma
+        )
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        """
+                        /h:html/h:body/x:input[@ref='/test_name/a']/x:setvalue[
+                          @ref='/test_name/c'
+                          and @event='xforms-value-changed'
+                          and @value='now()'
+                        ]
+                        """,
+                        """
+                        /h:html/h:body/x:input[@ref='/test_name/b']/x:setvalue[
+                          @ref='/test_name/c'
+                          and @event='xforms-value-changed'
+                          and @value='now()'
+                        ]
+                        """,
+                    ],
+                )
+
+    def test_multiple_triggers__with_bad_comma_delimiter(self):
+        """Should find an error is raised for incorrectly specified multiple references."""
+        md = """
+        | survey |          |      |             |             |         |
+        |        | type     | name | label       | calculation | trigger |
+        |        | text     | a    | Enter text  |             |         |
+        |        | text     | b    | Enter text  |             |         |
+        |        | dateTime | c    |             | now()       | {case}  |
+        """
+        cases = (
+            "${a}${b}",  # no comma
+            ",${a}${b}",  # multiple after comma first pos
+            "${a},${b}${c}",  # multiple after comma second pos
+            "${a}${b},",  # multiple before comma first pos
+            "${a},${b}${c}",  # multiple before comma second pos
+        )
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[
+                        ErrorCode.PYREF_002.value.format(
+                            sheet="survey", column="trigger", row="4"
+                        )
+                    ],
+                )
