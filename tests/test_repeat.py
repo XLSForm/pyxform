@@ -2,6 +2,14 @@
 Test reapeat structure.
 """
 
+from os import getpid
+from time import perf_counter
+from unittest import skip
+
+from psutil import Process
+from pyxform.xls2json_backends import SupportedFileTypes
+from pyxform.xls2xform import convert
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -982,3 +990,53 @@ class TestRepeat(PyxformTestCase):
                 """,
             ],
         )
+
+    @skip("Slow performance test. Un-skip to run as needed.")
+    def test_check_performance__relative_reference(self):
+        """
+        Should find that simple relative references are converted reasonably quickly.
+
+        Results with Python 3.12.11 on VM with 2vCPU (i7-7700HQ) 2GB RAM, x questions
+        with 1 reference each (to the same target), average of 10 runs (seconds) per form:
+
+        | num   | time   | peak RSS MB |
+        |   500 | 0.1653 |          54 |
+        |  1000 | 0.3381 |          58 |
+        |  2000 | 0.6872 |          67 |
+        |  5000 | 1.7852 |          95 |
+        | 10000 | 3.7220 |         141 |
+        """
+        survey_header = """
+        | survey |
+        |        | type         | name | label     |
+        |        | begin repeat | lcar | lcar      |
+        |        | text         | t    | target    |
+        """
+        question = """
+        |        | note         | s{i} | hi ${{t}} |
+        """
+        survey_footer = """
+        |        | end repeat   | lcar |           |
+        """
+        process = Process(getpid())
+        for count in (500, 1000, 2000, 5000, 10000):
+            questions = "\n".join(question.format(i=i) for i in range(count))
+            md = "".join((survey_header, questions, survey_footer))
+
+            def run(name, case):
+                runs = 0
+                results = []
+                peak_memory_usage = process.memory_info().rss
+                while runs < 10:
+                    start = perf_counter()
+                    convert(xlsform=case, file_type=SupportedFileTypes.md.value)
+                    results.append(perf_counter() - start)
+                    peak_memory_usage = max(process.memory_info().rss, peak_memory_usage)
+                    runs += 1
+                print(
+                    name,
+                    round(sum(results) / len(results), 4),
+                    f"| Peak RSS: {peak_memory_usage}",
+                )
+
+            run(name=f"questions={count}, (seconds):", case=md)
