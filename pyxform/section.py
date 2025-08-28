@@ -173,6 +173,36 @@ class Section(SurveyElement):
 
 
 class RepeatingSection(Section):
+    def __init__(
+        self,
+        name: str,
+        type: str = constants.REPEAT,
+        label: str | dict | None = None,
+        hint: str | dict | None = None,
+        bind: dict | None = None,
+        control: dict | None = None,
+        instance: dict | None = None,
+        media: dict | None = None,
+        flat: bool | None = None,
+        sms_field: str | None = None,
+        fields: tuple[str, ...] | None = None,
+        **kwargs,
+    ):
+        super().__init__(
+            name=name,
+            type=type,
+            label=label,
+            hint=hint,
+            bind=bind,
+            control=control,
+            instance=instance,
+            media=media,
+            flat=flat,
+            sms_field=sms_field,
+            fields=fields,
+            **kwargs,
+        )
+
     def xml_control(self, survey: "Survey"):
         """
         <group>
@@ -233,17 +263,35 @@ class RepeatingSection(Section):
 
 
 class GroupedSection(Section):
-    # I think this might be a better place for the table-list stuff, however it
-    # doesn't allow for as good of validation as putting it in xls2json
-    # def __init__(self, **kwargs):
-    #        control = kwargs.get(u"control")
-    #        if control:
-    #            appearance = control.get(u"appearance")
-    #            if appearance is u"table-list":
-    #                print "HI"
-    #                control[u"appearance"] = "field-list"
-    #                kwargs["children"].insert(0, kwargs["children"][0])
-    #        super(GroupedSection, self).__init__(kwargs)
+    def __init__(
+        self,
+        name: str,
+        type: str = constants.GROUP,
+        label: str | dict | None = None,
+        hint: str | dict | None = None,
+        bind: dict | None = None,
+        control: dict | None = None,
+        instance: dict | None = None,
+        media: dict | None = None,
+        flat: bool | None = None,
+        sms_field: str | None = None,
+        fields: tuple[str, ...] | None = None,
+        **kwargs,
+    ):
+        super().__init__(
+            name=name,
+            type=type,
+            label=label,
+            hint=hint,
+            bind=bind,
+            control=control,
+            instance=instance,
+            media=media,
+            flat=flat,
+            sms_field=sms_field,
+            fields=fields,
+            **kwargs,
+        )
 
     def xml_control(self, survey: "Survey"):
         if self.control and self.control.get("bodyless"):
