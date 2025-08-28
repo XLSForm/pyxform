@@ -9,7 +9,6 @@ import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from collections.abc import Generator, Iterable
 from datetime import datetime
-from functools import lru_cache
 from itertools import chain
 from pathlib import Path
 
@@ -75,29 +74,18 @@ def register_nsmap():
 register_nsmap()
 
 
-@lru_cache(maxsize=128)
-def is_parent_a_repeat(survey, xpath):
+def share_same_repeat_parent(
+    target: SurveyElement,
+    source: SurveyElement,
+    lcar_steps_source: int,
+    lcar: SurveyElement,
+    reference_parent: bool = False,
+):
     """
-    Returns the XPATH of the first repeat of the given xpath in the survey,
-    otherwise False will be returned.
-    """
-    parent_xpath = "/".join(xpath.split("/")[:-1])
-    if not parent_xpath:
-        return False
+    Returns a tuple of the number of steps from the source xpath to the lowest common
+    ancestor repeat, and the xpath to the target xpath from the LCAR.
 
-    for item in survey.iter_descendants(condition=lambda i: isinstance(i, Section)):
-        if item.type == constants.REPEAT and item.get_xpath() == parent_xpath:
-            return parent_xpath
-
-    return is_parent_a_repeat(survey, parent_xpath)
-
-
-@lru_cache(maxsize=128)
-def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=False):
-    """
-    Returns a tuple of the number of steps from the context xpath to the shared
-    repeat parent and the xpath to the target xpath from the shared repeat
-    parent.
+    Function only called if target and source share a ancestor repeat.
 
     For example,
         xpath =         /data/repeat_a/group_a/name
@@ -106,68 +94,29 @@ def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=Fals
         returns (2, '/group_a/name')'
     """
 
-    def _get_steps_and_target_xpath(context_parent, xpath_parent, include_parent=False):
-        parts = []
-        steps = 1
-        if not include_parent:
-            remainder_xpath = xpath[len(xpath_parent) :]
-            context_parts = context_xpath[len(xpath_parent) + 1 :].split("/")
-            xpath_parts = xpath[len(xpath_parent) + 1 :].split("/")
-        else:
-            split_idx = len(xpath_parent.split("/"))
-            context_parts = context_xpath.split("/")[split_idx - 1 :]
-            xpath_parts = xpath.split("/")[split_idx - 1 :]
-            remainder_xpath = "/".join(xpath_parts)
+    def is_repeat(i: SurveyElement) -> bool:
+        return isinstance(i, Section) and i.type == constants.REPEAT
 
-        for index, item in enumerate(context_parts[:-1]):
-            try:
-                if xpath[len(context_parent) + 1 :].split("/")[index] != item:
-                    steps = len(context_parts[index:])
-                    parts = xpath_parts[index:]
-                    break
-                else:
-                    parts = remainder_xpath.split("/")[index + 2 :]
-            except IndexError:
-                steps = len(context_parts[index - 1 :])
-                parts = xpath_parts[index - 1 :]
-                break
-        return (steps, f"""/{"/".join(parts)}""" if parts else remainder_xpath)
+    # Currently reference_parent only used for itemsets containing a pyxform variable,
+    # i.e. `select_one ${ref}`. In that case, an extra step up the reference path may be
+    # required, to allow appending a choice filter predicate.
+    if reference_parent:
+        # The LCAR may or may not be the closest ancestor repeat for source or target,
+        # but there's always at least the LCAR, so a check for None isn't needed.
+        source_car, _ = next(source.iter_ancestors(condition=is_repeat), None)
+        target_car, _ = next(target.iter_ancestors(condition=is_repeat), None)
+        # May return None if LCAR is a child of the Survey, or only non-repeating group(s).
+        lcar_not_in_repeat = next(lcar.iter_ancestors(condition=is_repeat), None) is None
 
-    context_parent = is_parent_a_repeat(survey, context_xpath)
-    xpath_parent = is_parent_a_repeat(survey, xpath)
-    if context_parent and xpath_parent and xpath_parent in context_parent:
-        if (not context_parent == xpath_parent and reference_parent) or bool(
-            is_parent_a_repeat(survey, context_parent)
-        ):
-            context_shared_ancestor = is_parent_a_repeat(survey, context_parent)
-            if context_shared_ancestor == xpath_parent:
-                # Check if context_parent is a child repeat of the xpath_parent
-                # If the context_parent is a child of the xpath_parent reference the entire
-                # xpath_parent in the generated nodeset
-                context_parent = context_shared_ancestor
-            elif context_parent == xpath_parent and context_shared_ancestor:
-                # If the context_parent is a child of another
-                # repeat and is equal to the xpath_parent
-                # we avoid refrencing the context_parent and instead reference the shared
-                # ancestor
-                reference_parent = False
-        return _get_steps_and_target_xpath(context_parent, xpath_parent, reference_parent)
-    elif context_parent and xpath_parent:
-        # Check if context_parent and xpath_parent share a common
-        # repeat ancestor
-        context_shared_ancestor = is_parent_a_repeat(survey, context_parent)
-        xpath_shared_ancestor = is_parent_a_repeat(survey, xpath_parent)
+        if lcar is target_car and (lcar_not_in_repeat or source_car is not lcar):
+            # Only honour the request for a reference relative to lcar parent
+            # if the target is not inside nested repeat(s) under lcar, and either:
+            # a) lcar is not in a repeat.
+            # b) source is in nested repeats under lcar.
+            return lcar_steps_source + 1, target.get_xpath(relative_to=lcar.parent)
 
-        if (
-            xpath_shared_ancestor
-            and context_shared_ancestor
-            and xpath_shared_ancestor == context_shared_ancestor
-        ):
-            return _get_steps_and_target_xpath(
-                context_shared_ancestor, xpath_shared_ancestor
-            )
-
-    return (None, None)
+    _, lca_steps_source, _, lca = source.lowest_common_ancestor(target)
+    return lca_steps_source, target.get_xpath(relative_to=lca)
 
 
 def recursive_dict():
@@ -1117,26 +1066,26 @@ class Survey(Section):
         def _relative_path(ref_name: str, _use_current: bool) -> str | None:
             """Given name in ${name}, return relative xpath to ${name}."""
             return_path = None
-            xpath = self._xpath[ref_name].get_xpath()
-            context_xpath = context.get_xpath()
-            # share same root i.e repeat_a from /data/repeat_a/...
-            if (
-                len(context_xpath.split("/")) > 2
-                and xpath.split("/")[2] == context_xpath.split("/")[2]
-            ):
-                # if context xpath and target xpath fall under the same
-                # repeat use relative xpath referencing.
-                relation = context.has_common_repeat_parent(self._xpath[ref_name])
-                if relation[0] == "Unrelated":
-                    return return_path
-                else:
-                    steps, ref_path = share_same_repeat_parent(
-                        self, xpath, context_xpath, reference_parent
+            target = self._xpath[ref_name]
+            # if context xpath and target xpath fall under the same
+            # repeat use relative xpath referencing.
+            relation = context.lowest_common_ancestor(
+                other=target, group_type=constants.REPEAT
+            )
+            if relation[0] == "Common Ancestor":
+                steps, ref_path = share_same_repeat_parent(
+                    target=target,
+                    source=context,
+                    lcar_steps_source=relation[1],
+                    lcar=relation[3],
+                    reference_parent=reference_parent,
+                )
+                if steps:
+                    ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
+                    prefix = " current()/" if _use_current else " "
+                    return_path = (
+                        f"""{prefix}{"/".join(".." for _ in range(steps))}{ref_path} """
                     )
-                    if steps:
-                        ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
-                        prefix = " current()/" if _use_current else " "
-                        return_path = f"""{prefix}{"/".join(".." for _ in range(steps))}{ref_path} """
 
             return return_path
 

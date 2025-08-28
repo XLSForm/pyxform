@@ -1000,11 +1000,11 @@ class TestRepeat(PyxformTestCase):
         with 1 reference each (to the same target), average of 10 runs (seconds) per form:
 
         | num   | time   | peak RSS MB |
-        |   500 | 0.1653 |          54 |
-        |  1000 | 0.3381 |          58 |
-        |  2000 | 0.6872 |          67 |
-        |  5000 | 1.7852 |          95 |
-        | 10000 | 3.7220 |         141 |
+        |   500 | 0.2380 |          52 |
+        |  1000 | 0.3913 |          57 |
+        |  2000 | 0.7147 |          67 |
+        |  5000 | 1.9949 |          84 |
+        | 10000 | 3.8903 |         125 |
         """
         survey_header = """
         | survey |

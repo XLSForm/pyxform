@@ -2,6 +2,7 @@ from csv import DictReader
 from pathlib import Path
 from unittest import TestCase
 
+from pyxform import constants as const
 from pyxform.question import InputQuestion
 from pyxform.section import GroupedSection, RepeatingSection
 from pyxform.survey import Survey, share_same_repeat_parent
@@ -209,10 +210,14 @@ class TestShareSameRepeatParent(TestCase):
         msg = (target_xpath, source_xpath, reference_parent, expected, expect_none)
 
         with self.subTest(msg=msg):
+            relation = source.lowest_common_ancestor(
+                other=target, group_type=const.REPEAT
+            )
             observed = share_same_repeat_parent(
-                survey=survey,
-                xpath=target_xpath,
-                context_xpath=source_xpath,
+                target=target,
+                source=source,
+                lcar_steps_source=relation[1],
+                lcar=relation[3],
                 reference_parent=reference_parent,
             )
             if expect_none:
