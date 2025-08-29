@@ -3,6 +3,7 @@ PyxformTestCase base class using markdown to define the XLSForm.
 """
 
 import logging
+import os
 import tempfile
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -14,6 +15,7 @@ from lxml import etree
 
 # noinspection PyProtectedMember
 from lxml.etree import _Element
+from pyxform.aliases import yes_no
 from pyxform.constants import NSMAP
 from pyxform.errors import PyXFormError
 from pyxform.utils import coalesce
@@ -30,6 +32,11 @@ if TYPE_CHECKING:
     from pyxform.survey import Survey
 
     NSMAPSubs: "list[tuple[str, str]]"
+
+
+PYXFORM_TESTS_RUN_ODK_VALIDATE = yes_no.get(
+    os.environ.get("PYXFORM_TESTS_RUN_ODK_VALIDATE"), False
+)
 
 
 class PyxformTestError(Exception):
@@ -94,7 +101,7 @@ class PyxformTestCase(TestCase):
         # Optional extras
         name: str | None = None,
         warnings: list[str] | None = None,
-        run_odk_validate: bool = False,
+        run_odk_validate: bool | None = None,
         debug: bool = False,
     ) -> ConvertResult | None:
         """
@@ -146,7 +153,8 @@ class PyxformTestCase(TestCase):
         Optional extra parameters:
         :param name: a valid xml tag, for the root element in the XForm main instance.
         :param warnings: a list to use for storing warnings for inspection.
-        :param run_odk_validate: If True, run ODK Validate on the XForm output.
+        :param run_odk_validate: If True, run ODK Validate on the XForm output. If False,
+          never run ODK Validate (e.g. the form is invalid or ODK Validate has bugs).
         :param debug: If True, log details of the test to stdout. Details include the
           input survey markdown, the XML document, XPath match strings.
         """
@@ -157,6 +165,9 @@ class PyxformTestCase(TestCase):
         odk_validate_error__contains = coalesce(odk_validate_error__contains, [])
         survey_valid = True
         result = None
+        # Some tests explicitly turn off ODK Validate because they not valid forms, so
+        # use the setting if any before applying the environment variable default.
+        run_odk_validate = coalesce(run_odk_validate, PYXFORM_TESTS_RUN_ODK_VALIDATE)
 
         try:
             if survey is None:
