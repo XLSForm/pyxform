@@ -7,7 +7,7 @@ from pyxform.question import InputQuestion
 from pyxform.section import GroupedSection, RepeatingSection
 from pyxform.survey import Survey, share_same_repeat_parent
 
-from tests.pyxform_test_case import PyxformTestCase
+from tests.pyxform_test_case import PYXFORM_TESTS_RUN_ODK_VALIDATE, PyxformTestCase
 
 
 class TestSurvey(PyxformTestCase):
@@ -131,8 +131,8 @@ def build_survey_from_path_spec(
     shared_path = target_path[:shared_path_length]
 
     # Objects always present once in paths.
-    target = InputQuestion(name="t", type="string")
-    source = InputQuestion(name="s", type="string")
+    target = InputQuestion(name="t", label="target", type="string")
+    source = InputQuestion(name="s", label="source ${t}", type="string")
     lcar = RepeatingSection(name="a")
     survey = Survey(name="data")
     current_parent = survey
@@ -209,7 +209,11 @@ class TestShareSameRepeatParent(TestCase):
         expect_none = expect_none == "1"
         msg = (target_xpath, source_xpath, reference_parent, expected, expect_none)
 
-        with self.subTest(msg=msg):
+        if PYXFORM_TESTS_RUN_ODK_VALIDATE:
+            with self.subTest(msg=f"ODK Validate: {msg}"):
+                survey.to_xml(validate=True)
+
+        with self.subTest(msg=f"Output Test: {msg}"):
             relation = source.lowest_common_ancestor(
                 other=target, group_type=const.REPEAT
             )
