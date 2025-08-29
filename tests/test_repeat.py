@@ -1040,3 +1040,28 @@ class TestRepeat(PyxformTestCase):
                 )
 
             run(name=f"questions={count}, (seconds):", case=md)
+
+    def test_calculation_using_node_from_nested_repeat_has_relative_reference(self):
+        """Should find the XPath reference for "t" is relative to LCA repeat "a"."""
+        # Repro case for pyxform/#453
+        md = """
+        | survey |
+        |        | type         | name | label  | calculation |
+        |        | begin repeat | a    | a      |             |
+        |        | begin repeat | r1t  | r1t    |             |
+        |        | integer      | t    | target |             |
+        |        | end repeat   | r1t  |        |             |
+        |        | note         | s    | source | sum(${t})   |
+        |        | end repeat   | a    |        |             |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:bind[
+                  @nodeset = '/test_name/a/s'
+                  and @calculate = 'sum( ../r1t/t )'
+                ]
+                """,
+            ],
+        )
