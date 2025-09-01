@@ -19,8 +19,8 @@ from pyxform.utils import (
     DetachableElement,
     default_is_dynamic,
     node,
+    print_pyobj_to_json,
 )
-from pyxform.xls2json import print_pyobj_to_json
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey

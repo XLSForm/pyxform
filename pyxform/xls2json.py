@@ -2,7 +2,6 @@
 A Python script to convert excel files into JSON.
 """
 
-import json
 import os
 import re
 import sys
@@ -27,6 +26,7 @@ from pyxform.utils import (
     PYXFORM_REFERENCE_REGEX,
     coalesce,
     default_is_dynamic,
+    print_pyobj_to_json,
 )
 from pyxform.validators.pyxform import parameters_generic, select_from_file
 from pyxform.validators.pyxform import question_types as qt
@@ -60,18 +60,6 @@ RE_SELECT = re.compile(
 RE_OSM = re.compile(
     r"(?P<osm_command>(" + "|".join(aliases.osm) + r")) (?P<list_name>\S+)"
 )
-
-
-def print_pyobj_to_json(pyobj, path=None):
-    """
-    dump a python nested array/dict structure to the specified file
-    or stdout if no file is specified
-    """
-    if path:
-        with open(path, mode="w", encoding="utf-8") as fp:
-            json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
-    else:
-        sys.stdout.write(json.dumps(pyobj, ensure_ascii=False, indent=4))
 
 
 def dealias_types(dict_array):
@@ -1456,26 +1444,6 @@ def parse_file_to_json(
     )
 
 
-def organize_by_values(dict_list, key):
-    """
-    dict_list -- a list of dicts
-    key -- a key shared by all the dicts in dict_list
-    Returns a dict of dicts keyed by the value of the specified key
-    in each dictionary.
-    If two dictionaries fall under the same key an error is thrown.
-    If a dictionary is doesn't have the specified key it is omitted
-    """
-    result = {}
-    for dicty in dict_list:
-        if key in dicty:
-            dicty_copy = dicty.copy()
-            val = dicty_copy.pop(key)
-            if val in result:
-                raise PyXFormError("Duplicate key: " + val)
-            result[val] = dicty_copy
-    return result
-
-
 class SpreadsheetReader:
     def __init__(self, path_or_file):
         path = path_or_file
@@ -1526,30 +1494,6 @@ class SurveyReader(SpreadsheetReader):
         # Open file to print warning log to.
         warn_out = open(warn_out_file, mode="w", encoding="utf-8")
         warn_out.write("\n".join(self._warnings))
-
-
-class QuestionTypesReader(SpreadsheetReader):
-    """
-    Class for reading spreadsheet file that specifies the available
-    question types.
-    @see question_type_dictionary
-    """
-
-    def __init__(self, path):
-        super().__init__(path)
-        self._setup_question_types_dictionary()
-
-    def _setup_question_types_dictionary(self):
-        types_sheet = "question types"
-        self._dict = self._dict[types_sheet]
-        self._dict = dealias_and_group_headers(
-            sheet_name=types_sheet,
-            sheet_data=self._dict,
-            header_aliases={},
-            header_columns=set(),
-            default_language=constants.DEFAULT_LANGUAGE_VALUE,
-        ).data
-        self._dict = organize_by_values(self._dict, "name")
 
 
 if __name__ == "__main__":

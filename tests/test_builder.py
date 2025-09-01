@@ -11,7 +11,7 @@ import defusedxml.ElementTree as ETree
 from pyxform import InputQuestion, Survey
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.errors import PyXFormError
-from pyxform.xls2json import print_pyobj_to_json
+from pyxform.utils import print_pyobj_to_json
 
 from tests import utils
 
