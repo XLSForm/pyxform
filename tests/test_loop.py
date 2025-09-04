@@ -169,6 +169,7 @@ class TestLoopInternalRepresentation(TestCase):
     maxDiff = None
 
     def test_pyxform(self):
+        """Should find that the internal pyxform data structure remains consistent."""
         md = """
         | survey |
         | | type                       | name     | label::English                    |
@@ -232,7 +233,8 @@ class TestLoopInternalRepresentation(TestCase):
         }
         self.assertEqual(expected, observed)
 
-    def test_survey(self):
+    def test_survey_to_json_output(self):
+        """Should find that the survey.to_json_dict output remains consistent."""
         md = """
         | survey |
         | | type                  | name               | label::English        | label::French    | constraint    |

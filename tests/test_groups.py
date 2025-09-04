@@ -2,10 +2,15 @@
 Test XForm groups.
 """
 
+from unittest import TestCase
+
+from pyxform.builder import create_survey_element_from_dict
+from pyxform.xls2xform import convert
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
-class GroupsTests(PyxformTestCase):
+class TestGroupOutput(PyxformTestCase):
     """
     Test XForm groups.
     """
@@ -71,3 +76,191 @@ class GroupsTests(PyxformTestCase):
                 """
             ],
         )
+
+
+class TestGroupParsing(PyxformTestCase):
+    def test_group__no_end_error(self):
+        """Should raise an error if there is a "begin group" with no "end group"."""
+        md = """
+        | survey |
+        |        | type        | name | label |
+        |        | begin group | g1   | G1    |
+        |        | text        | q1   | Q1    |
+        """
+        self.assertPyxformXform(
+            md=md, errored=True, error__contains=["Unmatched begin statement: group (g1)"]
+        )
+
+    def test_group__no_end_error__different_end_type(self):
+        """Should raise an error if there is a "begin group" with no "end group"."""
+        md = """
+        | survey |
+        |        | type        | name | label |
+        |        | begin group | g1   | G1    |
+        |        | text        | q1   | Q1    |
+        |        | end repeat  |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                "[row : 4] Unmatched end statement. Previous control type: group, Control "
+                "type: repeat, Control name: None"
+            ],
+        )
+
+    def test_group__no_end_error__with_another_closed_group(self):
+        """Should raise an error if there is a "begin group" with no "end group"."""
+        md = """
+        | survey |
+        |        | type        | name | label |
+        |        | begin group | g1   | G1    |
+        |        | begin group | g2   | G2    |
+        |        | text        | q1   | Q1    |
+        |        | end group   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md, errored=True, error__contains=["Unmatched begin statement: group (g1)"]
+        )
+
+    def test_group__no_begin_error(self):
+        """Should raise an error if there is a "end group" with no "begin group"."""
+        md = """
+        | survey |
+        |        | type        | name | label |
+        |        | text        | q1   | Q1    |
+        |        | end group   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                "[row : 3] Unmatched end statement. Previous control type: None, Control "
+                "type: group, Control name: None"
+            ],
+        )
+
+    def test_group__no_begin_error__with_another_closed_group(self):
+        """Should raise an error if there is a "end group" with no "begin group"."""
+        md = """
+        | survey |
+        |        | type        | name | label |
+        |        | begin group | g1   | G1    |
+        |        | text        | q1   | Q1    |
+        |        | end group   |      |       |
+        |        | end group   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                "[row : 5] Unmatched end statement. Previous control type: None, Control "
+                "type: group, Control name: None"
+            ],
+        )
+
+    def test_group__no_begin_error__with_another_closed_repeat(self):
+        """Should raise an error if there is a "end group" with no "begin group"."""
+        md = """
+        | survey |
+        |        | type         | name | label |
+        |        | begin repeat | g1   | G1    |
+        |        | text         | q1   | Q1    |
+        |        | end group    |      |       |
+        |        | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                "[row : 4] Unmatched end statement. Previous control type: repeat, Control"
+                " type: group, Control name: None"
+            ],
+        )
+
+
+class TestGroupInternalRepresentations(TestCase):
+    maxDiff = None
+
+    def test_survey_to_json_output(self):
+        """Should find that the survey.to_json_dict output remains consistent."""
+        md = """
+        | survey |
+        | | type         | name         | label::English (en)                |
+        | | text         | family_name  | What's your family name?           |
+        | | begin group  | father       | Father                             |
+        | | phone number | phone_number | What's your father's phone number? |
+        | | integer      | age          | How old is your father?            |
+        | | end group    |              |                                    |
+
+        | settings |
+        | | id_string |
+        | | group     |
+        """
+        observed = convert(xlsform=md, form_name="group")._survey.to_json_dict()
+        expected = {
+            "name": "group",
+            "title": "group",
+            "id_string": "group",
+            "sms_keyword": "group",
+            "default_language": "default",
+            "type": "survey",
+            "children": [
+                {
+                    "name": "family_name",
+                    "type": "text",
+                    "label": {"English (en)": "What's your family name?"},
+                },
+                {
+                    "name": "father",
+                    "type": "group",
+                    "label": {"English (en)": "Father"},
+                    "children": [
+                        {
+                            "name": "phone_number",
+                            "type": "phone number",
+                            "label": {
+                                "English (en)": "What's your father's phone number?"
+                            },
+                        },
+                        {
+                            "name": "age",
+                            "type": "integer",
+                            "label": {"English (en)": "How old is your father?"},
+                        },
+                    ],
+                },
+                {
+                    "children": [
+                        {
+                            "bind": {"jr:preload": "uid", "readonly": "true()"},
+                            "name": "instanceID",
+                            "type": "calculate",
+                        }
+                    ],
+                    "control": {"bodyless": True},
+                    "name": "meta",
+                    "type": "group",
+                },
+            ],
+        }
+        self.assertEqual(expected, observed)
+
+    def test_to_json_round_trip(self):
+        """Should find that survey.to_json_dict output can be re-used to build the survey."""
+        md = """
+        | survey |
+        | | type         | name         | label::English (en)                |
+        | | text         | family_name  | What's your family name?           |
+        | | begin group  | father       | Father                             |
+        | | phone number | phone_number | What's your father's phone number? |
+        | | integer      | age          | How old is your father?            |
+        | | end group    |              |                                    |
+
+        | settings |
+        | | id_string |
+        | | group     |
+        """
+        expected = convert(xlsform=md, form_name="group")._survey.to_json_dict()
+        observed = create_survey_element_from_dict(expected).to_json_dict()
+        self.assertEqual(expected, observed)
