@@ -60,6 +60,14 @@ RE_SELECT = re.compile(
 RE_OSM = re.compile(
     r"(?P<osm_command>(" + "|".join(aliases.osm) + r")) (?P<list_name>\S+)"
 )
+INVALID_CONTROL_END = (
+    "[row : {row}] Unmatched 'end {control_type}'. "
+    "No matching 'begin {control_type}' was found."
+)
+INVALID_CONTROL_BEGIN = (
+    "[row : {row}] Unmatched 'begin {control_type}'. "
+    "No matching 'end {control_type}' was found."
+)
 
 
 def dealias_types(dict_array):
@@ -519,6 +527,7 @@ def workbook_to_json(
             "control_type": None,
             "control_name": None,
             "parent_children": json_dict.get(constants.CHILDREN),
+            "row_number": None,
         }
     ]
     # If a group has a table-list appearance flag
@@ -533,12 +542,9 @@ def workbook_to_json(
 
     # row by row, validate questions, throwing errors and adding warnings where needed.
     for row_number, row in enumerate(survey_sheet.data, start=2):
-        if stack[-1] is not None:
-            prev_control_type = stack[-1]["control_type"]
-            parent_children_array = stack[-1]["parent_children"]
-        else:
-            prev_control_type = None
-            parent_children_array = []
+        prev_control_type = stack[-1]["control_type"]
+        parent_children_array = stack[-1]["parent_children"]
+
         # Disabled should probably be first
         # so the attributes below can be disabled.
         if "disabled" in row:
@@ -557,7 +563,6 @@ def workbook_to_json(
 
         # Get question type
         question_type = row.get(constants.TYPE)
-        question_name = row.get(constants.NAME)
 
         if not question_type:
             # if name and label are also missing,
@@ -772,16 +777,11 @@ def workbook_to_json(
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
                 control_type = aliases.control[parse_dict["type"]]
-                control_name = question_name
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
-                        ROW_FORMAT_STRING % row_number
-                        + " Unmatched end statement. Previous control type: "
-                        + str(prev_control_type)
-                        + ", Control type: "
-                        + str(control_type)
-                        + ", Control name: "
-                        + str(control_name)
+                        INVALID_CONTROL_END.format(
+                            row=row_number, control_type=control_type
+                        )
                     )
                 stack.pop()
                 table_list = None
@@ -792,9 +792,6 @@ def workbook_to_json(
             if row["type"] == "note":
                 # autogenerate names for notes without them
                 row["name"] = "generated_note_name_" + str(row_number)
-            # elif 'group' in row['type'].lower():
-            #     # autogenerate names for groups without them
-            #     row['name'] = "generated_group_name_" + str(row_number)
             else:
                 raise PyXFormError(
                     ROW_FORMAT_STRING % row_number + " Question or group with no name."
@@ -937,6 +934,7 @@ def workbook_to_json(
                         "control_type": control_type,
                         "control_name": control_name,
                         "parent_children": child_list,
+                        "row_number": row_number,
                     }
                 )
                 continue
@@ -1370,8 +1368,9 @@ def workbook_to_json(
 
     if len(stack) != 1:
         raise PyXFormError(
-            "Unmatched begin statement: "
-            + str(stack[-1]["control_type"] + " (" + stack[-1]["control_name"] + ")")
+            INVALID_CONTROL_BEGIN.format(
+                row=stack[-1]["row_number"], control_type=stack[-1]["control_type"]
+            )
         )
 
     if settings.get("flat", False):

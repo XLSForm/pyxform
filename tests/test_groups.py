@@ -5,6 +5,7 @@ Test XForm groups.
 from unittest import TestCase
 
 from pyxform.builder import create_survey_element_from_dict
+from pyxform.xls2json import INVALID_CONTROL_BEGIN, INVALID_CONTROL_END
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -88,7 +89,9 @@ class TestGroupParsing(PyxformTestCase):
         |        | text        | q1   | Q1    |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=["Unmatched begin statement: group (g1)"]
+            md=md,
+            errored=True,
+            error__contains=[INVALID_CONTROL_BEGIN.format(row=2, control_type="group")],
         )
 
     def test_group__no_end_error__different_end_type(self):
@@ -103,10 +106,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "[row : 4] Unmatched end statement. Previous control type: group, Control "
-                "type: repeat, Control name: None"
-            ],
+            error__contains=[INVALID_CONTROL_END.format(row=4, control_type="repeat")],
         )
 
     def test_group__no_end_error__with_another_closed_group(self):
@@ -120,7 +120,9 @@ class TestGroupParsing(PyxformTestCase):
         |        | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=["Unmatched begin statement: group (g1)"]
+            md=md,
+            errored=True,
+            error__contains=[INVALID_CONTROL_BEGIN.format(row=2, control_type="group")],
         )
 
     def test_group__no_begin_error(self):
@@ -134,10 +136,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "[row : 3] Unmatched end statement. Previous control type: None, Control "
-                "type: group, Control name: None"
-            ],
+            error__contains=[INVALID_CONTROL_END.format(row=3, control_type="group")],
         )
 
     def test_group__no_begin_error__with_another_closed_group(self):
@@ -153,10 +152,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "[row : 5] Unmatched end statement. Previous control type: None, Control "
-                "type: group, Control name: None"
-            ],
+            error__contains=[INVALID_CONTROL_END.format(row=5, control_type="group")],
         )
 
     def test_group__no_begin_error__with_another_closed_repeat(self):
@@ -172,10 +168,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "[row : 4] Unmatched end statement. Previous control type: repeat, Control"
-                " type: group, Control name: None"
-            ],
+            error__contains=[INVALID_CONTROL_END.format(row=4, control_type="group")],
         )
 
 
