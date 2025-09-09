@@ -4,6 +4,7 @@ Test loop syntax.
 
 from unittest import TestCase
 
+from pyxform.validators.pyxform import unique_names
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -111,8 +112,62 @@ class TestLoop(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            errored=True,
-            error__contains=["There are two sections with the name g1."],
+            xml__xpath_match=[
+                # Instance
+                xpq.model_instance_item("l1/x:thing1/x:g1/x:q1"),
+                xpq.model_instance_item("l1/x:thing1/x:g1/x:q2"),
+                xpq.model_instance_item("l1/x:thing2/x:g1/x:q1"),
+                xpq.model_instance_item("l1/x:thing2/x:g1/x:q2"),
+                # Bind
+                xpq.model_instance_bind("l1/thing1/g1/q1", "int"),
+                xpq.model_instance_bind("l1/thing1/g1/q2", "string"),
+                xpq.model_instance_bind("l1/thing1/g1/q1", "int"),
+                xpq.model_instance_bind("l1/thing1/g1/q1", "int"),
+                # Control
+                # TODO: name/label substitution doesn't work with nested group
+                """
+                /h:html/h:body/x:group[@ref = '/test_name/l1']/x:group[
+                  @ref = '/test_name/l1/thing1'
+                  and ./x:label = 'Thing 1'
+                ]/x:group[
+                  @ref = '/test_name/l1/thing1/g1'
+                  and ./x:input[
+                        @ref = '/test_name/l1/thing1/g1/q1'
+                        and ./x:label = 'Age'
+                      ]
+                  and ./x:select1[
+                        @ref = '/test_name/l1/thing1/g1/q2'
+                        and ./x:label = 'Size of %(label)s'
+                        and ./x:itemset[
+                              @nodeset = "instance('c2')/root/item"
+                              and ./x:value[@ref = 'name']
+                              and ./x:label[@ref = 'label']
+                            ]
+                      ]
+                ]
+                """,
+                """
+                /h:html/h:body/x:group[@ref = '/test_name/l1']/x:group[
+                  @ref = '/test_name/l1/thing2'
+                  and ./x:label = 'Thing 2'
+                ]/x:group[
+                  @ref = '/test_name/l1/thing2/g1'
+                  and ./x:input[
+                        @ref = '/test_name/l1/thing2/g1/q1'
+                        and ./x:label = 'Age'
+                      ]
+                  and ./x:select1[
+                        @ref = '/test_name/l1/thing2/g1/q2'
+                        and ./x:label = 'Size of %(label)s'
+                        and ./x:itemset[
+                              @nodeset = "instance('c2')/root/item"
+                              and ./x:value[@ref = 'name']
+                              and ./x:label[@ref = 'label']
+                            ]
+                      ]
+                ]
+                """,
+            ],
         )
 
     def test_loop__repeats_error(self):
@@ -137,7 +192,8 @@ class TestLoop(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=["There are two sections with the name r1."],
+            # Not caught by xls2json since loops are currently generated in builder.py
+            error__contains=[unique_names.NAMES004.format(row=None, value="r1")],
         )
 
     def test_loop__references_error(self):

@@ -7,10 +7,10 @@ from itertools import chain
 from typing import TYPE_CHECKING
 
 from pyxform import constants
-from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import DetachableElement, node
+from pyxform.validators.pyxform import unique_names
 
 if TYPE_CHECKING:
     from pyxform.question import Question
@@ -94,18 +94,18 @@ class Section(SurveyElement):
                     iter_into_section_items=iter_into_section_items,
                 )
 
-    # there's a stronger test of this when creating the xpath
-    # dictionary for a survey.
     def _validate_uniqueness_of_element_names(self):
-        element_slugs = set()
+        child_names = set()
+        child_names_lower = set()
+        warnings = []
         for element in self.children:
-            elem_lower = element.name.lower()
-            if elem_lower in element_slugs:
-                raise PyXFormError(
-                    f"There are more than one survey elements named '{elem_lower}' "
-                    f"(case-insensitive) in the section named '{self.name}'."
-                )
-            element_slugs.add(elem_lower)
+            unique_names.validate_question_group_repeat_name(
+                name=element.name,
+                seen_names=child_names,
+                seen_names_lower=child_names_lower,
+                warnings=warnings,
+                check_reserved=False,
+            )
 
     def xml_instance(self, survey: "Survey", **kwargs):
         """

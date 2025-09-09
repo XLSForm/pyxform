@@ -86,6 +86,7 @@ OSM = "osm"
 OSM_TYPE = "binary"
 
 NAMESPACES = "namespaces"
+META = "meta"
 
 # The following are the possible sheet names:
 SUPPORTED_SHEET_NAMES = {
@@ -125,6 +126,7 @@ class EntityColumns(StrEnum):
     ENTITY_ID = "entity_id"
     CREATE_IF = "create_if"
     UPDATE_IF = "update_if"
+    REPEAT = "repeat"
     LABEL = "label"
 
 
@@ -169,3 +171,4 @@ NSMAP = {
 }
 SUPPORTED_MEDIA_TYPES = {"image", "big-image", "audio", "video"}
 OR_OTHER_CHOICE = {NAME: "other", LABEL: "Other"}
+RESERVED_NAMES_SURVEY_SHEET = {META}

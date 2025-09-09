@@ -28,7 +28,7 @@ from pyxform.utils import (
     default_is_dynamic,
     print_pyobj_to_json,
 )
-from pyxform.validators.pyxform import parameters_generic, select_from_file
+from pyxform.validators.pyxform import parameters_generic, select_from_file, unique_names
 from pyxform.validators.pyxform import question_types as qt
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.choices import validate_and_clean_choices
@@ -527,6 +527,8 @@ def workbook_to_json(
             "control_type": None,
             "control_name": None,
             "parent_children": json_dict.get(constants.CHILDREN),
+            "child_names": set(),
+            "child_names_lower": set(),
             "row_number": None,
         }
     ]
@@ -539,11 +541,14 @@ def workbook_to_json(
     # To check that questions with triggers refer to other questions that exist.
     question_names = set()
     trigger_references = []
+    repeat_names = set()
 
     # row by row, validate questions, throwing errors and adding warnings where needed.
     for row_number, row in enumerate(survey_sheet.data, start=2):
         prev_control_type = stack[-1]["control_type"]
         parent_children_array = stack[-1]["parent_children"]
+        child_names = stack[-1]["child_names"]
+        child_names_lower = stack[-1]["child_names_lower"]
 
         # Disabled should probably be first
         # so the attributes below can be disabled.
@@ -789,9 +794,9 @@ def workbook_to_json(
 
         # Make sure the row has a valid name
         if constants.NAME not in row:
-            if row["type"] == "note":
+            if row[constants.TYPE] == "note":
                 # autogenerate names for notes without them
-                row["name"] = "generated_note_name_" + str(row_number)
+                row[constants.NAME] = "generated_note_name_" + str(row_number)
             else:
                 raise PyXFormError(
                     ROW_FORMAT_STRING % row_number + " Question or group with no name."
@@ -805,7 +810,17 @@ def workbook_to_json(
                 f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
             )
 
-        in_repeat = any(ancestor["control_type"] == "repeat" for ancestor in stack)
+        unique_names.validate_question_group_repeat_name(
+            row_number=row_number,
+            name=question_name,
+            seen_names=child_names,
+            seen_names_lower=child_names_lower,
+            warnings=warnings,
+        )
+
+        in_repeat = any(
+            ancestor["control_type"] == constants.REPEAT for ancestor in stack
+        )
         validate_entity_saveto(row, row_number, in_repeat, entity_declaration)
 
         # Try to parse question as begin control statement
@@ -820,7 +835,14 @@ def workbook_to_json(
                 # (so following questions are nested under it)
                 # until an end command is encountered.
                 control_type = aliases.control[parse_dict["type"]]
-                control_name = question_name
+
+                unique_names.validate_repeat_name(
+                    row_number=row_number,
+                    name=question_name,
+                    control_type=control_type,
+                    instance_element_name=json_dict[constants.NAME],
+                    seen_names=repeat_names,
+                )
 
                 # Check if the control item has a label, if applicable.
                 # This label check used to apply to all items, but no longer is
@@ -854,7 +876,7 @@ def workbook_to_json(
                 new_json_dict[constants.TYPE] = control_type
                 child_list = []
                 new_json_dict[constants.CHILDREN] = child_list
-                if control_type is constants.LOOP:
+                if control_type == constants.LOOP:
                     if not parse_dict.get(constants.LIST_NAME_U):
                         # TODO: Perhaps warn and make repeat into a group?
                         raise PyXFormError(
@@ -932,8 +954,10 @@ def workbook_to_json(
                 stack.append(
                     {
                         "control_type": control_type,
-                        "control_name": control_name,
+                        "control_name": question_name,
                         "parent_children": child_list,
+                        "child_names": set(),
+                        "child_names_lower": set(),
                         "row_number": row_number,
                     }
                 )

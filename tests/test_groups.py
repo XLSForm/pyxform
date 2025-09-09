@@ -5,6 +5,7 @@ Test groups.
 from unittest import TestCase
 
 from pyxform.builder import create_survey_element_from_dict
+from pyxform.validators.pyxform import unique_names
 from pyxform.xls2json import INVALID_CONTROL_BEGIN, INVALID_CONTROL_END
 from pyxform.xls2xform import convert
 
@@ -81,7 +82,7 @@ class TestGroupOutput(PyxformTestCase):
 
 class TestGroupParsing(PyxformTestCase):
     def test_names__group_basic_case__ok(self):
-        """Should find that a single group is ok."""
+        """Should find that a single unique group name is ok."""
         md = """
         | survey |
         | | type        | name | label |
@@ -95,7 +96,7 @@ class TestGroupParsing(PyxformTestCase):
         )
 
     def test_names__group_different_names_same_context__ok(self):
-        """Should find that groups with different names in the same context is ok."""
+        """Should find that groups with unique names in the same context is ok."""
         md = """
         | survey |
         | | type        | name | label |
@@ -128,8 +129,7 @@ class TestGroupParsing(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            errored=True,
-            error__contains="There are two sections with the name g1.",
+            warnings_count=0,
         )
 
     def test_names__group_same_as_group_in_different_repeat_context__ok(self):
@@ -149,8 +149,7 @@ class TestGroupParsing(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            errored=True,
-            error__contains="There are two sections with the name g1.",
+            warnings_count=0,
         )
 
     def test_names__group_same_as_repeat_in_different_group_context__ok(self):
@@ -169,8 +168,7 @@ class TestGroupParsing(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            errored=True,
-            error__contains="There are two sections with the name g2.",
+            warnings_count=0,
         )
 
     def test_names__group_same_as_repeat_in_different_repeat_context__ok(self):
@@ -189,8 +187,7 @@ class TestGroupParsing(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            errored=True,
-            error__contains="There are two sections with the name g2.",
+            warnings_count=0,
         )
 
     def test_names__group_same_as_survey_root__ok(self):
@@ -205,12 +202,11 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             name="data",
-            errored=True,
-            error__contains="The name 'data' is the same as the form name. Use a different section name (or change the form name in the 'name' column of the settings sheet).",
+            warnings_count=0,
         )
 
     def test_names__group_same_as_survey_root_case_insensitive__ok(self):
-        """Should find that a group name can be the same (CS) as the survey root."""
+        """Should find that a group name can be the same (CI) as the survey root."""
         md = """
         | survey |
         | | type        | name | label |
@@ -239,9 +235,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g1' (case-insensitive) in the section named 'test_name'."
-            ],
+            error__contains=[unique_names.NAMES001.format(row=5, value="g1")],
         )
 
     def test_names__group_same_as_repeat_in_same_context_in_survey__error(self):
@@ -259,9 +253,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g1' (case-insensitive) in the section named 'test_name'."
-            ],
+            error__contains=[unique_names.NAMES001.format(row=5, value="g1")],
         )
 
     def test_names__group_same_as_group_in_same_context_in_group__error(self):
@@ -281,9 +273,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g2' (case-insensitive) in the section named 'g1'."
-            ],
+            error__contains=[unique_names.NAMES001.format(row=6, value="g2")],
         )
 
     def test_names__group_same_as_repeat_in_same_context_in_group__error(self):
@@ -303,9 +293,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g2' (case-insensitive) in the section named 'g1'."
-            ],
+            error__contains=[unique_names.NAMES001.format(row=6, value="g2")],
         )
 
     def test_names__group_same_as_group_in_same_context_in_repeat__error(self):
@@ -325,9 +313,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g2' (case-insensitive) in the section named 'r1'."
-            ],
+            error__contains=[unique_names.NAMES001.format(row=6, value="g2")],
         )
 
     def test_names__group_same_as_repeat_in_same_context_in_repeat__error(self):
@@ -347,15 +333,13 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g2' (case-insensitive) in the section named 'r1'."
-            ],
+            error__contains=[unique_names.NAMES001.format(row=6, value="g2")],
         )
 
-    def test_names__group_same_as_group_in_same_context_in_survey__case_insensitive_error(
+    def test_names__group_same_as_group_in_same_context_in_survey__case_insensitive_warning(
         self,
     ):
-        """Should find that a duplicate group name (CI) raises an error."""
+        """Should find that a duplicate group name (CI) raises a warning."""
         md = """
         | survey |
         | | type        | name | label |
@@ -367,17 +351,13 @@ class TestGroupParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g1' (case-insensitive) in the section named 'test_name'."
-            ],
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=5, value="G1")]
         )
 
-    def test_names__group_same_as_repeat_in_same_context_in_survey__case_insensitive_error(
+    def test_names__group_same_as_repeat_in_same_context_in_survey__case_insensitive_warning(
         self,
     ):
-        """Should find that a duplicate group name (CI) raises an error."""
+        """Should find that a duplicate group name (CI) raises a warning."""
         md = """
         | survey |
         | | type        | name | label |
@@ -389,17 +369,13 @@ class TestGroupParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g1' (case-insensitive) in the section named 'test_name'."
-            ],
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=5, value="G1")]
         )
 
-    def test_names__group_same_as_group_in_same_context_in_group__case_insensitive_error(
+    def test_names__group_same_as_group_in_same_context_in_group__case_insensitive_warning(
         self,
     ):
-        """Should find that a duplicate group name (CI) raises an error."""
+        """Should find that a duplicate group name (CI) raises a warning."""
         md = """
         | survey |
         | | type        | name | label |
@@ -413,17 +389,13 @@ class TestGroupParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g2' (case-insensitive) in the section named 'g1'."
-            ],
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="G2")]
         )
 
-    def test_names__group_same_as_repeat_in_same_context_in_group__case_insensitive_error(
+    def test_names__group_same_as_repeat_in_same_context_in_group__case_insensitive_warning(
         self,
     ):
-        """Should find that a duplicate group name (CI) raises an error."""
+        """Should find that a duplicate group name (CI) raises a warning."""
         md = """
         | survey |
         | | type         | name | label |
@@ -437,17 +409,13 @@ class TestGroupParsing(PyxformTestCase):
         | | end group    |      |       |
         """
         self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g2' (case-insensitive) in the section named 'g1'."
-            ],
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="G2")]
         )
 
-    def test_names__group_same_as_group_in_same_context_in_repeat__case_insensitive_error(
+    def test_names__group_same_as_group_in_same_context_in_repeat__case_insensitive_warning(
         self,
     ):
-        """Should find that a duplicate group name (CI) raises an error."""
+        """Should find that a duplicate group name (CI) raises a warning."""
         md = """
         | survey |
         | | type         | name | label |
@@ -461,17 +429,13 @@ class TestGroupParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g2' (case-insensitive) in the section named 'r1'."
-            ],
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="G2")]
         )
 
-    def test_names__group_same_as_repeat_in_same_context_in_repeat__case_insensitive_error(
+    def test_names__group_same_as_repeat_in_same_context_in_repeat__case_insensitive_warning(
         self,
     ):
-        """Should find that a duplicate group name (CI) raises an error."""
+        """Should find that a duplicate group name (CI) raises a warning."""
         md = """
         | survey |
         | | type          | name | label |
@@ -485,11 +449,7 @@ class TestGroupParsing(PyxformTestCase):
         | | end repeat    |      |       |
         """
         self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'g2' (case-insensitive) in the section named 'r1'."
-            ],
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="G2")]
         )
 
     def test_group__no_end_error(self):

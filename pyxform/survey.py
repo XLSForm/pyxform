@@ -21,7 +21,7 @@ from pyxform.instance import SurveyInstance
 from pyxform.parsing.expression import has_last_saved
 from pyxform.parsing.instance_expression import replace_with_output
 from pyxform.question import Itemset, MultipleChoiceQuestion, Option, Question, Tag
-from pyxform.section import SECTION_EXTRA_FIELDS, Section
+from pyxform.section import SECTION_EXTRA_FIELDS, RepeatingSection, Section
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
     BRACKETED_TAG_REGEX,
@@ -31,6 +31,7 @@ from pyxform.utils import (
     node,
 )
 from pyxform.validators import enketo_validate, odk_validate
+from pyxform.validators.pyxform import unique_names
 from pyxform.validators.pyxform.iana_subtags.validation import get_languages_with_bad_tags
 
 RE_BRACKET = re.compile(r"\[([^]]+)\]")
@@ -292,21 +293,16 @@ class Survey(Section):
 
     def _validate_uniqueness_of_section_names(self):
         root_node_name = self.name
-        section_names = set()
-        for element in self.iter_descendants(condition=lambda i: isinstance(i, Section)):
-            if element.name in section_names:
-                if element.name == root_node_name:
-                    # The root node name is rarely explictly set; explain
-                    # the problem in a more helpful way (#510)
-                    msg = (
-                        f"The name '{element.name}' is the same as the form name. "
-                        "Use a different section name (or change the form name in "
-                        "the 'name' column of the settings sheet)."
-                    )
-                    raise PyXFormError(msg)
-                msg = f"There are two sections with the name {element.name}."
-                raise PyXFormError(msg)
-            section_names.add(element.name)
+        repeat_names = set()
+        for element in self.iter_descendants(
+            condition=lambda i: isinstance(i, RepeatingSection)
+        ):
+            unique_names.validate_repeat_name(
+                name=element.name,
+                control_type=constants.REPEAT,
+                instance_element_name=root_node_name,
+                seen_names=repeat_names,
+            )
 
     def get_nsmap(self):
         """Add additional namespaces"""
