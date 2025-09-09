@@ -97,8 +97,8 @@ class TestLoop(PyxformTestCase):
         |        | type               | name | label             |
         |        | begin loop over c1 | l1   |                   |
         |        | begin group        | g1   |                   |
-        |        | integer            | q1   | Count %(label)s   |
-        |        | select_one c2      | q2   | Type of %(label)s |
+        |        | integer            | q1   | Age               |
+        |        | select_one c2      | q2   | Size of %(label)s |
         |        | end group          |      |                   |
         |        | end loop           |      |                   |
 

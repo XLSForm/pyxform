@@ -39,20 +39,18 @@ class ExternalInstanceTests(PyxformTestCase):
 
     def test_cannot__use_same_external_xml_id_in_same_section(self):
         """Duplicate external instances in the same section raises an error."""
-        with self.assertRaises(PyxformTestError) as ctx:
-            self.assertPyxformXform(
-                md="""
-                | survey |              |        |       |
-                |        | type         | name   | label |
-                |        | xml-external | mydata |       |
-                |        | xml-external | mydata |       |
-                """,
-                model__contains=[],
-            )
-        # This is caught first by existing validation rule.
-        self.assertIn(
-            "There are more than one survey elements named 'mydata'",
-            repr(ctx.exception),
+        md = """
+        | survey |              |        |       |
+        |        | type         | name   | label |
+        |        | xml-external | mydata |       |
+        |        | xml-external | mydata |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                "There are more than one survey elements named 'mydata' (case-insensitive) in the section named 'test_name'"
+            ],
         )
 
     def test_can__use_unique_external_xml_in_same_section(self):
