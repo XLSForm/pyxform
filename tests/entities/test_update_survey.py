@@ -4,7 +4,9 @@ from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
 
 
-class EntitiesUpdateTest(PyxformTestCase):
+class TestEntitiesUpdateSurvey(PyxformTestCase):
+    """Test entity update specs for entities declared at the survey level"""
+
     def test_basic_entity_update_building_blocks(self):
         self.assertPyxformXform(
             md="""
@@ -181,7 +183,7 @@ class EntitiesUpdateTest(PyxformTestCase):
             """,
             xml__xpath_match=[
                 "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/x:label",
-                xpe.model_bind_label("a"),
+                xpe.model_bind_meta_label("a"),
             ],
         )
 

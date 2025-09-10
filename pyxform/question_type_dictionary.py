@@ -2,7 +2,11 @@
 XForm survey question type mapping dictionary module.
 """
 
+from collections.abc import Sequence
 from types import MappingProxyType
+from typing import Any
+
+from pyxform import constants as const
 
 _QUESTION_TYPE_DICT = {
     "q picture": {
@@ -378,3 +382,14 @@ _QUESTION_TYPE_DICT = {
 
 # Read-only view of the types.
 QUESTION_TYPE_DICT = MappingProxyType(_QUESTION_TYPE_DICT)
+
+
+def get_meta_group(children: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    if children is None:
+        children = []
+    return {
+        const.NAME: "meta",
+        const.TYPE: const.GROUP,
+        const.CONTROL: {"bodyless": True},
+        const.CHILDREN: children,
+    }

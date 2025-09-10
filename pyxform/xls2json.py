@@ -17,11 +17,13 @@ from pyxform.constants import (
 )
 from pyxform.entities.entities_parsing import (
     get_entity_declaration,
+    validate_entity_repeat_target,
     validate_entity_saveto,
 )
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_pyxform_reference, is_xml_tag
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
+from pyxform.question_type_dictionary import get_meta_group
 from pyxform.utils import (
     PYXFORM_REFERENCE_REGEX,
     coalesce,
@@ -781,6 +783,15 @@ def workbook_to_json(
         if end_control_parse:
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
+                if validate_entity_repeat_target(
+                    entity_declaration=entity_declaration,
+                    stack=stack,
+                ):
+                    parent_children_array.append(
+                        get_meta_group(children=[entity_declaration])
+                    )
+                    json_dict[constants.ENTITY_FEATURES] = ["create", "update", "offline"]
+                    entity_declaration = None
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
@@ -817,11 +828,12 @@ def workbook_to_json(
             seen_names_lower=child_names_lower,
             warnings=warnings,
         )
-
-        in_repeat = any(
-            ancestor["control_type"] == constants.REPEAT for ancestor in stack
+        validate_entity_saveto(
+            row=row,
+            row_number=row_number,
+            entity_declaration=entity_declaration,
+            stack=stack,
         )
-        validate_entity_saveto(row, row_number, in_repeat, entity_declaration)
 
         # Try to parse question as begin control statement
         # (i.e. begin loop/repeat/group):
@@ -960,6 +972,10 @@ def workbook_to_json(
                         "child_names_lower": set(),
                         "row_number": row_number,
                     }
+                )
+                validate_entity_repeat_target(
+                    stack=stack,
+                    entity_declaration=entity_declaration,
                 )
                 continue
 
@@ -1428,16 +1444,12 @@ def workbook_to_json(
         )
 
     if entity_declaration:
+        validate_entity_repeat_target(entity_declaration=entity_declaration)
         json_dict[constants.ENTITY_FEATURES] = ["create", "update", "offline"]
         meta_children.append(entity_declaration)
 
     if len(meta_children) > 0:
-        meta_element = {
-            "name": "meta",
-            "type": "group",
-            "control": {"bodyless": True},
-            "children": meta_children,
-        }
+        meta_element = get_meta_group(children=meta_children)
         survey_children_array = stack[0]["parent_children"]
         survey_children_array.append(meta_element)
 
