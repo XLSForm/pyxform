@@ -118,15 +118,15 @@ class SurveyElementBuilder:
 
     def _save_trigger(self, d: dict) -> None:
         if "trigger" in d:
-            triggering_ref = d["trigger"].strip()
-            value = ""
-            if const.BIND in d and "calculate" in d[const.BIND]:
-                value = d[const.BIND]["calculate"]
-            question_ref = (d[const.NAME], value)
-            if d[const.TYPE] == "background-geopoint":
-                self.setgeopoint_by_triggering_ref[triggering_ref].append(question_ref)
-            else:
-                self.setvalues_by_triggering_ref[triggering_ref].append(question_ref)
+            for trigger in d.get("trigger"):
+                value = ""
+                if const.BIND in d and "calculate" in d[const.BIND]:
+                    value = d[const.BIND]["calculate"]
+                question_ref = (d[const.NAME], value)
+                if d[const.TYPE] == "background-geopoint":
+                    self.setgeopoint_by_triggering_ref[trigger].append(question_ref)
+                else:
+                    self.setvalues_by_triggering_ref[trigger].append(question_ref)
 
     @staticmethod
     def _create_question_from_dict(
