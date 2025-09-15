@@ -5,8 +5,8 @@ NAMES001 = Detail(
     name="Invalid duplicate name in same context",
     msg=(
         "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
-        "Questions, groups, and repeats must be unique within their context i.e. nearest "
-        "parent group or repeat, or the survey if not inside a group or repeat."
+        "Questions, groups, and repeats must be unique within their nearest parent group "
+        "or repeat, or the survey if not inside a group or repeat."
     ),
 )
 NAMES002 = Detail(
@@ -14,8 +14,8 @@ NAMES002 = Detail(
     msg=(
         "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is problematic. "
         "The name is a case-insensitive match to another name. Questions, groups, and "
-        "repeats must be unique within their context i.e. nearest parent group or repeat, "
-        "or the survey if not inside a group or repeat. Some data processing tools are not "
+        "repeats should be unique within the nearest parent group or repeat, or the survey "
+        "if not inside a group or repeat. Some data processing tools are not "
         "case-sensitive, so the current names may make analysis difficult."
     ),
 )
@@ -30,7 +30,8 @@ NAMES004 = Detail(
     name="Invalid duplicate repeat name in the survey",
     msg=(
         "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
-        "Repeat names must unique anywhere the survey, at all levels of group or repeat nesting."
+        "Repeat names must unique anywhere in the survey, at all levels of group or "
+        "repeat nesting."
     ),
 )
 NAMES005 = Detail(

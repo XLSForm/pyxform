@@ -116,5 +116,4 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
                 xpe.model_bind_meta_label(" ../../q1 ", "/r1"),
                 xpe.model_bind_meta_instanceid(),
             ],
-            debug=True,
         )
