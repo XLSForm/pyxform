@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.validators.pyxform import unique_names
-from pyxform.xls2json import INVALID_CONTROL_BEGIN, INVALID_CONTROL_END
+from pyxform.xls2json import SURVEY_001, SURVEY_002
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -452,6 +452,20 @@ class TestGroupParsing(PyxformTestCase):
             md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="G2")]
         )
 
+    def test_group__no_end_error__no_name(self):
+        """Should raise an error if there is a "begin group" with no "end group" and no name."""
+        md = """
+        | survey |
+        |        | type        | name | label |
+        |        | begin group |      | G1    |
+        |        | text        | q1   | Q1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=["[row : 2] Question or group with no name."],
+        )
+
     def test_group__no_end_error(self):
         """Should raise an error if there is a "begin group" with no "end group"."""
         md = """
@@ -463,7 +477,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[INVALID_CONTROL_BEGIN.format(row=2, control_type="group")],
+            error__contains=[SURVEY_002.format(row=2, type="group", name="g1")],
         )
 
     def test_group__no_end_error__different_end_type(self):
@@ -478,7 +492,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[INVALID_CONTROL_END.format(row=4, control_type="repeat")],
+            error__contains=[SURVEY_001.format(row=4, type="repeat")],
         )
 
     def test_group__no_end_error__with_another_closed_group(self):
@@ -494,7 +508,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[INVALID_CONTROL_BEGIN.format(row=2, control_type="group")],
+            error__contains=[SURVEY_002.format(row=2, type="group", name="g1")],
         )
 
     def test_group__no_begin_error(self):
@@ -508,7 +522,21 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[INVALID_CONTROL_END.format(row=3, control_type="group")],
+            error__contains=[SURVEY_001.format(row=3, type="group")],
+        )
+
+    def test_group__no_begin_error__with_name(self):
+        """Should raise an error if there is a "end group" with no "begin group"."""
+        md = """
+        | survey |
+        |        | type        | name | label |
+        |        | text        | q1   | Q1    |
+        |        | end group   | g1   |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[SURVEY_001.format(row=3, type="group", name="g1")],
         )
 
     def test_group__no_begin_error__with_another_closed_group(self):
@@ -524,7 +552,12 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[INVALID_CONTROL_END.format(row=5, control_type="group")],
+            error__contains=[
+                SURVEY_001.format(
+                    row=5,
+                    type="group",
+                )
+            ],
         )
 
     def test_group__no_begin_error__with_another_closed_repeat(self):
@@ -540,7 +573,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[INVALID_CONTROL_END.format(row=4, control_type="group")],
+            error__contains=[SURVEY_001.format(row=4, type="group")],
         )
 
 

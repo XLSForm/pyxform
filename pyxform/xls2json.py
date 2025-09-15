@@ -20,7 +20,7 @@ from pyxform.entities.entities_parsing import (
     validate_entity_repeat_target,
     validate_entity_saveto,
 )
-from pyxform.errors import PyXFormError
+from pyxform.errors import Detail, PyXFormError
 from pyxform.parsing.expression import is_pyxform_reference, is_xml_tag
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
 from pyxform.question_type_dictionary import get_meta_group
@@ -62,13 +62,19 @@ RE_SELECT = re.compile(
 RE_OSM = re.compile(
     r"(?P<osm_command>(" + "|".join(aliases.osm) + r")) (?P<list_name>\S+)"
 )
-INVALID_CONTROL_END = (
-    "[row : {row}] Unmatched 'end {control_type}'. "
-    "No matching 'begin {control_type}' was found."
+SURVEY_001 = Detail(
+    name="Survey Sheet Unmatched Group/Repeat/Loop End",
+    msg=(
+        "[row : {row}] Unmatched 'end_{type}'. "
+        "No matching 'begin_{type}' was found for the name '{name}'."
+    ),
 )
-INVALID_CONTROL_BEGIN = (
-    "[row : {row}] Unmatched 'begin {control_type}'. "
-    "No matching 'end {control_type}' was found."
+SURVEY_002 = Detail(
+    name="Survey Sheet Unmatched Group/Repeat/Loop Begin",
+    msg=(
+        "[row : {row}] Unmatched 'begin_{type}'. "
+        "No matching 'end_{type}' was found for the name '{name}'."
+    ),
 )
 
 
@@ -795,8 +801,10 @@ def workbook_to_json(
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
-                        INVALID_CONTROL_END.format(
-                            row=row_number, control_type=control_type
+                        SURVEY_001.format(
+                            row=row_number,
+                            type=control_type,
+                            name=row.get(constants.NAME),
                         )
                     )
                 stack.pop()
@@ -1406,10 +1414,12 @@ def workbook_to_json(
     sheet_translations.or_other_check(warnings=warnings)
     qt.validate_references(referrers=trigger_references, questions=question_names)
 
-    if len(stack) != 1:
+    if len(stack) > 1:
         raise PyXFormError(
-            INVALID_CONTROL_BEGIN.format(
-                row=stack[-1]["row_number"], control_type=stack[-1]["control_type"]
+            SURVEY_002.format(
+                row=stack[-1]["row_number"],
+                type=stack[-1]["control_type"],
+                name=stack[-1]["control_name"],
             )
         )
 

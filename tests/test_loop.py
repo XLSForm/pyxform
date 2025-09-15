@@ -13,7 +13,7 @@ from tests.xpath_helpers.questions import xpq
 
 class TestLoop(PyxformTestCase):
     """
-    A 'loop' a type of group that, for each choice in the referenced choice list,
+    A 'loop' is a type of group that, for each choice in the referenced choice list,
     generates grouped set of questions using the questions inside the loop definition.
     The pattern "%(name)s" or "%(label)s" can be used to insert the choice name or label
     into the question columns, e.g. to adjust the label to each choice.
