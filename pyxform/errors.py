@@ -58,6 +58,14 @@ class ErrorCode(Enum):
             "Reference variables must refer to a question name. Could not find '{q}'."
         ),
     )
+    INTERNAL_001: _Detail = _Detail(
+        name="Internal error: Incorrectly Processed Question Trigger Data",
+        msg=(
+            "Internal error: "
+            "PyXForm expected processed trigger data as a tuple, but received a "
+            "type '{type}' with value '{value}'."
+        ),
+    )
 
 
 class PyXFormError(Exception):
@@ -83,6 +91,8 @@ class PyXFormError(Exception):
             if self.context:
                 return self.code.value.format(**self.context)
             else:
+                # If there's somehow no context for creating a helpful message, at least
+                # try to give some kind of normal-looking indication of the type of issue.
                 return self.code.value.name
         elif self.args[0]:
             return self.args[0]

@@ -2,6 +2,8 @@
 Test handling setvalue of 'trigger' column in forms
 """
 
+from itertools import product
+
 from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -334,12 +336,20 @@ class TriggerSetvalueTests(PyxformTestCase):
         |        | text     | b    | Enter text  |             |         |
         |        | dateTime | c    |             | now()       | {case}  |
         """
-        cases = (
-            "${a},${b}",  # single comma
-            "${a},,${b}",  # double comma
-            "${a},${b},",  # trailing comma
-            "${a},${b},,",  # trailing double comma
-        )
+        forms = {
+            "${{a}}{0}${{b}}": 1,  # single comma
+            "${{a}}{0}{1}${{b}}": 2,  # double comma
+            "${{a}}{0}${{b}}{1}": 2,  # trailing comma
+            "${{a}}{0}${{b}}{1}{2}": 3,  # trailing double comma
+        }
+        # Include space variants per pyxform 776 feedback.
+        comma_variants = (",", ", ", " ,", " , ")
+        # dict to keep order but remove duplicates in the "double comma" cases.
+        cases = {
+            form.format(*combo): None
+            for form, repeats in forms.items()
+            for combo in product(comma_variants, repeat=repeats)
+        }
         for case in cases:
             with self.subTest(msg=case):
                 self.assertPyxformXform(
@@ -389,3 +399,50 @@ class TriggerSetvalueTests(PyxformTestCase):
                         )
                     ],
                 )
+
+    def test_question_types_with_special_handling_produce_trigger_ref__minimal(self):
+        """Should find that a trigger setvalue is created."""
+        # minimal repro for pyxform 779
+        md = """
+        | survey |
+        | | type    | name | label | trigger |
+        | | integer | q1   | Q1    |         |
+        | | text    | q2   | Q2    | ${q1}   |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:body/x:input[@ref='/test_name/q1']/x:setvalue[
+                  @ref='/test_name/q2'
+                  and @event='xforms-value-changed'
+                ]
+                """
+            ],
+        )
+
+    def test_question_types_with_special_handling_produce_trigger_ref__full_case(self):
+        """Should find that a trigger setvalue is created."""
+        # full repro for pyxform 779
+        md = """
+        | survey |
+        | | type          | name | label | calculate | trigger |
+        | | select_one l1 | q1   | Q1    |           |         |
+        | | text          | q2   | Q2    | 2+2       | ${q1}   |
+
+        | choices |
+        | | list_name | name | label |
+        | | l1        | c1   | C1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:body/x:select1[@ref='/test_name/q1']/x:setvalue[
+                  @ref='/test_name/q2'
+                  and @event='xforms-value-changed'
+                  and @value='2+2'
+                ]
+                """
+            ],
+        )
