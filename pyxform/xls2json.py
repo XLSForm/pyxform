@@ -544,7 +544,7 @@ def workbook_to_json(
     meta_children = []
     # To check that questions with triggers refer to other questions that exist.
     question_names = set()
-    trigger_references = []
+    trigger_references: list[tuple[str, int]] = []
 
     # row by row, validate questions, throwing errors and adding warnings where needed.
     for row_number, row in enumerate(survey_sheet.data, start=2):
@@ -586,6 +586,13 @@ def workbook_to_json(
                 continue
             raise PyXFormError(
                 ROW_FORMAT_STRING % row_number + " Question with no type.\n" + str(row)
+            )
+
+        if "trigger" in row:
+            row["trigger"] = qt.process_trigger(
+                trigger=row["trigger"],
+                row_num=row_number,
+                trigger_references=trigger_references,
             )
 
         parameters = parameters_generic.parse(raw_parameters=row.get("parameters", ""))
@@ -1370,15 +1377,6 @@ def workbook_to_json(
             parent_children_array.append(new_dict)
             continue
         # TODO: Consider adding some question_type validation here.
-
-        trigger = row.get("trigger")
-        if trigger:
-            try:
-                row["trigger"] = qt.parse_trigger(trigger=trigger)
-            except PyXFormError as e:
-                e.context.update(sheet="survey", column="trigger", row=row_number)
-                raise
-            trigger_references.extend((t, row_number) for t in row["trigger"])
 
         if question_type == "background-geopoint":
             qt.validate_background_geopoint_trigger(

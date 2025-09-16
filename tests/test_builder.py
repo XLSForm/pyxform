@@ -10,7 +10,7 @@ from unittest import TestCase
 import defusedxml.ElementTree as ETree
 from pyxform import InputQuestion, Survey
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
-from pyxform.errors import PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.xls2json import print_pyobj_to_json
 
 from tests import utils
@@ -562,3 +562,36 @@ class BuilderTests(TestCase):
         ]
         self.assertEqual(len(body_elms), 1)
         self.assertEqual(body_elms[0].get("class"), "ltr")
+
+    def test_trigger_data_wrong_type__error(self):
+        """Should raise an error if a trigger is truthy and something other than tuple."""
+        # Should only happen if the builder is used incorrectly, rather than any user
+        # XLSForm being able to trigger this.
+        d = {
+            "type": "survey",
+            "name": "test_name",
+            "id_string": "data",
+            "title": "data",
+            "sms_keyword": "data",
+            "default_language": "default",
+            "children": [
+                {"label": "Q1", "name": "q1", "type": "integer"},
+                {"label": "Q2", "name": "q2", "trigger": "${q1}", "type": "text"},
+                {
+                    "children": [
+                        {
+                            "bind": {"jr:preload": "uid", "readonly": "true()"},
+                            "name": "instanceID",
+                            "type": "calculate",
+                        }
+                    ],
+                    "control": {"bodyless": True},
+                    "name": "meta",
+                    "type": "group",
+                },
+            ],
+        }
+        with self.assertRaises(PyXFormError) as e:
+            SurveyElementBuilder().create_survey_element_from_dict(d)
+        self.assertEqual(ErrorCode.INTERNAL_001, e.exception.code)
+        self.assertEqual({"type": "<class 'str'>", "value": "${q1}"}, e.exception.context)

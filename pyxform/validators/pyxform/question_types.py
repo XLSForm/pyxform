@@ -49,19 +49,44 @@ def validate_references(
     return True
 
 
-def parse_trigger(trigger: str | None) -> tuple[str, ...] | None:
-    """A trigger may contain one pyxform reference, or multiple comma-separated references."""
+def process_trigger(
+    trigger: str | None, row_num: int, trigger_references: list[tuple[str, int]]
+) -> tuple[str, ...] | None:
+    """
+    Try to parse the content of the "trigger" column into a list of question names.
+
+    A trigger may contain one pyxform reference, or multiple comma-separated references.
+    If a trigger is found, it will be added to trigger_references.
+
+    :param trigger: The trigger data.
+    :param row_num: The current row number.
+    :param trigger_references: Which questions are being referred to by which row.
+    """
     if not trigger:
         return None
+    elif not is_pyxform_reference_candidate(trigger):
+        raise PyXFormError(
+            code=ErrorCode.PYREF_001,
+            context={
+                "sheet": "survey",
+                "column": "trigger",
+                "row": row_num,
+                "q": trigger,
+            },
+        )
 
-    if is_pyxform_reference_candidate(trigger):
-        trigger_values = trigger.split(",")
-        trigger_refs = tuple(
+    try:
+        trigger = tuple(
             r
-            for t in trigger_values
+            for t in trigger.split(",")
             for r in parse_pyxform_references(value=t, match_limit=1)
         )
-        if trigger_refs:
-            return trigger_refs
+    except PyXFormError as e:
+        e.context.update(sheet="survey", column="trigger", row=row_num)
+        raise
+
+    if trigger:
+        trigger_references.extend((t, row_num) for t in trigger)
+        return trigger
     else:
-        raise PyXFormError(code=ErrorCode.PYREF_001, context={"q": trigger})
+        return None

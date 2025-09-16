@@ -9,7 +9,7 @@ from typing import Any
 from pyxform import constants as const
 from pyxform import file_utils, utils
 from pyxform.entities.entity_declaration import EntityDeclaration
-from pyxform.errors import PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.question import (
     InputQuestion,
@@ -117,16 +117,25 @@ class SurveyElementBuilder:
             )
 
     def _save_trigger(self, d: dict) -> None:
-        if "trigger" in d:
-            for trigger in d.get("trigger"):
-                value = ""
-                if const.BIND in d and "calculate" in d[const.BIND]:
-                    value = d[const.BIND]["calculate"]
-                question_ref = (d[const.NAME], value)
-                if d[const.TYPE] == "background-geopoint":
-                    self.setgeopoint_by_triggering_ref[trigger].append(question_ref)
-                else:
-                    self.setvalues_by_triggering_ref[trigger].append(question_ref)
+        trigger = d.get("trigger")
+        if not trigger:
+            return
+        elif not isinstance(trigger, tuple):
+            # Guard against e.g. "${a}" being processed as ("$", "{", "a", "}")
+            raise PyXFormError(
+                code=ErrorCode.INTERNAL_001,
+                context={"type": str(type(trigger)), "value": trigger},
+            )
+
+        for t in trigger:
+            value = ""
+            if const.BIND in d and "calculate" in d[const.BIND]:
+                value = d[const.BIND]["calculate"]
+            question_ref = (d[const.NAME], value)
+            if d[const.TYPE] == "background-geopoint":
+                self.setgeopoint_by_triggering_ref[t].append(question_ref)
+            else:
+                self.setvalues_by_triggering_ref[t].append(question_ref)
 
     @staticmethod
     def _create_question_from_dict(
