@@ -63,6 +63,26 @@ class RandomizeItemsetsTest(PyxformTestCase):
             ],
         )
 
+    def test_randomized_seeded_select_one_nameset_seed_expression__error(self):
+        md = """
+        | survey |
+        | | type               | name   | label  | parameters                       | calculation                    |
+        | | calculate          | seed   |        |                                  | once(decimal-date-time(now())) |
+        | | select_one choices | select | Select | randomize=true,seed=int(${seed}) |                                |
+
+        | choices |
+        | | list_name | name | label |
+        | | choices   | a    | opt_a |
+        | | choices   | b    | opt_b |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                "seed value must be a number or a reference to another field."
+            ],
+        )
+
     def test_randomized_seeded_filtered_select_one(self):
         self.assertPyxformXform(
             name="data",

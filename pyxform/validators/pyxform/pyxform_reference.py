@@ -59,7 +59,11 @@ def _parse(
         return None
 
     if match_full:
-        outer_matches = (RE_PYXFORM_REF_OUTER.fullmatch(value),)
+        outer_matches = RE_PYXFORM_REF_OUTER.fullmatch(value)
+        if not outer_matches:
+            # Expression may contain a reference but has other characters e.g. func call.
+            return None
+        outer_matches = (outer_matches,)
     else:
         outer_matches = RE_PYXFORM_REF_OUTER.finditer(value)
 
