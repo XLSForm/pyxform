@@ -180,16 +180,22 @@ class SurveyElement(Mapping):
             yield self
 
     def iter_ancestors(
-        self, condition: Callable[["SurveyElement"], bool] | None = None
+        self,
+        condition: Callable[["SurveyElement"], bool] | None = None,
+        stop_before: Callable[["SurveyElement"], bool] | None = None,
     ) -> Generator[tuple["SurveyElement", int], None, None]:
         """
         Get each self.parent with their distance from self (starting at 1).
 
         :param condition: If this evaluates to True, yield the element.
+        :param stop_before: If this evaluates to True, don't yield any more elements.
         """
         distance = 1
         current = self.parent
         while current is not None:
+            if stop_before is not None:
+                if stop_before(current):
+                    return None
             if condition is not None:
                 if condition(current):
                     yield current, distance
@@ -198,17 +204,24 @@ class SurveyElement(Mapping):
             current = current.parent
             distance += 1
 
-    def has_common_repeat_parent(
-        self, other: "SurveyElement"
-    ) -> tuple[str, int | None, Optional["SurveyElement"]]:
+    def lowest_common_ancestor(
+        self, other: "SurveyElement", group_type: str | None = None
+    ) -> tuple[str, int | None, int | None, Optional["SurveyElement"]]:
         """
-        Get the relation type, steps (generations), and the common ancestor.
+        Get the relation type, steps from self, steps from other, and the common ancestor.
         """
+
         # Quick check for immediate relation.
         if self.parent is other:
-            return "Parent (other)", 1, other
+            return "Parent (other)", 1, 0, other
         elif other.parent is self:
-            return "Parent (self)", 1, self
+            return "Parent (self)", 0, 1, self
+
+        # Filtering
+        if group_type:
+            type_filter = {group_type}
+        else:
+            type_filter = {const.GROUP, const.REPEAT}
 
         # Traversal tracking
         self_ancestors = {}
@@ -217,39 +230,35 @@ class SurveyElement(Mapping):
         other_current = other
         self_distance = 0
         other_distance = 0
+        lca = None
 
         # Traverse up both ancestor chains as far as necessary.
         while self_current or other_current:
             # Step up the self chain
             if self_current:
+                self_ancestors[self_current] = self_distance
+                if self_current.type in type_filter and self_current in other_ancestors:
+                    lca = self_current
+                    break
                 self_distance += 1
                 self_current = self_current.parent
-                if self_current:
-                    self_ancestors[self_current] = self_distance
-                    if (
-                        self_current.type == const.REPEAT
-                        and self_current in other_ancestors
-                    ):
-                        max_steps = max(self_distance, other_ancestors[self_current])
-                        return "Common Ancestor Repeat", max_steps, self_current
 
             # Step up the other chain
             if other_current:
+                other_ancestors[other_current] = other_distance
+                if other_current.type in type_filter and other_current in self_ancestors:
+                    lca = other_current
+                    break
                 other_distance += 1
                 other_current = other_current.parent
-                if other_current:
-                    other_ancestors[other_current] = other_distance
-                    if (
-                        other_current.type == const.REPEAT
-                        and other_current in self_ancestors
-                    ):
-                        max_steps = max(other_distance, self_ancestors[other_current])
-                        return "Common Ancestor Repeat", max_steps, other_current
 
-        # No common ancestor found.
-        return "Unrelated", None, None
+        if lca is None:
+            # Default is no common ancestor found.
+            return "Unrelated", None, None, None
+        else:
+            return "Common Ancestor", self_ancestors[lca], other_ancestors[lca], lca
 
-    def get_xpath(self):
+    def get_xpath(self, relative_to: Optional["SurveyElement"] = None) -> str:
         """
         Return the xpath of this survey element.
         """
@@ -263,18 +272,28 @@ class SurveyElement(Mapping):
                 not isinstance(e, Survey) and not (hasattr(e, "flat") and e.get("flat"))
             )
 
+        def stop_before(e):
+            return e is relative_to
+
         current_value = self._survey_element_xpath
-        if current_value is None:
-            if condition(self):
-                self_element = (self,)
-            else:
-                self_element = ()
-            lineage = chain(
-                reversed(tuple(i[0] for i in self.iter_ancestors(condition=condition))),
-                self_element,
+        if current_value is None or relative_to:
+            parent_lineage = reversed(
+                tuple(
+                    i[0].name
+                    for i in self.iter_ancestors(
+                        condition=condition, stop_before=stop_before
+                    )
+                )
             )
-            new_value = f"/{'/'.join(n.name for n in lineage)}"
-            self._survey_element_xpath = new_value
+            if condition(self):
+                lineage = chain(parent_lineage, (self.name,))
+            else:
+                lineage = parent_lineage
+            new_value = f"/{'/'.join(n for n in lineage)}"
+            if relative_to:
+                return new_value
+            elif current_value is None:
+                self._survey_element_xpath = new_value
             return new_value
         return current_value
 
@@ -559,7 +578,7 @@ class SurveyElement(Mapping):
                 v = f"""jr:itext('{self._translation_path("jr:requiredMsg")}')"""
             elif k == "jr:noAppErrorString" and isinstance(v, dict):
                 v = f"""jr:itext('{self._translation_path("jr:noAppErrorString")}')"""
-            bind_dict[k] = survey.insert_xpaths(v, context=self)
+            bind_dict[k] = survey.insert_xpaths(text=v, context=self)
         yield node("bind", nodeset=self.get_xpath(), **bind_dict)
 
     def xml_control(self, survey: "Survey"):

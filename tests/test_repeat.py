@@ -2,6 +2,14 @@
 Test repeat structure.
 """
 
+from os import getpid
+from time import perf_counter
+from unittest import skip
+
+from psutil import Process
+from pyxform.xls2json_backends import SupportedFileTypes
+from pyxform.xls2xform import convert
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -941,5 +949,80 @@ class TestRepeat(PyxformTestCase):
             md=xlsform_md,
             xml__contains=[
                 """<bind calculate="concat(instance('item')/root/item[index = current()/../pos5 ]/label,  ../pos5  + 1)" nodeset="/test_name/rep5/item5" type="string"/>""",  # pylint: disable=line-too-long
+            ],
+        )
+
+    @skip("Slow performance test. Un-skip to run as needed.")
+    def test_check_performance__relative_reference(self):
+        """
+        Should find that simple relative references are converted reasonably quickly.
+
+        Results with Python 3.12.11 on VM with 2vCPU (i7-7700HQ) 2GB RAM, x questions
+        with 1 reference each (to the same target), average of 10 runs (seconds) per form:
+
+        | num   | time   | peak RSS MB |
+        |   500 | 0.2380 |          52 |
+        |  1000 | 0.3913 |          57 |
+        |  2000 | 0.7147 |          67 |
+        |  5000 | 1.9949 |          84 |
+        | 10000 | 3.8903 |         125 |
+        """
+        survey_header = """
+        | survey |
+        |        | type         | name | label     |
+        |        | begin repeat | lcar | lcar      |
+        |        | text         | t    | target    |
+        """
+        question = """
+        |        | note         | s{i} | hi ${{t}} |
+        """
+        survey_footer = """
+        |        | end repeat   | lcar |           |
+        """
+        process = Process(getpid())
+        for count in (500, 1000, 2000, 5000, 10000):
+            questions = "\n".join(question.format(i=i) for i in range(count))
+            md = "".join((survey_header, questions, survey_footer))
+
+            def run(name, case):
+                runs = 0
+                results = []
+                peak_memory_usage = process.memory_info().rss
+                while runs < 10:
+                    start = perf_counter()
+                    convert(xlsform=case, file_type=SupportedFileTypes.md.value)
+                    results.append(perf_counter() - start)
+                    peak_memory_usage = max(process.memory_info().rss, peak_memory_usage)
+                    runs += 1
+                print(
+                    name,
+                    round(sum(results) / len(results), 4),
+                    f"| Peak RSS: {peak_memory_usage}",
+                )
+
+            run(name=f"questions={count}, (seconds):", case=md)
+
+    def test_calculation_using_node_from_nested_repeat_has_relative_reference(self):
+        """Should find the XPath reference for "t" is relative to LCA repeat "a"."""
+        # Repro case for pyxform/#453
+        md = """
+        | survey |
+        |        | type         | name | label  | calculation |
+        |        | begin repeat | a    | a      |             |
+        |        | begin repeat | r1t  | r1t    |             |
+        |        | integer      | t    | target |             |
+        |        | end repeat   | r1t  |        |             |
+        |        | note         | s    | source | sum(${t})   |
+        |        | end repeat   | a    |        |             |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:bind[
+                  @nodeset = '/test_name/a/s'
+                  and @calculate = 'sum( ../r1t/t )'
+                ]
+                """,
             ],
         )

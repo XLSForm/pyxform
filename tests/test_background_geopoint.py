@@ -141,8 +141,11 @@ class TestBackgroundGeopoint(PyxformTestCase):
         |        | end_group           |          |            |         |
         |        | begin_group         | groupB   |            |         |
         |        | background-geopoint | temp_geo |            | ${temp} |
+        |        | date                | today    | Enter date |         |
         |        | end_group           |          |            |         |
         """
+        # Includes question "today" because otherwise ODK Validate fails with error
+        # message: "Group has no children! Group: ${groupB}. The XML is invalid."
         self.assertPyxformXform(
             name="data",
             md=md,
@@ -223,8 +226,11 @@ class TestBackgroundGeopoint(PyxformTestCase):
         |        | end_repeat          |          |            |         |
         |        | begin_group         | groupB   |            |         |
         |        | background-geopoint | temp_geo |            | ${temp} |
+        |        | date                | today    | Enter date |         |
         |        | end_group           |          |            |         |
         """
+        # Includes question "today" because otherwise ODK Validate fails with error
+        # message: "Group has no children! Group: ${groupB}. The XML is invalid."
         self.assertPyxformXform(
             name="data",
             md=md,

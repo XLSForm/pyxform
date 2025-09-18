@@ -117,7 +117,7 @@ class EntityDeclaration(SurveyElement):
 
         if entity_id_expression:
             id_bind["calculate"] = survey.insert_xpaths(
-                entity_id_expression, context=self
+                text=entity_id_expression, context=self
             )
 
         return node(const.BIND, nodeset=self.get_xpath() + "/@id", **id_bind)
@@ -133,7 +133,7 @@ class EntityDeclaration(SurveyElement):
         return node("setvalue", ref=self.get_xpath() + "/@id", **id_setvalue_attrs)
 
     def _get_bind_node(self, survey, expression, destination):
-        expr = survey.insert_xpaths(expression, context=self)
+        expr = survey.insert_xpaths(text=expression, context=self)
         bind_attrs = {
             "calculate": expr,
             const.TYPE: "string",
