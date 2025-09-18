@@ -165,7 +165,7 @@ class PyxformTestCase(TestCase):
         odk_validate_error__contains = coalesce(odk_validate_error__contains, [])
         survey_valid = True
         result = None
-        # Some tests explicitly turn off ODK Validate because they not valid forms, so
+        # Some tests explicitly turn off ODK Validate because they are not valid forms, so
         # use the setting if any before applying the environment variable default.
         run_odk_validate = coalesce(run_odk_validate, PYXFORM_TESTS_RUN_ODK_VALIDATE)
 

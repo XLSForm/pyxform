@@ -77,28 +77,33 @@ def register_nsmap():
 register_nsmap()
 
 
-def share_same_repeat_parent(
+def get_path_relative_to_lcar(
     target: SurveyElement,
     source: SurveyElement,
     lcar_steps_source: int,
     lcar: SurveyElement,
     reference_parent: bool = False,
-):
+) -> tuple[int, str]:
     """
-    Returns a tuple of the number of steps from the source xpath to the lowest common
-    ancestor repeat, and the xpath to the target xpath from the LCAR.
+    Get the number of steps from the source to the LCAR, and the path to the target.
 
-    Function only called if target and source share a ancestor repeat.
+    Implementation assumes that it is only called if target and source have an LCAR.
 
-    For example,
-        xpath =         /data/repeat_a/group_a/name
-        context_xpath = /data/repeat_a/group_b/age
+    Example:
+        target = /data/repeat_a/group_a/name
+        source = /data/repeat_a/group_b/age
+        return = (2, "/group_a/name")
 
-        returns (2, '/group_a/name')'
+    :param target: The reference target, like "/data/repeat/q1" for "${q1}"
+    :param source: The reference source, where the reference is located.
+    :param lcar_steps_source: The number of path segments from the source to the LCAR.
+    :param lcar: The lowest common ancestor repeat.
+    :param reference_parent: If True, calculate to the LCAR parent rather than the LCAR.
+      This may not be actually honoured depending on the topography.
     """
 
-    def is_repeat(i: SurveyElement) -> bool:
-        return isinstance(i, Section) and i.type == constants.REPEAT
+    def is_repeat(e: SurveyElement) -> bool:
+        return isinstance(e, Section) and e.type == constants.REPEAT
 
     # Currently reference_parent only used for itemsets containing a pyxform variable,
     # i.e. `select_one ${ref}`. In that case, an extra step up the reference path may be
@@ -1092,7 +1097,7 @@ class Survey(Section):
                 other=target, group_type=constants.REPEAT
             )
             if relation[0] == "Common Ancestor":
-                steps, ref_path = share_same_repeat_parent(
+                steps, ref_path = get_path_relative_to_lcar(
                     target=target,
                     source=context,
                     lcar_steps_source=relation[1],

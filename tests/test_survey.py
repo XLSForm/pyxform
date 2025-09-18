@@ -5,7 +5,7 @@ from unittest import TestCase
 from pyxform import constants as const
 from pyxform.question import InputQuestion
 from pyxform.section import GroupedSection, RepeatingSection
-from pyxform.survey import Survey, share_same_repeat_parent
+from pyxform.survey import Survey, get_path_relative_to_lcar
 
 from tests.pyxform_test_case import PYXFORM_TESTS_RUN_ODK_VALIDATE, PyxformTestCase
 
@@ -181,9 +181,9 @@ def build_survey_from_path_spec(
     return survey, target, source
 
 
-class TestShareSameRepeatParent(TestCase):
+class TestGetPathRelativeToLCAR(TestCase):
     """
-    Tests of pyxform.survey.share_same_repeat_parent
+    Tests of pyxform.survey.get_path_relative_to_lcar
     """
 
     def assert_relative_path(
@@ -217,7 +217,7 @@ class TestShareSameRepeatParent(TestCase):
             relation = source.lowest_common_ancestor(
                 other=target, group_type=const.REPEAT
             )
-            observed = share_same_repeat_parent(
+            observed = get_path_relative_to_lcar(
                 target=target,
                 source=source,
                 lcar_steps_source=relation[1],
@@ -232,7 +232,7 @@ class TestShareSameRepeatParent(TestCase):
 
     def test_relative_paths__combinations_max_inner_depth_of_2(self):
         """Should find relative XPath and steps are calculated accurately."""
-        path = Path(__file__).parent / "fixtures" / "share_same_repeat_parent_cases.csv"
+        path = Path(__file__).parent / "fixtures" / "get_path_relative_to_lcar_cases.csv"
         with open(path) as f:
             for case in DictReader(f):
                 self.assert_relative_path(
