@@ -17,13 +17,12 @@ from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
-from pyxform.parsing.expression import has_last_saved
+from pyxform.parsing.expression import RE_PYXFORM_REF
 from pyxform.parsing.instance_expression import replace_with_output
 from pyxform.question import Itemset, MultipleChoiceQuestion, Option, Question, Tag
 from pyxform.section import SECTION_EXTRA_FIELDS, Section
-from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
+from pyxform.survey_element import _GET_SENTINEL, SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
-    BRACKETED_TAG_REGEX,
     LAST_SAVED_INSTANCE_NAME,
     DetachableElement,
     escape_text_for_xml,
@@ -31,6 +30,10 @@ from pyxform.utils import (
 )
 from pyxform.validators import enketo_validate, odk_validate
 from pyxform.validators.pyxform.iana_subtags.validation import get_languages_with_bad_tags
+from pyxform.validators.pyxform.pyxform_reference import (
+    has_pyxform_reference_with_last_saved,
+    is_pyxform_reference_candidate,
+)
 
 RE_BRACKET = re.compile(r"\[([^]]+)\]")
 RE_FUNCTION_ARGS = re.compile(r"\b[^()]+\((.*)\)$")
@@ -291,15 +294,6 @@ class Survey(Section):
         self.validate()
         self._setup_xpath_dictionary()
 
-        for triggering_reference in self.setvalues_by_triggering_ref:
-            if not re.search(BRACKETED_TAG_REGEX, triggering_reference):
-                raise PyXFormError(
-                    "Only references to other fields are allowed in the 'trigger' column."
-                )
-
-            # try to resolve reference and fail if can't
-            self.insert_xpaths(text=triggering_reference, context=self)
-
         body_kwargs = {}
         if self.style:
             body_kwargs["class"] = self.style
@@ -314,9 +308,9 @@ class Survey(Section):
 
     def get_trigger_values_for_question_name(self, question_name: str, trigger_type: str):
         if trigger_type == "setvalue":
-            return self.setvalues_by_triggering_ref.get(f"${{{question_name}}}")
+            return self.setvalues_by_triggering_ref.get(question_name)
         elif trigger_type == "setgeopoint":
-            return self.setgeopoint_by_triggering_ref.get(f"${{{question_name}}}")
+            return self.setgeopoint_by_triggering_ref.get(question_name)
 
     def _generate_static_instances(
         self, list_name: str, itemset: Itemset
@@ -480,16 +474,23 @@ class Survey(Section):
         """
         True if a last-saved instance should be generated, false otherwise.
         """
-        if has_last_saved(element.default):
+        if element.default and has_pyxform_reference_with_last_saved(element.default):
             return True
-        if has_last_saved(element.choice_filter):
+        if element.choice_filter and has_pyxform_reference_with_last_saved(
+            element.choice_filter
+        ):
             return True
         if element.bind:
             # Assuming average len(bind) < 10 and len(EXTERNAL_INSTANCES) = 5 and the
             # current has_last_saved implementation, iterating bind keys is fastest.
             for k, v in element.bind.items():
-                if k in constants.EXTERNAL_INSTANCES and has_last_saved(v):
+                if (
+                    k in constants.EXTERNAL_INSTANCES
+                    and v
+                    and has_pyxform_reference_with_last_saved(v)
+                ):
                     return True
+        return False
 
     @staticmethod
     def _get_last_saved_instance() -> InstanceInfo:
@@ -1033,6 +1034,24 @@ class Survey(Section):
                 xpaths[element_name] = element
         self._xpath = xpaths
 
+    def get_element_by_name(
+        self, name: str, error_prefix: str | None = None
+    ) -> SurveyElement:
+        element = self._xpath.get(name, _GET_SENTINEL)
+
+        prefix = ""
+        if error_prefix:
+            prefix = f"{error_prefix} "
+
+        if element is _GET_SENTINEL:
+            raise PyXFormError(f"{prefix}There is no survey element named '{name}'.")
+        elif element is None:
+            raise PyXFormError(
+                f"{prefix}There are multiple survey elements named '{name}'."
+            )
+
+        return element
+
     def _var_repl_function(
         self, matchobj, context, use_current=False, reference_parent=False
     ):
@@ -1041,8 +1060,8 @@ class Survey(Section):
         replace ${varname} with the xpath to varname.
         """
 
-        name = matchobj.group(2)
-        last_saved = matchobj.group(1) is not None
+        name = matchobj.group("ncname")
+        last_saved = matchobj.group("last_saved") is not None
         is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
 
         def _in_secondary_instance_predicate() -> bool:
@@ -1136,15 +1155,10 @@ class Survey(Section):
             return False
 
         intro = (
-            f"There has been a problem trying to replace {matchobj.group(0)} with the "
-            f"XPath to the survey element named '{name}'."
+            f"""There has been a problem trying to replace {matchobj.group("pyxform_ref")} """
+            f"""with the XPath to the survey element named '{name}'."""
         )
-        if name not in self._xpath:
-            raise PyXFormError(intro + " There is no survey element with this name.")
-        if self._xpath[name] is None:
-            raise PyXFormError(
-                intro + " There are multiple survey elements with this name."
-            )
+        target_xpath = self.get_element_by_name(name=name, error_prefix=intro).get_xpath()
 
         if _is_return_relative_path():
             if not use_current:
@@ -1156,7 +1170,7 @@ class Survey(Section):
         last_saved_prefix = (
             f"instance('{LAST_SAVED_INSTANCE_NAME}')" if last_saved else ""
         )
-        return f" {last_saved_prefix}{self._xpath[name].get_xpath()} "
+        return f" {last_saved_prefix}{target_xpath} "
 
     def insert_xpaths(
         self,
@@ -1167,15 +1181,25 @@ class Survey(Section):
     ):
         """
         Replace all instances of ${var} with the xpath to var.
+
+        :param text: The string to perform dereferencing on.
+        :param context: The context to use for relative references (if any).
+        :param use_current: If True, use 'current()' in the relative reference (if any).
+        :param reference_parent: Reference the lowest common ancestor repeat parent,
+          rather than using the shortest possible relative path.
         """
+        # "text" may actually be a dict, e.g. for custom attributes.
+        value = str(text)
+
+        if not is_pyxform_reference_candidate(value):
+            return value
 
         def _var_repl_function(matchobj):
             return self._var_repl_function(
                 matchobj, context, use_current, reference_parent
             )
 
-        # "text" may actually be a dict, e.g. for custom attributes.
-        return re.sub(BRACKETED_TAG_REGEX, _var_repl_function, str(text))
+        return re.sub(RE_PYXFORM_REF, _var_repl_function, value)
 
     def _var_repl_output_function(self, matchobj, context):
         """
@@ -1214,12 +1238,12 @@ class Survey(Section):
         # need to make sure we have reason to replace
         # since at this point < is &lt,
         # the net effect &lt gets translated again to &amp;lt;
-        xml_text = replace_with_output(original_xml, context, self)
-        if "{" in xml_text:
-            xml_text = re.sub(BRACKETED_TAG_REGEX, _var_repl_output_function, xml_text)
-        changed = xml_text != original_xml
+        value = replace_with_output(original_xml, context, self)
+        if is_pyxform_reference_candidate(value):
+            value = re.sub(RE_PYXFORM_REF, _var_repl_output_function, value)
+        changed = value != original_xml
         if changed:
-            return xml_text, True
+            return value, True
         else:
             return text, False
 

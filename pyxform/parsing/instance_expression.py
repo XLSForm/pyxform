@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from pyxform.parsing.expression import parse_expression
-from pyxform.utils import BRACKETED_TAG_REGEX, node
+from pyxform.parsing.expression import RE_PYXFORM_REF, parse_expression
+from pyxform.utils import node
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -99,7 +99,7 @@ def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey
     :return: The possibly modified string.
     """
     # 9 = len("instance(")
-    if 9 >= len(xml_text):
+    if len(xml_text) <= 9 or "instance(" not in xml_text:
         return xml_text
     boundaries = find_boundaries(xml_text=xml_text)
     if boundaries:
@@ -108,7 +108,7 @@ def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey
             old_str = xml_text[start:end]
             # Pass the new string through the pyxform reference replacer.
             # noinspection PyProtectedMember
-            new_str = BRACKETED_TAG_REGEX.sub(
+            new_str = RE_PYXFORM_REF.sub(
                 lambda m: survey._var_repl_function(m, context),
                 old_str,
             )
