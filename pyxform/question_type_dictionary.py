@@ -2,21 +2,11 @@
 XForm survey question type mapping dictionary module.
 """
 
+from collections.abc import Sequence
 from types import MappingProxyType
+from typing import Any
 
-from pyxform.xls2json import QuestionTypesReader, print_pyobj_to_json
-
-
-def generate_new_dict():
-    """
-    This is just here incase there is ever any need to generate the question
-    type dictionary from all.xls again.
-    It shouldn't be called as part of any application.
-    """
-    path_to_question_types = "/pyxform/question_types/all.xls"
-    json_dict = QuestionTypesReader(path_to_question_types).to_json_dict()
-    print_pyobj_to_json(json_dict, "new_question_type_dict.json")
-
+from pyxform import constants as const
 
 _QUESTION_TYPE_DICT = {
     "q picture": {
@@ -392,3 +382,14 @@ _QUESTION_TYPE_DICT = {
 
 # Read-only view of the types.
 QUESTION_TYPE_DICT = MappingProxyType(_QUESTION_TYPE_DICT)
+
+
+def get_meta_group(children: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    if children is None:
+        children = []
+    return {
+        const.NAME: "meta",
+        const.TYPE: const.GROUP,
+        const.CONTROL: {"bodyless": True},
+        const.CHILDREN: children,
+    }

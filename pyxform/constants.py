@@ -86,6 +86,7 @@ OSM = "osm"
 OSM_TYPE = "binary"
 
 NAMESPACES = "namespaces"
+META = "meta"
 
 # The following are the possible sheet names:
 SUPPORTED_SHEET_NAMES = {
@@ -113,10 +114,15 @@ EXTERNAL_INSTANCES = {"calculate", "constraint", "readonly", "required", "releva
 # The ODK XForms version that generated forms comply to
 CURRENT_XFORMS_VERSION = "1.0.0"
 
+
 # The ODK entities spec version that generated forms comply to
-ENTITIES_OFFLINE_VERSION = "2024.1.0"
+class EntityVersion(StrEnum):
+    v2024_1_0 = "2024.1.0"
+    v2025_1_0 = "2025.1.0"
+
+
 ENTITY = "entity"
-ENTITY_FEATURES = "entity_features"
+ENTITY_VERSION = "entity_version"
 ENTITIES_RESERVED_PREFIX = "__"
 
 
@@ -125,6 +131,7 @@ class EntityColumns(StrEnum):
     ENTITY_ID = "entity_id"
     CREATE_IF = "create_if"
     UPDATE_IF = "update_if"
+    REPEAT = "repeat"
     LABEL = "label"
 
 
@@ -169,3 +176,4 @@ NSMAP = {
 }
 SUPPORTED_MEDIA_TYPES = {"image", "big-image", "audio", "video"}
 OR_OTHER_CHOICE = {NAME: "other", LABEL: "Other"}
+RESERVED_NAMES_SURVEY_SHEET = {META}

@@ -7,15 +7,16 @@ from time import perf_counter
 from unittest import skip
 
 from psutil import Process
+from pyxform.validators.pyxform import unique_names
 from pyxform.xls2json_backends import SupportedFileTypes
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
 
 
-class TestRepeat(PyxformTestCase):
+class TestRepeatOutput(PyxformTestCase):
     """
-    TestRepeat class.
+    Test output for repeats.
     """
 
     def test_repeat_relative_reference(self):
@@ -1025,4 +1026,243 @@ class TestRepeat(PyxformTestCase):
                 ]
                 """,
             ],
+        )
+
+
+class TestRepeatParsing(PyxformTestCase):
+    def test_names__repeat_basic_case__ok(self):
+        """Should find that a single unique repeat name is ok."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+        )
+
+    def test_names__repeat_different_names_same_context__ok(self):
+        """Should find that repeats with unique names in the same context is ok."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | r2   | R2    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+        )
+
+    def test_names__repeat_same_as_repeat_in_different_context_case_insensitive__ok(self):
+        """Should find that a repeat name can be the same (CI) as another repeat in a different context."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin group  | g1   | G1    |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | end group    |      |       |
+        | | begin repeat | R1   | R2    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+        )
+
+    def test_names__repeat_same_as_survey_root_case_insensitive__ok(self):
+        """Should find that a repeat name can be the same (CI) as the survey root."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | DATA | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            name="data",
+            warnings_count=0,
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_survey__error(self):
+        """Should find that a duplicate repeat name raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | r1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES001.format(row=5, value="r1")],
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_group__error(self):
+        """Should find that a duplicate repeat name raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin group  | g1   | G1    |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | r1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        | | end group    |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES001.format(row=6, value="r1")],
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_repeat__error(self):
+        """Should find that a duplicate repeat name raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | begin repeat | r2   | R2    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | r2   | R2    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES001.format(row=6, value="r2")],
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_survey__case_insensitive_warning(
+        self,
+    ):
+        """Should find that a duplicate repeat name (CI) raises a warning."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | R1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=5, value="R1")]
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_group__case_insensitive_warning(
+        self,
+    ):
+        """Should find that a duplicate repeat name (CI) raises a warning."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin group  | g1   | G1    |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | R1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        | | end group    |      |       |
+        """
+        self.assertPyxformXform(
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="R1")]
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_repeat__case_insensitive_warning(
+        self,
+    ):
+        """Should find that a duplicate repeat name (CI) raises a warning."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | begin repeat | r2   | R2    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | R2   | R2    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="R2")]
+        )
+
+    def test_names__repeat_same_as_survey_root__error(self):
+        """Should find that a repeat name same as the survey root raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | data | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            name="data",
+            errored=True,
+            error__contains=[unique_names.NAMES003.format(row=2, value="data")],
+        )
+
+    def test_names__repeat_same_as_repeat_in_different_context_in_group__error(self):
+        """Should find that a duplicate repeat name raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin group  | g1   | G1    |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | end group    |      |       |
+        | | begin repeat | r1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES004.format(row=7, value="r1")],
+        )
+
+    def test_names__repeat_same_as_repeat_in_different_context_in_repeat__error(self):
+        """Should find that a duplicate repeat name raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | begin repeat | r2   | R2    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | end repeat   |      |       |
+        | | begin repeat | r2   | R2    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES004.format(row=7, value="r2")],
         )

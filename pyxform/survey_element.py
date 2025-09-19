@@ -13,11 +13,13 @@ from pyxform import aliases as alias
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_xml_tag
-from pyxform.utils import INVALID_XFORM_TAG_REGEXP, DetachableElement, node
-from pyxform.validators.pyxform.pyxform_reference import (
-    has_pyxform_reference,
+from pyxform.utils import (
+    INVALID_XFORM_TAG_REGEXP,
+    DetachableElement,
+    node,
+    print_pyobj_to_json,
 )
-from pyxform.xls2json import print_pyobj_to_json
+from pyxform.validators.pyxform.pyxform_reference import has_pyxform_reference
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey

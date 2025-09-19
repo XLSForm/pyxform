@@ -1,3 +1,5 @@
+from pyxform.validators.pyxform.unique_names import NAMES001
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.questions import xpq
 
@@ -95,10 +97,7 @@ class TestRepeatCount(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'r1_count' "
-                "(case-insensitive) in the section named 'test_name'."
-            ],
+            error__contains=[NAMES001.format(value="r1_count")],
         )
 
     def test_expression__generated_element_different_name__ok(self):
@@ -154,10 +153,7 @@ class TestRepeatCount(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'r1_count' "
-                "(case-insensitive) in the section named 'test_name'."
-            ],
+            error__contains=[NAMES001.format(value="r1_count")],
         )
 
     def test_manual_xpath__generated_element_different_name__ok(self):
@@ -208,10 +204,7 @@ class TestRepeatCount(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[
-                "There are more than one survey elements named 'r1_count' "
-                "(case-insensitive) in the section named 'test_name'."
-            ],
+            error__contains=[NAMES001.format(value="r1_count")],
         )
 
     def test_constant_integer__generated_element_different_name__ok(self):

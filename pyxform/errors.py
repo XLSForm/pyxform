@@ -15,7 +15,11 @@ class _ErrorFormatter(Formatter):
 
     def get_value(self, key, args, kwargs):
         if isinstance(key, str):
-            return kwargs.get(key, self.default_value)
+            value = kwargs.get(key, None)
+            if value is None:
+                return self.default_value
+            else:
+                return value
         else:
             return super().get_value(key, args, kwargs)
 
@@ -23,7 +27,7 @@ class _ErrorFormatter(Formatter):
 _ERROR_FORMATTER = _ErrorFormatter()
 
 
-class _Detail:
+class Detail:
     """ErrorCode details."""
 
     __slots__ = ("msg", "name")
@@ -37,28 +41,28 @@ class _Detail:
 
 
 class ErrorCode(Enum):
-    PYREF_001: _Detail = _Detail(
+    PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Reference variables must start with '${{', then a question name, and end with '}}'."
         ),
     )
-    PYREF_002: _Detail = _Detail(
+    PYREF_002: Detail = Detail(
         name="PyXForm Reference Parsing Limit Reached",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Reference variable lists must have a comma between each variable."
         ),
     )
-    PYREF_003: _Detail = _Detail(
+    PYREF_003: Detail = Detail(
         name="PyXForm Reference Question Not Found",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Reference variables must refer to a question name. Could not find '{q}'."
         ),
     )
-    INTERNAL_001: _Detail = _Detail(
+    INTERNAL_001: Detail = Detail(
         name="Internal error: Incorrectly Processed Question Trigger Data",
         msg=(
             "Internal error: "
