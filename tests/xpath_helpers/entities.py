@@ -21,45 +21,38 @@ class XPathHelper:
         """
 
     @staticmethod
-    def model_instance_entity() -> str:
-        """The base path to the expected entities nodeset."""
-        return """
-        /h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity
-        """
-
-    @staticmethod
-    def model_instance_repeat(
+    def model_instance_meta(
         list_name: str,
         meta_path: str = "",
+        repeat: bool = False,
         template: bool = False,
         create: bool = False,
         update: bool = False,
+        label: bool = False,
     ) -> str:
-        template_attrs = " not(@jr:template) "
-        if template:
-            template_attrs = " @jr:template='' "
-        create_attrs = " "
-        if create:
-            create_attrs = " and @create='1' "
-        update_attrs = " "
-        if update:
-            update_attrs = " and @update='1' and @baseVersion='' and @branchId='' and @trunkVersion='' "
+        assertion = {True: "{0}", False: "not({0})"}
+        repeat_asserts = ("not(./x:instanceID)",)
+        template_asserts = ("@jr:template",)
+        create_asserts = ("@create='1'",)
+        update_asserts = (
+            "@update='1'",
+            "@baseVersion=''",
+            "@branchId=''",
+            "@trunkVersion=''",
+        )
+        label_asserts = ("./x:label",)
         return f"""
         /h:html/h:head/x:model/x:instance/x:test_name{meta_path}[
-          {template_attrs}
-        ]/x:meta[not(./instanceID)]/x:entity[
+          {" and ".join(assertion[template].format(i) for i in template_asserts)}
+        ]/x:meta[
+          {" and ".join(assertion[repeat].format(i) for i in repeat_asserts)}
+        ]/x:entity[
           @dataset='{list_name}'
           and @id=''
-          {create_attrs}
-          {update_attrs}
+          and {" and ".join(assertion[create].format(i) for i in create_asserts)}
+          and {" and ".join(assertion[update].format(i) for i in update_asserts)}
+          and {" and ".join(assertion[label].format(i) for i in label_asserts)}
         ]
-        """
-
-    @staticmethod
-    def model_instance_dataset(value) -> str:
-        """An entity dataset has this value."""
-        return f"""
-        /h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@dataset='{value}']
         """
 
     @staticmethod
@@ -95,10 +88,15 @@ class XPathHelper:
         """
 
     @staticmethod
-    def model_bind_meta_id(meta_path: str = "") -> str:
+    def model_bind_meta_id(expression: str = "", meta_path: str = "") -> str:
+        assertion = {True: "{0}", False: "not({0})"}
+        expression_asserts = ("@calculate",)
+        if expression:
+            expression_asserts = (f"@calculate='{expression}'",)
         return f"""
         /h:html/h:head/x:model/x:bind[
           @nodeset='/test_name{meta_path}/meta/entity/@id'
+          and {" and ".join(assertion[bool(expression)].format(i) for i in expression_asserts)}
           and @type='string'
           and @readonly='true()'
         ]

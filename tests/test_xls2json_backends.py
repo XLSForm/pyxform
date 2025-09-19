@@ -98,7 +98,7 @@ class TestXLS2JSONBackends(PyxformTestCase):
             ]
             """,
             # entities
-            xpe.model_instance_dataset("e1"),
+            xpe.model_instance_meta("e1", create=True, label=True),
             xpe.model_bind_meta_label("l1"),
             # osm
             xpq.body_upload_tags("q3", (("n1-o", "l1-o"), ("n2-o", "l2-o"))),

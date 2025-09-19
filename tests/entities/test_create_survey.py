@@ -19,20 +19,11 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             xml__xpath_match=[
                 xpe.model_entities_version(co.EntityVersion.v2024_1_0.value),
-                xpe.model_instance_dataset("trees"),
                 # defaults to always creating
-                '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@create = "1"]',
-                '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@id = ""]',
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@id" and @type = "string" and @readonly = "true()"]',
+                xpe.model_instance_meta("trees", create=True, label=True),
+                xpe.model_bind_meta_id(),
                 xpe.model_setvalue_meta_id(),
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/x:label",
                 xpe.model_bind_meta_label("a"),
-            ],
-            xml__xpath_count=[
-                (
-                    "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/@update",
-                    0,
-                ),
             ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
@@ -137,7 +128,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
 
     def test_create_if_in_entities_sheet__puts_expression_on_bind(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |         |                      |       |
             |          | type    | name                 | label |
@@ -147,8 +137,8 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             |          | trees   | string-length(a) > 3 | a     |
             """,
             xml__xpath_match=[
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@create" and @calculate = "string-length(a) > 3"]',
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@create = "1"]',
+                xpe.model_bind_meta_create("string-length(a) > 3"),
+                xpe.model_instance_meta("trees", create=True, label=True),
             ],
         )
 
@@ -163,7 +153,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             |          | trees   | ${a}  | string-length(${a}) > 3 |
             """,
             xml__xpath_match=[
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@create" and @calculate = "string-length( /test_name/a ) > 3"]',
+                xpe.model_bind_meta_create("string-length( /test_name/a ) > 3"),
                 xpe.model_bind_meta_label(" /test_name/a "),
             ],
         )
@@ -198,7 +188,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
 
     def test_entities_version__omitted_if_no_entities_sheet(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |         |       |       |
             |          | type    | name  | label |
@@ -209,7 +198,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
 
     def test_saveto_column__added_to_xml(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |         |       |       |         |
             |          | type    | name  | label | save_to |
@@ -219,7 +207,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             |          | trees   | a     |       |         |
             """,
             xml__xpath_match=[
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/a" and @entities:saveto = "foo"]'
+                xpe.model_bind_question_saveto("/a", "foo"),
             ],
         )
 
@@ -383,7 +371,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             |          | list_name | label |       |
             |          | trees     | a     |       |
             """,
-            xml__xpath_match=[xpe.model_instance_dataset("trees")],
+            xml__xpath_match=[xpe.model_instance_meta("trees", create=True, label=True)],
         )
 
     def test_entities_columns__all_expected(self):
