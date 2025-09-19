@@ -2,14 +2,21 @@
 Validations for question types.
 """
 
-from pyxform.errors import PyXFormError
-from pyxform.parsing.expression import is_pyxform_reference
-from pyxform.utils import PYXFORM_REFERENCE_REGEX
+from collections.abc import Collection, Iterable
 
-BACKGROUND_GEOPOINT_CALCULATION = "[row : {r}] For 'background-geopoint' questions, the 'calculation' column must be empty."
-TRIGGER_INVALID = (
-    "[row : {r}] For '{t}' questions, the 'trigger' column must be a reference to another "
-    "question that exists, in the format ${{question_name_here}}."
+from pyxform.errors import ErrorCode, PyXFormError
+from pyxform.validators.pyxform.pyxform_reference import (
+    is_pyxform_reference_candidate,
+    parse_pyxform_references,
+)
+
+BACKGROUND_GEOPOINT_CALCULATION = (
+    "[row : {r}] For 'background-geopoint' questions, "
+    "the 'calculation' column must be empty."
+)
+BACKGROUND_GEOPOINT_TRIGGER = (
+    "[row : {r}] For 'background-geopoint' questions, "
+    "the 'trigger' column must not be empty."
 )
 
 
@@ -23,19 +30,63 @@ def validate_background_geopoint_calculation(row: dict, row_num: int) -> bool:
         raise PyXFormError(BACKGROUND_GEOPOINT_CALCULATION.format(r=row_num))
 
 
-def validate_background_geopoint_trigger(row: dict, row_num: int) -> bool:
+def validate_background_geopoint_trigger(trigger: str | None, row_num: int) -> bool:
     """A background-geopoint must have a trigger."""
-    if not row.get("trigger", False) or not is_pyxform_reference(value=row["trigger"]):
-        raise PyXFormError(TRIGGER_INVALID.format(r=row_num, t=row["type"]))
+    if not trigger:
+        raise PyXFormError(BACKGROUND_GEOPOINT_TRIGGER.format(r=row_num))
     return True
 
 
-def validate_references(referrers: list[tuple[dict, int]], questions: set[str]) -> bool:
-    """Triggers must refer to a question that exists."""
-    for row, row_num in referrers:
-        matches = PYXFORM_REFERENCE_REGEX.match(row["trigger"])
-        if matches is not None:
-            trigger = matches.groups()[0]
-            if trigger not in questions:
-                raise PyXFormError(TRIGGER_INVALID.format(r=row_num, t=row["type"]))
+def validate_references(
+    referrers: Iterable[Iterable[str | None, int]], questions: Collection[str]
+) -> bool:
+    """Pyxform references must refer to a question that exists."""
+    for target, row_num in referrers:
+        if target not in questions:
+            raise PyXFormError(
+                code=ErrorCode.PYREF_003, context={"q": target, "row": row_num}
+            )
     return True
+
+
+def process_trigger(
+    trigger: str | None, row_num: int, trigger_references: list[tuple[str, int]]
+) -> tuple[str, ...] | None:
+    """
+    Try to parse the content of the "trigger" column into a list of question names.
+
+    A trigger may contain one pyxform reference, or multiple comma-separated references.
+    If a trigger is found, it will be added to trigger_references.
+
+    :param trigger: The trigger data.
+    :param row_num: The current row number.
+    :param trigger_references: Which questions are being referred to by which row.
+    """
+    if not trigger:
+        return None
+    elif not is_pyxform_reference_candidate(trigger):
+        raise PyXFormError(
+            code=ErrorCode.PYREF_001,
+            context={
+                "sheet": "survey",
+                "column": "trigger",
+                "row": row_num,
+                "q": trigger,
+            },
+        )
+
+    try:
+        trigger = tuple(
+            r
+            for t in trigger.split(",")
+            for r in parse_pyxform_references(value=t, match_limit=1)
+        )
+    except PyXFormError as e:
+        e.context.update(sheet="survey", column="trigger", row=row_num)
+        raise
+
+    if trigger:
+        trigger_references.extend((t, row_num) for t in trigger)
+        return trigger
+    else:
+        return None

@@ -3,7 +3,6 @@ XForm Survey element classes for different question types.
 """
 
 import os.path
-import re
 from collections.abc import Callable, Generator, Iterable
 from itertools import chain
 from typing import TYPE_CHECKING
@@ -17,16 +16,16 @@ from pyxform.constants import (
     EXTERNAL_INSTANCE_EXTENSIONS,
 )
 from pyxform.errors import PyXFormError
-from pyxform.parsing.expression import RE_ANY_PYXFORM_REF
+from pyxform.parsing.expression import maybe_strip
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
-    PYXFORM_REFERENCE_REGEX,
     DetachableElement,
     combine_lists,
     default_is_dynamic,
     node,
 )
+from pyxform.validators.pyxform.pyxform_reference import has_pyxform_reference
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -141,7 +140,7 @@ class Question(SurveyElement):
         attributes = self.instance
         if attributes:
             for k, v in attributes.items():
-                result.setAttribute(k, survey.insert_xpaths(v, self))
+                result.setAttribute(k, survey.insert_xpaths(text=v, context=self))
         return result
 
     def xml_control(self, survey: "Survey"):
@@ -197,11 +196,11 @@ class Question(SurveyElement):
     def nest_set_nodes(self, survey, xml_node, tag, nested_items):
         for item in nested_items:
             node_attrs = {
-                "ref": survey.insert_xpaths(f"${{{item[0]}}}", survey).strip(),
+                "ref": survey.get_element_by_name(item[0]).get_xpath(),
                 "event": "xforms-value-changed",
             }
             if item[1]:
-                node_attrs["value"] = survey.insert_xpaths(item[1], self)
+                node_attrs["value"] = survey.insert_xpaths(text=item[1], context=self)
             set_node = node(tag, **node_attrs)
             xml_node.appendChild(set_node)
 
@@ -220,7 +219,7 @@ class Question(SurveyElement):
             # "tag" is from the question type dict so it can't include references. Also,
             # if it did include references, then the node element name would be invalid.
             if k != "tag":
-                result.setAttribute(k, survey.insert_xpaths(v, self))
+                result.setAttribute(k, survey.insert_xpaths(text=v, context=self))
         return result
 
     def build_xml(self, survey: "Survey") -> DetachableElement | None:
@@ -239,6 +238,23 @@ class Question(SurveyElement):
                     result[k] = v
         return result
 
+    def get_setvalue_node_for_dynamic_default(
+        self, survey: "Survey", in_repeat=False
+    ) -> DetachableElement | None:
+        if not self.default or not default_is_dynamic(self.default, self.type):
+            return None
+
+        triggering_events = "odk-instance-first-load"
+        if in_repeat:
+            triggering_events = f"{triggering_events} odk-new-repeat"
+
+        return node(
+            "setvalue",
+            ref=self.get_xpath(),
+            value=survey.insert_xpaths(text=self.default, context=self),
+            event=triggering_events,
+        )
+
 
 class InputQuestion(Question):
     """
@@ -253,7 +269,9 @@ class InputQuestion(Question):
         if self.query:
             choice_filter = self.choice_filter
             if choice_filter:
-                pred = survey.insert_xpaths(choice_filter, self, True)
+                pred = survey.insert_xpaths(
+                    text=choice_filter, context=self, use_current=True
+                )
                 query = f"""instance('{self.query}')/root/item[{pred}]"""
             else:
                 query = f"""instance('{self.query}')/root/item"""
@@ -331,10 +349,7 @@ class Itemset:
                     if label_is_dict:
                         requires_itext = True
                     # Dynamic label: string contains a pyxform reference.
-                    elif (
-                        choice_label
-                        and re.search(RE_ANY_PYXFORM_REF, choice_label) is not None
-                    ):
+                    elif choice_label and has_pyxform_reference(choice_label):
                         requires_itext = True
             yield option
         self.requires_itext = requires_itext
@@ -391,7 +406,7 @@ class MultipleChoiceQuestion(Question):
                 itemset_value_ref = self.parameters.get("value", itemset_value_ref)
                 itemset_label_ref = self.parameters.get("label", itemset_label_ref)
 
-            is_previous_question = bool(PYXFORM_REFERENCE_REGEX.search(self.itemset))
+            is_previous_question = has_pyxform_reference(self.itemset)
 
             if file_extension in EXTERNAL_INSTANCE_EXTENSIONS:
                 pass
@@ -404,11 +419,16 @@ class MultipleChoiceQuestion(Question):
             choice_filter = self.choice_filter
             if choice_filter:
                 choice_filter = survey.insert_xpaths(
-                    choice_filter, self, True, is_previous_question
+                    text=choice_filter,
+                    context=self,
+                    use_current=True,
+                    reference_parent=is_previous_question,
                 )
             if is_previous_question:
                 path = (
-                    survey.insert_xpaths(self.itemset, self, reference_parent=True)
+                    survey.insert_xpaths(
+                        text=self.itemset, context=self, reference_parent=True
+                    )
                     .strip()
                     .split("/")
                 )
@@ -437,11 +457,10 @@ class MultipleChoiceQuestion(Question):
                     nodeset = f"randomize({nodeset}"
 
                     if "seed" in params:
-                        if params["seed"].startswith("${"):
-                            seed = survey.insert_xpaths(params["seed"], self).strip()
-                            nodeset = f"{nodeset}, {seed}"
-                        else:
-                            nodeset = f"""{nodeset}, {params["seed"]}"""
+                        seed = maybe_strip(
+                            survey.insert_xpaths(text=params["seed"], context=self)
+                        )
+                        nodeset = f"{nodeset}, {seed}"
 
                     nodeset += ")"
 

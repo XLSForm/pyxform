@@ -2,6 +2,10 @@
 Test handling setvalue of 'trigger' column in forms
 """
 
+from itertools import product
+
+from pyxform.errors import ErrorCode
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -16,8 +20,9 @@ class TriggerSetvalueTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "There has been a problem trying to replace ${a} with the XPath to the "
-                + "survey element named 'a'. There is no survey element with this name."
+                ErrorCode.PYREF_003.value.format(
+                    sheet="survey", column="trigger", row=2, q="a"
+                )
             ],
         )
 
@@ -31,7 +36,9 @@ class TriggerSetvalueTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Only references to other fields are allowed in the 'trigger' column."
+                ErrorCode.PYREF_001.value.format(
+                    sheet="survey", column="trigger", row=2, q="6"
+                )
             ],
         )
 
@@ -317,5 +324,125 @@ class TriggerSetvalueTests(PyxformTestCase):
                 + "/x:repeat[@nodeset='/trigger-column/rep']/x:input[@ref='/trigger-column/rep/one']"
                 + "/x:setvalue[@event='xforms-value-changed' and @ref='/trigger-column/rep/three'"
                 + "  and @value='string-length( ../one )']",
+            ],
+        )
+
+    def test_multiple_triggers__with_comma_delimiter_ok(self):
+        """Should find setvalue elements added for each trigger reference question."""
+        md = """
+        | survey |          |      |             |             |         |
+        |        | type     | name | label       | calculation | trigger |
+        |        | text     | a    | Enter text  |             |         |
+        |        | text     | b    | Enter text  |             |         |
+        |        | dateTime | c    |             | now()       | {case}  |
+        """
+        forms = {
+            "${{a}}{0}${{b}}": 1,  # single comma
+            "${{a}}{0}{1}${{b}}": 2,  # double comma
+            "${{a}}{0}${{b}}{1}": 2,  # trailing comma
+            "${{a}}{0}${{b}}{1}{2}": 3,  # trailing double comma
+        }
+        # Include space variants per pyxform 776 feedback.
+        comma_variants = (",", ", ", " ,", " , ")
+        # dict to keep order but remove duplicates in the "double comma" cases.
+        cases = {
+            form.format(*combo): None
+            for form, repeats in forms.items()
+            for combo in product(comma_variants, repeat=repeats)
+        }
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        """
+                        /h:html/h:body/x:input[@ref='/test_name/a']/x:setvalue[
+                          @ref='/test_name/c'
+                          and @event='xforms-value-changed'
+                          and @value='now()'
+                        ]
+                        """,
+                        """
+                        /h:html/h:body/x:input[@ref='/test_name/b']/x:setvalue[
+                          @ref='/test_name/c'
+                          and @event='xforms-value-changed'
+                          and @value='now()'
+                        ]
+                        """,
+                    ],
+                )
+
+    def test_multiple_triggers__with_bad_comma_delimiter(self):
+        """Should find an error is raised for incorrectly specified multiple references."""
+        md = """
+        | survey |          |      |             |             |         |
+        |        | type     | name | label       | calculation | trigger |
+        |        | text     | a    | Enter text  |             |         |
+        |        | text     | b    | Enter text  |             |         |
+        |        | dateTime | c    |             | now()       | {case}  |
+        """
+        cases = (
+            "${a}${b}",  # no comma
+            ",${a}${b}",  # multiple after comma first pos
+            "${a},${b}${c}",  # multiple after comma second pos
+            "${a}${b},",  # multiple before comma first pos
+            "${a},${b}${c}",  # multiple before comma second pos
+        )
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[
+                        ErrorCode.PYREF_002.value.format(
+                            sheet="survey", column="trigger", row="4"
+                        )
+                    ],
+                )
+
+    def test_question_types_with_special_handling_produce_trigger_ref__minimal(self):
+        """Should find that a trigger setvalue is created."""
+        # minimal repro for pyxform 779
+        md = """
+        | survey |
+        | | type    | name | label | trigger |
+        | | integer | q1   | Q1    |         |
+        | | text    | q2   | Q2    | ${q1}   |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:body/x:input[@ref='/test_name/q1']/x:setvalue[
+                  @ref='/test_name/q2'
+                  and @event='xforms-value-changed'
+                ]
+                """
+            ],
+        )
+
+    def test_question_types_with_special_handling_produce_trigger_ref__full_case(self):
+        """Should find that a trigger setvalue is created."""
+        # full repro for pyxform 779
+        md = """
+        | survey |
+        | | type          | name | label | calculate | trigger |
+        | | select_one l1 | q1   | Q1    |           |         |
+        | | text          | q2   | Q2    | 2+2       | ${q1}   |
+
+        | choices |
+        | | list_name | name | label |
+        | | l1        | c1   | C1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:body/x:select1[@ref='/test_name/q1']/x:setvalue[
+                  @ref='/test_name/q2'
+                  and @event='xforms-value-changed'
+                  and @value='2+2'
+                ]
+                """
             ],
         )

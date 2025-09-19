@@ -380,15 +380,15 @@ class TestTranslations(PyxformTestCase):
         """
         Should find the translations check costs a fraction of a second for large forms.
 
-        Results with Python 3.10.14 on VM with 2vCPU (i7-7700HQ) 1GB RAM, x questions
+        Results with Python 3.12.11 on VM with 2vCPU (i7-7700HQ) 2GB RAM, x questions
         with 2 choices each, average of 10 runs (seconds), with and without the check,
         per question:
         | num   | with   | without | peak RSS MB |
-        |   500 | 0.6467 |  0.5648 |          77 |
-        |  1000 | 1.1448 |  1.2868 |          94 |
-        |  2000 | 2.3626 |  2.1485 |         129 |
-        |  5000 | 5.9631 |  5.7911 |         247 |
-        | 10000 | 11.404 |  11.399 |         423 |
+        |   500 | 0.4812 |  0.4412 |          73 |
+        |  1000 | 1.0376 |  1.0013 |          88 |
+        |  2000 | 2.0885 |  2.1231 |         136 |
+        |  5000 | 5.7501 |  5.8106 |         235 |
+        | 10000 | 11.151 |  10.724 |         415 |
         """
         survey_header = """
         | survey |                 |        |                    |                   |

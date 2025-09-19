@@ -2,7 +2,9 @@
 Common base classes for pyxform exceptions.
 """
 
+from enum import Enum
 from string import Formatter
+from typing import Any
 
 
 class _ErrorFormatter(Formatter):
@@ -38,8 +40,68 @@ class Detail:
         return _ERROR_FORMATTER.format(self.msg, **kwargs)
 
 
+class ErrorCode(Enum):
+    PYREF_001: Detail = Detail(
+        name="PyXForm Reference Parsing Failed",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Reference variables must start with '${{', then a question name, and end with '}}'."
+        ),
+    )
+    PYREF_002: Detail = Detail(
+        name="PyXForm Reference Parsing Limit Reached",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Reference variable lists must have a comma between each variable."
+        ),
+    )
+    PYREF_003: Detail = Detail(
+        name="PyXForm Reference Question Not Found",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Reference variables must refer to a question name. Could not find '{q}'."
+        ),
+    )
+    INTERNAL_001: Detail = Detail(
+        name="Internal error: Incorrectly Processed Question Trigger Data",
+        msg=(
+            "Internal error: "
+            "PyXForm expected processed trigger data as a tuple, but received a "
+            "type '{type}' with value '{value}'."
+        ),
+    )
+
+
 class PyXFormError(Exception):
     """Common base class for pyxform exceptions."""
+
+    def __init__(
+        self, *args, code: ErrorCode | None = None, context: dict[str, Any] | None = None
+    ) -> None:
+        """
+        :param args: Args for the base exception, such as a pre-formatted error message.
+        :param code: If provided, used for an error message template.
+        :param context: If provided, used to format the error message template.
+        """
+        super().__init__(*args)
+        self.code: ErrorCode | None = code
+        self.context: dict = context if context else {}
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        if self.code:
+            if self.context:
+                return self.code.value.format(**self.context)
+            else:
+                # If there's somehow no context for creating a helpful message, at least
+                # try to give some kind of normal-looking indication of the type of issue.
+                return self.code.value.name
+        elif self.args[0]:
+            return self.args[0]
+        else:
+            return super().__repr__()
 
 
 class ValidationError(PyXFormError):

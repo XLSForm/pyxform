@@ -1,4 +1,5 @@
 from pyxform.entities import entities_parsing as ep
+from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
@@ -280,7 +281,21 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | list_name | label   | repeat |
         | | e1        | ${{q1}} | {case} |
         """
-        cases = (".", "r1", "${r1}a", "${r1}${r2}", "${last-saved#r1}")
+        # Looks like a single reference but fails to parse.
+        cases_pyref = ("${.a}", "${a }", "${ }")
+        for case in cases_pyref:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[
+                        ErrorCode.PYREF_001.value.format(
+                            sheet="entities", column="repeat", row=2, value=case
+                        )
+                    ],
+                )
+        # Doesn't parse, or isn't a single reference.
+        cases = (".", "r1", "${r1}a", "${r1}${r2}", "${last-saved#r1}", "${}")
         for case in cases:
             with self.subTest(msg=case):
                 self.assertPyxformXform(

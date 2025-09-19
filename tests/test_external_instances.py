@@ -602,6 +602,7 @@ class ExternalInstanceTests(PyxformTestCase):
                 ]
                 """
             ],
+            run_odk_validate=False,  # Validate sees self references in relevants as circular but shouldn't
         )
 
     def test_external_instances_multiple_diff_pulldatas(self):
@@ -632,6 +633,7 @@ class ExternalInstanceTests(PyxformTestCase):
                 ]
                 """,
             ],
+            run_odk_validate=False,  # Validate sees self references in relevants as circular but shouldn't
         )
 
     def test_mixed_quotes_and_functions_in_pulldata(self):

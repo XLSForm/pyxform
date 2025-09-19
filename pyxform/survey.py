@@ -9,7 +9,6 @@ import xml.etree.ElementTree as ETree
 from collections import defaultdict
 from collections.abc import Generator, Iterable
 from datetime import datetime
-from functools import lru_cache
 from itertools import chain
 from pathlib import Path
 
@@ -18,13 +17,12 @@ from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
-from pyxform.parsing.expression import has_last_saved
+from pyxform.parsing.expression import RE_PYXFORM_REF
 from pyxform.parsing.instance_expression import replace_with_output
 from pyxform.question import Itemset, MultipleChoiceQuestion, Option, Question, Tag
 from pyxform.section import SECTION_EXTRA_FIELDS, RepeatingSection, Section
-from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
+from pyxform.survey_element import _GET_SENTINEL, SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
-    BRACKETED_TAG_REGEX,
     LAST_SAVED_INSTANCE_NAME,
     DetachableElement,
     escape_text_for_xml,
@@ -33,6 +31,10 @@ from pyxform.utils import (
 from pyxform.validators import enketo_validate, odk_validate
 from pyxform.validators.pyxform import unique_names
 from pyxform.validators.pyxform.iana_subtags.validation import get_languages_with_bad_tags
+from pyxform.validators.pyxform.pyxform_reference import (
+    has_pyxform_reference_with_last_saved,
+    is_pyxform_reference_candidate,
+)
 
 RE_BRACKET = re.compile(r"\[([^]]+)\]")
 RE_FUNCTION_ARGS = re.compile(r"\b[^()]+\((.*)\)$")
@@ -76,99 +78,54 @@ def register_nsmap():
 register_nsmap()
 
 
-@lru_cache(maxsize=128)
-def is_parent_a_repeat(survey, xpath):
+def get_path_relative_to_lcar(
+    target: SurveyElement,
+    source: SurveyElement,
+    lcar_steps_source: int,
+    lcar: SurveyElement,
+    reference_parent: bool = False,
+) -> tuple[int, str]:
     """
-    Returns the XPATH of the first repeat of the given xpath in the survey,
-    otherwise False will be returned.
-    """
-    parent_xpath = "/".join(xpath.split("/")[:-1])
-    if not parent_xpath:
-        return False
+    Get the number of steps from the source to the LCAR, and the path to the target.
 
-    for item in survey.iter_descendants(condition=lambda i: isinstance(i, Section)):
-        if item.type == constants.REPEAT and item.get_xpath() == parent_xpath:
-            return parent_xpath
+    Implementation assumes that it is only called if target and source have an LCAR.
 
-    return is_parent_a_repeat(survey, parent_xpath)
+    Example:
+        target = /data/repeat_a/group_a/name
+        source = /data/repeat_a/group_b/age
+        return = (2, "/group_a/name")
 
-
-@lru_cache(maxsize=128)
-def share_same_repeat_parent(survey, xpath, context_xpath, reference_parent=False):
-    """
-    Returns a tuple of the number of steps from the context xpath to the shared
-    repeat parent and the xpath to the target xpath from the shared repeat
-    parent.
-
-    For example,
-        xpath =         /data/repeat_a/group_a/name
-        context_xpath = /data/repeat_a/group_b/age
-
-        returns (2, '/group_a/name')'
+    :param target: The reference target, like "/data/repeat/q1" for "${q1}"
+    :param source: The reference source, where the reference is located.
+    :param lcar_steps_source: The number of path segments from the source to the LCAR.
+    :param lcar: The lowest common ancestor repeat.
+    :param reference_parent: If True, calculate to the LCAR parent rather than the LCAR.
+      This may not be actually honoured depending on the topography.
     """
 
-    def _get_steps_and_target_xpath(context_parent, xpath_parent, include_parent=False):
-        parts = []
-        steps = 1
-        if not include_parent:
-            remainder_xpath = xpath[len(xpath_parent) :]
-            context_parts = context_xpath[len(xpath_parent) + 1 :].split("/")
-            xpath_parts = xpath[len(xpath_parent) + 1 :].split("/")
-        else:
-            split_idx = len(xpath_parent.split("/"))
-            context_parts = context_xpath.split("/")[split_idx - 1 :]
-            xpath_parts = xpath.split("/")[split_idx - 1 :]
-            remainder_xpath = "/".join(xpath_parts)
+    def is_repeat(e: SurveyElement) -> bool:
+        return isinstance(e, Section) and e.type == constants.REPEAT
 
-        for index, item in enumerate(context_parts[:-1]):
-            try:
-                if xpath[len(context_parent) + 1 :].split("/")[index] != item:
-                    steps = len(context_parts[index:])
-                    parts = xpath_parts[index:]
-                    break
-                else:
-                    parts = remainder_xpath.split("/")[index + 2 :]
-            except IndexError:
-                steps = len(context_parts[index - 1 :])
-                parts = xpath_parts[index - 1 :]
-                break
-        return (steps, f"""/{"/".join(parts)}""" if parts else remainder_xpath)
+    # Currently reference_parent only used for itemsets containing a pyxform variable,
+    # i.e. `select_one ${ref}`. In that case, an extra step up the reference path may be
+    # required, to allow appending a choice filter predicate.
+    if reference_parent:
+        # The LCAR may or may not be the closest ancestor repeat for source or target,
+        # but there's always at least the LCAR, so a check for None isn't needed.
+        source_car, _ = next(source.iter_ancestors(condition=is_repeat), None)
+        target_car, _ = next(target.iter_ancestors(condition=is_repeat), None)
+        # May return None if LCAR is a child of the Survey, or only non-repeating group(s).
+        lcar_not_in_repeat = next(lcar.iter_ancestors(condition=is_repeat), None) is None
 
-    context_parent = is_parent_a_repeat(survey, context_xpath)
-    xpath_parent = is_parent_a_repeat(survey, xpath)
-    if context_parent and xpath_parent and xpath_parent in context_parent:
-        if (not context_parent == xpath_parent and reference_parent) or bool(
-            is_parent_a_repeat(survey, context_parent)
-        ):
-            context_shared_ancestor = is_parent_a_repeat(survey, context_parent)
-            if context_shared_ancestor == xpath_parent:
-                # Check if context_parent is a child repeat of the xpath_parent
-                # If the context_parent is a child of the xpath_parent reference the entire
-                # xpath_parent in the generated nodeset
-                context_parent = context_shared_ancestor
-            elif context_parent == xpath_parent and context_shared_ancestor:
-                # If the context_parent is a child of another
-                # repeat and is equal to the xpath_parent
-                # we avoid refrencing the context_parent and instead reference the shared
-                # ancestor
-                reference_parent = False
-        return _get_steps_and_target_xpath(context_parent, xpath_parent, reference_parent)
-    elif context_parent and xpath_parent:
-        # Check if context_parent and xpath_parent share a common
-        # repeat ancestor
-        context_shared_ancestor = is_parent_a_repeat(survey, context_parent)
-        xpath_shared_ancestor = is_parent_a_repeat(survey, xpath_parent)
+        if lcar is target_car and (lcar_not_in_repeat or source_car is not lcar):
+            # Only honour the request for a reference relative to lcar parent
+            # if the target is not inside nested repeat(s) under lcar, and either:
+            # a) lcar is not in a repeat.
+            # b) source is in nested repeats under lcar.
+            return lcar_steps_source + 1, target.get_xpath(relative_to=lcar.parent)
 
-        if (
-            xpath_shared_ancestor
-            and context_shared_ancestor
-            and xpath_shared_ancestor == context_shared_ancestor
-        ):
-            return _get_steps_and_target_xpath(
-                context_shared_ancestor, xpath_shared_ancestor
-            )
-
-    return (None, None)
+    _, lca_steps_source, _, lca = source.lowest_common_ancestor(target)
+    return lca_steps_source, target.get_xpath(relative_to=lca)
 
 
 def recursive_dict():
@@ -338,15 +295,6 @@ class Survey(Section):
         self.validate()
         self._setup_xpath_dictionary()
 
-        for triggering_reference in self.setvalues_by_triggering_ref:
-            if not re.search(BRACKETED_TAG_REGEX, triggering_reference):
-                raise PyXFormError(
-                    "Only references to other fields are allowed in the 'trigger' column."
-                )
-
-            # try to resolve reference and fail if can't
-            self.insert_xpaths(triggering_reference, self)
-
         body_kwargs = {}
         if self.style:
             body_kwargs["class"] = self.style
@@ -361,9 +309,9 @@ class Survey(Section):
 
     def get_trigger_values_for_question_name(self, question_name: str, trigger_type: str):
         if trigger_type == "setvalue":
-            return self.setvalues_by_triggering_ref.get(f"${{{question_name}}}")
+            return self.setvalues_by_triggering_ref.get(question_name)
         elif trigger_type == "setgeopoint":
-            return self.setgeopoint_by_triggering_ref.get(f"${{{question_name}}}")
+            return self.setgeopoint_by_triggering_ref.get(question_name)
 
     def _generate_static_instances(
         self, list_name: str, itemset: Itemset
@@ -527,16 +475,23 @@ class Survey(Section):
         """
         True if a last-saved instance should be generated, false otherwise.
         """
-        if has_last_saved(element.default):
+        if element.default and has_pyxform_reference_with_last_saved(element.default):
             return True
-        if has_last_saved(element.choice_filter):
+        if element.choice_filter and has_pyxform_reference_with_last_saved(
+            element.choice_filter
+        ):
             return True
         if element.bind:
             # Assuming average len(bind) < 10 and len(EXTERNAL_INSTANCES) = 5 and the
             # current has_last_saved implementation, iterating bind keys is fastest.
             for k, v in element.bind.items():
-                if k in constants.EXTERNAL_INSTANCES and has_last_saved(v):
+                if (
+                    k in constants.EXTERNAL_INSTANCES
+                    and v
+                    and has_pyxform_reference_with_last_saved(v)
+                ):
                     return True
+        return False
 
     @staticmethod
     def _get_last_saved_instance() -> InstanceInfo:
@@ -1080,6 +1035,24 @@ class Survey(Section):
                 xpaths[element_name] = element
         self._xpath = xpaths
 
+    def get_element_by_name(
+        self, name: str, error_prefix: str | None = None
+    ) -> SurveyElement:
+        element = self._xpath.get(name, _GET_SENTINEL)
+
+        prefix = ""
+        if error_prefix:
+            prefix = f"{error_prefix} "
+
+        if element is _GET_SENTINEL:
+            raise PyXFormError(f"{prefix}There is no survey element named '{name}'.")
+        elif element is None:
+            raise PyXFormError(
+                f"{prefix}There are multiple survey elements named '{name}'."
+            )
+
+        return element
+
     def _var_repl_function(
         self, matchobj, context, use_current=False, reference_parent=False
     ):
@@ -1088,8 +1061,8 @@ class Survey(Section):
         replace ${varname} with the xpath to varname.
         """
 
-        name = matchobj.group(2)
-        last_saved = matchobj.group(1) is not None
+        name = matchobj.group("ncname")
+        last_saved = matchobj.group("last_saved") is not None
         is_indexed_repeat = matchobj.string.find("indexed-repeat(") > -1
 
         def _in_secondary_instance_predicate() -> bool:
@@ -1113,26 +1086,26 @@ class Survey(Section):
         def _relative_path(ref_name: str, _use_current: bool) -> str | None:
             """Given name in ${name}, return relative xpath to ${name}."""
             return_path = None
-            xpath = self._xpath[ref_name].get_xpath()
-            context_xpath = context.get_xpath()
-            # share same root i.e repeat_a from /data/repeat_a/...
-            if (
-                len(context_xpath.split("/")) > 2
-                and xpath.split("/")[2] == context_xpath.split("/")[2]
-            ):
-                # if context xpath and target xpath fall under the same
-                # repeat use relative xpath referencing.
-                relation = context.has_common_repeat_parent(self._xpath[ref_name])
-                if relation[0] == "Unrelated":
-                    return return_path
-                else:
-                    steps, ref_path = share_same_repeat_parent(
-                        self, xpath, context_xpath, reference_parent
+            target = self._xpath[ref_name]
+            # if context xpath and target xpath fall under the same
+            # repeat use relative xpath referencing.
+            relation = context.lowest_common_ancestor(
+                other=target, group_type=constants.REPEAT
+            )
+            if relation[0] == "Common Ancestor":
+                steps, ref_path = get_path_relative_to_lcar(
+                    target=target,
+                    source=context,
+                    lcar_steps_source=relation[1],
+                    lcar=relation[3],
+                    reference_parent=reference_parent,
+                )
+                if steps:
+                    ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
+                    prefix = " current()/" if _use_current else " "
+                    return_path = (
+                        f"""{prefix}{"/".join(".." for _ in range(steps))}{ref_path} """
                     )
-                    if steps:
-                        ref_path = ref_path if ref_path.endswith(ref_name) else f"/{name}"
-                        prefix = " current()/" if _use_current else " "
-                        return_path = f"""{prefix}{"/".join(".." for _ in range(steps))}{ref_path} """
 
             return return_path
 
@@ -1183,15 +1156,10 @@ class Survey(Section):
             return False
 
         intro = (
-            f"There has been a problem trying to replace {matchobj.group(0)} with the "
-            f"XPath to the survey element named '{name}'."
+            f"""There has been a problem trying to replace {matchobj.group("pyxform_ref")} """
+            f"""with the XPath to the survey element named '{name}'."""
         )
-        if name not in self._xpath:
-            raise PyXFormError(intro + " There is no survey element with this name.")
-        if self._xpath[name] is None:
-            raise PyXFormError(
-                intro + " There are multiple survey elements with this name."
-            )
+        target_xpath = self.get_element_by_name(name=name, error_prefix=intro).get_xpath()
 
         if _is_return_relative_path():
             if not use_current:
@@ -1203,7 +1171,7 @@ class Survey(Section):
         last_saved_prefix = (
             f"instance('{LAST_SAVED_INSTANCE_NAME}')" if last_saved else ""
         )
-        return f" {last_saved_prefix}{self._xpath[name].get_xpath()} "
+        return f" {last_saved_prefix}{target_xpath} "
 
     def insert_xpaths(
         self,
@@ -1214,15 +1182,25 @@ class Survey(Section):
     ):
         """
         Replace all instances of ${var} with the xpath to var.
+
+        :param text: The string to perform dereferencing on.
+        :param context: The context to use for relative references (if any).
+        :param use_current: If True, use 'current()' in the relative reference (if any).
+        :param reference_parent: Reference the lowest common ancestor repeat parent,
+          rather than using the shortest possible relative path.
         """
+        # "text" may actually be a dict, e.g. for custom attributes.
+        value = str(text)
+
+        if not is_pyxform_reference_candidate(value):
+            return value
 
         def _var_repl_function(matchobj):
             return self._var_repl_function(
                 matchobj, context, use_current, reference_parent
             )
 
-        # "text" may actually be a dict, e.g. for custom attributes.
-        return re.sub(BRACKETED_TAG_REGEX, _var_repl_function, str(text))
+        return re.sub(RE_PYXFORM_REF, _var_repl_function, value)
 
     def _var_repl_output_function(self, matchobj, context):
         """
@@ -1261,12 +1239,12 @@ class Survey(Section):
         # need to make sure we have reason to replace
         # since at this point < is &lt,
         # the net effect &lt gets translated again to &amp;lt;
-        xml_text = replace_with_output(original_xml, context, self)
-        if "{" in xml_text:
-            xml_text = re.sub(BRACKETED_TAG_REGEX, _var_repl_output_function, xml_text)
-        changed = xml_text != original_xml
+        value = replace_with_output(original_xml, context, self)
+        if is_pyxform_reference_candidate(value):
+            value = re.sub(RE_PYXFORM_REF, _var_repl_output_function, value)
+        changed = value != original_xml
         if changed:
-            return xml_text, True
+            return value, True
         else:
             return text, False
 

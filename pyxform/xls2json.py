@@ -21,11 +21,13 @@ from pyxform.entities.entities_parsing import (
     validate_entity_saveto,
 )
 from pyxform.errors import Detail, PyXFormError
-from pyxform.parsing.expression import is_pyxform_reference, is_xml_tag
+from pyxform.parsing.expression import (
+    is_xml_tag,
+    maybe_strip,
+)
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
 from pyxform.question_type_dictionary import get_meta_group
 from pyxform.utils import (
-    PYXFORM_REFERENCE_REGEX,
     coalesce,
     default_is_dynamic,
     print_pyobj_to_json,
@@ -34,7 +36,11 @@ from pyxform.validators.pyxform import parameters_generic, select_from_file, uni
 from pyxform.validators.pyxform import question_types as qt
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.choices import validate_and_clean_choices
-from pyxform.validators.pyxform.pyxform_reference import validate_pyxform_reference_syntax
+from pyxform.validators.pyxform.pyxform_reference import (
+    has_pyxform_reference,
+    is_pyxform_reference,
+    validate_pyxform_reference_syntax,
+)
 from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
 from pyxform.xls2json_backends import (
@@ -105,12 +111,12 @@ def clean_text_values(
             if isinstance(value, str) and value:
                 # Remove extraneous whitespace characters.
                 if strip_whitespace:
-                    value = RE_WHITESPACE.sub(" ", value.strip())
+                    value = RE_WHITESPACE.sub(" ", maybe_strip(value))
                 # Replace "smart" quotes with regular quotes.
                 row[key] = RE_SMART_QUOTES.sub(lambda m: SMART_QUOTES[m.group(0)], value)
                 # Check cross reference syntax.
                 validate_pyxform_reference_syntax(
-                    value=value, sheet_name=sheet_name, row_number=row_number, key=key
+                    value=value, sheet_name=sheet_name, row_number=row_number, column=key
                 )
         if add_row_number:
             row["__row"] = row_number
@@ -266,7 +272,7 @@ def add_choices_info_to_question(
         # Select from file e.g. type = "select_one_from_file cities.xml".
         or file_extension in EXTERNAL_INSTANCE_EXTENSIONS
         # Select from previous answers e.g. type = "select_one ${q1}".
-        or bool(PYXFORM_REFERENCE_REGEX.search(list_name))
+        or has_pyxform_reference(list_name)
     ):
         question[constants.LIST_NAME_U] = list_name
         question[constants.CHOICES] = choices[list_name]
@@ -548,7 +554,7 @@ def workbook_to_json(
     meta_children = []
     # To check that questions with triggers refer to other questions that exist.
     question_names = set()
-    trigger_references = []
+    trigger_references: list[tuple[str, int]] = []
     repeat_names = set()
 
     # row by row, validate questions, throwing errors and adding warnings where needed.
@@ -589,6 +595,13 @@ def workbook_to_json(
                 continue
             raise PyXFormError(
                 ROW_FORMAT_STRING % row_number + " Question with no type.\n" + str(row)
+            )
+
+        if "trigger" in row:
+            row["trigger"] = qt.process_trigger(
+                trigger=row["trigger"],
+                row_num=row_number,
+                trigger_references=trigger_references,
             )
 
         parameters = parameters_generic.parse(raw_parameters=row.get("parameters", ""))
@@ -1033,7 +1046,7 @@ def workbook_to_json(
                     list_name not in choices
                     and select_type != constants.SELECT_ONE_EXTERNAL
                     and file_extension not in EXTERNAL_INSTANCE_EXTENSIONS
-                    and not PYXFORM_REFERENCE_REGEX.search(list_name)
+                    and not has_pyxform_reference(list_name)
                 ):
                     if not choices:
                         k = constants.CHOICES
@@ -1149,7 +1162,7 @@ def workbook_to_json(
                         )
 
                     if "seed" in parameters:
-                        if not parameters["seed"].startswith("${"):
+                        if not is_pyxform_reference(parameters["seed"]):
                             try:
                                 float(parameters["seed"])
                             except ValueError as seed_err:
@@ -1402,17 +1415,21 @@ def workbook_to_json(
             continue
         # TODO: Consider adding some question_type validation here.
 
-        # Ensure that
         if question_type == "background-geopoint":
-            qt.validate_background_geopoint_trigger(row=row, row_num=row_number)
+            qt.validate_background_geopoint_trigger(
+                trigger=row.get("trigger"), row_num=row_number
+            )
             qt.validate_background_geopoint_calculation(row=row, row_num=row_number)
-            trigger_references.append((row, row_number))
 
         # Put the row in the json dict as is:
         parent_children_array.append(row)
 
     sheet_translations.or_other_check(warnings=warnings)
-    qt.validate_references(referrers=trigger_references, questions=question_names)
+    try:
+        qt.validate_references(referrers=trigger_references, questions=question_names)
+    except PyXFormError as e:
+        e.context.update(sheet="survey", column="trigger")
+        raise
 
     if len(stack) > 1:
         raise PyXFormError(

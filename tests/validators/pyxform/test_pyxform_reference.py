@@ -1,6 +1,6 @@
 from itertools import chain, product
 
-from pyxform.errors import PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.validators.pyxform import pyxform_reference as pr
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -51,10 +51,8 @@ class TestPyxformReference(PyxformTestCase):
                     case = context.format(token)
                     pr.validate_pyxform_reference_syntax(case, "test", 1, "test")
                 self.assertEqual(
-                    err.exception.args[0],
-                    pr.PYXFORM_REFERENCE_INVALID.format(
-                        sheet="test", row_number=1, column="test"
-                    ),
+                    str(err.exception),
+                    ErrorCode.PYREF_001.value.format(sheet="test", column="test", row=1),
                     msg=case,
                 )
 
@@ -99,9 +97,7 @@ class TestPyxformReference(PyxformTestCase):
                     case = context.format(token1, token2)
                     pr.validate_pyxform_reference_syntax(case, "test", 1, "test")
                 self.assertEqual(
-                    err.exception.args[0],
-                    pr.PYXFORM_REFERENCE_INVALID.format(
-                        sheet="test", row_number=1, column="test"
-                    ),
+                    str(err.exception),
+                    ErrorCode.PYREF_001.value.format(sheet="test", column="test", row=1),
                     msg=case,
                 )

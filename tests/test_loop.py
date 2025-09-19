@@ -216,7 +216,7 @@ class TestLoop(PyxformTestCase):
             errored=True,
             error__contains=[
                 "There has been a problem trying to replace ${q1} with the XPath to the "
-                "survey element named 'q1'. There are multiple survey elements with this name."
+                "survey element named 'q1'. There are multiple survey elements named 'q1'."
             ],
         )
 

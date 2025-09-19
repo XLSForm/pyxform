@@ -4,7 +4,7 @@ from typing import Any
 from pyxform import constants as const
 from pyxform.errors import Detail, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
-from pyxform.utils import PYXFORM_REFERENCE_REGEX
+from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
 ENTITY001 = Detail(
@@ -130,17 +130,15 @@ def get_validated_repeat_name(entity) -> str | None:
         return None
 
     value = entity[EC.REPEAT]
-    if not (value and len(value) > 3):
-        raise PyXFormError(ENTITY001.format(value=value))
-    matches = PYXFORM_REFERENCE_REGEX.fullmatch(value)
-    if matches is None:
-        raise PyXFormError(ENTITY001.format(value=value))
+    try:
+        match = parse_pyxform_references(value=value, match_limit=1, match_full=True)
+    except PyXFormError as e:
+        e.context.update(sheet="entities", column="repeat", row=2)
     else:
-        match = matches.group(1)
-        if not is_xml_tag(match):
+        if not match or not is_xml_tag(match[0]):
             raise PyXFormError(ENTITY001.format(value=value))
         else:
-            return match
+            return match[0]
 
 
 def validate_entity_saveto(
