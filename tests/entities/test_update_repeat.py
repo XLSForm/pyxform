@@ -1,3 +1,5 @@
+from pyxform import constants as co
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
 
@@ -30,6 +32,7 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
             md=md,
             warnings_count=0,
             xml__xpath_match=[
+                xpe.model_entities_version(co.EntityVersion.v2025_1_0.value),
                 xpe.model_instance_repeat("e1", "/x:r1", template=True, update=True),
                 xpe.model_instance_repeat("e1", "/x:r1", update=True),
                 xpe.model_bind_question_saveto("/r1/q1", "q1e"),

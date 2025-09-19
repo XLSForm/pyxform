@@ -809,7 +809,9 @@ def workbook_to_json(
                     parent_children_array.append(
                         get_meta_group(children=[entity_declaration])
                     )
-                    json_dict[constants.ENTITY_FEATURES] = ["create", "update", "offline"]
+                    json_dict[constants.ENTITY_VERSION] = (
+                        constants.EntityVersion.v2025_1_0
+                    )
                     entity_declaration = None
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
@@ -1472,7 +1474,7 @@ def workbook_to_json(
 
     if entity_declaration:
         validate_entity_repeat_target(entity_declaration=entity_declaration)
-        json_dict[constants.ENTITY_FEATURES] = ["create", "update", "offline"]
+        json_dict[constants.ENTITY_VERSION] = constants.EntityVersion.v2024_1_0
         meta_children.append(entity_declaration)
 
     if len(meta_children) > 0:

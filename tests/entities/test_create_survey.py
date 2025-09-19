@@ -18,6 +18,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             |          | trees   | a     |       |
             """,
             xml__xpath_match=[
+                xpe.model_entities_version(co.EntityVersion.v2024_1_0.value),
                 xpe.model_instance_dataset("trees"),
                 # defaults to always creating
                 '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@create = "1"]',
@@ -26,7 +27,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
                 xpe.model_setvalue_meta_id(),
                 "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/x:label",
                 xpe.model_bind_meta_label("a"),
-                f"""/h:html/h:head/x:model[@entities:entities-version = '{co.ENTITIES_OFFLINE_VERSION}']""",
             ],
             xml__xpath_count=[
                 (
@@ -204,7 +204,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             |          | type    | name  | label |
             |          | text    | a     | A     |
             """,
-            xml__excludes=['entities:entities-version = "2022.1.0"'],
+            xml__xpath_match=[xpe.model_no_entities_version()],
         )
 
     def test_saveto_column__added_to_xml(self):

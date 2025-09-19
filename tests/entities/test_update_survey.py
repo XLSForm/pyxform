@@ -20,6 +20,7 @@ class TestEntitiesUpdateSurvey(PyxformTestCase):
             |          | trees        | ${id}      |         |
             """,
             xml__xpath_match=[
+                xpe.model_entities_version(co.EntityVersion.v2024_1_0.value),
                 xpe.model_instance_dataset("trees"),
                 # defaults to always updating if an entity_id is specified
                 '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@update = "1"]',
@@ -27,7 +28,6 @@ class TestEntitiesUpdateSurvey(PyxformTestCase):
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@id" and @type = "string" and @readonly = "true()" and @calculate = " /test_name/id "]',
                 '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@baseVersion = ""]',
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@baseVersion" and @type = "string" and @readonly = "true()" and @calculate = "instance(\'trees\')/root/item[name= /test_name/id ]/__version"]',
-                f"""/h:html/h:head/x:model[@entities:entities-version = '{co.ENTITIES_OFFLINE_VERSION}']""",
                 """
                   /h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[
                     @trunkVersion = ''

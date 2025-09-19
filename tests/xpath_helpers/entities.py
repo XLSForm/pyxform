@@ -4,6 +4,23 @@ class XPathHelper:
     """
 
     @staticmethod
+    def model_entities_version(version: str):
+        return f"""
+        /h:html/h:head/x:model[@entities:entities-version='{version}']
+        """
+
+    @staticmethod
+    def model_no_entities_version():
+        return """
+        /h:html/h:head/x:model/@*[
+          not(
+            namespace-uri()='http://www.opendatakit.org/xforms/entities'
+            and local-name()='entities-version'
+          )
+        ]
+        """
+
+    @staticmethod
     def model_instance_entity() -> str:
         """The base path to the expected entities nodeset."""
         return """

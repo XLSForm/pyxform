@@ -166,7 +166,7 @@ SURVEY_EXTRA_FIELDS = (
     constants.CLIENT_EDITABLE,
     constants.COMPACT_DELIMITER,
     constants.COMPACT_PREFIX,
-    constants.ENTITY_FEATURES,
+    constants.ENTITY_VERSION,
 )
 SURVEY_FIELDS = (*SURVEY_ELEMENT_FIELDS, *SECTION_EXTRA_FIELDS, *SURVEY_EXTRA_FIELDS)
 
@@ -192,7 +192,7 @@ class Survey(Section):
         # attribute is for custom instance attrs from settings e.g. attribute::abc:xyz
         self.attribute: dict | None = None
         self.choices: dict[str, Itemset] | None = None
-        self.entity_features: list[str] | None = None
+        self.entity_version: constants.EntityVersion | None = None
         self.setgeopoint_by_triggering_ref: dict[str, list[str]] = {}
         self.setvalues_by_triggering_ref: dict[str, list[str]] = {}
 
@@ -263,7 +263,7 @@ class Survey(Section):
 
     def get_nsmap(self):
         """Add additional namespaces"""
-        if self.entity_features:
+        if self.entity_version:
             entities_ns = " entities=http://www.opendatakit.org/xforms/entities"
             if self.namespaces is None:
                 self.namespaces = entities_ns
@@ -635,8 +635,8 @@ class Survey(Section):
 
         model_kwargs = {"odk:xforms-version": constants.CURRENT_XFORMS_VERSION}
 
-        if self.entity_features:
-            model_kwargs["entities:entities-version"] = constants.ENTITIES_OFFLINE_VERSION
+        if self.entity_version:
+            model_kwargs["entities:entities-version"] = self.entity_version.value
 
         model_children = []
         if self._translations:

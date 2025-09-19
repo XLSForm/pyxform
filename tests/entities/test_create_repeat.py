@@ -1,3 +1,4 @@
+from pyxform import constants as co
 from pyxform.entities import entities_parsing as ep
 from pyxform.errors import ErrorCode
 
@@ -25,6 +26,7 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
             md=md,
             warnings_count=0,
             xml__xpath_match=[
+                xpe.model_entities_version(co.EntityVersion.v2025_1_0.value),
                 xpe.model_instance_repeat("e1", "/x:r1", template=True, create=True),
                 xpe.model_instance_repeat("e1", "/x:r1", create=True),
                 xpe.model_bind_question_saveto("/r1/q1", "q1e"),
