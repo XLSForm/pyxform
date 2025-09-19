@@ -39,12 +39,7 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
                 xpe.model_bind_meta_branchid("e1", "current()/../../q1", "/r1"),
                 xpe.model_bind_meta_label(" ../../q1 ", "/r1"),
                 xpe.model_bind_meta_instanceid(),
-                # no repeat meta setvalue id
-                """
-                /h:html/h:head/x:model[
-                  not(x:setvalue[@ref='/test_name/r1/meta/entity/@id'])
-                ]
-                """,
+                xpe.model_no_setvalue_meta_id("/r1"),
             ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
@@ -109,7 +104,7 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
                 xpe.model_instance_repeat("e1", "/x:r1", create=True, update=True),
                 xpe.model_bind_question_saveto("/r1/q1", "q1e"),
                 xpe.model_bind_meta_id("/r1"),
-                xpe.model_setvalue_meta_id("/r1"),
+                xpe.model_setvalue_meta_id("/r1", repeat=True),
                 xpe.model_bind_meta_baseversion("e1", "current()/../../q1", "/r1"),
                 xpe.model_bind_meta_trunkversion("e1", "current()/../../q1", "/r1"),
                 xpe.model_bind_meta_branchid("e1", "current()/../../q1", "/r1"),

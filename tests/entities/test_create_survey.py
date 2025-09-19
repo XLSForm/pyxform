@@ -23,7 +23,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
                 '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@create = "1"]',
                 '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@id = ""]',
                 '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@id" and @type = "string" and @readonly = "true()"]',
-                '/h:html/h:head/x:model/x:setvalue[@event = "odk-instance-first-load" and @type = "string" and @ref = "/test_name/meta/entity/@id" and @value = "uuid()"]',
+                xpe.model_setvalue_meta_id(),
                 "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/x:label",
                 xpe.model_bind_meta_label("a"),
                 f"""/h:html/h:head/x:model[@entities:entities-version = '{co.ENTITIES_OFFLINE_VERSION}']""",

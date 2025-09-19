@@ -46,14 +46,25 @@ class XPathHelper:
         """
 
     @staticmethod
-    def model_setvalue_meta_id(meta_path: str = "") -> str:
+    def model_setvalue_meta_id(meta_path: str = "", repeat: bool = False) -> str:
+        new_repeat = ""
+        if repeat:
+            new_repeat = " odk-new-repeat"
         return f"""
         /h:html/h:head/x:model/x:setvalue[
           @ref='/test_name{meta_path}/meta/entity/@id'
-          and @event='odk-instance-first-load'
+          and @event='odk-instance-first-load{new_repeat}'
           and @type='string'
           and @readonly='true()'
           and @value='uuid()'
+        ]
+        """
+
+    @staticmethod
+    def model_no_setvalue_meta_id(meta_path: str = "") -> str:
+        return f"""
+        /h:html/h:head/x:model[
+          not(./x:setvalue[@ref='/test_name{meta_path}/meta/entity/@id'])
         ]
         """
 

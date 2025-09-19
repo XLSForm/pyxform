@@ -29,7 +29,7 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
                 xpe.model_instance_repeat("e1", "/x:r1", create=True),
                 xpe.model_bind_question_saveto("/r1/q1", "q1e"),
                 xpe.model_bind_meta_id("/r1"),
-                xpe.model_setvalue_meta_id("/r1"),
+                xpe.model_setvalue_meta_id("/r1", repeat=True),
                 xpe.model_bind_meta_label(" ../../q1 ", "/r1"),
                 xpe.model_bind_meta_instanceid(),
             ],
