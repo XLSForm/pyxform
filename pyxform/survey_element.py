@@ -590,6 +590,11 @@ class SurveyElement(Mapping):
         """
         raise NotImplementedError("Control not implemented")
 
+    def xml_actions(
+        self, survey: "Survey", in_repeat: bool = False
+    ) -> Generator[DetachableElement | None, None, None]:
+        yield
+
 
 def hashable(v):
     """Determine whether `v` can be hashed."""

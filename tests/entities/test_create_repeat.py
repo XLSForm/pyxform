@@ -44,9 +44,12 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
                 ),
                 xpe.model_bind_question_saveto("/r1/q1", "q1e"),
                 xpe.model_bind_meta_id(meta_path="/r1"),
-                xpe.model_setvalue_meta_id("/r1", repeat=True),
+                xpe.model_setvalue_meta_id("/r1"),
                 xpe.model_bind_meta_label(" ../../q1 ", "/r1"),
                 xpe.model_bind_meta_instanceid(),
+                xpe.body_repeat_setvalue_meta_id(
+                    "/x:group/x:repeat[@nodeset='/test_name/r1']", "/r1"
+                ),
             ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )

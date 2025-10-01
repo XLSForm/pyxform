@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from pyxform import constants
 from pyxform.external_instance import ExternalInstance
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
-from pyxform.utils import DetachableElement, node
+from pyxform.utils import node
 from pyxform.validators.pyxform import unique_names
 
 if TYPE_CHECKING:
@@ -230,8 +230,25 @@ class RepeatingSection(Section):
         for n in Section.xml_control(self, survey=survey):
             repeat_node.appendChild(n)
 
-        for setvalue_node in self._dynamic_defaults_helper(current=self, survey=survey):
-            repeat_node.appendChild(setvalue_node)
+        # Get setvalue nodes for all descendants of this repeat that have dynamic defaults
+        # and aren't nested in other repeats. Let nested repeats handle their own defaults
+        from pyxform.entities.entity_declaration import EntityDeclaration
+        from pyxform.question import Question
+
+        def condition(i, parent=self):
+            return isinstance(i, EntityDeclaration | Question) and (
+                i.parent is self
+                or parent
+                == next(
+                    i.iter_ancestors(condition=lambda j: isinstance(j, RepeatingSection)),
+                    (None, None),
+                )[0]
+            )
+
+        for e in self.iter_descendants(condition=condition):
+            for dynamic_default in e.xml_actions(survey=survey, in_repeat=True):
+                if dynamic_default:
+                    repeat_node.appendChild(dynamic_default)
 
         label = self.xml_label(survey=survey)
         if label:
@@ -240,21 +257,6 @@ class RepeatingSection(Section):
             return node("group", repeat_node, ref=self.get_xpath(), **self.control)
         else:
             return node("group", repeat_node, ref=self.get_xpath())
-
-    # Get setvalue nodes for all descendants of this repeat that have dynamic defaults and aren't nested in other repeats.
-    def _dynamic_defaults_helper(
-        self, current: "Section", survey: "Survey"
-    ) -> Generator[DetachableElement, None, None]:
-        if not isinstance(current, Section):
-            return
-        for e in current.children:
-            if e.type != "repeat":  # let nested repeats handle their own defaults
-                dynamic_default = e.get_setvalue_node_for_dynamic_default(
-                    in_repeat=True, survey=survey
-                )
-                if dynamic_default:
-                    yield dynamic_default
-                yield from self._dynamic_defaults_helper(current=e, survey=survey)
 
     # I'm anal about matching function signatures when overriding a function,
     # but there's no reason for kwargs to be an argument

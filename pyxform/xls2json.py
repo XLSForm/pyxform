@@ -15,6 +15,7 @@ from pyxform.constants import (
     ROW_FORMAT_STRING,
     XML_IDENTIFIER_ERROR_MESSAGE,
 )
+from pyxform.elements import action as action_module
 from pyxform.entities.entities_parsing import (
     get_entity_declaration,
     validate_entity_repeat_target,
@@ -604,6 +605,21 @@ def workbook_to_json(
                 trigger_references=trigger_references,
             )
 
+        if "default" in row:
+            question_default = row.get("default")
+            if question_default and default_is_dynamic(question_default, question_type):
+                row["_dynamic_default"] = True
+                row["actions"] = row.get("actions", [])
+                row["actions"].append(
+                    action_module.ActionLibrary.setvalue_first_load.value.to_dict()
+                )
+                if next(
+                    (i for i in reversed(stack) if i["control_type"] == "repeat"), False
+                ):
+                    row["actions"].append(
+                        action_module.ActionLibrary.setvalue_new_repeat.value.to_dict()
+                    )
+
         parameters = parameters_generic.parse(raw_parameters=row.get("parameters", ""))
 
         # Pull out questions that will go in meta block
@@ -774,10 +790,7 @@ def workbook_to_json(
 
         if question_type == "calculate":
             calculation = row.get("bind", {}).get("calculate")
-            question_default = row.get("default")
-            if not calculation and not (
-                question_default and default_is_dynamic(question_default, question_type)
-            ):
+            if not calculation and not row.get("_dynamic_default", False):
                 raise PyXFormError(
                     ROW_FORMAT_STRING % row_number + " Missing calculation."
                 )
@@ -889,10 +902,7 @@ def workbook_to_json(
                     and row.get(constants.MEDIA) is None
                     and question_type not in aliases.label_optional_types
                     and not row.get("bind", {}).get("calculate")
-                    and not (
-                        row.get("default")
-                        and default_is_dynamic(row.get("default"), question_type)
-                    )
+                    and not row.get("_dynamic_default", False)
                     and not (
                         control_type is constants.GROUP
                         and row.get("control", {}).get("appearance")
@@ -1349,6 +1359,9 @@ def workbook_to_json(
         if question_type == "background-audio":
             new_dict = row.copy()
             parameters_generic.validate(parameters=parameters, allowed=("quality",))
+            action = (
+                action_module.ActionLibrary.odk_recordaudio_instance_load.value.to_dict()
+            )
 
             if "quality" in parameters:
                 if parameters["quality"] not in {
@@ -1358,8 +1371,10 @@ def workbook_to_json(
                 }:
                     raise PyXFormError("Invalid value for quality.")
 
-                new_dict["action"] = new_dict.get("action", {})
-                new_dict["action"].update({"odk:quality": parameters["quality"]})
+                action["odk:quality"] = parameters["quality"]
+
+            new_dict["actions"] = new_dict.get("actions", [])
+            new_dict["actions"].append(action)
 
             parent_children_array.append(new_dict)
             continue
@@ -1416,6 +1431,15 @@ def workbook_to_json(
             parent_children_array.append(new_dict)
             continue
         # TODO: Consider adding some question_type validation here.
+
+        if question_type == "start-geopoint":
+            new_dict = row.copy()
+            new_dict["actions"] = new_dict.get("actions", [])
+            new_dict["actions"].append(
+                action_module.ActionLibrary.odk_setgeopoint_first_load.value.to_dict()
+            )
+            parent_children_array.append(new_dict)
+            continue
 
         if question_type == "background-geopoint":
             qt.validate_background_geopoint_trigger(

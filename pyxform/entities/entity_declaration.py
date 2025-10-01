@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from pyxform import constants as const
+from pyxform.elements import action
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import node
 
@@ -80,7 +81,6 @@ class EntityDeclaration(SurveyElement):
         create_condition = parameters.get(EC.CREATE_IF, None)
         update_condition = parameters.get(EC.UPDATE_IF, None)
         label_expression = parameters.get(EC.LABEL, None)
-        repeat_reference = parameters.get(EC.REPEAT, None)
 
         bind_nodes = []
 
@@ -88,11 +88,6 @@ class EntityDeclaration(SurveyElement):
             bind_nodes.append(self._get_bind_node(survey, create_condition, "/@create"))
 
         bind_nodes.append(self._get_id_bind_node(survey, entity_id_expression))
-
-        if create_condition or not entity_id_expression:
-            bind_nodes.append(
-                self._get_setvalue_node_for_id(in_repeat=bool(repeat_reference))
-            )
 
         if update_condition:
             bind_nodes.append(self._get_bind_node(survey, update_condition, "/@update"))
@@ -125,19 +120,20 @@ class EntityDeclaration(SurveyElement):
 
         return node(const.BIND, nodeset=self.get_xpath() + "/@id", **id_bind)
 
-    def _get_setvalue_node_for_id(self, in_repeat: bool = False):
-        triggering_events = "odk-instance-first-load"
-        if in_repeat:
-            triggering_events = f"{triggering_events} odk-new-repeat"
+    def xml_actions(self, survey: "Survey", in_repeat: bool = False):
+        if self.parameters.get(EC.CREATE_IF, None) or not self.parameters.get(
+            EC.ENTITY_ID, None
+        ):
+            if in_repeat:
+                setvalue_action = action.ActionLibrary.setvalue_new_repeat.value
+            else:
+                setvalue_action = action.ActionLibrary.setvalue_first_load.value
 
-        return node(
-            "setvalue",
-            ref=f"{self.get_xpath()}/@id",
-            type="string",
-            readonly="true()",
-            value="uuid()",
-            event=triggering_events,
-        )
+            yield action.ACTION_CLASSES[setvalue_action.name](
+                ref=f"{self.get_xpath()}/@id",
+                event=action.Event(setvalue_action.event),
+                value="uuid()",
+            ).node()
 
     def _get_bind_node(self, survey, expression, destination):
         expr = survey.insert_xpaths(text=expression, context=self)

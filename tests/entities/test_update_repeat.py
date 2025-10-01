@@ -133,11 +133,14 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
                 ),
                 xpe.model_bind_question_saveto("/r1/q1", "q1e"),
                 xpe.model_bind_meta_id(" ../../q1 ", "/r1"),
-                xpe.model_setvalue_meta_id("/r1", repeat=True),
+                xpe.model_setvalue_meta_id("/r1"),
                 xpe.model_bind_meta_baseversion("e1", "current()/../../q1", "/r1"),
                 xpe.model_bind_meta_trunkversion("e1", "current()/../../q1", "/r1"),
                 xpe.model_bind_meta_branchid("e1", "current()/../../q1", "/r1"),
                 xpe.model_bind_meta_label(" ../../q1 ", "/r1"),
                 xpe.model_bind_meta_instanceid(),
+                xpe.body_repeat_setvalue_meta_id(
+                    "/x:group/x:repeat[@nodeset='/test_name/r1']", "/r1"
+                ),
             ],
         )

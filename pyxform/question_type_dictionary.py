@@ -367,12 +367,10 @@ _QUESTION_TYPE_DICT = {
     "start-geopoint": {
         "control": {"tag": "action"},
         "bind": {"type": "geopoint"},
-        "action": {"name": "odk:setgeopoint", "event": "odk-instance-first-load"},
     },
     "background-audio": {
         "control": {"tag": "action"},
         "bind": {"type": "binary"},
-        "action": {"name": "odk:recordaudio", "event": "odk-instance-load"},
     },
     "background-geopoint": {
         "control": {"tag": "trigger"},

@@ -14,6 +14,7 @@ from pathlib import Path
 
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
+from pyxform.entities.entity_declaration import EntityDeclaration
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -307,12 +308,6 @@ class Survey(Section):
             **nsmap,
         )
 
-    def get_trigger_values_for_question_name(self, question_name: str, trigger_type: str):
-        if trigger_type == "setvalue":
-            return self.setvalues_by_triggering_ref.get(question_name)
-        elif trigger_type == "setgeopoint":
-            return self.setgeopoint_by_triggering_ref.get(question_name)
-
     def _generate_static_instances(
         self, list_name: str, itemset: Itemset
     ) -> InstanceInfo:
@@ -599,31 +594,17 @@ class Survey(Section):
                 yield i.instance
             seen[i.name] = i
 
-    def xml_descendent_bindings(self) -> Generator[DetachableElement | None, None, None]:
+    def xml_model_bindings(self) -> Generator[DetachableElement | None, None, None]:
         """
-        Yield bindings for this node and all its descendants.
+        Yield bindings (bind or action elements) for this node and all its descendants.
         """
         for e in self.iter_descendants(
             condition=lambda i: not isinstance(i, Option | Tag)
         ):
             yield from e.xml_bindings(survey=self)
 
-            # dynamic defaults for repeats go in the body. All other dynamic defaults (setvalue actions) go in the model
-            if not next(
-                e.iter_ancestors(condition=lambda i: i.type == constants.REPEAT), False
-            ):
-                dynamic_default = e.get_setvalue_node_for_dynamic_default(survey=self)
-                if dynamic_default:
-                    yield dynamic_default
-
-    def xml_actions(self) -> Generator[DetachableElement, None, None]:
-        """
-        Yield xml_actions for this node and all its descendants.
-        """
-        for e in self.iter_descendants(condition=lambda i: isinstance(i, Question)):
-            xml_action = e.xml_action()
-            if xml_action is not None:
-                yield xml_action
+            if isinstance(e, EntityDeclaration | Question):
+                yield from e.xml_actions(survey=self, in_repeat=False)
 
     def xml_model(self):
         """
@@ -672,8 +653,7 @@ class Survey(Section):
         def model_children_generator():
             yield from model_children
             yield from self._generate_instances()
-            yield from self.xml_descendent_bindings()
-            yield from self.xml_actions()
+            yield from self.xml_model_bindings()
 
         return node("model", model_children_generator(), **model_kwargs)
 
