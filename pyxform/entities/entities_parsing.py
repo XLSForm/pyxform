@@ -87,7 +87,7 @@ def get_entity_declaration(
             "The entities sheet is missing the label column which is required when creating entities."
         )
 
-    return {
+    entity = {
         const.NAME: const.ENTITY,
         const.TYPE: const.ENTITY,
         const.PARAMETERS: {
@@ -95,10 +95,22 @@ def get_entity_declaration(
             EC.ENTITY_ID.value: entity_id,
             EC.CREATE_IF.value: create_condition,
             EC.UPDATE_IF.value: update_condition,
-            EC.LABEL.value: entity_label,
             EC.REPEAT.value: entity_repeat,
         },
     }
+    if entity_label:
+        entity[const.CHILDREN] = [
+            {
+                const.TYPE: "label",
+                const.BIND: {
+                    "calculate": entity_label,
+                    "readonly": "true()",
+                    "type": "string",
+                },
+            }
+        ]
+
+    return entity
 
 
 def get_validated_dataset_name(entity):

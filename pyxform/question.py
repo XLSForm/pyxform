@@ -516,7 +516,7 @@ class OsmUploadQuestion(UploadQuestion):
         return OSM_QUESTION_FIELDS
 
     def __init__(self, **kwargs):
-        self.children: tuple[Option, ...] | None = None
+        self.children: tuple[Tag, ...] | None = None
 
         choices = combine_lists(
             a=kwargs.pop("tags", None), b=kwargs.pop(constants.CHILDREN, None)

@@ -15,6 +15,7 @@ from pathlib import Path
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
 from pyxform.entities.entity_declaration import EntityDeclaration
+from pyxform.entities.label import Label
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -599,7 +600,7 @@ class Survey(Section):
         Yield bindings (bind or action elements) for this node and all its descendants.
         """
         for e in self.iter_descendants(
-            condition=lambda i: not isinstance(i, Option | Tag)
+            condition=lambda i: not isinstance(i, Option | Tag | Label)
         ):
             yield from e.xml_bindings(survey=self)
 
