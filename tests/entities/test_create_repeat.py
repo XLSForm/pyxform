@@ -85,7 +85,7 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             warnings_count=0,
-            xml__xpath_match=[xpe.model_bind_meta_create(" ../../q1  = ''", "/r1")],
+            xml__xpath_match=[xpe.model_bind_meta_create(" ../../../q1  = ''", "/r1")],
         )
 
     def test_other_controls_before__ok(self):

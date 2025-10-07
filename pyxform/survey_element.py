@@ -137,6 +137,10 @@ class SurveyElement(Mapping):
             self.label = " "
         super().__init__()
 
+    @property
+    def name_for_xpath(self) -> str:
+        return self.name
+
     def _link_children(self):
         if self.children is not None:
             for child in self.children:
@@ -288,7 +292,7 @@ class SurveyElement(Mapping):
                 )
             )
             if condition(self):
-                lineage = chain(parent_lineage, (self.name,))
+                lineage = chain(parent_lineage, (self.name_for_xpath,))
             else:
                 lineage = parent_lineage
             new_value = f"/{'/'.join(n for n in lineage)}"

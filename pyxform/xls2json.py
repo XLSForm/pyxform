@@ -465,18 +465,12 @@ def workbook_to_json(
         entities_sheet = clean_text_values(
             sheet_name=constants.ENTITIES, data=workbook_dict.entities
         )
-        from pyxform.entities.entity_declaration import EntityDeclaration
-
         entities_sheet = dealias_and_group_headers(
             sheet_name=constants.ENTITIES,
             sheet_data=entities_sheet,
             sheet_header=workbook_dict.entities_header,
             header_aliases=aliases.entities_header,
-            # Entities treat some actual columns as if they are parameters.
-            header_columns={
-                *EntityDeclaration.get_slot_names(),
-                *(i.value for i in constants.EntityColumns.value_list()),
-            },
+            header_columns={i.value for i in constants.EntityColumns.value_list()},
         )
         entity_declaration = get_entity_declaration(entities_sheet=entities_sheet.data)
     else:

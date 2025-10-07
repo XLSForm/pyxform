@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from pyxform import constants as const
+from pyxform.elements import action
 from pyxform.errors import Detail, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
 from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
@@ -90,25 +91,112 @@ def get_entity_declaration(
     entity = {
         const.NAME: const.ENTITY,
         const.TYPE: const.ENTITY,
-        const.PARAMETERS: {
-            EC.DATASET.value: dataset_name,
-            EC.ENTITY_ID.value: entity_id,
-            EC.CREATE_IF.value: create_condition,
-            EC.UPDATE_IF.value: update_condition,
-            EC.REPEAT.value: entity_repeat,
-        },
+        EC.REPEAT.value: entity_repeat,
+        const.CHILDREN: [
+            {
+                const.NAME: "dataset",
+                const.TYPE: "attribute",
+                "value": dataset_name,
+            },
+        ],
     }
+
+    if create_condition or (not update_condition and not entity_id):
+        create = {const.NAME: "create", const.TYPE: "attribute", "value": "1"}
+        if create_condition:
+            create[const.BIND] = {
+                "calculate": create_condition,
+                "readonly": "true()",
+                "type": "string",
+            }
+        entity[const.CHILDREN].append(create)
+
+    if update_condition or entity_id:
+        update_attr = {
+            const.NAME: "update",
+            const.TYPE: "attribute",
+            "value": "1",
+        }
+
+        if update_condition:
+            update_attr[const.BIND] = {
+                "calculate": update_condition,
+                "readonly": "true()",
+                "type": "string",
+            }
+
+        entity[const.CHILDREN].append(update_attr)
+
+    id_attr = {
+        const.NAME: "id",
+        const.TYPE: "attribute",
+        const.BIND: {
+            "readonly": "true()",
+            "type": "string",
+        },
+        "actions": [],
+    }
+
+    if create_condition or not entity_id:
+        first_load = action.ActionLibrary.setvalue_first_load.value.to_dict()
+        first_load["value"] = "uuid()"
+        id_attr["actions"].append(first_load)
+
+    if entity_repeat:
+        new_repeat = action.ActionLibrary.setvalue_new_repeat.value.to_dict()
+        new_repeat["value"] = "uuid()"
+        id_attr["actions"].append(new_repeat)
+
+    if entity_id:
+        id_attr[const.BIND]["calculate"] = entity_id
+
+        entity_id_expression = f"instance('{dataset_name}')/root/item[name={entity_id}]"
+        entity[const.CHILDREN].extend(
+            [
+                {
+                    const.NAME: "baseVersion",
+                    const.TYPE: "attribute",
+                    const.BIND: {
+                        "calculate": f"{entity_id_expression}/__version",
+                        "readonly": "true()",
+                        "type": "string",
+                    },
+                },
+                {
+                    const.NAME: "trunkVersion",
+                    const.TYPE: "attribute",
+                    const.BIND: {
+                        "calculate": f"{entity_id_expression}/__trunkVersion",
+                        "readonly": "true()",
+                        "type": "string",
+                    },
+                },
+                {
+                    const.NAME: "branchId",
+                    const.TYPE: "attribute",
+                    const.BIND: {
+                        "calculate": f"{entity_id_expression}/__branchId",
+                        "readonly": "true()",
+                        "type": "string",
+                    },
+                },
+            ]
+        )
+
+    entity[const.CHILDREN].append(id_attr)
+
     if entity_label:
-        entity[const.CHILDREN] = [
+        entity[const.CHILDREN].append(
             {
                 const.TYPE: "label",
+                const.NAME: "label",
                 const.BIND: {
                     "calculate": entity_label,
                     "readonly": "true()",
                     "type": "string",
                 },
-            }
-        ]
+            },
+        )
 
     return entity
 
@@ -173,7 +261,7 @@ def validate_entity_saveto(
             f"{const.ROW_FORMAT_STRING % row_number} Groups and repeats can't be saved as entity properties."
         )
 
-    entity_repeat = entity_declaration[const.PARAMETERS].get(EC.REPEAT, None)
+    entity_repeat = entity_declaration.get(EC.REPEAT, None)
     if entity_repeat and stack:
         # Error: saveto in nested repeat inside entity repeat.
         in_repeat = False
@@ -244,7 +332,7 @@ def validate_entity_repeat_target(
     if not entity_declaration:
         return False
 
-    entity_repeat = entity_declaration[const.PARAMETERS].get(EC.REPEAT, None)
+    entity_repeat = entity_declaration.get(EC.REPEAT, None)
 
     # Ignore: no repeat declared for the entity.
     if not entity_repeat:

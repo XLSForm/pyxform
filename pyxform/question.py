@@ -198,7 +198,12 @@ class Question(SurveyElement):
         action_fields = {"name", "event", "value"}
         if self.actions:
             for _action in self.actions:
-                cls = action.ACTION_CLASSES[_action["name"]]
+                event = action.Event(_action["event"])
+                if (not in_repeat and event == action.Event.ODK_NEW_REPEAT.value) or (
+                    in_repeat and event != action.Event.ODK_NEW_REPEAT
+                ):
+                    continue
+
                 if self._dynamic_default is True or (
                     self.default and default_is_dynamic(self.default, self.type)
                 ):
@@ -208,13 +213,7 @@ class Question(SurveyElement):
                 else:
                     value = _action.get("value")
 
-                event = action.Event(_action["event"])
-                if (not in_repeat and event == action.Event.ODK_NEW_REPEAT.value) or (
-                    in_repeat and event != action.Event.ODK_NEW_REPEAT
-                ):
-                    continue
-
-                yield cls(
+                yield action.ACTION_CLASSES[_action["name"]](
                     ref=self.get_xpath(),
                     event=event,
                     value=value,

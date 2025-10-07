@@ -49,10 +49,10 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
                     label=True,
                 ),
                 xpe.model_bind_question_saveto("/r1/q1", "q1e"),
-                xpe.model_bind_meta_id(" ../../q1 ", "/r1"),
-                xpe.model_bind_meta_baseversion("e1", "current()/../../q1", "/r1"),
-                xpe.model_bind_meta_trunkversion("e1", "current()/../../q1", "/r1"),
-                xpe.model_bind_meta_branchid("e1", "current()/../../q1", "/r1"),
+                xpe.model_bind_meta_id(" ../../../q1 ", "/r1"),
+                xpe.model_bind_meta_baseversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_trunkversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_branchid("e1", "current()/../../../q1", "/r1"),
                 xpe.model_bind_meta_label(" ../../../q1 ", "/r1"),
                 xpe.model_bind_meta_instanceid(),
                 xpe.model_no_setvalue_meta_id("/r1"),
@@ -93,7 +93,7 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             warnings_count=0,
-            xml__xpath_match=[xpe.model_bind_meta_update(" ../../q1  = ''", "/r1")],
+            xml__xpath_match=[xpe.model_bind_meta_update(" ../../../q1  = ''", "/r1")],
         )
 
     def test_all_fields__ok(self):
@@ -132,11 +132,11 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
                     label=True,
                 ),
                 xpe.model_bind_question_saveto("/r1/q1", "q1e"),
-                xpe.model_bind_meta_id(" ../../q1 ", "/r1"),
+                xpe.model_bind_meta_id(" ../../../q1 ", "/r1"),
                 xpe.model_setvalue_meta_id("/r1"),
-                xpe.model_bind_meta_baseversion("e1", "current()/../../q1", "/r1"),
-                xpe.model_bind_meta_trunkversion("e1", "current()/../../q1", "/r1"),
-                xpe.model_bind_meta_branchid("e1", "current()/../../q1", "/r1"),
+                xpe.model_bind_meta_baseversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_trunkversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_branchid("e1", "current()/../../../q1", "/r1"),
                 xpe.model_bind_meta_label(" ../../../q1 ", "/r1"),
                 xpe.model_bind_meta_instanceid(),
                 xpe.body_repeat_setvalue_meta_id(

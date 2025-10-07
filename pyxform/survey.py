@@ -14,8 +14,6 @@ from pathlib import Path
 
 from pyxform import aliases, constants
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, NSMAP
-from pyxform.entities.entity_declaration import EntityDeclaration
-from pyxform.entities.label import Label
 from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
@@ -24,6 +22,7 @@ from pyxform.parsing.instance_expression import replace_with_output
 from pyxform.question import Itemset, MultipleChoiceQuestion, Option, Question, Tag
 from pyxform.section import SECTION_EXTRA_FIELDS, RepeatingSection, Section
 from pyxform.survey_element import _GET_SENTINEL, SURVEY_ELEMENT_FIELDS, SurveyElement
+from pyxform.survey_elements.attribute import Attribute
 from pyxform.utils import (
     LAST_SAVED_INSTANCE_NAME,
     DetachableElement,
@@ -600,11 +599,11 @@ class Survey(Section):
         Yield bindings (bind or action elements) for this node and all its descendants.
         """
         for e in self.iter_descendants(
-            condition=lambda i: not isinstance(i, Option | Tag | Label)
+            condition=lambda i: not isinstance(i, Option | Tag)
         ):
             yield from e.xml_bindings(survey=self)
 
-            if isinstance(e, EntityDeclaration | Question):
+            if isinstance(e, Attribute | Question):
                 yield from e.xml_actions(survey=self, in_repeat=False)
 
     def xml_model(self):

@@ -5,6 +5,7 @@ Section survey element module.
 from collections.abc import Callable, Generator, Iterable
 from itertools import chain
 from typing import TYPE_CHECKING
+from xml.dom.minidom import Attr
 
 from pyxform import constants
 from pyxform.external_instance import ExternalInstance
@@ -133,9 +134,13 @@ class Section(SurveyElement):
                 if isinstance(child, RepeatingSection) and not append_template:
                     append_template = not append_template
                     repeating_template = child.generate_repeating_template(survey=survey)
-                result.appendChild(
-                    child.xml_instance(survey=survey, append_template=append_template)
+                child_instance = child.xml_instance(
+                    survey=survey, append_template=append_template
                 )
+                if isinstance(child_instance, Attr):
+                    result.setAttributeNode(child_instance)
+                else:
+                    result.appendChild(child_instance)
             if append_template and repeating_template:
                 append_template = not append_template
                 result.insertBefore(repeating_template, result._get_lastChild())
@@ -232,11 +237,11 @@ class RepeatingSection(Section):
 
         # Get setvalue nodes for all descendants of this repeat that have dynamic defaults
         # and aren't nested in other repeats. Let nested repeats handle their own defaults
-        from pyxform.entities.entity_declaration import EntityDeclaration
         from pyxform.question import Question
+        from pyxform.survey_elements.attribute import Attribute
 
         def condition(i, parent=self):
-            return isinstance(i, EntityDeclaration | Question) and (
+            return isinstance(i, Attribute | Question) and (
                 i.parent is self
                 or parent
                 == next(

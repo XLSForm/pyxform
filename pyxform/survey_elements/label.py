@@ -24,6 +24,7 @@ class Label(SurveyElement):
     def __init__(self, fields: tuple[str, ...] | None = None, **kwargs):
         # Structure
         self.bind: dict | None = None
+        self.type: str | None = None
 
         if fields is None:
             fields = LABEL_FIELDS
@@ -33,6 +34,3 @@ class Label(SurveyElement):
 
     def xml_instance(self, survey: "Survey", **kwargs):
         return node(self.name)
-
-    def validate(self):
-        pass

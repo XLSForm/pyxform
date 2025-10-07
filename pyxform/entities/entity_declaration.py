@@ -1,19 +1,14 @@
-from typing import TYPE_CHECKING
-
 from pyxform import constants as const
-from pyxform.elements import action
-from pyxform.entities.label import Label
 from pyxform.section import Section
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS
-from pyxform.utils import combine_lists, node
-
-if TYPE_CHECKING:
-    from pyxform.survey import Survey
-
+from pyxform.survey_elements.attribute import Attribute
+from pyxform.survey_elements.label import Label
+from pyxform.utils import combine_lists
 
 EC = const.EntityColumns
-ENTITY_EXTRA_FIELDS = (const.PARAMETERS,)
+ENTITY_EXTRA_FIELDS = (const.CHILDREN,)
 ENTITY_FIELDS = (*SURVEY_ELEMENT_FIELDS, *ENTITY_EXTRA_FIELDS)
+CHILD_TYPES = {"label": Label, "attribute": Attribute}
 
 
 class EntityDeclaration(Section):
@@ -40,109 +35,13 @@ class EntityDeclaration(Section):
     def get_slot_names() -> tuple[str, ...]:
         return ENTITY_FIELDS
 
-    def __init__(self, name: str, type: str, parameters: dict, **kwargs):
+    def __init__(self, name: str, type: str, **kwargs):
         super().__init__(name=name, type=type, **kwargs)
-        self.parameters: dict = parameters
-        self.children: list[Label] | None = None
+        self.children: list[Label | Attribute] = []
 
-        choices = combine_lists(
+        children = combine_lists(
             a=kwargs.pop("children", None), b=kwargs.pop(const.CHILDREN, None)
         )
-        if choices:
-            self.children = [Label(name="label", **c) for c in choices]
+        if children:
+            self.children = [CHILD_TYPES[c["type"]](**c) for c in children]
             self._link_children()
-        else:
-            self.children = []
-
-    def xml_instance(self, survey: "Survey", **kwargs):
-        parameters = self.parameters
-
-        attributes = {
-            EC.DATASET.value: parameters.get(EC.DATASET, ""),
-            "id": "",
-        }
-
-        entity_id_expression = parameters.get(EC.ENTITY_ID, None)
-        create_condition = parameters.get(EC.CREATE_IF, None)
-        update_condition = parameters.get(EC.UPDATE_IF, None)
-
-        if entity_id_expression:
-            attributes["update"] = "1"
-            attributes["baseVersion"] = ""
-            attributes["trunkVersion"] = ""
-            attributes["branchId"] = ""
-
-        if create_condition or (not update_condition and not entity_id_expression):
-            attributes["create"] = "1"
-
-        return super().xml_instance(survey=survey, **attributes)
-
-    def xml_bindings(self, survey: "Survey"):
-        """
-        See the class comment for an explanation of the logic for generating bindings.
-        """
-        parameters = self.parameters
-        entity_id_expression = parameters.get(EC.ENTITY_ID, None)
-        create_condition = parameters.get(EC.CREATE_IF, None)
-        update_condition = parameters.get(EC.UPDATE_IF, None)
-
-        if create_condition:
-            yield self._get_bind_node(survey, create_condition, "/@create")
-
-        yield self._get_id_bind_node(survey, entity_id_expression)
-
-        if update_condition:
-            yield self._get_bind_node(survey, update_condition, "/@update")
-
-        if entity_id_expression:
-            dataset_name = parameters.get(EC.DATASET, "")
-            entity = f"instance('{dataset_name}')/root/item[name={entity_id_expression}]"
-            yield self._get_bind_node(survey, f"{entity}/__version", "/@baseVersion")
-            yield self._get_bind_node(
-                survey, f"{entity}/__trunkVersion", "/@trunkVersion"
-            )
-            yield self._get_bind_node(survey, f"{entity}/__branchId", "/@branchId")
-
-        for e in self.iter_descendants():
-            if e is not self:
-                yield from e.xml_bindings(survey=survey)
-
-    def _get_id_bind_node(self, survey, entity_id_expression):
-        extra_attrs = {}
-
-        if entity_id_expression:
-            extra_attrs["calculate"] = survey.insert_xpaths(
-                text=entity_id_expression, context=self
-            )
-
-        return node(
-            const.BIND,
-            nodeset=f"{self.get_xpath()}/@id",
-            type="string",
-            readonly="true()",
-            **extra_attrs,
-        )
-
-    def xml_actions(self, survey: "Survey", in_repeat: bool = False):
-        if self.parameters.get(EC.CREATE_IF, None) or not self.parameters.get(
-            EC.ENTITY_ID, None
-        ):
-            if in_repeat:
-                setvalue_action = action.ActionLibrary.setvalue_new_repeat.value
-            else:
-                setvalue_action = action.ActionLibrary.setvalue_first_load.value
-
-            yield action.ACTION_CLASSES[setvalue_action.name](
-                ref=f"{self.get_xpath()}/@id",
-                event=action.Event(setvalue_action.event),
-                value="uuid()",
-            ).node()
-
-    def _get_bind_node(self, survey, expression, destination):
-        return node(
-            const.BIND,
-            nodeset=f"{self.get_xpath()}{destination}",
-            calculate=survey.insert_xpaths(text=expression, context=self),
-            type="string",
-            readonly="true()",
-        )
