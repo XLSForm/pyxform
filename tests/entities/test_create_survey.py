@@ -1,4 +1,5 @@
 from pyxform import constants as co
+from pyxform.entities import entities_parsing as ep
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
@@ -343,6 +344,25 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             error__contains=[
                 "[row : 2] Groups and repeats can't be saved as entity properties."
             ],
+        )
+
+    def test_saveto_in_repeat__errors(self):
+        """Should find that an error is raised if a save_to is in an undeclared entity repeat."""
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | q1e     |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | trees   | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ep.ENTITY007.format(row=3, value="q1e")],
         )
 
     def test_saveto_in_group__works(self):

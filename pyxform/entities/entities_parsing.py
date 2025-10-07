@@ -41,7 +41,7 @@ ENTITY005 = Detail(
     name="Invalid entity repeat save_to: question in nested repeat",
     msg=(
         "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-        "The entity properties populated with 'save_to' must not be inside of a nested "
+        "The entity property populated with 'save_to' must not be inside of a nested "
         "repeat within the entity repeat."
     ),
 )
@@ -49,8 +49,16 @@ ENTITY006 = Detail(
     name="Invalid entity repeat save_to: question not in entity repeat",
     msg=(
         "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-        "The entity properties populated with 'save_to' must be inside of the entity "
+        "The entity property populated with 'save_to' must be inside of the entity "
         "repeat."
+    ),
+)
+ENTITY007 = Detail(
+    name="Invalid entity repeat save_to: question in repeat but no entity repeat defined",
+    msg=(
+        "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
+        "The entity property populated with 'save_to' must be inside a repeat that is "
+        "declared in the 'repeat' column of the 'entities' sheet."
     ),
 )
 
@@ -244,8 +252,8 @@ def get_validated_repeat_name(entity) -> str | None:
 def validate_entity_saveto(
     row: dict,
     row_number: int,
+    stack: Sequence[dict[str, Any]],
     entity_declaration: dict[str, Any] | None = None,
-    stack: Sequence[dict[str, Any]] | None = None,
 ):
     save_to = row.get(const.BIND, {}).get("entities:saveto", "")
     if not save_to:
@@ -262,23 +270,26 @@ def validate_entity_saveto(
         )
 
     entity_repeat = entity_declaration.get(EC.REPEAT, None)
-    if entity_repeat and stack:
-        # Error: saveto in nested repeat inside entity repeat.
-        in_repeat = False
-        located = False
-        for i in reversed(stack):
-            if not i["control_name"] or not i["control_type"]:
-                break
-            elif i["control_type"] == const.REPEAT:
-                if in_repeat:
-                    raise PyXFormError(ENTITY005.format(row=row_number, value=save_to))
-                elif i["control_name"] == entity_repeat:
-                    located = True
-                in_repeat = True
+    in_repeat = False
+    located = False
+    for i in reversed(stack):
+        if not i["control_name"] or not i["control_type"]:
+            break
+        elif i["control_type"] == const.REPEAT:
+            # Error: saveto in nested repeat inside entity repeat.
+            if in_repeat:
+                raise PyXFormError(ENTITY005.format(row=row_number, value=save_to))
+            elif i["control_name"] == entity_repeat:
+                located = True
+            in_repeat = True
 
-        # Error: saveto not in entity repeat
-        if not located:
-            raise PyXFormError(ENTITY006.format(row=row_number, value=save_to))
+    # Error: saveto not in entity repeat
+    if entity_repeat and not located:
+        raise PyXFormError(ENTITY006.format(row=row_number, value=save_to))
+
+    # Error: saveto in repeat but no entity repeat declared
+    if in_repeat and not entity_repeat:
+        raise PyXFormError(ENTITY007.format(row=row_number, value=save_to))
 
     error_start = f"{const.ROW_FORMAT_STRING % row_number} Invalid save_to name:"
 

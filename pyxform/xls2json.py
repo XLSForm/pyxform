@@ -861,8 +861,8 @@ def workbook_to_json(
         validate_entity_saveto(
             row=row,
             row_number=row_number,
-            entity_declaration=entity_declaration,
             stack=stack,
+            entity_declaration=entity_declaration,
         )
 
         # Try to parse question as begin control statement
