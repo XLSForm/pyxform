@@ -131,6 +131,7 @@ def has_pyxform_reference_with_last_saved(value: str) -> bool:
 def parse_pyxform_references(
     value: str,
     match_limit: int | None = None,
+    match_full: bool = False,
 ) -> tuple[str, ...]:
     """
     Parse all pyxform references in a string.
@@ -138,8 +139,10 @@ def parse_pyxform_references(
     :param value: The string to inspect.
     :param match_limit: If provided, parse only this many references in the string, and if
       more references than the limit are found, then raise an error.
+    :param match_full: If True, require that the string contains a reference and nothing
+      else (no other characters or references).
     """
-    return tuple(_parse(value=value, match_limit=match_limit))
+    return tuple(_parse(value=value, match_limit=match_limit, match_full=match_full))
 
 
 def validate_pyxform_reference_syntax(

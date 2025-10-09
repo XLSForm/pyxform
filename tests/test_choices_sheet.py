@@ -1,3 +1,5 @@
+from pyxform.validators.pyxform import choices as vc
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
@@ -152,5 +154,138 @@ class ChoicesSheetTest(PyxformTestCase):
             xml__xpath_match=[
                 xpc.model_instance_choices_label("choices", (("1", "Y"), ("2", "N"))),
                 xpc.model_instance_choices_label("choices2", (("1", "Y"), ("2", "N"))),
+            ],
+        )
+
+    def test_duplicate_choices_without_setting(self):
+        self.assertPyxformXform(
+            md="""
+            | survey  |                 |          |          |
+            |         | type            | name     | label    |
+            |         | select_one list | S1       | s1       |
+            | choices |                 |          |          |
+            |         | list name       | name     | label    |
+            |         | list            | a        | option a |
+            |         | list            | b        | option b |
+            |         | list            | b        | option c |
+            """,
+            errored=True,
+            error__contains=[vc.INVALID_DUPLICATE.format(row=4)],
+        )
+
+    def test_multiple_duplicate_choices_without_setting(self):
+        self.assertPyxformXform(
+            md="""
+            | survey  |                 |          |          |
+            |         | type            | name     | label    |
+            |         | select_one list | S1       | s1       |
+            | choices |                 |          |          |
+            |         | list name       | name     | label    |
+            |         | list            | a        | option a |
+            |         | list            | a        | option b |
+            |         | list            | b        | option c |
+            |         | list            | b        | option d |
+            """,
+            errored=True,
+            error__contains=[
+                vc.INVALID_DUPLICATE.format(row=3),
+                vc.INVALID_DUPLICATE.format(row=5),
+            ],
+        )
+
+    def test_duplicate_choices_with_setting_not_set_to_yes(self):
+        self.assertPyxformXform(
+            md="""
+            | survey  |                 |          |          |
+            |         | type            | name     | label    |
+            |         | select_one list | S1       | s1       |
+            | choices |                 |          |          |
+            |         | list name       | name     | label    |
+            |         | list            | a        | option a |
+            |         | list            | b        | option b |
+            |         | list            | b        | option c |
+            | settings |                |          |          |
+            |          | id_string    | allow_choice_duplicates   |
+            |          | Duplicates   | Bob                       |
+            """,
+            errored=True,
+            error__contains=[vc.INVALID_DUPLICATE.format(row=4)],
+        )
+
+    def test_duplicate_choices_with_allow_choice_duplicates_setting(self):
+        md = """
+            | survey  |                 |      |       |
+            |         | type            | name | label |
+            |         | select_one list | S1   | s1    |
+            | choices |                 |      |       |
+            |         | list name       | name | label |
+            |         | list            | a    | A     |
+            |         | list            | b    | B     |
+            |         | list            | b    | C     |
+            | settings |                |                         |
+            |          | id_string      | allow_choice_duplicates |
+            |          | Duplicates     | Yes                     |
+            """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_instance_choices_label(
+                    "list", (("a", "A"), ("b", "B"), ("b", "C"))
+                ),
+                xpq.body_select1_itemset("S1"),
+            ],
+        )
+
+    def test_duplicate_choices_with_allow_choice_duplicates_setting_and_translations(
+        self,
+    ):
+        md = """
+            | survey  |                 |      |       |
+            |         | type            | name | label::en | label::ko |
+            |         | select_one list | S1   | s1        | 질문 1     |
+            | choices |                 |      |                |
+            |         | list name       | name | label::en      | label::ko |
+            |         | list            | a    | Pass           | 패스       |
+            |         | list            | b    | Fail           | 실패       |
+            |         | list            | c    | Skipped        | 건너뛴     |
+            |         | list            | c    | Not Applicable | 해당 없음  |
+            | settings |                |                         |
+            |          | id_string      | allow_choice_duplicates |
+            |          | Duplicates     | Yes                     |
+            """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_itext_choice_text_label_by_pos(
+                    "en",
+                    "list",
+                    ("Pass", "Fail", "Skipped", "Not Applicable"),
+                ),
+                xpc.model_itext_choice_text_label_by_pos(
+                    "ko",
+                    "list",
+                    ("패스", "실패", "건너뛴", "해당 없음"),
+                ),
+            ],
+        )
+
+    def test_choice_list_without_duplicates_is_successful(self):
+        md = """
+            | survey  |                 |      |       |
+            |         | type            | name | label |
+            |         | select_one list | S1   | s1    |
+            | choices |                 |      |       |
+            |         | list name       | name | label |
+            |         | list            | a    | A     |
+            |         | list            | b    | B     |
+            | settings |              |                         |
+            |          | id_string    | allow_choice_duplicates |
+            |          | Duplicates   | Yes                     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_instance_choices_label("list", (("a", "A"), ("b", "B"))),
+                xpq.body_select1_itemset("S1"),
             ],
         )

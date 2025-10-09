@@ -6,6 +6,7 @@ import copy
 import csv
 import json
 import re
+import sys
 from collections.abc import Generator, Iterable
 from functools import lru_cache
 from io import StringIO
@@ -161,6 +162,18 @@ def get_pyobj_from_json(str_or_path):
         # if it doesn't work load the text
         doc = json.loads(str_or_path)
     return doc
+
+
+def print_pyobj_to_json(pyobj, path=None):
+    """
+    dump a python nested array/dict structure to the specified file
+    or stdout if no file is specified
+    """
+    if path:
+        with open(path, mode="w", encoding="utf-8") as fp:
+            json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
+    else:
+        sys.stdout.write(json.dumps(pyobj, ensure_ascii=False, indent=4))
 
 
 def flatten(li):

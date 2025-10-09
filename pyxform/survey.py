@@ -20,8 +20,9 @@ from pyxform.instance import SurveyInstance
 from pyxform.parsing.expression import RE_PYXFORM_REF
 from pyxform.parsing.instance_expression import replace_with_output
 from pyxform.question import Itemset, MultipleChoiceQuestion, Option, Question, Tag
-from pyxform.section import SECTION_EXTRA_FIELDS, Section
+from pyxform.section import SECTION_EXTRA_FIELDS, RepeatingSection, Section
 from pyxform.survey_element import _GET_SENTINEL, SURVEY_ELEMENT_FIELDS, SurveyElement
+from pyxform.survey_elements.attribute import Attribute
 from pyxform.utils import (
     LAST_SAVED_INSTANCE_NAME,
     DetachableElement,
@@ -29,6 +30,7 @@ from pyxform.utils import (
     node,
 )
 from pyxform.validators import enketo_validate, odk_validate
+from pyxform.validators.pyxform import unique_names
 from pyxform.validators.pyxform.iana_subtags.validation import get_languages_with_bad_tags
 from pyxform.validators.pyxform.pyxform_reference import (
     has_pyxform_reference_with_last_saved,
@@ -165,7 +167,7 @@ SURVEY_EXTRA_FIELDS = (
     constants.CLIENT_EDITABLE,
     constants.COMPACT_DELIMITER,
     constants.COMPACT_PREFIX,
-    constants.ENTITY_FEATURES,
+    constants.ENTITY_VERSION,
 )
 SURVEY_FIELDS = (*SURVEY_ELEMENT_FIELDS, *SECTION_EXTRA_FIELDS, *SURVEY_EXTRA_FIELDS)
 
@@ -191,7 +193,7 @@ class Survey(Section):
         # attribute is for custom instance attrs from settings e.g. attribute::abc:xyz
         self.attribute: dict | None = None
         self.choices: dict[str, Itemset] | None = None
-        self.entity_features: list[str] | None = None
+        self.entity_version: constants.EntityVersion | None = None
         self.setgeopoint_by_triggering_ref: dict[str, list[str]] = {}
         self.setvalues_by_triggering_ref: dict[str, list[str]] = {}
 
@@ -249,25 +251,20 @@ class Survey(Section):
 
     def _validate_uniqueness_of_section_names(self):
         root_node_name = self.name
-        section_names = set()
-        for element in self.iter_descendants(condition=lambda i: isinstance(i, Section)):
-            if element.name in section_names:
-                if element.name == root_node_name:
-                    # The root node name is rarely explictly set; explain
-                    # the problem in a more helpful way (#510)
-                    msg = (
-                        f"The name '{element.name}' is the same as the form name. "
-                        "Use a different section name (or change the form name in "
-                        "the 'name' column of the settings sheet)."
-                    )
-                    raise PyXFormError(msg)
-                msg = f"There are two sections with the name {element.name}."
-                raise PyXFormError(msg)
-            section_names.add(element.name)
+        repeat_names = set()
+        for element in self.iter_descendants(
+            condition=lambda i: isinstance(i, RepeatingSection)
+        ):
+            unique_names.validate_repeat_name(
+                name=element.name,
+                control_type=constants.REPEAT,
+                instance_element_name=root_node_name,
+                seen_names=repeat_names,
+            )
 
     def get_nsmap(self):
         """Add additional namespaces"""
-        if self.entity_features:
+        if self.entity_version:
             entities_ns = " entities=http://www.opendatakit.org/xforms/entities"
             if self.namespaces is None:
                 self.namespaces = entities_ns
@@ -310,12 +307,6 @@ class Survey(Section):
             node("h:body", *self.xml_control(survey=self), **body_kwargs),
             **nsmap,
         )
-
-    def get_trigger_values_for_question_name(self, question_name: str, trigger_type: str):
-        if trigger_type == "setvalue":
-            return self.setvalues_by_triggering_ref.get(question_name)
-        elif trigger_type == "setgeopoint":
-            return self.setgeopoint_by_triggering_ref.get(question_name)
 
     def _generate_static_instances(
         self, list_name: str, itemset: Itemset
@@ -603,31 +594,17 @@ class Survey(Section):
                 yield i.instance
             seen[i.name] = i
 
-    def xml_descendent_bindings(self) -> Generator[DetachableElement | None, None, None]:
+    def xml_model_bindings(self) -> Generator[DetachableElement | None, None, None]:
         """
-        Yield bindings for this node and all its descendants.
+        Yield bindings (bind or action elements) for this node and all its descendants.
         """
         for e in self.iter_descendants(
             condition=lambda i: not isinstance(i, Option | Tag)
         ):
             yield from e.xml_bindings(survey=self)
 
-            # dynamic defaults for repeats go in the body. All other dynamic defaults (setvalue actions) go in the model
-            if not next(
-                e.iter_ancestors(condition=lambda i: i.type == constants.REPEAT), False
-            ):
-                dynamic_default = e.get_setvalue_node_for_dynamic_default(survey=self)
-                if dynamic_default:
-                    yield dynamic_default
-
-    def xml_actions(self) -> Generator[DetachableElement, None, None]:
-        """
-        Yield xml_actions for this node and all its descendants.
-        """
-        for e in self.iter_descendants(condition=lambda i: isinstance(i, Question)):
-            xml_action = e.xml_action()
-            if xml_action is not None:
-                yield xml_action
+            if isinstance(e, Attribute | Question):
+                yield from e.xml_actions(survey=self, in_repeat=False)
 
     def xml_model(self):
         """
@@ -639,8 +616,8 @@ class Survey(Section):
 
         model_kwargs = {"odk:xforms-version": constants.CURRENT_XFORMS_VERSION}
 
-        if self.entity_features:
-            model_kwargs["entities:entities-version"] = constants.ENTITIES_OFFLINE_VERSION
+        if self.entity_version:
+            model_kwargs["entities:entities-version"] = self.entity_version.value
 
         model_children = []
         if self._translations:
@@ -676,8 +653,7 @@ class Survey(Section):
         def model_children_generator():
             yield from model_children
             yield from self._generate_instances()
-            yield from self.xml_descendent_bindings()
-            yield from self.xml_actions()
+            yield from self.xml_model_bindings()
 
         return node("model", model_children_generator(), **model_kwargs)
 

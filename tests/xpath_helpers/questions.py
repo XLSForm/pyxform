@@ -38,6 +38,28 @@ class XPathHelper:
         """
 
     @staticmethod
+    def setvalue(path: str, ref: str, event: str, value: str = "") -> str:
+        if value:
+            value = f"""and @value="{value}" """
+
+        return f"""
+        /h:html/{path}/x:setvalue[
+          @ref='{ref}'
+          and @event='{event}'
+          {value}
+        ]
+        """
+
+    @staticmethod
+    def setgeopoint(path: str, ref: str, event: str) -> str:
+        return f"""
+        /h:html/{path}/odk:setgeopoint[
+          @ref='{ref}'
+          and @event='{event}'
+        ]
+        """
+
+    @staticmethod
     def model_itext_label(q_name: str, lang: str, q_label: str) -> str:
         """Model itext contains the question label."""
         return f"""

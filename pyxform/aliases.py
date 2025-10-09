@@ -123,7 +123,6 @@ list_header = {
     "audio": survey_header["audio"],
     "video": survey_header["video"],
 }
-# Note that most of the type aliasing happens in all.xls
 _type_alias_map = {
     "imei": "deviceid",
     "image": "photo",

@@ -11,7 +11,7 @@ import defusedxml.ElementTree as ETree
 from pyxform import InputQuestion, Survey
 from pyxform.builder import SurveyElementBuilder, create_survey_from_xls
 from pyxform.errors import ErrorCode, PyXFormError
-from pyxform.xls2json import print_pyobj_to_json
+from pyxform.utils import print_pyobj_to_json
 
 from tests import utils
 
@@ -21,24 +21,9 @@ FIXTURE_FILETYPE = "xls"
 class BuilderTests(TestCase):
     maxDiff = None
 
-    #   Moving to spec tests
-    #    def test_new_widgets(self):
-    #        survey = utils.build_survey('widgets.xls')
-    #        path = utils.path_to_text_fixture('widgets.xml')
-    #        survey.to_xml
-    #        with open(path) as f:
-    #            expected = ETree.fromstring(survey.to_xml())
-    #            result = ETree.fromstring(f.read())
-    #            self.assertTrue(xml_compare(expected, result))
-
     def test_unknown_question_type(self):
         with self.assertRaises(PyXFormError):
             utils.build_survey("unknown_question_type.xls")
-
-    def test_uniqueness_of_section_names(self):
-        # Looking at the xls file, I think this test might be broken.
-        survey = utils.build_survey("group_names_must_be_unique.xls")
-        self.assertRaises(Exception, survey.to_xml)
 
     def setUp(self):
         self.this_directory = os.path.dirname(__file__)

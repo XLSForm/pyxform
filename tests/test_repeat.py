@@ -7,15 +7,17 @@ from time import perf_counter
 from unittest import skip
 
 from psutil import Process
+from pyxform.validators.pyxform import unique_names
 from pyxform.xls2json_backends import SupportedFileTypes
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.questions import xpq
 
 
-class TestRepeat(PyxformTestCase):
+class TestRepeatOutput(PyxformTestCase):
     """
-    TestRepeat class.
+    Test output for repeats.
     """
 
     def test_repeat_relative_reference(self):
@@ -482,37 +484,65 @@ class TestRepeat(PyxformTestCase):
     def test_indexed_repeat_dynamic_default_relative_path_exception(self):
         """Test relative path exception (absolute path) in indexed-repeat() using dynamic default."""
         # dynamic default indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
+        md = """
+        | survey |
+        | | type         | name | label                            | default                                      |
+        | | begin_repeat | r1   | Person                           |                                              |
+        | | text         | q1   | Enter name                       |                                              |
+        | | text         | q2   | Name in previous repeat instance | indexed-repeat(${q1}, ${r1}, position(..)-1) |
+        | | end repeat   |      |                                  |                                              |
+        """
         self.assertPyxformXform(
-            md="""
-                | survey  |                |           |                                  |                                                    |
-                |         | type           | name      | label                            | default                                            |
-                |         | begin_repeat   | person    | Person                           |                                                    |
-                |         | text           | name      | Enter name                       |                                                    |
-                |         | text           | prev_name | Name in previous repeat instance | indexed-repeat(${name}, ${person}, position(..)-1) |
-                |         | end repeat     |           |                                  |                                                    |
-            """,  # pylint: disable=line-too-long
-            xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/test_name/person/prev_name" value="indexed-repeat( /test_name/person/name ,  /test_name/person , position(..)-1)"/>"""  # pylint: disable=line-too-long
+            md=md,
+            xml__xpath_match=[
+                # q2 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/q2",
+                    event="odk-instance-first-load",
+                    value="indexed-repeat( /test_name/r1/q1 ,  /test_name/r1 , position(..)-1)",
+                ),
+                # q2 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']""",
+                    ref="/test_name/r1/q2",
+                    event="odk-new-repeat",
+                    value="indexed-repeat( /test_name/r1/q1 ,  /test_name/r1 , position(..)-1)",
+                ),
             ],
         )
 
     def test_indexed_repeat_nested_repeat_relative_path_exception(self):
         """Test relative path exception (absolute path) in indexed-repeat() using nested repeat."""
         # In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
+        md = """
+        | survey |
+        | | type         | name | label                                                  | default                                   |
+        | | begin_repeat | r1   | Family                                                 |                                           |
+        | | integer      | q1   | How many members in this family?                       |                                           |
+        | | begin_repeat | r2   | Person                                                 |                                           |
+        | | text         | q3   | Enter name                                             |                                           |
+        | | text         | q4   | Non-sensible previous name in first family, 2nd person | indexed-repeat(${q3}, ${r1}, 1, ${r2}, 2) |
+        | | end repeat   | r1   |                                                        |                                           |
+        | | end repeat   | r2   |                                                        |                                           |
+        """
         self.assertPyxformXform(
-            md="""
-                | survey  |                |                |                                                        |                                                     |
-                |         | type           | name           | label                                                  | default                                             |
-                |         | begin_repeat   | family         | Family                                                 |                                                     |
-                |         | integer        | members_number | How many members in this family?                       |                                                     |
-                |         | begin_repeat   | person         | Person                                                 |                                                     |
-                |         | text           | name           | Enter name                                             |                                                     |
-                |         | text           | prev_name      | Non-sensible previous name in first family, 2nd person | indexed-repeat(${name}, ${family}, 1, ${person}, 2) |
-                |         | end repeat     |                |                                                        |                                                     |
-                |         | end repeat     |                |                                                        |                                                     |
-            """,  # pylint: disable=line-too-long
-            xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/test_name/family/person/prev_name" value="indexed-repeat( /test_name/family/person/name ,  /test_name/family , 1,  /test_name/family/person , 2)"/>"""  # pylint: disable=line-too-long
+            md=md,
+            xml__xpath_match=[
+                # q4 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/r2/q4",
+                    event="odk-instance-first-load",
+                    value="indexed-repeat( /test_name/r1/r2/q3 ,  /test_name/r1 , 1,  /test_name/r1/r2 , 2)",
+                ),
+                # q4 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group/x:repeat[@nodeset='/test_name/r1']/x:group/x:repeat[@nodeset='/test_name/r1/r2']""",
+                    ref="/test_name/r1/r2/q4",
+                    event="odk-new-repeat",
+                    value="indexed-repeat( /test_name/r1/r2/q3 ,  /test_name/r1 , 1,  /test_name/r1/r2 , 2)",
+                ),
             ],
         )
 
@@ -590,21 +620,35 @@ class TestRepeat(PyxformTestCase):
     ):
         """Test relative path exception (absolute path) in an expression contains variables and indexed-repeat() in an integer type using nested repeat."""
         # In nested repeat, indexed-repeat 1st, 2nd, 4th, and 6th argument is using absolute path
+        md = """
+        | survey |
+        | | type         | name | label                 | default                                                     |
+        | | begin_group  | g1   |                       |                                                             |
+        | | begin_repeat | r1   |                       |                                                             |
+        | | integer      | q1   | Repeating group entry |                                                             |
+        | | text         | q2   | Position              |                                                             |
+        | | integer      | q3   | Systolic pressure     |                                                             |
+        | | integer      | q4   | Diastolic pressure    | if(${q1} = 1, '',  indexed-repeat(${q4}, ${r1}, ${q1} - 1)) |
+        | | end_repeat   | r1   |                       |                                                             |
+        | | end_group    | g1   |                       |                                                             |
+        """
         self.assertPyxformXform(
-            md="""
-                | survey  |                |          |                        |                                                                             |
-                |         | type           | name     | label                  | default                                                                     |
-                |         | begin_group    | page     |                        |                                                                             |
-                |         | begin_repeat   | bp_rg    |                        |                                                                             |
-                |         | integer        | bp_row   | Repeating group entry  |                                                                             |
-                |         | text           | bp_pos   | Position               |                                                                             |
-                |         | integer        | bp_sys   | Systolic pressure      |                                                                             |
-                |         | integer        | bp_dia   | Diastolic pressure     | if(${bp_row} = 1, '',  indexed-repeat(${bp_dia}, ${bp_rg}, ${bp_row} - 1))  |
-                |         | end repeat     |          |                        |                                                                             |
-                |         | end group      |          |                        |                                                                             |
-            """,  # pylint: disable=line-too-long
-            xml__contains=[
-                """<setvalue event="odk-instance-first-load odk-new-repeat" ref="/test_name/page/bp_rg/bp_dia" value="if( ../bp_row  = 1, '', indexed-repeat( /test_name/page/bp_rg/bp_dia ,  /test_name/page/bp_rg ,  ../bp_row  - 1))"/>"""  # pylint: disable=line-too-long
+            md=md,
+            xml__xpath_match=[
+                # q4 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/g1/r1/q4",
+                    event="odk-instance-first-load",
+                    value="""if( ../q1  = 1, '', indexed-repeat( /test_name/g1/r1/q4 ,  /test_name/g1/r1 ,  ../q1  - 1))""",
+                ),
+                # q4 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group/x:group/x:repeat[@nodeset='/test_name/g1/r1']""",
+                    ref="/test_name/g1/r1/q4",
+                    event="odk-new-repeat",
+                    value="""if( ../q1  = 1, '', indexed-repeat( /test_name/g1/r1/q4 ,  /test_name/g1/r1 ,  ../q1  - 1))""",
+                ),
             ],
         )
 
@@ -1025,4 +1069,243 @@ class TestRepeat(PyxformTestCase):
                 ]
                 """,
             ],
+        )
+
+
+class TestRepeatParsing(PyxformTestCase):
+    def test_names__repeat_basic_case__ok(self):
+        """Should find that a single unique repeat name is ok."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+        )
+
+    def test_names__repeat_different_names_same_context__ok(self):
+        """Should find that repeats with unique names in the same context is ok."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | r2   | R2    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+        )
+
+    def test_names__repeat_same_as_repeat_in_different_context_case_insensitive__ok(self):
+        """Should find that a repeat name can be the same (CI) as another repeat in a different context."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin group  | g1   | G1    |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | end group    |      |       |
+        | | begin repeat | R1   | R2    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+        )
+
+    def test_names__repeat_same_as_survey_root_case_insensitive__ok(self):
+        """Should find that a repeat name can be the same (CI) as the survey root."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | DATA | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            name="data",
+            warnings_count=0,
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_survey__error(self):
+        """Should find that a duplicate repeat name raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | r1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES001.format(row=5, value="r1")],
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_group__error(self):
+        """Should find that a duplicate repeat name raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin group  | g1   | G1    |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | r1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        | | end group    |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES001.format(row=6, value="r1")],
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_repeat__error(self):
+        """Should find that a duplicate repeat name raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | begin repeat | r2   | R2    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | r2   | R2    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES001.format(row=6, value="r2")],
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_survey__case_insensitive_warning(
+        self,
+    ):
+        """Should find that a duplicate repeat name (CI) raises a warning."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | R1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=5, value="R1")]
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_group__case_insensitive_warning(
+        self,
+    ):
+        """Should find that a duplicate repeat name (CI) raises a warning."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin group  | g1   | G1    |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | R1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        | | end group    |      |       |
+        """
+        self.assertPyxformXform(
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="R1")]
+        )
+
+    def test_names__repeat_same_as_repeat_in_same_context_in_repeat__case_insensitive_warning(
+        self,
+    ):
+        """Should find that a duplicate repeat name (CI) raises a warning."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | begin repeat | r2   | R2    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | begin repeat | R2   | R2    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="R2")]
+        )
+
+    def test_names__repeat_same_as_survey_root__error(self):
+        """Should find that a repeat name same as the survey root raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | data | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            name="data",
+            errored=True,
+            error__contains=[unique_names.NAMES003.format(row=2, value="data")],
+        )
+
+    def test_names__repeat_same_as_repeat_in_different_context_in_group__error(self):
+        """Should find that a duplicate repeat name raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin group  | g1   | G1    |
+        | | begin repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | end group    |      |       |
+        | | begin repeat | r1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES004.format(row=7, value="r1")],
+        )
+
+    def test_names__repeat_same_as_repeat_in_different_context_in_repeat__error(self):
+        """Should find that a duplicate repeat name raises an error."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | begin repeat | r2   | R2    |
+        | | text         | q1   | Q1    |
+        | | end repeat   |      |       |
+        | | end repeat   |      |       |
+        | | begin repeat | r2   | R2    |
+        | | text         | q2   | Q2    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES004.format(row=7, value="r2")],
         )

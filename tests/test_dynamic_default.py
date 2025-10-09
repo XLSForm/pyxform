@@ -224,19 +224,20 @@ class TestDynamicDefault(PyxformTestCase):
                   ./x:bind[@nodeset='/test_name/r1/q0' and @type='int']
                 ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:q0[not(text())]
                 """,
-                # q0 dynamic default value not in model setvalue.
-                """
-                /h:html/h:head/x:model[not(./x:setvalue[@ref='data/r1/q0'])]
-                """,
-                # q0 dynamic default value in body group setvalue, with 2 events.
-                """
-                /h:html/h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']
-                  /x:setvalue[
-                    @event='odk-instance-first-load odk-new-repeat'
-                    and @ref='/test_name/r1/q0'
-                    and @value='random()'
-                  ]
-                """,
+                # q0 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/q0",
+                    event="odk-instance-first-load",
+                    value="random()",
+                ),
+                # q0 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']""",
+                    ref="/test_name/r1/q0",
+                    event="odk-new-repeat",
+                    value="random()",
+                ),
                 # q1 static default value in repeat template.
                 """
                 /h:html/h:head/x:model[
@@ -250,6 +251,8 @@ class TestDynamicDefault(PyxformTestCase):
                 ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:q1[text()='not_func$']
                 """,
             ],
+            # No other setvalue expected besides those above.
+            xml__xpath_count=[("/h:html//x:setvalue", 2)],
         )
 
     def test_dynamic_default_in_group(self):
@@ -272,13 +275,12 @@ class TestDynamicDefault(PyxformTestCase):
                 # q1 dynamic default not in instance.
                 """/h:html/h:head/x:model/x:instance/x:test_name[@id="data"]/x:g1/x:q1[not(text())]""",
                 # q1 dynamic default value in model setvalue, with 1 event.
-                """
-                /h:html/h:head/x:model/x:setvalue[
-                  @event="odk-instance-first-load"
-                  and @ref='/test_name/g1/q1'
-                  and @value=' /test_name/q0 '
-                ]
-                """,
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/g1/q1",
+                    event="odk-instance-first-load",
+                    value=" /test_name/q0 ",
+                ),
                 # q1 dynamic default value not in body group setvalue.
                 """
                 /h:html/h:body/x:group[
@@ -287,10 +289,12 @@ class TestDynamicDefault(PyxformTestCase):
                 ]
                 """,
             ],
+            # No other setvalue expected besides those above.
+            xml__xpath_count=[("/h:html//x:setvalue", 1)],
         )
 
     def test_sibling_dynamic_default_in_group(self):
-        """Should use model setvalue for dynamic default form inside a group."""
+        """Should find model setvalue for dynamic default form inside a group."""
         md = """
         | survey |              |      |       |         |
         |        | type         | name | label | default |
@@ -309,13 +313,12 @@ class TestDynamicDefault(PyxformTestCase):
                 # q1 dynamic default not in instance.
                 """/h:html/h:head/x:model/x:instance/x:test_name[@id="data"]/x:g1/x:q1[not(text())]""",
                 # q1 dynamic default value in model setvalue, with 1 event.
-                """
-                /h:html/h:head/x:model/x:setvalue[
-                  @event="odk-instance-first-load"
-                  and @ref='/test_name/g1/q1'
-                  and @value=' /test_name/g1/q0 '
-                ]
-                """,
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/g1/q1",
+                    event="odk-instance-first-load",
+                    value=" /test_name/g1/q0 ",
+                ),
                 # q1 dynamic default value not in body group setvalue.
                 """
                 /h:html/h:body/x:group[
@@ -324,10 +327,12 @@ class TestDynamicDefault(PyxformTestCase):
                 ]
                 """,
             ],
+            # No other setvalue expected besides those above.
+            xml__xpath_count=[("/h:html//x:setvalue", 1)],
         )
 
     def test_sibling_dynamic_default_in_repeat(self):
-        """Should use body setvalue for dynamic default form inside a repeat."""
+        """Should find body setvalue for dynamic default form inside a repeat."""
         md = """
         | survey |              |      |       |         |
         |        | type         | name | label | default |
@@ -359,24 +364,27 @@ class TestDynamicDefault(PyxformTestCase):
                   ./x:bind[@nodeset='/test_name/r1/q0' and @type='int']
                 ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:q0
                 """,
-                # q1 dynamic default value not in model setvalue.
-                """
-                /h:html/h:head/x:model[not(./x:setvalue[@ref='data/r1/q1'])]
-                """,
-                # q1 dynamic default value in body group setvalue, with 2 events.
-                """
-                /h:html/h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']
-                  /x:setvalue[
-                    @event='odk-instance-first-load odk-new-repeat'
-                    and @ref='/test_name/r1/q1'
-                    and @value=' ../q0 '
-                  ]
-                """,
+                # q1 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/q1",
+                    event="odk-instance-first-load",
+                    value=" ../q0 ",
+                ),
+                # q1 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']""",
+                    ref="/test_name/r1/q1",
+                    event="odk-new-repeat",
+                    value=" ../q0 ",
+                ),
             ],
+            # No other setvalue expected besides those above.
+            xml__xpath_count=[("/h:html//x:setvalue", 2)],
         )
 
     def test_dynamic_default_in_group_nested_in_repeat(self):
-        """Should use body setvalue for dynamic default form inside a group and repeat."""
+        """Should find body setvalue for dynamic default form inside a group and repeat."""
         md = """
         | survey |              |      |       |         |
         |        | type         | name | label | default |
@@ -410,24 +418,27 @@ class TestDynamicDefault(PyxformTestCase):
                   ./x:bind[@nodeset='/test_name/r1/g1/q0' and @type='int']
                 ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:g1/x:q0
                 """,
-                # q1 dynamic default value not in model setvalue.
-                """
-                /h:html/h:head/x:model[not(./x:setvalue[@ref='data/r1/g1/q1'])]
-                """,
-                # q1 dynamic default value in body group setvalue, with 2 events.
-                """
-                /h:html/h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']
-                  /x:setvalue[
-                    @event='odk-instance-first-load odk-new-repeat'
-                    and @ref='/test_name/r1/g1/q1'
-                    and @value=' ../q0 '
-                  ]
-                """,
+                # q1 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/g1/q1",
+                    event="odk-instance-first-load",
+                    value=" ../q0 ",
+                ),
+                # q1 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']""",
+                    ref="/test_name/r1/g1/q1",
+                    event="odk-new-repeat",
+                    value=" ../q0 ",
+                ),
             ],
+            # No other setvalue expected besides those above.
+            xml__xpath_count=[("/h:html//x:setvalue", 2)],
         )
 
     def test_dynamic_default_in_repeat_nested_in_repeat(self):
-        """Should use body setvalue for dynamic default form inside 2 levels of repeat."""
+        """Should find body setvalue for dynamic default form inside 2 levels of repeat."""
         md = """
         | survey |              |      |       |         |
         |        | type         | name | label | default |
@@ -462,19 +473,20 @@ class TestDynamicDefault(PyxformTestCase):
                   ./x:bind[@nodeset='/test_name/r1/q0' and @type='date']
                 ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:q0
                 """,
-                # q0 dynamic default value not in model setvalue.
-                """
-                /h:html/h:head/x:model[not(./x:setvalue[@ref='data/r1/q0'])]
-                """,
-                # q0 dynamic default value in body group setvalue, with 2 events.
-                """
-                /h:html/h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']
-                  /x:setvalue[
-                    @event='odk-instance-first-load odk-new-repeat'
-                    and @ref='/test_name/r1/q0'
-                    and @value='now()'
-                  ]
-                """,
+                # q1 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/q0",
+                    event="odk-instance-first-load",
+                    value="now()",
+                ),
+                # q1 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']""",
+                    ref="/test_name/r1/q0",
+                    event="odk-new-repeat",
+                    value="now()",
+                ),
                 # q1 element in repeat template.
                 """
                 /h:html/h:head/x:model[
@@ -499,21 +511,59 @@ class TestDynamicDefault(PyxformTestCase):
                   ./x:bind[@nodeset='/test_name/r1/q1' and @type='int']
                 ]/x:instance/x:test_name[@id="data"]/x:r1[not(@jr:template)]/x:r2[not(@jr:template)]/x:q2
                 """,
-                # q2 dynamic default value not in model setvalue.
-                """
-                /h:html/h:head/x:model[not(./x:setvalue[@ref='data/r1/r2/q2'])]
-                """,
-                # q2 dynamic default value in body group setvalue, with 2 events.
-                """
-                /h:html/h:body/x:group[@ref='/test_name/r1']/x:repeat[@nodeset='/test_name/r1']
-                  /x:group[@ref='/test_name/r1/r2']/x:repeat[@nodeset='/test_name/r1/r2']
-                    /x:setvalue[
-                      @event='odk-instance-first-load odk-new-repeat'
-                      and @ref='/test_name/r1/r2/q2'
-                      and @value=' ../../q1 '
-                    ]
-                """,
+                # q2 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/r2/q2",
+                    event="odk-instance-first-load",
+                    value=" ../../q1 ",
+                ),
+                # q2 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group/x:repeat/x:group/x:repeat[@nodeset='/test_name/r1/r2']""",
+                    ref="/test_name/r1/r2/q2",
+                    event="odk-new-repeat",
+                    value=" ../../q1 ",
+                ),
             ],
+            # No other setvalue expected besides those above.
+            xml__xpath_count=[("/h:html//x:setvalue", 4)],
+        )
+
+    def test_dynamic_default_in_repeat_in_repeat_in_group(self):
+        """Should find body setvalue for dynamic default form inside 2 repeats and 1 group."""
+        md = """
+        | survey |
+        | | type         | name | label | default |
+        | | begin_repeat | r1   |       |         |
+        | | begin_repeat | r2   |       |         |
+        | | begin_group  | g3   |       |         |
+        | | integer      | q1   | Q1    |         |
+        | | integer      | q2   | Q2    | 1 + 1   |
+        | | end_group    | g3   |       |         |
+        | | end_repeat   | r2   |       |         |
+        | | end_repeat   | r1   |       |         |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                # q1 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/r2/g3/q2",
+                    event="odk-instance-first-load",
+                    value="1 + 1",
+                ),
+                # q1 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group/x:repeat/x:group/x:repeat[@nodeset='/test_name/r1/r2']""",
+                    ref="/test_name/r1/r2/g3/q2",
+                    event="odk-new-repeat",
+                    value="1 + 1",
+                ),
+            ],
+            # No other setvalue expected besides those above.
+            xml__xpath_count=[("/h:html//x:setvalue", 2)],
         )
 
     def test_dynamic_default_does_not_warn(self):
@@ -576,6 +626,85 @@ class TestDynamicDefault(PyxformTestCase):
                 xpq.body_select1_itemset("q1"),
                 xpq.body_select1_itemset("q2"),
                 xpq.body_select1_itemset("q3"),
+            ],
+        )
+
+    def test_dynamic_default_with_trigger(self):
+        """Should find that setvalues are created for the dynamic default and trigger."""
+        md = """
+        | survey |
+        | | type         | name | label | default | trigger |
+        | | begin_repeat | r1   |       |         |         |
+        | | integer      | q1   | Q1    | 1 + 1   |         |
+        | | text         | q2   | Q2    |         | ${q1}   |
+        | | end_repeat   | r1   |       |         |         |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                # q1 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/q1",
+                    event="odk-instance-first-load",
+                    value="1 + 1",
+                ),
+                # q1 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group/x:repeat[@nodeset='/test_name/r1']""",
+                    ref="/test_name/r1/q1",
+                    event="odk-new-repeat",
+                    value="1 + 1",
+                ),
+                # q1 trigger in body input control setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group/x:repeat/x:input[@ref='/test_name/r1/q1']""",
+                    ref="/test_name/r1/q2",
+                    event="xforms-value-changed",
+                ),
+            ],
+            # No other setvalue expected besides those above.
+            xml__xpath_count=[("/h:html//x:setvalue", 3)],
+        )
+
+    def test_dynamic_default_with_start_geopoint(self):
+        """Should find that actions are created for the dynamic default and start-geopoint."""
+        md = """
+        | survey |
+        | | type           | name | label | default |
+        | | begin_repeat   | r1   |       |         |
+        | | start-geopoint | q1   | Q1    |         |
+        | | geopoint       | q2   | Q2    | ${q1}   |
+        | | end_repeat     | r1   |       |         |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                # q2 dynamic default value in model setvalue, with first-load event.
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/q2",
+                    event="odk-instance-first-load",
+                    value=" ../q1 ",
+                ),
+                # q2 dynamic default value in body group setvalue, with new-repeat event.
+                xpq.setvalue(
+                    path="""h:body/x:group/x:repeat[@nodeset='/test_name/r1']""",
+                    ref="/test_name/r1/q2",
+                    event="odk-new-repeat",
+                    value=" ../q1 ",
+                ),
+                # q1 setgeopoint in model, with first-load event.
+                xpq.setgeopoint(
+                    path="""h:head/x:model""",
+                    ref="/test_name/r1/q1",
+                    event="odk-instance-first-load",
+                ),
+            ],
+            # No other setvalue/setgeopoint expected besides those above.
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 2),
+                ("/h:html//odk:setgeopoint", 1),
             ],
         )
 

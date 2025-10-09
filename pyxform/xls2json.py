@@ -2,7 +2,6 @@
 A Python script to convert excel files into JSON.
 """
 
-import json
 import os
 import re
 import sys
@@ -16,18 +15,25 @@ from pyxform.constants import (
     ROW_FORMAT_STRING,
     XML_IDENTIFIER_ERROR_MESSAGE,
 )
+from pyxform.elements import action as action_module
 from pyxform.entities.entities_parsing import (
     get_entity_declaration,
+    validate_entity_repeat_target,
     validate_entity_saveto,
 )
-from pyxform.errors import PyXFormError
+from pyxform.errors import Detail, PyXFormError
 from pyxform.parsing.expression import (
     is_xml_tag,
     maybe_strip,
 )
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
-from pyxform.utils import coalesce, default_is_dynamic
-from pyxform.validators.pyxform import parameters_generic, select_from_file
+from pyxform.question_type_dictionary import get_meta_group
+from pyxform.utils import (
+    coalesce,
+    default_is_dynamic,
+    print_pyobj_to_json,
+)
+from pyxform.validators.pyxform import parameters_generic, select_from_file, unique_names
 from pyxform.validators.pyxform import question_types as qt
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.choices import validate_and_clean_choices
@@ -63,18 +69,20 @@ RE_SELECT = re.compile(
 RE_OSM = re.compile(
     r"(?P<osm_command>(" + "|".join(aliases.osm) + r")) (?P<list_name>\S+)"
 )
-
-
-def print_pyobj_to_json(pyobj, path=None):
-    """
-    dump a python nested array/dict structure to the specified file
-    or stdout if no file is specified
-    """
-    if path:
-        with open(path, mode="w", encoding="utf-8") as fp:
-            json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
-    else:
-        sys.stdout.write(json.dumps(pyobj, ensure_ascii=False, indent=4))
+SURVEY_001 = Detail(
+    name="Survey Sheet Unmatched Group/Repeat/Loop End",
+    msg=(
+        "[row : {row}] Unmatched 'end_{type}'. "
+        "No matching 'begin_{type}' was found for the name '{name}'."
+    ),
+)
+SURVEY_002 = Detail(
+    name="Survey Sheet Unmatched Group/Repeat/Loop Begin",
+    msg=(
+        "[row : {row}] Unmatched 'begin_{type}'. "
+        "No matching 'end_{type}' was found for the name '{name}'."
+    ),
+)
 
 
 def dealias_types(dict_array):
@@ -457,18 +465,12 @@ def workbook_to_json(
         entities_sheet = clean_text_values(
             sheet_name=constants.ENTITIES, data=workbook_dict.entities
         )
-        from pyxform.entities.entity_declaration import EntityDeclaration
-
         entities_sheet = dealias_and_group_headers(
             sheet_name=constants.ENTITIES,
             sheet_data=entities_sheet,
             sheet_header=workbook_dict.entities_header,
             header_aliases=aliases.entities_header,
-            # Entities treat some actual columns as if they are parameters.
-            header_columns={
-                *EntityDeclaration.get_slot_names(),
-                *(i.value for i in constants.EntityColumns.value_list()),
-            },
+            header_columns={i.value for i in constants.EntityColumns.value_list()},
         )
         entity_declaration = get_entity_declaration(entities_sheet=entities_sheet.data)
     else:
@@ -534,6 +536,9 @@ def workbook_to_json(
             "control_type": None,
             "control_name": None,
             "parent_children": json_dict.get(constants.CHILDREN),
+            "child_names": set(),
+            "child_names_lower": set(),
+            "row_number": None,
         }
     ]
     # If a group has a table-list appearance flag
@@ -545,15 +550,15 @@ def workbook_to_json(
     # To check that questions with triggers refer to other questions that exist.
     question_names = set()
     trigger_references: list[tuple[str, int]] = []
+    repeat_names = set()
 
     # row by row, validate questions, throwing errors and adding warnings where needed.
     for row_number, row in enumerate(survey_sheet.data, start=2):
-        if stack[-1] is not None:
-            prev_control_type = stack[-1]["control_type"]
-            parent_children_array = stack[-1]["parent_children"]
-        else:
-            prev_control_type = None
-            parent_children_array = []
+        prev_control_type = stack[-1]["control_type"]
+        parent_children_array = stack[-1]["parent_children"]
+        child_names = stack[-1]["child_names"]
+        child_names_lower = stack[-1]["child_names_lower"]
+
         # Disabled should probably be first
         # so the attributes below can be disabled.
         if "disabled" in row:
@@ -572,7 +577,6 @@ def workbook_to_json(
 
         # Get question type
         question_type = row.get(constants.TYPE)
-        question_name = row.get(constants.NAME)
 
         if not question_type:
             # if name and label are also missing,
@@ -594,6 +598,21 @@ def workbook_to_json(
                 row_num=row_number,
                 trigger_references=trigger_references,
             )
+
+        if "default" in row:
+            question_default = row.get("default")
+            if question_default and default_is_dynamic(question_default, question_type):
+                row["_dynamic_default"] = True
+                row["actions"] = row.get("actions", [])
+                row["actions"].append(
+                    action_module.ActionLibrary.setvalue_first_load.value.to_dict()
+                )
+                if next(
+                    (i for i in reversed(stack) if i["control_type"] == "repeat"), False
+                ):
+                    row["actions"].append(
+                        action_module.ActionLibrary.setvalue_new_repeat.value.to_dict()
+                    )
 
         parameters = parameters_generic.parse(raw_parameters=row.get("parameters", ""))
 
@@ -765,10 +784,7 @@ def workbook_to_json(
 
         if question_type == "calculate":
             calculation = row.get("bind", {}).get("calculate")
-            question_default = row.get("default")
-            if not calculation and not (
-                question_default and default_is_dynamic(question_default, question_type)
-            ):
+            if not calculation and not row.get("_dynamic_default", False):
                 raise PyXFormError(
                     ROW_FORMAT_STRING % row_number + " Missing calculation."
                 )
@@ -793,17 +809,25 @@ def workbook_to_json(
         if end_control_parse:
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
+                if validate_entity_repeat_target(
+                    entity_declaration=entity_declaration,
+                    stack=stack,
+                ):
+                    parent_children_array.append(
+                        get_meta_group(children=[entity_declaration])
+                    )
+                    json_dict[constants.ENTITY_VERSION] = (
+                        constants.EntityVersion.v2025_1_0
+                    )
+                    entity_declaration = None
                 control_type = aliases.control[parse_dict["type"]]
-                control_name = question_name
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
-                        ROW_FORMAT_STRING % row_number
-                        + " Unmatched end statement. Previous control type: "
-                        + str(prev_control_type)
-                        + ", Control type: "
-                        + str(control_type)
-                        + ", Control name: "
-                        + str(control_name)
+                        SURVEY_001.format(
+                            row=row_number,
+                            type=control_type,
+                            name=row.get(constants.NAME),
+                        )
                     )
                 stack.pop()
                 table_list = None
@@ -811,12 +835,9 @@ def workbook_to_json(
 
         # Make sure the row has a valid name
         if constants.NAME not in row:
-            if row["type"] == "note":
+            if row[constants.TYPE] == "note":
                 # autogenerate names for notes without them
-                row["name"] = "generated_note_name_" + str(row_number)
-            # elif 'group' in row['type'].lower():
-            #     # autogenerate names for groups without them
-            #     row['name'] = "generated_group_name_" + str(row_number)
+                row[constants.NAME] = "generated_note_name_" + str(row_number)
             else:
                 raise PyXFormError(
                     ROW_FORMAT_STRING % row_number + " Question or group with no name."
@@ -830,8 +851,19 @@ def workbook_to_json(
                 f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
             )
 
-        in_repeat = any(ancestor["control_type"] == "repeat" for ancestor in stack)
-        validate_entity_saveto(row, row_number, in_repeat, entity_declaration)
+        unique_names.validate_question_group_repeat_name(
+            row_number=row_number,
+            name=question_name,
+            seen_names=child_names,
+            seen_names_lower=child_names_lower,
+            warnings=warnings,
+        )
+        validate_entity_saveto(
+            row=row,
+            row_number=row_number,
+            stack=stack,
+            entity_declaration=entity_declaration,
+        )
 
         # Try to parse question as begin control statement
         # (i.e. begin loop/repeat/group):
@@ -845,7 +877,14 @@ def workbook_to_json(
                 # (so following questions are nested under it)
                 # until an end command is encountered.
                 control_type = aliases.control[parse_dict["type"]]
-                control_name = question_name
+
+                unique_names.validate_repeat_name(
+                    row_number=row_number,
+                    name=question_name,
+                    control_type=control_type,
+                    instance_element_name=json_dict[constants.NAME],
+                    seen_names=repeat_names,
+                )
 
                 # Check if the control item has a label, if applicable.
                 # This label check used to apply to all items, but no longer is
@@ -857,10 +896,7 @@ def workbook_to_json(
                     and row.get(constants.MEDIA) is None
                     and question_type not in aliases.label_optional_types
                     and not row.get("bind", {}).get("calculate")
-                    and not (
-                        row.get("default")
-                        and default_is_dynamic(row.get("default"), question_type)
-                    )
+                    and not row.get("_dynamic_default", False)
                     and not (
                         control_type is constants.GROUP
                         and row.get("control", {}).get("appearance")
@@ -879,7 +915,7 @@ def workbook_to_json(
                 new_json_dict[constants.TYPE] = control_type
                 child_list = []
                 new_json_dict[constants.CHILDREN] = child_list
-                if control_type is constants.LOOP:
+                if control_type == constants.LOOP:
                     if not parse_dict.get(constants.LIST_NAME_U):
                         # TODO: Perhaps warn and make repeat into a group?
                         raise PyXFormError(
@@ -957,9 +993,16 @@ def workbook_to_json(
                 stack.append(
                     {
                         "control_type": control_type,
-                        "control_name": control_name,
+                        "control_name": question_name,
                         "parent_children": child_list,
+                        "child_names": set(),
+                        "child_names_lower": set(),
+                        "row_number": row_number,
                     }
+                )
+                validate_entity_repeat_target(
+                    stack=stack,
+                    entity_declaration=entity_declaration,
                 )
                 continue
 
@@ -1310,6 +1353,9 @@ def workbook_to_json(
         if question_type == "background-audio":
             new_dict = row.copy()
             parameters_generic.validate(parameters=parameters, allowed=("quality",))
+            action = (
+                action_module.ActionLibrary.odk_recordaudio_instance_load.value.to_dict()
+            )
 
             if "quality" in parameters:
                 if parameters["quality"] not in {
@@ -1319,8 +1365,10 @@ def workbook_to_json(
                 }:
                     raise PyXFormError("Invalid value for quality.")
 
-                new_dict["action"] = new_dict.get("action", {})
-                new_dict["action"].update({"odk:quality": parameters["quality"]})
+                action["odk:quality"] = parameters["quality"]
+
+            new_dict["actions"] = new_dict.get("actions", [])
+            new_dict["actions"].append(action)
 
             parent_children_array.append(new_dict)
             continue
@@ -1378,6 +1426,15 @@ def workbook_to_json(
             continue
         # TODO: Consider adding some question_type validation here.
 
+        if question_type == "start-geopoint":
+            new_dict = row.copy()
+            new_dict["actions"] = new_dict.get("actions", [])
+            new_dict["actions"].append(
+                action_module.ActionLibrary.odk_setgeopoint_first_load.value.to_dict()
+            )
+            parent_children_array.append(new_dict)
+            continue
+
         if question_type == "background-geopoint":
             qt.validate_background_geopoint_trigger(
                 trigger=row.get("trigger"), row_num=row_number
@@ -1394,10 +1451,13 @@ def workbook_to_json(
         e.context.update(sheet="survey", column="trigger")
         raise
 
-    if len(stack) != 1:
+    if len(stack) > 1:
         raise PyXFormError(
-            "Unmatched begin statement: "
-            + str(stack[-1]["control_type"] + " (" + stack[-1]["control_name"] + ")")
+            SURVEY_002.format(
+                row=stack[-1]["row_number"],
+                type=stack[-1]["control_type"],
+                name=stack[-1]["control_name"],
+            )
         )
 
     if settings.get("flat", False):
@@ -1431,16 +1491,12 @@ def workbook_to_json(
         )
 
     if entity_declaration:
-        json_dict[constants.ENTITY_FEATURES] = ["create", "update", "offline"]
+        validate_entity_repeat_target(entity_declaration=entity_declaration)
+        json_dict[constants.ENTITY_VERSION] = constants.EntityVersion.v2024_1_0
         meta_children.append(entity_declaration)
 
     if len(meta_children) > 0:
-        meta_element = {
-            "name": "meta",
-            "type": "group",
-            "control": {"bodyless": True},
-            "children": meta_children,
-        }
+        meta_element = get_meta_group(children=meta_children)
         survey_children_array = stack[0]["parent_children"]
         survey_children_array.append(meta_element)
 
@@ -1468,26 +1524,6 @@ def parse_file_to_json(
         default_language=default_language,
         warnings=warnings,
     )
-
-
-def organize_by_values(dict_list, key):
-    """
-    dict_list -- a list of dicts
-    key -- a key shared by all the dicts in dict_list
-    Returns a dict of dicts keyed by the value of the specified key
-    in each dictionary.
-    If two dictionaries fall under the same key an error is thrown.
-    If a dictionary is doesn't have the specified key it is omitted
-    """
-    result = {}
-    for dicty in dict_list:
-        if key in dicty:
-            dicty_copy = dicty.copy()
-            val = dicty_copy.pop(key)
-            if val in result:
-                raise PyXFormError("Duplicate key: " + val)
-            result[val] = dicty_copy
-    return result
 
 
 class SpreadsheetReader:
@@ -1540,30 +1576,6 @@ class SurveyReader(SpreadsheetReader):
         # Open file to print warning log to.
         warn_out = open(warn_out_file, mode="w", encoding="utf-8")
         warn_out.write("\n".join(self._warnings))
-
-
-class QuestionTypesReader(SpreadsheetReader):
-    """
-    Class for reading spreadsheet file that specifies the available
-    question types.
-    @see question_type_dictionary
-    """
-
-    def __init__(self, path):
-        super().__init__(path)
-        self._setup_question_types_dictionary()
-
-    def _setup_question_types_dictionary(self):
-        types_sheet = "question types"
-        self._dict = self._dict[types_sheet]
-        self._dict = dealias_and_group_headers(
-            sheet_name=types_sheet,
-            sheet_data=self._dict,
-            header_aliases={},
-            header_columns=set(),
-            default_language=constants.DEFAULT_LANGUAGE_VALUE,
-        ).data
-        self._dict = organize_by_values(self._dict, "name")
 
 
 if __name__ == "__main__":

@@ -13,11 +13,13 @@ from pyxform import aliases as alias
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import is_xml_tag
-from pyxform.utils import INVALID_XFORM_TAG_REGEXP, DetachableElement, node
-from pyxform.validators.pyxform.pyxform_reference import (
-    has_pyxform_reference,
+from pyxform.utils import (
+    INVALID_XFORM_TAG_REGEXP,
+    DetachableElement,
+    node,
+    print_pyobj_to_json,
 )
-from pyxform.xls2json import print_pyobj_to_json
+from pyxform.validators.pyxform.pyxform_reference import has_pyxform_reference
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -134,6 +136,10 @@ class SurveyElement(Mapping):
         ):
             self.label = " "
         super().__init__()
+
+    @property
+    def name_for_xpath(self) -> str:
+        return self.name
 
     def _link_children(self):
         if self.children is not None:
@@ -286,7 +292,7 @@ class SurveyElement(Mapping):
                 )
             )
             if condition(self):
-                lineage = chain(parent_lineage, (self.name,))
+                lineage = chain(parent_lineage, (self.name_for_xpath,))
             else:
                 lineage = parent_lineage
             new_value = f"/{'/'.join(n for n in lineage)}"
@@ -587,6 +593,11 @@ class SurveyElement(Mapping):
         doesn't make sense to implement here in the base class.
         """
         raise NotImplementedError("Control not implemented")
+
+    def xml_actions(
+        self, survey: "Survey", in_repeat: bool = False
+    ) -> Generator[DetachableElement | None, None, None]:
+        yield
 
 
 def hashable(v):

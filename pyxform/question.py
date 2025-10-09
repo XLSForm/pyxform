@@ -15,6 +15,7 @@ from pyxform.constants import (
     EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON,
     EXTERNAL_INSTANCE_EXTENSIONS,
 )
+from pyxform.elements import action
 from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import maybe_strip
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
@@ -32,9 +33,10 @@ if TYPE_CHECKING:
 
 
 QUESTION_EXTRA_FIELDS = (
+    "_dynamic_default",
     "_qtd_defaults",
     "_qtd_kwargs",
-    "action",
+    "actions",
     "default",
     "guidance_hint",
     "instance",
@@ -78,11 +80,12 @@ class Question(SurveyElement):
 
     def __init__(self, fields: tuple[str, ...] | None = None, **kwargs):
         # Internals
+        self._dynamic_default: bool | None = None
         self._qtd_defaults: dict | None = None
         self._qtd_kwargs: dict | None = None
 
         # Structure
-        self.action: dict[str, str] | None = None
+        self.actions: list[dict[str, str]] | None = None
         self.bind: dict | None = None
         self.control: dict | None = None
         self.instance: dict | None = None
@@ -148,9 +151,7 @@ class Question(SurveyElement):
             ((self.bind is not None and "calculate" in self.bind) or self.trigger)
             and not (self.label or self.hint)
         ):
-            nested_setvalues = survey.get_trigger_values_for_question_name(
-                self.name, "setvalue"
-            )
+            nested_setvalues = survey.setvalues_by_triggering_ref.get(self.name)
             if nested_setvalues:
                 for setvalue in nested_setvalues:
                     msg = (
@@ -164,45 +165,60 @@ class Question(SurveyElement):
         xml_node = self.build_xml(survey=survey)
 
         if xml_node:
-            # Get nested setvalue and setgeopoint items
-            setvalue_items = survey.get_trigger_values_for_question_name(
-                self.name, "setvalue"
-            )
-            setgeopoint_items = survey.get_trigger_values_for_question_name(
-                self.name, "setgeopoint"
-            )
+            setvalue = survey.setvalues_by_triggering_ref.get(self.name)
+            setvalue_action = action.ActionLibrary.setvalue_value_changed.value
+            if setvalue:
+                for question_name, value in setvalue:
+                    xml_node.appendChild(
+                        action.ACTION_CLASSES[setvalue_action.name](
+                            ref=survey.get_element_by_name(question_name).get_xpath(),
+                            event=action.Event(setvalue_action.event),
+                            value=survey.insert_xpaths(text=value, context=self),
+                        ).node()
+                    )
 
-            # Only call nest_set_nodes if the respective nested items list is not empty
-            if setvalue_items:
-                self.nest_set_nodes(survey, xml_node, "setvalue", setvalue_items)
-            if setgeopoint_items:
-                self.nest_set_nodes(
-                    survey, xml_node, "odk:setgeopoint", setgeopoint_items
-                )
+            setgeopoint = survey.setgeopoint_by_triggering_ref.get(self.name)
+            setgeopoint_action = action.ActionLibrary.odk_setgeopoint_value_changed.value
+            if setgeopoint:
+                for question_name, value in setgeopoint:
+                    xml_node.appendChild(
+                        action.ACTION_CLASSES[setgeopoint_action.name](
+                            ref=survey.get_element_by_name(question_name).get_xpath(),
+                            event=action.Event(setgeopoint_action.event),
+                            value=survey.insert_xpaths(text=value, context=self),
+                        ).node()
+                    )
 
         return xml_node
 
-    def xml_action(self) -> DetachableElement | None:
+    def xml_actions(self, survey: "Survey", in_repeat: bool = False):
         """
-        Return the action for this survey element.
+        Return the action(s) for this survey element.
         """
-        if self.action:
-            result = node(self.action["name"], ref=self.get_xpath())
-            for k, v in self.action.items():
-                if k != "name":
-                    result.setAttribute(k, v)
-            return result
+        action_fields = {"name", "event", "value"}
+        if self.actions:
+            for _action in self.actions:
+                event = action.Event(_action["event"])
+                if (not in_repeat and event == action.Event.ODK_NEW_REPEAT.value) or (
+                    in_repeat and event != action.Event.ODK_NEW_REPEAT
+                ):
+                    continue
 
-    def nest_set_nodes(self, survey, xml_node, tag, nested_items):
-        for item in nested_items:
-            node_attrs = {
-                "ref": survey.get_element_by_name(item[0]).get_xpath(),
-                "event": "xforms-value-changed",
-            }
-            if item[1]:
-                node_attrs["value"] = survey.insert_xpaths(text=item[1], context=self)
-            set_node = node(tag, **node_attrs)
-            xml_node.appendChild(set_node)
+                if self._dynamic_default is True or (
+                    self.default and default_is_dynamic(self.default, self.type)
+                ):
+                    value = survey.insert_xpaths(text=self.default, context=self)
+                elif self.default:
+                    value = self.default
+                else:
+                    value = _action.get("value")
+
+                yield action.ACTION_CLASSES[_action["name"]](
+                    ref=self.get_xpath(),
+                    event=event,
+                    value=value,
+                    **{k: v for k, v in _action.items() if k not in action_fields},
+                ).node()
 
     def _build_xml(self, survey: "Survey") -> DetachableElement | None:
         """
@@ -237,23 +253,6 @@ class Question(SurveyElement):
                 if v:
                     result[k] = v
         return result
-
-    def get_setvalue_node_for_dynamic_default(
-        self, survey: "Survey", in_repeat=False
-    ) -> DetachableElement | None:
-        if not self.default or not default_is_dynamic(self.default, self.type):
-            return None
-
-        triggering_events = "odk-instance-first-load"
-        if in_repeat:
-            triggering_events = f"{triggering_events} odk-new-repeat"
-
-        return node(
-            "setvalue",
-            ref=self.get_xpath(),
-            value=survey.insert_xpaths(text=self.default, context=self),
-            event=triggering_events,
-        )
 
 
 class InputQuestion(Question):
@@ -516,7 +515,7 @@ class OsmUploadQuestion(UploadQuestion):
         return OSM_QUESTION_FIELDS
 
     def __init__(self, **kwargs):
-        self.children: tuple[Option, ...] | None = None
+        self.children: tuple[Tag, ...] | None = None
 
         choices = combine_lists(
             a=kwargs.pop("tags", None), b=kwargs.pop(constants.CHILDREN, None)
