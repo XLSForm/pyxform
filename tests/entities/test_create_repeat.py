@@ -52,6 +52,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
                 ),
             ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 2),
+            ],
         )
 
     def test_minimal_fields__ok(self):
@@ -67,7 +70,19 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | list_name | label | repeat |
         | | e1        | ${q1} | ${r1}  |
         """
-        self.assertPyxformXform(md=md, warnings_count=0)
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                xpe.model_setvalue_meta_id("/r1"),
+                xpe.body_repeat_setvalue_meta_id(
+                    "/x:group/x:repeat[@nodeset='/test_name/r1']", "/r1"
+                ),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 2),
+            ],
+        )
 
     def test_create_if__ok(self):
         """Should find that the create_if expression targets the entity repeat."""
@@ -85,7 +100,16 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             warnings_count=0,
-            xml__xpath_match=[xpe.model_bind_meta_create(" ../../../q1  = ''", "/r1")],
+            xml__xpath_match=[
+                xpe.model_bind_meta_create(" ../../../q1  = ''", "/r1"),
+                xpe.model_setvalue_meta_id("/r1"),
+                xpe.body_repeat_setvalue_meta_id(
+                    "/x:group/x:repeat[@nodeset='/test_name/r1']", "/r1"
+                ),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 2),
+            ],
         )
 
     def test_other_controls_before__ok(self):

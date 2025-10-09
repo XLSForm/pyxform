@@ -66,9 +66,29 @@ ENTITY007 = Detail(
 def get_entity_declaration(
     entities_sheet: Sequence[dict],
 ) -> dict[str, Any]:
+    """
+    Transform the entities sheet data into a spec for creating an EntityDeclaration.
+
+    The combination of entity_id, create_if and update_if columns determines what entity
+    behaviour is intended:
+
+    entity_id  create_if  update_if  result
+    0          0          0          always create
+    0          0          1          error, need id to update
+    0          1          0          create based on condition
+    0          1          1          error, need id to update
+    1          0          0          always update
+    1          0          1          update based on condition
+    1          1          0          error, id only acceptable when updating
+    1          1          1          include conditions for create and update
+                                       (user's responsibility to ensure they're exclusive)
+
+    :param entities_sheet: XLSForm entities sheet data.
+    """
     if len(entities_sheet) > 1:
         raise PyXFormError(
-            "Currently, you can only declare a single entity per form. Please make sure your entities sheet only declares one entity."
+            "Currently, you can only declare a single entity per form. "
+            "Please make sure your entities sheet only declares one entity."
         )
 
     entity_row = entities_sheet[0]
@@ -76,30 +96,33 @@ def get_entity_declaration(
     validate_entities_columns(row=entity_row)
     dataset_name = get_validated_dataset_name(entity_row)
     entity_id = entity_row.get(EC.ENTITY_ID, None)
-    create_condition = entity_row.get(EC.CREATE_IF, None)
-    update_condition = entity_row.get(EC.UPDATE_IF, None)
-    entity_label = entity_row.get(EC.LABEL, None)
-    entity_repeat = get_validated_repeat_name(entity_row)
+    create_if = entity_row.get(EC.CREATE_IF, None)
+    update_if = entity_row.get(EC.UPDATE_IF, None)
+    label = entity_row.get(EC.LABEL, None)
+    repeat = get_validated_repeat_name(entity_row)
 
-    if update_condition and not entity_id:
+    if not entity_id and update_if:
         raise PyXFormError(
-            "The entities sheet is missing the entity_id column which is required when updating entities."
+            "The entities sheet is missing the entity_id column which is required when "
+            "updating entities."
         )
 
-    if entity_id and create_condition and not update_condition:
+    if entity_id and create_if and not update_if:
         raise PyXFormError(
-            "The entities sheet can't specify an entity creation condition and an entity_id without also including an update condition."
+            "The entities sheet can't specify an entity creation condition and an "
+            "entity_id without also including an update condition."
         )
 
-    if not entity_id and not entity_label:
+    if not entity_id and not label:
         raise PyXFormError(
-            "The entities sheet is missing the label column which is required when creating entities."
+            "The entities sheet is missing the label column which is required when "
+            "creating entities."
         )
 
     entity = {
         const.NAME: const.ENTITY,
         const.TYPE: const.ENTITY,
-        EC.REPEAT.value: entity_repeat,
+        EC.REPEAT.value: repeat,
         const.CHILDREN: [
             {
                 const.NAME: "dataset",
@@ -108,32 +131,6 @@ def get_entity_declaration(
             },
         ],
     }
-
-    if create_condition or (not update_condition and not entity_id):
-        create = {const.NAME: "create", const.TYPE: "attribute", "value": "1"}
-        if create_condition:
-            create[const.BIND] = {
-                "calculate": create_condition,
-                "readonly": "true()",
-                "type": "string",
-            }
-        entity[const.CHILDREN].append(create)
-
-    if update_condition or entity_id:
-        update_attr = {
-            const.NAME: "update",
-            const.TYPE: "attribute",
-            "value": "1",
-        }
-
-        if update_condition:
-            update_attr[const.BIND] = {
-                "calculate": update_condition,
-                "readonly": "true()",
-                "type": "string",
-            }
-
-        entity[const.CHILDREN].append(update_attr)
 
     id_attr = {
         const.NAME: "id",
@@ -145,17 +142,38 @@ def get_entity_declaration(
         "actions": [],
     }
 
-    if create_condition or not entity_id:
+    # Create mode
+    if not entity_id or create_if:
+        create_attr = {const.NAME: "create", const.TYPE: "attribute", "value": "1"}
+        if create_if:
+            create_attr[const.BIND] = {
+                "calculate": create_if,
+                "readonly": "true()",
+                "type": "string",
+            }
+        entity[const.CHILDREN].append(create_attr)
+
         first_load = action.ActionLibrary.setvalue_first_load.value.to_dict()
         first_load["value"] = "uuid()"
         id_attr["actions"].append(first_load)
 
-    if entity_repeat:
-        new_repeat = action.ActionLibrary.setvalue_new_repeat.value.to_dict()
-        new_repeat["value"] = "uuid()"
-        id_attr["actions"].append(new_repeat)
+        if repeat:
+            new_repeat = action.ActionLibrary.setvalue_new_repeat.value.to_dict()
+            new_repeat["value"] = "uuid()"
+            id_attr["actions"].append(new_repeat)
 
+    # Update mode
     if entity_id:
+        update_attr = {const.NAME: "update", const.TYPE: "attribute", "value": "1"}
+        if update_if:
+            update_attr[const.BIND] = {
+                "calculate": update_if,
+                "readonly": "true()",
+                "type": "string",
+            }
+
+        entity[const.CHILDREN].append(update_attr)
+
         id_attr[const.BIND]["calculate"] = entity_id
 
         entity_id_expression = f"instance('{dataset_name}')/root/item[name={entity_id}]"
@@ -193,13 +211,13 @@ def get_entity_declaration(
 
     entity[const.CHILDREN].append(id_attr)
 
-    if entity_label:
+    if label:
         entity[const.CHILDREN].append(
             {
                 const.TYPE: "label",
                 const.NAME: "label",
                 const.BIND: {
-                    "calculate": entity_label,
+                    "calculate": label,
                     "readonly": "true()",
                     "type": "string",
                 },

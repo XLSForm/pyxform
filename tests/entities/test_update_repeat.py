@@ -58,6 +58,9 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
                 xpe.model_no_setvalue_meta_id("/r1"),
             ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
         )
 
     def test_minimal_fields__ok(self):
@@ -74,7 +77,13 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
         | | list_name | repeat | entity_id |
         | | e1        | ${r1}  | ${q1}     |
         """
-        self.assertPyxformXform(md=md, warnings_count=0)
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
 
     def test_update_if__ok(self):
         """Should find that the update_if expression targets the entity repeat."""
@@ -93,7 +102,9 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             warnings_count=0,
-            xml__xpath_match=[xpe.model_bind_meta_update(" ../../../q1  = ''", "/r1")],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
         )
 
     def test_all_fields__ok(self):
@@ -142,5 +153,8 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
                 xpe.body_repeat_setvalue_meta_id(
                     "/x:group/x:repeat[@nodeset='/test_name/r1']", "/r1"
                 ),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 2),
             ],
         )

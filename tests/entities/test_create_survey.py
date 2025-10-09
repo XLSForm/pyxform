@@ -26,6 +26,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
                 xpe.model_setvalue_meta_id(),
                 xpe.model_bind_meta_label("a"),
             ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 1),
+            ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
 
@@ -156,6 +159,10 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             xml__xpath_match=[
                 xpe.model_bind_meta_create("string-length( /test_name/a ) > 3"),
                 xpe.model_bind_meta_label(" /test_name/a "),
+                xpe.model_setvalue_meta_id(),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 1),
             ],
         )
 

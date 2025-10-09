@@ -29,6 +29,9 @@ class TestEntitiesUpdateSurvey(PyxformTestCase):
                 xpe.model_bind_meta_branchid("trees", "/test_name/id"),
                 xpe.model_no_setvalue_meta_id(),
             ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
 
@@ -105,6 +108,9 @@ class TestEntitiesUpdateSurvey(PyxformTestCase):
                 xpe.model_bind_meta_baseversion("trees", "/test_name/id"),
                 xpe.model_no_setvalue_meta_id(),
             ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
         )
 
     def test_update_and_create_conditions_with_entity_id__puts_both_in_bind_calculations(
@@ -128,6 +134,9 @@ class TestEntitiesUpdateSurvey(PyxformTestCase):
                 xpe.model_setvalue_meta_id(),
                 xpe.model_bind_meta_id(" /test_name/id "),
                 xpe.model_bind_meta_baseversion("trees", "/test_name/id"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 1),
             ],
         )
 
