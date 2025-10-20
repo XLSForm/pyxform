@@ -1,6 +1,6 @@
 Pyxform Changelog
 
-v4.1.0, 2025-10-16
+v4.1.0, 2025-10-20
 * Restore pre-py3.13 xml attribute escaping behaviour for \r\n\t by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/772
 * Update dependencies by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/774
 * Accept a list of references in the trigger column by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/776
