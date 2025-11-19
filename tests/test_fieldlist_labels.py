@@ -17,8 +17,14 @@ class FieldListLabels(PyxformTestCase):
             |        | text        | my-text  | my-text |
             |        | end_group   |          |         |
             """,
-            warnings_count=1,
-            warnings__contains=["[row : 2] Group has no label"],
+            warnings_count=0,
+            xml__xpath_match=[
+                """
+                /h:html/h:body/x:group[
+                  @ref = '/test_name/my-group'
+                ]
+                """
+            ],
         )
 
     def test_unlabeled_group_alternate_syntax(self):
@@ -30,39 +36,14 @@ class FieldListLabels(PyxformTestCase):
             |        | text        | my-text  | my-text             |
             |        | end group   |          |                     |
             """,
-            warnings_count=1,
-            warnings__contains=["[row : 2] Group has no label"],
-        )
-
-    def test_unlabeled_group_fieldlist(self):
-        self.assertPyxformXform(
-            md="""
-            | survey |              |           |         |            |
-            |        | type         | name      | label   | appearance |
-            |        | begin_group  | my-group  |         | field-list |
-            |        | text         | my-text   | my-text |            |
-            |        | end_group    |           |         |            |
-            """,
             warnings_count=0,
             xml__xpath_match=[
                 """
                 /h:html/h:body/x:group[
-                  @ref = '/test_name/my-group' and @appearance='field-list'
+                  @ref = '/test_name/my-group'
                 ]
                 """
             ],
-        )
-
-    def test_unlabeled_group_fieldlist_alternate_syntax(self):
-        self.assertPyxformXform(
-            md="""
-            | survey |              |           |         |            |
-            |        | type         | name      | label   | appearance |
-            |        | begin group  | my-group  |         | field-list |
-            |        | text         | my-text   | my-text |            |
-            |        | end group    |           |         |            |
-            """,
-            warnings_count=0,
         )
 
     def test_unlabeled_repeat(self):

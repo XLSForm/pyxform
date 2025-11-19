@@ -68,8 +68,6 @@ class TestWarnings(PyxformTestCase):
             vc.INVALID_LABEL.format(row=6),
             vc.INVALID_LABEL.format(row=7),
             "[row : 9] Repeat has no label: {'name': 'repeat_test', 'type': 'begin repeat'}",
-            "[row : 10] Group has no label: {'name': 'group_test', 'type': 'begin group'}",
-            "[row : 17] Group has no label: {'name': 'name', 'type': 'begin group'}",
             "[row : 28] Use the max-pixels parameter to speed up submission "
             + "sending and save storage space. Learn more: https://xlsform.org/#image",
         ]
