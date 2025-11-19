@@ -6,6 +6,7 @@ import copy
 import csv
 import json
 import re
+import sys
 from collections.abc import Generator, Iterable
 from functools import lru_cache
 from io import StringIO
@@ -21,11 +22,9 @@ from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import parse_expression
 from pyxform.xls2json_backends import DefinitionData
 
-BRACKETED_TAG_REGEX = re.compile(r"\${(last-saved#)?(.*?)}")
 INVALID_XFORM_TAG_REGEXP = re.compile(r"[^a-zA-Z:_][^a-zA-Z:_0-9\-.]*")
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
 NODE_TYPE_TEXT = {Node.TEXT_NODE, Node.CDATA_SECTION_NODE}
-PYXFORM_REFERENCE_REGEX = re.compile(r"\$\{(.*?)\}")
 SPACE_TRANS_TABLE = str.maketrans({" ": "_"})
 XML_TEXT_SUBS = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
 XML_TEXT_TABLE = str.maketrans(XML_TEXT_SUBS)
@@ -163,6 +162,18 @@ def get_pyobj_from_json(str_or_path):
         # if it doesn't work load the text
         doc = json.loads(str_or_path)
     return doc
+
+
+def print_pyobj_to_json(pyobj, path=None):
+    """
+    dump a python nested array/dict structure to the specified file
+    or stdout if no file is specified
+    """
+    if path:
+        with open(path, mode="w", encoding="utf-8") as fp:
+            json.dump(pyobj, fp=fp, ensure_ascii=False, indent=4)
+    else:
+        sys.stdout.write(json.dumps(pyobj, ensure_ascii=False, indent=4))
 
 
 def flatten(li):

@@ -41,9 +41,13 @@ jobs:
       matrix:
         python: ['3.10', '3.11', '3.12', '3.13']
         os: [ubuntu-latest, macos-latest, windows-latest]
+        PYXFORM_TESTS_RUN_ODK_VALIDATE: ['false']
+        # Extra job to check PyxformTestCase tests pass with ODK Validate.
+        # Keep versions sync with default dev version (same as 'lint' job above).
         include:
-          - os: windows-latest
-            windows_nose_args: --traverse-namespace ./tests
+          - python: '3.12'
+            os: ubuntu-latest
+            PYXFORM_TESTS_RUN_ODK_VALIDATE: 'true'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -67,15 +71,17 @@ jobs:
       # Tests.
       - name: Run tests
         run: python -m unittest --verbose
+        env:
+          PYXFORM_TESTS_RUN_ODK_VALIDATE: ${{ matrix.PYXFORM_TESTS_RUN_ODK_VALIDATE }}
 
       # Build and Upload.
       - name: Build sdist and wheel.
-        if: success()
+        if: success() && matrix.PYXFORM_TESTS_RUN_ODK_VALIDATE == 'false'
         run: |
           pip install flit==3.9.0
           flit --debug build --no-use-vcs
       - name: Upload sdist and wheel.
-        if: success()
+        if: success() && matrix.PYXFORM_TESTS_RUN_ODK_VALIDATE == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: pyxform--on-${{ matrix.os }}--py${{ matrix.python }}

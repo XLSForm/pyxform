@@ -1,12 +1,13 @@
-from collections.abc import Sequence
+from collections.abc import Collection
 from typing import Any
 
 from pyxform.errors import PyXFormError
+from pyxform.parsing.expression import maybe_strip
 
 PARAMETERS_TYPE = dict[str, Any]
 
 # Label and value are used to match against user-specified files so case should be preserved.
-CASE_SENSITIVE_VALUES = ["label", "value"]
+CASE_SENSITIVE_VALUES = {"label", "value"}
 
 
 def parse(raw_parameters: str) -> PARAMETERS_TYPE:
@@ -24,15 +25,15 @@ def parse(raw_parameters: str) -> PARAMETERS_TYPE:
                 "'parameter1=value parameter2=value'."
             )
         k, v = param.split("=")[:2]
-        key = k.lower().strip()
-        params[key] = v.strip() if key in CASE_SENSITIVE_VALUES else v.lower().strip()
+        key = maybe_strip(k.lower())
+        params[key] = v if key in CASE_SENSITIVE_VALUES else maybe_strip(v.lower())
 
     return params
 
 
 def validate(
     parameters: PARAMETERS_TYPE,
-    allowed: Sequence[str],
+    allowed: Collection[str],
 ) -> dict[str, str]:
     """
     Raise an error if 'parameters' includes any keys not named in 'allowed'.

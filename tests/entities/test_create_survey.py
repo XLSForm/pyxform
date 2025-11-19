@@ -1,10 +1,13 @@
 from pyxform import constants as co
+from pyxform.entities import entities_parsing as ep
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
 
 
-class EntitiesCreationTest(PyxformTestCase):
+class TestEntitiesCreateSurvey(PyxformTestCase):
+    """Test entity create specs for entities declared at the survey level"""
+
     def test_basic_entity_creation_building_blocks(self):
         self.assertPyxformXform(
             md="""
@@ -16,24 +19,31 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | trees   | a     |       |
             """,
             xml__xpath_match=[
-                xpe.model_instance_dataset("trees"),
+                xpe.model_entities_version(co.EntityVersion.v2024_1_0.value),
                 # defaults to always creating
-                '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@create = "1"]',
-                '/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@id = ""]',
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@id" and @type = "string" and @readonly = "true()"]',
-                '/h:html/h:head/x:model/x:setvalue[@event = "odk-instance-first-load" and @type = "string" and @ref = "/test_name/meta/entity/@id" and @value = "uuid()"]',
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/x:label",
-                xpe.model_bind_label("a"),
-                f"""/h:html/h:head/x:model[@entities:entities-version = '{co.ENTITIES_OFFLINE_VERSION}']""",
+                xpe.model_instance_meta("trees", create=True, label=True),
+                xpe.model_bind_meta_id(),
+                xpe.model_setvalue_meta_id(),
+                xpe.model_bind_meta_label("a"),
             ],
             xml__xpath_count=[
-                (
-                    "/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity/@update",
-                    0,
-                ),
+                ("/h:html//x:setvalue", 1),
             ],
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
+
+    def test_create_repeat__minimal_fields__ok(self):
+        """Should find that omitting all optional entity fields is OK."""
+        md = """
+        | survey |
+        | | type         | name  | label |
+        | | text         | q1    | Q1    |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
 
     def test_multiple_dataset_rows_in_entities_sheet__errors(self):
         self.assertPyxformXform(
@@ -122,7 +132,6 @@ class EntitiesCreationTest(PyxformTestCase):
 
     def test_create_if_in_entities_sheet__puts_expression_on_bind(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |         |                      |       |
             |          | type    | name                 | label |
@@ -132,8 +141,8 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | trees   | string-length(a) > 3 | a     |
             """,
             xml__xpath_match=[
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/meta/entity/@create" and @calculate = "string-length(a) > 3"]',
-                '/h:html/h:head/x:model/x:instance/x:data/x:meta/x:entity[@create = "1"]',
+                xpe.model_bind_meta_create("string-length(a) > 3"),
+                xpe.model_instance_meta("trees", create=True, label=True),
             ],
         )
 
@@ -148,8 +157,12 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | trees   | ${a}  | string-length(${a}) > 3 |
             """,
             xml__xpath_match=[
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/test_name/meta/entity/@create" and @calculate = "string-length( /test_name/a ) > 3"]',
-                xpe.model_bind_label(" /test_name/a "),
+                xpe.model_bind_meta_create("string-length( /test_name/a ) > 3"),
+                xpe.model_bind_meta_label(" /test_name/a "),
+                xpe.model_setvalue_meta_id(),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 1),
             ],
         )
 
@@ -183,18 +196,16 @@ class EntitiesCreationTest(PyxformTestCase):
 
     def test_entities_version__omitted_if_no_entities_sheet(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |         |       |       |
             |          | type    | name  | label |
             |          | text    | a     | A     |
             """,
-            xml__excludes=['entities:entities-version = "2022.1.0"'],
+            xml__xpath_match=[xpe.model_no_entities_version()],
         )
 
     def test_saveto_column__added_to_xml(self):
         self.assertPyxformXform(
-            name="data",
             md="""
             | survey   |         |       |       |         |
             |          | type    | name  | label | save_to |
@@ -204,7 +215,7 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | trees   | a     |       |         |
             """,
             xml__xpath_match=[
-                '/h:html/h:head/x:model/x:bind[@nodeset = "/data/a" and @entities:saveto = "foo"]'
+                xpe.model_bind_question_saveto("/a", "foo"),
             ],
         )
 
@@ -343,22 +354,22 @@ class EntitiesCreationTest(PyxformTestCase):
         )
 
     def test_saveto_in_repeat__errors(self):
+        """Should find that an error is raised if a save_to is in an undeclared entity repeat."""
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | q1e     |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | trees   | ${q1} |
+        """
         self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey   |             |        |       |         |
-            |          | type        | name   | label | save_to |
-            |          | begin_repeat| a      | A     |         |
-            |          | text        | size   | Size  | size    |
-            |          | end_repeat  |        |       |         |
-            | entities |             |        |       |         |
-            |          | dataset     | label  |       |         |
-            |          | trees       | ${size}|       |         |
-            """,
+            md=md,
             errored=True,
-            error__contains=[
-                "[row : 3] Currently, you can't create entities from repeats. You may only specify save_to values for form fields outside of repeats."
-            ],
+            error__contains=[ep.ENTITY007.format(row=3, value="q1e")],
         )
 
     def test_saveto_in_group__works(self):
@@ -374,6 +385,7 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | dataset     | label  |       |         |
             |          | trees       | ${size}|       |         |
             """,
+            warnings_count=0,
         )
 
     def test_list_name_alias_to_dataset(self):
@@ -386,7 +398,7 @@ class EntitiesCreationTest(PyxformTestCase):
             |          | list_name | label |       |
             |          | trees     | a     |       |
             """,
-            xml__xpath_match=[xpe.model_instance_dataset("trees")],
+            xml__xpath_match=[xpe.model_instance_meta("trees", create=True, label=True)],
         )
 
     def test_entities_columns__all_expected(self):

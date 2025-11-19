@@ -6,6 +6,8 @@ See also test_external_instances_for_selects
 
 from textwrap import dedent
 
+from pyxform.validators.pyxform import unique_names
+
 from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
 from tests.xpath_helpers.choices import xpc
 
@@ -39,20 +41,16 @@ class ExternalInstanceTests(PyxformTestCase):
 
     def test_cannot__use_same_external_xml_id_in_same_section(self):
         """Duplicate external instances in the same section raises an error."""
-        with self.assertRaises(PyxformTestError) as ctx:
-            self.assertPyxformXform(
-                md="""
-                | survey |              |        |       |
-                |        | type         | name   | label |
-                |        | xml-external | mydata |       |
-                |        | xml-external | mydata |       |
-                """,
-                model__contains=[],
-            )
-        # This is caught first by existing validation rule.
-        self.assertIn(
-            "There are more than one survey elements named 'mydata'",
-            repr(ctx.exception),
+        md = """
+        | survey |              |        |       |
+        |        | type         | name   | label |
+        |        | xml-external | mydata |       |
+        |        | xml-external | mydata |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[unique_names.NAMES001.format(row=3, value="mydata")],
         )
 
     def test_can__use_unique_external_xml_in_same_section(self):
@@ -604,6 +602,7 @@ class ExternalInstanceTests(PyxformTestCase):
                 ]
                 """
             ],
+            run_odk_validate=False,  # Validate sees self references in relevants as circular but shouldn't
         )
 
     def test_external_instances_multiple_diff_pulldatas(self):
@@ -634,6 +633,7 @@ class ExternalInstanceTests(PyxformTestCase):
                 ]
                 """,
             ],
+            run_odk_validate=False,  # Validate sees self references in relevants as circular but shouldn't
         )
 
     def test_mixed_quotes_and_functions_in_pulldata(self):

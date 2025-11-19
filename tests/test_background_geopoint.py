@@ -1,3 +1,4 @@
+from pyxform.errors import ErrorCode
 from pyxform.validators.pyxform import question_types as qt
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -18,7 +19,7 @@ class TestBackgroundGeopoint(PyxformTestCase):
             name="data",
             md=md,
             errored=True,
-            error__contains=[qt.TRIGGER_INVALID.format(r=3, t="background-geopoint")],
+            error__contains=[qt.BACKGROUND_GEOPOINT_TRIGGER.format(r=3)],
         )
 
     def test_error__invalid_trigger(self):
@@ -30,10 +31,13 @@ class TestBackgroundGeopoint(PyxformTestCase):
         |        | background-geopoint | temp_geo |            | ${invalid} |
         """
         self.assertPyxformXform(
-            name="data",
             md=md,
             errored=True,
-            error__contains=[qt.TRIGGER_INVALID.format(r=3, t="background-geopoint")],
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="survey", column="trigger", row="3", q="invalid"
+                )
+            ],
         )
 
     def test_error__calculation_exists(self):
@@ -45,7 +49,6 @@ class TestBackgroundGeopoint(PyxformTestCase):
         |        | background-geopoint | temp_geo |            | ${temp} | 5 * temp    |
         """
         self.assertPyxformXform(
-            name="data",
             md=md,
             errored=True,
             error__contains=[qt.BACKGROUND_GEOPOINT_CALCULATION.format(r=3)],
@@ -138,8 +141,11 @@ class TestBackgroundGeopoint(PyxformTestCase):
         |        | end_group           |          |            |         |
         |        | begin_group         | groupB   |            |         |
         |        | background-geopoint | temp_geo |            | ${temp} |
+        |        | date                | today    | Enter date |         |
         |        | end_group           |          |            |         |
         """
+        # Includes question "today" because otherwise ODK Validate fails with error
+        # message: "Group has no children! Group: ${groupB}. The XML is invalid."
         self.assertPyxformXform(
             name="data",
             md=md,
@@ -220,8 +226,11 @@ class TestBackgroundGeopoint(PyxformTestCase):
         |        | end_repeat          |          |            |         |
         |        | begin_group         | groupB   |            |         |
         |        | background-geopoint | temp_geo |            | ${temp} |
+        |        | date                | today    | Enter date |         |
         |        | end_group           |          |            |         |
         """
+        # Includes question "today" because otherwise ODK Validate fails with error
+        # message: "Group has no children! Group: ${groupB}. The XML is invalid."
         self.assertPyxformXform(
             name="data",
             md=md,

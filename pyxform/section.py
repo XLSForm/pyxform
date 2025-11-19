@@ -5,12 +5,13 @@ Section survey element module.
 from collections.abc import Callable, Generator, Iterable
 from itertools import chain
 from typing import TYPE_CHECKING
+from xml.dom.minidom import Attr
 
 from pyxform import constants
-from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
-from pyxform.utils import DetachableElement, node
+from pyxform.utils import node
+from pyxform.validators.pyxform import unique_names
 
 if TYPE_CHECKING:
     from pyxform.question import Question
@@ -94,18 +95,18 @@ class Section(SurveyElement):
                     iter_into_section_items=iter_into_section_items,
                 )
 
-    # there's a stronger test of this when creating the xpath
-    # dictionary for a survey.
     def _validate_uniqueness_of_element_names(self):
-        element_slugs = set()
+        child_names = set()
+        child_names_lower = set()
+        warnings = []
         for element in self.children:
-            elem_lower = element.name.lower()
-            if elem_lower in element_slugs:
-                raise PyXFormError(
-                    f"There are more than one survey elements named '{elem_lower}' "
-                    f"(case-insensitive) in the section named '{self.name}'."
-                )
-            element_slugs.add(elem_lower)
+            unique_names.validate_question_group_repeat_name(
+                name=element.name,
+                seen_names=child_names,
+                seen_names_lower=child_names_lower,
+                warnings=warnings,
+                check_reserved=False,
+            )
 
     def xml_instance(self, survey: "Survey", **kwargs):
         """
@@ -119,7 +120,7 @@ class Section(SurveyElement):
             attributes.update(self.instance)
         # Resolve field references in attributes
         for key, value in attributes.items():
-            attributes[key] = survey.insert_xpaths(value, self)
+            attributes[key] = survey.insert_xpaths(text=value, context=self)
         result = node(self.name, **attributes)
 
         for child in self.children:
@@ -133,9 +134,13 @@ class Section(SurveyElement):
                 if isinstance(child, RepeatingSection) and not append_template:
                     append_template = not append_template
                     repeating_template = child.generate_repeating_template(survey=survey)
-                result.appendChild(
-                    child.xml_instance(survey=survey, append_template=append_template)
+                child_instance = child.xml_instance(
+                    survey=survey, append_template=append_template
                 )
+                if isinstance(child_instance, Attr):
+                    result.setAttributeNode(child_instance)
+                else:
+                    result.appendChild(child_instance)
             if append_template and repeating_template:
                 append_template = not append_template
                 result.insertBefore(repeating_template, result._get_lastChild())
@@ -173,6 +178,36 @@ class Section(SurveyElement):
 
 
 class RepeatingSection(Section):
+    def __init__(
+        self,
+        name: str,
+        type: str = constants.REPEAT,
+        label: str | dict | None = None,
+        hint: str | dict | None = None,
+        bind: dict | None = None,
+        control: dict | None = None,
+        instance: dict | None = None,
+        media: dict | None = None,
+        flat: bool | None = None,
+        sms_field: str | None = None,
+        fields: tuple[str, ...] | None = None,
+        **kwargs,
+    ):
+        super().__init__(
+            name=name,
+            type=type,
+            label=label,
+            hint=hint,
+            bind=bind,
+            control=control,
+            instance=instance,
+            media=media,
+            flat=flat,
+            sms_field=sms_field,
+            fields=fields,
+            **kwargs,
+        )
+
     def xml_control(self, survey: "Survey"):
         """
         <group>
@@ -190,7 +225,7 @@ class RepeatingSection(Section):
         # Resolve field references in attributes
         if self.control:
             control_dict = {
-                key: survey.insert_xpaths(value, self)
+                key: survey.insert_xpaths(text=value, context=self)
                 for key, value in self.control.items()
             }
             repeat_node = node("repeat", nodeset=self.get_xpath(), **control_dict)
@@ -200,8 +235,25 @@ class RepeatingSection(Section):
         for n in Section.xml_control(self, survey=survey):
             repeat_node.appendChild(n)
 
-        for setvalue_node in self._dynamic_defaults_helper(current=self, survey=survey):
-            repeat_node.appendChild(setvalue_node)
+        # Get setvalue nodes for all descendants of this repeat that have dynamic defaults
+        # and aren't nested in other repeats. Let nested repeats handle their own defaults
+        from pyxform.question import Question
+        from pyxform.survey_elements.attribute import Attribute
+
+        def condition(i, parent=self):
+            return isinstance(i, Attribute | Question) and (
+                i.parent is self
+                or parent
+                == next(
+                    i.iter_ancestors(condition=lambda j: isinstance(j, RepeatingSection)),
+                    (None, None),
+                )[0]
+            )
+
+        for e in self.iter_descendants(condition=condition):
+            for dynamic_default in e.xml_actions(survey=survey, in_repeat=True):
+                if dynamic_default:
+                    repeat_node.appendChild(dynamic_default)
 
         label = self.xml_label(survey=survey)
         if label:
@@ -211,21 +263,6 @@ class RepeatingSection(Section):
         else:
             return node("group", repeat_node, ref=self.get_xpath())
 
-    # Get setvalue nodes for all descendants of this repeat that have dynamic defaults and aren't nested in other repeats.
-    def _dynamic_defaults_helper(
-        self, current: "Section", survey: "Survey"
-    ) -> Generator[DetachableElement, None, None]:
-        if not isinstance(current, Section):
-            return
-        for e in current.children:
-            if e.type != "repeat":  # let nested repeats handle their own defaults
-                dynamic_default = e.get_setvalue_node_for_dynamic_default(
-                    in_repeat=True, survey=survey
-                )
-                if dynamic_default:
-                    yield dynamic_default
-                yield from self._dynamic_defaults_helper(current=e, survey=survey)
-
     # I'm anal about matching function signatures when overriding a function,
     # but there's no reason for kwargs to be an argument
     def template_instance(self, survey: "Survey", **kwargs):
@@ -233,17 +270,35 @@ class RepeatingSection(Section):
 
 
 class GroupedSection(Section):
-    # I think this might be a better place for the table-list stuff, however it
-    # doesn't allow for as good of validation as putting it in xls2json
-    # def __init__(self, **kwargs):
-    #        control = kwargs.get(u"control")
-    #        if control:
-    #            appearance = control.get(u"appearance")
-    #            if appearance is u"table-list":
-    #                print "HI"
-    #                control[u"appearance"] = "field-list"
-    #                kwargs["children"].insert(0, kwargs["children"][0])
-    #        super(GroupedSection, self).__init__(kwargs)
+    def __init__(
+        self,
+        name: str,
+        type: str = constants.GROUP,
+        label: str | dict | None = None,
+        hint: str | dict | None = None,
+        bind: dict | None = None,
+        control: dict | None = None,
+        instance: dict | None = None,
+        media: dict | None = None,
+        flat: bool | None = None,
+        sms_field: str | None = None,
+        fields: tuple[str, ...] | None = None,
+        **kwargs,
+    ):
+        super().__init__(
+            name=name,
+            type=type,
+            label=label,
+            hint=hint,
+            bind=bind,
+            control=control,
+            instance=instance,
+            media=media,
+            flat=flat,
+            sms_field=sms_field,
+            fields=fields,
+            **kwargs,
+        )
 
     def xml_control(self, survey: "Survey"):
         if self.control and self.control.get("bodyless"):
@@ -254,7 +309,7 @@ class GroupedSection(Section):
         # Resolve field references in attributes
         if self.control:
             attributes = {
-                key: survey.insert_xpaths(value, self)
+                key: survey.insert_xpaths(text=value, context=self)
                 for key, value in self.control.items()
             }
             if "appearance" in self.control:

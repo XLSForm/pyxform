@@ -192,7 +192,7 @@ class LastSavedTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "There has been a problem trying to replace ${last-saved#foo} with the XPath to the survey element named 'foo'. There is no survey element with this name."
+                "There has been a problem trying to replace ${last-saved#foo} with the XPath to the survey element named 'foo'. There is no survey element named 'foo'."
             ],
         )
 
