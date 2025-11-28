@@ -1405,6 +1405,7 @@ class TestRepeatParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             warnings_count=0,
+            run_odk_validate=True,  # Error about empty groups is from Validate only.
             xml__xpath_match=[
                 """
                 /h:html/h:body/x:group[@ref='/test_name/r1']
@@ -1428,6 +1429,7 @@ class TestRepeatParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             warnings_count=0,
+            run_odk_validate=True,  # Error about empty groups is from Validate only.
             xml__xpath_match=[
                 """
                 /h:html/h:body/x:group[@ref='/test_name/r1']

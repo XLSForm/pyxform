@@ -620,7 +620,7 @@ class TestGroupParsing(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            run_odk_validate=True,  # Error is from Validate only.
+            run_odk_validate=True,  # Error about empty groups is from Validate only.
             odk_validate_error__contains=[
                 "Group has no children! Group: ${g1}. The XML is invalid."
             ],
@@ -637,7 +637,7 @@ class TestGroupParsing(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            run_odk_validate=True,  # Error is from Validate only.
+            run_odk_validate=True,  # Error about empty groups is from Validate only.
             odk_validate_error__contains=[
                 "Group has no children! Group: ${g1}. The XML is invalid."
             ],
