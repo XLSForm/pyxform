@@ -79,6 +79,40 @@ class TestGroupOutput(PyxformTestCase):
             ],
         )
 
+    def test_table_list_appearance(self):
+        md = """
+        | survey  |
+        | | type              | name       | label     | hint       | appearance         |
+        | | begin_group       | tablelist1 | Table_Y_N |            | table-list minimal |
+        | | select_one yes_no | options1a  | Q1        | first row! |                    |
+        | | select_one yes_no | options1b  | Q2        |            |                    |
+        | | end_group         |            |           |            |                    |
+        | choices |
+        | | list_name | name | label |
+        | | yes_no    | yes  | Yes   |
+        """
+        xml_contains = """
+    <group appearance="field-list minimal" ref="/table-list-appearance-mod/tablelist1">
+      <input ref="/table-list-appearance-mod/tablelist1/generated_table_list_label_2">
+        <label>Table_Y_N</label>
+      </input>
+      <select1 appearance="label" ref="/table-list-appearance-mod/tablelist1/reserved_name_for_field_list_labels_3">
+        <label> </label>
+        <itemset nodeset="instance('yes_no')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
+      </select1>
+      <select1 appearance="list-nolabel" ref="/table-list-appearance-mod/tablelist1/options1a">
+        <label>Q1</label>
+        <hint>first row!</hint>
+""".strip()
+        self.assertPyxformXform(
+            name="table-list-appearance-mod",
+            md=md,
+            xml__contains=[xml_contains],
+        )
+
 
 class TestGroupParsing(PyxformTestCase):
     def test_names__group_basic_case__ok(self):
@@ -607,6 +641,63 @@ class TestGroupParsing(PyxformTestCase):
             odk_validate_error__contains=[
                 "Group has no children! Group: ${g1}. The XML is invalid."
             ],
+        )
+
+    def test_unlabeled_group(self):
+        self.assertPyxformXform(
+            md="""
+            | survey |
+            | | type        | name     | label   |
+            | | begin_group | my-group |         |
+            | | text        | my-text  | my-text |
+            | | end_group   |          |         |
+            """,
+            warnings_count=1,
+            warnings__contains=["[row : 2] Group has no label"],
+        )
+
+    def test_unlabeled_group_alternate_syntax(self):
+        self.assertPyxformXform(
+            md="""
+            | survey |
+            | | type        | name     | label::English (en) |
+            | | begin group | my-group |                     |
+            | | text        | my-text  | my-text             |
+            | | end group   |          |                     |
+            """,
+            warnings_count=1,
+            warnings__contains=["[row : 2] Group has no label"],
+        )
+
+    def test_unlabeled_group_fieldlist(self):
+        self.assertPyxformXform(
+            md="""
+            | survey |
+            | | type         | name      | label   | appearance |
+            | | begin_group  | my-group  |         | field-list |
+            | | text         | my-text   | my-text |            |
+            | | end_group    |           |         |            |
+            """,
+            warnings_count=0,
+            xml__xpath_match=[
+                """
+                /h:html/h:body/x:group[
+                  @ref = '/test_name/my-group' and @appearance='field-list'
+                ]
+                """
+            ],
+        )
+
+    def test_unlabeled_group_fieldlist_alternate_syntax(self):
+        self.assertPyxformXform(
+            md="""
+            | survey |
+            | | type        | name     | label::English (en) | appearance |
+            | | begin group | my-group |                     | field-list |
+            | | text        | my-text  | my-text             |            |
+            | | end group   |          |                     |            |
+            """,
+            warnings_count=0,
         )
 
 
