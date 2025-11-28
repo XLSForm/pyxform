@@ -121,9 +121,6 @@ class SurveyElement(Mapping):
         if len(kwargs) > 0:
             self.extra_data = kwargs
 
-        if hasattr(self, const.CHILDREN):
-            self._link_children()
-
         # Create a space label for unlabeled elements with the label
         # appearance tag. # This is because such elements are used to label the
         # options for selects in a field-list and might want blank labels for
@@ -140,24 +137,6 @@ class SurveyElement(Mapping):
     @property
     def name_for_xpath(self) -> str:
         return self.name
-
-    def _link_children(self):
-        if self.children is not None:
-            for child in self.children:
-                child.parent = self
-
-    def add_child(self, child):
-        if self.children is None:
-            self.children = []
-        self.children.append(child)
-        child.parent = self
-
-    def add_children(self, children):
-        if isinstance(children, list | tuple):
-            for child in children:
-                self.add_child(child)
-        else:
-            self.add_child(children)
 
     def validate(self):
         if not is_xml_tag(self.name):

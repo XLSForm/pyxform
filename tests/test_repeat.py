@@ -1309,3 +1309,48 @@ class TestRepeatParsing(PyxformTestCase):
             errored=True,
             error__contains=[unique_names.NAMES004.format(row=7, value="r2")],
         )
+
+    def test_empty_repeat__no_question__ok(self):
+        """Should not raise an error for an empty repeat with no questions."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin repeat | r1   | R1    |
+        | | end repeat   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                """
+                /h:html/h:body/x:group[@ref='/test_name/r1']
+                  /x:repeat[
+                    @nodeset='/test_name/r1'
+                    and not(./x:input)
+                  ]
+                """
+            ],
+        )
+
+    def test_empty_repeat__no_question_control__ok(self):
+        """Should not raise an error for an empty repeat with no question controls."""
+        md = """
+        | survey |
+        | | type         | name | label | calculation |
+        | | begin repeat | r1   | R1    |             |
+        | | text         | r1   |       | 0 + 0       |
+        | | end repeat   |      |       |             |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                """
+                /h:html/h:body/x:group[@ref='/test_name/r1']
+                  /x:repeat[
+                    @nodeset='/test_name/r1'
+                    and not(./x:input)
+                  ]
+                """
+            ],
+        )

@@ -576,6 +576,39 @@ class TestGroupParsing(PyxformTestCase):
             error__contains=[SURVEY_001.format(row=4, type="group")],
         )
 
+    def test_empty_group__no_question__error(self):
+        """Should raise an error for an empty group with no questions."""
+        md = """
+        | survey |
+        | | type        | name | label |
+        | | begin group | g1   | G1    |
+        | | end group   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            run_odk_validate=True,  # Error is from Validate only.
+            odk_validate_error__contains=[
+                "Group has no children! Group: ${g1}. The XML is invalid."
+            ],
+        )
+
+    def test_empty_group__no_question_control__error(self):
+        """Should raise an error for an empty group with no question controls."""
+        md = """
+        | survey |
+        | | type        | name | label | calculation |
+        | | begin group | g1   | G1    |             |
+        | | text        | q1   |       | 0 + 0       |
+        | | end group   |      |       |             |
+        """
+        self.assertPyxformXform(
+            md=md,
+            run_odk_validate=True,  # Error is from Validate only.
+            odk_validate_error__contains=[
+                "Group has no children! Group: ${g1}. The XML is invalid."
+            ],
+        )
+
 
 class TestGroupInternalRepresentations(TestCase):
     maxDiff = None
