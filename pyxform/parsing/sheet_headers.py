@@ -1,10 +1,15 @@
+import re
 from collections.abc import Container, Sequence
 from itertools import chain, islice
 from typing import Any
 
 from pyxform import constants
 from pyxform.errors import PyXFormError
+from pyxform.parsing.expression import maybe_strip
+from pyxform.xls2json_backends import RE_WHITESPACE
 
+SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
+RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
 INVALID_HEADER = (
     "Invalid headers provided for sheet: '{sheet_name}'. For XLSForms, this may be due "
     "a missing header row, in which case add a header row as per the reference template "
@@ -22,6 +27,25 @@ INVALID_MISSING_REQUIRED = (
     "headers were not found: {missing}. "
     "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
 )
+
+
+def clean_text_values(
+    value: str,
+    strip_whitespace: bool = False,
+) -> str:
+    """
+    Replace "smart" quotes with regular quotes and optionally collapse whitespace characters.
+
+    :param value: The string to process.
+    :param strip_whitespace: If True, collapse sequences of whitespace to a single space.
+    """
+    if isinstance(value, str) and value:
+        # Remove extraneous whitespace characters.
+        if strip_whitespace:
+            value = RE_WHITESPACE.sub(" ", maybe_strip(value))
+        # Replace "smart" quotes with regular quotes.
+        value = RE_SMART_QUOTES.sub(lambda m: SMART_QUOTES[m.group(0)], value)
+    return value
 
 
 def merge_dicts(
@@ -149,7 +173,10 @@ def process_row(
     sheet_name: str,
     row: dict[str, str],
     header_key: dict[str, tuple[str, ...]],
+    row_number: int,
     default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
+    strip_whitespace: bool = False,
+    add_row_number: bool = False,
 ) -> dict[str, str]:
     """
     Convert original headers and values to a possibly nested structure.
@@ -157,15 +184,17 @@ def process_row(
     :param sheet_name: Name of the sheet data being processed.
     :param row: Original XLSForm data row.
     :param header_key: Mapping from original headers to headers split on a delimiter.
+    :param row_number: The row number from the input data.
     :param default_language: Default translation language for the form, used to group
       used to group labels/hints/etc without a language specified with localized versions.
+    :param strip_whitespace: If True, collapse sequences of whitespace to a single space
+    :param add_row_number: If True, add a "__row" key with the row number from the input data.
     """
     out_row = {}
     for header, val in row.items():
+        val = clean_text_values(value=val, strip_whitespace=strip_whitespace)
         tokens = header_key.get(header, None)
-        if header == "__row":
-            out_row[header] = val
-        elif not tokens:
+        if not tokens:
             raise PyXFormError(
                 INVALID_HEADER.format(sheet_name=sheet_name, header=header)
             )
@@ -174,7 +203,8 @@ def process_row(
         else:
             new_value = list_to_nested_dict((*tokens[1:], val))
             out_row = merge_dicts(out_row, {tokens[0]: new_value}, default_language)
-
+    if add_row_number:
+        out_row["__row"] = row_number
     return out_row
 
 
@@ -186,6 +216,8 @@ def dealias_and_group_headers(
     header_columns: set[str],
     headers_required: set[str] | None = None,
     default_language: str = constants.DEFAULT_LANGUAGE_VALUE,
+    strip_whitespace: bool = False,
+    add_row_number: bool = False,
 ) -> DealiasAndGroupHeadersResult:
     """
     Normalise headers and group keys that contain a delimiter.
@@ -205,6 +237,9 @@ def dealias_and_group_headers(
     :param headers_required: Required columns for the sheet.
     :param default_language: Default translation language for the form, used to group
       used to group labels/hints/etc without a language specified with localized versions.
+    :param strip_whitespace: If True, collapse sequences of whitespace to a single space
+      in the data rows.
+    :param add_row_number: If True, add a "__row" key with the row number from the input data.
     """
 
     header_key: dict[str, tuple[str, ...]] = {}
@@ -247,9 +282,12 @@ def dealias_and_group_headers(
             sheet_name=sheet_name,
             row=row,
             header_key=header_key,
+            row_number=row_number,
             default_language=default_language,
+            strip_whitespace=strip_whitespace,
+            add_row_number=add_row_number,
         )
-        for row in sheet_data
+        for row_number, row in enumerate(sheet_data, start=2)
     )
     if headers_required and (data or sheet_name == constants.SURVEY):
         missing = {h for h in headers_required if h not in {h[0] for h in tokens_key}}

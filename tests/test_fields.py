@@ -2,6 +2,7 @@
 Test duplicate survey question field name.
 """
 
+from pyxform.errors import ErrorCode
 from pyxform.validators.pyxform import unique_names
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -459,4 +460,166 @@ class TestQuestionParsing(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+        )
+
+    def test_reference_name_not_found__target_after_source__error(self):
+        """Should raise an error if the referenced name is not in the survey sheet."""
+        md = """
+        | survey |
+        | | type | name | label  |
+        | | text | q1   | ${q2x} |
+        | | text | q2   | Q2     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="survey", column="label", row=2, q="q2x"
+                )
+            ],
+        )
+
+    def test_reference_name_not_found__target_before_source__error(self):
+        """Should raise an error if the referenced name is not in the survey sheet."""
+        md = """
+        | survey |
+        | | type | name | label  |
+        | | text | q1   | Q1     |
+        | | text | q2   | ${q1x} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="survey", column="label", row=3, q="q1x"
+                )
+            ],
+        )
+
+    def test_names__question_same_as_question_in_different_group_context__with_reference__error(
+        self,
+    ):
+        """Should find that a referenced name needs to be unique in all contexts."""
+        md = """
+        | survey |
+        | | type        | name | label |
+        | | text        | q1   | Q1    |
+        | | begin group | g1   | G1    |
+        | | text        | q1   | ${q1} |
+        | | end group   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_004.value.format(
+                    sheet="survey", column="label", row=4, q="q1"
+                ),
+            ],
+        )
+
+    def test_names__question_same_as_group_in_different_group_context__with_reference__error(
+        self,
+    ):
+        """Should find that a referenced name needs to be unique in all contexts."""
+        md = """
+        | survey |
+        | | type        | name | label |
+        | | text        | q1   | Q1    |
+        | | begin group | g1   | G1    |
+        | | begin group | q1   | G1    |
+        | | text        | q2   | ${q1} |
+        | | end group   |      |       |
+        | | end group   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_004.value.format(
+                    sheet="survey", column="label", row=5, q="q1"
+                ),
+            ],
+        )
+
+    def test_reference_in_ignored_columns__not_validated__type__error(self):
+        """Should find that references in ignored columns are not resolved."""
+        md = """
+        | survey |
+        | | type   | name | label |
+        | | text   | q1   | Q1    |
+        | | ${q1x} | q2   | Q2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=["Unknown question type '${q1x}'."],
+        )
+
+    def test_reference_in_ignored_columns__not_validated__name__error(self):
+        """Should find that references in ignored columns are not resolved."""
+        md = """
+        | survey |
+        | | type | name   | label |
+        | | text | q1     | Q1    |
+        | | text | ${q1x} | Q2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=["[row : 3] Invalid question name '${q1x}'."],
+        )
+
+    def test_reference_in_ignored_columns__not_validated__name_alias__error(self):
+        """Should find that references in ignored columns (using an alias) are not resolved."""
+        # per aliases.py, tag -> name
+        md = """
+        | survey |
+        | | type | tag    | label |
+        | | text | q1     | Q1    |
+        | | text | ${q1x} | Q2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=["[row : 3] Invalid question name '${q1x}'."],
+        )
+
+    def test_reference_in_aliased_column(self):
+        """Should find that references in a column using an alias are resolved."""
+        # per aliases.py, caption -> label
+        md = """
+        | survey |
+        | | type | name | caption |
+        | | text | q1   | Q1      |
+        | | text | q2   | ${q1x}  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="survey", column="caption", row=3, q="q1x"
+                ),
+            ],
+        )
+
+    def test_reference_in_aliased_column__translated(self):
+        """Should find that references in a translated column using an alias are resolved."""
+        md = """
+        | survey |
+        | | type | name | caption::English (en) |
+        | | text | q1   | Q1                    |
+        | | text | q2   | ${q1x}                |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="survey", column="caption::English (en)", row=3, q="q1x"
+                ),
+            ],
         )

@@ -1,4 +1,5 @@
 from pyxform import constants as co
+from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
@@ -172,5 +173,26 @@ class TestEntitiesUpdateSurvey(PyxformTestCase):
             """,
             xml__xpath_match=[
                 xpe.model_bind_question_saveto("/a", "foo"),
+            ],
+        )
+
+    def test_reference_name_not_found__error(self):
+        """Should raise an error if a referenced name is not in the survey sheet."""
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | entity_id |
+        | | e1        | ${q1x}    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="entities", column="entity_id", row=2, q="q1x"
+                )
             ],
         )
