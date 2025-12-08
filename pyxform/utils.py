@@ -96,44 +96,35 @@ class PatchedText(Text):
         writer.write(data)
 
 
-def node(*args, **kwargs) -> DetachableElement:
+def node(tag: str, *args, toParseString: bool = False, **kwargs) -> DetachableElement:
     """
-    args[0] -- a XML tag
-    args[1:] -- an array of children to append to the newly created node
-            or if a unicode arg is supplied it will be used to make a text node
-    kwargs -- attributes
-    returns a xml.dom.minidom.Element
+    Create an Element, with attached child elements (args) and attributes (kwargs).
+
+    :param tag: The Element XML tag name.
+    :param toParseString: If True, parse the first text arg as XML and add it to the tag.
     """
-    blocked_attributes = {"tag"}
-    tag = args[0] if len(args) > 0 else kwargs["tag"]
-    args = args[1:]
     result = DetachableElement(tag)
     unicode_args = tuple(u for u in args if isinstance(u, str))
     if len(unicode_args) > 1:
         raise PyXFormError("""Invalid value for `unicode_args`.""")
-    parsed_string = False
+    elif len(unicode_args) == 1:
+        if toParseString:
+            # Add this header string so parseString can be used?
+            s = f"""<?xml version="1.0" ?><{tag}>{unicode_args[0]}</{tag}>"""
+            parsed_node = parseString(s.encode("utf-8")).documentElement
+            # Move node's children to the result Element
+            # discarding node's root
+            for child in parsed_node.childNodes:
+                result.appendChild(child.cloneNode(deep=False))
+        else:
+            text_node = PatchedText()
+            text_node.data = unicode_args[0]
+            result.appendChild(text_node)
 
     # Convert the kwargs xml attribute dictionary to a xml.dom.minidom.Element.
     for k, v in kwargs.items():
-        if k in blocked_attributes:
-            continue
-        if k == "toParseString":
-            if v is True and len(unicode_args) == 1:
-                parsed_string = True
-                # Add this header string so parseString can be used?
-                s = f"""<?xml version="1.0" ?><{tag}>{unicode_args[0]}</{tag}>"""
-                parsed_node = parseString(s.encode("utf-8")).documentElement
-                # Move node's children to the result Element
-                # discarding node's root
-                for child in parsed_node.childNodes:
-                    result.appendChild(child.cloneNode(deep=False))
-        else:
-            result.setAttribute(k, v)
+        result.setAttribute(k, v)
 
-    if len(unicode_args) == 1 and not parsed_string:
-        text_node = PatchedText()
-        text_node.data = unicode_args[0]
-        result.appendChild(text_node)
     for n in args:
         if isinstance(n, int | float | bytes):
             text_node = PatchedText()
