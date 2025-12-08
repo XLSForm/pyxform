@@ -343,9 +343,8 @@ class Itemset:
                     requires_itext = True
                 else:
                     choice_label = option.label
-                    label_is_dict = isinstance(choice_label, dict)
                     # Multi-language: dict of labels etc per language. Can be just a string.
-                    if label_is_dict:
+                    if isinstance(choice_label, dict):
                         requires_itext = True
                     # Dynamic label: string contains a pyxform reference.
                     elif choice_label and has_pyxform_reference(choice_label):
