@@ -56,7 +56,7 @@ class Section(SurveyElement):
     ):
         # Structure
         self.bind: dict | None = bind
-        self.children: list[Section | Question] | None = None
+        self.children: list[Section | Question] = []
         self.control: dict | None = control
         # instance is for custom instance attrs from survey e.g. instance::abc:xyz
         self.instance: dict | None = instance
@@ -72,6 +72,23 @@ class Section(SurveyElement):
         # Recursively creating child objects currently handled by the builder module.
         kwargs.pop(constants.CHILDREN, None)
         super().__init__(name=name, label=label, fields=fields, **kwargs)
+
+        self._link_children()
+
+    def _link_children(self):
+        for child in self.children:
+            child.parent = self
+
+    def add_child(self, child):
+        self.children.append(child)
+        child.parent = self
+
+    def add_children(self, children):
+        if isinstance(children, list | tuple):
+            for child in children:
+                self.add_child(child)
+        else:
+            self.add_child(children)
 
     def validate(self):
         super().validate()
