@@ -232,16 +232,16 @@ def default_is_dynamic(element_default, element_type=None):
     if not element_default or not isinstance(element_default, str):
         return False
 
-    tokens, _ = parse_expression(element_default)
+    tokens = parse_expression(element_default)
     for t in tokens:
         # Data types which are likely to have non-dynamic defaults containing a hyphen.
         if element_type in {"date", "dateTime", "geopoint", "geotrace", "geoshape"}:
             # Nested to avoid extra string comparisons if not a relevant data type.
-            if t.name == "OPS_MATH" and t.value == "-":
+            if t.type == "OPS_MATH" and t.value == "-":
                 return False
 
         # A match on these lexer rules indicates a dynamic default.
-        if t.name in {
+        if t.type in {
             "OPS_MATH",
             "OPS_UNION",
             "XPATH_PRED",

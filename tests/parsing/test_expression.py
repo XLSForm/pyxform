@@ -408,5 +408,5 @@ class TestExpression(PyxformTestCase):
             description, case = lexer_case.value
             with self.subTest(case=case, description=description):
                 self.assertEqual(
-                    token_types, tuple(t.name for t in parse_expression(text=case)[0])
+                    token_types, tuple(t.type for t in parse_expression(text=case))
                 )
