@@ -79,3 +79,28 @@ class TestErrorMessageCleaning(TestCase):
         message = """Error in gugu/gaga\nError in gugu/gaga"""
         cleaned = ErrorCleaner.enketo_validate(message)
         self.assertEqual(cleaned, "Error in gugu/gaga")
+
+    def test_improve_selected_error_message(self):
+        """Should replace misleading selected() error message with clearer one."""
+        # Simulate ODK Validate error with type mismatch
+        misleading_error = (
+            "org.javarosa.xpath.XPathTypeMismatchException: XPath evaluation: type mismatch\n"
+            "The second parameter to the selected() function must be in quotes (like '1')."
+        )
+        cleaned = ErrorCleaner.odk_validate(misleading_error)
+        # Should contain improved message
+        self.assertIn("has an invalid type or expression", cleaned)
+        self.assertIn("selected() function", cleaned)
+        # Should not contain misleading message
+        self.assertNotIn("must be in quotes", cleaned)
+
+    def test_improve_selected_error_message_no_type_mismatch(self):
+        """Should not replace message if it's not a type mismatch."""
+        # Error without type mismatch indicator - should not be replaced
+        syntax_error = (
+            "XPath evaluation: parse error\n"
+            "The second parameter to the selected() function must be in quotes (like '1')."
+        )
+        cleaned = ErrorCleaner.odk_validate(syntax_error)
+        # Should still contain original message (not a type mismatch, so not replaced)
+        self.assertIn("must be in quotes", cleaned)

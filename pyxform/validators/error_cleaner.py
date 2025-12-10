@@ -59,9 +59,51 @@ class ErrorCleaner:
         return "\n".join(line for line in error_messages if line is not None)
 
     @staticmethod
+    def _improve_selected_error_message(error_message: str) -> str:
+        """
+        Improve misleading error message for selected() function type mismatches.
+        
+        ODK Validate reports "The second parameter to the selected() function must be
+        in quotes" for type mismatches, which is misleading because non-literal
+        expressions can be valid. This method detects type mismatch errors and
+        replaces them with a clearer message.
+        """
+        # Check if this is a type mismatch error (not just a syntax error)
+        is_type_mismatch = (
+            "XPathTypeMismatchException" in error_message
+            or "type mismatch" in error_message.lower()
+        )
+        
+        # Check if the misleading message is present and relates to selected()
+        misleading_pattern = (
+            r"The second parameter to the selected\(\) function must be in quotes"
+        )
+        
+        if is_type_mismatch and re.search(misleading_pattern, error_message, re.IGNORECASE):
+            # Replace with clearer message that explains it's a type/expression issue
+            improved_message = (
+                "The second parameter to the selected() function has an invalid type or "
+                "expression. The parameter must evaluate to a string value, but the "
+                "provided expression does not return a compatible type."
+            )
+            # Replace the misleading message (may include text like "(like '1')")
+            error_message = re.sub(
+                misleading_pattern + r"(?: \(like '[^']+'\))?",
+                improved_message,
+                error_message,
+                flags=re.IGNORECASE,
+            )
+        
+        return error_message
+
+    @staticmethod
     def odk_validate(error_message):
         if "Error: Unable to access jarfile" in error_message:
             return error_message  # Avoids tokenising the file path.
+        
+        # Improve selected() error messages before cleanup
+        error_message = ErrorCleaner._improve_selected_error_message(error_message)
+        
         common = ErrorCleaner._cleanup_errors(error_message)
         java_clean = [ErrorCleaner._remove_java_content(i) for i in common]
         final_message = ErrorCleaner._join_final(java_clean)
