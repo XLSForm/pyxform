@@ -790,9 +790,6 @@ def workbook_to_json(
                 )
         question_name = str(row[constants.NAME])
         if not is_xml_tag(question_name):
-            if isinstance(question_name, bytes):
-                question_name = question_name.decode("utf-8")
-
             raise PyXFormError(
                 f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
             )
