@@ -94,6 +94,9 @@ class SurveyElement(Mapping):
             self._survey_element_xpath = None
         super().__setattr__(key, value)
 
+    def __repr__(self):
+        return f"""{super().__repr__()}(name="{self.name}")"""
+
     def __init__(
         self,
         name: str,
