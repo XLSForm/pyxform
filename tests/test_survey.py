@@ -537,12 +537,12 @@ class TestReferencesToAncestorRepeat(PyxformTestCase):
         """Should find the XPath reference path is absolute."""
         md = """
         | survey |
-        | | type         | name | label | default   |
-        | | begin_repeat | t    | t     |           |
-        | | begin_group  | g1s  | g1s   |           |
-        | | text         | s    | s     | ${t}[1]/s |
-        | | end_group    |      |       |           |
-        | | end_repeat   |      |       |           |
+        | | type         | name | label | default       |
+        | | begin_repeat | t    | t     |               |
+        | | begin_group  | g1s  | g1s   |               |
+        | | text         | s    | s     | ${t}[1]/g1s/s |
+        | | end_group    |      |       |               |
+        | | end_repeat   |      |       |               |
             """
         self.assertPyxformXform(
             md=md,
@@ -550,7 +550,7 @@ class TestReferencesToAncestorRepeat(PyxformTestCase):
                 """
                 /h:html/h:head/x:model/x:setvalue[
                   @ref='/test_name/t/g1s/s'
-                  and @value=' /test_name/t [1]/s'
+                  and @value=' /test_name/t [1]/g1s/s'
                 ]
                 """
             ],
@@ -560,12 +560,12 @@ class TestReferencesToAncestorRepeat(PyxformTestCase):
         """Should find the XPath reference path is absolute."""
         md = """
         | survey |
-        | | type         | name | label | default   |
-        | | begin_repeat | t    | t     |           |
-        | | begin_repeat | r1s  | r1s   |           |
-        | | text         | s    | s     | ${t}[1]/s |
-        | | end_repeat   |      |       |           |
-        | | end_repeat   |      |       |           |
+        | | type         | name | label | default       |
+        | | begin_repeat | t    | t     |               |
+        | | begin_repeat | r1s  | r1s   |               |
+        | | text         | s    | s     | ${t}[1]/r1s/s |
+        | | end_repeat   |      |       |               |
+        | | end_repeat   |      |       |               |
             """
         self.assertPyxformXform(
             md=md,
@@ -573,7 +573,7 @@ class TestReferencesToAncestorRepeat(PyxformTestCase):
                 """
                 /h:html/h:head/x:model/x:setvalue[
                   @ref='/test_name/t/r1s/s'
-                  and @value=' /test_name/t [1]/s'
+                  and @value=' /test_name/t [1]/r1s/s'
                 ]
                 """
             ],
@@ -606,14 +606,14 @@ class TestReferencesToAncestorRepeat(PyxformTestCase):
         """Should find the XPath reference path is absolute."""
         md = """
         | survey |
-        | | type         | name | label | default   |
-        | | begin_group  | g1o  | g1o   |           |
-        | | begin_repeat | t    | t     |           |
-        | | begin_group  | g1s  | g1s   |           |
-        | | text         | s    | s     | ${t}[1]/s |
-        | | end_group    |      |       |           |
-        | | end_repeat   |      |       |           |
-        | | end_group    |      |       |           |
+        | | type         | name | label | default       |
+        | | begin_group  | g1o  | g1o   |               |
+        | | begin_repeat | t    | t     |               |
+        | | begin_group  | g1s  | g1s   |               |
+        | | text         | s    | s     | ${t}[1]/g1s/s |
+        | | end_group    |      |       |               |
+        | | end_repeat   |      |       |               |
+        | | end_group    |      |       |               |
             """
         self.assertPyxformXform(
             md=md,
@@ -621,7 +621,7 @@ class TestReferencesToAncestorRepeat(PyxformTestCase):
                 """
                 /h:html/h:head/x:model/x:setvalue[
                   @ref='/test_name/g1o/t/g1s/s'
-                  and @value=' /test_name/g1o/t [1]/s'
+                  and @value=' /test_name/g1o/t [1]/g1s/s'
                 ]
                 """
             ],
@@ -631,14 +631,14 @@ class TestReferencesToAncestorRepeat(PyxformTestCase):
         """Should find the XPath reference path is absolute."""
         md = """
         | survey |
-        | | type         | name | label | default   |
-        | | begin_group  | g1o  | g1o   |           |
-        | | begin_repeat | t    | t     |           |
-        | | begin_repeat | r1s  | r1s   |           |
-        | | text         | s    | s     | ${t}[1]/s |
-        | | end_repeat   |      |       |           |
-        | | end_repeat   |      |       |           |
-        | | end_group    |      |       |           |
+        | | type         | name | label | default       |
+        | | begin_group  | g1o  | g1o   |               |
+        | | begin_repeat | t    | t     |               |
+        | | begin_repeat | r1s  | r1s   |               |
+        | | text         | s    | s     | ${t}[1]/r1s/s |
+        | | end_repeat   |      |       |               |
+        | | end_repeat   |      |       |               |
+        | | end_group    |      |       |               |
             """
         self.assertPyxformXform(
             md=md,
@@ -646,7 +646,7 @@ class TestReferencesToAncestorRepeat(PyxformTestCase):
                 """
                 /h:html/h:head/x:model/x:setvalue[
                   @ref='/test_name/g1o/t/r1s/s'
-                  and @value=' /test_name/g1o/t [1]/s'
+                  and @value=' /test_name/g1o/t [1]/r1s/s'
                 ]
                 """
             ],
