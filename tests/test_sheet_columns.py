@@ -734,6 +734,7 @@ class TestHeaderProcessing(PyxformTestCase):
                 row={"a": "b", "c": "d", "e": "f"},
                 header_key={"a": ("a",), "c": ("b", "z")},
                 default_language=constants.DEFAULT_LANGUAGE_VALUE,
+                row_number=2,
             )
         self.assertEqual(
             INVALID_HEADER.format(sheet_name="survey", header="e"),

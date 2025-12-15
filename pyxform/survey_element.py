@@ -7,7 +7,7 @@ import re
 import warnings
 from collections.abc import Callable, Generator, Iterable, Mapping
 from itertools import chain
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from pyxform import aliases as alias
 from pyxform import constants as const
@@ -294,7 +294,7 @@ class SurveyElement(Mapping):
             if isinstance(value, dict):
                 self._delete_keys_from_dict(value, keys)
 
-    def copy(self):
+    def copy(self) -> dict[str, Any]:
         return {k: self[k] for k in self}
 
     def to_json_dict(self, delete_keys: Iterable[str] | None = None) -> dict:
@@ -343,7 +343,7 @@ class SurveyElement(Mapping):
 
         return result
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self.to_json_dict())
 
     def json_dump(self, path=""):

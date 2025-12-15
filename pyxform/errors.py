@@ -56,10 +56,19 @@ class ErrorCode(Enum):
         ),
     )
     PYREF_003: Detail = Detail(
-        name="PyXForm Reference Question Not Found",
+        name="PyXForm Reference Name Not Found",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "Reference variables must refer to a question name. Could not find '{q}'."
+            "Reference variables must contain a name from the 'survey' sheet. Could not "
+            "find the name '{q}'."
+        ),
+    )
+    PYREF_004: Detail = Detail(
+        name="PyXForm Reference Duplicate Name",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Reference variables names must be unique anywhere in the 'survey'. The name "
+            "'{q}' appears more than once."
         ),
     )
     INTERNAL_001: Detail = Detail(

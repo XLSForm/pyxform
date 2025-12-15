@@ -2,6 +2,8 @@
 The last-saved virtual instance can be queried to get values from the last saved instance of the form being authored.
 """
 
+from pyxform.errors import ErrorCode
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -192,7 +194,9 @@ class LastSavedTest(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "There has been a problem trying to replace ${last-saved#foo} with the XPath to the survey element named 'foo'. There is no survey element named 'foo'."
+                ErrorCode.PYREF_003.value.format(
+                    sheet="survey", column="calculation", row=2, q="foo"
+                )
             ],
         )
 

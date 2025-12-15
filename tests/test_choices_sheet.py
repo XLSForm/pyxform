@@ -1,3 +1,4 @@
+from pyxform.errors import ErrorCode
 from pyxform.validators.pyxform import choices as vc
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -5,7 +6,7 @@ from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
 
 
-class ChoicesSheetTest(PyxformTestCase):
+class TestChoicesSheet(PyxformTestCase):
     def test_numeric_choice_names__for_static_selects__allowed(self):
         """
         Test numeric choice names for static selects.
@@ -287,5 +288,268 @@ class ChoicesSheetTest(PyxformTestCase):
             xml__xpath_match=[
                 xpc.model_instance_choices_label("list", (("a", "A"), ("b", "B"))),
                 xpq.body_select1_itemset("S1"),
+            ],
+        )
+
+    def test_label_from_reference(self):
+        """Should find the label is an output node using the reference."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | label |
+        | | c1        | n1   | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_instance_choices_itext("c1", ("n1",)),
+                """
+                /h:html/h:head/x:model/x:itext/x:translation[@lang='default']
+                  /x:text[@id='c1-0']/x:value[
+                    not(@form)
+                    and normalize-space(./text())=''
+                    and ./x:output[@value=' /test_name/q1 ']
+                  ]
+                """,
+            ],
+        )
+
+    def test_label_from_reference__translated(self):
+        """Should find the label is an output node using the reference."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | label::English (en) |
+        | | c1        | n1   | ${q1}               |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_instance_choices_itext("c1", ("n1",)),
+                """
+                /h:html/h:head/x:model/x:itext/x:translation[@lang='English (en)']
+                  /x:text[@id='c1-0']/x:value[
+                    not(@form)
+                    and normalize-space(./text())=''
+                    and ./x:output[@value=' /test_name/q1 ']
+                  ]
+                """,
+            ],
+        )
+
+    def test_label_from_reference__name_not_found__error(self):
+        """Should raise an error if the referenced name is not in the survey sheet."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | label  |
+        | | c1        | n1   | ${q1x} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="choices", column="label", row=2, q="q1x"
+                )
+            ],
+        )
+
+    def test_label_from_reference__name_not_found__translated__error(self):
+        """Should raise an error if the referenced name is not in the survey sheet."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | label::English (en) |
+        | | c1        | n1   | ${q1x}              |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="choices", column="label::English (en)", row=2, q="q1x"
+                )
+            ],
+        )
+
+    def test_media_from_reference(self):
+        """Should find the media is an output node using the reference."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | audio |
+        | | c1        | n1   | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_instance_choices_itext("c1", ("n1",)),
+                # e.g. ' jr://audio/<output value=" /test_name/q1 "</output> '
+                """
+                /h:html/h:head/x:model/x:itext/x:translation[@lang='default']
+                  /x:text[@id='c1-0']/x:value[
+                    @form='audio'
+                    and normalize-space(./text())='jr://audio/'
+                    and ./x:output[@value=' /test_name/q1 ']
+                  ]
+                """,
+            ],
+        )
+
+    def test_media_from_reference__translated(self):
+        """Should find the media is an output node using the reference."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | audio::English (en) |
+        | | c1        | n1   | ${q1}               |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpc.model_instance_choices_itext("c1", ("n1",)),
+                """
+                /h:html/h:head/x:model/x:itext/x:translation[@lang='English (en)']
+                  /x:text[@id='c1-0']/x:value[
+                    @form='audio'
+                    and normalize-space(./text())='jr://audio/'
+                    and ./x:output[@value=' /test_name/q1 ']
+                  ]
+                """,
+            ],
+        )
+
+    def test_media_from_reference__name_not_found__error(self):
+        """Should raise an error if the referenced name is not in the survey sheet."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | audio  |
+        | | c1        | n1   | ${q1x} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="choices", column="audio", row=2, q="q1x"
+                )
+            ],
+        )
+
+    def test_media_from_reference__name_not_found__translated__error(self):
+        """Should raise an error if the referenced name is not in the survey sheet."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | audio::English (en) |
+        | | c1        | n1   | ${q1x}              |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="choices", column="audio::English (en)", row=2, q="q1x"
+                )
+            ],
+        )
+
+    def test_reference_in_extra_columns__not_resolved(self):
+        """Should find that references in extra choices columns are not resolved."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | label | extra |
+        | | c1        | n1   | N1    | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance[@id='c1']/x:root/x:item[
+                  ./x:name/text()='n1'
+                  and ./x:label/text()='N1'
+                  and ./x:extra/text()='${q1}'
+                ]
+                """,
+            ],
+        )
+
+    def test_reference_in_extra_columns__not_validated(self):
+        """Should find that references in extra choices columns are not validated."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+        | | audio         | q2   | Q2    |
+
+        | choices |
+        | | list_name | name | label | unknown  | bad_syntax |
+        | | c1        | n1   | N1    | ${q1x}   | ${}        |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance[@id='c1']/x:root/x:item[
+                  ./x:name/text()='n1'
+                  and ./x:label/text()='N1'
+                  and ./x:unknown/text()='${q1x}'
+                  and ./x:bad_syntax/text()='${}'
+                ]
+                """
+            ],
+        )
+
+    def test_reference_in_extra_columns__between_columns_of_interest(self):
+        """Should find that references validation works if the extra columns are interspersed."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | extra | name | label |
+        | | c1        | ${q1} | n1   | N1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance[@id='c1']/x:root/x:item[
+                  ./x:name/text()='n1'
+                  and ./x:label/text()='N1'
+                  and ./x:extra/text()='${q1}'
+                ]
+                """,
             ],
         )
