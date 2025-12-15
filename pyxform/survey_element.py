@@ -94,6 +94,9 @@ class SurveyElement(Mapping):
             self._survey_element_xpath = None
         super().__setattr__(key, value)
 
+    def __repr__(self):
+        return f"""{super().__repr__()}(name="{self.name}")"""
+
     def __init__(
         self,
         name: str,
@@ -195,13 +198,6 @@ class SurveyElement(Mapping):
         """
         Get the relation type, steps from self, steps from other, and the common ancestor.
         """
-
-        # Quick check for immediate relation.
-        if self.parent is other:
-            return "Parent (other)", 1, 0, other
-        elif other.parent is self:
-            return "Parent (self)", 0, 1, self
-
         # Filtering
         if group_type:
             type_filter = {group_type}
@@ -211,10 +207,10 @@ class SurveyElement(Mapping):
         # Traversal tracking
         self_ancestors = {}
         other_ancestors = {}
-        self_current = self
-        other_current = other
-        self_distance = 0
-        other_distance = 0
+        self_current = self.parent
+        other_current = other.parent
+        self_distance = 1
+        other_distance = 1
         lca = None
 
         # Traverse up both ancestor chains as far as necessary.

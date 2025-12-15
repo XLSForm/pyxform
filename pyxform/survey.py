@@ -113,8 +113,8 @@ def get_path_relative_to_lcar(
     if reference_parent:
         # The LCAR may or may not be the closest ancestor repeat for source or target,
         # but there's always at least the LCAR, so a check for None isn't needed.
-        source_car, _ = next(source.iter_ancestors(condition=is_repeat), None)
-        target_car, _ = next(target.iter_ancestors(condition=is_repeat), None)
+        source_car, _ = next(source.iter_ancestors(condition=is_repeat), (None, None))
+        target_car, _ = next(target.iter_ancestors(condition=is_repeat), (None, None))
         # May return None if LCAR is a child of the Survey, or only non-repeating group(s).
         lcar_not_in_repeat = next(lcar.iter_ancestors(condition=is_repeat), None) is None
 
