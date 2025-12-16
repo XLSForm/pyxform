@@ -8,7 +8,6 @@ from unittest import skip
 
 from psutil import Process
 from pyxform.errors import ErrorCode
-from pyxform.validators.pyxform import unique_names
 from pyxform.xls2json_backends import SupportedFileTypes
 from pyxform.xls2xform import convert
 
@@ -1375,7 +1374,7 @@ class TestRepeatParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES004.format(row=7, value="r1")],
+            error__contains=[ErrorCode.NAMES_004.value.format(row=7, value="r1")],
         )
 
     def test_names__repeat_same_as_repeat_in_different_context_in_repeat__error(self):
@@ -1395,7 +1394,7 @@ class TestRepeatParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES004.format(row=7, value="r2")],
+            error__contains=[ErrorCode.NAMES_004.value.format(row=7, value="r2")],
         )
 
     def test_empty_repeat__no_question__ok(self):

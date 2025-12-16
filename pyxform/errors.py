@@ -66,6 +66,14 @@ class ErrorCode(Enum):
             "Repeat names must not be the same as the survey root (which defaults to 'data')."
         ),
     )
+    NAMES_004 = Detail(
+        name="Invalid duplicate repeat name in the survey",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
+            "Repeat names must unique anywhere in the survey, at all levels of group or "
+            "repeat nesting."
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(
