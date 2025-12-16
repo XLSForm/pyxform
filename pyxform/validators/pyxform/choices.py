@@ -1,12 +1,6 @@
 from pyxform import constants
 from pyxform.errors import ErrorCode, PyXFormError
 
-INVALID_HEADER = (
-    "[row : 1] On the 'choices' sheet, the '{column}' value is invalid. "
-    "Column headers must not be empty and must not contain spaces. "
-    "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
-)
-
 
 def validate_headers(
     headers: tuple[tuple[str, ...], ...], warnings: list[str]
@@ -15,7 +9,7 @@ def validate_headers(
         for header in headers:
             header = header[0]
             if header != constants.LIST_NAME_S and (" " in header or header == ""):
-                warnings.append(INVALID_HEADER.format(column=header))
+                warnings.append(ErrorCode.HEADER_004.value.format(column=header))
                 yield header
 
     return tuple(check())
