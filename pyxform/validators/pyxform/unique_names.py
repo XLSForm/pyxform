@@ -1,13 +1,5 @@
 from pyxform import constants as const
-from pyxform.errors import Detail, ErrorCode, PyXFormError
-
-NAMES005 = Detail(
-    name="Invalid duplicate meta name in the survey",
-    msg=(
-        "[row : {row}] On the 'survey' sheet, the 'name' value 'meta' is invalid. "
-        "The name 'meta' is reserved for form metadata."
-    ),
-)
+from pyxform.errors import ErrorCode, PyXFormError
 
 
 def validate_question_group_repeat_name(
@@ -40,7 +32,7 @@ def validate_question_group_repeat_name(
 
     if name in seen_names:
         if name == const.META:
-            raise PyXFormError(NAMES005.format(row=row_number))
+            raise PyXFormError(ErrorCode.NAMES_005.value.format(row=row_number))
         else:
             raise PyXFormError(
                 ErrorCode.NAMES_001.value.format(row=row_number, value=name)

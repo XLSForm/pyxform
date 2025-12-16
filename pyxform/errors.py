@@ -74,6 +74,13 @@ class ErrorCode(Enum):
             "repeat nesting."
         ),
     )
+    NAMES_005 = Detail(
+        name="Invalid duplicate meta name in the survey",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'name' value 'meta' is invalid. "
+            "The name 'meta' is reserved for form metadata."
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(
