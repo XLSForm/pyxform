@@ -75,6 +75,22 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
+    INTERNAL_001: Detail = Detail(
+        name="Internal error: Incorrectly Processed Question Trigger Data",
+        msg=(
+            "Internal error: "
+            "PyXForm expected processed trigger data as a tuple, but received a "
+            "type '{type}' with value '{value}'."
+        ),
+    )
+    LABEL_001: Detail = Detail(
+        name="Invalid missing label in the choices sheet",
+        msg=(
+            "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
+            "Choices should have a label. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
     NAMES_001: Detail = Detail(
         name="Invalid duplicate name in same context",
         msg=(
@@ -132,14 +148,6 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/#choice-names."
         ),
     )
-    LABEL_001: Detail = Detail(
-        name="Invalid missing label in the choices sheet",
-        msg=(
-            "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
-            "Choices should have a label. "
-            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
-        ),
-    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(
@@ -168,14 +176,6 @@ class ErrorCode(Enum):
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Reference variables names must be unique anywhere in the 'survey'. The name "
             "'{q}' appears more than once."
-        ),
-    )
-    INTERNAL_001: Detail = Detail(
-        name="Internal error: Incorrectly Processed Question Trigger Data",
-        msg=(
-            "Internal error: "
-            "PyXForm expected processed trigger data as a tuple, but received a "
-            "type '{type}' with value '{value}'."
         ),
     )
     SURVEY_003: Detail = Detail(
