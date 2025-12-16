@@ -56,6 +56,13 @@ class ErrorCode(Enum):
             "The entity repeat target was not found in the 'survey' sheet."
         ),
     )
+    ENTITY_003 = Detail(
+        name="Invalid entity repeat: target is not a repeat",
+        msg=(
+            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
+            "The entity repeat target is not a repeat."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Invalid missing header row.",
         msg=(
