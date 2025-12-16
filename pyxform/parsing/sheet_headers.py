@@ -10,11 +10,6 @@ from pyxform.xls2json_backends import RE_WHITESPACE
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
-INVALID_DUPLICATE = (
-    "Invalid headers provided for sheet: '{sheet_name}'. Headers that are different "
-    "names for the same column were found: '{other}', '{header}'. Rename or remove one "
-    "of these columns."
-)
 INVALID_MISSING_REQUIRED = (
     "Invalid headers provided for sheet: '{sheet_name}'. One or more required column "
     "headers were not found: {missing}. "
@@ -261,7 +256,7 @@ def dealias_and_group_headers(
                 other_header = tokens_key.get(tokens)
                 if other_header and new_header != header:
                     raise PyXFormError(
-                        INVALID_DUPLICATE.format(
+                        ErrorCode.HEADER_002.value.format(
                             sheet_name=sheet_name,
                             other=other_header,
                             header=header,

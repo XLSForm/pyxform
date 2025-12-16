@@ -51,6 +51,14 @@ class ErrorCode(Enum):
             "within the first 100 rows, or specify the header row in '{sheet_name}_header'."
         ),
     )
+    HEADER_002: Detail = Detail(
+        name="Invalid duplicate header.",
+        msg=(
+            "Invalid headers provided for sheet: '{sheet_name}'. Headers that are different "
+            "names for the same column were found: '{other}', '{header}'. Rename or remove one "
+            "of these columns."
+        ),
+    )
     NAMES_001: Detail = Detail(
         name="Invalid duplicate name in same context",
         msg=(

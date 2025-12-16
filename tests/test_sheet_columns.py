@@ -9,7 +9,6 @@ from unittest import skip
 from pyxform import constants
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.sheet_headers import (
-    INVALID_DUPLICATE,
     INVALID_MISSING_REQUIRED,
     dealias_and_group_headers,
     process_header,
@@ -356,7 +355,7 @@ class TestColumnAliases(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                INVALID_DUPLICATE.format(
+                ErrorCode.HEADER_002.value.format(
                     sheet_name="survey", other="name", header="value"
                 )
             ],
@@ -374,7 +373,9 @@ class TestColumnAliases(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                INVALID_DUPLICATE.format(sheet_name="survey", other="name", header="name")
+                ErrorCode.HEADER_002.value.format(
+                    sheet_name="survey", other="name", header="name"
+                )
             ],
         )
 
