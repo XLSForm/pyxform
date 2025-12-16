@@ -8,13 +8,6 @@ from pyxform.parsing.expression import is_xml_tag
 from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
-ENTITY002 = Detail(
-    name="Invalid entity repeat: target not found",
-    msg=(
-        "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-        "The entity repeat target was not found in the 'survey' sheet."
-    ),
-)
 ENTITY003 = Detail(
     name="Invalid entity repeat: target is not a repeat",
     msg=(
@@ -362,7 +355,7 @@ def validate_entity_repeat_target(
 
     # Error: repeat not found while processing survey sheet.
     if not stack:
-        raise PyXFormError(ENTITY002.format(value=entity_repeat))
+        raise PyXFormError(ErrorCode.ENTITY_002.value.format(value=entity_repeat))
 
     control_name = stack[-1]["control_name"]
     control_type = stack[-1]["control_type"]
