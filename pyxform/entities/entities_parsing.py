@@ -3,19 +3,11 @@ from typing import Any
 
 from pyxform import constants as const
 from pyxform.elements import action
-from pyxform.errors import Detail, PyXFormError
+from pyxform.errors import Detail, ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
 from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
-ENTITY001 = Detail(
-    name="Invalid entity repeat reference",
-    msg=(
-        "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-        "The 'repeat' column, if specified, must contain only a single reference variable "
-        "(like '${{q1}}'), and the reference variable must contain a valid name."
-    ),
-)
 ENTITY002 = Detail(
     name="Invalid entity repeat: target not found",
     msg=(
@@ -263,7 +255,7 @@ def get_validated_repeat_name(entity) -> str | None:
         raise
     else:
         if not match or match[0].last_saved:
-            raise PyXFormError(ENTITY001.format(value=value))
+            raise PyXFormError(ErrorCode.ENTITY_001.value.format(value=value))
         else:
             return match[0].name
 

@@ -41,6 +41,14 @@ class Detail:
 
 
 class ErrorCode(Enum):
+    ENTITY_001 = Detail(
+        name="Invalid entity repeat reference",
+        msg=(
+            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
+            "The 'repeat' column, if specified, must contain only a single reference variable "
+            "(like '${{q1}}'), and the reference variable must contain a valid name."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Invalid missing header row.",
         msg=(
