@@ -1,11 +1,6 @@
 from pyxform import constants
 from pyxform.errors import ErrorCode, PyXFormError
 
-INVALID_LABEL = (
-    "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
-    "Choices should have a label. "
-    "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
-)
 INVALID_HEADER = (
     "[row : 1] On the 'choices' sheet, the '{column}' value is invalid. "
     "Column headers must not be empty and must not contain spaces. "
@@ -41,7 +36,7 @@ def validate_choice_list(
         if constants.NAME not in option:
             raise PyXFormError(ErrorCode.NAMES_006.value.format(row=option["__row"]))
         elif constants.LABEL not in option:
-            warnings.append(INVALID_LABEL.format(row=option["__row"]))
+            warnings.append(ErrorCode.LABEL_001.value.format(row=option["__row"]))
 
         if not allow_duplicates:
             name = option[constants.NAME]

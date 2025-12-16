@@ -89,6 +89,14 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
+    LABEL_001: Detail = Detail(
+        name="Invalid missing label in the choices sheet",
+        msg=(
+            "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
+            "Choices should have a label. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(
