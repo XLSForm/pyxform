@@ -1,16 +1,6 @@
 from pyxform import constants as const
 from pyxform.errors import Detail, ErrorCode, PyXFormError
 
-NAMES002 = Detail(
-    name="Invalid duplicate name in context (case-insensitive)",
-    msg=(
-        "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is problematic. "
-        "The name is a case-insensitive match to another name. Questions, groups, and "
-        "repeats should be unique within the nearest parent group or repeat, or the survey "
-        "if not inside a group or repeat. Some data processing tools are not "
-        "case-sensitive, so the current names may make analysis difficult."
-    ),
-)
 NAMES003 = Detail(
     name="Invalid repeat name same as survey",
     msg=(
@@ -75,7 +65,7 @@ def validate_question_group_repeat_name(
     question_name_lower = name.lower()
     if question_name_lower in seen_names_lower:
         # No case-insensitive warning for 'meta' since it's not an exported data table.
-        warnings.append(NAMES002.format(row=row_number, value=name))
+        warnings.append(ErrorCode.NAMES_002.value.format(row=row_number, value=name))
     seen_names_lower.add(question_name_lower)
 
 

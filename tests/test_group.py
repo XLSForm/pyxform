@@ -6,7 +6,6 @@ from unittest import TestCase
 
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import ErrorCode
-from pyxform.validators.pyxform import unique_names
 from pyxform.xls2json import SURVEY_001, SURVEY_002
 from pyxform.xls2xform import convert
 
@@ -386,7 +385,8 @@ class TestGroupParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=5, value="G1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=5, value="G1")],
         )
 
     def test_names__group_same_as_repeat_in_same_context_in_survey__case_insensitive_warning(
@@ -404,7 +404,8 @@ class TestGroupParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=5, value="G1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=5, value="G1")],
         )
 
     def test_names__group_same_as_group_in_same_context_in_group__case_insensitive_warning(
@@ -424,7 +425,8 @@ class TestGroupParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="G2")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=6, value="G2")],
         )
 
     def test_names__group_same_as_repeat_in_same_context_in_group__case_insensitive_warning(
@@ -444,7 +446,8 @@ class TestGroupParsing(PyxformTestCase):
         | | end group    |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="G2")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=6, value="G2")],
         )
 
     def test_names__group_same_as_group_in_same_context_in_repeat__case_insensitive_warning(
@@ -464,7 +467,8 @@ class TestGroupParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="G2")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=6, value="G2")],
         )
 
     def test_names__group_same_as_repeat_in_same_context_in_repeat__case_insensitive_warning(
@@ -484,7 +488,8 @@ class TestGroupParsing(PyxformTestCase):
         | | end repeat    |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="G2")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=6, value="G2")],
         )
 
     def test_group__no_end_error__no_name(self):

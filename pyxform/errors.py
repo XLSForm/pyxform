@@ -49,6 +49,16 @@ class ErrorCode(Enum):
             "or repeat, or the survey if not inside a group or repeat."
         ),
     )
+    NAMES_002 = Detail(
+        name="Invalid duplicate name in context (case-insensitive)",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is problematic. "
+            "The name is a case-insensitive match to another name. Questions, groups, and "
+            "repeats should be unique within the nearest parent group or repeat, or the survey "
+            "if not inside a group or repeat. Some data processing tools are not "
+            "case-sensitive, so the current names may make analysis difficult."
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(
