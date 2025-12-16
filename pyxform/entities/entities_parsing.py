@@ -3,19 +3,11 @@ from typing import Any
 
 from pyxform import constants as const
 from pyxform.elements import action
-from pyxform.errors import Detail, ErrorCode, PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
 from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
-ENTITY007 = Detail(
-    name="Invalid entity repeat save_to: question in repeat but no entity repeat defined",
-    msg=(
-        "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-        "The entity property populated with 'save_to' must be inside a repeat that is "
-        "declared in the 'repeat' column of the 'entities' sheet."
-    ),
-)
 
 
 def get_entity_declaration(
@@ -267,7 +259,9 @@ def validate_entity_saveto(
 
     # Error: saveto in repeat but no entity repeat declared
     if in_repeat and not entity_repeat:
-        raise PyXFormError(ENTITY007.format(row=row_number, value=save_to))
+        raise PyXFormError(
+            ErrorCode.ENTITY_007.value.format(row=row_number, value=save_to)
+        )
 
     error_start = f"{const.ROW_FORMAT_STRING % row_number} Invalid save_to name:"
 

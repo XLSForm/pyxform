@@ -1,5 +1,5 @@
 from pyxform import constants as co
-from pyxform.entities import entities_parsing as ep
+from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
@@ -369,7 +369,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ep.ENTITY007.format(row=3, value="q1e")],
+            error__contains=[ErrorCode.ENTITY_007.value.format(row=3, value="q1e")],
         )
 
     def test_saveto_in_group__works(self):
