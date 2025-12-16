@@ -1296,7 +1296,8 @@ class TestRepeatParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=5, value="R1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=5, value="R1")],
         )
 
     def test_names__repeat_same_as_repeat_in_same_context_in_group__case_insensitive_warning(
@@ -1316,7 +1317,8 @@ class TestRepeatParsing(PyxformTestCase):
         | | end group    |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="R1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=6, value="R1")],
         )
 
     def test_names__repeat_same_as_repeat_in_same_context_in_repeat__case_insensitive_warning(
@@ -1336,7 +1338,8 @@ class TestRepeatParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="R2")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=6, value="R2")],
         )
 
     def test_names__repeat_same_as_survey_root__error(self):

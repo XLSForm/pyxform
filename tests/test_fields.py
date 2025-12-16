@@ -3,7 +3,6 @@ Test duplicate survey question field name.
 """
 
 from pyxform.errors import ErrorCode
-from pyxform.validators.pyxform import unique_names
 
 from tests.pyxform_test_case import PyxformTestCase
 
@@ -323,7 +322,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | text        | Q1   | Q2    |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=3, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=3, value="Q1")],
         )
 
     def test_names__question_same_as_group_in_same_context_in_survey__case_insensitive_warning(
@@ -339,7 +339,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=3, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=3, value="Q1")],
         )
 
     def test_names__question_same_as_repeat_in_same_context_in_survey__case_insensitive_warning(
@@ -355,7 +356,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=3, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=3, value="Q1")],
         )
 
     def test_names__question_same_as_question_in_same_context_in_group__case_insensitive_warning(
@@ -371,7 +373,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_names__question_same_as_group_in_same_context_in_group__case_insensitive_warning(
@@ -389,7 +392,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_names__question_same_as_repeat_in_same_context_in_group__case_insensitive_warning(
@@ -407,7 +411,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end group    |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_names__question_same_as_question_in_same_context_in_repeat__case_insensitive_warning(
@@ -423,7 +428,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_names__question_same_as_group_in_same_context_in_repeat__case_insensitive_warning(
@@ -441,7 +447,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_names__question_same_as_repeat_in_same_context_in_repeat__case_insensitive_warning(
@@ -459,7 +466,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_reference_name_not_found__target_after_source__error(self):
