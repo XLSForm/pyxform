@@ -1,14 +1,6 @@
 from pyxform import constants as const
-from pyxform.errors import Detail, PyXFormError
+from pyxform.errors import Detail, ErrorCode, PyXFormError
 
-NAMES001 = Detail(
-    name="Invalid duplicate name in same context",
-    msg=(
-        "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
-        "Questions, groups, and repeats must be unique within their nearest parent group "
-        "or repeat, or the survey if not inside a group or repeat."
-    ),
-)
 NAMES002 = Detail(
     name="Invalid duplicate name in context (case-insensitive)",
     msg=(
@@ -75,7 +67,9 @@ def validate_question_group_repeat_name(
         if name == const.META:
             raise PyXFormError(NAMES005.format(row=row_number))
         else:
-            raise PyXFormError(NAMES001.format(row=row_number, value=name))
+            raise PyXFormError(
+                ErrorCode.NAMES_001.value.format(row=row_number, value=name)
+            )
     seen_names.add(name)
 
     question_name_lower = name.lower()

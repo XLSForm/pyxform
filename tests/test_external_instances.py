@@ -6,7 +6,7 @@ See also test_external_instances_for_selects
 
 from textwrap import dedent
 
-from pyxform.validators.pyxform import unique_names
+from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
 from tests.xpath_helpers.choices import xpc
@@ -50,7 +50,7 @@ class ExternalInstanceTests(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=3, value="mydata")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=3, value="mydata")],
         )
 
     def test_can__use_unique_external_xml_in_same_section(self):

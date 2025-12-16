@@ -41,6 +41,14 @@ class Detail:
 
 
 class ErrorCode(Enum):
+    NAMES_001: Detail = Detail(
+        name="Invalid duplicate name in same context",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
+            "Questions, groups, and repeats must be unique within their nearest parent group "
+            "or repeat, or the survey if not inside a group or repeat."
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(
