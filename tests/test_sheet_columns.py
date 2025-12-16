@@ -9,7 +9,6 @@ from unittest import skip
 from pyxform import constants
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.sheet_headers import (
-    INVALID_MISSING_REQUIRED,
     dealias_and_group_headers,
     process_header,
     process_row,
@@ -201,7 +200,7 @@ class TestSurveyColumns(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                INVALID_MISSING_REQUIRED.format(sheet_name="survey", missing="'type'")
+                ErrorCode.HEADER_003.value.format(sheet_name="survey", missing="'type'")
             ],
         )
 
@@ -260,7 +259,7 @@ class TestChoicesColumns(PyxformTestCase):
             ),
             errored=True,
             error__contains=[
-                INVALID_MISSING_REQUIRED.format(sheet_name="choices", missing="'name'")
+                ErrorCode.HEADER_003.value.format(sheet_name="choices", missing="'name'")
             ],
         )
 
@@ -309,7 +308,7 @@ class TestChoicesColumns(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                INVALID_MISSING_REQUIRED.format(sheet_name="choices", missing="'name'")
+                ErrorCode.HEADER_003.value.format(sheet_name="choices", missing="'name'")
             ],
         )
 

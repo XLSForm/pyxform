@@ -59,6 +59,14 @@ class ErrorCode(Enum):
             "of these columns."
         ),
     )
+    HEADER_003: Detail = Detail(
+        name="Invalid missing required header.",
+        msg=(
+            "Invalid headers provided for sheet: '{sheet_name}'. One or more required column "
+            "headers were not found: {missing}. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
     NAMES_001: Detail = Detail(
         name="Invalid duplicate name in same context",
         msg=(

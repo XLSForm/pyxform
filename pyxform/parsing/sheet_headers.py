@@ -10,11 +10,6 @@ from pyxform.xls2json_backends import RE_WHITESPACE
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
-INVALID_MISSING_REQUIRED = (
-    "Invalid headers provided for sheet: '{sheet_name}'. One or more required column "
-    "headers were not found: {missing}. "
-    "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
-)
 
 
 def clean_text_values(
@@ -281,7 +276,7 @@ def dealias_and_group_headers(
         missing = {h for h in headers_required if h not in {h[0] for h in tokens_key}}
         if missing:
             raise PyXFormError(
-                INVALID_MISSING_REQUIRED.format(
+                ErrorCode.HEADER_003.value.format(
                     sheet_name=sheet_name, missing=", ".join(f"'{h}'" for h in missing)
                 )
             )
