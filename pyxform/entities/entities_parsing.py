@@ -8,13 +8,6 @@ from pyxform.parsing.expression import is_xml_tag
 from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
-ENTITY003 = Detail(
-    name="Invalid entity repeat: target is not a repeat",
-    msg=(
-        "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-        "The entity repeat target is not a repeat."
-    ),
-)
 ENTITY004 = Detail(
     name="Invalid entity repeat: target is in a repeat",
     msg=(
@@ -366,7 +359,7 @@ def validate_entity_repeat_target(
 
     # Error: target is not a repeat.
     if control_type and control_type != const.REPEAT:
-        raise PyXFormError(ENTITY003.format(value=entity_repeat))
+        raise PyXFormError(ErrorCode.ENTITY_003.value.format(value=entity_repeat))
 
     # Error: repeat is in nested repeat.
     located = False

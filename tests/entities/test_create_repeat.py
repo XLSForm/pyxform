@@ -418,7 +418,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${g1}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY003.format(value="g1")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_003.value.format(value="g1")],
         )
 
     def test_entity_repeat_is_a_loop__error(self):
@@ -439,7 +441,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${l1}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY003.format(value="l1")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_003.value.format(value="l1")],
         )
 
     def test_entity_repeat_in_repeat__error(self):
