@@ -7,10 +7,9 @@ from pathlib import Path
 from unittest import TestCase
 
 import pyxform
-from pyxform.errors import PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.utils import has_external_choices
 from pyxform.validators.odk_validate import ODKValidateError, check_xform
-from pyxform.validators.pyxform import choices as vc
 from pyxform.xls2json import SurveyReader
 from pyxform.xls2json_backends import DefinitionData, get_xlsform, xlsx_to_dict
 from pyxform.xls2xform import convert
@@ -78,7 +77,7 @@ class BadChoicesSheetHeaders(TestCase):
         observed = [
             w
             for w in warnings
-            if w == vc.INVALID_HEADER.format(column="header with spaces")
+            if w == ErrorCode.HEADER_004.value.format(column="header with spaces")
         ]
         self.assertEqual(1, len(observed), warnings)
 

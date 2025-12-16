@@ -67,6 +67,14 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
+    HEADER_004: Detail = Detail(
+        name="Invalid choices header.",
+        msg=(
+            "[row : 1] On the 'choices' sheet, the '{column}' value is invalid. "
+            "Column headers must not be empty and must not contain spaces. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
     NAMES_001: Detail = Detail(
         name="Invalid duplicate name in same context",
         msg=(

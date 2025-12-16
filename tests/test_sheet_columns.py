@@ -14,7 +14,6 @@ from pyxform.parsing.sheet_headers import (
     process_row,
     to_snake_case,
 )
-from pyxform.validators.pyxform import choices as vc
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -603,7 +602,7 @@ class TestHeaderProcessing(PyxformTestCase):
                 ]
                 """,
             ),
-            warnings__contains=(vc.INVALID_HEADER.format(column="e f"),),
+            warnings__contains=(ErrorCode.HEADER_004.value.format(column="e f"),),
         )
 
     def test_dealias_and_group_headers__use_double_colon_modes(self):
