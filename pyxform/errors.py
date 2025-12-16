@@ -86,6 +86,14 @@ class ErrorCode(Enum):
             "repeat."
         ),
     )
+    ENTITY_007 = Detail(
+        name="Invalid entity repeat save_to: question in repeat but no entity repeat defined",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
+            "The entity property populated with 'save_to' must be inside a repeat that is "
+            "declared in the 'repeat' column of the 'entities' sheet."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Invalid missing header row.",
         msg=(
