@@ -2,7 +2,7 @@
 Test language warnings.
 """
 
-from pyxform.validators.pyxform import unique_names
+from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
 
@@ -115,7 +115,7 @@ class TestMetadata(PyxformTestCase):
         | | text | meta | Q1    |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[unique_names.NAMES005.format(row=2)]
+            md=md, errored=True, error__contains=[ErrorCode.NAMES_005.value.format(row=2)]
         )
 
     def test_names__group_named_meta__in_survey__error(self):
@@ -128,7 +128,7 @@ class TestMetadata(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[unique_names.NAMES005.format(row=2)]
+            md=md, errored=True, error__contains=[ErrorCode.NAMES_005.value.format(row=2)]
         )
 
     def test_names__repeat_named_meta__in_survey__error(self):
@@ -141,7 +141,7 @@ class TestMetadata(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[unique_names.NAMES005.format(row=2)]
+            md=md, errored=True, error__contains=[ErrorCode.NAMES_005.value.format(row=2)]
         )
 
     def test_names__question_named_meta__in_group__error(self):
@@ -154,7 +154,7 @@ class TestMetadata(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[unique_names.NAMES005.format(row=3)]
+            md=md, errored=True, error__contains=[ErrorCode.NAMES_005.value.format(row=3)]
         )
 
     def test_names__group_named_meta__in_group__error(self):
@@ -169,7 +169,7 @@ class TestMetadata(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[unique_names.NAMES005.format(row=3)]
+            md=md, errored=True, error__contains=[ErrorCode.NAMES_005.value.format(row=3)]
         )
 
     def test_names__repeat_named_meta__in_group__error(self):
@@ -184,7 +184,7 @@ class TestMetadata(PyxformTestCase):
         | | end group    |      |       |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[unique_names.NAMES005.format(row=3)]
+            md=md, errored=True, error__contains=[ErrorCode.NAMES_005.value.format(row=3)]
         )
 
     def test_names__question_named_meta__in_repeat__error(self):
@@ -197,7 +197,7 @@ class TestMetadata(PyxformTestCase):
         | | end group    |      |       |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[unique_names.NAMES005.format(row=3)]
+            md=md, errored=True, error__contains=[ErrorCode.NAMES_005.value.format(row=3)]
         )
 
     def test_names__group_named_meta__in_repeat__error(self):
@@ -212,7 +212,7 @@ class TestMetadata(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[unique_names.NAMES005.format(row=3)]
+            md=md, errored=True, error__contains=[ErrorCode.NAMES_005.value.format(row=3)]
         )
 
     def test_names__repeat_named_meta__in_repeat__error(self):
@@ -227,5 +227,5 @@ class TestMetadata(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[unique_names.NAMES005.format(row=3)]
+            md=md, errored=True, error__contains=[ErrorCode.NAMES_005.value.format(row=3)]
         )
