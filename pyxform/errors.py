@@ -59,6 +59,13 @@ class ErrorCode(Enum):
             "case-sensitive, so the current names may make analysis difficult."
         ),
     )
+    NAMES_003 = Detail(
+        name="Invalid repeat name same as survey",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
+            "Repeat names must not be the same as the survey root (which defaults to 'data')."
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(

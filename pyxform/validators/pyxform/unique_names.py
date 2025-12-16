@@ -1,13 +1,6 @@
 from pyxform import constants as const
 from pyxform.errors import Detail, ErrorCode, PyXFormError
 
-NAMES003 = Detail(
-    name="Invalid repeat name same as survey",
-    msg=(
-        "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
-        "Repeat names must not be the same as the survey root (which defaults to 'data')."
-    ),
-)
 NAMES004 = Detail(
     name="Invalid duplicate repeat name in the survey",
     msg=(
@@ -91,7 +84,9 @@ def validate_repeat_name(
     """
     if control_type == const.REPEAT:
         if name == instance_element_name:
-            raise PyXFormError(NAMES003.format(row=row_number, value=name))
+            raise PyXFormError(
+                ErrorCode.NAMES_003.value.format(row=row_number, value=name)
+            )
         elif name in seen_names:
             raise PyXFormError(NAMES004.format(row=row_number, value=name))
         seen_names.add(name)

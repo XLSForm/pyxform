@@ -1355,7 +1355,7 @@ class TestRepeatParsing(PyxformTestCase):
             md=md,
             name="data",
             errored=True,
-            error__contains=[unique_names.NAMES003.format(row=2, value="data")],
+            error__contains=[ErrorCode.NAMES_003.value.format(row=2, value="data")],
         )
 
     def test_names__repeat_same_as_repeat_in_different_context_in_group__error(self):
