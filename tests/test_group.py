@@ -6,7 +6,6 @@ from unittest import TestCase
 
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import ErrorCode
-from pyxform.xls2json import SURVEY_002
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -517,7 +516,9 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[SURVEY_002.format(row=2, type="group", name="g1")],
+            error__contains=[
+                ErrorCode.SURVEY_002.value.format(row=2, type="group", name="g1")
+            ],
         )
 
     def test_group__no_end_error__different_end_type(self):
@@ -548,7 +549,9 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[SURVEY_002.format(row=2, type="group", name="g1")],
+            error__contains=[
+                ErrorCode.SURVEY_002.value.format(row=2, type="group", name="g1")
+            ],
         )
 
     def test_group__no_begin_error(self):
