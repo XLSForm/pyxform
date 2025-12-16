@@ -49,6 +49,13 @@ class ErrorCode(Enum):
             "(like '${{q1}}'), and the reference variable must contain a valid name."
         ),
     )
+    ENTITY_002 = Detail(
+        name="Invalid entity repeat: target not found",
+        msg=(
+            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
+            "The entity repeat target was not found in the 'survey' sheet."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Invalid missing header row.",
         msg=(

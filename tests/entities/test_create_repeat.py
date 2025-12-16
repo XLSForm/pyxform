@@ -399,7 +399,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r2}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY002.format(value="r2")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_002.value.format(value="r2")],
         )
 
     def test_entity_repeat_is_a_group__error(self):
