@@ -7,10 +7,9 @@ from dataclasses import dataclass
 from unittest import skip
 
 from pyxform import constants
-from pyxform.errors import PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.sheet_headers import (
     INVALID_DUPLICATE,
-    INVALID_HEADER,
     INVALID_MISSING_REQUIRED,
     dealias_and_group_headers,
     process_header,
@@ -737,7 +736,7 @@ class TestHeaderProcessing(PyxformTestCase):
                 row_number=2,
             )
         self.assertEqual(
-            INVALID_HEADER.format(sheet_name="survey", header="e"),
+            ErrorCode.HEADER_001.value.format(sheet_name="survey", header="e"),
             err.exception.args[0],
         )
 
@@ -752,7 +751,7 @@ class TestHeaderProcessing(PyxformTestCase):
         with self.assertRaises(PyXFormError) as err:
             convert(xlsform={"survey": survey_data})
         self.assertEqual(
-            INVALID_HEADER.format(sheet_name="survey", header="e"),
+            ErrorCode.HEADER_001.value.format(sheet_name="survey", header="e"),
             err.exception.args[0],
         )
 
@@ -771,7 +770,9 @@ class TestHeaderProcessing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=INVALID_HEADER.format(sheet_name="survey", header="None"),
+            error__contains=[
+                ErrorCode.HEADER_001.value.format(sheet_name="survey", header="unknown"),
+            ],
         )
 
     def test_process_row__bad_header_info__happy_path(self):

@@ -4,19 +4,12 @@ from itertools import chain, islice
 from typing import Any
 
 from pyxform import constants
-from pyxform.errors import PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import maybe_strip
 from pyxform.xls2json_backends import RE_WHITESPACE
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
-INVALID_HEADER = (
-    "Invalid headers provided for sheet: '{sheet_name}'. For XLSForms, this may be due "
-    "a missing header row, in which case add a header row as per the reference template "
-    "https://xlsform.org/en/ref-table/. For internal API usage, may be due to a missing "
-    "mapping for '{header}', in which case ensure that the full set of headers appear "
-    "within the first 100 rows, or specify the header row in '{sheet_name}_header'."
-)
 INVALID_DUPLICATE = (
     "Invalid headers provided for sheet: '{sheet_name}'. Headers that are different "
     "names for the same column were found: '{other}', '{header}'. Rename or remove one "
@@ -196,7 +189,7 @@ def process_row(
         tokens = header_key.get(header, None)
         if not tokens:
             raise PyXFormError(
-                INVALID_HEADER.format(sheet_name=sheet_name, header=header)
+                ErrorCode.HEADER_001.value.format(sheet_name=sheet_name, header=header)
             )
         elif len(tokens) == 1:
             out_row[tokens[0]] = val

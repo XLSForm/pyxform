@@ -41,6 +41,16 @@ class Detail:
 
 
 class ErrorCode(Enum):
+    HEADER_001: Detail = Detail(
+        name="Invalid missing header row.",
+        msg=(
+            "Invalid headers provided for sheet: '{sheet_name}'. For XLSForms, this may be due "
+            "a missing header row, in which case add a header row as per the reference template "
+            "https://xlsform.org/en/ref-table/. For internal API usage, may be due to a missing "
+            "mapping for '{header}', in which case ensure that the full set of headers appear "
+            "within the first 100 rows, or specify the header row in '{sheet_name}_header'."
+        ),
+    )
     NAMES_001: Detail = Detail(
         name="Invalid duplicate name in same context",
         msg=(
