@@ -89,6 +89,15 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
+    NAMES_007: Detail = Detail(
+        name="Invalid duplicate name in the choices sheet",
+        msg=(
+            "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
+            "Choice names must be unique for each choice list. "
+            "If this is intentional, use the setting 'allow_choice_duplicates'. "
+            "Learn more: https://xlsform.org/#choice-names."
+        ),
+    )
     LABEL_001: Detail = Detail(
         name="Invalid missing label in the choices sheet",
         msg=(

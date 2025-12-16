@@ -1,5 +1,4 @@
 from pyxform.errors import ErrorCode
-from pyxform.validators.pyxform import choices as vc
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
@@ -174,7 +173,7 @@ class TestChoicesSheet(PyxformTestCase):
             |         | list            | b        | option c |
             """,
             errored=True,
-            error__contains=[vc.INVALID_DUPLICATE.format(row=4)],
+            error__contains=[ErrorCode.NAMES_007.value.format(row=4)],
         )
 
     def test_multiple_duplicate_choices_without_setting(self):
@@ -192,8 +191,8 @@ class TestChoicesSheet(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                vc.INVALID_DUPLICATE.format(row=3),
-                vc.INVALID_DUPLICATE.format(row=5),
+                ErrorCode.NAMES_007.value.format(row=3),
+                ErrorCode.NAMES_007.value.format(row=5),
             ],
         )
 
@@ -213,7 +212,7 @@ class TestChoicesSheet(PyxformTestCase):
             |          | Duplicates   | Bob                       |
             """,
             errored=True,
-            error__contains=[vc.INVALID_DUPLICATE.format(row=4)],
+            error__contains=[ErrorCode.NAMES_007.value.format(row=4)],
         )
 
     def test_duplicate_choices_with_allow_choice_duplicates_setting(self):

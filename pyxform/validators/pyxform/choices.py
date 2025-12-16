@@ -6,12 +6,6 @@ INVALID_HEADER = (
     "Column headers must not be empty and must not contain spaces. "
     "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
 )
-INVALID_DUPLICATE = (
-    "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
-    "Choice names must be unique for each choice list. "
-    "If this is intentional, use the setting 'allow_choice_duplicates'. "
-    "Learn more: https://xlsform.org/#choice-names."
-)
 
 
 def validate_headers(
@@ -41,7 +35,9 @@ def validate_choice_list(
         if not allow_duplicates:
             name = option[constants.NAME]
             if name in seen_options:
-                duplicate_errors.append(INVALID_DUPLICATE.format(row=option["__row"]))
+                duplicate_errors.append(
+                    ErrorCode.NAMES_007.value.format(row=option["__row"])
+                )
             else:
                 seen_options.add(name)
 
