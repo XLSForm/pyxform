@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import ErrorCode
-from pyxform.xls2json import SURVEY_001, SURVEY_002
+from pyxform.xls2json import SURVEY_002
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -532,7 +532,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[SURVEY_001.format(row=4, type="repeat")],
+            error__contains=[ErrorCode.SURVEY_001.value.format(row=4, type="repeat")],
         )
 
     def test_group__no_end_error__with_another_closed_group(self):
@@ -562,7 +562,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[SURVEY_001.format(row=3, type="group")],
+            error__contains=[ErrorCode.SURVEY_001.value.format(row=3, type="group")],
         )
 
     def test_group__no_begin_error__with_name(self):
@@ -576,7 +576,9 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[SURVEY_001.format(row=3, type="group", name="g1")],
+            error__contains=[
+                ErrorCode.SURVEY_001.value.format(row=3, type="group", name="g1")
+            ],
         )
 
     def test_group__no_begin_error__with_another_closed_group(self):
@@ -593,7 +595,7 @@ class TestGroupParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                SURVEY_001.format(
+                ErrorCode.SURVEY_001.value.format(
                     row=5,
                     type="group",
                 )
@@ -613,7 +615,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[SURVEY_001.format(row=4, type="group")],
+            error__contains=[ErrorCode.SURVEY_001.value.format(row=4, type="group")],
         )
 
     def test_empty_group__no_question__error(self):
