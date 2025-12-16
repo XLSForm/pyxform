@@ -8,14 +8,6 @@ from pyxform.parsing.expression import is_xml_tag
 from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
-ENTITY005 = Detail(
-    name="Invalid entity repeat save_to: question in nested repeat",
-    msg=(
-        "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-        "The entity property populated with 'save_to' must not be inside of a nested "
-        "repeat within the entity repeat."
-    ),
-)
 ENTITY006 = Detail(
     name="Invalid entity repeat save_to: question not in entity repeat",
     msg=(
@@ -268,7 +260,9 @@ def validate_entity_saveto(
         elif i["control_type"] == const.REPEAT:
             # Error: saveto in nested repeat inside entity repeat.
             if in_repeat:
-                raise PyXFormError(ENTITY005.format(row=row_number, value=save_to))
+                raise PyXFormError(
+                    ErrorCode.ENTITY_005.value.format(row=row_number, value=save_to)
+                )
             elif i["control_name"] == entity_repeat:
                 located = True
             in_repeat = True

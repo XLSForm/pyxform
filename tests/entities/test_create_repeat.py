@@ -560,5 +560,7 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r1}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY005.format(row=4, value="q1e")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_005.value.format(row=4, value="q1e")],
         )

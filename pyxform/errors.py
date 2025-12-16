@@ -70,6 +70,14 @@ class ErrorCode(Enum):
             "The entity repeat target is inside a repeat."
         ),
     )
+    ENTITY_005 = Detail(
+        name="Invalid entity repeat save_to: question in nested repeat",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
+            "The entity property populated with 'save_to' must not be inside of a nested "
+            "repeat within the entity repeat."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Invalid missing header row.",
         msg=(
