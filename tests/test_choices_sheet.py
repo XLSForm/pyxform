@@ -558,3 +558,20 @@ class TestChoicesSheet(PyxformTestCase):
                 """,
             ],
         )
+
+    def test_missing_name__error(self):
+        """Should raise an error if name is missing in the choices sheet."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | label |
+        | | c1        |      | N1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.NAMES_006.value.format(row=2)],
+        )

@@ -49,7 +49,7 @@ class ErrorCode(Enum):
             "or repeat, or the survey if not inside a group or repeat."
         ),
     )
-    NAMES_002 = Detail(
+    NAMES_002: Detail = Detail(
         name="Invalid duplicate name in context (case-insensitive)",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is problematic. "
@@ -59,14 +59,14 @@ class ErrorCode(Enum):
             "case-sensitive, so the current names may make analysis difficult."
         ),
     )
-    NAMES_003 = Detail(
+    NAMES_003: Detail = Detail(
         name="Invalid repeat name same as survey",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
             "Repeat names must not be the same as the survey root (which defaults to 'data')."
         ),
     )
-    NAMES_004 = Detail(
+    NAMES_004: Detail = Detail(
         name="Invalid duplicate repeat name in the survey",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
@@ -74,11 +74,19 @@ class ErrorCode(Enum):
             "repeat nesting."
         ),
     )
-    NAMES_005 = Detail(
+    NAMES_005: Detail = Detail(
         name="Invalid duplicate meta name in the survey",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value 'meta' is invalid. "
             "The name 'meta' is reserved for form metadata."
+        ),
+    )
+    NAMES_006: Detail = Detail(
+        name="Invalid missing name in the choices sheet",
+        msg=(
+            "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
+            "Choices must have a name. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
     PYREF_001: Detail = Detail(

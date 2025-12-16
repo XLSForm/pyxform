@@ -1,11 +1,6 @@
 from pyxform import constants
-from pyxform.errors import PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 
-INVALID_NAME = (
-    "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
-    "Choices must have a name. "
-    "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
-)
 INVALID_LABEL = (
     "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
     "Choices should have a label. "
@@ -44,7 +39,7 @@ def validate_choice_list(
     duplicate_errors = []
     for option in options:
         if constants.NAME not in option:
-            raise PyXFormError(INVALID_NAME.format(row=option["__row"]))
+            raise PyXFormError(ErrorCode.NAMES_006.value.format(row=option["__row"]))
         elif constants.LABEL not in option:
             warnings.append(INVALID_LABEL.format(row=option["__row"]))
 
