@@ -178,6 +178,13 @@ class ErrorCode(Enum):
             "'{q}' appears more than once."
         ),
     )
+    SURVEY_001 = Detail(
+        name="Survey Sheet Unmatched Group/Repeat/Loop End",
+        msg=(
+            "[row : {row}] Unmatched 'end_{type}'. "
+            "No matching 'begin_{type}' was found for the name '{name}'."
+        ),
+    )
     SURVEY_003: Detail = Detail(
         name="Survey Sheet - invalid geoshape/geotrace parameter 'incremental'",
         msg=(
