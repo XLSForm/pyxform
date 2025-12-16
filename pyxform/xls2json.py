@@ -21,7 +21,7 @@ from pyxform.entities.entities_parsing import (
     validate_entity_repeat_target,
     validate_entity_saveto,
 )
-from pyxform.errors import Detail, ErrorCode, PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
 from pyxform.question_type_dictionary import get_meta_group
@@ -59,13 +59,6 @@ RE_SELECT = re.compile(
 )
 RE_OSM = re.compile(
     r"(?P<osm_command>(" + "|".join(aliases.osm) + r")) (?P<list_name>\S+)"
-)
-SURVEY_002 = Detail(
-    name="Survey Sheet Unmatched Group/Repeat/Loop Begin",
-    msg=(
-        "[row : {row}] Unmatched 'begin_{type}'. "
-        "No matching 'end_{type}' was found for the name '{name}'."
-    ),
 )
 
 
@@ -1403,7 +1396,7 @@ def workbook_to_json(
 
     if len(stack) > 1:
         raise PyXFormError(
-            SURVEY_002.format(
+            ErrorCode.SURVEY_002.value.format(
                 row=stack[-1]["row_number"],
                 type=stack[-1]["control_type"],
                 name=stack[-1]["control_name"],

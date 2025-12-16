@@ -185,6 +185,13 @@ class ErrorCode(Enum):
             "No matching 'begin_{type}' was found for the name '{name}'."
         ),
     )
+    SURVEY_002 = Detail(
+        name="Survey Sheet Unmatched Group/Repeat/Loop Begin",
+        msg=(
+            "[row : {row}] Unmatched 'begin_{type}'. "
+            "No matching 'end_{type}' was found for the name '{name}'."
+        ),
+    )
     SURVEY_003: Detail = Detail(
         name="Survey Sheet - invalid geoshape/geotrace parameter 'incremental'",
         msg=(
