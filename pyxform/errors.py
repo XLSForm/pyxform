@@ -63,6 +63,13 @@ class ErrorCode(Enum):
             "The entity repeat target is not a repeat."
         ),
     )
+    ENTITY_004 = Detail(
+        name="Invalid entity repeat: target is in a repeat",
+        msg=(
+            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
+            "The entity repeat target is inside a repeat."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Invalid missing header row.",
         msg=(
