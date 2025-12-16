@@ -382,7 +382,7 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
                 self.assertPyxformXform(
                     md=md.format(case=case),
                     errored=True,
-                    error__contains=[ep.ENTITY001.format(value=case)],
+                    error__contains=[ErrorCode.ENTITY_001.value.format(value=case)],
                 )
 
     def test_entity_repeat_not_found__error(self):
