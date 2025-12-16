@@ -8,14 +8,6 @@ from pyxform.parsing.expression import is_xml_tag
 from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
-ENTITY006 = Detail(
-    name="Invalid entity repeat save_to: question not in entity repeat",
-    msg=(
-        "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-        "The entity property populated with 'save_to' must be inside of the entity "
-        "repeat."
-    ),
-)
 ENTITY007 = Detail(
     name="Invalid entity repeat save_to: question in repeat but no entity repeat defined",
     msg=(
@@ -269,7 +261,9 @@ def validate_entity_saveto(
 
     # Error: saveto not in entity repeat
     if entity_repeat and not located:
-        raise PyXFormError(ENTITY006.format(row=row_number, value=save_to))
+        raise PyXFormError(
+            ErrorCode.ENTITY_006.value.format(row=row_number, value=save_to)
+        )
 
     # Error: saveto in repeat but no entity repeat declared
     if in_repeat and not entity_repeat:

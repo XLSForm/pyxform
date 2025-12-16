@@ -1,5 +1,4 @@
 from pyxform import constants as co
-from pyxform.entities import entities_parsing as ep
 from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -483,7 +482,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r2}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY006.format(row=3, value="q1e")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_006.value.format(row=3, value="q1e")],
         )
 
     def test_saveto_question_not_in_entity_repeat_in_survey__error(self):
@@ -501,7 +502,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r1}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY006.format(row=2, value="q1e")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_006.value.format(row=2, value="q1e")],
         )
 
     def test_saveto_question_not_in_entity_repeat_in_group__error(self):
@@ -521,7 +524,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r1}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY006.format(row=3, value="q1e")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_006.value.format(row=3, value="q1e")],
         )
 
     def test_saveto_question_not_in_entity_repeat_in_repeat__error(self):
@@ -541,7 +546,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r2}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY006.format(row=3, value="q1e")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_006.value.format(row=3, value="q1e")],
         )
 
     def test_saveto_question_in_nested_repeat__error(self):
