@@ -47,10 +47,8 @@ class TestChoicesSheet(PyxformTestCase):
             ],
         )
 
-    def test_choices_without_labels__for_static_selects__forbidden(self):
-        """
-        Test choices without labels for static selects. Validate will fail.
-        """
+    def test_choices_without_labels__for_static_selects__warning_and_error(self):
+        """Should warn (and Validate error) if a label is missing in the choices sheet."""
         self.assertPyxformXform(
             md="""
             | survey   |                    |      |       |
@@ -75,15 +73,17 @@ class TestChoicesSheet(PyxformTestCase):
                 ]
                 """,
             ],
+            warnings__contains=[
+                ErrorCode.LABEL_001.value.format(row=2),
+                ErrorCode.LABEL_001.value.format(row=3),
+            ],
             odk_validate_error__contains=[
                 "<label> node for itemset doesn't exist! [instance(choices)/root/item/label]"
             ],
         )
 
-    def test_choices_without_labels__for_dynamic_selects__forbidden(self):
-        """
-        Test choices without labels for dynamic selects. Validate will fail.
-        """
+    def test_choices_without_labels__for_dynamic_selects__warning_and_error(self):
+        """Should warn (and Validate error) if a label is missing in the choices sheet."""
         self.assertPyxformXform(
             md="""
             | survey   |                    |      |       |               |
@@ -107,6 +107,10 @@ class TestChoicesSheet(PyxformTestCase):
                     and not(./x:item/x:itextId)
                 ]
                 """,
+            ],
+            warnings__contains=[
+                ErrorCode.LABEL_001.value.format(row=2),
+                ErrorCode.LABEL_001.value.format(row=3),
             ],
             odk_validate_error__contains=[
                 "<label> node for itemset doesn't exist! [instance(choices)/root/item/label]"
@@ -560,7 +564,7 @@ class TestChoicesSheet(PyxformTestCase):
         )
 
     def test_missing_name__error(self):
-        """Should raise an error if name is missing in the choices sheet."""
+        """Should raise an error if a name is missing in the choices sheet."""
         md = """
         | survey |
         | | type          | name | label |
