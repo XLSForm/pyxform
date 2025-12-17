@@ -514,7 +514,7 @@ class SurveyElement(Mapping):
             and "big-image" in self.media
         ):
             raise PyXFormError(
-                "To use big-image, you must also specify an image for the survey element named {self.name}."
+                f"To use big-image, you must also specify an image for the survey element named {self.name}."
             )
 
         return result
