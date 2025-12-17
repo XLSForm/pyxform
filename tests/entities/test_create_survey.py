@@ -252,7 +252,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: the entity property name 'name' is reserved."
+                ErrorCode.NAMES_011.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 
@@ -269,7 +271,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: the entity property name 'naMe' is reserved."
+                ErrorCode.NAMES_011.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 
@@ -286,7 +290,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: the entity property name 'label' is reserved."
+                ErrorCode.NAMES_011.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 
@@ -303,7 +309,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: the entity property name 'lAbEl' is reserved."
+                ErrorCode.NAMES_011.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 

@@ -231,6 +231,13 @@ class ErrorCode(Enum):
             "Names used here must not contain a period."
         ),
     )
+    NAMES_012: Detail = Detail(
+        name="Invalid character(s) in entity-related name (XML identifier)(reserved words).",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Names used here must not be 'name' or 'label' (case-insensitive)."
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(

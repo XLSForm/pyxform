@@ -264,21 +264,20 @@ def validate_entity_saveto(
             ErrorCode.ENTITY_007.value.format(row=row_number, value=save_to)
         )
 
-    error_start = f"{const.ROW_FORMAT_STRING % row_number} Invalid save_to name:"
-
-    if save_to.lower() == const.NAME or save_to.lower() == const.LABEL:
+    # Error: naming rules
+    if save_to.lower() in {const.NAME, const.LABEL}:
         raise PyXFormError(
-            f"{error_start} the entity property name '{save_to}' is reserved."
+            ErrorCode.NAMES_011.value.format(
+                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
+            )
         )
-
-    if save_to.startswith(const.ENTITIES_RESERVED_PREFIX):
+    elif save_to.startswith(const.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
             ErrorCode.NAMES_010.value.format(
                 sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
             )
         )
-
-    if not is_xml_tag(save_to):
+    elif not is_xml_tag(save_to):
         raise PyXFormError(
             ErrorCode.NAMES_008.value.format(
                 sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
