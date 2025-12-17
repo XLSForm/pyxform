@@ -93,7 +93,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid entity list name: '$sweet'. Names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
+                ErrorCode.NAMES_008.value.format(
+                    sheet=co.ENTITIES, row=2, column=co.EntityColumns.DATASET.value
+                )
             ],
         )
 
