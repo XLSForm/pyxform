@@ -114,7 +114,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid entity list name: 's.w.eet'. Names may not include periods."
+                ErrorCode.NAMES_011.value.format(
+                    sheet=co.ENTITIES, row=2, column=co.EntityColumns.DATASET.value
+                )
             ],
         )
 

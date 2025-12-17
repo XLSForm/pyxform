@@ -183,13 +183,13 @@ def get_validated_dataset_name(entity):
                 sheet=const.ENTITIES, row=2, column=EC.DATASET.value
             )
         )
-
-    if "." in dataset:
+    elif "." in dataset:
         raise PyXFormError(
-            f"Invalid entity list name: '{dataset}'. Names may not include periods."
+            ErrorCode.NAMES_011.value.format(
+                sheet=const.ENTITIES, row=2, column=EC.DATASET.value
+            )
         )
-
-    if not is_xml_tag(dataset):
+    elif not is_xml_tag(dataset):
         raise PyXFormError(
             ErrorCode.NAMES_008.value.format(
                 sheet=const.ENTITIES, row=2, column=EC.DATASET.value
