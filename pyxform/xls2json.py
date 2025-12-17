@@ -13,7 +13,6 @@ from pyxform.constants import (
     _MSG_SUPPRESS_SPELLING,
     EXTERNAL_INSTANCE_EXTENSIONS,
     ROW_FORMAT_STRING,
-    XML_IDENTIFIER_ERROR_MESSAGE,
 )
 from pyxform.elements import action as action_module
 from pyxform.entities.entities_parsing import (
@@ -777,7 +776,9 @@ def workbook_to_json(
         question_name = str(row[constants.NAME])
         if not is_xml_tag(question_name):
             raise PyXFormError(
-                f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
+                ErrorCode.NAMES_008.value.format(
+                    sheet=constants.SURVEY, row=row_number, column=constants.NAME
+                )
             )
         element_names.update((question_name,))
 

@@ -2,6 +2,7 @@
 Test duplicate survey question field name.
 """
 
+from pyxform import constants as co
 from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -577,7 +578,9 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=["[row : 3] Invalid question name '${q1x}'."],
+            error__contains=[
+                ErrorCode.NAMES_008.value.format(sheet=co.SURVEY, row=3, column=co.NAME)
+            ],
         )
 
     def test_reference_in_ignored_columns__not_validated__name_alias__error(self):
@@ -592,7 +595,9 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=["[row : 3] Invalid question name '${q1x}'."],
+            error__contains=[
+                ErrorCode.NAMES_008.value.format(sheet=co.SURVEY, row=3, column=co.NAME)
+            ],
         )
 
     def test_reference_in_aliased_column(self):
