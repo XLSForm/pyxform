@@ -578,3 +578,19 @@ class TestChoicesSheet(PyxformTestCase):
             errored=True,
             error__contains=[ErrorCode.NAMES_006.value.format(row=2)],
         )
+
+    def test_name_not_validated_as_xml_name(self):
+        """Should not raise an error if a name has invalid XML name characters."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | label |
+        | | c1        | .n   | N1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[xpc.model_instance_choices_label("c1", ((".n", "N1"),))],
+        )

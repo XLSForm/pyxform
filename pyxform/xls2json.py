@@ -31,6 +31,7 @@ from pyxform.utils import (
 )
 from pyxform.validators.pyxform import parameters_generic, select_from_file, unique_names
 from pyxform.validators.pyxform import question_types as qt
+from pyxform.validators.pyxform import settings as validate_settings
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.choices import validate_and_clean_choices
 from pyxform.validators.pyxform.pyxform_reference import (
@@ -263,6 +264,7 @@ def workbook_to_json(
         raise PyXFormError(msg)
 
     # Make sure the passed in vars are unicode
+    validate_settings.validate_form_name(form_name=form_name)
     form_name = str(coalesce(form_name, constants.DEFAULT_FORM_NAME))
     default_language = str(coalesce(default_language, constants.DEFAULT_LANGUAGE_VALUE))
 

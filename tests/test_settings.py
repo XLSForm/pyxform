@@ -43,6 +43,32 @@ class TestSettings(PyxformTestCase):
             xml__xpath_match=[xps.form_id("my_form")],
         )
 
+    def test_form_name__valid_characters(self):
+        """Should allow a custom form_name with valid characters."""
+        md = """
+        | survey |
+        | | type  | name | label |
+        | | text  | q1   | hello |
+        """
+        self.assertPyxformXform(
+            md=md,
+            name="master-form_v2.1",
+        )
+
+    def test_form_name__invalid_characters__error(self):
+        """Should raise an error if the form_name is not a valid name."""
+        md = """
+        | survey |
+        | | type  | name | label |
+        | | text  | q1   | hello |
+        """
+        self.assertPyxformXform(
+            md=md,
+            name="bad@filename",
+            errored=True,
+            error__contains=[ErrorCode.NAMES_009.value.format(name="form_name")],
+        )
+
     def test_clean_text_values__yes(self):
         """Should find clean_text_values=yes (default) collapses survey sheet whitespace."""
         md = """
