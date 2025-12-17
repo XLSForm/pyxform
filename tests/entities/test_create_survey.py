@@ -76,7 +76,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid entity list name: '__sweet' starts with reserved prefix __."
+                ErrorCode.NAMES_010.value.format(
+                    sheet=co.ENTITIES, row=2, column=co.EntityColumns.DATASET.value
+                )
             ],
         )
 
@@ -316,7 +318,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: the entity property name '__a' starts with reserved prefix __."
+                ErrorCode.NAMES_010.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 

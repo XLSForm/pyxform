@@ -179,7 +179,9 @@ def get_validated_dataset_name(entity):
 
     if dataset.startswith(const.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
-            f"Invalid entity list name: '{dataset}' starts with reserved prefix {const.ENTITIES_RESERVED_PREFIX}."
+            ErrorCode.NAMES_010.value.format(
+                sheet=const.ENTITIES, row=2, column=EC.DATASET.value
+            )
         )
 
     if "." in dataset:
@@ -271,7 +273,9 @@ def validate_entity_saveto(
 
     if save_to.startswith(const.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
-            f"{error_start} the entity property name '{save_to}' starts with reserved prefix {const.ENTITIES_RESERVED_PREFIX}."
+            ErrorCode.NAMES_010.value.format(
+                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
+            )
         )
 
     if not is_xml_tag(save_to):

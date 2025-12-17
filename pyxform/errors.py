@@ -217,6 +217,13 @@ class ErrorCode(Enum):
             "names may contain letters, digits, underscores, hyphens, or periods."
         ),
     )
+    NAMES_010: Detail = Detail(
+        name="Invalid character(s) in entity-related name (XML identifier)(underscores).",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Names used here must not begin with two underscores."
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(
