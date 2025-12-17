@@ -333,7 +333,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: '$a'. Entity property names must begin with a letter, colon, or underscore. Other characters can include numbers, dashes, and periods."
+                ErrorCode.NAMES_008.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 
