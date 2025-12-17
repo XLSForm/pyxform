@@ -3,7 +3,6 @@ Survey Element base class for all survey elements.
 """
 
 import json
-import re
 import warnings
 from collections.abc import Callable, Generator, Iterable, Mapping
 from itertools import chain
@@ -11,10 +10,9 @@ from typing import TYPE_CHECKING, Any, Optional
 
 from pyxform import aliases as alias
 from pyxform import constants as const
-from pyxform.errors import PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
 from pyxform.utils import (
-    INVALID_XFORM_TAG_REGEXP,
     DetachableElement,
     node,
     print_pyobj_to_json,
@@ -143,10 +141,7 @@ class SurveyElement(Mapping):
 
     def validate(self):
         if not is_xml_tag(self.name):
-            invalid_char = re.search(INVALID_XFORM_TAG_REGEXP, self.name)
-            raise PyXFormError(
-                f"The name '{self.name}' contains an invalid character '{invalid_char.group(0)}'. Names {const.XML_IDENTIFIER_ERROR_MESSAGE}"
-            )
+            raise PyXFormError(ErrorCode.NAMES_009.value.format(name=const.NAME))
 
     def iter_descendants(
         self,

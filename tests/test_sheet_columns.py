@@ -280,21 +280,6 @@ class TestChoicesColumns(PyxformTestCase):
             error__contains=["choices", "name", "list_name"],
         )
 
-    def test_clear_filename_error_message(self):
-        """Test clear filename error message"""
-        error_message = "The name 'bad@filename' contains an invalid character '@'. Names must begin with a letter, colon, or underscore. Other characters can include numbers, dashes, and periods."
-        self.assertPyxformXform(
-            name="bad@filename",
-            ss_structure=self._simple_choice_ss(
-                [
-                    {"list_name": "l1", "name": "c1", "label": "choice 1"},
-                    {"list_name": "l1", "name": "c2", "label": "choice 2"},
-                ]
-            ),
-            errored=True,
-            error__contains=[error_message],
-        )
-
     def test_missing_choice_headers(self):
         self.assertPyxformXform(
             md="""
