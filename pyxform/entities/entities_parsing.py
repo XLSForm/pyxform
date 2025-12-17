@@ -188,11 +188,10 @@ def get_validated_dataset_name(entity):
         )
 
     if not is_xml_tag(dataset):
-        if isinstance(dataset, bytes):
-            dataset = dataset.decode("utf-8")
-
         raise PyXFormError(
-            f"Invalid entity list name: '{dataset}'. Names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
+            ErrorCode.NAMES_008.value.format(
+                sheet=const.ENTITIES, row=2, column=EC.DATASET.value
+            )
         )
 
     return dataset

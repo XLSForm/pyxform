@@ -201,6 +201,14 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/#choice-names."
         ),
     )
+    NAMES_008: Detail = Detail(
+        name="Invalid character(s) in name (XML identifier).",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Names must begin with a letter or underscore. After the first character, "
+            "names may contain letters, digits, underscores, hyphens, or periods."
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(
