@@ -8,9 +8,8 @@ import os
 from dataclasses import dataclass, field
 
 from pyxform import aliases
-from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS
-from pyxform.errors import PyXFormError
-from pyxform.validators.pyxform import select_from_file
+from pyxform import constants as co
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.xls2json_backends import md_table_to_workbook
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
 
@@ -225,7 +224,7 @@ class TestSelectFromFile(PyxformTestCase):
             "label=lbl.()",
         )
         for q_type in q_types:
-            for file_ext in EXTERNAL_INSTANCE_EXTENSIONS:
+            for file_ext in co.EXTERNAL_INSTANCE_EXTENSIONS:
                 for param in good_params:
                     with self.subTest(msg=f"{q_type}, {file_ext}, {param}"):
                         self.assertPyxformXform(
@@ -236,13 +235,16 @@ class TestSelectFromFile(PyxformTestCase):
                         name = "value"
                         if "label" in param:
                             name = "label"
-                        msg = select_from_file.value_or_label_format_msg(
-                            name=name, row_number=2
-                        )
                         self.assertPyxformXform(
                             md=md.format(q=q_type, e=file_ext, p=param),
                             errored=True,
-                            error__contains=[msg],
+                            error__contains=[
+                                ErrorCode.NAMES_008.value.format(
+                                    sheet=co.SURVEY,
+                                    row=2,
+                                    column=f"{co.PARAMETERS} ({name})",
+                                )
+                            ],
                         )
 
     def test_param_value_case_preserved(self):
