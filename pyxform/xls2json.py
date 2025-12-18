@@ -841,11 +841,7 @@ def workbook_to_json(
                     and question_type not in aliases.label_optional_types
                     and not row.get("bind", {}).get("calculate")
                     and not row.get("_dynamic_default", False)
-                    and not (
-                        control_type is constants.GROUP
-                        and row.get("control", {}).get("appearance")
-                        == constants.FIELD_LIST
-                    )
+                    and (control_type is not constants.GROUP)
                 ):
                     # Row number, name, and type probably enough for user message.
                     # Also means the error message text is stable for tests.
