@@ -681,6 +681,7 @@ class TestGroupParsing(PyxformTestCase):
             ],
         )
 
+
 class TestGroupInternalRepresentations(TestCase):
     maxDiff = None
 
