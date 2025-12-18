@@ -77,7 +77,7 @@ def process_trigger(
 
     try:
         trigger = tuple(
-            r
+            r.name
             for t in trigger.split(",")
             for r in parse_pyxform_references(value=t, match_limit=1)
         )

@@ -21,7 +21,7 @@ def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
     :param xml_text: XML text that may contain an instance expression.
     :return: Tokens in instance expression, and the string position boundaries.
     """
-    tokens, _ = parse_expression(xml_text)
+    tokens = parse_expression(xml_text)
     if not tokens:
         return []
     instance_enter = False
@@ -33,43 +33,43 @@ def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
     for t in tokens:
         emit = False
         # If an instance expression had started, note the string position boundary.
-        if not instance_enter and t.name == "FUNC_CALL" and t.value == "instance(":
+        if not instance_enter and t.type == "FUNC_CALL" and t.value == "instance(":
             instance_enter = True
             emit = True
-            boundaries.append(t.start)
+            boundaries.append(t.start_pos)
         # Tokens that are part of an instance expression.
         elif instance_enter:
             # Tokens that are part of the instance call.
             if (
-                t.name == "SYSTEM_LITERAL"
-                and last_token.name == "FUNC_CALL"
+                t.type == "SYSTEM_LITERAL"
+                and last_token.type == "FUNC_CALL"
                 and last_token.value == "instance("
             ):
                 emit = True
-            elif last_token.name == "SYSTEM_LITERAL" and t.name == "CLOSE_PAREN":
+            elif last_token.type == "SYSTEM_LITERAL" and t.type == "CLOSE_PAREN":
                 emit = True
-            elif t.name == "PATH_SEP" and last_token.name == "CLOSE_PAREN":
+            elif t.type == "PATH_SEP" and last_token.type == "CLOSE_PAREN":
                 emit = True
                 path_enter = True
             # A XPath path may continue after a predicate.
-            elif t.name == "PATH_SEP" and last_token.name == "XPATH_PRED_END":
+            elif t.type == "PATH_SEP" and last_token.type == "XPATH_PRED_END":
                 emit = True
                 path_enter = True
             # Tokens that are part of a XPath path.
             elif path_enter:
-                if t.name == "WHITESPACE":
+                if t.type == "WHITESPACE":
                     path_enter = False
-                elif t.name != "XPATH_PRED_START":
+                elif t.type != "XPATH_PRED_START":
                     emit = True
-                elif t.name == "XPATH_PRED_START":
+                elif t.type == "XPATH_PRED_START":
                     emit = True
                     path_enter = False
                     pred_enter = True
             # Tokens that are part of a XPath predicate.
             elif pred_enter:
-                if t.name != "XPATH_PRED_END":
+                if t.type != "XPATH_PRED_END":
                     emit = True
-                elif t.name == "XPATH_PRED_END":
+                elif t.type == "XPATH_PRED_END":
                     emit = True
                     pred_enter = False
         # Track instance expression tokens, ignore others.
@@ -78,10 +78,10 @@ def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
         # If an instance expression had ended, note the string position boundary.
         elif instance_enter:
             instance_enter = False
-            boundaries.append(last_token.end)
+            boundaries.append(last_token.end_pos)
 
     if last_token is not None:
-        boundaries.append(last_token.end)
+        boundaries.append(last_token.end_pos)
 
     # Pair up the boundaries [1, 2, 3, 4] -> [(1, 2), (3, 4)].
     bounds = iter(boundaries)

@@ -1,3 +1,5 @@
+from pyxform.errors import ErrorCode
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
@@ -96,6 +98,51 @@ class TestSettings(PyxformTestCase):
                 ),
                 xpc.model_instance_choices_label("c1", (("a  b", "c  1"),)),
                 xpc.model_instance_choices_label("c2", (("b", "c  2"),)),
+            ],
+        )
+
+    def test_instance_name_from_reference(self):
+        """Should find a binding to set the instance name from the reference."""
+        md = """
+        | settings |
+        | | instance_name |
+        | | ${q1}         |
+
+        | survey |
+        | | type  | name | label |
+        | | text  | q1   | hello |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:bind[
+                  @calculate=' /test_name/q1 '
+                  and @nodeset='/test_name/meta/instanceName'
+                  and @type='string'
+                ]
+                """
+            ],
+        )
+
+    def test_instance_name_from_reference__name_not_found__error(self):
+        """Should raise an error if the referenced name is not in the survey sheet."""
+        md = """
+        | settings |
+        | | instance_name |
+        | | ${q2}         |
+
+        | survey |
+        | | type  | name | label |
+        | | text  | q1   | hello |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.PYREF_003.value.format(
+                    sheet="settings", column="instance_name", row=2, q="q2"
+                )
             ],
         )
 

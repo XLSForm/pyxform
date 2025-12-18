@@ -32,9 +32,11 @@ class XPathHelper:
         choices_xp = "\n              and ".join(
             (
                 f"""
-                ./x:item/x:name/text() = '{cv}'
-                  and not(./x:item/x:label)
-                  and ./x:item/x:itextId = '{cname}-{idx}'
+                ./x:item[
+                  ./x:name/text() = '{cv}'
+                    and not(./x:label)
+                    and ./x:itextId = '{cname}-{idx}'
+                ]
                 """
                 for idx, cv in enumerate(choices)
             )

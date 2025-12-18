@@ -5,7 +5,7 @@ A Python script to convert excel files into JSON.
 import os
 import re
 import sys
-from collections.abc import Sequence
+from collections import Counter
 from typing import IO, Any
 
 from pyxform import aliases, constants
@@ -22,10 +22,7 @@ from pyxform.entities.entities_parsing import (
     validate_entity_saveto,
 )
 from pyxform.errors import Detail, PyXFormError
-from pyxform.parsing.expression import (
-    is_xml_tag,
-    maybe_strip,
-)
+from pyxform.parsing.expression import is_xml_tag
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
 from pyxform.question_type_dictionary import get_meta_group
 from pyxform.utils import (
@@ -40,18 +37,12 @@ from pyxform.validators.pyxform.choices import validate_and_clean_choices
 from pyxform.validators.pyxform.pyxform_reference import (
     has_pyxform_reference,
     is_pyxform_reference,
-    validate_pyxform_reference_syntax,
+    validate_pyxform_references_in_workbook,
 )
 from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
-from pyxform.xls2json_backends import (
-    RE_WHITESPACE,
-    DefinitionData,
-    get_xlsform,
-)
+from pyxform.xls2json_backends import DefinitionData, get_xlsform
 
-SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
-RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
 RE_BEGIN_CONTROL = re.compile(
     r"^(?P<begin>begin)(\s|_)(?P<type>("
     + "|".join(aliases.control)
@@ -95,33 +86,6 @@ def dealias_types(dict_array):
         if found_type in aliases._type_alias_map:
             row[constants.TYPE] = aliases._type_alias_map[found_type]
     return dict_array
-
-
-def clean_text_values(
-    sheet_name: str,
-    data: Sequence[dict],
-    strip_whitespace: bool = False,
-    add_row_number: bool = False,
-) -> Sequence[dict]:
-    """
-    Go though the dict array and strips all text values.
-    Also replaces multiple spaces with single spaces.
-    """
-    for row_number, row in enumerate(data, start=2):
-        for key, value in row.items():
-            if isinstance(value, str) and value:
-                # Remove extraneous whitespace characters.
-                if strip_whitespace:
-                    value = RE_WHITESPACE.sub(" ", maybe_strip(value))
-                # Replace "smart" quotes with regular quotes.
-                row[key] = RE_SMART_QUOTES.sub(lambda m: SMART_QUOTES[m.group(0)], value)
-                # Check cross reference syntax.
-                validate_pyxform_reference_syntax(
-                    value=value, sheet_name=sheet_name, row_number=row_number, column=key
-                )
-        if add_row_number:
-            row["__row"] = row_number
-    return data
 
 
 def group_dictionaries_by_key(list_of_dicts, key, remove_key=True):
@@ -356,9 +320,7 @@ def workbook_to_json(
             header_aliases=aliases.settings_header,
             header_columns=set(Survey.get_slot_names()),
         )
-        settings = clean_text_values(
-            sheet_name=constants.SETTINGS, data=[settings_sheet.data[0]]
-        )[0]
+        settings = settings_sheet.data[0]
     else:
         similar = find_sheet_misspellings(key=constants.SETTINGS, keys=sheet_names)
         if similar is not None:
@@ -407,9 +369,6 @@ def workbook_to_json(
     # ########## External Choices sheet ##########
     external_choices = workbook_dict.external_choices
     if external_choices:
-        external_choices = clean_text_values(
-            sheet_name=constants.EXTERNAL_CHOICES, data=external_choices
-        )
         external_choices = dealias_and_group_headers(
             sheet_name=constants.EXTERNAL_CHOICES,
             sheet_data=external_choices,
@@ -426,12 +385,6 @@ def workbook_to_json(
     choices_sheet = workbook_dict.choices
     choices = {}
     if choices_sheet:
-        if clean_text_values_enabled:
-            choices_sheet = clean_text_values(
-                sheet_name=constants.CHOICES,
-                data=choices_sheet,
-                add_row_number=True,
-            )
         choices_sheet = dealias_and_group_headers(
             sheet_name=constants.CHOICES,
             sheet_data=choices_sheet,
@@ -440,6 +393,7 @@ def workbook_to_json(
             header_columns=option_fields,
             headers_required={constants.NAME},
             default_language=default_language,
+            add_row_number=True,
         )
         choices = group_dictionaries_by_key(
             list_of_dicts=choices_sheet.data, key=constants.LIST_NAME_S
@@ -462,12 +416,9 @@ def workbook_to_json(
     # ########## Entities sheet ###########
     entity_declaration = None
     if workbook_dict.entities:
-        entities_sheet = clean_text_values(
-            sheet_name=constants.ENTITIES, data=workbook_dict.entities
-        )
         entities_sheet = dealias_and_group_headers(
             sheet_name=constants.ENTITIES,
-            sheet_data=entities_sheet,
+            sheet_data=workbook_dict.entities,
             sheet_header=workbook_dict.entities_header,
             header_aliases=aliases.entities_header,
             header_columns={i.value for i in constants.EntityColumns.value_list()},
@@ -479,22 +430,18 @@ def workbook_to_json(
             warnings.append(similar + constants._MSG_SUPPRESS_SPELLING)
 
     # ########## Survey sheet ###########
-    survey_sheet = workbook_dict.survey
     # Process the headers:
-    if clean_text_values_enabled:
-        survey_sheet = clean_text_values(
-            sheet_name=constants.SURVEY, data=workbook_dict.survey, strip_whitespace=True
-        )
     from pyxform.question import MultipleChoiceQuestion
 
     survey_sheet = dealias_and_group_headers(
         sheet_name=constants.SURVEY,
-        sheet_data=survey_sheet,
+        sheet_data=workbook_dict.survey,
         sheet_header=workbook_dict.survey_header,
         header_aliases=aliases.survey_header,
         header_columns=set(MultipleChoiceQuestion.get_slot_names()),
         headers_required={constants.TYPE},
         default_language=default_language,
+        strip_whitespace=clean_text_values_enabled,
     )
     survey_sheet.data = dealias_types(dict_array=survey_sheet.data)
 
@@ -525,8 +472,6 @@ def workbook_to_json(
             list_of_dicts=osm_sheet.data, key=constants.LIST_NAME_S
         )
 
-    # Clear references to original data for garbage collection.
-    del workbook_dict
     # #################################
 
     # Parse the survey sheet while generating a survey in our json format:
@@ -549,6 +494,7 @@ def workbook_to_json(
     meta_children = []
     # To check that questions with triggers refer to other questions that exist.
     question_names = set()
+    element_names = Counter()
     trigger_references: list[tuple[str, int]] = []
     repeat_names = set()
 
@@ -844,12 +790,10 @@ def workbook_to_json(
                 )
         question_name = str(row[constants.NAME])
         if not is_xml_tag(question_name):
-            if isinstance(question_name, bytes):
-                question_name = question_name.decode("utf-8")
-
             raise PyXFormError(
                 f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
             )
+        element_names.update((question_name,))
 
         unique_names.validate_question_group_repeat_name(
             row_number=row_number,
@@ -1495,6 +1439,13 @@ def workbook_to_json(
         meta_element = get_meta_group(children=meta_children)
         survey_children_array = stack[0]["parent_children"]
         survey_children_array.append(meta_element)
+
+    validate_pyxform_references_in_workbook(
+        workbook_dict=workbook_dict,
+        survey_headers=survey_sheet.headers,
+        choices_headers=choices_headers,
+        element_names=element_names,
+    )
 
     # print_pyobj_to_json(json_dict)
     return json_dict

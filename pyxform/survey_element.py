@@ -7,7 +7,7 @@ import re
 import warnings
 from collections.abc import Callable, Generator, Iterable, Mapping
 from itertools import chain
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from pyxform import aliases as alias
 from pyxform import constants as const
@@ -94,6 +94,9 @@ class SurveyElement(Mapping):
             self._survey_element_xpath = None
         super().__setattr__(key, value)
 
+    def __repr__(self):
+        return f"""{super().__repr__()}(name="{self.name}")"""
+
     def __init__(
         self,
         name: str,
@@ -121,9 +124,6 @@ class SurveyElement(Mapping):
         if len(kwargs) > 0:
             self.extra_data = kwargs
 
-        if hasattr(self, const.CHILDREN):
-            self._link_children()
-
         # Create a space label for unlabeled elements with the label
         # appearance tag. # This is because such elements are used to label the
         # options for selects in a field-list and might want blank labels for
@@ -140,24 +140,6 @@ class SurveyElement(Mapping):
     @property
     def name_for_xpath(self) -> str:
         return self.name
-
-    def _link_children(self):
-        if self.children is not None:
-            for child in self.children:
-                child.parent = self
-
-    def add_child(self, child):
-        if self.children is None:
-            self.children = []
-        self.children.append(child)
-        child.parent = self
-
-    def add_children(self, children):
-        if isinstance(children, list | tuple):
-            for child in children:
-                self.add_child(child)
-        else:
-            self.add_child(children)
 
     def validate(self):
         if not is_xml_tag(self.name):
@@ -216,13 +198,6 @@ class SurveyElement(Mapping):
         """
         Get the relation type, steps from self, steps from other, and the common ancestor.
         """
-
-        # Quick check for immediate relation.
-        if self.parent is other:
-            return "Parent (other)", 1, 0, other
-        elif other.parent is self:
-            return "Parent (self)", 0, 1, self
-
         # Filtering
         if group_type:
             type_filter = {group_type}
@@ -232,10 +207,10 @@ class SurveyElement(Mapping):
         # Traversal tracking
         self_ancestors = {}
         other_ancestors = {}
-        self_current = self
-        other_current = other
-        self_distance = 0
-        other_distance = 0
+        self_current = self.parent
+        other_current = other.parent
+        self_distance = 1
+        other_distance = 1
         lca = None
 
         # Traverse up both ancestor chains as far as necessary.
@@ -315,7 +290,7 @@ class SurveyElement(Mapping):
             if isinstance(value, dict):
                 self._delete_keys_from_dict(value, keys)
 
-    def copy(self):
+    def copy(self) -> dict[str, Any]:
         return {k: self[k] for k in self}
 
     def to_json_dict(self, delete_keys: Iterable[str] | None = None) -> dict:
@@ -364,7 +339,7 @@ class SurveyElement(Mapping):
 
         return result
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps(self.to_json_dict())
 
     def json_dump(self, path=""):

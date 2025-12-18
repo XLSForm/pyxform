@@ -260,11 +260,12 @@ def get_validated_repeat_name(entity) -> str | None:
         match = parse_pyxform_references(value=value, match_limit=1, match_full=True)
     except PyXFormError as e:
         e.context.update(sheet="entities", column="repeat", row=2)
+        raise
     else:
-        if not match or not is_xml_tag(match[0]):
+        if not match or match[0].last_saved:
             raise PyXFormError(ENTITY001.format(value=value))
         else:
-            return match[0]
+            return match[0].name
 
 
 def validate_entity_saveto(

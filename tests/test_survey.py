@@ -114,6 +114,7 @@ def build_survey_from_path_spec(
       - groups above the LCAR are suffixed with "o".
       - groups below the LCAR that are on the target's path are suffixed with "t".
       - groups below the LCAR that are only on the source's path are suffixed with "s".
+      - "at" indicates that the reference target is an ancestor repeat of the source.
 
     :param lcar_context: The path above the lowest common ancestor repeat.
     :param target_path: The path to the target, including the LCAR.
@@ -124,18 +125,26 @@ def build_survey_from_path_spec(
 
     shared_path_length = 0
     for i, (t, s) in enumerate(zip(target_path, source_path, strict=False)):
+        shared_path_length = i
         if t != s:
-            shared_path_length = i
             break
 
-    shared_path = target_path[:shared_path_length]
-
     # Objects always present once in paths.
-    target = InputQuestion(name="t", label="target", type="string")
-    source = InputQuestion(name="s", label="source ${t}", type="string")
-    lcar = RepeatingSection(name="a")
     survey = Survey(name="data")
+    target_name = target_path[-1]
+    if target_name == "t":
+        lcar = RepeatingSection(name="a")
+        target = InputQuestion(name=target_name, label="target", type="string")
+    elif target_name == "at":
+        lcar = RepeatingSection(name=target_name)
+        target = lcar
+        shared_path_length += 1
+    else:
+        raise ValueError(f"Unknown target_name: {target_name}")
+
+    source = InputQuestion(name="s", label=f"source ${{{target_name}}}", type="string")
     current_parent = survey
+    shared_path = target_path[:shared_path_length]
 
     # Shared path
     for item in shared_path:
@@ -158,7 +167,9 @@ def build_survey_from_path_spec(
         if item == "t":
             target_parent.add_child(target)
         else:
-            if item[0] == "r":
+            if not item:
+                continue
+            elif item[0] == "r":
                 new_node = RepeatingSection(name=item)
             else:
                 new_node = GroupedSection(name=item)
@@ -171,7 +182,9 @@ def build_survey_from_path_spec(
         if item == "s":
             source_parent.add_child(source)
         else:
-            if item[0] == "r":
+            if not item:
+                continue
+            elif item[0] == "r":
                 new_node = RepeatingSection(name=item)
             else:
                 new_node = GroupedSection(name=item)
@@ -319,3 +332,322 @@ class TestGetPathRelativeToLCAR(TestCase):
         )
         for case in cases:
             self.assert_relative_path(**topo, **case)
+
+    def test_relative_paths__source_under_target__outer_r(self):
+        """Should find relative XPath and steps are calculated accurately."""
+        topo = {
+            "lcar_context": "/y/r1o",
+            "target_path": "/at",
+            "source_path": "/at/s",
+            "expect_none": "0",
+        }
+        cases = (
+            {"reference_parent": "0", "out_steps": "2", "out_path": "/at"},
+            {"reference_parent": "1", "out_steps": "3", "out_path": "/r1o/at"},
+        )
+        for case in cases:
+            self.assert_relative_path(**topo, **case)
+
+    def test_relative_paths__source_under_target__outer_rr(self):
+        """Should find relative XPath and steps are calculated accurately."""
+        topo = {
+            "lcar_context": "/y/r1o/r2o",
+            "target_path": "/at",
+            "source_path": "/at/s",
+            "expect_none": "0",
+        }
+        cases = (
+            {"reference_parent": "0", "out_steps": "2", "out_path": "/at"},
+            {"reference_parent": "1", "out_steps": "3", "out_path": "/r2o/at"},
+        )
+        for case in cases:
+            self.assert_relative_path(**topo, **case)
+
+    def test_relative_paths__source_under_target__outer_gr(self):
+        """Should find relative XPath and steps are calculated accurately."""
+        topo = {
+            "lcar_context": "/y/g1o/r2o",
+            "target_path": "/at",
+            "source_path": "/at/s",
+            "expect_none": "0",
+        }
+        cases = (
+            {"reference_parent": "0", "out_steps": "2", "out_path": "/at"},
+            {"reference_parent": "1", "out_steps": "3", "out_path": "/r2o/at"},
+        )
+        for case in cases:
+            self.assert_relative_path(**topo, **case)
+
+    def test_relative_paths__source_under_target__outer_r__inner_r(self):
+        """Should find relative XPath and steps are calculated accurately."""
+        topo = {
+            "lcar_context": "/y/r1o",
+            "target_path": "/at",
+            "source_path": "/at/r1s/s",
+            "expect_none": "0",
+        }
+        cases = (
+            {"reference_parent": "0", "out_steps": "3", "out_path": "/at"},
+            {"reference_parent": "1", "out_steps": "4", "out_path": "/r1o/at"},
+        )
+        for case in cases:
+            self.assert_relative_path(**topo, **case)
+
+    def test_relative_paths__source_under_target__outer_r__inner_rr(self):
+        """Should find relative XPath and steps are calculated accurately."""
+        topo = {
+            "lcar_context": "/y/r1o",
+            "target_path": "/at",
+            "source_path": "/at/r1s/r2s/s",
+            "expect_none": "0",
+        }
+        cases = (
+            {"reference_parent": "0", "out_steps": "4", "out_path": "/at"},
+            {"reference_parent": "1", "out_steps": "5", "out_path": "/r1o/at"},
+        )
+        for case in cases:
+            self.assert_relative_path(**topo, **case)
+
+    def test_relative_paths__source_under_target__outer_r__inner_rg(self):
+        """Should find relative XPath and steps are calculated accurately."""
+        topo = {
+            "lcar_context": "/y/r1o",
+            "target_path": "/at",
+            "source_path": "/at/r1s/g2s/s",
+            "expect_none": "0",
+        }
+        cases = (
+            {"reference_parent": "0", "out_steps": "4", "out_path": "/at"},
+            {"reference_parent": "1", "out_steps": "5", "out_path": "/r1o/at"},
+        )
+        for case in cases:
+            self.assert_relative_path(**topo, **case)
+
+    def test_relative_paths__source_under_target__outer_r__inner_g(self):
+        """Should find relative XPath and steps are calculated accurately."""
+        topo = {
+            "lcar_context": "/y/r1o",
+            "target_path": "/at",
+            "source_path": "/at/g1s/s",
+            "expect_none": "0",
+        }
+        cases = (
+            {"reference_parent": "0", "out_steps": "3", "out_path": "/at"},
+            {"reference_parent": "1", "out_steps": "4", "out_path": "/r1o/at"},
+        )
+        for case in cases:
+            self.assert_relative_path(**topo, **case)
+
+    def test_relative_paths__source_under_target__outer_r__inner_gg(self):
+        """Should find relative XPath and steps are calculated accurately."""
+        topo = {
+            "lcar_context": "/y/r1o",
+            "target_path": "/at",
+            "source_path": "/at/g1s/g2s/s",
+            "expect_none": "0",
+        }
+        cases = (
+            {"reference_parent": "0", "out_steps": "4", "out_path": "/at"},
+            {"reference_parent": "1", "out_steps": "5", "out_path": "/r1o/at"},
+        )
+        for case in cases:
+            self.assert_relative_path(**topo, **case)
+
+    def test_relative_paths__source_under_target__outer_r__inner_gr(self):
+        """Should find relative XPath and steps are calculated accurately."""
+        topo = {
+            "lcar_context": "/y/r1o",
+            "target_path": "/at",
+            "source_path": "/at/g1s/r2s/s",
+            "expect_none": "0",
+        }
+        cases = (
+            {"reference_parent": "0", "out_steps": "4", "out_path": "/at"},
+            {"reference_parent": "1", "out_steps": "5", "out_path": "/r1o/at"},
+        )
+        for case in cases:
+            self.assert_relative_path(**topo, **case)
+
+
+class TestReferencesToAncestorRepeat(PyxformTestCase):
+    """
+    References cases that involve a repeat, but don't fit with the above tests using
+    'assert_relative_path', since the target is not inside a repeat, and so the expected
+    XPath is an absolute path (not relative).
+    """
+
+    def test_references__source_under_target(self):
+        """Should find the XPath reference path is absolute."""
+        # Repro case for pyxform/#791
+        # The position() predicate approach shown here is the only workaround for unsupported
+        # 'preceding-sibling' and 'following-sibling' axes in javarosa/Collect. In practical
+        # terms this example sets the default for a question using the previous repeat response.
+        md = """
+        | survey |
+        | | type         | name | label  | default     |
+        | | begin_repeat | t    | target |             |
+        | | begin group  | g1t  | g1t    |             |
+        | | date         | s    | source | ${t}[position() = position(current()/../..) - 1]/g1t/s |
+        | | end group    | g1t  |        |             |
+        | | end_repeat   | t    |        |             |
+        | | begin_repeat | t2   | t2     |             |
+        | | text         | s2   | s2     | ${t2}[position() = position(current()/..) - 1]/s2 |
+        | | end_repeat   | t2   |        |             |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:setvalue[
+                  @ref='/test_name/t/g1t/s'
+                  and @value=' /test_name/t [position() = position(current()/../..) - 1]/g1t/s'
+                ]
+                """,
+                """
+                /h:html/h:head/x:model/x:setvalue[
+                  @ref='/test_name/t2/s2'
+                  and @value=' /test_name/t2 [position() = position(current()/..) - 1]/s2'
+                ]
+                """,
+            ],
+        )
+
+    def test_references__source_under_target_repeat(self):
+        """Should find the XPath reference path is absolute."""
+        md = """
+        | survey |
+        | | type         | name | label | default   |
+        | | begin_repeat | t    | t     |           |
+        | | text         | s    | s     | ${t}[1]/s |
+        | | end_repeat   |      |       |           |
+            """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:setvalue[
+                  @ref='/test_name/t/s'
+                  and @value=' /test_name/t [1]/s'
+                ]
+                """
+            ],
+        )
+
+    def test_references__source_under_target_repeat__inner_g(self):
+        """Should find the XPath reference path is absolute."""
+        md = """
+        | survey |
+        | | type         | name | label | default       |
+        | | begin_repeat | t    | t     |               |
+        | | begin_group  | g1s  | g1s   |               |
+        | | text         | s    | s     | ${t}[1]/g1s/s |
+        | | end_group    |      |       |               |
+        | | end_repeat   |      |       |               |
+            """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:setvalue[
+                  @ref='/test_name/t/g1s/s'
+                  and @value=' /test_name/t [1]/g1s/s'
+                ]
+                """
+            ],
+        )
+
+    def test_references__source_under_target_repeat__inner_r(self):
+        """Should find the XPath reference path is absolute."""
+        md = """
+        | survey |
+        | | type         | name | label | default       |
+        | | begin_repeat | t    | t     |               |
+        | | begin_repeat | r1s  | r1s   |               |
+        | | text         | s    | s     | ${t}[1]/r1s/s |
+        | | end_repeat   |      |       |               |
+        | | end_repeat   |      |       |               |
+            """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:setvalue[
+                  @ref='/test_name/t/r1s/s'
+                  and @value=' /test_name/t [1]/r1s/s'
+                ]
+                """
+            ],
+        )
+
+    def test_references__source_under_target_repeat__outer_g(self):
+        """Should find the XPath reference path is absolute."""
+        md = """
+        | survey |
+        | | type         | name | label | default   |
+        | | begin_group  | g1o  | g1o   |           |
+        | | begin_repeat | t    | t     |           |
+        | | text         | s    | s     | ${t}[1]/s |
+        | | end_repeat   |      |       |           |
+        | | end_group    |      |       |           |
+            """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:setvalue[
+                  @ref='/test_name/g1o/t/s'
+                  and @value=' /test_name/g1o/t [1]/s'
+                ]
+                """
+            ],
+        )
+
+    def test_references__source_under_target_repeat__outer_g__inner_g(self):
+        """Should find the XPath reference path is absolute."""
+        md = """
+        | survey |
+        | | type         | name | label | default       |
+        | | begin_group  | g1o  | g1o   |               |
+        | | begin_repeat | t    | t     |               |
+        | | begin_group  | g1s  | g1s   |               |
+        | | text         | s    | s     | ${t}[1]/g1s/s |
+        | | end_group    |      |       |               |
+        | | end_repeat   |      |       |               |
+        | | end_group    |      |       |               |
+            """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:setvalue[
+                  @ref='/test_name/g1o/t/g1s/s'
+                  and @value=' /test_name/g1o/t [1]/g1s/s'
+                ]
+                """
+            ],
+        )
+
+    def test_references__source_under_target_repeat__outer_g__inner_r(self):
+        """Should find the XPath reference path is absolute."""
+        md = """
+        | survey |
+        | | type         | name | label | default       |
+        | | begin_group  | g1o  | g1o   |               |
+        | | begin_repeat | t    | t     |               |
+        | | begin_repeat | r1s  | r1s   |               |
+        | | text         | s    | s     | ${t}[1]/r1s/s |
+        | | end_repeat   |      |       |               |
+        | | end_repeat   |      |       |               |
+        | | end_group    |      |       |               |
+            """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:setvalue[
+                  @ref='/test_name/g1o/t/r1s/s'
+                  and @value=' /test_name/g1o/t [1]/r1s/s'
+                ]
+                """
+            ],
+        )
