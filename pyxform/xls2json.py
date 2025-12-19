@@ -836,16 +836,9 @@ def workbook_to_json(
                 # There isn't an easy and neat place to put this besides here.
                 # Could potentially be simplified for control item cases.
                 if (
-                    constants.LABEL not in row
+                    control_type == constants.REPEAT
+                    and constants.LABEL not in row
                     and row.get(constants.MEDIA) is None
-                    and question_type not in aliases.label_optional_types
-                    and not row.get("bind", {}).get("calculate")
-                    and not row.get("_dynamic_default", False)
-                    and not (
-                        control_type is constants.GROUP
-                        and row.get("control", {}).get("appearance")
-                        == constants.FIELD_LIST
-                    )
                 ):
                     # Row number, name, and type probably enough for user message.
                     # Also means the error message text is stable for tests.

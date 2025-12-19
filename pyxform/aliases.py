@@ -148,17 +148,6 @@ yes_no = {
     "FALSE": False,
     "false()": False,
 }
-label_optional_types = [
-    "calculate",
-    "deviceid",
-    "end",
-    "phonenumber",
-    "simserial",
-    "start",
-    "start-geopoint",
-    "today",
-    "username",
-]
 osm = {"osm": constants.OSM_TYPE}
 BINDING_CONVERSIONS = {
     "yes": "true()",

@@ -8,10 +8,11 @@ from pyxform.validators.pyxform import unique_names
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.group import xpg
 from tests.xpath_helpers.questions import xpq
 
 
-class TestLoop(PyxformTestCase):
+class TestLoopOutput(PyxformTestCase):
     """
     A 'loop' is a type of group that, for each choice in the referenced choice list,
     generates grouped set of questions using the questions inside the loop definition.
@@ -24,10 +25,10 @@ class TestLoop(PyxformTestCase):
         md = """
         | survey |
         |        | type               | name | label             |
-        |        | begin loop over c1 | l1   |                   |
+        |        | begin_loop over c1 | l1   |                   |
         |        | integer            | q1   | Age               |
         |        | select_one c2      | q2   | Size of %(label)s |
-        |        | end loop           |      |                   |
+        |        | end_loop           |      |                   |
 
         | choices |
         |         | list_name | name   | label   |
@@ -96,12 +97,12 @@ class TestLoop(PyxformTestCase):
         md = """
         | survey |
         |        | type               | name | label             |
-        |        | begin loop over c1 | l1   |                   |
-        |        | begin group        | g1   |                   |
+        |        | begin_loop over c1 | l1   |                   |
+        |        | begin_group        | g1   |                   |
         |        | integer            | q1   | Age               |
         |        | select_one c2      | q2   | Size of %(label)s |
-        |        | end group          |      |                   |
-        |        | end loop           |      |                   |
+        |        | end_group          |      |                   |
+        |        | end_loop           |      |                   |
 
         | choices |
         |         | list_name | name   | label   |
@@ -170,6 +171,218 @@ class TestLoop(PyxformTestCase):
             ],
         )
 
+    def test_loop__label__ok(self):
+        """Should find a group control with a child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type               | name | label |
+        | | begin_loop over c1 | g1   | G1    |
+        | | text               | q1   | Q1    |
+        | | end_loop           |      |       |
+
+        | choices |
+        | | list_name | name | label |
+        | | c1        | n1   | N1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                # Primary loop group.
+                xpg.group_label_no_translation("/test_name/g1", "G1"),
+                # Choice loop group.
+                xpg.group_label_no_translation(
+                    "/test_name/g1/n1", "N1", "/x:group[@ref='/test_name/g1']"
+                ),
+            ],
+        )
+
+    def test_loop__no_label__ok(self):
+        """Should find a group control with no child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type               | name | label |
+        | | begin_loop over c1 | g1   |       |
+        | | text               | q1   | Q1    |
+        | | end_loop           |      |       |
+
+        | choices |
+        | | list_name | name | label |
+        | | c1        | n1   | N1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                # Primary loop group.
+                xpg.group_no_label("/test_name/g1"),
+                # Choice loop group.
+                xpg.group_label_no_translation(
+                    "/test_name/g1/n1", "N1", "/x:group[@ref='/test_name/g1']"
+                ),
+            ],
+        )
+
+    def test_loop__label__translated__ok(self):
+        """Should find a group control with a child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type               | name | label::English (en) |
+        | | begin_loop over c1 | g1   | G1                  |
+        | | text               | q1   | Q1                  |
+        | | end_loop           |      |                     |
+
+        | choices |
+        | | list_name | name | label::English (en) |
+        | | c1        | n1   | N1                  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                # Primary loop group.
+                xpg.group_label_translation("/test_name/g1"),
+                # Choice loop group.
+                xpg.group_label_translation(
+                    "/test_name/g1/n1", "/x:group[@ref='/test_name/g1']"
+                ),
+            ],
+        )
+
+    def test_loop__no_label__translated__ok(self):
+        """Should find a group control with no child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type               | name | label::English (en) |
+        | | begin_loop over c1 | g1   |                     |
+        | | text               | q1   | Q1                  |
+        | | end_loop           |      |                     |
+
+        | choices |
+        | | list_name | name | label::English (en) |
+        | | c1        | n1   | N1                  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                # Primary loop group.
+                xpg.group_no_label("/test_name/g1"),
+                # Choice loop group.
+                xpg.group_label_translation(
+                    "/test_name/g1/n1", "/x:group[@ref='/test_name/g1']"
+                ),
+            ],
+        )
+
+    def test_loop__label__appearance__ok(self):
+        """Should find a group control with a child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type               | name | label | appearance |
+        | | begin_loop over c1 | g1   | G1    | field-list |
+        | | text               | q1   | Q1    |            |
+        | | end_loop           |      |       |            |
+
+        | choices |
+        | | list_name | name | label |
+        | | c1        | n1   | N1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                # Primary loop group.
+                xpg.group_label_no_translation_appearance(
+                    "/test_name/g1", "G1", "field-list"
+                ),
+                # Choice loop group.
+                xpg.group_label_no_translation(
+                    "/test_name/g1/n1", "N1", "/x:group[@ref='/test_name/g1']"
+                ),
+            ],
+        )
+
+    def test_loop__no_label__appearance__ok(self):
+        """Should find a group control with no child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type               | name | label | appearance |
+        | | begin_loop over c1 | g1   |       | field-list |
+        | | text               | q1   | Q1    |            |
+        | | end_loop           |      |       |            |
+
+        | choices |
+        | | list_name | name | label |
+        | | c1        | n1   | N1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                # Primary loop group.
+                xpg.group_no_label_appearance("/test_name/g1", "field-list"),
+                # Choice loop group.
+                xpg.group_label_no_translation(
+                    "/test_name/g1/n1", "N1", "/x:group[@ref='/test_name/g1']"
+                ),
+            ],
+        )
+
+    def test_loop__label__translated__appearance__ok(self):
+        """Should find a group control with a child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type               | name | label::English (en) | appearance |
+        | | begin_loop over c1 | g1   | G1                  | field-list |
+        | | text               | q1   | Q1                  |            |
+        | | end_loop           |      |                     |            |
+
+        | choices |
+        | | list_name | name | label::English (en) |
+        | | c1        | n1   | N1                  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                # Primary loop group.
+                xpg.group_label_translation_appearance("/test_name/g1", "field-list"),
+                # Choice loop group.
+                xpg.group_label_translation(
+                    "/test_name/g1/n1", "/x:group[@ref='/test_name/g1']"
+                ),
+            ],
+        )
+
+    def test_loop__no_label__translated__appearance__ok(self):
+        """Should find a group control with no child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type               | name | label::English (en) | appearance |
+        | | begin_loop over c1 | g1   |                     | field-list |
+        | | text               | q1   | Q1                  |            |
+        | | end_loop           |      |                     |            |
+
+        | choices |
+        | | list_name | name | label::English (en) |
+        | | c1        | n1   | N1                  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                # Primary loop group.
+                xpg.group_no_label_appearance("/test_name/g1", "field-list"),
+                # Choice loop group.
+                xpg.group_label_translation(
+                    "/test_name/g1/n1", "/x:group[@ref='/test_name/g1']"
+                ),
+            ],
+        )
+
+
+class TestLoopParsing(PyxformTestCase):
     def test_loop__repeats_error(self):
         """Should find that using a repeat in a loop results in an error."""
         md = """
