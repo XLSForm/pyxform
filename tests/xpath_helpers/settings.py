@@ -18,6 +18,16 @@ class XPathHelper:
         """
 
     @staticmethod
+    def name(value: str) -> str:
+        """The primary instance root node name is set to this value."""
+        return f"""
+        /h:html/h:head/x:model/x:instance/*[
+          namespace-uri()='http://www.w3.org/2002/xforms'
+          and local-name()='{value}'
+        ]
+        """
+
+    @staticmethod
     def language_is_default(lang: str) -> str:
         """The language translation has itext and is marked as the default."""
         return f"""

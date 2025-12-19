@@ -264,7 +264,7 @@ def workbook_to_json(
         raise PyXFormError(msg)
 
     # Make sure the passed in vars are unicode
-    validate_settings.validate_form_name(form_name=form_name)
+    validate_settings.validate_name(name=form_name, from_sheet=False)
     form_name = str(coalesce(form_name, constants.DEFAULT_FORM_NAME))
     default_language = str(coalesce(default_language, constants.DEFAULT_LANGUAGE_VALUE))
 
@@ -308,6 +308,7 @@ def workbook_to_json(
             header_columns=set(Survey.get_slot_names()),
         )
         settings = settings_sheet.data[0]
+        validate_settings.validate_name(name=settings.get(constants.NAME, None))
     else:
         similar = find_sheet_misspellings(key=constants.SETTINGS, keys=sheet_names)
         if similar is not None:
