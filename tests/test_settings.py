@@ -1,3 +1,4 @@
+from pyxform import constants as co
 from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -43,7 +44,39 @@ class TestSettings(PyxformTestCase):
             xml__xpath_match=[xps.form_id("my_form")],
         )
 
-    def test_form_name__valid_characters(self):
+    def test_name__from_sheet__valid_characters(self):
+        """Should allow a custom name with valid characters."""
+        md = """
+        | settings |
+        | | name             |
+        | | master-form_v2.1 |
+
+        | survey |
+        | | type  | name | label |
+        | | text  | q1   | hello |
+        """
+        self.assertPyxformXform(md=md, xml__xpath_match=[xps.name("master-form_v2.1")])
+
+    def test_name__from_sheet__invalid_characters__error(self):
+        """Should raise an error if the form_name is not a valid name."""
+        md = """
+        | settings |
+        | | name         |
+        | | bad@filename |
+
+        | survey |
+        | | type  | name | label |
+        | | text  | q1   | hello |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.NAMES_008.value.format(sheet=co.SETTINGS, row=1, column=co.NAME)
+            ],
+        )
+
+    def test_name__from_file__valid_characters(self):
         """Should allow a custom form_name with valid characters."""
         md = """
         | survey |
@@ -53,9 +86,10 @@ class TestSettings(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             name="master-form_v2.1",
+            xml__xpath_match=[xps.name("master-form_v2.1")],
         )
 
-    def test_form_name__invalid_characters__error(self):
+    def test_name__from_file__invalid_characters__error(self):
         """Should raise an error if the form_name is not a valid name."""
         md = """
         | survey |
