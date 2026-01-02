@@ -157,7 +157,7 @@ def process_range_question_type(
         parameters=parameters, allowed=("start", "end", "step")
     )
     parameters_map = {"start": "start", "end": "end", "step": "step"}
-    defaults = {"start": "1", "end": "10", "step": "1"}
+    defaults = {"start": "0", "end": "10", "step": "1"}
 
     # set defaults
     for key in parameters_map.values():
