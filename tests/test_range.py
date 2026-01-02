@@ -45,7 +45,7 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="10" ref="/data/level" start="1" step="1">',
+                '<range end="10" ref="/data/level" start="0" step="1">',
             ],
         )
 
@@ -58,7 +58,7 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="20" ref="/data/level" start="1" step="1">',
+                '<range end="20" ref="/data/level" start="0" step="1">',
             ],
         )
 
@@ -71,7 +71,7 @@ class RangeWidgetTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/level" type="int"/>',
-                '<range end="10" ref="/data/level" start="1" step="1">',
+                '<range end="10" ref="/data/level" start="0" step="1">',
             ],
         )
 
