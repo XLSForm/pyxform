@@ -1423,6 +1423,8 @@ def workbook_to_json(
                 "type": "calculate",
             }
         )
+        # Allow ${instanceID} reference for longitudinal / entities workflows.
+        element_names.update(("instanceID",))
 
     if "instance_name" in settings:
         # Automatically add an instanceName element:
