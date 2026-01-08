@@ -4,6 +4,7 @@ Validations for question types.
 
 from collections.abc import Collection, Iterable
 
+from pyxform import aliases
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.validators.pyxform.pyxform_reference import (
     is_pyxform_reference_candidate,
@@ -90,3 +91,12 @@ def process_trigger(
         return trigger
     else:
         return None
+
+
+def validate_geo_parameter_incremental(value: str) -> None:
+    """For geoshape and geotrace, the 'incremental' parameter can only resolve to 'true'."""
+    incremental = aliases.yes_no.get(value, None)
+    if incremental is None or not incremental:
+        raise PyXFormError(
+            code=ErrorCode.SURVEY_003,
+        )

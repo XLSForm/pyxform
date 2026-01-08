@@ -1331,7 +1331,7 @@ def workbook_to_json(
                 )
             else:
                 parameters_generic.validate(
-                    parameters=parameters, allowed=("allow-mock-accuracy",)
+                    parameters=parameters, allowed=("allow-mock-accuracy", "incremental")
                 )
 
             if "allow-mock-accuracy" in parameters:
@@ -1365,6 +1365,19 @@ def workbook_to_json(
                     raise PyXFormError(
                         "Parameter warning-accuracy must have a numeric value"
                     ) from wa_err
+
+            if "incremental" in parameters:
+                try:
+                    qt.validate_geo_parameter_incremental(value=parameters["incremental"])
+                except PyXFormError as e:
+                    e.context.update(
+                        sheet=constants.SURVEY,
+                        column=constants.PARAMETERS,
+                        row=row_number,
+                    )
+                    raise
+                else:
+                    new_dict["control"]["incremental"] = "true"
 
             parent_children_array.append(new_dict)
             continue

@@ -2,6 +2,9 @@
 Test geo widgets.
 """
 
+from pyxform import constants as co
+from pyxform.errors import ErrorCode
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -66,3 +69,117 @@ class GeoWidgetsTest(PyxformTestCase):
                 'type="string"/>',
             ],
         )
+
+
+class TestParameterIncremental(PyxformTestCase):
+    def test_not_emitted_by_default(self):
+        """Should find that the parameter is not included as a default control attribute."""
+        md = """
+        | survey |
+        | | type   | name | label |
+        | | {type} | q1   | Q1    |
+        """
+        types = ["geoshape", "geotrace", "geopoint", "integer", "note"]
+        for t in types:
+            with self.subTest(t):
+                self.assertPyxformXform(
+                    md=md.format(type=t),
+                    xml__xpath_match=[
+                        "/h:html/h:body/x:input[@ref='/test_name/q1' and not(@incremental)]",
+                    ],
+                )
+
+    def test_with_incremental__geoshape_geotrace__ok(self):
+        """Should find that the parameter is emitted as a control attribute if specified."""
+        md = """
+        | survey |
+        | | type   | name | label | parameters       |
+        | | {type} | q1   | Q1    | incremental=true |
+        """
+        types = ["geoshape", "geotrace"]
+        for t in types:
+            with self.subTest(t):
+                self.assertPyxformXform(
+                    md=md.format(type=t),
+                    xml__xpath_match=[
+                        f"/h:html/h:head/x:model/x:bind[@nodeset='/test_name/q1' and @type='{t}']",
+                        "/h:html/h:body/x:input[@ref='/test_name/q1' and @incremental='true']",
+                    ],
+                )
+
+    def test_with_incremental__geoshape_geotrace____aliases__ok(self):
+        """Should find that the parameter is emitted as a control attribute if specified."""
+        md = """
+        | survey |
+        | | type   | name | label | parameters      |
+        | | {type} | q1   | Q1    | incremental=yes |
+        """
+        types = ["geoshape", "geotrace"]
+        values = ["yes", "true()"]
+        for t in types:
+            for v in values:
+                with self.subTest((t, v)):
+                    self.assertPyxformXform(
+                        md=md.format(type=t),
+                        xml__xpath_match=[
+                            f"/h:html/h:head/x:model/x:bind[@nodeset='/test_name/q1' and @type='{t}']",
+                            "/h:html/h:body/x:input[@ref='/test_name/q1' and @incremental='true']",
+                        ],
+                    )
+
+    def test_with_incremental__geoshape_geotrace____wrong_value__error(self):
+        """Should raise an error if an unrecognised value is specified."""
+        md = """
+        | survey |
+        | | type   | name | label | parameters          |
+        | | {type} | q1   | Q1    | incremental={value} |
+        """
+        types = ["geoshape", "geotrace"]
+        values = ["", "yeah", "false"]
+        for t in types:
+            for v in values:
+                with self.subTest((t, v)):
+                    self.assertPyxformXform(
+                        md=md.format(type=t, value=v),
+                        errored=True,
+                        error__contains=[
+                            ErrorCode.SURVEY_003.value.format(
+                                sheet=co.SURVEY, column=co.PARAMETERS, row=2
+                            )
+                        ],
+                    )
+
+    def test_with_incremental__wrong_type_with_params__error(self):
+        """Should raise an error if specified for other question types with parameters."""
+        md = """
+        | survey |
+        | | type   | name | label | parameters       |
+        | | {type} | q1   | Q1    | incremental=true |
+        """
+        types = ["geopoint", "audio"]
+        for t in types:
+            with self.subTest(t):
+                self.assertPyxformXform(
+                    md=md.format(type=t),
+                    errored=True,
+                    error__contains=[
+                        "The following are invalid parameter(s): 'incremental'."
+                    ],
+                )
+
+    def test_with_incremental__wrong_type_no_params__ok(self):
+        """Should not raise an error if specified for other question types without parameters."""
+        md = """
+        | survey |
+        | | type   | name | label | parameters       |
+        | | {type} | q1   | Q1    | incremental=true |
+        """
+        types = ["integer", "note"]
+        for t in types:
+            with self.subTest(t):
+                self.assertPyxformXform(
+                    md=md.format(type=t),
+                    xml__xpath_match=[
+                        "/h:html/h:body/x:input[@ref='/test_name/q1' and not(@incremental)]",
+                    ],
+                )
