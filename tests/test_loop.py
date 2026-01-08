@@ -4,7 +4,7 @@ Test loop syntax.
 
 from unittest import TestCase
 
-from pyxform.validators.pyxform import unique_names
+from pyxform.errors import ErrorCode
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -193,7 +193,7 @@ class TestLoop(PyxformTestCase):
             md=md,
             errored=True,
             # Not caught by xls2json since loops are currently generated in builder.py
-            error__contains=[unique_names.NAMES004.format(row=None, value="r1")],
+            error__contains=[ErrorCode.NAMES_004.value.format(row=None, value="r1")],
         )
 
     def test_loop__references_error(self):

@@ -2,8 +2,8 @@
 Test duplicate survey question field name.
 """
 
+from pyxform import constants as co
 from pyxform.errors import ErrorCode
-from pyxform.validators.pyxform import unique_names
 
 from tests.pyxform_test_case import PyxformTestCase
 
@@ -173,7 +173,7 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=3, value="q1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=3, value="q1")],
         )
 
     def test_names__question_same_as_group_in_same_context_in_survey__error(self):
@@ -189,7 +189,7 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=3, value="q1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=3, value="q1")],
         )
 
     def test_names__question_same_as_repeat_in_same_context_in_survey__error(self):
@@ -205,7 +205,7 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=3, value="q1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=3, value="q1")],
         )
 
     def test_names__question_same_as_question_in_same_context_in_group__error(self):
@@ -221,7 +221,7 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=4, value="q1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=4, value="q1")],
         )
 
     def test_names__question_same_as_group_in_same_context_in_group__error(self):
@@ -239,7 +239,7 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=4, value="q1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=4, value="q1")],
         )
 
     def test_names__question_same_as_repeat_in_same_context_in_group__error(self):
@@ -257,7 +257,7 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=4, value="q1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=4, value="q1")],
         )
 
     def test_names__question_same_as_question_in_same_context_in_repeat__error(self):
@@ -273,7 +273,7 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=4, value="q1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=4, value="q1")],
         )
 
     def test_names__question_same_as_group_in_same_context_in_repeat__error(self):
@@ -291,7 +291,7 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=4, value="q1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=4, value="q1")],
         )
 
     def test_names__question_same_as_repeat_in_same_context_in_repeat__error(self):
@@ -309,7 +309,7 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=4, value="q1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=4, value="q1")],
         )
 
     def test_names__question_same_as_question_in_same_context_in_survey__case_insensitive_warning(
@@ -323,7 +323,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | text        | Q1   | Q2    |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=3, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=3, value="Q1")],
         )
 
     def test_names__question_same_as_group_in_same_context_in_survey__case_insensitive_warning(
@@ -339,7 +340,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=3, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=3, value="Q1")],
         )
 
     def test_names__question_same_as_repeat_in_same_context_in_survey__case_insensitive_warning(
@@ -355,7 +357,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=3, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=3, value="Q1")],
         )
 
     def test_names__question_same_as_question_in_same_context_in_group__case_insensitive_warning(
@@ -371,7 +374,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_names__question_same_as_group_in_same_context_in_group__case_insensitive_warning(
@@ -389,7 +393,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end group   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_names__question_same_as_repeat_in_same_context_in_group__case_insensitive_warning(
@@ -407,7 +412,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end group    |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_names__question_same_as_question_in_same_context_in_repeat__case_insensitive_warning(
@@ -423,7 +429,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_names__question_same_as_group_in_same_context_in_repeat__case_insensitive_warning(
@@ -441,7 +448,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_names__question_same_as_repeat_in_same_context_in_repeat__case_insensitive_warning(
@@ -459,7 +467,8 @@ class TestQuestionParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=4, value="Q1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=4, value="Q1")],
         )
 
     def test_reference_name_not_found__target_after_source__error(self):
@@ -569,7 +578,9 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=["[row : 3] Invalid question name '${q1x}'."],
+            error__contains=[
+                ErrorCode.NAMES_008.value.format(sheet=co.SURVEY, row=3, column=co.NAME)
+            ],
         )
 
     def test_reference_in_ignored_columns__not_validated__name_alias__error(self):
@@ -584,7 +595,9 @@ class TestQuestionParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=["[row : 3] Invalid question name '${q1x}'."],
+            error__contains=[
+                ErrorCode.NAMES_008.value.format(sheet=co.SURVEY, row=3, column=co.NAME)
+            ],
         )
 
     def test_reference_in_aliased_column(self):

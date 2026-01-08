@@ -1,27 +1,5 @@
 from pyxform import constants
-from pyxform.errors import PyXFormError
-
-INVALID_NAME = (
-    "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
-    "Choices must have a name. "
-    "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
-)
-INVALID_LABEL = (
-    "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
-    "Choices should have a label. "
-    "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
-)
-INVALID_HEADER = (
-    "[row : 1] On the 'choices' sheet, the '{column}' value is invalid. "
-    "Column headers must not be empty and must not contain spaces. "
-    "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
-)
-INVALID_DUPLICATE = (
-    "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
-    "Choice names must be unique for each choice list. "
-    "If this is intentional, use the setting 'allow_choice_duplicates'. "
-    "Learn more: https://xlsform.org/#choice-names."
-)
+from pyxform.errors import ErrorCode, PyXFormError
 
 
 def validate_headers(
@@ -31,7 +9,7 @@ def validate_headers(
         for header in headers:
             header = header[0]
             if header != constants.LIST_NAME_S and (" " in header or header == ""):
-                warnings.append(INVALID_HEADER.format(column=header))
+                warnings.append(ErrorCode.HEADER_004.value.format(column=header))
                 yield header
 
     return tuple(check())
@@ -44,14 +22,16 @@ def validate_choice_list(
     duplicate_errors = []
     for option in options:
         if constants.NAME not in option:
-            raise PyXFormError(INVALID_NAME.format(row=option["__row"]))
+            raise PyXFormError(ErrorCode.NAMES_006.value.format(row=option["__row"]))
         elif constants.LABEL not in option:
-            warnings.append(INVALID_LABEL.format(row=option["__row"]))
+            warnings.append(ErrorCode.LABEL_001.value.format(row=option["__row"]))
 
         if not allow_duplicates:
             name = option[constants.NAME]
             if name in seen_options:
-                duplicate_errors.append(INVALID_DUPLICATE.format(row=option["__row"]))
+                duplicate_errors.append(
+                    ErrorCode.NAMES_007.value.format(row=option["__row"])
+                )
             else:
                 seen_options.add(name)
 

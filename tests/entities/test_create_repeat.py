@@ -1,5 +1,4 @@
 from pyxform import constants as co
-from pyxform.entities import entities_parsing as ep
 from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -382,7 +381,7 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
                 self.assertPyxformXform(
                     md=md.format(case=case),
                     errored=True,
-                    error__contains=[ep.ENTITY001.format(value=case)],
+                    error__contains=[ErrorCode.ENTITY_001.value.format(value=case)],
                 )
 
     def test_entity_repeat_not_found__error(self):
@@ -399,7 +398,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r2}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY002.format(value="r2")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_002.value.format(value="r2")],
         )
 
     def test_entity_repeat_is_a_group__error(self):
@@ -416,7 +417,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${g1}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY003.format(value="g1")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_003.value.format(value="g1")],
         )
 
     def test_entity_repeat_is_a_loop__error(self):
@@ -437,7 +440,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${l1}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY003.format(value="l1")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_003.value.format(value="l1")],
         )
 
     def test_entity_repeat_in_repeat__error(self):
@@ -456,7 +461,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r2}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY004.format(value="r2")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_004.value.format(value="r2")],
         )
 
     def test_saveto_question_not_in_entity_repeat_no_entity_repeat__error(
@@ -475,7 +482,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r2}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY006.format(row=3, value="q1e")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_006.value.format(row=3, value="q1e")],
         )
 
     def test_saveto_question_not_in_entity_repeat_in_survey__error(self):
@@ -493,7 +502,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r1}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY006.format(row=2, value="q1e")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_006.value.format(row=2, value="q1e")],
         )
 
     def test_saveto_question_not_in_entity_repeat_in_group__error(self):
@@ -513,7 +524,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r1}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY006.format(row=3, value="q1e")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_006.value.format(row=3, value="q1e")],
         )
 
     def test_saveto_question_not_in_entity_repeat_in_repeat__error(self):
@@ -533,7 +546,9 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r2}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY006.format(row=3, value="q1e")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_006.value.format(row=3, value="q1e")],
         )
 
     def test_saveto_question_in_nested_repeat__error(self):
@@ -552,5 +567,7 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | e1        | ${q1} | ${r1}  |
         """
         self.assertPyxformXform(
-            md=md, errored=True, error__contains=[ep.ENTITY005.format(row=4, value="q1e")]
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_005.value.format(row=4, value="q1e")],
         )

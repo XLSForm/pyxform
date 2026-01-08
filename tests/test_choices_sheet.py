@@ -1,5 +1,4 @@
 from pyxform.errors import ErrorCode
-from pyxform.validators.pyxform import choices as vc
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
@@ -47,10 +46,8 @@ class TestChoicesSheet(PyxformTestCase):
             ],
         )
 
-    def test_choices_without_labels__for_static_selects__allowed(self):
-        """
-        Test choices without labels for static selects. Validate will NOT fail.
-        """
+    def test_choices_without_labels__for_static_selects__warning(self):
+        """Should show a warning if a label is missing in the choices sheet."""
         self.assertPyxformXform(
             md="""
             | survey   |                    |      |       |
@@ -75,13 +72,14 @@ class TestChoicesSheet(PyxformTestCase):
                 ]
                 """,
             ],
+            warnings__contains=[
+                ErrorCode.LABEL_001.value.format(row=2),
+                ErrorCode.LABEL_001.value.format(row=3),
+            ],
         )
 
-    def test_choices_without_labels__for_dynamic_selects__allowed_by_pyxform(self):
-        """
-        Test choices without labels for dynamic selects. Validate will fail.
-        """
-        # TODO: validate doesn't fail
+    def test_choices_without_labels__for_dynamic_selects__warning(self):
+        """Should show a warning if a label is missing in the choices sheet."""
         self.assertPyxformXform(
             md="""
             | survey   |                    |      |       |               |
@@ -105,6 +103,10 @@ class TestChoicesSheet(PyxformTestCase):
                     and not(./x:item/x:itextId)
                 ]
                 """,
+            ],
+            warnings__contains=[
+                ErrorCode.LABEL_001.value.format(row=2),
+                ErrorCode.LABEL_001.value.format(row=3),
             ],
         )
 
@@ -171,7 +173,7 @@ class TestChoicesSheet(PyxformTestCase):
             |         | list            | b        | option c |
             """,
             errored=True,
-            error__contains=[vc.INVALID_DUPLICATE.format(row=4)],
+            error__contains=[ErrorCode.NAMES_007.value.format(row=4)],
         )
 
     def test_multiple_duplicate_choices_without_setting(self):
@@ -189,8 +191,8 @@ class TestChoicesSheet(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                vc.INVALID_DUPLICATE.format(row=3),
-                vc.INVALID_DUPLICATE.format(row=5),
+                ErrorCode.NAMES_007.value.format(row=3),
+                ErrorCode.NAMES_007.value.format(row=5),
             ],
         )
 
@@ -210,7 +212,7 @@ class TestChoicesSheet(PyxformTestCase):
             |          | Duplicates   | Bob                       |
             """,
             errored=True,
-            error__contains=[vc.INVALID_DUPLICATE.format(row=4)],
+            error__contains=[ErrorCode.NAMES_007.value.format(row=4)],
         )
 
     def test_duplicate_choices_with_allow_choice_duplicates_setting(self):
@@ -552,4 +554,37 @@ class TestChoicesSheet(PyxformTestCase):
                 ]
                 """,
             ],
+        )
+
+    def test_missing_name__error(self):
+        """Should raise an error if a name is missing in the choices sheet."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | label |
+        | | c1        |      | N1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.NAMES_006.value.format(row=2)],
+        )
+
+    def test_name_not_validated_as_xml_name(self):
+        """Should not raise an error if a name has invalid XML name characters."""
+        md = """
+        | survey |
+        | | type          | name | label |
+        | | select_one c1 | q1   | Q1    |
+
+        | choices |
+        | | list_name | name | label |
+        | | c1        | .n   | N1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[xpc.model_instance_choices_label("c1", ((".n", "N1"),))],
         )

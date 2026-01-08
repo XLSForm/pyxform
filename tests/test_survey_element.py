@@ -1,6 +1,8 @@
 import warnings
 from unittest import TestCase
 
+from pyxform import constants as co
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.survey_element import SurveyElement
 
 
@@ -65,3 +67,11 @@ class TestSurveyElementMappingBehaviour(TestCase):
             _ = elem.foo
         with self.assertRaises(AttributeError):
             _ = elem["foo"]
+
+    def test_validate__invalid_name__error(self):
+        """Should raise an error if the 'name' is not a valid XML Name."""
+        with self.assertRaises(PyXFormError) as err:
+            SurveyElement(name=".q", label="Q1").validate()
+        self.assertEqual(
+            ErrorCode.NAMES_009.value.format(name=co.NAME), err.exception.args[0]
+        )

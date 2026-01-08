@@ -312,13 +312,36 @@ class PyxformTestCase(TestCase):
                     )
 
         problem_test_specs = (
-            (error__contains, "errors", errors, self.assertContains),
-            (error__not_contains, "errors", errors, self.assertNotContains),
-            (warnings__contains, "warnings", warnings, self.assertContains),
-            (warnings__not_contains, "warnings", warnings, self.assertNotContains),
+            ("error__contains", error__contains, "errors", errors, self.assertContains),
+            (
+                "error__not_contains",
+                error__not_contains,
+                "errors",
+                errors,
+                self.assertNotContains,
+            ),
+            (
+                "warnings__contains",
+                warnings__contains,
+                "warnings",
+                warnings,
+                self.assertContains,
+            ),
+            (
+                "warnings__not_contains",
+                warnings__not_contains,
+                "warnings",
+                warnings,
+                self.assertNotContains,
+            ),
         )
-        for test_spec, prefix, test_obj, test_func in problem_test_specs:
+        for param_name, test_spec, prefix, test_obj, test_func in problem_test_specs:
             if test_spec is not None:
+                if isinstance(test_spec, str):
+                    raise PyxformTestError(
+                        f"The parameter '{param_name}' is a string but should be an "
+                        f"iterable of strings."
+                    )
                 test_str = "\n".join(test_obj)
                 for i in test_spec:
                     test_func(content=test_str, text=i, msg_prefix=prefix)

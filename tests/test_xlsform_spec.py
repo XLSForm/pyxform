@@ -1,4 +1,4 @@
-from pyxform.validators.pyxform import choices as vc
+from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
 
@@ -63,10 +63,10 @@ class TestWarnings(PyxformTestCase):
         )
         self.maxDiff = 2000
         expected = [
-            vc.INVALID_LABEL.format(row=4),
-            vc.INVALID_LABEL.format(row=5),
-            vc.INVALID_LABEL.format(row=6),
-            vc.INVALID_LABEL.format(row=7),
+            ErrorCode.LABEL_001.value.format(row=4),
+            ErrorCode.LABEL_001.value.format(row=5),
+            ErrorCode.LABEL_001.value.format(row=6),
+            ErrorCode.LABEL_001.value.format(row=7),
             "[row : 9] Repeat has no label: {'name': 'repeat_test', 'type': 'begin repeat'}",
             "[row : 10] Group has no label: {'name': 'group_test', 'type': 'begin group'}",
             "[row : 17] Group has no label: {'name': 'name', 'type': 'begin group'}",
