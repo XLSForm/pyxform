@@ -47,9 +47,9 @@ class TestChoicesSheet(PyxformTestCase):
             ],
         )
 
-    def test_choices_without_labels__for_static_selects__allowed(self):
+    def test_choices_without_labels__for_static_selects__forbidden(self):
         """
-        Test choices without labels for static selects. Validate will NOT fail.
+        Test choices without labels for static selects. Validate will fail.
         """
         self.assertPyxformXform(
             md="""
@@ -75,13 +75,15 @@ class TestChoicesSheet(PyxformTestCase):
                 ]
                 """,
             ],
+            odk_validate_error__contains=[
+                "<label> node for itemset doesn't exist! [instance(choices)/root/item/label]"
+            ],
         )
 
-    def test_choices_without_labels__for_dynamic_selects__allowed_by_pyxform(self):
+    def test_choices_without_labels__for_dynamic_selects__forbidden(self):
         """
         Test choices without labels for dynamic selects. Validate will fail.
         """
-        # TODO: validate doesn't fail
         self.assertPyxformXform(
             md="""
             | survey   |                    |      |       |               |
@@ -106,6 +108,9 @@ class TestChoicesSheet(PyxformTestCase):
                 ]
                 """,
             ],
+            odk_validate_error__contains=[
+                "<label> node for itemset doesn't exist! [instance(choices)/root/item/label]"
+            ],
         )
 
     def test_choices_extra_columns_output_order_matches_xlsform(self):
@@ -116,8 +121,8 @@ class TestChoicesSheet(PyxformTestCase):
         |          | select_one choices | a    | A     |
         | choices  |                    |      |       |
         |          | list_name          | name | label | geometry                 |
-        |          | choices            | 1    |       | 46.5841618 7.0801379 0 0 |
-        |          | choices            | 2    |       | 35.8805082 76.515057 0 0 |
+        |          | choices            | 1    | one   | 46.5841618 7.0801379 0 0 |
+        |          | choices            | 2    | two   | 35.8805082 76.515057 0 0 |
         """
         self.assertPyxformXform(
             md=md,
