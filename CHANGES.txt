@@ -1,5 +1,13 @@
 Pyxform Changelog
 
+v4.2.0, 2026-01-08
+* Fix 'NoneType is not iterable' error for group with no children by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/787
+* Indicate which sheet a ${} replacement error comes from by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/789
+* Fix support for a source referencing an ancestor repeat target by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/794
+* Allow ${instanceID} reference for longitudinal / entities workflows by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/805
+* Incremental parameter for geotrace and geoshape by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/808
+* Update Validate to v1.20.0 by @lognaturel in https://github.com/XLSForm/pyxform/pull/810
+
 v4.1.0, 2025-10-20
 * Restore pre-py3.13 xml attribute escaping behaviour for \r\n\t by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/772
 * Update dependencies by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/774
