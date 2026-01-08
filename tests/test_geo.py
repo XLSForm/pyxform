@@ -112,7 +112,7 @@ class TestParameterIncremental(PyxformTestCase):
         md = """
         | survey |
         | | type   | name | label | parameters      |
-        | | {type} | q1   | Q1    | incremental=yes |
+        | | {type} | q1   | Q1    | incremental={value} |
         """
         types = ["geoshape", "geotrace"]
         values = ["yes", "true()"]
@@ -120,7 +120,7 @@ class TestParameterIncremental(PyxformTestCase):
             for v in values:
                 with self.subTest((t, v)):
                     self.assertPyxformXform(
-                        md=md.format(type=t),
+                        md=md.format(type=t, value=v),
                         xml__xpath_match=[
                             f"/h:html/h:head/x:model/x:bind[@nodeset='/test_name/q1' and @type='{t}']",
                             "/h:html/h:body/x:input[@ref='/test_name/q1' and @incremental='true']",
