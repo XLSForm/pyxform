@@ -79,6 +79,14 @@ class ErrorCode(Enum):
             "type '{type}' with value '{value}'."
         ),
     )
+    SURVEY_003: Detail = Detail(
+        name="Survey Sheet - invalid geoshape/geotrace parameter 'incremental'",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "For geoshape and geotrace questions, the 'incremental' parameter may either "
+            "be 'true' or not included."
+        ),
+    )
 
 
 class PyXFormError(Exception):
