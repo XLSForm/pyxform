@@ -10,6 +10,7 @@ from pyxform.xls2json import SURVEY_001, SURVEY_002
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.group import xpg
 
 
 class TestGroupOutput(PyxformTestCase):
@@ -111,6 +112,144 @@ class TestGroupOutput(PyxformTestCase):
             name="table-list-appearance-mod",
             md=md,
             xml__contains=[xml_contains],
+        )
+
+    def test_group__label__ok(self):
+        """Should find a group control with a child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type        | name | label |
+        | | begin_group | g1   | G1    |
+        | | text        | q1   | Q1    |
+        | | end_group   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                xpg.group_label_no_translation("/test_name/g1", "G1"),
+            ],
+        )
+
+    def test_group__no_label__ok(self):
+        """Should find a group control with no child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type        | name | label |
+        | | begin_group | g1   |       |
+        | | text        | q1   | Q1    |
+        | | end_group   |      |       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                xpg.group_no_label("/test_name/g1"),
+            ],
+        )
+
+    def test_group__label__translated__ok(self):
+        """Should find a group control with a child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type        | name | label::English (en) |
+        | | begin_group | g1   | G1                  |
+        | | text        | q1   | Q1                  |
+        | | end_group   |      |                     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                xpg.group_label_translation("/test_name/g1"),
+            ],
+        )
+
+    def test_group__no_label__translated__ok(self):
+        """Should find a group control with no child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type        | name | label::English (en) |
+        | | begin_group | g1   |                     |
+        | | text        | q1   | Q1                  |
+        | | end_group   |      |                     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                xpg.group_no_label("/test_name/g1"),
+            ],
+        )
+
+    def test_group__label__appearance__ok(self):
+        """Should find a group control with a child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type        | name | label | appearance |
+        | | begin_group | g1   | G1    | field-list |
+        | | text        | q1   | Q1    |            |
+        | | end_group   |      |       |            |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                xpg.group_label_no_translation_appearance(
+                    "/test_name/g1", "G1", "field-list"
+                ),
+            ],
+        )
+
+    def test_group__no_label__appearance__ok(self):
+        """Should find a group control with no child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type        | name | label | appearance |
+        | | begin_group | g1   |       | field-list |
+        | | text        | q1   | Q1    |            |
+        | | end_group   |      |       |            |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                xpg.group_no_label_appearance("/test_name/g1", "field-list"),
+            ],
+        )
+
+    def test_group__label__translated__appearance__ok(self):
+        """Should find a group control with a child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type        | name | label::English (en) | appearance |
+        | | begin_group | g1   | G1                  | field-list |
+        | | text        | q1   | Q1                  |            |
+        | | end_group   |      |                     |            |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                xpg.group_label_translation_appearance("/test_name/g1", "field-list"),
+            ],
+        )
+
+    def test_group__no_label__translated__appearance__ok(self):
+        """Should find a group control with no child `label` element and no warnings."""
+        md = """
+        | survey |
+        | | type        | name | label::English (en) | appearance |
+        | | begin_group | g1   |                     | field-list |
+        | | text        | q1   | Q1                  |            |
+        | | end_group   |      |                     |            |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            xml__xpath_match=[
+                xpg.group_no_label_appearance("/test_name/g1", "field-list"),
+            ],
         )
 
 
@@ -641,63 +780,6 @@ class TestGroupParsing(PyxformTestCase):
             odk_validate_error__contains=[
                 "Group has no children! Group: ${g1}. The XML is invalid."
             ],
-        )
-
-    def test_unlabeled_group(self):
-        self.assertPyxformXform(
-            md="""
-            | survey |
-            | | type        | name     | label   |
-            | | begin_group | my-group |         |
-            | | text        | my-text  | my-text |
-            | | end_group   |          |         |
-            """,
-            warnings_count=1,
-            warnings__contains=["[row : 2] Group has no label"],
-        )
-
-    def test_unlabeled_group_alternate_syntax(self):
-        self.assertPyxformXform(
-            md="""
-            | survey |
-            | | type        | name     | label::English (en) |
-            | | begin group | my-group |                     |
-            | | text        | my-text  | my-text             |
-            | | end group   |          |                     |
-            """,
-            warnings_count=1,
-            warnings__contains=["[row : 2] Group has no label"],
-        )
-
-    def test_unlabeled_group_fieldlist(self):
-        self.assertPyxformXform(
-            md="""
-            | survey |
-            | | type         | name      | label   | appearance |
-            | | begin_group  | my-group  |         | field-list |
-            | | text         | my-text   | my-text |            |
-            | | end_group    |           |         |            |
-            """,
-            warnings_count=0,
-            xml__xpath_match=[
-                """
-                /h:html/h:body/x:group[
-                  @ref = '/test_name/my-group' and @appearance='field-list'
-                ]
-                """
-            ],
-        )
-
-    def test_unlabeled_group_fieldlist_alternate_syntax(self):
-        self.assertPyxformXform(
-            md="""
-            | survey |
-            | | type        | name     | label::English (en) | appearance |
-            | | begin group | my-group |                     | field-list |
-            | | text        | my-text  | my-text             |            |
-            | | end group   |          |                     |            |
-            """,
-            warnings_count=0,
         )
 
 
