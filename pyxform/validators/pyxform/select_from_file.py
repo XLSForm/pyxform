@@ -1,28 +1,10 @@
-import re
 from pathlib import Path
 
 from pyxform import aliases
+from pyxform import constants as co
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, ROW_FORMAT_STRING
-from pyxform.errors import PyXFormError
-
-VALUE_OR_LABEL_TEST_REGEX = re.compile(r"^[a-zA-Z_][a-zA-Z0-9\-_\.]*$")
-
-
-def value_or_label_format_msg(name: str, row_number: int) -> str:
-    return (
-        ROW_FORMAT_STRING % str(row_number)
-        + f" Parameter '{name}' has a value which is not valid."
-        + " Values must begin with a letter or underscore. Subsequent "
-        + "characters can include letters, numbers, dashes, underscores, and periods."
-    )
-
-
-def value_or_label_test(value: str) -> bool:
-    query = VALUE_OR_LABEL_TEST_REGEX.search(value)
-    if query is None:
-        return False
-    else:
-        return query.group(0) == value
+from pyxform.errors import ErrorCode, PyXFormError
+from pyxform.parsing.expression import is_xml_tag
 
 
 def value_or_label_check(name: str, value: str, row_number: int) -> None:
@@ -40,9 +22,12 @@ def value_or_label_check(name: str, value: str, row_number: int) -> None:
     :param value: The parameter value to validate.
     :param row_number: The survey sheet row number.
     """
-    if not value_or_label_test(value=value):
-        msg = value_or_label_format_msg(name=name, row_number=row_number)
-        raise PyXFormError(msg)
+    if not is_xml_tag(value=value):
+        raise PyXFormError(
+            ErrorCode.NAMES_008.value.format(
+                sheet=co.SURVEY, row=row_number, column=f"{co.PARAMETERS} ({name})"
+            )
+        )
 
 
 def validate_list_name_extension(

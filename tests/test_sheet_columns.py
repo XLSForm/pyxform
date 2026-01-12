@@ -7,17 +7,13 @@ from dataclasses import dataclass
 from unittest import skip
 
 from pyxform import constants
-from pyxform.errors import PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.sheet_headers import (
-    INVALID_DUPLICATE,
-    INVALID_HEADER,
-    INVALID_MISSING_REQUIRED,
     dealias_and_group_headers,
     process_header,
     process_row,
     to_snake_case,
 )
-from pyxform.validators.pyxform import choices as vc
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -203,7 +199,7 @@ class TestSurveyColumns(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                INVALID_MISSING_REQUIRED.format(sheet_name="survey", missing="'type'")
+                ErrorCode.HEADER_003.value.format(sheet_name="survey", missing="'type'")
             ],
         )
 
@@ -262,7 +258,7 @@ class TestChoicesColumns(PyxformTestCase):
             ),
             errored=True,
             error__contains=[
-                INVALID_MISSING_REQUIRED.format(sheet_name="choices", missing="'name'")
+                ErrorCode.HEADER_003.value.format(sheet_name="choices", missing="'name'")
             ],
         )
 
@@ -284,21 +280,6 @@ class TestChoicesColumns(PyxformTestCase):
             error__contains=["choices", "name", "list_name"],
         )
 
-    def test_clear_filename_error_message(self):
-        """Test clear filename error message"""
-        error_message = "The name 'bad@filename' contains an invalid character '@'. Names must begin with a letter, colon, or underscore. Other characters can include numbers, dashes, and periods."
-        self.assertPyxformXform(
-            name="bad@filename",
-            ss_structure=self._simple_choice_ss(
-                [
-                    {"list_name": "l1", "name": "c1", "label": "choice 1"},
-                    {"list_name": "l1", "name": "c2", "label": "choice 2"},
-                ]
-            ),
-            errored=True,
-            error__contains=[error_message],
-        )
-
     def test_missing_choice_headers(self):
         self.assertPyxformXform(
             md="""
@@ -311,7 +292,7 @@ class TestChoicesColumns(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                INVALID_MISSING_REQUIRED.format(sheet_name="choices", missing="'name'")
+                ErrorCode.HEADER_003.value.format(sheet_name="choices", missing="'name'")
             ],
         )
 
@@ -357,7 +338,7 @@ class TestColumnAliases(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                INVALID_DUPLICATE.format(
+                ErrorCode.HEADER_002.value.format(
                     sheet_name="survey", other="name", header="value"
                 )
             ],
@@ -375,7 +356,9 @@ class TestColumnAliases(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                INVALID_DUPLICATE.format(sheet_name="survey", other="name", header="name")
+                ErrorCode.HEADER_002.value.format(
+                    sheet_name="survey", other="name", header="name"
+                )
             ],
         )
 
@@ -604,7 +587,7 @@ class TestHeaderProcessing(PyxformTestCase):
                 ]
                 """,
             ),
-            warnings__contains=(vc.INVALID_HEADER.format(column="e f"),),
+            warnings__contains=(ErrorCode.HEADER_004.value.format(column="e f"),),
         )
 
     def test_dealias_and_group_headers__use_double_colon_modes(self):
@@ -737,7 +720,7 @@ class TestHeaderProcessing(PyxformTestCase):
                 row_number=2,
             )
         self.assertEqual(
-            INVALID_HEADER.format(sheet_name="survey", header="e"),
+            ErrorCode.HEADER_001.value.format(sheet_name="survey", header="e"),
             err.exception.args[0],
         )
 
@@ -752,7 +735,7 @@ class TestHeaderProcessing(PyxformTestCase):
         with self.assertRaises(PyXFormError) as err:
             convert(xlsform={"survey": survey_data})
         self.assertEqual(
-            INVALID_HEADER.format(sheet_name="survey", header="e"),
+            ErrorCode.HEADER_001.value.format(sheet_name="survey", header="e"),
             err.exception.args[0],
         )
 
@@ -771,7 +754,9 @@ class TestHeaderProcessing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=INVALID_HEADER.format(sheet_name="survey", header="None"),
+            error__contains=[
+                ErrorCode.HEADER_001.value.format(sheet_name="survey", header="unknown"),
+            ],
         )
 
     def test_process_row__bad_header_info__happy_path(self):

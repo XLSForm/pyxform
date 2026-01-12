@@ -3,64 +3,11 @@ from typing import Any
 
 from pyxform import constants as const
 from pyxform.elements import action
-from pyxform.errors import Detail, PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
 from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
-ENTITY001 = Detail(
-    name="Invalid entity repeat reference",
-    msg=(
-        "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-        "The 'repeat' column, if specified, must contain only a single reference variable "
-        "(like '${{q1}}'), and the reference variable must contain a valid name."
-    ),
-)
-ENTITY002 = Detail(
-    name="Invalid entity repeat: target not found",
-    msg=(
-        "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-        "The entity repeat target was not found in the 'survey' sheet."
-    ),
-)
-ENTITY003 = Detail(
-    name="Invalid entity repeat: target is not a repeat",
-    msg=(
-        "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-        "The entity repeat target is not a repeat."
-    ),
-)
-ENTITY004 = Detail(
-    name="Invalid entity repeat: target is in a repeat",
-    msg=(
-        "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-        "The entity repeat target is inside a repeat."
-    ),
-)
-ENTITY005 = Detail(
-    name="Invalid entity repeat save_to: question in nested repeat",
-    msg=(
-        "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-        "The entity property populated with 'save_to' must not be inside of a nested "
-        "repeat within the entity repeat."
-    ),
-)
-ENTITY006 = Detail(
-    name="Invalid entity repeat save_to: question not in entity repeat",
-    msg=(
-        "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-        "The entity property populated with 'save_to' must be inside of the entity "
-        "repeat."
-    ),
-)
-ENTITY007 = Detail(
-    name="Invalid entity repeat save_to: question in repeat but no entity repeat defined",
-    msg=(
-        "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-        "The entity property populated with 'save_to' must be inside a repeat that is "
-        "declared in the 'repeat' column of the 'entities' sheet."
-    ),
-)
 
 
 def get_entity_declaration(
@@ -232,20 +179,21 @@ def get_validated_dataset_name(entity):
 
     if dataset.startswith(const.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
-            f"Invalid entity list name: '{dataset}' starts with reserved prefix {const.ENTITIES_RESERVED_PREFIX}."
+            ErrorCode.NAMES_010.value.format(
+                sheet=const.ENTITIES, row=2, column=EC.DATASET.value
+            )
         )
-
-    if "." in dataset:
+    elif "." in dataset:
         raise PyXFormError(
-            f"Invalid entity list name: '{dataset}'. Names may not include periods."
+            ErrorCode.NAMES_011.value.format(
+                sheet=const.ENTITIES, row=2, column=EC.DATASET.value
+            )
         )
-
-    if not is_xml_tag(dataset):
-        if isinstance(dataset, bytes):
-            dataset = dataset.decode("utf-8")
-
+    elif not is_xml_tag(dataset):
         raise PyXFormError(
-            f"Invalid entity list name: '{dataset}'. Names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
+            ErrorCode.NAMES_008.value.format(
+                sheet=const.ENTITIES, row=2, column=EC.DATASET.value
+            )
         )
 
     return dataset
@@ -263,7 +211,7 @@ def get_validated_repeat_name(entity) -> str | None:
         raise
     else:
         if not match or match[0].last_saved:
-            raise PyXFormError(ENTITY001.format(value=value))
+            raise PyXFormError(ErrorCode.ENTITY_001.value.format(value=value))
         else:
             return match[0].name
 
@@ -297,37 +245,43 @@ def validate_entity_saveto(
         elif i["control_type"] == const.REPEAT:
             # Error: saveto in nested repeat inside entity repeat.
             if in_repeat:
-                raise PyXFormError(ENTITY005.format(row=row_number, value=save_to))
+                raise PyXFormError(
+                    ErrorCode.ENTITY_005.value.format(row=row_number, value=save_to)
+                )
             elif i["control_name"] == entity_repeat:
                 located = True
             in_repeat = True
 
     # Error: saveto not in entity repeat
     if entity_repeat and not located:
-        raise PyXFormError(ENTITY006.format(row=row_number, value=save_to))
+        raise PyXFormError(
+            ErrorCode.ENTITY_006.value.format(row=row_number, value=save_to)
+        )
 
     # Error: saveto in repeat but no entity repeat declared
     if in_repeat and not entity_repeat:
-        raise PyXFormError(ENTITY007.format(row=row_number, value=save_to))
-
-    error_start = f"{const.ROW_FORMAT_STRING % row_number} Invalid save_to name:"
-
-    if save_to.lower() == const.NAME or save_to.lower() == const.LABEL:
         raise PyXFormError(
-            f"{error_start} the entity property name '{save_to}' is reserved."
+            ErrorCode.ENTITY_007.value.format(row=row_number, value=save_to)
         )
 
-    if save_to.startswith(const.ENTITIES_RESERVED_PREFIX):
+    # Error: naming rules
+    if save_to.lower() in {const.NAME, const.LABEL}:
         raise PyXFormError(
-            f"{error_start} the entity property name '{save_to}' starts with reserved prefix {const.ENTITIES_RESERVED_PREFIX}."
+            ErrorCode.NAMES_011.value.format(
+                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
+            )
         )
-
-    if not is_xml_tag(save_to):
-        if isinstance(save_to, bytes):
-            save_to = save_to.decode("utf-8")
-
+    elif save_to.startswith(const.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
-            f"{error_start} '{save_to}'. Entity property names {const.XML_IDENTIFIER_ERROR_MESSAGE}"
+            ErrorCode.NAMES_010.value.format(
+                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
+            )
+        )
+    elif not is_xml_tag(save_to):
+        raise PyXFormError(
+            ErrorCode.NAMES_008.value.format(
+                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
+            )
         )
 
 
@@ -370,7 +324,7 @@ def validate_entity_repeat_target(
 
     # Error: repeat not found while processing survey sheet.
     if not stack:
-        raise PyXFormError(ENTITY002.format(value=entity_repeat))
+        raise PyXFormError(ErrorCode.ENTITY_002.value.format(value=entity_repeat))
 
     control_name = stack[-1]["control_name"]
     control_type = stack[-1]["control_type"]
@@ -381,7 +335,7 @@ def validate_entity_repeat_target(
 
     # Error: target is not a repeat.
     if control_type and control_type != const.REPEAT:
-        raise PyXFormError(ENTITY003.format(value=entity_repeat))
+        raise PyXFormError(ErrorCode.ENTITY_003.value.format(value=entity_repeat))
 
     # Error: repeat is in nested repeat.
     located = False
@@ -390,7 +344,7 @@ def validate_entity_repeat_target(
             break
         elif i["control_type"] == const.REPEAT:
             if located:
-                raise PyXFormError(ENTITY004.format(value=entity_repeat))
+                raise PyXFormError(ErrorCode.ENTITY_004.value.format(value=entity_repeat))
             elif i["control_name"] == entity_repeat:
                 located = True
 

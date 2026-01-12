@@ -135,7 +135,7 @@ class TypedCalculatesTest(PyxformTestCase):
         |        | integer  | a    |             |
         """,
             errored=True,
-            error__contains="The survey element named 'a' has no label or hint.",
+            error__contains=["The survey element named 'a' has no label or hint."],
         )
 
     def test_calculate_without_calculation_without_default(self):
@@ -147,7 +147,7 @@ class TypedCalculatesTest(PyxformTestCase):
         |        | calculate  | a    |             |             |         |
         """,
             errored=True,
-            error__contains="Missing calculation",
+            error__contains=["Missing calculation"],
         )
 
     def test_calculate_without_calculation_with_default_without_dynamic_default(self):
@@ -159,7 +159,7 @@ class TypedCalculatesTest(PyxformTestCase):
         |        | calculate  | a    |             |             | foo     |
         """,
             errored=True,
-            error__contains="Missing calculation",
+            error__contains=["Missing calculation"],
         )
 
     def test_calculate_without_calculation_with_dynamic_default(self):

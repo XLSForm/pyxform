@@ -22,8 +22,14 @@ class BuilderTests(TestCase):
     maxDiff = None
 
     def test_unknown_question_type(self):
-        with self.assertRaises(PyXFormError):
+        with self.assertRaises(PyXFormError) as err:
             utils.build_survey("unknown_question_type.xls")
+        self.assertEqual(
+            ErrorCode.HEADER_002.value.format(
+                sheet_name="survey", other="bind:relevant", header="relevance"
+            ),
+            err.exception.args[0],
+        )
 
     def setUp(self):
         self.this_directory = os.path.dirname(__file__)

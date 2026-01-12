@@ -5,7 +5,6 @@ pyxform utils module.
 import copy
 import csv
 import json
-import re
 import sys
 from collections.abc import Generator, Iterable
 from functools import lru_cache
@@ -22,7 +21,6 @@ from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import parse_expression
 from pyxform.xls2json_backends import DefinitionData
 
-INVALID_XFORM_TAG_REGEXP = re.compile(r"[^a-zA-Z:_][^a-zA-Z:_0-9\-.]*")
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
 NODE_TYPE_TEXT = {Node.TEXT_NODE, Node.CDATA_SECTION_NODE}
 SPACE_TRANS_TABLE = str.maketrans({" ": "_"})

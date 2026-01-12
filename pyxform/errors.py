@@ -41,6 +41,203 @@ class Detail:
 
 
 class ErrorCode(Enum):
+    ENTITY_001 = Detail(
+        name="Invalid entity repeat reference",
+        msg=(
+            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
+            "The 'repeat' column, if specified, must contain only a single reference variable "
+            "(like '${{q1}}'), and the reference variable must contain a valid name."
+        ),
+    )
+    ENTITY_002 = Detail(
+        name="Invalid entity repeat: target not found",
+        msg=(
+            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
+            "The entity repeat target was not found in the 'survey' sheet."
+        ),
+    )
+    ENTITY_003 = Detail(
+        name="Invalid entity repeat: target is not a repeat",
+        msg=(
+            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
+            "The entity repeat target is not a repeat."
+        ),
+    )
+    ENTITY_004 = Detail(
+        name="Invalid entity repeat: target is in a repeat",
+        msg=(
+            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
+            "The entity repeat target is inside a repeat."
+        ),
+    )
+    ENTITY_005 = Detail(
+        name="Invalid entity repeat save_to: question in nested repeat",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
+            "The entity property populated with 'save_to' must not be inside of a nested "
+            "repeat within the entity repeat."
+        ),
+    )
+    ENTITY_006 = Detail(
+        name="Invalid entity repeat save_to: question not in entity repeat",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
+            "The entity property populated with 'save_to' must be inside of the entity "
+            "repeat."
+        ),
+    )
+    ENTITY_007 = Detail(
+        name="Invalid entity repeat save_to: question in repeat but no entity repeat defined",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
+            "The entity property populated with 'save_to' must be inside a repeat that is "
+            "declared in the 'repeat' column of the 'entities' sheet."
+        ),
+    )
+    HEADER_001: Detail = Detail(
+        name="Invalid missing header row.",
+        msg=(
+            "Invalid headers provided for sheet: '{sheet_name}'. For XLSForms, this may be due "
+            "a missing header row, in which case add a header row as per the reference template "
+            "https://xlsform.org/en/ref-table/. For internal API usage, may be due to a missing "
+            "mapping for '{header}', in which case ensure that the full set of headers appear "
+            "within the first 100 rows, or specify the header row in '{sheet_name}_header'."
+        ),
+    )
+    HEADER_002: Detail = Detail(
+        name="Invalid duplicate header.",
+        msg=(
+            "Invalid headers provided for sheet: '{sheet_name}'. Headers that are different "
+            "names for the same column were found: '{other}', '{header}'. Rename or remove one "
+            "of these columns."
+        ),
+    )
+    HEADER_003: Detail = Detail(
+        name="Invalid missing required header.",
+        msg=(
+            "Invalid headers provided for sheet: '{sheet_name}'. One or more required column "
+            "headers were not found: {missing}. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    HEADER_004: Detail = Detail(
+        name="Invalid choices header.",
+        msg=(
+            "[row : 1] On the 'choices' sheet, the '{column}' value is invalid. "
+            "Column headers must not be empty and must not contain spaces. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    INTERNAL_001: Detail = Detail(
+        name="Internal error: Incorrectly Processed Question Trigger Data",
+        msg=(
+            "Internal error: "
+            "PyXForm expected processed trigger data as a tuple, but received a "
+            "type '{type}' with value '{value}'."
+        ),
+    )
+    LABEL_001: Detail = Detail(
+        name="Invalid missing label in the choices sheet",
+        msg=(
+            "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
+            "Choices should have a label. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    NAMES_001: Detail = Detail(
+        name="Invalid duplicate name in same context",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
+            "Questions, groups, and repeats must be unique within their nearest parent group "
+            "or repeat, or the survey if not inside a group or repeat."
+        ),
+    )
+    NAMES_002: Detail = Detail(
+        name="Invalid duplicate name in context (case-insensitive)",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is problematic. "
+            "The name is a case-insensitive match to another name. Questions, groups, and "
+            "repeats should be unique within the nearest parent group or repeat, or the survey "
+            "if not inside a group or repeat. Some data processing tools are not "
+            "case-sensitive, so the current names may make analysis difficult."
+        ),
+    )
+    NAMES_003: Detail = Detail(
+        name="Invalid repeat name same as survey",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
+            "Repeat names must not be the same as the survey root (which defaults to 'data')."
+        ),
+    )
+    NAMES_004: Detail = Detail(
+        name="Invalid duplicate repeat name in the survey",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
+            "Repeat names must unique anywhere in the survey, at all levels of group or "
+            "repeat nesting."
+        ),
+    )
+    NAMES_005: Detail = Detail(
+        name="Invalid duplicate meta name in the survey",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'name' value 'meta' is invalid. "
+            "The name 'meta' is reserved for form metadata."
+        ),
+    )
+    NAMES_006: Detail = Detail(
+        name="Invalid missing name in the choices sheet",
+        msg=(
+            "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
+            "Choices must have a name. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    NAMES_007: Detail = Detail(
+        name="Invalid duplicate name in the choices sheet",
+        msg=(
+            "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
+            "Choice names must be unique for each choice list. "
+            "If this is intentional, use the setting 'allow_choice_duplicates'. "
+            "Learn more: https://xlsform.org/#choice-names."
+        ),
+    )
+    NAMES_008: Detail = Detail(
+        name="Invalid character(s) in name (XML identifier).",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Names must begin with a letter or underscore. After the first character, "
+            "names may contain letters, digits, underscores, hyphens, or periods."
+        ),
+    )
+    NAMES_009: Detail = Detail(
+        name="Invalid character(s) in name (XML identifier)(no sheet context).",
+        msg=(
+            "The '{name}' value is invalid. "
+            "Names must begin with a letter or underscore. After the first character, "
+            "names may contain letters, digits, underscores, hyphens, or periods."
+        ),
+    )
+    NAMES_010: Detail = Detail(
+        name="Invalid character(s) in entity-related name (XML identifier)(underscores).",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Names used here must not begin with two underscores."
+        ),
+    )
+    NAMES_011: Detail = Detail(
+        name="Invalid character(s) in entity-related name (XML identifier)(period).",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Names used here must not contain a period."
+        ),
+    )
+    NAMES_012: Detail = Detail(
+        name="Invalid character(s) in entity-related name (XML identifier)(reserved words).",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "Names used here must not be 'name' or 'label' (case-insensitive)."
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm Reference Parsing Failed",
         msg=(
@@ -71,12 +268,18 @@ class ErrorCode(Enum):
             "'{q}' appears more than once."
         ),
     )
-    INTERNAL_001: Detail = Detail(
-        name="Internal error: Incorrectly Processed Question Trigger Data",
+    SURVEY_001 = Detail(
+        name="Survey Sheet Unmatched Group/Repeat/Loop End",
         msg=(
-            "Internal error: "
-            "PyXForm expected processed trigger data as a tuple, but received a "
-            "type '{type}' with value '{value}'."
+            "[row : {row}] Unmatched 'end_{type}'. "
+            "No matching 'begin_{type}' was found for the name '{name}'."
+        ),
+    )
+    SURVEY_002 = Detail(
+        name="Survey Sheet Unmatched Group/Repeat/Loop Begin",
+        msg=(
+            "[row : {row}] Unmatched 'begin_{type}'. "
+            "No matching 'end_{type}' was found for the name '{name}'."
         ),
     )
     SURVEY_003: Detail = Detail(

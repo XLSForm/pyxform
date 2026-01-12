@@ -13,7 +13,6 @@ from pyxform.constants import (
     _MSG_SUPPRESS_SPELLING,
     EXTERNAL_INSTANCE_EXTENSIONS,
     ROW_FORMAT_STRING,
-    XML_IDENTIFIER_ERROR_MESSAGE,
 )
 from pyxform.elements import action as action_module
 from pyxform.entities.entities_parsing import (
@@ -21,7 +20,7 @@ from pyxform.entities.entities_parsing import (
     validate_entity_repeat_target,
     validate_entity_saveto,
 )
-from pyxform.errors import Detail, PyXFormError
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
 from pyxform.question_type_dictionary import get_meta_group
@@ -32,6 +31,7 @@ from pyxform.utils import (
 )
 from pyxform.validators.pyxform import parameters_generic, select_from_file, unique_names
 from pyxform.validators.pyxform import question_types as qt
+from pyxform.validators.pyxform import settings as validate_settings
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.choices import validate_and_clean_choices
 from pyxform.validators.pyxform.pyxform_reference import (
@@ -59,20 +59,6 @@ RE_SELECT = re.compile(
 )
 RE_OSM = re.compile(
     r"(?P<osm_command>(" + "|".join(aliases.osm) + r")) (?P<list_name>\S+)"
-)
-SURVEY_001 = Detail(
-    name="Survey Sheet Unmatched Group/Repeat/Loop End",
-    msg=(
-        "[row : {row}] Unmatched 'end_{type}'. "
-        "No matching 'begin_{type}' was found for the name '{name}'."
-    ),
-)
-SURVEY_002 = Detail(
-    name="Survey Sheet Unmatched Group/Repeat/Loop Begin",
-    msg=(
-        "[row : {row}] Unmatched 'begin_{type}'. "
-        "No matching 'end_{type}' was found for the name '{name}'."
-    ),
 )
 
 
@@ -278,6 +264,7 @@ def workbook_to_json(
         raise PyXFormError(msg)
 
     # Make sure the passed in vars are unicode
+    validate_settings.validate_name(name=form_name, from_sheet=False)
     form_name = str(coalesce(form_name, constants.DEFAULT_FORM_NAME))
     default_language = str(coalesce(default_language, constants.DEFAULT_LANGUAGE_VALUE))
 
@@ -321,6 +308,7 @@ def workbook_to_json(
             header_columns=set(Survey.get_slot_names()),
         )
         settings = settings_sheet.data[0]
+        validate_settings.validate_name(name=settings.get(constants.NAME, None))
     else:
         similar = find_sheet_misspellings(key=constants.SETTINGS, keys=sheet_names)
         if similar is not None:
@@ -769,7 +757,7 @@ def workbook_to_json(
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
-                        SURVEY_001.format(
+                        ErrorCode.SURVEY_001.value.format(
                             row=row_number,
                             type=control_type,
                             name=row.get(constants.NAME),
@@ -791,7 +779,9 @@ def workbook_to_json(
         question_name = str(row[constants.NAME])
         if not is_xml_tag(question_name):
             raise PyXFormError(
-                f"{ROW_FORMAT_STRING % row_number} Invalid question name '{question_name}'. Names {XML_IDENTIFIER_ERROR_MESSAGE}"
+                ErrorCode.NAMES_008.value.format(
+                    sheet=constants.SURVEY, row=row_number, column=constants.NAME
+                )
             )
         element_names.update((question_name,))
 
@@ -1410,7 +1400,7 @@ def workbook_to_json(
 
     if len(stack) > 1:
         raise PyXFormError(
-            SURVEY_002.format(
+            ErrorCode.SURVEY_002.value.format(
                 row=stack[-1]["row_number"],
                 type=stack[-1]["control_type"],
                 name=stack[-1]["control_name"],

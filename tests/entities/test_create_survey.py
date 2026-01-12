@@ -1,5 +1,5 @@
 from pyxform import constants as co
-from pyxform.entities import entities_parsing as ep
+from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
@@ -76,7 +76,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid entity list name: '__sweet' starts with reserved prefix __."
+                ErrorCode.NAMES_010.value.format(
+                    sheet=co.ENTITIES, row=2, column=co.EntityColumns.DATASET.value
+                )
             ],
         )
 
@@ -93,7 +95,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid entity list name: '$sweet'. Names must begin with a letter, colon, or underscore. Other characters can include numbers or dashes."
+                ErrorCode.NAMES_008.value.format(
+                    sheet=co.ENTITIES, row=2, column=co.EntityColumns.DATASET.value
+                )
             ],
         )
 
@@ -110,7 +114,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "Invalid entity list name: 's.w.eet'. Names may not include periods."
+                ErrorCode.NAMES_011.value.format(
+                    sheet=co.ENTITIES, row=2, column=co.EntityColumns.DATASET.value
+                )
             ],
         )
 
@@ -246,7 +252,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: the entity property name 'name' is reserved."
+                ErrorCode.NAMES_011.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 
@@ -263,7 +271,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: the entity property name 'naMe' is reserved."
+                ErrorCode.NAMES_011.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 
@@ -280,7 +290,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: the entity property name 'label' is reserved."
+                ErrorCode.NAMES_011.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 
@@ -297,7 +309,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: the entity property name 'lAbEl' is reserved."
+                ErrorCode.NAMES_011.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 
@@ -314,7 +328,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: the entity property name '__a' starts with reserved prefix __."
+                ErrorCode.NAMES_010.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 
@@ -331,7 +347,9 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                "[row : 2] Invalid save_to name: '$a'. Entity property names must begin with a letter, colon, or underscore. Other characters can include numbers, dashes, and periods."
+                ErrorCode.NAMES_008.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                )
             ],
         )
 
@@ -369,7 +387,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ep.ENTITY007.format(row=3, value="q1e")],
+            error__contains=[ErrorCode.ENTITY_007.value.format(row=3, value="q1e")],
         )
 
     def test_saveto_in_group__works(self):
