@@ -1450,7 +1450,9 @@ def workbook_to_json(
         )
 
     if entity_declaration:
-        validate_entity_repeat_target(entity_declaration=entity_declaration)
+        validate_entity_repeat_target(
+            entity_declaration=entity_declaration, repeat_names=repeat_names
+        )
         json_dict[constants.ENTITY_VERSION] = constants.EntityVersion.v2024_1_0
         meta_children.append(entity_declaration)
 

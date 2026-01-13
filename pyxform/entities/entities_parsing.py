@@ -347,6 +347,7 @@ def validate_entities_columns(row: dict):
 def validate_entity_repeat_target(
     entity_declaration: dict[str, Any] | None,
     stack: Sequence[dict[str, Any]] | None = None,
+    repeat_names: set[str] | None = None,
 ) -> bool:
     """
     Check if the entity repeat target exists, is a repeat, and is a name match.
@@ -356,6 +357,7 @@ def validate_entity_repeat_target(
 
     :param entity_declaration:
     :param stack: The control stack from workbook_to_json.
+    :param repeat_names: Set of all repeat names found in the survey sheet.
     :return:
     """
     # Ignore: entity already processed.
@@ -369,8 +371,15 @@ def validate_entity_repeat_target(
         return False
 
     # Error: repeat not found while processing survey sheet.
+    # When stack is None (end of processing), check against repeat_names set.
     if not stack:
-        raise PyXFormError(ENTITY002.format(value=entity_repeat))
+        # If repeat_names is provided, check if the entity repeat exists in the set
+        if repeat_names is not None:
+            if entity_repeat not in repeat_names:
+                raise PyXFormError(ENTITY002.format(value=entity_repeat))
+        else:
+            # Fall back to original behavior if repeat_names not provided
+            raise PyXFormError(ENTITY002.format(value=entity_repeat))
 
     control_name = stack[-1]["control_name"]
     control_type = stack[-1]["control_type"]
