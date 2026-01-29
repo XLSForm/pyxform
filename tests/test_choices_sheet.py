@@ -581,6 +581,21 @@ class TestChoicesSheet(PyxformTestCase):
 
     def test_name_not_validated_as_xml_name(self):
         """Should not raise an error if a name has invalid XML name characters."""
+        # This test is to establish documentation of current behaviour, but could be
+        # expanded to cover more use cases. User docs may encourage stricter name rules
+        # to avoid data integration problems. Relevant evidence for behaviour seems to be:
+        #
+        # 1. Commit 803303a9 (2011-04-28) disabled XML name validation for the
+        #    `Option(SurveyElement)` class to allow numeric choices.
+        # 2. XForms 1.0, ODK XForms spec, and xlsforms.org spec don't constrain the choice
+        #    name, so they may include characters not allowed anywhere in XML names, such
+        #    as commas, whitespace, special characters, or emoji.
+        # 3. Choice names aren't used as XML elements in the XForm:
+        #    - in the choices instance XML, they are a text node `<name>123</name>`
+        #    - in the itext XML, they are referenced by position `<text id="yes_no-1"/>`
+        #    - when choices were in the body, they were a text node `<value>123</value>`
+        # 4. Validate/javarosa doesn't seem to check/warn/error for choice names that are
+        #    invalid XML names.
         md = """
         | survey |
         | | type          | name | label |
