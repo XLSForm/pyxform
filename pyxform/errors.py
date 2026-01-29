@@ -33,6 +33,12 @@ class Detail:
     __slots__ = ("msg", "name")
 
     def __init__(self, name: str, msg: str) -> None:
+        """
+        :param name: A brief description of the error, used for organising messages and/or
+          technical words that are not suitable for the user-visible message.
+        :param msg: The message shown to the user. May include string formatting {tokens}
+          which are resolved from context data made available to the PyXFormError.
+        """
         self.name: str = name
         self.msg: str = msg
 
@@ -41,6 +47,16 @@ class Detail:
 
 
 class ErrorCode(Enum):
+    """
+    A collection of error messages used in pyxform.
+
+    The enum names only have to be unique, but for organisation purposes, try to use a
+    prefix word that aligns to the topic of the message. The number suffix is not
+    significant and does not have to be sequential. With reference to the SQLSTATE standard
+    as an example, the enum name would be the sqlstate code, and the Detail.name would be
+    the "class text" and the Detail.msg would be the "subclass text" (with app context).
+    """
+
     ENTITY_001 = Detail(
         name="Invalid entity repeat reference",
         msg=(
