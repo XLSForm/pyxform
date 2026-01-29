@@ -1,7 +1,7 @@
 import unittest
 from dataclasses import dataclass
 
-from tests.pyxform_test_case import PyxformTestCase
+from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
 
 
 @dataclass(slots=True)
@@ -334,3 +334,61 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
                 xml__xpath_match=[*self.suite2_xpaths, self.s1c1.xpath],
                 run_odk_validate=False,
             )
+
+
+class TestPyxformTestCaseErrors(PyxformTestCase):
+    def test_error__contains__wrong_type__error(self):
+        """Should raise an error if error__contains is the wrong type."""
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+        """
+        with self.assertRaises(PyxformTestError) as err:
+            self.assertPyxformXform(md=md, error__contains="A string.")
+        self.assertEqual(
+            "The parameter 'error__contains' is a string but should be an iterable of strings.",
+            err.exception.args[0],
+        )
+
+    def test_error__not_contains__wrong_type__error(self):
+        """Should raise an error if error__not_contains is the wrong type."""
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+        """
+        with self.assertRaises(PyxformTestError) as err:
+            self.assertPyxformXform(md=md, error__not_contains="A string.")
+        self.assertEqual(
+            "The parameter 'error__not_contains' is a string but should be an iterable of strings.",
+            err.exception.args[0],
+        )
+
+    def test_warnings__contains__wrong_type__error(self):
+        """Should raise an error if warnings__contains is the wrong type."""
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+        """
+        with self.assertRaises(PyxformTestError) as err:
+            self.assertPyxformXform(md=md, warnings__contains="A string.")
+        self.assertEqual(
+            "The parameter 'warnings__contains' is a string but should be an iterable of strings.",
+            err.exception.args[0],
+        )
+
+    def test_warnings__not_contains__wrong_type__error(self):
+        """Should raise an error if warnings__not_contains is the wrong type."""
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+        """
+        with self.assertRaises(PyxformTestError) as err:
+            self.assertPyxformXform(md=md, warnings__not_contains="A string.")
+        self.assertEqual(
+            "The parameter 'warnings__not_contains' is a string but should be an iterable of strings.",
+            err.exception.args[0],
+        )

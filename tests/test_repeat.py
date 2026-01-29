@@ -7,7 +7,7 @@ from time import perf_counter
 from unittest import skip
 
 from psutil import Process
-from pyxform.validators.pyxform import unique_names
+from pyxform.errors import ErrorCode
 from pyxform.xls2json_backends import SupportedFileTypes
 from pyxform.xls2xform import convert
 
@@ -1237,7 +1237,7 @@ class TestRepeatParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=5, value="r1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=5, value="r1")],
         )
 
     def test_names__repeat_same_as_repeat_in_same_context_in_group__error(self):
@@ -1257,7 +1257,7 @@ class TestRepeatParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=6, value="r1")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=6, value="r1")],
         )
 
     def test_names__repeat_same_as_repeat_in_same_context_in_repeat__error(self):
@@ -1277,7 +1277,7 @@ class TestRepeatParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(row=6, value="r2")],
+            error__contains=[ErrorCode.NAMES_001.value.format(row=6, value="r2")],
         )
 
     def test_names__repeat_same_as_repeat_in_same_context_in_survey__case_insensitive_warning(
@@ -1295,7 +1295,8 @@ class TestRepeatParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=5, value="R1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=5, value="R1")],
         )
 
     def test_names__repeat_same_as_repeat_in_same_context_in_group__case_insensitive_warning(
@@ -1315,7 +1316,8 @@ class TestRepeatParsing(PyxformTestCase):
         | | end group    |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="R1")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=6, value="R1")],
         )
 
     def test_names__repeat_same_as_repeat_in_same_context_in_repeat__case_insensitive_warning(
@@ -1335,7 +1337,8 @@ class TestRepeatParsing(PyxformTestCase):
         | | end repeat   |      |       |
         """
         self.assertPyxformXform(
-            md=md, warnings__contains=[unique_names.NAMES002.format(row=6, value="R2")]
+            md=md,
+            warnings__contains=[ErrorCode.NAMES_002.value.format(row=6, value="R2")],
         )
 
     def test_names__repeat_same_as_survey_root__error(self):
@@ -1351,7 +1354,7 @@ class TestRepeatParsing(PyxformTestCase):
             md=md,
             name="data",
             errored=True,
-            error__contains=[unique_names.NAMES003.format(row=2, value="data")],
+            error__contains=[ErrorCode.NAMES_003.value.format(row=2, value="data")],
         )
 
     def test_names__repeat_same_as_repeat_in_different_context_in_group__error(self):
@@ -1371,7 +1374,7 @@ class TestRepeatParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES004.format(row=7, value="r1")],
+            error__contains=[ErrorCode.NAMES_004.value.format(row=7, value="r1")],
         )
 
     def test_names__repeat_same_as_repeat_in_different_context_in_repeat__error(self):
@@ -1391,7 +1394,7 @@ class TestRepeatParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES004.format(row=7, value="r2")],
+            error__contains=[ErrorCode.NAMES_004.value.format(row=7, value="r2")],
         )
 
     def test_empty_repeat__no_question__ok(self):
@@ -1587,7 +1590,7 @@ class TestRepeatCount(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(value="r1_count")],
+            error__contains=[ErrorCode.NAMES_001.value.format(value="r1_count")],
         )
 
     def test_expression__generated_element_different_name__ok(self):
@@ -1643,7 +1646,7 @@ class TestRepeatCount(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(value="r1_count")],
+            error__contains=[ErrorCode.NAMES_001.value.format(value="r1_count")],
         )
 
     def test_manual_xpath__generated_element_different_name__ok(self):
@@ -1694,7 +1697,7 @@ class TestRepeatCount(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[unique_names.NAMES001.format(value="r1_count")],
+            error__contains=[ErrorCode.NAMES_001.value.format(value="r1_count")],
         )
 
     def test_constant_integer__generated_element_different_name__ok(self):
