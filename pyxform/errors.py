@@ -58,7 +58,7 @@ class ErrorCode(Enum):
     """
 
     ENTITY_001 = Detail(
-        name="Invalid entity repeat reference",
+        name="Entities - invalid entity repeat reference",
         msg=(
             "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
             "The 'repeat' column, if specified, must contain only a single reference variable "
@@ -66,28 +66,28 @@ class ErrorCode(Enum):
         ),
     )
     ENTITY_002 = Detail(
-        name="Invalid entity repeat: target not found",
+        name="Entities - invalid entity repeat: target not found",
         msg=(
             "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
             "The entity repeat target was not found in the 'survey' sheet."
         ),
     )
     ENTITY_003 = Detail(
-        name="Invalid entity repeat: target is not a repeat",
+        name="Entities - invalid entity repeat: target is not a repeat",
         msg=(
             "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
             "The entity repeat target is not a repeat."
         ),
     )
     ENTITY_004 = Detail(
-        name="Invalid entity repeat: target is in a repeat",
+        name="Entities - invalid entity repeat: target is in a repeat",
         msg=(
             "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
             "The entity repeat target is inside a repeat."
         ),
     )
     ENTITY_005 = Detail(
-        name="Invalid entity repeat save_to: question in nested repeat",
+        name="Entities - invalid entity repeat save_to: question in nested repeat",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
             "The entity property populated with 'save_to' must not be inside of a nested "
@@ -95,7 +95,7 @@ class ErrorCode(Enum):
         ),
     )
     ENTITY_006 = Detail(
-        name="Invalid entity repeat save_to: question not in entity repeat",
+        name="Entities - invalid entity repeat save_to: question not in entity repeat",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
             "The entity property populated with 'save_to' must be inside of the entity "
@@ -103,7 +103,7 @@ class ErrorCode(Enum):
         ),
     )
     ENTITY_007 = Detail(
-        name="Invalid entity repeat save_to: question in repeat but no entity repeat defined",
+        name="Entities - invalid entity repeat save_to: question in repeat but no entity repeat defined",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
             "The entity property populated with 'save_to' must be inside a repeat that is "
@@ -111,7 +111,7 @@ class ErrorCode(Enum):
         ),
     )
     HEADER_001: Detail = Detail(
-        name="Invalid missing header row.",
+        name="Headers - invalid missing header row",
         msg=(
             "Invalid headers provided for sheet: '{sheet_name}'. For XLSForms, this may be due "
             "a missing header row, in which case add a header row as per the reference template "
@@ -121,7 +121,7 @@ class ErrorCode(Enum):
         ),
     )
     HEADER_002: Detail = Detail(
-        name="Invalid duplicate header.",
+        name="Headers - invalid duplicate",
         msg=(
             "Invalid headers provided for sheet: '{sheet_name}'. Headers that are different "
             "names for the same column were found: '{other}', '{header}'. Rename or remove one "
@@ -129,7 +129,7 @@ class ErrorCode(Enum):
         ),
     )
     HEADER_003: Detail = Detail(
-        name="Invalid missing required header.",
+        name="Headers - invalid missing required header",
         msg=(
             "Invalid headers provided for sheet: '{sheet_name}'. One or more required column "
             "headers were not found: {missing}. "
@@ -137,7 +137,7 @@ class ErrorCode(Enum):
         ),
     )
     HEADER_004: Detail = Detail(
-        name="Invalid choices header.",
+        name="Headers - invalid choices header",
         msg=(
             "[row : 1] On the 'choices' sheet, the '{column}' value is invalid. "
             "Column headers must not be empty and must not contain spaces. "
@@ -145,7 +145,7 @@ class ErrorCode(Enum):
         ),
     )
     INTERNAL_001: Detail = Detail(
-        name="Internal error: Incorrectly Processed Question Trigger Data",
+        name="Internal error - incorrectly processed question trigger data",
         msg=(
             "Internal error: "
             "PyXForm expected processed trigger data as a tuple, but received a "
@@ -153,7 +153,7 @@ class ErrorCode(Enum):
         ),
     )
     LABEL_001: Detail = Detail(
-        name="Invalid missing label in the choices sheet",
+        name="Labels - invalid missing label in the choices sheet",
         msg=(
             "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
             "Choices should have a label. "
@@ -161,7 +161,7 @@ class ErrorCode(Enum):
         ),
     )
     NAMES_001: Detail = Detail(
-        name="Invalid duplicate name in same context",
+        name="Names - invalid duplicate name in same context",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
             "Questions, groups, and repeats must be unique within their nearest parent group "
@@ -169,7 +169,7 @@ class ErrorCode(Enum):
         ),
     )
     NAMES_002: Detail = Detail(
-        name="Invalid duplicate name in context (case-insensitive)",
+        name="Names - invalid duplicate name in context (case-insensitive)",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is problematic. "
             "The name is a case-insensitive match to another name. Questions, groups, and "
@@ -179,14 +179,14 @@ class ErrorCode(Enum):
         ),
     )
     NAMES_003: Detail = Detail(
-        name="Invalid repeat name same as survey",
+        name="Names - invalid repeat name same as survey",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
             "Repeat names must not be the same as the survey root (which defaults to 'data')."
         ),
     )
     NAMES_004: Detail = Detail(
-        name="Invalid duplicate repeat name in the survey",
+        name="Names - invalid duplicate repeat name in the survey",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
             "Repeat names must unique anywhere in the survey, at all levels of group or "
@@ -194,14 +194,14 @@ class ErrorCode(Enum):
         ),
     )
     NAMES_005: Detail = Detail(
-        name="Invalid duplicate meta name in the survey",
+        name="Names - invalid duplicate meta name in the survey",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value 'meta' is invalid. "
             "The name 'meta' is reserved for form metadata."
         ),
     )
     NAMES_006: Detail = Detail(
-        name="Invalid missing name in the choices sheet",
+        name="Names - invalid missing name in the choices sheet",
         msg=(
             "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
             "Choices must have a name. "
@@ -209,7 +209,7 @@ class ErrorCode(Enum):
         ),
     )
     NAMES_007: Detail = Detail(
-        name="Invalid duplicate name in the choices sheet",
+        name="Names - invalid duplicate name in the choices sheet",
         msg=(
             "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
             "Choice names must be unique for each choice list. "
@@ -218,7 +218,7 @@ class ErrorCode(Enum):
         ),
     )
     NAMES_008: Detail = Detail(
-        name="Invalid character(s) in name (XML identifier).",
+        name="Names - invalid character(s) in name (XML identifier)",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Names must begin with a letter or underscore. After the first character, "
@@ -226,7 +226,7 @@ class ErrorCode(Enum):
         ),
     )
     NAMES_009: Detail = Detail(
-        name="Invalid character(s) in name (XML identifier)(no sheet context).",
+        name="Names - invalid character(s) in name (XML identifier)(no sheet context)",
         msg=(
             "The '{name}' value is invalid. "
             "Names must begin with a letter or underscore. After the first character, "
@@ -234,42 +234,42 @@ class ErrorCode(Enum):
         ),
     )
     NAMES_010: Detail = Detail(
-        name="Invalid character(s) in entity-related name (XML identifier)(underscores).",
+        name="Names - invalid character(s) in entity-related name (XML identifier)(underscores)",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Names used here must not begin with two underscores."
         ),
     )
     NAMES_011: Detail = Detail(
-        name="Invalid character(s) in entity-related name (XML identifier)(period).",
+        name="Names - invalid character(s) in entity-related name (XML identifier)(period)",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Names used here must not contain a period."
         ),
     )
     NAMES_012: Detail = Detail(
-        name="Invalid character(s) in entity-related name (XML identifier)(reserved words).",
+        name="Names - invalid character(s) in entity-related name (XML identifier)(reserved words)",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Names used here must not be 'name' or 'label' (case-insensitive)."
         ),
     )
     PYREF_001: Detail = Detail(
-        name="PyXForm Reference Parsing Failed",
+        name="PyXForm reference - parsing failed",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Reference variables must start with '${{', then a question name, and end with '}}'."
         ),
     )
     PYREF_002: Detail = Detail(
-        name="PyXForm Reference Parsing Limit Reached",
+        name="PyXForm reference - parsing limit reached",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Reference variable lists must have a comma between each variable."
         ),
     )
     PYREF_003: Detail = Detail(
-        name="PyXForm Reference Name Not Found",
+        name="PyXForm reference - name not found",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Reference variables must contain a name from the 'survey' sheet. Could not "
@@ -277,7 +277,7 @@ class ErrorCode(Enum):
         ),
     )
     PYREF_004: Detail = Detail(
-        name="PyXForm Reference Duplicate Name",
+        name="PyXForm reference - duplicate name",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Reference variables names must be unique anywhere in the 'survey'. The name "
@@ -285,21 +285,21 @@ class ErrorCode(Enum):
         ),
     )
     SURVEY_001 = Detail(
-        name="Survey Sheet Unmatched Group/Repeat/Loop End",
+        name="Survey sheet - unmatched group/repeat/loop end",
         msg=(
             "[row : {row}] Unmatched 'end_{type}'. "
             "No matching 'begin_{type}' was found for the name '{name}'."
         ),
     )
     SURVEY_002 = Detail(
-        name="Survey Sheet Unmatched Group/Repeat/Loop Begin",
+        name="Survey sheet - unmatched group/repeat/loop begin",
         msg=(
             "[row : {row}] Unmatched 'begin_{type}'. "
             "No matching 'end_{type}' was found for the name '{name}'."
         ),
     )
     SURVEY_003: Detail = Detail(
-        name="Survey Sheet - invalid geoshape/geotrace parameter 'incremental'",
+        name="Survey sheet - invalid geoshape/geotrace parameter 'incremental'",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "For geoshape and geotrace questions, the 'incremental' parameter may either "
