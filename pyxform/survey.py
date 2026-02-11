@@ -183,7 +183,7 @@ class Survey(Section):
     def get_slot_names() -> tuple[str, ...]:
         return SURVEY_FIELDS
 
-    def __init__(self, **kwargs):
+    def __init__(self, name: str, type: str = constants.SURVEY, **kwargs):
         # Internals
         self._created: datetime.now = datetime.now()
         self._translations: recursive_dict = recursive_dict()
@@ -234,8 +234,7 @@ class Survey(Section):
                 list_name: Itemset(name=list_name, choices=values)
                 for list_name, values in choices.items()
             }
-        kwargs[constants.TYPE] = constants.SURVEY
-        super().__init__(fields=SURVEY_EXTRA_FIELDS, **kwargs)
+        super().__init__(name=name, type=type, fields=SURVEY_EXTRA_FIELDS, **kwargs)
 
     def to_json_dict(self, delete_keys: Iterable[str] | None = None) -> dict:
         to_delete = (k for k in self.get_slot_names() if k.startswith("_"))
@@ -996,12 +995,6 @@ class Survey(Section):
     def _to_pretty_xml(self) -> str:
         """Get the XForm with human readable formatting."""
         return f"""<?xml version="1.0"?>\n{self.xml().toprettyxml(indent="  ")}"""
-
-    def __repr__(self):
-        return self.__unicode__()
-
-    def __unicode__(self):
-        return f"<pyxform.survey.Survey instance at {hex(id(self))}>"
 
     def _setup_xpath_dictionary(self):
         if self._xpath:

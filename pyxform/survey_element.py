@@ -93,7 +93,10 @@ class SurveyElement(Mapping):
         super().__setattr__(key, value)
 
     def __repr__(self):
-        return f"""{super().__repr__()}(name="{self.name}")"""
+        type_info = ""
+        if hasattr(self, "type"):
+            type_info = f", type={self.type}"
+        return f"""{super().__repr__()}(name="{self.name}{type_info}")"""
 
     def __init__(
         self,
