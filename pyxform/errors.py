@@ -72,13 +72,6 @@ class ErrorCode(Enum):
             "The entity repeat target was not found in the 'survey' sheet."
         ),
     )
-    ENTITY_003 = Detail(
-        name="Entities - invalid entity repeat: target is not a repeat",
-        msg=(
-            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-            "The entity repeat target is not a repeat."
-        ),
-    )
     ENTITY_004 = Detail(
         name="Entities - invalid entity repeat: target is in a repeat",
         msg=(
@@ -100,14 +93,6 @@ class ErrorCode(Enum):
             "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
             "The entity property populated with 'save_to' must be inside of the entity "
             "repeat."
-        ),
-    )
-    ENTITY_007 = Detail(
-        name="Entities - invalid entity repeat save_to: question in repeat but no entity repeat defined",
-        msg=(
-            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-            "The entity property populated with 'save_to' must be inside a repeat that is "
-            "declared in the 'repeat' column of the 'entities' sheet."
         ),
     )
     HEADER_001: Detail = Detail(

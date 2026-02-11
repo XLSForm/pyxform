@@ -1,18 +1,35 @@
-from collections.abc import Sequence
-from typing import Any
+from collections import defaultdict
+from collections.abc import Iterable
+from typing import Any, NamedTuple
 
 from pyxform import constants as const
 from pyxform.elements import action
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
+from pyxform.question_type_dictionary import get_meta_group
 from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
 
 
-def get_entity_declaration(
-    entities_sheet: Sequence[dict],
-) -> dict[str, Any]:
+class ContainerNode(NamedTuple):
+    name: str
+    type: str
+
+
+class ReferenceSource(NamedTuple):
+    path: tuple[ContainerNode, ...]
+    row: int
+    type: str
+
+    def get_scope_boundary(self) -> tuple[ContainerNode, ...]:
+        for i in range(len(self.path) - 1, -1, -1):
+            if self.path[i].type in {const.REPEAT, const.SURVEY}:
+                return self.path[: i + 1]
+        return ()
+
+
+def get_entity_declaration(row: dict) -> dict[str, Any]:
     """
     Transform the entities sheet data into a spec for creating an EntityDeclaration.
 
@@ -30,23 +47,14 @@ def get_entity_declaration(
     1          1          1          include conditions for create and update
                                        (user's responsibility to ensure they're exclusive)
 
-    :param entities_sheet: XLSForm entities sheet data.
+    :param row: A row from the XLSForm entities sheet data.
     """
-    if len(entities_sheet) > 1:
-        raise PyXFormError(
-            "Currently, you can only declare a single entity per form. "
-            "Please make sure your entities sheet only declares one entity."
-        )
-
-    entity_row = entities_sheet[0]
-
-    validate_entities_columns(row=entity_row)
-    dataset_name = get_validated_dataset_name(entity_row)
-    entity_id = entity_row.get(EC.ENTITY_ID, None)
-    create_if = entity_row.get(EC.CREATE_IF, None)
-    update_if = entity_row.get(EC.UPDATE_IF, None)
-    label = entity_row.get(EC.LABEL, None)
-    repeat = get_validated_repeat_name(entity_row)
+    validate_entities_columns(row=row)
+    dataset_name = get_validated_dataset_name(row)
+    entity_id = row.get(EC.ENTITY_ID, None)
+    create_if = row.get(EC.CREATE_IF, None)
+    update_if = row.get(EC.UPDATE_IF, None)
+    label = row.get(EC.LABEL, None)
 
     if not entity_id and update_if:
         raise PyXFormError(
@@ -69,7 +77,6 @@ def get_entity_declaration(
     entity = {
         const.NAME: const.ENTITY,
         const.TYPE: const.ENTITY,
-        EC.REPEAT.value: repeat,
         const.CHILDREN: [
             {
                 const.NAME: "dataset",
@@ -103,11 +110,6 @@ def get_entity_declaration(
         first_load = action.ActionLibrary.setvalue_first_load.value.to_dict()
         first_load["value"] = "uuid()"
         id_attr["actions"].append(first_load)
-
-        if repeat:
-            new_repeat = action.ActionLibrary.setvalue_new_repeat.value.to_dict()
-            new_repeat["value"] = "uuid()"
-            id_attr["actions"].append(new_repeat)
 
     # Update mode
     if entity_id:
@@ -199,34 +201,16 @@ def get_validated_dataset_name(entity):
     return dataset
 
 
-def get_validated_repeat_name(entity) -> str | None:
-    if EC.REPEAT.value not in entity:
-        return None
-
-    value = entity[EC.REPEAT]
-    try:
-        match = parse_pyxform_references(value=value, match_limit=1, match_full=True)
-    except PyXFormError as e:
-        e.context.update(sheet="entities", column="repeat", row=2)
-        raise
-    else:
-        if not match or match[0].last_saved:
-            raise PyXFormError(ErrorCode.ENTITY_001.value.format(value=value))
-        else:
-            return match[0].name
-
-
 def validate_entity_saveto(
     row: dict,
     row_number: int,
-    stack: Sequence[dict[str, Any]],
-    entity_declaration: dict[str, Any] | None = None,
-):
-    save_to = row.get(const.BIND, {}).get("entities:saveto", "")
+    entity_declarations: dict[str, dict[str, Any]] | None = None,
+) -> bool:
+    save_to = row.get(const.BIND, {}).get(const.ENTITIES_SAVETO_NS, "")
     if not save_to:
-        return
+        return False
 
-    if not entity_declaration:
+    if not entity_declarations:
         raise PyXFormError(
             "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
         )
@@ -234,34 +218,6 @@ def validate_entity_saveto(
     if const.GROUP in row.get(const.TYPE) or const.REPEAT in row.get(const.TYPE):
         raise PyXFormError(
             f"{const.ROW_FORMAT_STRING % row_number} Groups and repeats can't be saved as entity properties."
-        )
-
-    entity_repeat = entity_declaration.get(EC.REPEAT, None)
-    in_repeat = False
-    located = False
-    for i in reversed(stack):
-        if not i["control_name"] or not i["control_type"]:
-            break
-        elif i["control_type"] == const.REPEAT:
-            # Error: saveto in nested repeat inside entity repeat.
-            if in_repeat:
-                raise PyXFormError(
-                    ErrorCode.ENTITY_005.value.format(row=row_number, value=save_to)
-                )
-            elif i["control_name"] == entity_repeat:
-                located = True
-            in_repeat = True
-
-    # Error: saveto not in entity repeat
-    if entity_repeat and not located:
-        raise PyXFormError(
-            ErrorCode.ENTITY_006.value.format(row=row_number, value=save_to)
-        )
-
-    # Error: saveto in repeat but no entity repeat declared
-    if in_repeat and not entity_repeat:
-        raise PyXFormError(
-            ErrorCode.ENTITY_007.value.format(row=row_number, value=save_to)
         )
 
     # Error: naming rules
@@ -277,12 +233,14 @@ def validate_entity_saveto(
                 sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
             )
         )
-    elif not is_xml_tag(save_to):
+    elif not is_xml_tag(save_to.split("#")[-1]):
         raise PyXFormError(
             ErrorCode.NAMES_008.value.format(
                 sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
             )
         )
+
+    return True
 
 
 def validate_entities_columns(row: dict):
@@ -298,54 +256,348 @@ def validate_entities_columns(row: dict):
         raise PyXFormError(msg)
 
 
-def validate_entity_repeat_target(
-    entity_declaration: dict[str, Any] | None,
-    stack: Sequence[dict[str, Any]] | None = None,
-) -> bool:
+def get_entity_declarations(
+    entities_sheet: Iterable[dict],
+) -> dict[str, dict[str, Any]]:
     """
-    Check if the entity repeat target exists, is a repeat, and is a name match.
-
-    Raises an error if the control type or name is None (such as for the Survey), or if
-    the control type is not a repeat.
-
-    :param entity_declaration:
-    :param stack: The control stack from workbook_to_json.
-    :return:
+    Collect all entity declarations from the entities sheet.
     """
-    # Ignore: entity already processed.
-    if not entity_declaration:
-        return False
+    entities = {}
+    for row in entities_sheet:
+        entity = get_entity_declaration(row=row)
+        dataset_name = next(
+            c["value"] for c in entity["children"] if c.get("name", "") == "dataset"
+        )
+        if dataset_name in entities:
+            raise PyXFormError(f"Duplicate entity :( {dataset_name}")
+        entities[dataset_name] = entity
 
-    entity_repeat = entity_declaration.get(EC.REPEAT, None)
+    return entities
 
-    # Ignore: no repeat declared for the entity.
-    if not entity_repeat:
-        return False
 
-    # Error: repeat not found while processing survey sheet.
-    if not stack:
-        raise PyXFormError(ErrorCode.ENTITY_002.value.format(value=entity_repeat))
+def get_entity_variable_references(
+    entities_sheet: Iterable[dict],
+) -> dict[str, dict[str, list[str]]]:
+    """
+    Parse variable references in the entities sheet columns.
+    """
+    entity_references = defaultdict(lambda: defaultdict(list))
+    for row in entities_sheet:
+        for column_name, value in row.items():
+            if column_name == EC.DATASET:
+                continue
+            references = parse_pyxform_references(value=value)
+            if references:
+                for ref in references:
+                    entity_references[ref.name][row[EC.DATASET]].append(column_name)
+    return entity_references
 
-    control_name = stack[-1]["control_name"]
-    control_type = stack[-1]["control_type"]
 
-    # Ignore: current control is not the target.
-    if control_name and control_name != entity_repeat:
-        return False
+def get_entity_references_by_question(
+    stack: list[dict[str, Any]],
+    row: dict[str, Any],
+    row_number: int,
+    question_name: str,
+    entity_declarations: dict[str, dict[str, Any]],
+    entity_variable_references: dict[str, dict[str, list[str]]],
+    entity_references_by_question: defaultdict[str, list[ReferenceSource]],
+) -> None:
+    """
+    For each question store the saveto or variable references that link it to an entity.
+    """
+    # TODO: pre-calculate the current_path externally - maybe as part of the stack? It only
+    #   changes when the container opens/closes so may be unnecessarily re-calculated and
+    #   this block is recursing up the stack each time so may be non-trivial impact
+    if len(stack) > 1:
+        container_path = (
+            ContainerNode(name=const.SURVEY, type=const.SURVEY),
+            *(
+                ContainerNode(
+                    name=container.get("control_name"), type=container.get("control_type")
+                )
+                for container in stack[1:]
+            ),
+        )
+    else:
+        container_path = (ContainerNode(name=const.SURVEY, type=const.SURVEY),)
 
-    # Error: target is not a repeat.
-    if control_type and control_type != const.REPEAT:
-        raise PyXFormError(ErrorCode.ENTITY_003.value.format(value=entity_repeat))
+    # Collect references for later reconciliation, because otherwise the first
+    # referent found will determine the scope but there may be deeper refs.
+    saveto = row.get(const.BIND, {}).get(const.ENTITIES_SAVETO_NS, "")
+    if saveto:
+        validate_entity_saveto(
+            row=row,
+            row_number=row_number,
+            entity_declarations=entity_declarations,
+        )
+        if "#" in saveto:
+            saveto = saveto.split("#")
+            dataset_name = saveto[0]
+            row[const.BIND][const.ENTITIES_SAVETO_NS] = saveto[-1]
+        else:
+            dataset_name = next(iter(entity_declarations.keys()))
+        entity_references_by_question[dataset_name].append(
+            ReferenceSource(path=container_path, row=row_number, type="saveto")
+        )
 
-    # Error: repeat is in nested repeat.
-    located = False
-    for i in reversed(stack):
-        if not i["control_name"] or not i["control_type"]:
-            break
-        elif i["control_type"] == const.REPEAT:
-            if located:
-                raise PyXFormError(ErrorCode.ENTITY_004.value.format(value=entity_repeat))
-            elif i["control_name"] == entity_repeat:
-                located = True
+    if entity_variable_references and question_name in entity_variable_references:
+        for dataset_name in entity_variable_references[question_name]:
+            entity_references_by_question[dataset_name].append(
+                ReferenceSource(path=container_path, row=row_number, type="variable")
+            )
 
-    return entity_repeat == control_name
+
+def get_container_scopes(
+    entity_references_by_question: defaultdict[str, list[ReferenceSource]],
+) -> defaultdict[tuple[ContainerNode, ...], dict[str, list[ReferenceSource]]]:
+    """
+    Find/validate the deepest scope among the entity_references.
+    """
+    scope_paths = defaultdict(dict)
+
+    for dataset_name, entity_references in entity_references_by_question.items():
+        scope_path = (ContainerNode(name=const.SURVEY, type=const.SURVEY),)
+
+        for s in entity_references:
+            deepest_scope = s.get_scope_boundary()
+
+            if len(deepest_scope) == len(scope_path) and deepest_scope != scope_path:
+                raise PyXFormError(
+                    f"Scope Breach for '{dataset_name}': subscriber trying to switch scope at same level"
+                )
+            elif len(deepest_scope) > len(scope_path):
+                scope_path = deepest_scope
+
+        scope_paths[scope_path][dataset_name] = entity_references
+
+    return scope_paths
+
+
+def get_allocation_requests(
+    scope_path: tuple[ContainerNode, ...],
+    entity_references: dict[str, list[ReferenceSource]],
+):
+    """
+    Assign/validate the preferred path for each entity declaration.
+    """
+    allocation_requests = []
+    for dataset_name, references in entity_references.items():
+        if not references:
+            continue
+
+        # Determine the repeat lineage of the first subscriber to use as a baseline
+        requested_ref = max(references, key=lambda s: len(s.path))
+
+        # Prioritise saveto since they must be in the nearest container.
+        save_tos = tuple(s for s in references if s.type == "saveto")
+        if save_tos:
+            lca_saveto = max(save_tos, key=lambda s: len(s.path))
+            requested_ref = min((requested_ref, lca_saveto), key=lambda s: len(s.path))
+
+        # Check saveto entity_refs match the scope_path
+        for ref in references:
+            ref_scope_stack = ref.get_scope_boundary()
+
+            if (
+                ref.type == "saveto"
+                and ref_scope_stack
+                and scope_path
+                and ref_scope_stack != scope_path
+            ):
+                raise PyXFormError(
+                    f"Scope Breach for '{dataset_name}': saveto references "
+                    f"(rows {requested_ref.row}, {ref.row}) "
+                    "exist across inconsistent repeat boundaries."
+                )
+
+        allocation_requests.append(
+            {
+                "dataset_name": dataset_name,
+                "requested_path": requested_ref.path,
+                "minimum_depth": len(scope_path),
+                "rows": [s.row for s in references],
+                "has_savetos": int(bool(save_tos)),
+            }
+        )
+
+    return allocation_requests
+
+
+def allocate_entities_to_paths(
+    scope_path: tuple[ContainerNode, ...], requests: list[dict[str, Any]]
+) -> dict[tuple[ContainerNode, ...], str]:
+    """
+    Assign the requested allocations to available allowed container nodes if possible.
+    """
+    allocations = {}
+
+    # Prioritise save_to references but otherwise try to put deepest allocation first.
+    requests.sort(
+        key=lambda x: (x["has_savetos"], len(x["requested_path"])), reverse=True
+    )
+
+    for item in requests:
+        current_path = item["requested_path"]
+        placed = False
+
+        # Attempt to place as low as possible, but try going up to the highest allowed.
+        while len(current_path) >= item["minimum_depth"]:
+            if current_path not in allocations:
+                allocations[current_path] = item["dataset_name"]
+                placed = True
+                break
+            current_path = current_path[:-1]
+
+        if not placed:
+            rows = ", ".join(str(r) for r in item["rows"])
+            raise PyXFormError(
+                f"Conflict in scope '{scope_path[-1]}': Referent '{item['dataset_name']}' "
+                f"(rows {rows}) has no available allowed container slots."
+            )
+
+    return allocations
+
+
+def allocate_entities_to_containers(
+    entity_references_by_question: defaultdict[str, list[ReferenceSource]],
+) -> dict[tuple[ContainerNode, ...], str]:
+    """
+    Get the paths into which the entities will be placed.
+    """
+    all_allocations = {}
+    scope_paths = get_container_scopes(
+        entity_references_by_question=entity_references_by_question
+    )
+    for scope_path, entity_references in scope_paths.items():
+        requests = get_allocation_requests(
+            scope_path=scope_path, entity_references=entity_references
+        )
+        allocations = allocate_entities_to_paths(scope_path=scope_path, requests=requests)
+        all_allocations.update(allocations)
+
+    return all_allocations
+
+
+def inject_entities_into_json(
+    node: dict[str, Any],
+    allocations: dict[tuple[ContainerNode, ...], str],
+    entity_declarations: dict[str, dict[str, Any]],
+    current_path: tuple[ContainerNode, ...],
+    search_prefixes: set[tuple[ContainerNode, ...]],
+    entities_allocated: set[str] | None = None,
+) -> dict[str, Any]:
+    """
+    Recursively traverse the json_dict to inject entity declarations.
+    """
+    if entities_allocated is None:
+        entities_allocated = set()
+
+    dataset_name = allocations.get(current_path, None)
+    if dataset_name and dataset_name not in entities_allocated:
+        entity_decl = entity_declarations.get(dataset_name, None)
+        if node[const.TYPE] == const.REPEAT:
+            id_attr = next(
+                iter(c for c in entity_decl[const.CHILDREN] if c[const.NAME] == "id"),
+                None,
+            )
+            # TODO: could do with a more explicit way of signaling that repeat is allowed
+            # TODO: should there be an error if the id attr is not found? could that ever happen
+            if id_attr and id_attr["actions"]:
+                new_repeat = action.ActionLibrary.setvalue_new_repeat.value.to_dict()
+                new_repeat["value"] = "uuid()"
+                if new_repeat not in id_attr["actions"]:
+                    id_attr["actions"].append(new_repeat)
+
+        if const.CHILDREN not in node:
+            node[const.CHILDREN] = []
+
+        node[const.CHILDREN].append(get_meta_group(children=[entity_decl]))
+        entities_allocated.add(dataset_name)
+
+    for child in node.get(const.CHILDREN, []):
+        child_name = child.get(const.NAME)
+        child_type = child.get(const.TYPE)
+        if child_name and child_type in {const.GROUP, const.REPEAT}:
+            child_path = (*current_path, ContainerNode(name=child_name, type=child_type))
+            if child_path in search_prefixes:
+                inject_entities_into_json(
+                    node=child,
+                    allocations=allocations,
+                    entity_declarations=entity_declarations,
+                    current_path=child_path,
+                    search_prefixes=search_prefixes,
+                    entities_allocated=entities_allocated,
+                )
+
+    return node
+
+
+def get_search_prefixes(
+    allocations: dict[tuple[ContainerNode, ...], str],
+) -> set[tuple[ContainerNode, ...]]:
+    """
+    Get all the relevant path prefixes to help reduce the path search space.
+
+    :param allocations: The entity path allocations.
+    :return: path prefixes like (a, b, c) -> ((a,), (a, b), (a, b, c))
+    """
+    active = set()
+    for path in allocations.keys():
+        # Add every prefix of the path to the set
+        for i in range(1, len(path) + 1):
+            active.add(path[:i])
+    return active
+
+
+def apply_entities_declarations(
+    entity_declarations: dict[str, dict[str, Any]],
+    entity_references_by_question: defaultdict[str, list[ReferenceSource]],
+    json_dict: dict[str, Any],
+    meta_children: list[dict[str, Any]],
+) -> None:
+    """
+    Traverse the json_dict tree and add meta/entity blocks where appropriate.
+
+    Processing phases:
+    1. for each question collect references in get_entity_references_by_question
+    2. calculate entity container assignments in allocate_entities_to_containers
+    3. apply those meta/entity declarations in inject_entities_into_json
+
+    :param entity_declarations: Entity definition data to be passed to EntityDeclaration,
+      structured as `{dataset_name: entity_declaration}`.
+    :param entity_references_by_question: For each entity, details of where and how they
+      are referred to, structured as `{dataset_name: list[ReferenceSource]}`.
+    :param json_dict: The output dict structure to be emitted from `workbook_to_json`.
+    :param meta_children: Details of the nodes to be added to the (parent) meta block.
+    :return: The json_dict is modified in-place
+    """
+    has_allocations = False
+    has_repeats = False
+    if entity_references_by_question:
+        allocations = allocate_entities_to_containers(
+            entity_references_by_question=entity_references_by_question
+        )
+        if allocations:
+            has_allocations = True
+            has_repeats = any(
+                p.type == const.REPEAT for i in allocations.keys() for p in i
+            )
+            json_dict = inject_entities_into_json(
+                node=json_dict,
+                allocations=allocations,
+                entity_declarations=entity_declarations,
+                current_path=(ContainerNode(name=const.SURVEY, type=const.SURVEY),),
+                search_prefixes=get_search_prefixes(allocations=allocations),
+            )
+
+    if len(entity_declarations) > 1 or has_repeats:
+        json_dict[const.ENTITY_VERSION] = const.EntityVersion.v2025_1_0
+    else:
+        json_dict[const.ENTITY_VERSION] = const.EntityVersion.v2024_1_0
+        if not has_allocations:
+            if len(entity_declarations) > 1:
+                # TODO: raise error if not already caught / handled elsewhere
+                pass
+            else:
+                # TODO: could this func chain deal with the no-reference case as well?
+                meta_children.append(next(iter(entity_declarations.values())))

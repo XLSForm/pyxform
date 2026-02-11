@@ -45,22 +45,22 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
         """
         self.assertPyxformXform(md=md, warnings_count=0)
 
-    def test_multiple_dataset_rows_in_entities_sheet__errors(self):
+    def test_multiple_dataset_rows_in_entities_sheet__ok(self):
         self.assertPyxformXform(
-            name="data",
             md="""
-            | survey   |         |      |       |
-            |          | type    | name | label |
-            |          | text    | a    | A     |
-            | entities |         |      |       |
-            |          | dataset |      |       |
-            |          | trees   |      |       |
-            |          | shovels |      |       |
+            | survey |
+            | | type        | name | label | save_to |
+            | | begin group | g1   | G1    |         |
+            | | text        | q1   | Q1    | e1#a1   |
+            | | end group   | g1   |       |         |
+            | | text        | q2   | Q2    | e2#a1   |
+            | |
+            | entities |
+            | | dataset | label |
+            | | e1      | ${q1} |
+            | | e2      | ${q1} |
             """,
-            errored=True,
-            error__contains=[
-                "Currently, you can only declare a single entity per form. Please make sure your entities sheet only declares one entity."
-            ],
+            warnings_count=0,
         )
 
     def test_dataset_with_reserved_prefix__errors(self):
@@ -369,25 +369,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             error__contains=[
                 "[row : 2] Groups and repeats can't be saved as entity properties."
             ],
-        )
-
-    def test_saveto_in_repeat__errors(self):
-        """Should find that an error is raised if a save_to is in an undeclared entity repeat."""
-        md = """
-        | survey |
-        | | type         | name | label | save_to |
-        | | begin_repeat | r1   | R1    |         |
-        | | text         | q1   | Q1    | q1e     |
-        | | end_repeat   | r1   |       |         |
-
-        | entities |
-        | | dataset | label |
-        | | trees   | ${q1} |
-        """
-        self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[ErrorCode.ENTITY_007.value.format(row=3, value="q1e")],
         )
 
     def test_saveto_in_group__works(self):

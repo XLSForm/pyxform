@@ -25,8 +25,8 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
         | | csv-external | e1    |       |         |
 
         | entities |
-        |          | list_name | label | repeat | entity_id |
-        |          | e1        | ${q1} | ${r1}  | ${q1}     |
+        |          | list_name | label | entity_id |
+        |          | e1        | ${q1} | ${q1}     |
         """
         self.assertPyxformXform(
             md=md,
@@ -74,8 +74,8 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
         | | csv-external | e1    |       |
 
         | entities |
-        | | list_name | repeat | entity_id |
-        | | e1        | ${r1}  | ${q1}     |
+        | | list_name | entity_id |
+        | | e1        | ${q1}     |
         """
         self.assertPyxformXform(
             md=md,
@@ -96,8 +96,8 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
         | | csv-external | e1    |       |         |
 
         | entities |
-        | | list_name | label | repeat | entity_id | update_if  |
-        | | e1        | ${q1} | ${r1}  | ${q1}     | ${q1} = '' |
+        | | list_name | label | entity_id | update_if  |
+        | | e1        | ${q1} | ${q1}     | ${q1} = '' |
         """
         self.assertPyxformXform(
             md=md,
@@ -118,8 +118,8 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
         | | csv-external | e1    |       |         |
 
         | entities |
-        | | list_name | label | repeat | entity_id | create_if  | update_if  |
-        | | e1        | ${q1} | ${r1}  | ${q1}     | ${q1} = '' | ${q1} = '' |
+        | | list_name | label | entity_id | create_if  | update_if  |
+        | | e1        | ${q1} | ${q1}     | ${q1} = '' | ${q1} = '' |
         """
         self.assertPyxformXform(
             md=md,

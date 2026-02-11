@@ -5,7 +5,7 @@ A Python script to convert excel files into JSON.
 import os
 import re
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from typing import IO, Any
 
 from pyxform import aliases, constants
@@ -16,9 +16,10 @@ from pyxform.constants import (
 )
 from pyxform.elements import action as action_module
 from pyxform.entities.entities_parsing import (
-    get_entity_declaration,
-    validate_entity_repeat_target,
-    validate_entity_saveto,
+    apply_entities_declarations,
+    get_entity_declarations,
+    get_entity_references_by_question,
+    get_entity_variable_references,
 )
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
@@ -402,7 +403,8 @@ def workbook_to_json(
             json_dict[constants.CHOICES] = choices
 
     # ########## Entities sheet ###########
-    entity_declaration = None
+    entity_declarations = None
+    entity_variable_references = None
     if workbook_dict.entities:
         entities_sheet = dealias_and_group_headers(
             sheet_name=constants.ENTITIES,
@@ -411,7 +413,10 @@ def workbook_to_json(
             header_aliases=aliases.entities_header,
             header_columns={i.value for i in constants.EntityColumns.value_list()},
         )
-        entity_declaration = get_entity_declaration(entities_sheet=entities_sheet.data)
+        entity_declarations = get_entity_declarations(entities_sheet=entities_sheet.data)
+        entity_variable_references = get_entity_variable_references(
+            entities_sheet=entities_sheet.data
+        )
     else:
         similar = find_sheet_misspellings(key=constants.ENTITIES, keys=sheet_names)
         if similar is not None:
@@ -485,6 +490,7 @@ def workbook_to_json(
     element_names = Counter()
     trigger_references: list[tuple[str, int]] = []
     repeat_names = set()
+    entity_references_by_question = defaultdict(list)
 
     # row by row, validate questions, throwing errors and adding warnings where needed.
     for row_number, row in enumerate(survey_sheet.data, start=2):
@@ -743,17 +749,6 @@ def workbook_to_json(
         if end_control_parse:
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
-                if validate_entity_repeat_target(
-                    entity_declaration=entity_declaration,
-                    stack=stack,
-                ):
-                    parent_children_array.append(
-                        get_meta_group(children=[entity_declaration])
-                    )
-                    json_dict[constants.ENTITY_VERSION] = (
-                        constants.EntityVersion.v2025_1_0
-                    )
-                    entity_declaration = None
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
@@ -792,11 +787,15 @@ def workbook_to_json(
             seen_names_lower=child_names_lower,
             warnings=warnings,
         )
-        validate_entity_saveto(
+
+        get_entity_references_by_question(
+            stack=stack,
             row=row,
             row_number=row_number,
-            stack=stack,
-            entity_declaration=entity_declaration,
+            question_name=question_name,
+            entity_declarations=entity_declarations,
+            entity_variable_references=entity_variable_references,
+            entity_references_by_question=entity_references_by_question,
         )
 
         # Try to parse question as begin control statement
@@ -926,10 +925,6 @@ def workbook_to_json(
                         "child_names_lower": set(),
                         "row_number": row_number,
                     }
-                )
-                validate_entity_repeat_target(
-                    stack=stack,
-                    entity_declaration=entity_declaration,
                 )
                 continue
 
@@ -1432,15 +1427,27 @@ def workbook_to_json(
             }
         )
 
-    if entity_declaration:
-        validate_entity_repeat_target(entity_declaration=entity_declaration)
-        json_dict[constants.ENTITY_VERSION] = constants.EntityVersion.v2024_1_0
-        meta_children.append(entity_declaration)
+    if entity_declarations:
+        apply_entities_declarations(
+            entity_declarations=entity_declarations,
+            entity_references_by_question=entity_references_by_question,
+            json_dict=json_dict,
+            meta_children=meta_children,
+        )
 
     if len(meta_children) > 0:
-        meta_element = get_meta_group(children=meta_children)
-        survey_children_array = stack[0]["parent_children"]
-        survey_children_array.append(meta_element)
+        existing_meta = next(
+            (
+                e
+                for e in json_dict[constants.CHILDREN]
+                if e[constants.NAME] == "meta" and e[constants.TYPE] == constants.GROUP
+            ),
+            None,
+        )
+        if existing_meta:
+            existing_meta[constants.CHILDREN].extend(meta_children)
+        else:
+            json_dict[constants.CHILDREN].append(get_meta_group(children=meta_children))
 
     validate_pyxform_references_in_workbook(
         workbook_dict=workbook_dict,

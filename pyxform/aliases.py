@@ -90,7 +90,7 @@ survey_header = {
     "requiredmsg": ("bind", "jr:requiredMsg"),
     "required_message": ("bind", "jr:requiredMsg"),
     "body": "control",
-    constants.ENTITIES_SAVETO: ("bind", "entities:saveto"),
+    constants.ENTITIES_SAVETO: ("bind", constants.ENTITIES_SAVETO_NS),
 }
 
 entities_header = {constants.LIST_NAME_U: "dataset"}

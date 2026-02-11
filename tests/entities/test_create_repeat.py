@@ -1,5 +1,4 @@
 from pyxform import constants as co
-from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
@@ -18,8 +17,8 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         |        | end_repeat   |       |       |         |
 
         | entities |
-        |          | list_name | label | repeat |
-        |          | e1        | ${q1} | ${r1}  |
+        |          | list_name | label |
+        |          | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -66,8 +65,8 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | end_repeat   |       |       |
 
         | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r1}  |
+        | | list_name | label |
+        | | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -93,8 +92,8 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | end_repeat   |       |       |         |
 
         | entities |
-        | | list_name | label | repeat | create_if  |
-        | | e1        | ${q1} | ${r1}  | ${q1} = '' |
+        | | list_name | label | create_if  |
+        | | e1        | ${q1} | ${q1} = '' |
         """
         self.assertPyxformXform(
             md=md,
@@ -127,8 +126,8 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | end_repeat   |       |       |
 
         | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q3} | ${r2}  |
+        | | list_name | label |
+        | | e1        | ${q3} |
         """
         self.assertPyxformXform(md=md, warnings_count=0)
 
@@ -148,8 +147,8 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | end_repeat   |       |       |
 
         | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r1}  |
+        | | list_name | label |
+        | | e1        | ${q1} |
         """
         self.assertPyxformXform(md=md, warnings_count=0)
 
@@ -175,8 +174,8 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | end_repeat   |       |       |
 
         | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q3} | ${r2}  |
+        | | list_name | label |
+        | | e1        | ${q3} |
         """
         self.assertPyxformXform(md=md, warnings_count=0)
 
@@ -191,8 +190,8 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         |        | end_repeat   |       |       |         |
 
         | entities |
-        |          | list_name | label | repeat |
-        |          | e1        | ${q1} | ${r1}  |
+        |          | list_name | label |
+        |          | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -244,8 +243,8 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         |        | end_repeat   |       |       |         |
 
         | entities |
-        |          | list_name | label | repeat |
-        |          | e1        | ${q1} | ${r1}  |
+        |          | list_name | label |
+        |          | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -282,8 +281,8 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | end_repeat   |       |       |         |
 
         | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r1}  |
+        | | list_name | label |
+        | | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -291,21 +290,20 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
             xml__xpath_match=[
                 xpe.model_instance_meta(
                     "e1",
-                    "/x:r1",
+                    "/x:r1[@jr:template]/x:g1",
                     repeat=True,
-                    template=True,
                     create=True,
                     label=True,
                 ),
                 xpe.model_instance_meta(
                     "e1",
-                    "/x:r1",
+                    "/x:r1[not(@jr:template)]/x:g1",
                     repeat=True,
                     create=True,
                     label=True,
                 ),
                 xpe.model_bind_question_saveto("/r1/g1/q1", "q1e"),
-                xpe.model_bind_meta_label(" ../../../g1/q1 ", "/r1"),
+                xpe.model_bind_meta_label(" ../../../q1 ", "/r1/g1"),
             ],
         )
 
@@ -321,8 +319,8 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
         | | end_group    |       |       |         |
 
         | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r1}  |
+        | | list_name | label |
+        | | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -348,226 +346,228 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
             ],
         )
 
-    def test_entity_repeat_is_not_a_single_reference__error(self):
-        """Should raise an error if the entity repeat is not a reference."""
+    def test_somewhat_ambiguous_repeat_nesting_references(self):
+        md = """
+        | survey |
+        | | type         | name  | label |
+        | | begin_repeat | r1    | R1    |
+        | | begin_group  | g1    | G1    |
+        | | text         | q1    | Q1    |
+        | | begin_repeat | r2    | R2    |
+        | | begin_group  | g2    | G2    |
+        | | text         | q2    | Q2    |
+        | | begin_group  | g3    | G3    |
+        | | text         | q3    | Q3    |
+        | | end_group    |       |       |
+        | | end_group    |       |       |
+        | | end_repeat   |       |       |
+        | | end_group    |       |       |
+        | | end_repeat   |       |       |
+
+        | entities |
+        | | list_name | label                |
+        | | e1        | concat(${q1}, " ", ${q2}, " ", ${q3}) |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance/x:test_name/x:r1[@jr:template='']
+                  /x:g1/x:r2[@jr:template='']/x:g2/x:g3/x:meta/x:entity[@dataset='e1']
+                """,
+            ],
+        )
+
+    def test_somewhat_ambiguous_repeat_nesting_references_with_saveto(self):
         md = """
         | survey |
         | | type         | name  | label | save_to |
         | | begin_repeat | r1    | R1    |         |
-        | | text         | q1    | Q1    | q1e     |
+        | | begin_group  | g1    | G1    |         |
+        | | text         | q1    | Q1    |         |
+        | | begin_repeat | r2    | R2    |         |
+        | | begin_group  | g2    | G2    |         |
+        | | text         | q2    | Q2    |         |
+        | | begin_group  | g3    | G3    |         |
+        | | text         | q3    | Q3    |         |
+        | | text         | q4    | Q4    | p1      |
+        | | end_group    |       |       |         |
+        | | end_group    |       |       |         |
+        | | end_repeat   |       |       |         |
+        | | end_group    |       |       |         |
         | | end_repeat   |       |       |         |
 
         | entities |
-        | | list_name | label   | repeat |
-        | | e1        | ${{q1}} | {case} |
-        """
-        # Looks like a single reference but fails to parse.
-        cases_pyref = ("${.a}", "${a }", "${ }")
-        for case in cases_pyref:
-            with self.subTest(msg=case):
-                self.assertPyxformXform(
-                    md=md.format(case=case),
-                    errored=True,
-                    error__contains=[
-                        ErrorCode.PYREF_001.value.format(
-                            sheet="entities", column="repeat", row=2, value=case
-                        )
-                    ],
-                )
-        # Doesn't parse, or isn't a single reference.
-        cases = (".", "r1", "${r1}a", "${r1}${r2}", "${last-saved#r1}", "${}")
-        for case in cases:
-            with self.subTest(msg=case):
-                self.assertPyxformXform(
-                    md=md.format(case=case),
-                    errored=True,
-                    error__contains=[ErrorCode.ENTITY_001.value.format(value=case)],
-                )
-
-    def test_entity_repeat_not_found__error(self):
-        """Should raise an error if the entity repeat was not found in the survey sheet."""
-        md = """
-        | survey |
-        | | type         | name  | label |
-        | | begin_repeat | r1    | R1    |
-        | | text         | q1    | Q1    |
-        | | end_repeat   |       |       |
-
-        | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r2}  |
+        | | list_name | label                                 |
+        | | e1        | concat(${q1}, " ", ${q2}, " ", ${q3}) |
         """
         self.assertPyxformXform(
             md=md,
-            errored=True,
-            error__contains=[ErrorCode.ENTITY_002.value.format(value="r2")],
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance/x:test_name/x:r1[@jr:template='']
+                  /x:g1/x:r2[@jr:template='']/x:g2/x:g3/x:meta/x:entity[@dataset='e1']
+                """,
+            ],
         )
 
-    def test_entity_repeat_is_a_group__error(self):
-        """Should raise an error if the entity repeat is not a repeat."""
-        md = """
-        | survey |
-        | | type        | name  | label | save_to |
-        | | begin_group | g1    | G1    |         |
-        | | text        | q1    | Q1    | q1e     |
-        | | end_group   |       |       |         |
-
-        | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${g1}  |
-        """
-        self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[ErrorCode.ENTITY_003.value.format(value="g1")],
-        )
-
-    def test_entity_repeat_is_a_loop__error(self):
-        """Should raise an error if the entity repeat is not a repeat."""
-        md = """
-        | survey |
-        | | type               | name  | label | save_to |
-        | | begin_loop over c1 | l1    | L1    |         |
-        | | text               | q1    | Q1    | q1e     |
-        | | end_loop           |       |       |         |
-
-        | choices |
-        | | list_name | name | label |
-        | | c1        | o1   | l1    |
-
-        | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${l1}  |
-        """
-        self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[ErrorCode.ENTITY_003.value.format(value="l1")],
-        )
-
-    def test_entity_repeat_in_repeat__error(self):
-        """Should raise an error if the entity repeat is inside a repeat."""
-        md = """
-        | survey |
-        | | type         | name  | label |
-        | | begin_repeat | r1    | R1    |
-        | | begin_repeat | r2    | R2    |
-        | | text         | q1    | Q1    |
-        | | end_repeat   |       |       |
-        | | end_repeat   |       |       |
-
-        | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r2}  |
-        """
-        self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[ErrorCode.ENTITY_004.value.format(value="r2")],
-        )
-
-    def test_saveto_question_not_in_entity_repeat_no_entity_repeat__error(
+    def test_somewhat_ambiguous_repeat_nesting_references_with_saveto_and_competing_lists(
         self,
     ):
-        """Should raise an error if a save_to question is not in the entity repeat."""
         md = """
         | survey |
         | | type         | name  | label | save_to |
         | | begin_repeat | r1    | R1    |         |
-        | | text         | q1    | Q1    | q1e     |
-        | | end_repeat   |       |       |         |
-
-        | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r2}  |
-        """
-        self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[ErrorCode.ENTITY_006.value.format(row=3, value="q1e")],
-        )
-
-    def test_saveto_question_not_in_entity_repeat_in_survey__error(self):
-        """Should raise an error if a save_to question is not in the entity repeat."""
-        md = """
-        | survey |
-        | | type         | name  | label | save_to |
-        | | text         | q1    | Q1    | q1e     |
-        | | begin_repeat | r1    | R1    |         |
-        | | text         | q2    | Q2    |         |
-        | | end_repeat   |       |       |         |
-
-        | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r1}  |
-        """
-        self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[ErrorCode.ENTITY_006.value.format(row=2, value="q1e")],
-        )
-
-    def test_saveto_question_not_in_entity_repeat_in_group__error(self):
-        """Should raise an error if a save_to question is not in the entity repeat."""
-        md = """
-        | survey |
-        | | type         | name  | label | save_to |
         | | begin_group  | g1    | G1    |         |
-        | | text         | q1    | Q1    | q1e     |
+        | | text         | q1    | Q1    |         |
+        | | begin_repeat | r2    | R2    |         |
+        | | begin_group  | g2    | G2    |         |
+        | | text         | q2    | Q2    | e1#p1   |
+        | | begin_group  | g3    | G3    |         |
+        | | text         | q3    | Q3    |         |
+        | | text         | q4    | Q4    | e2#p1   |
         | | end_group    |       |       |         |
-        | | begin_repeat | r1    | R1    |         |
-        | | text         | q2    | Q2    |         |
+        | | end_group    |       |       |         |
+        | | end_repeat   |       |       |         |
+        | | end_group    |       |       |         |
         | | end_repeat   |       |       |         |
 
         | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r1}  |
+        | | list_name | label                                 |
+        | | e1        | concat(${q1}, " ", ${q2}, " ", ${q3}) |
+        | | e2        | concat(${q1}, " ", ${q2}, " ", ${q3}) |
         """
         self.assertPyxformXform(
             md=md,
-            errored=True,
-            error__contains=[ErrorCode.ENTITY_006.value.format(row=3, value="q1e")],
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance/x:test_name/x:r1[@jr:template='']
+                  /x:g1/x:r2[@jr:template='']/x:g2/x:meta/x:entity[@dataset='e1']
+                """,
+                """
+                /h:html/h:head/x:model/x:instance/x:test_name/x:r1[@jr:template='']
+                  /x:g1/x:r2[@jr:template='']/x:g2/x:g3/x:meta/x:entity[@dataset='e2']
+                """,
+            ],
         )
 
-    def test_saveto_question_not_in_entity_repeat_in_repeat__error(self):
-        """Should raise an error if a save_to question is not in the entity repeat."""
+    def test_somewhat_ambiguous_repeat_nesting_references_with_saveto_and_many_competing_lists(
+        self,
+    ):
+        md = """
+        | survey |
+        | | type         | name  | label | save_to | meta gets what
+        | | begin_repeat | r1    | R1    |         |
+        | | begin_group  | g1    | G1    |         |
+        | | text         | q1    | Q1    |         |
+        | | begin_repeat | r2    | R2    |         | e4 (spare slot in R2 scope)
+        | | begin_group  | g2    | G2    |         | e1 (pinned by saveto)
+        | | text         | q2    | Q2    | e1#p1   |
+        | | begin_group  | g3    | G3    |         | e3 (another spare slot in R2 scope)
+        | | begin_group  | g4    | G4    |         | e2 (pinned to container by saveto)
+        | | text         | q3    | Q3    |         |
+        | | text         | q4    | Q4    | e2#p1   |
+        | | end_group    |       |       |         |
+        | | end_group    |       |       |         |
+        | | end_group    |       |       |         |
+        | | end_repeat   |       |       |         |
+        | | end_group    |       |       |         |
+        | | end_repeat   |       |       |         |
+
+        | entities |
+        | | list_name | label                                 | create_if  |
+        | | e1        | concat(${q1}, " ", ${q2}, " ", ${q3}) | ${q1} = '' |
+        | | e2        | concat(${q1}, " ", ${q2}, " ", ${q3}) | |
+        | | e3        | concat(${q1}, " ", ${q2}, " ", ${q3}) | |
+        | | e4        | concat(${q1}, " ", ${q2}, " ", ${q3}) | |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:instance/x:test_name/x:r1[@jr:template='']
+                  /x:g1/x:r2[@jr:template='']/x:meta/x:entity[@dataset='e4']
+                """,
+                """
+                /h:html/h:head/x:model/x:instance/x:test_name/x:r1[@jr:template='']
+                  /x:g1/x:r2[@jr:template='']/x:g2/x:meta/x:entity[@dataset='e1']
+                """,
+                """
+                /h:html/h:head/x:model/x:instance/x:test_name/x:r1[@jr:template='']
+                  /x:g1/x:r2[@jr:template='']/x:g2/x:g3/x:meta/x:entity[@dataset='e3']
+                """,
+                """
+                /h:html/h:head/x:model/x:instance/x:test_name/x:r1[@jr:template='']
+                  /x:g1/x:r2[@jr:template='']/x:g2/x:g3/x:g4/x:meta/x:entity[@dataset='e2']
+                """,
+            ],
+        )
+
+    def test_bad_sibling_repeats_savetos(self):
         md = """
         | survey |
         | | type         | name  | label | save_to |
         | | begin_repeat | r1    | R1    |         |
-        | | text         | q1    | Q1    | q1e     |
+        | | text         | q1    | Q1    | e1#p1   |
+        | | end_repeat   |       |       |         |
+        | | begin_repeat | r2    | R2    |         |
+        | | text         | q2    | Q2    | e1#p2   |
+        | | end_repeat   |       |       |         |
+
+        | entities |
+        | | list_name | label                     |
+        | | e1        | concat(${q1}, " ", ${q2}) |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                "Scope Breach for 'e1': subscriber trying to switch scope at same level"
+            ],
+        )
+
+    def test_bad_sibling_repeats_saveto(self):
+        md = """
+        | survey |
+        | | type         | name  | label | save_to |
+        | | begin_repeat | r1    | R1    |         |
+        | | text         | q1    | Q1    | e1#p1   |
         | | end_repeat   |       |       |         |
         | | begin_repeat | r2    | R2    |         |
         | | text         | q2    | Q2    |         |
         | | end_repeat   |       |       |         |
 
         | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r2}  |
+        | | list_name | label                     |
+        | | e1        | concat(${q1}, " ", ${q2}) |
         """
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.ENTITY_006.value.format(row=3, value="q1e")],
+            error__contains=[
+                "Scope Breach for 'e1': subscriber trying to switch scope at same level"
+            ],
         )
 
-    def test_saveto_question_in_nested_repeat__error(self):
-        """Should raise an error if a save_to question is in a repeat inside the entity repeat."""
+    def test_bad_sibling_repeats(self):
         md = """
         | survey |
         | | type         | name  | label | save_to |
         | | begin_repeat | r1    | R1    |         |
-        | | begin_repeat | r2    | R2    |         |
-        | | text         | q1    | Q1    | q1e     |
+        | | text         | q1    | Q1    |         |
         | | end_repeat   |       |       |         |
+        | | begin_repeat | r2    | R2    |         |
+        | | text         | q2    | Q2    |         |
         | | end_repeat   |       |       |         |
 
         | entities |
-        | | list_name | label | repeat |
-        | | e1        | ${q1} | ${r1}  |
+        | | list_name | label                     |
+        | | e1        | concat(${q1}, " ", ${q2}) |
         """
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.ENTITY_005.value.format(row=4, value="q1e")],
+            error__contains=[
+                "Scope Breach for 'e1': subscriber trying to switch scope at same level"
+            ],
         )
