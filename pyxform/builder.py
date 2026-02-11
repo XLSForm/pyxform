@@ -4,6 +4,7 @@ Survey builder functionality.
 
 import os
 from collections import defaultdict
+from collections.abc import Mapping
 from typing import Any
 
 from pyxform import constants as const
@@ -65,7 +66,7 @@ class SurveyElementBuilder:
         the name of the section and the value is a dict that can be
         used to create a whole survey.
         """
-        if not isinstance(sections, dict):
+        if not isinstance(sections, Mapping):
             raise PyXFormError("""Invalid value for `sections`.""")
         self._sections = sections
 
@@ -79,7 +80,7 @@ class SurveyElementBuilder:
 
         :param d: data to use for constructing SurveyElements.
         """
-        if "add_none_option" in d:
+        if d.get("add_none_option", None) is not None:
             self._add_none_option = d["add_none_option"]
 
         if d[const.TYPE] in SECTION_CLASSES:
@@ -266,7 +267,7 @@ class SurveyElementBuilder:
         # if the label in column_headers has multiple languages setup a
         # dictionary by language to do substitutions.
         info_by_lang = None
-        if isinstance(column_headers[const.LABEL], dict):
+        if isinstance(column_headers[const.LABEL], Mapping):
             info_by_lang = {
                 lang: {
                     const.NAME: column_headers[const.NAME],
@@ -279,10 +280,10 @@ class SurveyElementBuilder:
         for key in result:
             if isinstance(result[key], str):
                 result[key] %= column_headers
-            elif isinstance(result[key], dict):
+            elif isinstance(result[key], Mapping):
                 result[key] = result[key].copy()
                 for key2 in result[key]:
-                    if info_by_lang and isinstance(column_headers[const.LABEL], dict):
+                    if info_by_lang and isinstance(column_headers[const.LABEL], Mapping):
                         result[key][key2] %= info_by_lang.get(key2, column_headers)
                     else:
                         result[key][key2] %= column_headers
