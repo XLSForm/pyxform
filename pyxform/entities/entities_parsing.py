@@ -485,6 +485,7 @@ def inject_entities_into_json(
     current_path: tuple[ContainerNode, ...],
     search_prefixes: set[tuple[ContainerNode, ...]],
     entities_allocated: set[str] | None = None,
+    has_repeat_ancestor: bool = False,
 ) -> dict[str, Any]:
     """
     Recursively traverse the json_dict to inject entity declarations.
@@ -495,30 +496,34 @@ def inject_entities_into_json(
     dataset_name = allocations.get(current_path, None)
     if dataset_name and dataset_name not in entities_allocated:
         entity_decl = entity_declarations.get(dataset_name, None)
-        if node[const.TYPE] == const.REPEAT:
-            id_attr = next(
-                iter(c for c in entity_decl[const.CHILDREN] if c[const.NAME] == "id"),
-                None,
-            )
-            # TODO: could do with a more explicit way of signaling that repeat is allowed
-            # TODO: should there be an error if the id attr is not found? could that ever happen
-            if id_attr and id_attr["actions"]:
-                new_repeat = action.ActionLibrary.setvalue_new_repeat.value.to_dict()
-                new_repeat["value"] = "uuid()"
-                if new_repeat not in id_attr["actions"]:
-                    id_attr["actions"].append(new_repeat)
+        # TODO: seems unlikely but perhaps there should be an error on `entity_decl is None`
+        if entity_decl:
+            if has_repeat_ancestor:
+                id_attr = next(
+                    iter(c for c in entity_decl[const.CHILDREN] if c[const.NAME] == "id"),
+                    None,
+                )
+                # TODO: could do with a more explicit way of signaling that repeat is allowed
+                # TODO: should there be an error if the id attr is not found? could that ever happen
+                if id_attr and id_attr["actions"]:
+                    new_repeat = action.ActionLibrary.setvalue_new_repeat.value.to_dict()
+                    new_repeat["value"] = "uuid()"
+                    if new_repeat not in id_attr["actions"]:
+                        id_attr["actions"].append(new_repeat)
 
-        if const.CHILDREN not in node:
-            node[const.CHILDREN] = []
+            if const.CHILDREN not in node:
+                node[const.CHILDREN] = []
 
-        node[const.CHILDREN].append(get_meta_group(children=[entity_decl]))
-        entities_allocated.add(dataset_name)
+            node[const.CHILDREN].append(get_meta_group(children=[entity_decl]))
+            entities_allocated.add(dataset_name)
 
     for child in node.get(const.CHILDREN, []):
         child_name = child.get(const.NAME)
         child_type = child.get(const.TYPE)
         if child_name and child_type in {const.GROUP, const.REPEAT}:
             child_path = (*current_path, ContainerNode(name=child_name, type=child_type))
+            if not has_repeat_ancestor and child_type == const.REPEAT:
+                has_repeat_ancestor = True
             if child_path in search_prefixes:
                 inject_entities_into_json(
                     node=child,
@@ -527,6 +532,7 @@ def inject_entities_into_json(
                     current_path=child_path,
                     search_prefixes=search_prefixes,
                     entities_allocated=entities_allocated,
+                    has_repeat_ancestor=has_repeat_ancestor,
                 )
 
     return node
@@ -582,12 +588,14 @@ def apply_entities_declarations(
             has_repeats = any(
                 p.type == const.REPEAT for i in allocations.keys() for p in i
             )
+            has_repeat_ancestor = json_dict.get(const.TYPE) == const.REPEAT
             json_dict = inject_entities_into_json(
                 node=json_dict,
                 allocations=allocations,
                 entity_declarations=entity_declarations,
                 current_path=(ContainerNode(name=const.SURVEY, type=const.SURVEY),),
                 search_prefixes=get_search_prefixes(allocations=allocations),
+                has_repeat_ancestor=has_repeat_ancestor,
             )
 
     if len(entity_declarations) > 1 or has_repeats:
