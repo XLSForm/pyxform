@@ -223,7 +223,7 @@ def validate_entity_saveto(
     # Error: naming rules
     if save_to.lower() in {const.NAME, const.LABEL}:
         raise PyXFormError(
-            ErrorCode.NAMES_011.value.format(
+            ErrorCode.NAMES_012.value.format(
                 sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
             )
         )

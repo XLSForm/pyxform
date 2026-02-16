@@ -252,7 +252,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                ErrorCode.NAMES_011.value.format(
+                ErrorCode.NAMES_012.value.format(
                     sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
                 )
             ],
@@ -271,7 +271,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                ErrorCode.NAMES_011.value.format(
+                ErrorCode.NAMES_012.value.format(
                     sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
                 )
             ],
@@ -290,7 +290,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                ErrorCode.NAMES_011.value.format(
+                ErrorCode.NAMES_012.value.format(
                     sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
                 )
             ],
@@ -309,7 +309,7 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                ErrorCode.NAMES_011.value.format(
+                ErrorCode.NAMES_012.value.format(
                     sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
                 )
             ],
