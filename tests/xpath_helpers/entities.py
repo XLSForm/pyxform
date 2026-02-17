@@ -25,12 +25,12 @@ class XPathHelper:
         list_name: str,
         meta_path: str = "",
         repeat: bool = False,
-        template: bool = False,
+        template: bool | None = False,
         create: bool = False,
         update: bool = False,
         label: bool = False,
     ) -> str:
-        assertion = {True: "{0}", False: "not({0})"}
+        assertion = {True: "{0}", False: "not({0})", None: "true()"}
         repeat_asserts = ("not(./x:instanceID)",)
         template_asserts = ("@jr:template",)
         create_asserts = ("@create='1'",)
@@ -162,8 +162,8 @@ class XPathHelper:
     def model_bind_meta_label(value: str, meta_path: str = "") -> str:
         return f"""
         /h:html/h:head/x:model/x:bind[
-          @nodeset="/test_name{meta_path}/meta/entity/label"
-          and @calculate="{value}"
+          @nodeset='/test_name{meta_path}/meta/entity/label'
+          and @calculate='{value}'
           and @type='string'
           and @readonly='true()'
         ]
