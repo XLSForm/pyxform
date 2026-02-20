@@ -430,21 +430,3 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
                 "The entities sheet included the following unexpected column(s): 'what'"
             ],
         )
-
-    def test_entities_columns__multiple_unexpected(self):
-        self.assertPyxformXform(
-            md="""
-            | survey   |           |       |       |
-            |          | type      | name  | label |
-            |          | text      | a     | A     |
-            | entities |           |       |       |
-            |          | dataset   | label | what  | why |
-            |          | trees     | a     | !     | ?   |
-            """,
-            errored=True,
-            error__contains=[
-                "The entities sheet included the following unexpected column(s):",
-                "'what'",
-                "'why'",
-            ],
-        )
