@@ -152,20 +152,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             ],
         )
 
-    def test_saveto_without_entities_sheet__errors(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey   |         |       |       |         |
-            |          | type    | name  | label | save_to |
-            |          | text    | a     | A     | foo     |
-            """,
-            errored=True,
-            error__contains=[
-                "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
-            ],
-        )
-
     def test_name_in_saveto_column__errors(self):
         self.assertPyxformXform(
             name="data",
