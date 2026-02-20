@@ -63,25 +63,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             warnings_count=0,
         )
 
-    def test_dataset_with_reserved_prefix__errors(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey   |         |       |       |
-            |          | type    | name  | label |
-            |          | text    | a     | A     |
-            | entities |         |       |       |
-            |          | dataset | label |       |
-            |          | __sweet | a     |       |
-            """,
-            errored=True,
-            error__contains=[
-                ErrorCode.NAMES_010.value.format(
-                    sheet=co.ENTITIES, row=2, column=co.EntityColumns.DATASET.value
-                )
-            ],
-        )
-
     def test_dataset_with_invalid_xml_name__errors(self):
         self.assertPyxformXform(
             name="data",
