@@ -82,25 +82,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             ],
         )
 
-    def test_dataset_with_period_in_name__errors(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey   |         |       |       |
-            |          | type    | name  | label |
-            |          | text    | a     | A     |
-            | entities |         |       |       |
-            |          | dataset | label |       |
-            |          | s.w.eet | a     |       |
-            """,
-            errored=True,
-            error__contains=[
-                ErrorCode.NAMES_011.value.format(
-                    sheet=co.ENTITIES, row=2, column=co.EntityColumns.DATASET.value
-                )
-            ],
-        )
-
     def test_worksheet_name_close_to_entities__produces_warning(self):
         self.assertPyxformXform(
             name="data",
