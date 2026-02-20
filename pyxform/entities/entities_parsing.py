@@ -209,43 +209,47 @@ def get_validated_dataset_name(entity):
 
 
 def validate_entity_saveto(
-    row: dict,
+    saveto: str,
     row_number: int,
-    entity_declarations: dict[str, dict[str, Any]] | None = None,
-) -> bool:
-    save_to = row.get(const.BIND, {}).get(const.ENTITIES_SAVETO_NS, "")
-    if not save_to:
-        return False
-
-    if not entity_declarations:
-        raise PyXFormError(ErrorCode.ENTITY_001.value.format(row=row_number))
-
-    if const.GROUP in row.get(const.TYPE) or const.REPEAT in row.get(const.TYPE):
-        raise PyXFormError(
-            f"{const.ROW_FORMAT_STRING % row_number} Groups and repeats can't be saved as entity properties."
-        )
-
-    # Error: naming rules
-    if save_to.lower() in {const.NAME, const.LABEL}:
-        raise PyXFormError(
-            ErrorCode.NAMES_012.value.format(
-                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
-            )
-        )
-    elif save_to.startswith(const.ENTITIES_RESERVED_PREFIX):
-        raise PyXFormError(
-            ErrorCode.NAMES_010.value.format(
-                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
-            )
-        )
-    elif not is_xml_tag(save_to.split("#", maxsplit=1)[-1]):
+    is_container_begin: bool,
+    is_container_end: bool,
+    entity_references: list[ReferenceSource],
+) -> None:
+    if not saveto:
         raise PyXFormError(
             ErrorCode.NAMES_008.value.format(
                 sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
             )
         )
-
-    return True
+    elif is_container_begin or is_container_end:
+        raise PyXFormError(ErrorCode.ENTITY_003.value.format(row=row_number))
+    # Error: naming rules
+    elif saveto.lower() in {const.NAME, const.LABEL}:
+        raise PyXFormError(
+            ErrorCode.NAMES_012.value.format(
+                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
+            )
+        )
+    elif saveto.startswith(const.ENTITIES_RESERVED_PREFIX):
+        raise PyXFormError(
+            ErrorCode.NAMES_010.value.format(
+                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
+            )
+        )
+    elif not is_xml_tag(saveto):
+        raise PyXFormError(
+            ErrorCode.NAMES_008.value.format(
+                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
+            )
+        )
+    elif entity_references:
+        for ref_source in entity_references:
+            if ref_source.property_name == saveto:
+                raise PyXFormError(
+                    ErrorCode.ENTITY_002.value.format(
+                        row=row_number, saveto=saveto, other_row=ref_source.row
+                    )
+                )
 
 
 def get_entity_declarations(
@@ -255,13 +259,13 @@ def get_entity_declarations(
     Collect all entity declarations from the entities sheet.
     """
     entities = {}
-    for row in entities_sheet:
+    for row_number, row in enumerate(entities_sheet, start=2):
         entity = get_entity_declaration(row=row)
         dataset_name = next(
             c["value"] for c in entity["children"] if c.get("name", "") == "dataset"
         )
         if dataset_name in entities:
-            raise PyXFormError(f"Duplicate entity :( {dataset_name}")
+            raise PyXFormError(ErrorCode.NAMES_014.value.format(row=row_number))
         entities[dataset_name] = entity
 
     return entities
@@ -293,6 +297,8 @@ def get_entity_references_by_question(
     entity_declarations: dict[str, dict[str, Any]],
     entity_variable_references: dict[str, dict[str, list[str]]],
     entity_references_by_question: defaultdict[str, list[ReferenceSource]],
+    is_container_begin: bool,
+    is_container_end: bool,
 ) -> None:
     """
     For each question store the saveto or variable references that link it to an entity.
@@ -317,26 +323,26 @@ def get_entity_references_by_question(
     # referent found will determine the scope but there may be deeper refs.
     saveto = row.get(const.BIND, {}).get(const.ENTITIES_SAVETO_NS, "")
     if saveto:
-        validate_entity_saveto(
-            row=row,
-            row_number=row_number,
-            entity_declarations=entity_declarations,
-        )
+        if not entity_declarations:
+            raise PyXFormError(ErrorCode.ENTITY_001.value.format(row=row_number))
+
         if "#" in saveto:
             dataset_name, saveto = saveto.split("#", maxsplit=1)
             row[const.BIND][const.ENTITIES_SAVETO_NS] = saveto
         else:
             dataset_name = next(iter(entity_declarations.keys()))
 
-        entity_refs = entity_references_by_question.get(dataset_name)
-        if entity_refs:
-            for ref_source in entity_refs:
-                if ref_source.property_name == saveto:
-                    msg = ErrorCode.ENTITY_002.value.format(
-                        row=row_number, saveto=saveto, other_row=ref_source.row
-                    )
-                    raise PyXFormError(msg)
-        entity_references_by_question[dataset_name].append(
+        entity_references = entity_references_by_question[dataset_name]
+
+        validate_entity_saveto(
+            saveto=saveto,
+            row_number=row_number,
+            is_container_begin=is_container_begin,
+            is_container_end=is_container_end,
+            entity_references=entity_references,
+        )
+
+        entity_references.append(
             ReferenceSource(path=container_path, row=row_number, property_name=saveto)
         )
 

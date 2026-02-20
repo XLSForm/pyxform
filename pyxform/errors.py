@@ -73,6 +73,14 @@ class ErrorCode(Enum):
             "Either remove or change one of these duplicate save_to property names."
         ),
     )
+    ENTITY_003 = Detail(
+        name="Entities - save_to in group or repeat row",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "Groups and repeats can't be saved as entity properties. "
+            "Either remove or move the save_to value in this row."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Headers - invalid missing header row",
         msg=(
@@ -231,6 +239,13 @@ class ErrorCode(Enum):
         msg=(
             "When looking for a sheet named '{sheet}', the following sheets with "
             "similar names were found: {candidates}."
+        ),
+    )
+    NAMES_014: Detail = Detail(
+        name="Names - invalid duplicate name in the entities sheet",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, the 'list_name' value is invalid. "
+            "The 'list_name' column must not have any duplicate names. "
         ),
     )
     PYREF_001: Detail = Detail(

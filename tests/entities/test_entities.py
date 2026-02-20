@@ -20,8 +20,8 @@ Each entities test should reference one (or more) requirements from these lists.
     - EV003: Unresolved variable reference error
     - EV004: No entity declarations error
     - EV005: Duplicate entity declarations error
-    - EV006: Duplicate entity property error
-    - EV007: Container as entity property error
+    - EV006: Duplicate save_to error
+    - EV007: Container row has save_to error
     - EV008: Missing entity declaration error
     - EV009: Missing entity create label error
     - EV010: Missing entity update condition error
@@ -31,10 +31,13 @@ Each entities test should reference one (or more) requirements from these lists.
     - EV014: Unsolvable meta/entity topology error
     - EV015: Entity property scope breach error
     - EV016: Entity container scope conflict error
-    - EV017: Duplicate entity property delimiter error
+    - EV017: Duplicate save_to delimiter error
     - EV018: Entity name invalid identifier error
     - EV019: Entity name invalid period character error
     - EV020: Entity name invalid underscore prefix error
+    - EV021: save_to name invalid identifier error
+    - EV022: save_to name invalid reserved names error
+    - EV023: save_to name invalid underscore prefix error
 - Behaviour
     - EB001: Dataset column alias
     - EB002: implicit entity_id=0, create_if=0, update_if=0 (create)
@@ -232,9 +235,29 @@ class TestEntitiesParsing(PyxformTestCase):
             error__contains=[ErrorCode.ENTITY_001.value.format(row=2)],
         )
 
+    def test_duplicate_entity_declaration__error(self):
+        """Should raise an error when more than one entity uses the same name."""
+        # EV005
+        md = """
+        | survey |
+        | | type | name | label | save_to |
+        | | text | q1   | Q1    | e1#e1p1 |
+        | | text | q2   | Q2    | e2#e2p1 |
+
+        | entities |
+        | | dataset | label |
+        | |  e1     | ${q1} |
+        | |  e1     | ${q2} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.NAMES_014.value.format(row=3)],
+        )
+
     def test_duplicate_entity_property__single_entity__error(self):
         """Should raise an error when multiple rows attempt to save_to the same entity property."""
-        # EV005
+        # EV006
         md = """
         | survey |
         | | type | name | label | save_to |
@@ -255,7 +278,7 @@ class TestEntitiesParsing(PyxformTestCase):
 
     def test_duplicate_entity_property__multiple_entity__error(self):
         """Should raise an error when multiple rows attempt to save_to the same entity property."""
-        # EV005
+        # EV006
         md = """
         | survey |
         | | type | name | label | save_to |
@@ -277,6 +300,107 @@ class TestEntitiesParsing(PyxformTestCase):
                 ErrorCode.ENTITY_002.value.format(row=5, saveto="e1p1", other_row=4)
             ],
         )
+
+    def test_container_row_has_save_to__begin_group__error(self):
+        """Should raise an error when a begin_group has a save_to value."""
+        # EV007
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    | e1p1    |
+        | | text        | q1   | Q1    |         |
+        | | end_group   |      |       |         |
+
+        | entities |
+        | | dataset | label |
+        | |  e1     | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_003.value.format(row=2)],
+        )
+
+    def test_container_row_has_save_to__end_group__error(self):
+        """Should raise an error when a end_group has a save_to value."""
+        # EV007
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q1   | Q1    |         |
+        | | end_group   |      |       | e1p1    |
+
+        | entities |
+        | | dataset | label |
+        | |  e1     | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_003.value.format(row=4)],
+        )
+
+    def test_container_row_has_save_to__begin_repeat__error(self):
+        """Should raise an error when a begin_repeat has a save_to value."""
+        # EV007
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | g1   | G1    | e1p1    |
+        | | text         | q1   | Q1    |         |
+        | | end_repeat   |      |       |         |
+
+        | entities |
+        | | dataset | label |
+        | |  e1     | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_003.value.format(row=2)],
+        )
+
+    def test_container_row_has_save_to__end_repeat__error(self):
+        """Should raise an error when a end_repeat has a save_to value."""
+        # EV007
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | g1   | G1    |         |
+        | | text         | q1   | Q1    |         |
+        | | end_repeat   |      |       | e1p1    |
+
+        | entities |
+        | | dataset | label |
+        | |  e1     | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_003.value.format(row=4)],
+        )
+
+    def test_container_as_entity_property__group__no_false_positive(self):
+        """Should not raise an error when a valid type contains a container type."""
+        # EV007
+        md = """
+        | survey |
+        | | type              | name | label | save_to |
+        | | select_one {case} | q1   | Q1    | e1p1    |
+
+        | choices |
+        | | list_name | name | label |
+        | | {case}    | n1   | N1    |
+
+        | entities |
+        | | dataset | label |
+        | |  e1     | E1    |
+        """
+        cases = ("group", "my_group1", "repeat", "my_repeat1")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(md=md.format(case=case), warnings_count=0)
 
     def test_dataset_name__xml_identifier__error(self):
         """Should raise an error if the dataset name is not a XML identifier."""
@@ -340,6 +464,78 @@ class TestEntitiesParsing(PyxformTestCase):
             error__contains=[
                 ErrorCode.NAMES_010.value.format(
                     sheet=co.ENTITIES, row=2, column=co.EntityColumns.DATASET.value
+                )
+            ],
+        )
+
+    def test_save_to_name__xml_identifier__error(self):
+        """Should raise an error if the save_to name is not a XML identifier."""
+        # ES005 EV021
+        md = """
+        | survey |
+        | | type | name | label | save_to |
+        | | text | q1   | Q1    | {case}  |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | E1    |
+        """
+        cases = ("$e1p1", "e1#", "e1#$e1p1")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[
+                        ErrorCode.NAMES_008.value.format(
+                            sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                        )
+                    ],
+                )
+
+    def test_save_to_name__reserved_name__error(self):
+        """Should raise an error if the save_to name is a reserved name."""
+        # ES005 EV022
+        md = """
+        | survey |
+        | | type | name | label | save_to |
+        | | text | q1   | Q1    | {case}  |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | E1    |
+        """
+        cases = ("name", "naMe", "label", "lAbEl")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[
+                        ErrorCode.NAMES_012.value.format(
+                            sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
+                        )
+                    ],
+                )
+
+    def test_save_to_name__reserved_prefix__error(self):
+        """Should raise an error if the save_to name has the reserved prefix."""
+        # ES005 EV023
+        md = """
+        | survey |
+        | | type | name | label | save_to |
+        | | text | q1   | Q1    | __e1p1  |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.NAMES_010.value.format(
+                    sheet=co.SURVEY, row=2, column=co.ENTITIES_SAVETO
                 )
             ],
         )
@@ -458,7 +654,6 @@ class TestEntitiesOutput(PyxformTestCase):
             xml__xpath_match=[
                 """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity"""
             ],
-            debug=True,
         )
 
     def test_create__container_survey__id_attribute__exists(self):

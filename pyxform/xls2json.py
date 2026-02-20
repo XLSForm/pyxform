@@ -743,9 +743,54 @@ def workbook_to_json(
             json_dict[settings_type] = str(row.get(constants.NAME))
             continue
 
+        # Try to parse question as begin control statement
+        # (i.e. begin loop/repeat/group):
+        begin_control_parse = RE_BEGIN_CONTROL.search(question_type)
         # Try to parse question as a end control statement
         # (i.e. end loop/repeat/group):
         end_control_parse = RE_END_CONTROL.search(question_type)
+
+        # Make sure the row has a valid name
+        question_name = None
+        if not end_control_parse:
+            if constants.NAME not in row:
+                if row[constants.TYPE] == "note":
+                    # autogenerate names for notes without them
+                    row[constants.NAME] = "generated_note_name_" + str(row_number)
+                elif not end_control_parse:
+                    raise PyXFormError(
+                        ROW_FORMAT_STRING % row_number
+                        + " Question or group with no name."
+                    )
+            question_name = str(row[constants.NAME])
+            if not is_xml_tag(question_name):
+                raise PyXFormError(
+                    ErrorCode.NAMES_008.value.format(
+                        sheet=constants.SURVEY, row=row_number, column=constants.NAME
+                    )
+                )
+            element_names.update((question_name,))
+
+            unique_names.validate_question_group_repeat_name(
+                row_number=row_number,
+                name=question_name,
+                seen_names=child_names,
+                seen_names_lower=child_names_lower,
+                warnings=warnings,
+            )
+
+        get_entity_references_by_question(
+            stack=stack,
+            row=row,
+            row_number=row_number,
+            question_name=question_name,
+            entity_declarations=entity_declarations,
+            entity_variable_references=entity_variable_references,
+            entity_references_by_question=entity_references_by_question,
+            is_container_begin=begin_control_parse is not None,
+            is_container_end=end_control_parse is not None,
+        )
+
         if end_control_parse:
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
@@ -762,45 +807,6 @@ def workbook_to_json(
                 table_list = None
                 continue
 
-        # Make sure the row has a valid name
-        if constants.NAME not in row:
-            if row[constants.TYPE] == "note":
-                # autogenerate names for notes without them
-                row[constants.NAME] = "generated_note_name_" + str(row_number)
-            else:
-                raise PyXFormError(
-                    ROW_FORMAT_STRING % row_number + " Question or group with no name."
-                )
-        question_name = str(row[constants.NAME])
-        if not is_xml_tag(question_name):
-            raise PyXFormError(
-                ErrorCode.NAMES_008.value.format(
-                    sheet=constants.SURVEY, row=row_number, column=constants.NAME
-                )
-            )
-        element_names.update((question_name,))
-
-        unique_names.validate_question_group_repeat_name(
-            row_number=row_number,
-            name=question_name,
-            seen_names=child_names,
-            seen_names_lower=child_names_lower,
-            warnings=warnings,
-        )
-
-        get_entity_references_by_question(
-            stack=stack,
-            row=row,
-            row_number=row_number,
-            question_name=question_name,
-            entity_declarations=entity_declarations,
-            entity_variable_references=entity_variable_references,
-            entity_references_by_question=entity_references_by_question,
-        )
-
-        # Try to parse question as begin control statement
-        # (i.e. begin loop/repeat/group):
-        begin_control_parse = RE_BEGIN_CONTROL.search(question_type)
         if begin_control_parse:
             parse_dict = begin_control_parse.groupdict()
             if parse_dict.get("begin") and "type" in parse_dict:
