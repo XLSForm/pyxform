@@ -13,7 +13,7 @@ def validate_question_group_repeat_name(
     """
     Warn about duplicate or problematic names on the survey sheet.
 
-    May append the name to `seen_names` and `neen_names_lower`. May append to `warnings`.
+    May append the name to `seen_names` and `seen_names_lower`. May append to `warnings`.
 
     :param name: Question or group name.
     :param seen_names: Names already processed in the sheet.
