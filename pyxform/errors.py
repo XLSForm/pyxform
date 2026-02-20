@@ -58,41 +58,19 @@ class ErrorCode(Enum):
     """
 
     ENTITY_001 = Detail(
-        name="Entities - invalid entity repeat reference",
+        name="Entities - save_to but no entities",
         msg=(
-            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-            "The 'repeat' column, if specified, must contain only a single reference variable "
-            "(like '${{q1}}'), and the reference variable must contain a valid name."
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "To save entity properties using the save_to column, add an entities sheet and "
+            "declare an entity."
         ),
     )
     ENTITY_002 = Detail(
-        name="Entities - invalid entity repeat: target not found",
+        name="Entities - duplicate save_to property",
         msg=(
-            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-            "The entity repeat target was not found in the 'survey' sheet."
-        ),
-    )
-    ENTITY_004 = Detail(
-        name="Entities - invalid entity repeat: target is in a repeat",
-        msg=(
-            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-            "The entity repeat target is inside a repeat."
-        ),
-    )
-    ENTITY_005 = Detail(
-        name="Entities - invalid entity repeat save_to: question in nested repeat",
-        msg=(
-            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-            "The entity property populated with 'save_to' must not be inside of a nested "
-            "repeat within the entity repeat."
-        ),
-    )
-    ENTITY_006 = Detail(
-        name="Entities - invalid entity repeat save_to: question not in entity repeat",
-        msg=(
-            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-            "The entity property populated with 'save_to' must be inside of the entity "
-            "repeat."
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "The save_to property '{saveto}' is already assigned by row '{other_row}'. "
+            "Either remove or change one of these duplicate save_to property names."
         ),
     )
     HEADER_001: Detail = Detail(
@@ -127,6 +105,15 @@ class ErrorCode(Enum):
             "[row : 1] On the 'choices' sheet, the '{column}' value is invalid. "
             "Column headers must not be empty and must not contain spaces. "
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    HEADER_005: Detail = Detail(
+        name="Headers - invalid entities header",
+        msg=(
+            "[row : 1] On the 'entities' sheet, one or more column names are invalid. "
+            "The following column(s) are not supported by this version of pyxform: {columns}. "
+            "Please either: check the spelling of the column names, remove the columns, "
+            "or update pyxform."
         ),
     )
     INTERNAL_001: Detail = Detail(
@@ -237,6 +224,13 @@ class ErrorCode(Enum):
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Names used here must not be 'name' or 'label' (case-insensitive)."
+        ),
+    )
+    NAMES_013: Detail = Detail(
+        name="Names - possible sheet name misspelling",
+        msg=(
+            "When looking for a sheet named '{sheet}', the following sheets with "
+            "similar names were found: {candidates}."
         ),
     )
     PYREF_001: Detail = Detail(

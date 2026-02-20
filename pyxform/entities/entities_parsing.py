@@ -20,7 +20,8 @@ class ContainerNode(NamedTuple):
 class ReferenceSource(NamedTuple):
     path: tuple[ContainerNode, ...]
     row: int
-    type: str
+    property_name: str | None = None
+    question_name: str | None = None
 
     def get_scope_boundary(self) -> tuple[ContainerNode, ...]:
         for i in range(len(self.path) - 1, -1, -1):
@@ -49,7 +50,13 @@ def get_entity_declaration(row: dict) -> dict[str, Any]:
 
     :param row: A row from the XLSForm entities sheet data.
     """
-    validate_entities_columns(row=row)
+    extra = {k: None for k in row if k not in EC.value_list()}
+    if 0 < len(extra):
+        msg = ErrorCode.HEADER_005.value.format(
+            columns=", ".join(f"'{k}'" for k in extra)
+        )
+        raise PyXFormError(msg)
+
     dataset_name = get_validated_dataset_name(row)
     entity_id = row.get(EC.ENTITY_ID, None)
     create_if = row.get(EC.CREATE_IF, None)
@@ -211,9 +218,7 @@ def validate_entity_saveto(
         return False
 
     if not entity_declarations:
-        raise PyXFormError(
-            "To save entity properties using the save_to column, you must add an entities sheet and declare an entity."
-        )
+        raise PyXFormError(ErrorCode.ENTITY_001.value.format(row=row_number))
 
     if const.GROUP in row.get(const.TYPE) or const.REPEAT in row.get(const.TYPE):
         raise PyXFormError(
@@ -233,7 +238,7 @@ def validate_entity_saveto(
                 sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
             )
         )
-    elif not is_xml_tag(save_to.split("#")[-1]):
+    elif not is_xml_tag(save_to.split("#", maxsplit=1)[-1]):
         raise PyXFormError(
             ErrorCode.NAMES_008.value.format(
                 sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
@@ -241,19 +246,6 @@ def validate_entity_saveto(
         )
 
     return True
-
-
-def validate_entities_columns(row: dict):
-    extra = {k: None for k in row if k not in EC.value_list()}
-    if 0 < len(extra):
-        fmt_extra = ", ".join(f"'{k}'" for k in extra)
-        msg = (
-            f"The entities sheet included the following unexpected column(s): {fmt_extra}. "
-            f"These columns are not supported by this version of pyxform. Please either: "
-            f"check the spelling of the column names, remove the columns, or update "
-            f"pyxform."
-        )
-        raise PyXFormError(msg)
 
 
 def get_entity_declarations(
@@ -331,19 +323,29 @@ def get_entity_references_by_question(
             entity_declarations=entity_declarations,
         )
         if "#" in saveto:
-            saveto = saveto.split("#")
-            dataset_name = saveto[0]
-            row[const.BIND][const.ENTITIES_SAVETO_NS] = saveto[-1]
+            dataset_name, saveto = saveto.split("#", maxsplit=1)
+            row[const.BIND][const.ENTITIES_SAVETO_NS] = saveto
         else:
             dataset_name = next(iter(entity_declarations.keys()))
+
+        entity_refs = entity_references_by_question.get(dataset_name)
+        if entity_refs:
+            for ref_source in entity_refs:
+                if ref_source.property_name == saveto:
+                    msg = ErrorCode.ENTITY_002.value.format(
+                        row=row_number, saveto=saveto, other_row=ref_source.row
+                    )
+                    raise PyXFormError(msg)
         entity_references_by_question[dataset_name].append(
-            ReferenceSource(path=container_path, row=row_number, type="saveto")
+            ReferenceSource(path=container_path, row=row_number, property_name=saveto)
         )
 
     if entity_variable_references and question_name in entity_variable_references:
         for dataset_name in entity_variable_references[question_name]:
             entity_references_by_question[dataset_name].append(
-                ReferenceSource(path=container_path, row=row_number, type="variable")
+                ReferenceSource(
+                    path=container_path, row=row_number, question_name=question_name
+                )
             )
 
 
@@ -358,6 +360,7 @@ def get_container_scopes(
     for dataset_name, entity_references in entity_references_by_question.items():
         scope_path = (ContainerNode(name=const.SURVEY, type=const.SURVEY),)
 
+        # Assumes entity_references is already in row order.
         for s in entity_references:
             deepest_scope = s.get_scope_boundary()
 
@@ -389,7 +392,7 @@ def get_allocation_requests(
         requested_ref = max(references, key=lambda s: len(s.path))
 
         # Prioritise saveto since they must be in the nearest container.
-        save_tos = tuple(s for s in references if s.type == "saveto")
+        save_tos = tuple(s for s in references if s.property_name is not None)
         if save_tos:
             lca_saveto = max(save_tos, key=lambda s: len(s.path))
             requested_ref = min((requested_ref, lca_saveto), key=lambda s: len(s.path))
@@ -399,7 +402,7 @@ def get_allocation_requests(
             ref_scope_stack = ref.get_scope_boundary()
 
             if (
-                ref.type == "saveto"
+                ref.property_name is not None
                 and ref_scope_stack
                 and scope_path
                 and ref_scope_stack != scope_path
