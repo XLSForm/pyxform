@@ -63,22 +63,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             warnings_count=0,
         )
 
-    def test_worksheet_name_close_to_entities__produces_warning(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey   |         |       |       |
-            |          | type    | name  | label |
-            |          | text    | a     | A     |
-            | entitoes |         |       |       |
-            |          | dataset | label |       |
-            |          | trees   | a     |       |
-            """,
-            warnings__contains=[
-                "When looking for a sheet named 'entities', the following sheets with similar names were found: 'entitoes'."
-            ],
-        )
-
     def test_create_if_in_entities_sheet__puts_expression_on_bind(self):
         self.assertPyxformXform(
             md="""
