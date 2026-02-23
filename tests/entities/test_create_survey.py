@@ -98,23 +98,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             ],
         )
 
-    def test_entity_label__required(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey   |         |       |       |
-            |          | type    | name  | label |
-            |          | text    | a     | A     |
-            | entities |         |       |       |
-            |          | dataset |       |       |
-            |          | trees   |       |       |
-            """,
-            errored=True,
-            error__contains=[
-                "The entities sheet is missing the label column which is required when creating entities."
-            ],
-        )
-
     def test_entities_namespace__omitted_if_no_entities_sheet(self):
         self.assertPyxformXform(
             name="data",

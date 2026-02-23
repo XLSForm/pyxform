@@ -91,6 +91,17 @@ class ErrorCode(Enum):
             "of existing entity list names."
         ),
     )
+    ENTITY_005 = Detail(
+        name="Entities - missing entity create label",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, an entity declaration is invalid. "
+            "The entity list name '{dataset}' does not have a label, but a label is "
+            "required when creating entities. Creation of entities is indicated by using "
+            "a 'create_if' expression, or by not using 'entity_id' expression. "
+            "Please either: add a label value for this entity declaration, or to update "
+            "entities instead provide an 'entity_id' (and optionally 'update_if') expression."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Headers - invalid missing header row",
         msg=(

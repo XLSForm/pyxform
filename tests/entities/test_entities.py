@@ -403,7 +403,7 @@ class TestEntitiesParsing(PyxformTestCase):
                 self.assertPyxformXform(md=md.format(case=case), warnings_count=0)
 
     def test_missing_entity_declaration__error(self):
-        """Should raise an error when there are entities defined but not the one referenced."""
+        """Should raise an error if there are entities defined but not the one referenced."""
         # EV008
         md = """
         | survey |
@@ -418,6 +418,42 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[ErrorCode.ENTITY_004.value.format(row=2, dataset="e2")],
+        )
+
+    def test_missing_entity_create_label__create_if_present__error(self):
+        """Should raise an error if an entity is in create mode but there is no label."""
+        # EV009
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | dataset |
+        | | e1      |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_005.value.format(row=2, dataset="e1")],
+        )
+
+    def test_missing_entity_create_label__entity_id_not_present__error(self):
+        """Should raise an error if an entity is in create mode but there is no label."""
+        # EV009
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | dataset | create_if   |
+        | | e1      | ${q1} != '' |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_005.value.format(row=2, dataset="e1")],
         )
 
     def test_dataset_name__xml_identifier__error(self):

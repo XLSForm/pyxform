@@ -30,7 +30,7 @@ class ReferenceSource(NamedTuple):
         return ()
 
 
-def get_entity_declaration(row: dict) -> dict[str, Any]:
+def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
     """
     Transform the entities sheet data into a spec for creating an EntityDeclaration.
 
@@ -49,6 +49,7 @@ def get_entity_declaration(row: dict) -> dict[str, Any]:
                                        (user's responsibility to ensure they're exclusive)
 
     :param row: A row from the XLSForm entities sheet data.
+    :param row_number: The sheet row number as a user would see it, counting from row 1.
     """
     extra = {k: None for k in row if k not in EC.value_list()}
     if 0 < len(extra):
@@ -77,8 +78,7 @@ def get_entity_declaration(row: dict) -> dict[str, Any]:
 
     if not entity_id and not label:
         raise PyXFormError(
-            "The entities sheet is missing the label column which is required when "
-            "creating entities."
+            ErrorCode.ENTITY_005.value.format(row=row_number, dataset=dataset_name)
         )
 
     entity = {
@@ -260,7 +260,7 @@ def get_entity_declarations(
     """
     entities = {}
     for row_number, row in enumerate(entities_sheet, start=2):
-        entity = get_entity_declaration(row=row)
+        entity = get_entity_declaration(row=row, row_number=row_number)
         dataset_name = next(
             c["value"] for c in entity["children"] if c.get("name", "") == "dataset"
         )
