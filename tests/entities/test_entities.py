@@ -22,12 +22,11 @@ Each entities test should reference one (or more) requirements from these lists.
     - EV005: Duplicate entity declarations error
     - EV006: Duplicate save_to error
     - EV007: Container row has save_to error
-    - EV008: Missing entity declaration error
+    - EV008: Unresolved entity save_to prefix error
     - EV009: Missing entity create label error
     - EV010: Missing entity upsert update_if error
     - EV011: Missing entity update/upsert entity_id error
     - EV012: Missing entity save_to prefix error
-    - EV013: Unresolved entity save_to prefix error
     - EV014: Unsolvable meta/entity topology error
     - EV015: Entity property scope breach error
     - EV016: Entity container scope conflict error
