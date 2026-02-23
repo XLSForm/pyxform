@@ -332,6 +332,11 @@ def get_entity_references_by_question(
         else:
             dataset_name = next(iter(entity_declarations.keys()))
 
+        if dataset_name not in entity_declarations:
+            raise PyXFormError(
+                ErrorCode.ENTITY_004.value.format(row=row_number, dataset=dataset_name)
+            )
+
         entity_references = entity_references_by_question[dataset_name]
 
         validate_entity_saveto(

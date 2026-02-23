@@ -402,6 +402,24 @@ class TestEntitiesParsing(PyxformTestCase):
             with self.subTest(msg=case):
                 self.assertPyxformXform(md=md.format(case=case), warnings_count=0)
 
+    def test_missing_entity_declaration__error(self):
+        """Should raise an error when there are entities defined but not the one referenced."""
+        # EV008
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    | e2#e1p1 |
+
+        | entities |
+        | | dataset | label |
+        | |  e1     | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_004.value.format(row=2, dataset="e2")],
+        )
+
     def test_dataset_name__xml_identifier__error(self):
         """Should raise an error if the dataset name is not a XML identifier."""
         # ES003 EV018

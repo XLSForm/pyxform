@@ -81,6 +81,16 @@ class ErrorCode(Enum):
             "Either remove or move the save_to value in this row."
         ),
     )
+    ENTITY_004 = Detail(
+        name="Entities - list_name not found",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "The entity list name '{dataset}' was not found on the entities sheet. "
+            "Please either: check the spelling of the list name in the save_to value, or "
+            "on the entities sheet add a row for this entity list, or check the spelling "
+            "of existing entity list names."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Headers - invalid missing header row",
         msg=(
