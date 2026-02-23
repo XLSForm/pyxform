@@ -328,6 +328,9 @@ def get_entity_references_by_question(
             dataset_name, saveto = saveto.split("#", maxsplit=1)
             row[const.BIND][const.ENTITIES_SAVETO_NS] = saveto
         else:
+            if len(entity_declarations) > 1:
+                raise PyXFormError(ErrorCode.ENTITY_008.value.format(row=row_number))
+
             dataset_name = next(iter(entity_declarations.keys()))
 
         if dataset_name not in entity_declarations:

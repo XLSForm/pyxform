@@ -528,6 +528,46 @@ class TestEntitiesParsing(PyxformTestCase):
             error__contains=[ErrorCode.ENTITY_007.value.format(row=2, dataset="e1")],
         )
 
+    def test_missing_save_to_prefix__bad_row_first__error(self):
+        """Should raise an error if 2 or more entities but a save_to is not prefixed."""
+        # EV012
+        md = """
+        | survey |
+        | | type | name | label | save_to |
+        | | text | q1   | Q1    | e1p1    |
+        | | text | q2   | Q2    | e2#e2p1 |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q1} |
+        | | e2      | ${q2} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_008.value.format(row=2)],
+        )
+
+    def test_missing_save_to_prefix__bad_row_second__error(self):
+        """Should raise an error if 2 or more entities but a save_to is not prefixed."""
+        # EV012
+        md = """
+        | survey |
+        | | type | name | label | save_to |
+        | | text | q1   | Q1    | e1#e1p1 |
+        | | text | q2   | Q2    | e2p1    |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q1} |
+        | | e2      | ${q2} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_008.value.format(row=3)],
+        )
+
     def test_dataset_name__xml_identifier__error(self):
         """Should raise an error if the dataset name is not a XML identifier."""
         # ES003 EV018

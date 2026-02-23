@@ -124,6 +124,18 @@ class ErrorCode(Enum):
             "create entities instead move the 'update_if' to 'create_if'."
         ),
     )
+    ENTITY_008 = Detail(
+        name="Entities - missing save_to prefix with multiple entities",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "When there is more than one entity declaration, 'save_to' names must be "
+            "prefixed with the entity 'list_name' that the property belongs to. "
+            "Please either: add the entity 'list_name' prefix separated with a '#' "
+            "e.g. my_list#my_save_to (where 'my_list' is the entity 'list_name', and "
+            "'my_save_to' is the 'save_to' property name), or remove all but one entity "
+            "declarations."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Headers - invalid missing header row",
         msg=(
