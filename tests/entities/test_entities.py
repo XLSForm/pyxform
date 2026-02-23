@@ -24,7 +24,7 @@ Each entities test should reference one (or more) requirements from these lists.
     - EV007: Container row has save_to error
     - EV008: Missing entity declaration error
     - EV009: Missing entity create label error
-    - EV010: Missing entity update condition error
+    - EV010: Missing entity upsert update_if error
     - EV011: Missing entity id expression error
     - EV012: Missing entity save_to prefix error
     - EV013: Unresolved entity save_to prefix error
@@ -454,6 +454,42 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[ErrorCode.ENTITY_005.value.format(row=2, dataset="e1")],
+        )
+
+    def test_missing_entity_upsert_update_if__error(self):
+        """Should raise an error if an entity is in upsert mode but there is no update_if."""
+        # EV010
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | dataset | create_if   | entity_id |
+        | | e1      | ${q1} != '' | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_006.value.format(row=2, dataset="e1")],
+        )
+
+    def test_missing_entity_upsert_update_if__with_label__error(self):
+        """Should raise an error if an entity is in upsert mode but there is no update_if."""
+        # EV010
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | dataset | label | create_if   | entity_id |
+        | | e1      | ${q1} | ${q1} != '' | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_006.value.format(row=2, dataset="e1")],
         )
 
     def test_dataset_name__xml_identifier__error(self):

@@ -35,24 +35,6 @@ class TestEntitiesUpdateSurvey(PyxformTestCase):
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
 
-    def test_entity_id_with_creation_condition_only__errors(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey   |         |            |           |
-            |          | type    | name       | label     |
-            |          | text    | id         | Tree id   |
-            |          | text    | a          | A         |
-            | entities |         |            |           |
-            |          | dataset | entity_id  | create_if |
-            |          | trees   | ${id}      | true()    |
-            """,
-            errored=True,
-            error__contains=[
-                "The entities sheet can't specify an entity creation condition and an entity_id without also including an update condition."
-            ],
-        )
-
     def test_update_condition_without_entity_id__errors(self):
         self.assertPyxformXform(
             name="data",

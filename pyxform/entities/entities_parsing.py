@@ -72,8 +72,7 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
 
     if entity_id and create_if and not update_if:
         raise PyXFormError(
-            "The entities sheet can't specify an entity creation condition and an "
-            "entity_id without also including an update condition."
+            ErrorCode.ENTITY_006.value.format(row=row_number, dataset=dataset_name)
         )
 
     if not entity_id and not label:
