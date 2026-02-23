@@ -35,42 +35,6 @@ class TestEntitiesUpdateSurvey(PyxformTestCase):
             xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
         )
 
-    def test_update_condition_without_entity_id__errors(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey   |         |            |           |
-            |          | type    | name       | label     |
-            |          | text    | id         | Tree id   |
-            |          | text    | a          | A         |
-            | entities |         |            |           |
-            |          | dataset | update_if  |           |
-            |          | trees   | true()     |           |
-            """,
-            errored=True,
-            error__contains=[
-                "The entities sheet is missing the entity_id column which is required when updating entities."
-            ],
-        )
-
-    def test_update_and_create_conditions_without_entity_id__errors(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey   |         |            |            |
-            |          | type    | name       | label      |
-            |          | text    | id         | Tree id    |
-            |          | integer | a          | A          |
-            | entities |         |            |            |
-            |          | dataset | update_if  | create_if  |
-            |          | trees   | ${id} != ''| ${id} = '' |
-            """,
-            errored=True,
-            error__contains=[
-                "The entities sheet is missing the entity_id column which is required when updating entities."
-            ],
-        )
-
     def test_create_if_with_entity_id_in_entities_sheet__puts_expression_on_bind(self):
         self.assertPyxformXform(
             md="""

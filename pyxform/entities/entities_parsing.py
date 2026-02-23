@@ -66,8 +66,7 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
 
     if not entity_id and update_if:
         raise PyXFormError(
-            "The entities sheet is missing the entity_id column which is required when "
-            "updating entities."
+            ErrorCode.ENTITY_007.value.format(row=row_number, dataset=dataset_name)
         )
 
     if entity_id and create_if and not update_if:

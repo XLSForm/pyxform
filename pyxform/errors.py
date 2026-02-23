@@ -95,8 +95,8 @@ class ErrorCode(Enum):
         name="Entities - missing entity create label",
         msg=(
             "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
-            "The entity list name '{dataset}' does not have a label, but a label is "
-            "required when creating entities. Creation of entities is indicated by using "
+            "The entity list name '{dataset}' does not have a label, but a 'label' is "
+            "required when creating entities. Creating entities is indicated by using "
             "a 'create_if' expression, or by not using 'entity_id' expression. "
             "Please either: add a 'label' for this entity declaration, or to update "
             "entities instead provide an 'entity_id' (and optionally 'update_if') expression."
@@ -111,6 +111,17 @@ class ErrorCode(Enum):
             "is indicated by using 'create_if' and 'entity_id' expressions. "
             "Please either: add an 'update_if' for this entity declaration, or to only "
             "create entities instead remove the 'entity_id' expression."
+        ),
+    )
+    ENTITY_007 = Detail(
+        name="Entities - missing entity update/upsert entity_id",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
+            "The entity list name '{dataset}' does not have an 'entity_id' expression, "
+            "but an 'entity_id' is required when updating entities. Updating entities "
+            "is indicated by using 'entity_id' and/or 'update_if' expressions. "
+            "Please either: add an 'entity_id' for this entity declaration, or to only "
+            "create entities instead move the 'update_if' to 'create_if'."
         ),
     )
     HEADER_001: Detail = Detail(
