@@ -148,12 +148,34 @@ class ErrorCode(Enum):
         ),
     )
     ENTITY_010 = Detail(
-        name="Entities - save_to scope breach",
+        name="Entities - reference scope conflict (conflicting save_tos)",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
             "The entity list name '{dataset}' is also referenced by a 'save_to' in "
             "the 'survey' sheet row {other_row}, which is in a different container scope. "
             "Please either: check the spelling of the list name in the 'save_to', or "
+            "copy either value into the desired container scope with a 'calculate' "
+            "question then use that 'calculate' for the 'save_to'."
+        ),
+    )
+    ENTITY_011 = Detail(
+        name="Entities - reference scope conflict (save_to conflicts with other ref)",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "The entity list name '{dataset}' has a reference in container scope '{other_scope}' "
+            "which is not compatible with this 'save_to' reference in scope '{scope}'. "
+            "Please either: check the spelling of the list name in the 'save_to', or "
+            "copy either value into the desired container scope with a 'calculate' "
+            "question then use that 'calculate' for the 'save_to'."
+        ),
+    )
+    ENTITY_012 = Detail(
+        name="Entities - reference scope conflict (variable conflicts with other ref)",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
+            "The entity list name '{dataset}' has a reference in container scope '{other_scope}' "
+            "which is not compatible with the variable reference to '{question}' in scope '{scope}'."
+            "Please either: check the spelling of the variable references, or "
             "copy either value into the desired container scope with a 'calculate' "
             "question then use that 'calculate' for the 'save_to'."
         ),
@@ -207,6 +229,14 @@ class ErrorCode(Enum):
             "Internal error: "
             "PyXForm expected processed trigger data as a tuple, but received a "
             "type '{type}' with value '{value}'."
+        ),
+    )
+    INTERNAL_002: Detail = Detail(
+        name="Internal error - reference source missing both property and question",
+        msg=(
+            "Internal error: "
+            "Both property_name and question_name were None for ReferenceSource with "
+            "path '{path}'."
         ),
     )
     LABEL_001: Detail = Detail(

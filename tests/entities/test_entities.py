@@ -29,7 +29,7 @@ Each entities test should reference one (or more) requirements from these lists.
     - EV012: Missing entity save_to prefix error
     - EV014: Unsolvable meta/entity topology error
     - EV015: save_to scope breach error
-    - EV016: Entity container scope conflict error
+    - EV016: Reference scope conflict error
     - EV017: Duplicate save_to delimiter error
     - EV018: Entity name invalid identifier error
     - EV019: Entity name invalid period character error
@@ -133,7 +133,8 @@ Each entities test should reference one (or more) requirements from these lists.
 """
 
 from pyxform import constants as co
-from pyxform.errors import ErrorCode
+from pyxform.entities.entities_parsing import ContainerNode, ReferenceSource
+from pyxform.errors import ErrorCode, PyXFormError
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
@@ -745,6 +746,254 @@ class TestEntitiesParsing(PyxformTestCase):
             ],
         )
 
+    def test_ref_scope_conflict__depth_1_sibling_repeat__saveto_only__error(self):
+        """Should raise an error if an entity save_to is in more than one scope lineage."""
+        # EV016
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    |         |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q2   | Q2    | e1#e1p1 |
+        | | end_repeat   | r1   |       |         |
+        | | begin_repeat | r2   | R2    |         |
+        | | text         | q3   | Q3    | e1#e1p2 |
+        | | end_repeat   | r2   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_011.value.format(
+                    row=7, dataset="e1", other_scope="/survey/r1", scope="/survey/r2"
+                ),
+            ],
+        )
+
+    def test_ref_scope_conflict__depth_1_sibling_repeat__var_then_saveto__error(self):
+        """Should raise an error if an entity has references in more than one scope lineage."""
+        # EV016
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    |         |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q2   | Q2    |         |
+        | | end_repeat   | r1   |       |         |
+        | | begin_repeat | r2   | R2    |         |
+        | | text         | q3   | Q3    | e1#e1p1 |
+        | | end_repeat   | r2   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q2} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_011.value.format(
+                    row=7, dataset="e1", other_scope="/survey/r1", scope="/survey/r2"
+                ),
+            ],
+        )
+
+    def test_ref_scope_conflict__depth_1_sibling_repeat__saveto_then_var__error(self):
+        """Should raise an error if an entity has references in more than one scope lineage."""
+        # EV016
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    |         |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q2   | Q2    | e1#e1p1 |
+        | | end_repeat   | r1   |       |         |
+        | | begin_repeat | r2   | R2    |         |
+        | | text         | q3   | Q3    |         |
+        | | end_repeat   | r2   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q3} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_012.value.format(
+                    row=2,
+                    dataset="e1",
+                    other_scope="/survey/r1",
+                    scope="/survey/r2",
+                    question="q3",
+                ),
+            ],
+        )
+
+    def test_ref_scope_conflict__depth_1_sibling_repeat__var_only__error(self):
+        """Should raise an error if an entity has references in more than one scope lineage."""
+        # EV016
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | text         | q1   | Q1    |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end_repeat   | r1   |       |
+        | | begin_repeat | r2   | R2    |
+        | | text         | q3   | Q3    |
+        | | end_repeat   | r2   |       |
+
+        | entities |
+        | | dataset | label                     |
+        | | e1      | concat(${q2}, " ", ${q3}) |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_012.value.format(
+                    row=2,
+                    dataset="e1",
+                    other_scope="/survey/r1",
+                    scope="/survey/r2",
+                    question="q3",
+                ),
+            ],
+        )
+
+    def test_ref_scope_conflict__depth_2_asymmetric_lineage__saveto_only__error(self):
+        """Should raise an error if an entity has references in more than one scope lineage."""
+        # EV016
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    |         |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q2   | Q2    | e1#e1p1 |
+        | | end_repeat   | r1   |       |         |
+        | | begin_repeat | r2   | R2    |         |
+        | | begin_repeat | r3   | R3    |         |
+        | | text         | q3   | Q3    | e1#e1p2 |
+        | | end_repeat   | r3   |       |         |
+        | | end_repeat   | r2   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q3} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_011.value.format(
+                    row=8, dataset="e1", other_scope="/survey/r1", scope="/survey/r2/r3"
+                ),
+            ],
+        )
+
+    def test_ref_scope_conflict__depth_2_asymmetric_lineage__var_then_saveto__error(self):
+        """Should raise an error if an entity has references in more than one scope lineage."""
+        # EV016
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    |         |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q2   | Q2    |         |
+        | | end_repeat   | r1   |       |         |
+        | | begin_repeat | r2   | R2    |         |
+        | | begin_repeat | r3   | R3    |         |
+        | | text         | q3   | Q3    | e1#e1p1 |
+        | | end_repeat   | r3   |       |         |
+        | | end_repeat   | r2   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q2} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_011.value.format(
+                    row=8, dataset="e1", other_scope="/survey/r1", scope="/survey/r2/r3"
+                ),
+            ],
+        )
+
+    def test_ref_scope_conflict__depth_2_asymmetric_lineage__saveto_then_var__error(self):
+        """Should raise an error if an entity has references in more than one scope lineage."""
+        # EV016
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    |         |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q2   | Q2    | e1#e1p1 |
+        | | end_repeat   | r1   |       |         |
+        | | begin_repeat | r2   | R2    |         |
+        | | begin_repeat | r3   | R3    |         |
+        | | text         | q3   | Q3    |         |
+        | | end_repeat   | r3   |       |         |
+        | | end_repeat   | r2   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q3} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_012.value.format(
+                    row=2,
+                    dataset="e1",
+                    other_scope="/survey/r1",
+                    scope="/survey/r2/r3",
+                    question="q3",
+                ),
+            ],
+        )
+
+    def test_ref_scope_conflict__depth_2_asymmetric_lineage__var_only__error(self):
+        """Should raise an error if an entity has references in more than one scope lineage."""
+        # EV016
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | text         | q1   | Q1    |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end_repeat   | r1   |       |
+        | | begin_repeat | r2   | R2    |
+        | | begin_repeat | r3   | R3    |
+        | | text         | q3   | Q3    |
+        | | end_repeat   | r3   |       |
+        | | end_repeat   | r2   |       |
+
+        | entities |
+        | | dataset | label                     |
+        | | e1      | concat(${q2}, " ", ${q3}) |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_012.value.format(
+                    row=2,
+                    dataset="e1",
+                    other_scope="/survey/r1",
+                    scope="/survey/r2/r3",
+                    question="q3",
+                ),
+            ],
+        )
+
     def test_dataset_name__xml_identifier__error(self):
         """Should raise an error if the dataset name is not a XML identifier."""
         # ES003 EV018
@@ -1071,4 +1320,17 @@ class TestEntitiesOutput(PyxformTestCase):
             xml__xpath_match=[
                 """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@dataset='e1']"""
             ],
+        )
+
+
+class TestReferenceSource(PyxformTestCase):
+    def test_missing_property_and_question_name__error(self):
+        """Should raise an error if both property_name and question_name are None."""
+        with self.assertRaises(PyXFormError) as err:
+            ReferenceSource(
+                path=(ContainerNode(name=co.SURVEY, type=co.SURVEY),),
+                row=1,
+            )
+        self.assertEqual(
+            err.exception.args[0], ErrorCode.INTERNAL_002.value.format(path="/survey")
         )

@@ -18,11 +18,18 @@ class ContainerNode(NamedTuple):
     type: str
 
 
-class ReferenceSource(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class ReferenceSource:
     path: tuple[ContainerNode, ...]
     row: int
     property_name: str | None = None
     question_name: str | None = None
+
+    def __post_init__(self):
+        if self.property_name is None and self.question_name is None:
+            raise PyXFormError(
+                ErrorCode.INTERNAL_002.value.format(path=self.path_as_str())
+            )
 
     def get_scope_boundary(self) -> tuple[ContainerNode, ...]:
         for i in range(len(self.path) - 1, -1, -1):
@@ -30,8 +37,11 @@ class ReferenceSource(NamedTuple):
                 return self.path[: i + 1]
         return ()
 
+    def path_as_str(self) -> str:
+        return f"/{'/'.join(p.name for p in self.path)}"
 
-@dataclass(frozen=True, slots=True)
+
+@dataclass(slots=True)
 class EntityReferences:
     dataset_name: str
     row_number: int = field(compare=False, hash=False)
@@ -394,14 +404,31 @@ def get_container_scopes(
 
         # Assumes entity_references is already in row order.
         for s in entity_references.references:
-            deepest_scope = s.get_scope_boundary()
+            current_scope = s.get_scope_boundary()
 
-            if len(deepest_scope) == len(scope_path) and deepest_scope != scope_path:
-                raise PyXFormError(
-                    f"Scope Breach for '{dataset_name}': subscriber trying to switch scope at same level"
-                )
-            elif len(deepest_scope) > len(scope_path):
-                scope_path = deepest_scope
+            if current_scope[: len(scope_path)] != scope_path:
+                scope_path_join = f"/{'/'.join(p.name for p in scope_path)}"
+                if s.property_name is not None:  # save_to
+                    raise PyXFormError(
+                        ErrorCode.ENTITY_011.value.format(
+                            row=s.row,
+                            dataset=dataset_name,
+                            other_scope=scope_path_join,
+                            scope=s.path_as_str(),
+                        )
+                    )
+                else:  # variable
+                    raise PyXFormError(
+                        ErrorCode.ENTITY_012.value.format(
+                            row=entity_references.row_number,
+                            dataset=dataset_name,
+                            other_scope=scope_path_join,
+                            scope=s.path_as_str(),
+                            question=s.question_name,
+                        )
+                    )
+            elif len(current_scope) > len(scope_path):
+                scope_path = current_scope
 
         scope_paths[scope_path][dataset_name] = entity_references
 
