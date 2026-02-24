@@ -429,20 +429,21 @@ def get_allocation_requests(
             lca_saveto = max(save_tos, key=lambda s: len(s.path))
             requested_ref = min((requested_ref, lca_saveto), key=lambda s: len(s.path))
 
-        # Check saveto entity_refs match the scope_path
+        # Check saveto entity_refs match the scope_path. Specific to save_to since
+        # variable references are allowed for ancestor scopes.
         for ref in refs.references:
             ref_scope_stack = ref.get_scope_boundary()
 
             if (
-                ref.property_name is not None
+                ref.property_name is not None  # indicates a save_to
                 and ref_scope_stack
                 and scope_path
                 and ref_scope_stack != scope_path
             ):
                 raise PyXFormError(
-                    f"Scope Breach for '{dataset_name}': saveto references "
-                    f"(rows {requested_ref.row}, {ref.row}) "
-                    "exist across inconsistent repeat boundaries."
+                    ErrorCode.ENTITY_010.value.format(
+                        row=requested_ref.row, dataset=dataset_name, other_row=ref.row
+                    )
                 )
 
         allocation_requests.append(

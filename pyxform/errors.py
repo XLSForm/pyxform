@@ -147,6 +147,17 @@ class ErrorCode(Enum):
             "from the 'entities' sheet with variable references (such as in the 'label')."
         ),
     )
+    ENTITY_010 = Detail(
+        name="Entities - save_to scope breach",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "The entity list name '{dataset}' is also referenced by a 'save_to' in "
+            "the 'survey' sheet row {other_row}, which is in a different container scope. "
+            "Please either: check the spelling of the list name in the 'save_to', or "
+            "copy either value into the desired container scope with a 'calculate' "
+            "question then use that 'calculate' for the 'save_to'."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Headers - invalid missing header row",
         msg=(

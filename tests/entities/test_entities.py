@@ -28,7 +28,7 @@ Each entities test should reference one (or more) requirements from these lists.
     - EV011: Missing entity update/upsert entity_id error
     - EV012: Missing entity save_to prefix error
     - EV014: Unsolvable meta/entity topology error
-    - EV015: Entity property scope breach error
+    - EV015: save_to scope breach error
     - EV016: Entity container scope conflict error
     - EV017: Duplicate save_to delimiter error
     - EV018: Entity name invalid identifier error
@@ -658,6 +658,90 @@ class TestEntitiesParsing(PyxformTestCase):
             errored=True,
             error__contains=[
                 ErrorCode.ENTITY_009.value.format(row=4, scope="/survey/r1"),
+            ],
+        )
+
+    def test_save_to_scope_breach__depth_1_repeat__error(self):
+        """Should raise an error if an entity save_to is in more than one scope."""
+        # EV015
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    | e1#e1p1 |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q2   | Q2    | e1#e1p2 |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_010.value.format(row=4, dataset="e1", other_row=2),
+            ],
+        )
+
+    def test_save_to_scope_breach__depth_1_repeat__ok(self):
+        """Should not raise an error if different entity save_tos are in different scopes."""
+        # EV015
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    | e1#e1p1 |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q2   | Q2    | e2#e1p1 |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | E1    |
+        | | e2      | E2    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_1_group__ok(self):
+        """Should not raise an error if the entity save_tos are in the same scope."""
+        # EV015
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | text        | q1   | Q1    | e1#e1p1 |
+        | | begin_group | g1   | g1    |         |
+        | | text        | q2   | Q2    | e1#e1p2 |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | E1    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_2_repeat__error(self):
+        """Should raise an error if an entity save_to is in more than one nested scope."""
+        # EV015
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    |         |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q2   | Q2    | e1#e1p1 |
+        | | begin_repeat | r2   | R2    |         |
+        | | text         | q3   | Q3    | e1#e1p2 |
+        | | end_repeat   | r2   |       |         |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_010.value.format(row=6, dataset="e1", other_row=4),
             ],
         )
 
