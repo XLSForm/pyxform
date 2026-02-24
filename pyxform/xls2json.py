@@ -5,7 +5,7 @@ A Python script to convert excel files into JSON.
 import os
 import re
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from typing import IO, Any
 
 from pyxform import aliases, constants
@@ -490,7 +490,7 @@ def workbook_to_json(
     element_names = Counter()
     trigger_references: list[tuple[str, int]] = []
     repeat_names = set()
-    entity_references_by_question = defaultdict(list)
+    entity_references_by_question = {}
 
     # row by row, validate questions, throwing errors and adding warnings where needed.
     for row_number, row in enumerate(survey_sheet.data, start=2):

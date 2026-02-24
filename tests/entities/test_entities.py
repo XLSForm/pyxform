@@ -567,6 +567,100 @@ class TestEntitiesParsing(PyxformTestCase):
             error__contains=[ErrorCode.ENTITY_008.value.format(row=3)],
         )
 
+    def test_unsolvable_meta_topology__depth_0__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q1} |
+        | | e2      | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_1_group__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type        | name | label |
+        | | begin_group | g1   | G1    |
+        | | text        | q1   | Q1    |
+        | | end_group   | g1   |       |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q1} |
+        | | e2      | ${q1} |
+        | | e3      | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_1_repeat__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q1} |
+        | | e2      | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_2_group__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | begin_group  | g1   | G1    |
+        | | text         | q1   | Q1    |
+        | | end_group    | g1   |       |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | ${q1} |
+        | | e2      | ${q1} |
+        | | e3      | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey/r1"),
+            ],
+        )
+
     def test_dataset_name__xml_identifier__error(self):
         """Should raise an error if the dataset name is not a XML identifier."""
         # ES003 EV018

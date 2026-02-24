@@ -1,5 +1,6 @@
 from collections import defaultdict
 from collections.abc import Iterable
+from dataclasses import dataclass, field
 from typing import Any, NamedTuple
 
 from pyxform import constants as const
@@ -28,6 +29,15 @@ class ReferenceSource(NamedTuple):
             if self.path[i].type in {const.REPEAT, const.SURVEY}:
                 return self.path[: i + 1]
         return ()
+
+
+@dataclass(frozen=True, slots=True)
+class EntityReferences:
+    dataset_name: str
+    row_number: int = field(compare=False, hash=False)
+    references: list[ReferenceSource] = field(
+        compare=False, hash=False, default_factory=list
+    )
 
 
 def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
@@ -89,6 +99,7 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
                 "value": dataset_name,
             },
         ],
+        "__row_number": row_number,
     }
 
     id_attr = {
@@ -211,7 +222,7 @@ def validate_entity_saveto(
     row_number: int,
     is_container_begin: bool,
     is_container_end: bool,
-    entity_references: list[ReferenceSource],
+    entity_references: EntityReferences,
 ) -> None:
     if not saveto:
         raise PyXFormError(
@@ -241,7 +252,7 @@ def validate_entity_saveto(
             )
         )
     elif entity_references:
-        for ref_source in entity_references:
+        for ref_source in entity_references.references:
             if ref_source.property_name == saveto:
                 raise PyXFormError(
                     ErrorCode.ENTITY_002.value.format(
@@ -294,7 +305,7 @@ def get_entity_references_by_question(
     question_name: str,
     entity_declarations: dict[str, dict[str, Any]],
     entity_variable_references: dict[str, dict[str, list[str]]],
-    entity_references_by_question: defaultdict[str, list[ReferenceSource]],
+    entity_references_by_question: dict[str, EntityReferences],
     is_container_begin: bool,
     is_container_end: bool,
 ) -> None:
@@ -338,23 +349,32 @@ def get_entity_references_by_question(
                 ErrorCode.ENTITY_004.value.format(row=row_number, dataset=dataset_name)
             )
 
-        entity_references = entity_references_by_question[dataset_name]
+        if dataset_name not in entity_references_by_question:
+            entity_references_by_question[dataset_name] = EntityReferences(
+                dataset_name=dataset_name,
+                row_number=entity_declarations[dataset_name]["__row_number"],
+            )
 
         validate_entity_saveto(
             saveto=saveto,
             row_number=row_number,
             is_container_begin=is_container_begin,
             is_container_end=is_container_end,
-            entity_references=entity_references,
+            entity_references=entity_references_by_question[dataset_name],
         )
 
-        entity_references.append(
+        entity_references_by_question[dataset_name].references.append(
             ReferenceSource(path=container_path, row=row_number, property_name=saveto)
         )
 
     if entity_variable_references and question_name in entity_variable_references:
         for dataset_name in entity_variable_references[question_name]:
-            entity_references_by_question[dataset_name].append(
+            if dataset_name not in entity_references_by_question:
+                entity_references_by_question[dataset_name] = EntityReferences(
+                    dataset_name=dataset_name,
+                    row_number=entity_declarations[dataset_name]["__row_number"],
+                )
+            entity_references_by_question[dataset_name].references.append(
                 ReferenceSource(
                     path=container_path, row=row_number, question_name=question_name
                 )
@@ -362,8 +382,8 @@ def get_entity_references_by_question(
 
 
 def get_container_scopes(
-    entity_references_by_question: defaultdict[str, list[ReferenceSource]],
-) -> defaultdict[tuple[ContainerNode, ...], dict[str, list[ReferenceSource]]]:
+    entity_references_by_question: dict[str, EntityReferences],
+) -> defaultdict[tuple[ContainerNode, ...], dict[str, EntityReferences]]:
     """
     Find/validate the deepest scope among the entity_references.
     """
@@ -373,7 +393,7 @@ def get_container_scopes(
         scope_path = (ContainerNode(name=const.SURVEY, type=const.SURVEY),)
 
         # Assumes entity_references is already in row order.
-        for s in entity_references:
+        for s in entity_references.references:
             deepest_scope = s.get_scope_boundary()
 
             if len(deepest_scope) == len(scope_path) and deepest_scope != scope_path:
@@ -390,27 +410,27 @@ def get_container_scopes(
 
 def get_allocation_requests(
     scope_path: tuple[ContainerNode, ...],
-    entity_references: dict[str, list[ReferenceSource]],
+    entity_references: dict[str, EntityReferences],
 ):
     """
     Assign/validate the preferred path for each entity declaration.
     """
     allocation_requests = []
-    for dataset_name, references in entity_references.items():
-        if not references:
+    for dataset_name, refs in entity_references.items():
+        if not refs.references:
             continue
 
         # Determine the repeat lineage of the first subscriber to use as a baseline
-        requested_ref = max(references, key=lambda s: len(s.path))
+        requested_ref = max(refs.references, key=lambda s: len(s.path))
 
         # Prioritise saveto since they must be in the nearest container.
-        save_tos = tuple(s for s in references if s.property_name is not None)
+        save_tos = tuple(s for s in refs.references if s.property_name is not None)
         if save_tos:
             lca_saveto = max(save_tos, key=lambda s: len(s.path))
             requested_ref = min((requested_ref, lca_saveto), key=lambda s: len(s.path))
 
         # Check saveto entity_refs match the scope_path
-        for ref in references:
+        for ref in refs.references:
             ref_scope_stack = ref.get_scope_boundary()
 
             if (
@@ -430,7 +450,7 @@ def get_allocation_requests(
                 "dataset_name": dataset_name,
                 "requested_path": requested_ref.path,
                 "minimum_depth": len(scope_path),
-                "rows": [s.row for s in references],
+                "entity_references": refs,
                 "has_savetos": int(bool(save_tos)),
             }
         )
@@ -464,17 +484,18 @@ def allocate_entities_to_paths(
             current_path = current_path[:-1]
 
         if not placed:
-            rows = ", ".join(str(r) for r in item["rows"])
             raise PyXFormError(
-                f"Conflict in scope '{scope_path[-1]}': Referent '{item['dataset_name']}' "
-                f"(rows {rows}) has no available allowed container slots."
+                ErrorCode.ENTITY_009.value.format(
+                    row=item["entity_references"].row_number,
+                    scope=f"/{'/'.join(p.name for p in scope_path)}",
+                )
             )
 
     return allocations
 
 
 def allocate_entities_to_containers(
-    entity_references_by_question: defaultdict[str, list[ReferenceSource]],
+    entity_references_by_question: dict[str, EntityReferences],
 ) -> dict[tuple[ContainerNode, ...], str]:
     """
     Get the paths into which the entities will be placed.
@@ -483,9 +504,11 @@ def allocate_entities_to_containers(
     scope_paths = get_container_scopes(
         entity_references_by_question=entity_references_by_question
     )
+    # `entity_references_by_question` is the full list, `entity_references` are subsets.
     for scope_path, entity_references in scope_paths.items():
         requests = get_allocation_requests(
-            scope_path=scope_path, entity_references=entity_references
+            scope_path=scope_path,
+            entity_references=entity_references,
         )
         allocations = allocate_entities_to_paths(scope_path=scope_path, requests=requests)
         all_allocations.update(allocations)
@@ -572,7 +595,7 @@ def get_search_prefixes(
 
 def apply_entities_declarations(
     entity_declarations: dict[str, dict[str, Any]],
-    entity_references_by_question: defaultdict[str, list[ReferenceSource]],
+    entity_references_by_question: dict[str, EntityReferences],
     json_dict: dict[str, Any],
     meta_children: list[dict[str, Any]],
 ) -> None:
@@ -587,7 +610,7 @@ def apply_entities_declarations(
     :param entity_declarations: Entity definition data to be passed to EntityDeclaration,
       structured as `{dataset_name: entity_declaration}`.
     :param entity_references_by_question: For each entity, details of where and how they
-      are referred to, structured as `{dataset_name: list[ReferenceSource]}`.
+      are referred to, structured as `{dataset_name: EntityReferences}`.
     :param json_dict: The output dict structure to be emitted from `workbook_to_json`.
     :param meta_children: Details of the nodes to be added to the (parent) meta block.
     :return: The json_dict is modified in-place
