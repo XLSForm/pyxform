@@ -345,9 +345,12 @@ def get_entity_references_by_question(
         if not entity_declarations:
             raise PyXFormError(ErrorCode.ENTITY_001.value.format(row=row_number))
 
-        if "#" in saveto:
+        delimiter_count = saveto.count("#")
+        if delimiter_count == 1:
             dataset_name, saveto = saveto.split("#", maxsplit=1)
             row[const.BIND][const.ENTITIES_SAVETO_NS] = saveto
+        elif delimiter_count > 1:
+            raise PyXFormError(ErrorCode.ENTITY_013.value.format(row=row_number))
         else:
             if len(entity_declarations) > 1:
                 raise PyXFormError(ErrorCode.ENTITY_008.value.format(row=row_number))

@@ -180,6 +180,14 @@ class ErrorCode(Enum):
             "question then use that 'calculate' for the 'save_to'."
         ),
     )
+    ENTITY_013 = Detail(
+        name="Entities - save_to multiple delimiters",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "A 'save_to' value must have at most one '#' delimiter character. "
+            "Please check the spelling of this 'save_to' value."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Headers - invalid missing header row",
         msg=(

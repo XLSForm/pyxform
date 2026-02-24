@@ -994,6 +994,27 @@ class TestEntitiesParsing(PyxformTestCase):
             ],
         )
 
+    def test_duplicate_save_to_delimiter__error(self):
+        """Should raise an error if a save_to has mutliple delimiters."""
+        # EV017
+        md = """
+        | survey |
+        | | type | name | label | save_to |
+        | | text | q1   | Q1    | {case}  |
+
+        | entities |
+        | | dataset | label |
+        | | e1      | E1    |
+        """
+        cases = ("e1##e1p1", "e1#e1#p1", "##e1p1")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[ErrorCode.ENTITY_013.value.format(row=2)],
+                )
+
     def test_dataset_name__xml_identifier__error(self):
         """Should raise an error if the dataset name is not a XML identifier."""
         # ES003 EV018
