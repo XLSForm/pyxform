@@ -49,7 +49,11 @@ Each entities test should reference one (or more) requirements from these lists.
     - EB009: implicit entity_id=1, create_if=1, update_if=1 (upsert)
     - EB010: Meta/entity allocations are stable/deterministic
     - EB011: Entities sheet row order used for allocation tie break
-    - EB012: Omit setvalue when entity_id present (pyxform/#819)
+    - EB012: Do not emit setvalue when entity_id present (pyxform/#819)
+    - EB013: Emit setvalue for default id
+    - EB014: Always emit the instanceID in a survey-level meta block only
+    - EB015: Variable reference tokens in the entities sheet are resolved
+    - EB016: Variable references for repeats are resolved relative to the entity
 
 
 ## Topological constraint solver regression suite
@@ -1357,6 +1361,127 @@ class TestEntitiesOutput(PyxformTestCase):
             md=md,
             xml__xpath_match=[
                 """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@dataset='e1']"""
+            ],
+        )
+
+    def test_implicit_create_mode__survey(self):
+        """Should find that when no entity_id is provided, the entity is in create mode."""
+        # ES003 EB002 EB013 EB014
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", create=True, label=True),
+                xpe.model_bind_meta_label("E1"),
+                xpe.model_bind_meta_id(),
+                xpe.model_setvalue_meta_id(),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 1),
+            ],
+        )
+
+    def test_implicit_create_mode__repeat(self):
+        """Should find that when no entity_id is provided, the entity is in create mode."""
+        # ES003 EB002 EB013 EB014 EB015 EB016
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, create=True, label=True
+                ),
+                xpe.model_bind_meta_label(" ../../../q1 ", "/r1"),
+                xpe.model_bind_meta_id(meta_path="/r1"),
+                xpe.model_setvalue_meta_id("/r1"),
+                xpe.body_repeat_setvalue_meta_id(
+                    "/x:group/x:repeat[@nodeset='/test_name/r1']", "/r1"
+                ),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 2),
+            ],
+        )
+
+    def test_implicit_create_mode__create_if__survey(self):
+        """Should find that when no entity_id is provided, the entity is in create mode."""
+        # ES003 EB004 EB013 EB014 EB015
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | label | create_if  |
+        | | e1        | E1    | ${q1} = '' |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", create=True, label=True),
+                xpe.model_bind_meta_label("E1"),
+                xpe.model_bind_meta_id(),
+                xpe.model_setvalue_meta_id(),
+                xpe.model_bind_meta_create(" /test_name/q1  = ''"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 1),
+            ],
+        )
+
+
+    def test_implicit_create_mode__create_if__repeat(self):
+        """Should find that when no entity_id is provided, the entity is in create mode."""
+        # ES003 EB004 EB013 EB014 EB015 EB016
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | list_name | label | create_if  |
+        | | e1        | ${q1} | ${q1} = '' |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, create=True, label=True
+                ),
+                xpe.model_bind_meta_label(" ../../../q1 ", "/r1"),
+                xpe.model_bind_meta_id(meta_path="/r1"),
+                xpe.model_setvalue_meta_id("/r1"),
+                xpe.body_repeat_setvalue_meta_id(
+                    "/x:group/x:repeat[@nodeset='/test_name/r1']", "/r1"
+                ),
+                xpe.model_bind_meta_create(" ../../../q1  = ''", "/r1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 2),
             ],
         )
 

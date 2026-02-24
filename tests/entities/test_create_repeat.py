@@ -55,61 +55,6 @@ class TestEntitiesCreateRepeat(PyxformTestCase):
             ],
         )
 
-    def test_minimal_fields__ok(self):
-        """Should find that omitting all optional entity fields is OK."""
-        md = """
-        | survey |
-        | | type         | name  | label |
-        | | begin_repeat | r1    | R1    |
-        | | text         | q1    | Q1    |
-        | | end_repeat   |       |       |
-
-        | entities |
-        | | list_name | label |
-        | | e1        | ${q1} |
-        """
-        self.assertPyxformXform(
-            md=md,
-            warnings_count=0,
-            xml__xpath_match=[
-                xpe.model_setvalue_meta_id("/r1"),
-                xpe.body_repeat_setvalue_meta_id(
-                    "/x:group/x:repeat[@nodeset='/test_name/r1']", "/r1"
-                ),
-            ],
-            xml__xpath_count=[
-                ("/h:html//x:setvalue", 2),
-            ],
-        )
-
-    def test_create_if__ok(self):
-        """Should find that the create_if expression targets the entity repeat."""
-        md = """
-        | survey |
-        | | type         | name  | label | save_to |
-        | | begin_repeat | r1    | R1    |         |
-        | | text         | q1    | Q1    | q1e     |
-        | | end_repeat   |       |       |         |
-
-        | entities |
-        | | list_name | label | create_if  |
-        | | e1        | ${q1} | ${q1} = '' |
-        """
-        self.assertPyxformXform(
-            md=md,
-            warnings_count=0,
-            xml__xpath_match=[
-                xpe.model_bind_meta_create(" ../../../q1  = ''", "/r1"),
-                xpe.model_setvalue_meta_id("/r1"),
-                xpe.body_repeat_setvalue_meta_id(
-                    "/x:group/x:repeat[@nodeset='/test_name/r1']", "/r1"
-                ),
-            ],
-            xml__xpath_count=[
-                ("/h:html//x:setvalue", 2),
-            ],
-        )
-
     def test_other_controls_before__ok(self):
         """Should find that having other control types before the entity repeat is OK."""
         md = """

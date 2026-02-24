@@ -7,43 +7,6 @@ from tests.xpath_helpers.entities import xpe
 class TestEntitiesCreateSurvey(PyxformTestCase):
     """Test entity create specs for entities declared at the survey level"""
 
-    def test_basic_entity_creation_building_blocks(self):
-        self.assertPyxformXform(
-            md="""
-            | survey   |         |       |       |
-            |          | type    | name  | label |
-            |          | text    | a     | A     |
-            | entities |         |       |       |
-            |          | dataset | label |       |
-            |          | trees   | a     |       |
-            """,
-            xml__xpath_match=[
-                xpe.model_entities_version(co.EntityVersion.v2024_1_0.value),
-                # defaults to always creating
-                xpe.model_instance_meta("trees", create=True, label=True),
-                xpe.model_bind_meta_id(),
-                xpe.model_setvalue_meta_id(),
-                xpe.model_bind_meta_label("a"),
-            ],
-            xml__xpath_count=[
-                ("/h:html//x:setvalue", 1),
-            ],
-            xml__contains=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
-        )
-
-    def test_create_repeat__minimal_fields__ok(self):
-        """Should find that omitting all optional entity fields is OK."""
-        md = """
-        | survey |
-        | | type         | name  | label |
-        | | text         | q1    | Q1    |
-
-        | entities |
-        | | list_name | label |
-        | | e1        | ${q1} |
-        """
-        self.assertPyxformXform(md=md, warnings_count=0)
-
     def test_multiple_dataset_rows_in_entities_sheet__ok(self):
         self.assertPyxformXform(
             md="""
@@ -60,42 +23,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             | | e2      | ${q1} |
             """,
             warnings_count=0,
-        )
-
-    def test_create_if_in_entities_sheet__puts_expression_on_bind(self):
-        self.assertPyxformXform(
-            md="""
-            | survey   |         |                      |       |
-            |          | type    | name                 | label |
-            |          | text    | a                    | A     |
-            | entities |         |                      |       |
-            |          | dataset | create_if            | label |
-            |          | trees   | string-length(a) > 3 | a     |
-            """,
-            xml__xpath_match=[
-                xpe.model_bind_meta_create("string-length(a) > 3"),
-                xpe.model_instance_meta("trees", create=True, label=True),
-            ],
-        )
-
-    def test_label_and_create_if_in_entities_sheet__expand_node_selectors_to_xpath(self):
-        self.assertPyxformXform(
-            md="""
-            | survey   |         |       |                         |
-            |          | type    | name  | label                   |
-            |          | text    | a     | A                       |
-            | entities |         |       |                         |
-            |          | dataset | label | create_if               |
-            |          | trees   | ${a}  | string-length(${a}) > 3 |
-            """,
-            xml__xpath_match=[
-                xpe.model_bind_meta_create("string-length( /test_name/a ) > 3"),
-                xpe.model_bind_meta_label(" /test_name/a "),
-                xpe.model_setvalue_meta_id(),
-            ],
-            xml__xpath_count=[
-                ("/h:html//x:setvalue", 1),
-            ],
         )
 
     def test_entities_namespace__omitted_if_no_entities_sheet(self):
@@ -148,19 +75,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             |          | trees       | ${size}|       |         |
             """,
             warnings_count=0,
-        )
-
-    def test_list_name_alias_to_dataset(self):
-        self.assertPyxformXform(
-            md="""
-            | survey   |           |       |       |
-            |          | type      | name  | label |
-            |          | text      | a     | A     |
-            | entities |           |       |       |
-            |          | list_name | label |       |
-            |          | trees     | a     |       |
-            """,
-            xml__xpath_match=[xpe.model_instance_meta("trees", create=True, label=True)],
         )
 
     def test_entities_columns__all_expected(self):
