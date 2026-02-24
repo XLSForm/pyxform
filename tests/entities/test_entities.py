@@ -150,8 +150,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entitoes |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -172,8 +172,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label | what |
-        | | e1      | E1    | !    |
+        | | list_name | label | what |
+        | | e1        | E1    | !    |
         """
         self.assertPyxformXform(
             md=md,
@@ -190,8 +190,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label | what | why |
-        | | e1      | E1    | !    | ?   |
+        | | list_name | label | what | why |
+        | | e1        | E1    | !    | ?   |
         """
         self.assertPyxformXform(
             md=md,
@@ -208,8 +208,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q2} |
+        | | list_name | label |
+        | | e1        | ${q2} |
         """
         self.assertPyxformXform(
             md=md,
@@ -245,9 +245,9 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q2   | Q2    | e2#e2p1 |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
-        | | e1      | ${q2} |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        | | e1        | ${q2} |
         """
         self.assertPyxformXform(
             md=md,
@@ -265,8 +265,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q2   | Q2    | e1p1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
+        | | list_name | label |
+        | | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -288,9 +288,9 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q4   | Q4    | e2#e1p1 |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
-        | | e2      | ${q3} |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        | | e2        | ${q3} |
         """
         self.assertPyxformXform(
             md=md,
@@ -312,8 +312,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_group   |      |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
+        | | list_name | label |
+        | | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -332,8 +332,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_group   |      |       | e1p1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
+        | | list_name | label |
+        | | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -352,8 +352,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   |      |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
+        | | list_name | label |
+        | | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -372,8 +372,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   |      |       | e1p1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
+        | | list_name | label |
+        | | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -394,8 +394,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | {case}    | n1   | N1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         cases = ("group", "my_group1", "repeat", "my_repeat1")
         for case in cases:
@@ -411,8 +411,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    | e2#e1p1 |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
+        | | list_name | label |
+        | | e1        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -429,8 +429,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset |
-        | | e1      |
+        | | list_name |
+        | | e1        |
         """
         self.assertPyxformXform(
             md=md,
@@ -447,8 +447,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | create_if   |
-        | | e1      | ${q1} != '' |
+        | | list_name | create_if   |
+        | | e1        | ${q1} != '' |
         """
         self.assertPyxformXform(
             md=md,
@@ -465,8 +465,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | create_if   | entity_id |
-        | | e1      | ${q1} != '' | ${q1}     |
+        | | list_name | create_if   | entity_id |
+        | | e1        | ${q1} != '' | ${q1}     |
         """
         self.assertPyxformXform(
             md=md,
@@ -483,8 +483,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label | create_if   | entity_id |
-        | | e1      | ${q1} | ${q1} != '' | ${q1}     |
+        | | list_name | label | create_if   | entity_id |
+        | | e1        | ${q1} | ${q1} != '' | ${q1}     |
         """
         self.assertPyxformXform(
             md=md,
@@ -501,8 +501,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | update_if   |
-        | | e1      | ${q1} != '' |
+        | | list_name | update_if   |
+        | | e1        | ${q1} != '' |
         """
         self.assertPyxformXform(
             md=md,
@@ -519,8 +519,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | create_if   | update_if   |
-        | | e1      | ${q1} != '' | ${q1} != '' |
+        | | list_name | create_if   | update_if   |
+        | | e1        | ${q1} != '' | ${q1} != '' |
         """
         self.assertPyxformXform(
             md=md,
@@ -538,9 +538,9 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q2   | Q2    | e2#e2p1 |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
-        | | e2      | ${q2} |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        | | e2        | ${q2} |
         """
         self.assertPyxformXform(
             md=md,
@@ -558,9 +558,9 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q2   | Q2    | e2p1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
-        | | e2      | ${q2} |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        | | e2        | ${q2} |
         """
         self.assertPyxformXform(
             md=md,
@@ -577,9 +577,9 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
-        | | e2      | ${q1} |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        | | e2        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -600,10 +600,10 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_group   | g1   |       |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
-        | | e2      | ${q1} |
-        | | e3      | ${q1} |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        | | e2        | ${q1} |
+        | | e3        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -624,9 +624,9 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r1   |       |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
-        | | e2      | ${q1} |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        | | e2        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -649,10 +649,10 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r1   |       |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q1} |
-        | | e2      | ${q1} |
-        | | e3      | ${q1} |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        | | e2        | ${q1} |
+        | | e3        | ${q1} |
         """
         self.assertPyxformXform(
             md=md,
@@ -674,8 +674,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r1   |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -697,9 +697,9 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r1   |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
-        | | e2      | E2    |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | E2    |
         """
         self.assertPyxformXform(md=md, warnings_count=0)
 
@@ -715,8 +715,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_group   | g1   |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(md=md, warnings_count=0)
 
@@ -735,8 +735,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r1   |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -761,8 +761,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r2   |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -789,8 +789,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r2   |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q2} |
+        | | list_name | label |
+        | | e1        | ${q2} |
         """
         self.assertPyxformXform(
             md=md,
@@ -817,8 +817,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r2   |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q3} |
+        | | list_name | label |
+        | | e1        | ${q3} |
         """
         self.assertPyxformXform(
             md=md,
@@ -849,8 +849,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r2   |       |
 
         | entities |
-        | | dataset | label                     |
-        | | e1      | concat(${q2}, " ", ${q3}) |
+        | | list_name | label                     |
+        | | e1        | concat(${q2}, " ", ${q3}) |
         """
         self.assertPyxformXform(
             md=md,
@@ -883,8 +883,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r2   |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q3} |
+        | | list_name | label |
+        | | e1        | ${q3} |
         """
         self.assertPyxformXform(
             md=md,
@@ -913,8 +913,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r2   |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q2} |
+        | | list_name | label |
+        | | e1        | ${q2} |
         """
         self.assertPyxformXform(
             md=md,
@@ -943,8 +943,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r2   |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | ${q3} |
+        | | list_name | label |
+        | | e1        | ${q3} |
         """
         self.assertPyxformXform(
             md=md,
@@ -977,8 +977,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | end_repeat   | r2   |       |
 
         | entities |
-        | | dataset | label                     |
-        | | e1      | concat(${q2}, " ", ${q3}) |
+        | | list_name | label                     |
+        | | e1        | concat(${q2}, " ", ${q3}) |
         """
         self.assertPyxformXform(
             md=md,
@@ -1003,8 +1003,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    | {case}  |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         cases = ("e1##e1p1", "e1#e1#p1", "##e1p1")
         for case in cases:
@@ -1024,8 +1024,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | $e1     | E1    |
+        | | list_name | label |
+        | | $e1       | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1046,8 +1046,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e.1     | E1    |
+        | | list_name | label |
+        | | e.1       | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1068,8 +1068,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | __e1    | E1    |
+        | | list_name | label |
+        | | __e1      | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1090,8 +1090,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    | {case}  |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         cases = ("$e1p1", "e1#", "e1#$e1p1")
         for case in cases:
@@ -1115,8 +1115,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    | {case}  |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         cases = ("name", "naMe", "label", "lAbEl")
         for case in cases:
@@ -1140,8 +1140,8 @@ class TestEntitiesParsing(PyxformTestCase):
         | | text | q1   | Q1    | __e1p1  |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1152,6 +1152,23 @@ class TestEntitiesParsing(PyxformTestCase):
                 )
             ],
         )
+
+    def test_list_name_or_dataset_alias__error(self):
+        """Should be possible to provide the entity name as 'list_name' or 'dataset'."""
+        # EB001
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | {case} | label   |
+        | | e1     | ${{q1}} |
+        """
+        cases = ("list_name", "dataset")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(md=md.format(case=case), warnings_count=0)
 
 
 class TestEntitiesOutput(PyxformTestCase):
@@ -1164,8 +1181,8 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1181,8 +1198,8 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1200,8 +1217,8 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1219,8 +1236,8 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1240,8 +1257,8 @@ class TestEntitiesOutput(PyxformTestCase):
         | | end_repeat   |       |       |         |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1259,8 +1276,8 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1278,8 +1295,8 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1297,8 +1314,8 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1314,8 +1331,8 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
@@ -1333,8 +1350,8 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text | q1   | Q1    |
 
         | entities |
-        | | dataset | label |
-        | | e1      | E1    |
+        | | list_name | label |
+        | | e1        | E1    |
         """
         self.assertPyxformXform(
             md=md,
