@@ -1,5 +1,3 @@
-from pyxform import constants as co
-
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
 

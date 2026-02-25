@@ -50,6 +50,24 @@ class EntityReferences:
     )
 
 
+class AllocationRequest(NamedTuple):
+    """
+    Details required to place an entity in a valid container path.
+
+    Attributes:
+        dataset_name: The entity list_name.
+        requested_path: The preferred path for the entity based on references.
+        minimum_depth: The path depth of the entity scope (survey or repeat).
+        entity_references: The entity details including it's references.
+        has_savetos: If 1 (true), there are save_tos among the references.
+    """
+    dataset_name: str
+    requested_path: tuple[ContainerNode, ...]
+    minimum_depth: int
+    entity_references: EntityReferences
+    has_savetos: int
+
+
 def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
     """
     Transform the entities sheet data into a spec for creating an EntityDeclaration.
@@ -441,7 +459,7 @@ def get_container_scopes(
 def get_allocation_requests(
     scope_path: tuple[ContainerNode, ...],
     entity_references: dict[str, EntityReferences],
-):
+) -> list[AllocationRequest]:
     """
     Assign/validate the preferred path for each entity declaration.
     """
@@ -477,20 +495,20 @@ def get_allocation_requests(
                 )
 
         allocation_requests.append(
-            {
-                "dataset_name": dataset_name,
-                "requested_path": requested_ref.path,
-                "minimum_depth": len(scope_path),
-                "entity_references": refs,
-                "has_savetos": int(bool(save_tos)),
-            }
+            AllocationRequest(
+                dataset_name=dataset_name,
+                requested_path=requested_ref.path,
+                minimum_depth=len(scope_path),
+                entity_references=refs,
+                has_savetos=int(bool(save_tos)),
+            )
         )
 
     return allocation_requests
 
 
 def allocate_entities_to_paths(
-    scope_path: tuple[ContainerNode, ...], requests: list[dict[str, Any]]
+    scope_path: tuple[ContainerNode, ...], requests: list[AllocationRequest]
 ) -> dict[tuple[ContainerNode, ...], str]:
     """
     Assign the requested allocations to available allowed container nodes if possible.
@@ -499,17 +517,17 @@ def allocate_entities_to_paths(
 
     # Prioritise save_to references but otherwise try to put deepest allocation first.
     requests.sort(
-        key=lambda x: (x["has_savetos"], len(x["requested_path"])), reverse=True
+        key=lambda x: (x.has_savetos, len(x.requested_path)), reverse=True
     )
 
     for item in requests:
-        current_path = item["requested_path"]
+        current_path = item.requested_path
         placed = False
 
         # Attempt to place as low as possible, but try going up to the highest allowed.
-        while len(current_path) >= item["minimum_depth"]:
+        while len(current_path) >= item.minimum_depth:
             if current_path not in allocations:
-                allocations[current_path] = item["dataset_name"]
+                allocations[current_path] = item.dataset_name
                 placed = True
                 break
             current_path = current_path[:-1]
@@ -517,7 +535,7 @@ def allocate_entities_to_paths(
         if not placed:
             raise PyXFormError(
                 ErrorCode.ENTITY_009.value.format(
-                    row=item["entity_references"].row_number,
+                    row=item.entity_references.row_number,
                     scope=f"/{'/'.join(p.name for p in scope_path)}",
                 )
             )

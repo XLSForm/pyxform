@@ -1450,7 +1450,6 @@ class TestEntitiesOutput(PyxformTestCase):
             ],
         )
 
-
     def test_implicit_create_mode__create_if__repeat(self):
         """Should find that when no entity_id is provided, the entity is in create mode."""
         # ES003 EB004 EB013 EB014 EB015 EB016
