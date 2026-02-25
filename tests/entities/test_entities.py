@@ -668,7 +668,7 @@ class TestEntitiesParsing(PyxformTestCase):
 
     def test_save_to_scope_breach__depth_1_repeat__error(self):
         """Should raise an error if an entity save_to is in more than one scope."""
-        # EV015
+        # ES006 EV015
         md = """
         | survey |
         | | type         | name | label | save_to |
@@ -685,13 +685,40 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_010.value.format(row=4, dataset="e1", other_row=2),
+                ErrorCode.ENTITY_011.value.format(
+                    row=2, dataset="e1", other_scope="/survey/r1", scope="/survey"
+                ),
             ],
         )
 
-    def test_save_to_scope_breach__depth_1_repeat__ok(self):
+    def test_save_to_scope_breach__depth_1_group__error(self):
+        """Should raise an error if an entity save_to is in more than one scope."""
+        # ES006 EV015
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | text        | q1   | Q1    | e1#e1p1 |
+        | | begin_group | g1   | g1    |         |
+        | | text        | q2   | Q2    | e1#e1p2 |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_011.value.format(
+                    row=2, dataset="e1", other_scope="/survey/g1", scope="/survey"
+                ),
+            ],
+        )
+
+    def test_save_to_scope_breach__depth_1_repeat__multiple_lists__ok(self):
         """Should not raise an error if different entity save_tos are in different scopes."""
-        # EV015
+        # ES006 EV015
         md = """
         | survey |
         | | type         | name | label | save_to |
@@ -707,14 +734,49 @@ class TestEntitiesParsing(PyxformTestCase):
         """
         self.assertPyxformXform(md=md, warnings_count=0)
 
-    def test_save_to_scope_breach__depth_1_group__ok(self):
-        """Should not raise an error if the entity save_tos are in the same scope."""
-        # EV015
+    def test_save_to_scope_breach__depth_1_group__multiple_lists__ok(self):
+        """Should not raise an error if different entity save_tos are in different scopes."""
+        # ES006 EV015
         md = """
         | survey |
         | | type        | name | label | save_to |
         | | text        | q1   | Q1    | e1#e1p1 |
-        | | begin_group | g1   | g1    |         |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q2   | Q2    | e2#e1p1 |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | E2    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_1_repeat__same_scope__ok(self):
+        """Should not raise an error if an entity has multiple save_tos in one scope."""
+        # ES006 EV015
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | e1#e1p1 |
+        | | text         | q2   | Q2    | e1#e1p2 |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_1_group__same_scope__ok(self):
+        """Should not raise an error if an entity has multiple save_tos in one scope."""
+        # ES006 EV015
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q1   | Q1    | e1#e1p1 |
         | | text        | q2   | Q2    | e1#e1p2 |
         | | end_group   | g1   |       |         |
 
@@ -726,7 +788,7 @@ class TestEntitiesParsing(PyxformTestCase):
 
     def test_save_to_scope_breach__depth_2_repeat__error(self):
         """Should raise an error if an entity save_to is in more than one nested scope."""
-        # EV015
+        # ES006 EV015
         md = """
         | survey |
         | | type         | name | label | save_to |
@@ -746,7 +808,12 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_010.value.format(row=6, dataset="e1", other_row=4),
+                ErrorCode.ENTITY_011.value.format(
+                    row=4,
+                    dataset="e1",
+                    other_scope="/survey/r1/r2",
+                    scope="/survey/r1",
+                ),
             ],
         )
 
@@ -895,7 +962,7 @@ class TestEntitiesParsing(PyxformTestCase):
             errored=True,
             error__contains=[
                 ErrorCode.ENTITY_011.value.format(
-                    row=8, dataset="e1", other_scope="/survey/r1", scope="/survey/r2/r3"
+                    row=4, dataset="e1", other_scope="/survey/r2/r3", scope="/survey/r1"
                 ),
             ],
         )
@@ -924,8 +991,12 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_011.value.format(
-                    row=8, dataset="e1", other_scope="/survey/r1", scope="/survey/r2/r3"
+                ErrorCode.ENTITY_012.value.format(
+                    row=2,
+                    dataset="e1",
+                    other_scope="/survey/r2/r3",
+                    scope="/survey/r1",
+                    question="q2",
                 ),
             ],
         )
@@ -954,11 +1025,11 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_012.value.format(
-                    row=2,
+                ErrorCode.ENTITY_011.value.format(
+                    row=4,
                     dataset="e1",
-                    other_scope="/survey/r1",
-                    scope="/survey/r2/r3",
+                    other_scope="/survey/r2/r3",
+                    scope="/survey/r1",
                     question="q3",
                 ),
             ],
@@ -991,9 +1062,9 @@ class TestEntitiesParsing(PyxformTestCase):
                 ErrorCode.ENTITY_012.value.format(
                     row=2,
                     dataset="e1",
-                    other_scope="/survey/r1",
-                    scope="/survey/r2/r3",
-                    question="q3",
+                    other_scope="/survey/r2/r3",
+                    scope="/survey/r1",
+                    question="q2",
                 ),
             ],
         )
