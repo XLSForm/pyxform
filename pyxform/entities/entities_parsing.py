@@ -53,28 +53,40 @@ class EntityReferences:
         """
         Find/validate the preferred path for each entity declaration.
         """
-        boundaries = tuple((r, r.get_scope_boundary()) for r in self.references)
-        deepest_scope_ref, deepest_scope_boundary = max(
-            boundaries, key=lambda x: len(x[1])
-        )
+        deepest_scope_ref = None
+        deepest_scope_boundary = ()
+        deepest_container_ref = self.references[0]
+        deepest_saveto = None
+        boundaries = []
 
-        deepest_container_ref = max(self.references, key=lambda x: len(x.path))
-        # Prioritise saveto since they must be in the nearest container.
-        deepest_saveto = max(
-            (s for s in self.references if s.property_name is not None),
-            default=(),
-            key=lambda x: len(x.path),
-        )
+        # Find the request constraints for this entity.
+        for ref in self.references:
+            ref_path_length = len(ref.path)
+            if ref_path_length > len(deepest_container_ref.path):
+                deepest_container_ref = ref
+
+            if ref.property_name is not None and (
+                deepest_saveto is None or ref_path_length > len(deepest_saveto.path)
+            ):
+                deepest_saveto = ref
+
+            boundary = ref.get_scope_boundary()
+            boundary_length = len(boundary)
+            if boundary_length > len(deepest_scope_boundary):
+                deepest_scope_boundary = boundary
+                deepest_scope_ref = ref
+
+            boundaries.append((ref, boundary, boundary_length))
+
+        # Prioritise saveto since they must be in the nearest container with an entity.
         if deepest_saveto:
-            requested_ref = min(
-                deepest_container_ref, deepest_saveto, key=lambda x: len(x.path)
-            )
+            requested_ref = deepest_saveto
         else:
             requested_ref = deepest_container_ref
 
-        # Assumes entity_references is already in row order.
-        for ref_source, scope_boundary in boundaries:
-            if deepest_scope_boundary[: len(scope_boundary)] != scope_boundary:
+        # Validate each reference against the request constraints.
+        for ref_source, scope_boundary, scope_boundary_length in boundaries:
+            if deepest_scope_boundary[:scope_boundary_length] != scope_boundary:
                 if ref_source.property_name is not None:  # save_to
                     raise PyXFormError(
                         ErrorCode.ENTITY_011.value.format(
@@ -109,12 +121,11 @@ class EntityReferences:
                 )
 
         return AllocationRequest(
+            scope_path=deepest_scope_boundary,
             dataset_name=self.dataset_name,
             requested_path=requested_ref.path,
-            minimum_depth=len(deepest_scope_boundary),
-            entity_references=self,
             sorting_key=(int(bool(deepest_saveto)), len(requested_ref.path)),
-            scope_path=deepest_scope_boundary,
+            entity_row_number=self.row_number,
         )
 
 
@@ -125,18 +136,16 @@ class AllocationRequest(NamedTuple):
     Attributes:
         dataset_name: The entity list_name.
         requested_path: The preferred path for the entity based on references.
-        minimum_depth: The path depth of the entity scope (survey or repeat).
-        entity_references: The entity details including it's references.
+        entity_row_number: The entity sheet row number of the entity.
         sorting_key: First item - if 1 (true), there are save_tos among the references.
           Second item - the length of the requested path.
     """
 
+    scope_path: tuple[ContainerNode, ...]
     dataset_name: str
     requested_path: tuple[ContainerNode, ...]
-    minimum_depth: int
-    entity_references: EntityReferences
     sorting_key: tuple[int, int]
-    scope_path: tuple[ContainerNode, ...]
+    entity_row_number: int
 
 
 def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
@@ -483,62 +492,50 @@ def get_entity_references_by_question(
             )
 
 
-def allocate_entities_to_paths(
-    scope_path: tuple[ContainerNode, ...], requests: list[AllocationRequest]
-) -> dict[tuple[ContainerNode, ...], str]:
-    """
-    Assign the requested allocations to available allowed container nodes if possible.
-    """
-    allocations = {}
-
-    # Prioritise save_to references but otherwise try to put deepest allocation first.
-    for item in sorted(requests, key=lambda x: x.sorting_key, reverse=True):
-        current_path = item.requested_path
-        placed = False
-
-        # Attempt to place as low as possible, but try going up to the highest allowed.
-        while len(current_path) >= item.minimum_depth:
-            if current_path in allocations:
-                # Request with a save_to wants a group that already has an entity.
-                if item.sorting_key[0] == 1:
-                    break
-            else:
-                allocations[current_path] = item.dataset_name
-                placed = True
-                break
-            current_path = current_path[:-1]
-
-        if not placed:
-            raise PyXFormError(
-                ErrorCode.ENTITY_009.value.format(
-                    row=item.entity_references.row_number,
-                    scope=f"/{'/'.join(p.name for p in scope_path)}",
-                )
-            )
-
-    return allocations
-
-
 def allocate_entities_to_containers(
     entity_references_by_question: dict[str, EntityReferences],
 ) -> dict[tuple[ContainerNode, ...], str]:
     """
     Get the paths into which the entities will be placed.
     """
-    all_allocations = {}
+    allocations = {}
     scope_paths = defaultdict(list)
 
-    # group requests by container scope
+    # Group requests by container scope.
     for entity_references in entity_references_by_question.values():
         req = entity_references.get_allocation_request()
         scope_paths[req.scope_path].append(req)
 
-    # `entity_references_by_question` is the full list, `entity_references` are subsets.
-    for scope_path, req in scope_paths.items():
-        allocations = allocate_entities_to_paths(scope_path=scope_path, requests=req)
-        all_allocations.update(allocations)
+    # Assign the requests to available allowed container nodes.
+    for scope_path, requests in scope_paths.items():
+        scope_path_depth_limit = len(scope_path) - 1
 
-    return all_allocations
+        # Prioritise save_to references but otherwise try to put deepest allocation first.
+        for req in sorted(requests, key=lambda x: x.sorting_key, reverse=True):
+            placed = False
+
+            # Attempt to place as low as possible, but try going up to the highest allowed.
+            for depth in range(req.sorting_key[1], scope_path_depth_limit, -1):
+                current_path = req.requested_path[:depth]
+
+                if current_path in allocations:
+                    # Request with a save_to wants a group that already has an entity.
+                    if req.sorting_key[0] == 1:
+                        break
+                else:
+                    allocations[current_path] = req.dataset_name
+                    placed = True
+                    break
+
+            if not placed:
+                raise PyXFormError(
+                    ErrorCode.ENTITY_009.value.format(
+                        row=req.entity_row_number,
+                        scope=f"/{'/'.join(p.name for p in scope_path)}",
+                    )
+                )
+
+    return allocations
 
 
 def inject_entities_into_json(
