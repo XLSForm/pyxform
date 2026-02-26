@@ -572,7 +572,29 @@ class TestEntitiesParsing(PyxformTestCase):
             error__contains=[ErrorCode.ENTITY_008.value.format(row=3)],
         )
 
-    def test_unsolvable_meta_topology__depth_0__error(self):
+    def test_unsolvable_meta_topology__depth_0__saveto_only__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type | name | label | save_to |
+        | | text | q1   | Q1    | e1#e1p1 |
+        | | text | q2   | Q2    | e2#e2p1 |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | E2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_0__var_only__error(self):
         """Should raise an error if there is no valid placement for the meta/entity block."""
         # EV014
         md = """
@@ -593,7 +615,69 @@ class TestEntitiesParsing(PyxformTestCase):
             ],
         )
 
-    def test_unsolvable_meta_topology__depth_1_group__error(self):
+    def test_unsolvable_meta_topology__depth_0__saveto_and_var__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type | name | label | save_to |
+        | | text | q1   | Q1    | e1#e1p1 |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_1_group__saveto_only__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q1   | Q1    | e1#e1p1 |
+        | | text        | q2   | Q2    | e2#e2p1 |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | E2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey"),
+            ],
+        )
+
+    def test_save_to_scope_breach__depth_1_group__save_to_only__ok(self):
+        """Should not raise an error if an entity save_to is in more than one group."""
+        # ES006 EV014 EV015
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | text        | q1   | Q1    | e1#e1p1 |
+        | | begin_group | g1   | g1    |         |
+        | | text        | q2   | Q2    | e1#e1p2 |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_unsolvable_meta_topology__depth_1_group__var_only__error(self):
         """Should raise an error if there is no valid placement for the meta/entity block."""
         # EV014
         md = """
@@ -614,6 +698,102 @@ class TestEntitiesParsing(PyxformTestCase):
             errored=True,
             error__contains=[
                 ErrorCode.ENTITY_009.value.format(row=4, scope="/survey"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_1_group__saveto_and_var__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q1   | Q1    | e1#e1p1 |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | ${q1} |
+        | | e3        | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_1_repeat__saveto_only__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | e1#e1p1 |
+        | | text         | q2   | Q2    | e2#e2p1 |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | E2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_1_repeat__var_only__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        | | e2        | ${q1} |
+        | | e3        | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_1_repeat__saveto_and_var__error(self):
+        """Should raise an error if there is no valid placement for the meta/entity block."""
+        # EV014
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | e1#e1p1 |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | ${q1} |
+        | | e3        | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1"),
             ],
         )
 
@@ -687,31 +867,6 @@ class TestEntitiesParsing(PyxformTestCase):
             error__contains=[
                 ErrorCode.ENTITY_011.value.format(
                     row=2, dataset="e1", other_scope="/survey/r1", scope="/survey"
-                ),
-            ],
-        )
-
-    def test_save_to_scope_breach__depth_1_group__error(self):
-        """Should raise an error if an entity save_to is in more than one scope."""
-        # ES006 EV015
-        md = """
-        | survey |
-        | | type        | name | label | save_to |
-        | | text        | q1   | Q1    | e1#e1p1 |
-        | | begin_group | g1   | g1    |         |
-        | | text        | q2   | Q2    | e1#e1p2 |
-        | | end_group   | g1   |       |         |
-
-        | entities |
-        | | list_name | label |
-        | | e1        | E1    |
-        """
-        self.assertPyxformXform(
-            md=md,
-            errored=True,
-            error__contains=[
-                ErrorCode.ENTITY_011.value.format(
-                    row=2, dataset="e1", other_scope="/survey/g1", scope="/survey"
                 ),
             ],
         )

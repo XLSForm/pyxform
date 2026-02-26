@@ -97,7 +97,7 @@ class EntityReferences:
 
             if (
                 ref_source.property_name is not None  # save_to
-                and requested_ref.path != ref_source.path
+                and deepest_scope_boundary != scope_boundary
             ):
                 raise PyXFormError(
                     ErrorCode.ENTITY_011.value.format(
@@ -113,7 +113,7 @@ class EntityReferences:
             requested_path=requested_ref.path,
             minimum_depth=len(deepest_scope_boundary),
             entity_references=self,
-            has_savetos=int(bool(deepest_saveto)),
+            sorting_key=(int(bool(deepest_saveto)), len(requested_ref.path)),
             scope_path=deepest_scope_boundary,
         )
 
@@ -127,14 +127,15 @@ class AllocationRequest(NamedTuple):
         requested_path: The preferred path for the entity based on references.
         minimum_depth: The path depth of the entity scope (survey or repeat).
         entity_references: The entity details including it's references.
-        has_savetos: If 1 (true), there are save_tos among the references.
+        sorting_key: First item - if 1 (true), there are save_tos among the references.
+          Second item - the length of the requested path.
     """
 
     dataset_name: str
     requested_path: tuple[ContainerNode, ...]
     minimum_depth: int
     entity_references: EntityReferences
-    has_savetos: int
+    sorting_key: tuple[int, int]
     scope_path: tuple[ContainerNode, ...]
 
 
@@ -491,15 +492,17 @@ def allocate_entities_to_paths(
     allocations = {}
 
     # Prioritise save_to references but otherwise try to put deepest allocation first.
-    requests.sort(key=lambda x: (x.has_savetos, len(x.requested_path)), reverse=True)
-
-    for item in requests:
+    for item in sorted(requests, key=lambda x: x.sorting_key, reverse=True):
         current_path = item.requested_path
         placed = False
 
         # Attempt to place as low as possible, but try going up to the highest allowed.
         while len(current_path) >= item.minimum_depth:
-            if current_path not in allocations:
+            if current_path in allocations:
+                # Request with a save_to wants a group that already has an entity.
+                if item.sorting_key[0] == 1:
+                    break
+            else:
                 allocations[current_path] = item.dataset_name
                 placed = True
                 break
