@@ -23,27 +23,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             warnings_count=0,
         )
 
-    def test_entities_namespace__omitted_if_no_entities_sheet(self):
-        self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey   |         |       |       |
-            |          | type    | name  | label |
-            |          | text    | a     | A     |
-            """,
-            xml__excludes=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
-        )
-
-    def test_entities_version__omitted_if_no_entities_sheet(self):
-        self.assertPyxformXform(
-            md="""
-            | survey   |         |       |       |
-            |          | type    | name  | label |
-            |          | text    | a     | A     |
-            """,
-            xml__xpath_match=[xpe.model_no_entities_version()],
-        )
-
     def test_saveto_column__added_to_xml(self):
         self.assertPyxformXform(
             md="""
@@ -71,21 +50,6 @@ class TestEntitiesCreateSurvey(PyxformTestCase):
             | entities |             |        |       |         |
             |          | dataset     | label  |       |         |
             |          | trees       | ${size}|       |         |
-            """,
-            warnings_count=0,
-        )
-
-    def test_entities_columns__all_expected(self):
-        self.assertPyxformXform(
-            md="""
-            | survey   |              |       |            |
-            |          | type         | name  | label      |
-            |          | text         | id    | Treid      |
-            |          | text         | a     | A          |
-            |          | csv-external | trees |            |
-            | entities |              |       |            |
-            |          | dataset      | label | update_if  | create_if  | entity_id |
-            |          | trees        | a     | id != ''   | id = ''    | ${a}      |
             """,
             warnings_count=0,
         )

@@ -63,50 +63,6 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
             ],
         )
 
-    def test_minimal_fields__ok(self):
-        """Should find that omitting all optional entity fields is OK."""
-        md = """
-        | survey |
-        | | type         | name  | label |
-        | | begin_repeat | r1    | R1    |
-        | | text         | q1    | Q1    |
-        | | end_repeat   |       |       |
-        | | csv-external | e1    |       |
-
-        | entities |
-        | | list_name | entity_id |
-        | | e1        | ${q1}     |
-        """
-        self.assertPyxformXform(
-            md=md,
-            warnings_count=0,
-            xml__xpath_count=[
-                ("/h:html//x:setvalue", 0),
-            ],
-        )
-
-    def test_update_if__ok(self):
-        """Should find that the update_if expression targets the entity repeat."""
-        md = """
-        | survey |
-        | | type         | name  | label | save_to |
-        | | begin_repeat | r1    | R1    |         |
-        | | text         | q1    | Q1    | q1e     |
-        | | end_repeat   |       |       |         |
-        | | csv-external | e1    |       |         |
-
-        | entities |
-        | | list_name | label | entity_id | update_if  |
-        | | e1        | ${q1} | ${q1}     | ${q1} = '' |
-        """
-        self.assertPyxformXform(
-            md=md,
-            warnings_count=0,
-            xml__xpath_count=[
-                ("/h:html//x:setvalue", 0),
-            ],
-        )
-
     def test_all_fields__ok(self):
         """Should find that using all entity fields at once is OK."""
         md = """
@@ -144,17 +100,14 @@ class TestEntitiesUpdateRepeat(PyxformTestCase):
                 ),
                 xpe.model_bind_question_saveto("/r1/q1", "q1e"),
                 xpe.model_bind_meta_id(" ../../../q1 ", "/r1"),
-                xpe.model_setvalue_meta_id("/r1"),
+                xpe.model_no_setvalue_meta_id(),
                 xpe.model_bind_meta_baseversion("e1", "current()/../../../q1", "/r1"),
                 xpe.model_bind_meta_trunkversion("e1", "current()/../../../q1", "/r1"),
                 xpe.model_bind_meta_branchid("e1", "current()/../../../q1", "/r1"),
                 xpe.model_bind_meta_label(" ../../../q1 ", "/r1"),
                 xpe.model_bind_meta_instanceid(),
-                xpe.body_repeat_setvalue_meta_id(
-                    "/x:group/x:repeat[@nodeset='/test_name/r1']", "/r1"
-                ),
             ],
             xml__xpath_count=[
-                ("/h:html//x:setvalue", 2),
+                ("/h:html//x:setvalue", 0),
             ],
         )

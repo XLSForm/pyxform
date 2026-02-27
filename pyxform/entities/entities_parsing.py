@@ -231,9 +231,10 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
             }
         entity[const.CHILDREN].append(create_attr)
 
-        first_load = action.ActionLibrary.setvalue_first_load.value.to_dict()
-        first_load["value"] = "uuid()"
-        id_attr["actions"].append(first_load)
+        if not entity_id:
+            first_load = action.ActionLibrary.setvalue_first_load.value.to_dict()
+            first_load["value"] = "uuid()"
+            id_attr["actions"].append(first_load)
 
     # Update mode
     if entity_id:

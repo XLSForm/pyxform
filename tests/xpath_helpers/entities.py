@@ -56,6 +56,22 @@ class XPathHelper:
         """
 
     @staticmethod
+    def model_no_instance_csv(list_name: str) -> str:
+        return f"""
+        /h:html/h:head/x:model[
+          not(./x:instance[@id='{list_name}' and @src='jr://file-csv/{list_name}.csv'])
+        ]
+        """
+
+    @staticmethod
+    def model_instance_csv(list_name: str) -> str:
+        return f"""
+        /h:html/h:head/x:model/x:instance[
+          @id='{list_name}' and @src='jr://file-csv/{list_name}.csv'
+        ]
+        """
+
+    @staticmethod
     def model_setvalue_meta_id(meta_path: str = "") -> str:
         return f"""
         /h:html/h:head/x:model/x:setvalue[

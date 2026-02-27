@@ -41,19 +41,22 @@ Each entities test should reference one (or more) requirements from these lists.
     - EB001: Dataset column alias
     - EB002: implicit entity_id=0, create_if=0, update_if=0 (create)
     - EB003: implicit entity_id=0, create_if=0, update_if=1 (error, EV011)
-    - EB004: implicit entity_id=0, create_if=1, update_if=0 (create_if)
+    - EB004: implicit entity_id=0, create_if=1, update_if=0 (create / if)
     - EB005: implicit entity_id=0, create_if=1, update_if=1 (error, EV011)
     - EB006: implicit entity_id=1, create_if=0, update_if=0 (update)
-    - EB007: implicit entity_id=1, create_if=0, update_if=1 (update_if)
+    - EB007: implicit entity_id=1, create_if=0, update_if=1 (update / if)
     - EB008: implicit entity_id=1, create_if=1, update_if=0 (error, EV010)
-    - EB009: implicit entity_id=1, create_if=1, update_if=1 (upsert)
+    - EB009: implicit entity_id=1, create_if=1, update_if=1 (upsert / if)
     - EB010: Meta/entity allocations are stable/deterministic
     - EB011: Entities sheet row order used for allocation tie break
-    - EB012: Do not emit setvalue when entity_id present (pyxform/#819)
+    - EB012: Do not emit entity id setvalue when entity_id present (pyxform/#819)
     - EB013: Emit setvalue for default id
     - EB014: Always emit the instanceID in a survey-level meta block only
     - EB015: Variable reference tokens in the entities sheet are resolved
     - EB016: Variable references for repeats are resolved relative to the entity
+    - EB017: Do not emit entities namespace if entities not used
+    - EB018: Do not emit entities version if entities not used
+    - EB019: Do not emit default instance to load the entity from csv
 
 
 ## Topological constraint solver regression suite
@@ -142,6 +145,7 @@ from pyxform.errors import ErrorCode, PyXFormError
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
+from tests.xpath_helpers.questions import xpq
 
 
 class TestEntitiesParsing(PyxformTestCase):
@@ -462,7 +466,7 @@ class TestEntitiesParsing(PyxformTestCase):
 
     def test_missing_entity_upsert_update_if__error(self):
         """Should raise an error if an entity is in upsert mode but there is no update_if."""
-        # EV010
+        # EB008 EV010
         md = """
         | survey |
         | | type | name | label |
@@ -480,7 +484,7 @@ class TestEntitiesParsing(PyxformTestCase):
 
     def test_missing_entity_upsert_update_if__with_label__error(self):
         """Should raise an error if an entity is in upsert mode but there is no update_if."""
-        # EV010
+        # EB008 EV010
         md = """
         | survey |
         | | type | name | label |
@@ -498,7 +502,7 @@ class TestEntitiesParsing(PyxformTestCase):
 
     def test_missing_entity_entity_id__update__error(self):
         """Should raise an error if an entity is in update mode but there is no entity_id."""
-        # EV011
+        # EB003 EV011
         md = """
         | survey |
         | | type | name | label |
@@ -516,7 +520,7 @@ class TestEntitiesParsing(PyxformTestCase):
 
     def test_missing_entity_entity_id__upsert__error(self):
         """Should raise an error if an entity is in upsert mode but there is no entity_id."""
-        # EV011
+        # EB005 EV011
         md = """
         | survey |
         | | type | name | label |
@@ -1402,7 +1406,20 @@ class TestEntitiesParsing(PyxformTestCase):
 
 
 class TestEntitiesOutput(PyxformTestCase):
-    def test_namespace__exists(self):
+    def test_namespace__entities_not_used__not_exists(self):
+        """Should not find the entities namespace definition when entities not used."""
+        # ES001 EB017
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__excludes=['xmlns:entities="http://www.opendatakit.org/xforms/entities"'],
+        )
+
+    def test_namespace__entities_used__exists(self):
         """Should find namespace definition in XForm when entities used."""
         # ES001
         md = """
@@ -1455,6 +1472,19 @@ class TestEntitiesOutput(PyxformTestCase):
             xml__xpath_match=[
                 """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity"""
             ],
+        )
+
+    def test_version__not_entities__not_exists(self):
+        """Should not find the entities version when entities not used."""
+        # ES002 EB018
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[xpe.model_no_entities_version()],
         )
 
     def test_version__2024_1_0(self):
@@ -1592,7 +1622,7 @@ class TestEntitiesOutput(PyxformTestCase):
 
     def test_implicit_create_mode__survey(self):
         """Should find that when no entity_id is provided, the entity is in create mode."""
-        # ES003 EB002 EB013 EB014
+        # ES003 EB002 EB013 EB014 EB019
         md = """
         | survey |
         | | type | name | label |
@@ -1605,6 +1635,7 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
+                xpe.model_no_instance_csv("e1"),
                 xpe.model_bind_meta_instanceid(),
                 xpe.model_instance_meta("e1", create=True, label=True),
                 xpe.model_bind_meta_label("E1"),
@@ -1618,7 +1649,7 @@ class TestEntitiesOutput(PyxformTestCase):
 
     def test_implicit_create_mode__repeat(self):
         """Should find that when no entity_id is provided, the entity is in create mode."""
-        # ES003 EB002 EB013 EB014 EB015 EB016
+        # ES003 EB002 EB013 EB014 EB015 EB016 EB019
         md = """
         | survey |
         | | type         | name | label |
@@ -1633,6 +1664,7 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
+                xpe.model_no_instance_csv("e1"),
                 xpe.model_bind_meta_instanceid(),
                 xpe.model_instance_meta(
                     "e1", "/x:r1", repeat=True, create=True, label=True
@@ -1707,6 +1739,471 @@ class TestEntitiesOutput(PyxformTestCase):
             ],
             xml__xpath_count=[
                 ("/h:html//x:setvalue", 2),
+            ],
+        )
+
+    def test_implicit_update_mode__entity_id__survey(self):
+        """Should find that when an entity_id is provided, the entity is in update mode."""
+        # ES004 EB006 EB012 EB014 EB015 EB019
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | entity_id |
+        | | e1        | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_no_instance_csv("e1"),
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", update=True),
+                xpe.model_bind_meta_id(" /test_name/q1 "),
+                xpe.model_bind_meta_baseversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_trunkversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_branchid("e1", "/test_name/q1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_update_mode__entity_id__repeat(self):
+        """Should find that when an entity_id is provided, the entity is in update mode."""
+        # ES004 EB006 EB012 EB014 EB015 EB016 EB019
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | list_name | entity_id |
+        | | e1        | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_no_instance_csv("e1"),
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", "/x:r1", repeat=True, update=True),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, template=True, update=True
+                ),
+                xpe.model_bind_meta_id(" ../../../q1 ", "/r1"),
+                xpe.model_bind_meta_baseversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_trunkversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_branchid("e1", "current()/../../../q1", "/r1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_update_mode__entity_id__with_csv_instance__survey(self):
+        """Should find that when an entity_id is provided, the entity is in update mode."""
+        # ES004 EB006 EB012 EB014 EB015 EB019
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | csv-external | e1   |       |
+        | | text         | q1   | Q1    |
+
+        | entities |
+        | | list_name | entity_id |
+        | | e1        | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_instance_csv("e1"),
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", update=True),
+                xpe.model_bind_meta_id(" /test_name/q1 "),
+                xpe.model_bind_meta_baseversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_trunkversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_branchid("e1", "/test_name/q1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_update_mode__entity_id__with_csv_instance__repeat(self):
+        """Should find that when an entity_id is provided, the entity is in update mode."""
+        # ES004 EB006 EB012 EB014 EB015 EB016 EB019
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | csv-external | e1   |       |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | list_name | entity_id |
+        | | e1        | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_instance_csv("e1"),
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", "/x:r1", repeat=True, update=True),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, template=True, update=True
+                ),
+                xpe.model_bind_meta_id(" ../../../q1 ", "/r1"),
+                xpe.model_bind_meta_baseversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_trunkversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_branchid("e1", "current()/../../../q1", "/r1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_update_mode__entity_id__with_label__survey(self):
+        """Should find that when an entity_id is provided, the entity is in update mode."""
+        # ES004 EB006 EB012 EB014 EB015
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | text         | q1   | Q1    |
+
+        | entities |
+        | | list_name | entity_id | label |
+        | | e1        | ${q1}     | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", update=True, label=True),
+                xpe.model_bind_meta_id(" /test_name/q1 "),
+                xpe.model_bind_meta_baseversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_trunkversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_branchid("e1", "/test_name/q1"),
+                xpe.model_bind_meta_label("E1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_update_mode__entity_id__with_label__repeat(self):
+        """Should find that when an entity_id is provided, the entity is in update mode."""
+        # ES004 EB006 EB012 EB014 EB015 EB016
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | csv-external | e1   |       |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | list_name | entity_id | label |
+        | | e1        | ${q1}     | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, update=True, label=True
+                ),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, template=True, update=True, label=True
+                ),
+                xpe.model_bind_meta_id(" ../../../q1 ", "/r1"),
+                xpe.model_bind_meta_baseversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_trunkversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_branchid("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_label("E1", "/r1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_update_mode__entity_id__with_other_setvalue__survey(self):
+        """Should find that when an entity_id is provided, the entity is in update mode."""
+        # ES004 EB006 EB012 EB014 EB015
+        md = """
+        | survey |
+        | | type | name | label | default |
+        | | text | q1   | Q1    | uuid()  |
+
+        | entities |
+        | | list_name | entity_id |
+        | | e1        | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", update=True),
+                xpe.model_bind_meta_id(" /test_name/q1 "),
+                xpe.model_bind_meta_baseversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_trunkversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_branchid("e1", "/test_name/q1"),
+                xpq.setvalue(
+                    "h:head/x:model", "/test_name/q1", "odk-instance-first-load", "uuid()"
+                ),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 1),
+            ],
+        )
+
+    def test_implicit_update_mode__entity_id__with_other_setvalue__repeat(self):
+        """Should find that when an entity_id is provided, the entity is in update mode."""
+        # ES004 EB006 EB012 EB014 EB015 EB016
+        md = """
+        | survey |
+        | | type         | name | label | default |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | uuid()  |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | list_name | entity_id |
+        | | e1        | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", "/x:r1", repeat=True, update=True),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, template=True, update=True
+                ),
+                xpe.model_bind_meta_id(" ../../../q1 ", "/r1"),
+                xpe.model_bind_meta_baseversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_trunkversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_branchid("e1", "current()/../../../q1", "/r1"),
+                xpq.setvalue(
+                    "h:head/x:model",
+                    "/test_name/r1/q1",
+                    "odk-instance-first-load",
+                    "uuid()",
+                ),
+                xpq.setvalue(
+                    "h:body/x:group/x:repeat[@nodeset='/test_name/r1']",
+                    "/test_name/r1/q1",
+                    "odk-new-repeat",
+                    "uuid()",
+                ),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 2),
+            ],
+        )
+
+    def test_implicit_update_mode__update_if__survey(self):
+        """Should find that when an update_if is provided, the condition is emitted."""
+        # ES004 EB007 EB012 EB014 EB015
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | entity_id | update_if   |
+        | | e1        | ${q1}     | ${q1} != '' |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", update=True),
+                xpe.model_bind_meta_id(" /test_name/q1 "),
+                xpe.model_bind_meta_baseversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_trunkversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_branchid("e1", "/test_name/q1"),
+                xpe.model_bind_meta_update(" /test_name/q1  != ''"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_update_mode__update_if__repeat(self):
+        """Should find that when an update_if is provided, the condition is emitted."""
+        # ES004 EB007 EB012 EB014 EB015 EB016
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | list_name | entity_id | update_if   |
+        | | e1        | ${q1}     | ${q1} != '' |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", "/x:r1", repeat=True, update=True),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, template=True, update=True
+                ),
+                xpe.model_bind_meta_id(" ../../../q1 ", "/r1"),
+                xpe.model_bind_meta_baseversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_trunkversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_branchid("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_update(" ../../../q1  != ''", "/r1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_upsert_mode__survey(self):
+        """Should find that entity_id, create_if, and update_if are provided, the entity is in upsert mode."""
+        # ES004 EB009 EB012 EB014 EB015 EB019
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | entity_id | update_if   | create_if   |
+        | | e1        | ${q1}     | ${q1} != '' | ${q1} != '' |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_no_instance_csv("e1"),
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", update=True, create=True),
+                xpe.model_bind_meta_id(" /test_name/q1 "),
+                xpe.model_bind_meta_baseversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_trunkversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_branchid("e1", "/test_name/q1"),
+                xpe.model_bind_meta_update(" /test_name/q1  != ''"),
+                xpe.model_bind_meta_create(" /test_name/q1  != ''"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_upsert_mode__repeat(self):
+        """Should find that entity_id, create_if, and update_if are provided, the entity is in upsert mode."""
+        # ES004 EB009 EB012 EB014 EB015 EB016 EB019
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | list_name | entity_id | update_if   | create_if   |
+        | | e1        | ${q1}     | ${q1} != '' | ${q1} != '' |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_no_instance_csv("e1"),
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, update=True, create=True
+                ),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, template=True, update=True, create=True
+                ),
+                xpe.model_bind_meta_id(" ../../../q1 ", "/r1"),
+                xpe.model_bind_meta_baseversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_trunkversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_branchid("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_update(" ../../../q1  != ''", "/r1"),
+                xpe.model_bind_meta_create(" ../../../q1  != ''", "/r1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_upsert_mode__with_label__survey(self):
+        """Should find that entity_id, create_if, and update_if are provided, the entity is in upsert mode."""
+        # ES004 EB009 EB012 EB014 EB015 EB019
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | entity_id | update_if   | create_if   | label |
+        | | e1        | ${q1}     | ${q1} != '' | ${q1} != '' | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_no_instance_csv("e1"),
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", update=True, create=True, label=True),
+                xpe.model_bind_meta_id(" /test_name/q1 "),
+                xpe.model_bind_meta_baseversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_trunkversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_branchid("e1", "/test_name/q1"),
+                xpe.model_bind_meta_update(" /test_name/q1  != ''"),
+                xpe.model_bind_meta_create(" /test_name/q1  != ''"),
+                xpe.model_bind_meta_label("E1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
+            ],
+        )
+
+    def test_implicit_upsert_mode__with_label__repeat(self):
+        """Should find that entity_id, create_if, and update_if are provided, the entity is in upsert mode."""
+        # ES004 EB009 EB012 EB014 EB015 EB016 EB019
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | list_name | entity_id | update_if   | create_if   | label |
+        | | e1        | ${q1}     | ${q1} != '' | ${q1} != '' | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_no_instance_csv("e1"),
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, update=True, create=True, label=True
+                ),
+                xpe.model_instance_meta(
+                    "e1",
+                    "/x:r1",
+                    repeat=True,
+                    template=True,
+                    update=True,
+                    create=True,
+                    label=True,
+                ),
+                xpe.model_bind_meta_id(" ../../../q1 ", "/r1"),
+                xpe.model_bind_meta_baseversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_trunkversion("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_branchid("e1", "current()/../../../q1", "/r1"),
+                xpe.model_bind_meta_update(" ../../../q1  != ''", "/r1"),
+                xpe.model_bind_meta_create(" ../../../q1  != ''", "/r1"),
+                xpe.model_bind_meta_label("E1", "/r1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
             ],
         )
 
