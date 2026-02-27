@@ -16,6 +16,7 @@ from pyxform.constants import (
 )
 from pyxform.elements import action as action_module
 from pyxform.entities.entities_parsing import (
+    ContainerPath,
     apply_entities_declarations,
     get_entity_declarations,
     get_entity_references_by_question,
@@ -477,6 +478,7 @@ def workbook_to_json(
             "child_names": set(),
             "child_names_lower": set(),
             "row_number": None,
+            "container_path": ContainerPath.default(),
         }
     ]
     # If a group has a table-list appearance flag
@@ -780,7 +782,7 @@ def workbook_to_json(
             )
 
         get_entity_references_by_question(
-            stack=stack,
+            container_path=stack[-1]["container_path"],
             row=row,
             row_number=row_number,
             question_name=question_name,
@@ -932,6 +934,7 @@ def workbook_to_json(
                         "row_number": row_number,
                     }
                 )
+                stack[-1]["container_path"] = ContainerPath.from_stack(stack=stack)
                 continue
 
         # Assuming a question is anything not processed above as a loop/repeat/group.

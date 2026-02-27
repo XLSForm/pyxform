@@ -140,7 +140,7 @@ Each entities test should reference one (or more) requirements from these lists.
 """
 
 from pyxform import constants as co
-from pyxform.entities.entities_parsing import ContainerNode, ReferenceSource
+from pyxform.entities.entities_parsing import ContainerPath, ReferenceSource
 from pyxform.errors import ErrorCode, PyXFormError
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -2212,10 +2212,7 @@ class TestReferenceSource(PyxformTestCase):
     def test_missing_property_and_question_name__error(self):
         """Should raise an error if both property_name and question_name are None."""
         with self.assertRaises(PyXFormError) as err:
-            ReferenceSource(
-                path=(ContainerNode(name=co.SURVEY, type=co.SURVEY),),
-                row=1,
-            )
+            ReferenceSource(path=ContainerPath.default(), row=1)
         self.assertEqual(
             err.exception.args[0], ErrorCode.INTERNAL_002.value.format(path="/survey")
         )

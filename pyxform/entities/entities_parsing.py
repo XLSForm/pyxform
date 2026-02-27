@@ -13,14 +13,55 @@ from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_reference
 EC = const.EntityColumns
 
 
-class ContainerNode(NamedTuple):
+@dataclass(frozen=True, slots=True)
+class ContainerNode:
+    """
+    Details of a XForm container: the survey root, a group, or a repeat.
+    """
+
     name: str
     type: str
 
 
 @dataclass(frozen=True, slots=True)
+class ContainerPath:
+    """
+    Details of a collection of containers, ordered by their depth, which forms a path.
+
+    Example: /survey/group1/repeat1/group2
+    """
+
+    nodes: tuple[ContainerNode, ...]
+
+    @classmethod
+    def default(cls) -> "ContainerPath":
+        """
+        Create the default ContainerPath, which is the '/survey' root path.
+        """
+        return cls((ContainerNode(name=const.SURVEY, type=const.SURVEY),))
+
+    @classmethod
+    def from_stack(cls, stack: list[dict[str, Any]]) -> "ContainerPath":
+        """
+        Create a ContainerPath from the workbook_to_json container stack.
+        """
+        if len(stack) > 1:
+            return cls(
+                (
+                    *stack[-2]["container_path"].nodes,
+                    ContainerNode(
+                        name=stack[-1]["control_name"],
+                        type=stack[-1]["control_type"],
+                    ),
+                )
+            )
+        else:
+            return cls.default()
+
+
+@dataclass(frozen=True, slots=True)
 class ReferenceSource:
-    path: tuple[ContainerNode, ...]
+    path: ContainerPath
     row: int
     property_name: str | None = None
     question_name: str | None = None
@@ -31,14 +72,14 @@ class ReferenceSource:
                 ErrorCode.INTERNAL_002.value.format(path=self.path_as_str())
             )
 
-    def get_scope_boundary(self) -> tuple[ContainerNode, ...]:
-        for i in range(len(self.path) - 1, -1, -1):
-            if self.path[i].type in {const.REPEAT, const.SURVEY}:
-                return self.path[: i + 1]
-        return (ContainerNode(name=const.SURVEY, type=const.SURVEY),)
+    def get_scope_boundary(self) -> ContainerPath:
+        for i in range(len(self.path.nodes) - 1, -1, -1):
+            if self.path.nodes[i].type in {const.REPEAT, const.SURVEY}:
+                return ContainerPath(self.path.nodes[: i + 1])
+        return ContainerPath.default()
 
     def path_as_str(self) -> str:
-        return f"/{'/'.join(p.name for p in self.path)}"
+        return f"/{'/'.join(p.name for p in self.path.nodes)}"
 
 
 @dataclass(slots=True)
@@ -54,25 +95,27 @@ class EntityReferences:
         Find/validate the preferred path for each entity declaration.
         """
         deepest_scope_ref = None
-        deepest_scope_boundary = ()
+        deepest_scope_boundary = None
         deepest_container_ref = self.references[0]
         deepest_saveto = None
         boundaries = []
 
         # Find the request constraints for this entity.
         for ref in self.references:
-            ref_path_length = len(ref.path)
-            if ref_path_length > len(deepest_container_ref.path):
+            ref_path_length = len(ref.path.nodes)
+            if ref_path_length > len(deepest_container_ref.path.nodes):
                 deepest_container_ref = ref
 
             if ref.property_name is not None and (
-                deepest_saveto is None or ref_path_length > len(deepest_saveto.path)
+                deepest_saveto is None or ref_path_length > len(deepest_saveto.path.nodes)
             ):
                 deepest_saveto = ref
 
             boundary = ref.get_scope_boundary()
-            boundary_length = len(boundary)
-            if boundary_length > len(deepest_scope_boundary):
+            boundary_length = len(boundary.nodes)
+            if deepest_scope_boundary is None or boundary_length > len(
+                deepest_scope_boundary.nodes
+            ):
                 deepest_scope_boundary = boundary
                 deepest_scope_ref = ref
 
@@ -86,7 +129,10 @@ class EntityReferences:
 
         # Validate each reference against the request constraints.
         for ref_source, scope_boundary, scope_boundary_length in boundaries:
-            if deepest_scope_boundary[:scope_boundary_length] != scope_boundary:
+            if (
+                deepest_scope_boundary.nodes[:scope_boundary_length]
+                != scope_boundary.nodes
+            ):
                 if ref_source.property_name is not None:  # save_to
                     raise PyXFormError(
                         ErrorCode.ENTITY_011.value.format(
@@ -124,7 +170,7 @@ class EntityReferences:
             scope_path=deepest_scope_boundary,
             dataset_name=self.dataset_name,
             requested_path=requested_ref.path,
-            sorting_key=(int(bool(deepest_saveto)), len(requested_ref.path)),
+            sorting_key=(int(bool(deepest_saveto)), len(requested_ref.path.nodes)),
             entity_row_number=self.row_number,
         )
 
@@ -134,16 +180,17 @@ class AllocationRequest(NamedTuple):
     Details required to place an entity in a valid container path.
 
     Attributes:
+        scope_path: The scope boundary for the entity.
         dataset_name: The entity list_name.
         requested_path: The preferred path for the entity based on references.
-        entity_row_number: The entity sheet row number of the entity.
         sorting_key: First item - if 1 (true), there are save_tos among the references.
           Second item - the length of the requested path.
+        entity_row_number: The entity sheet row number of the entity.
     """
 
-    scope_path: tuple[ContainerNode, ...]
+    scope_path: ContainerPath
     dataset_name: str
-    requested_path: tuple[ContainerNode, ...]
+    requested_path: ContainerPath
     sorting_key: tuple[int, int]
     entity_row_number: int
 
@@ -408,7 +455,7 @@ def get_entity_variable_references(
 
 
 def get_entity_references_by_question(
-    stack: list[dict[str, Any]],
+    container_path: ContainerPath,
     row: dict[str, Any],
     row_number: int,
     question_name: str,
@@ -421,22 +468,6 @@ def get_entity_references_by_question(
     """
     For each question store the saveto or variable references that link it to an entity.
     """
-    # TODO: pre-calculate the current_path externally - maybe as part of the stack? It only
-    #   changes when the container opens/closes so may be unnecessarily re-calculated and
-    #   this block is recursing up the stack each time so may be non-trivial impact
-    if len(stack) > 1:
-        container_path = (
-            ContainerNode(name=const.SURVEY, type=const.SURVEY),
-            *(
-                ContainerNode(
-                    name=container.get("control_name"), type=container.get("control_type")
-                )
-                for container in stack[1:]
-            ),
-        )
-    else:
-        container_path = (ContainerNode(name=const.SURVEY, type=const.SURVEY),)
-
     # Collect references for later reconciliation, because otherwise the first
     # referent found will determine the scope but there may be deeper refs.
     saveto = row.get(const.BIND, {}).get(const.ENTITIES_SAVETO_NS, "")
@@ -495,7 +526,7 @@ def get_entity_references_by_question(
 
 def allocate_entities_to_containers(
     entity_references_by_question: dict[str, EntityReferences],
-) -> dict[tuple[ContainerNode, ...], str]:
+) -> dict[ContainerPath, str]:
     """
     Get the paths into which the entities will be placed.
     """
@@ -509,7 +540,7 @@ def allocate_entities_to_containers(
 
     # Assign the requests to available allowed container nodes.
     for scope_path, requests in scope_paths.items():
-        scope_path_depth_limit = len(scope_path) - 1
+        scope_path_depth_limit = len(scope_path.nodes) - 1
 
         # Prioritise save_to references but otherwise try to put deepest allocation first.
         for req in sorted(requests, key=lambda x: x.sorting_key, reverse=True):
@@ -517,7 +548,7 @@ def allocate_entities_to_containers(
 
             # Attempt to place as low as possible, but try going up to the highest allowed.
             for depth in range(req.sorting_key[1], scope_path_depth_limit, -1):
-                current_path = req.requested_path[:depth]
+                current_path = ContainerPath(req.requested_path.nodes[:depth])
 
                 if current_path in allocations:
                     # Request with a save_to wants a group that already has an entity.
@@ -532,7 +563,7 @@ def allocate_entities_to_containers(
                 raise PyXFormError(
                     ErrorCode.ENTITY_009.value.format(
                         row=req.entity_row_number,
-                        scope=f"/{'/'.join(p.name for p in scope_path)}",
+                        scope=f"/{'/'.join(p.name for p in scope_path.nodes)}",
                     )
                 )
 
@@ -541,10 +572,10 @@ def allocate_entities_to_containers(
 
 def inject_entities_into_json(
     node: dict[str, Any],
-    allocations: dict[tuple[ContainerNode, ...], str],
+    allocations: dict[ContainerPath, str],
     entity_declarations: dict[str, dict[str, Any]],
-    current_path: tuple[ContainerNode, ...],
-    search_prefixes: set[tuple[ContainerNode, ...]],
+    current_path: ContainerPath,
+    search_prefixes: set[ContainerPath],
     entities_allocated: set[str] | None = None,
     has_repeat_ancestor: bool = False,
 ) -> dict[str, Any]:
@@ -577,7 +608,9 @@ def inject_entities_into_json(
         child_name = child.get(const.NAME)
         child_type = child.get(const.TYPE)
         if child_name and child_type in {const.GROUP, const.REPEAT}:
-            child_path = (*current_path, ContainerNode(name=child_name, type=child_type))
+            child_path = ContainerPath(
+                (*current_path.nodes, ContainerNode(name=child_name, type=child_type))
+            )
             if not has_repeat_ancestor and child_type == const.REPEAT:
                 has_repeat_ancestor = True
             if child_path in search_prefixes:
@@ -595,8 +628,8 @@ def inject_entities_into_json(
 
 
 def get_search_prefixes(
-    allocations: dict[tuple[ContainerNode, ...], str],
-) -> set[tuple[ContainerNode, ...]]:
+    allocations: dict[ContainerPath, str],
+) -> set[ContainerPath]:
     """
     Get all the relevant path prefixes to help reduce the path search space.
 
@@ -606,8 +639,8 @@ def get_search_prefixes(
     active = set()
     for path in allocations.keys():
         # Add every prefix of the path to the set
-        for i in range(1, len(path) + 1):
-            active.add(path[:i])
+        for i in range(1, len(path.nodes) + 1):
+            active.add(ContainerPath(path.nodes[:i]))
     return active
 
 
@@ -642,14 +675,14 @@ def apply_entities_declarations(
         if allocations:
             has_allocations = True
             has_repeats = any(
-                p.type == const.REPEAT for i in allocations.keys() for p in i
+                p.type == const.REPEAT for i in allocations.keys() for p in i.nodes
             )
             has_repeat_ancestor = json_dict.get(const.TYPE) == const.REPEAT
             json_dict = inject_entities_into_json(
                 node=json_dict,
                 allocations=allocations,
                 entity_declarations=entity_declarations,
-                current_path=(ContainerNode(name=const.SURVEY, type=const.SURVEY),),
+                current_path=ContainerPath.default(),
                 search_prefixes=get_search_prefixes(allocations=allocations),
                 has_repeat_ancestor=has_repeat_ancestor,
             )
