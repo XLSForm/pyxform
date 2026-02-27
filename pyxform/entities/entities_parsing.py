@@ -556,27 +556,22 @@ def inject_entities_into_json(
 
     dataset_name = allocations.get(current_path, None)
     if dataset_name and dataset_name not in entities_allocated:
-        entity_decl = entity_declarations.get(dataset_name, None)
-        # TODO: seems unlikely but perhaps there should be an error on `entity_decl is None`
-        if entity_decl:
-            if has_repeat_ancestor:
-                id_attr = next(
-                    iter(c for c in entity_decl[const.CHILDREN] if c[const.NAME] == "id"),
-                    None,
-                )
-                # TODO: could do with a more explicit way of signaling that repeat is allowed
-                # TODO: should there be an error if the id attr is not found? could that ever happen
-                if id_attr and id_attr["actions"]:
-                    new_repeat = action.ActionLibrary.setvalue_new_repeat.value.to_dict()
-                    new_repeat["value"] = "uuid()"
-                    if new_repeat not in id_attr["actions"]:
-                        id_attr["actions"].append(new_repeat)
+        entity_decl = entity_declarations[dataset_name]
+        if has_repeat_ancestor:
+            id_attr = next(
+                iter(c for c in entity_decl[const.CHILDREN] if c[const.NAME] == "id"),
+                None,
+            )
+            if id_attr and len(id_attr["actions"]) == 1:
+                new_repeat = action.ActionLibrary.setvalue_new_repeat.value.to_dict()
+                new_repeat["value"] = id_attr["actions"][0]["value"]
+                id_attr["actions"].append(new_repeat)
 
-            if const.CHILDREN not in node:
-                node[const.CHILDREN] = []
+        if const.CHILDREN not in node:
+            node[const.CHILDREN] = []
 
-            node[const.CHILDREN].append(get_meta_group(children=[entity_decl]))
-            entities_allocated.add(dataset_name)
+        node[const.CHILDREN].append(get_meta_group(children=[entity_decl]))
+        entities_allocated.add(dataset_name)
 
     for child in node.get(const.CHILDREN, []):
         child_name = child.get(const.NAME)
