@@ -692,9 +692,5 @@ def apply_entities_declarations(
     else:
         json_dict[const.ENTITY_VERSION] = const.EntityVersion.v2024_1_0
         if not has_allocations:
-            if len(entity_declarations) > 1:
-                # TODO: raise error if not already caught / handled elsewhere
-                pass
-            else:
-                # TODO: could this func chain deal with the no-reference case as well?
-                meta_children.append(next(iter(entity_declarations.values())))
+            # TODO: could this func chain deal with the no-reference case as well?
+            meta_children.append(next(iter(entity_declarations.values())))
