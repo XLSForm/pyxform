@@ -389,7 +389,7 @@ class TestEntitiesParsing(PyxformTestCase):
             error__contains=[ErrorCode.ENTITY_003.value.format(row=4)],
         )
 
-    def test_container_as_entity_property__group__no_false_positive(self):
+    def test_container_as_entity_property__group__no_false_positive__ok(self):
         """Should not raise an error when a valid type contains a container type."""
         # EV007
         md = """
@@ -1742,13 +1742,36 @@ class TestEntitiesOutput(PyxformTestCase):
             ],
         )
 
+    def test_implicit_update_mode__instance_required__error(self):
+        """Should find that when an update mode, an instance for the entity is required."""
+        # ES004 EB006 EB012 EB014 EB015 EB019
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | text         | q1   | Q1    |
+
+        | entities |
+        | | list_name | entity_id |
+        | | e1        | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            run_odk_validate=True,
+            odk_validate_error__contains=[
+                "Error evaluating field 'baseVersion' (${meta}[1]/entity[1]/@baseVersion): "
+                "The problem was located in Calculate expression for ${entity}/@baseVersion\n"
+                "XPath evaluation: Instance referenced by instance(e1)/root/item/__version does not exist"
+            ],
+        )
+
     def test_implicit_update_mode__entity_id__survey(self):
         """Should find that when an entity_id is provided, the entity is in update mode."""
         # ES004 EB006 EB012 EB014 EB015 EB019
         md = """
         | survey |
-        | | type | name | label |
-        | | text | q1   | Q1    |
+        | | type         | name | label |
+        | | text         | q1   | Q1    |
+        | | csv-external | e1   |       |
 
         | entities |
         | | list_name | entity_id |
@@ -1757,7 +1780,6 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpe.model_no_instance_csv("e1"),
                 xpe.model_bind_meta_instanceid(),
                 xpe.model_instance_meta("e1", update=True),
                 xpe.model_bind_meta_id(" /test_name/q1 "),
@@ -1779,6 +1801,7 @@ class TestEntitiesOutput(PyxformTestCase):
         | | begin_repeat | r1   | R1    |
         | | text         | q1   | Q1    |
         | | end_repeat   | r1   |       |
+        | | csv-external | e1   |       |
 
         | entities |
         | | list_name | entity_id |
@@ -1787,7 +1810,6 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpe.model_no_instance_csv("e1"),
                 xpe.model_bind_meta_instanceid(),
                 xpe.model_instance_meta("e1", "/x:r1", repeat=True, update=True),
                 xpe.model_instance_meta(
@@ -1873,6 +1895,7 @@ class TestEntitiesOutput(PyxformTestCase):
         | survey |
         | | type         | name | label |
         | | text         | q1   | Q1    |
+        | | csv-external | e1   |       |
 
         | entities |
         | | list_name | entity_id | label |
@@ -1900,10 +1923,10 @@ class TestEntitiesOutput(PyxformTestCase):
         md = """
         | survey |
         | | type         | name | label |
-        | | csv-external | e1   |       |
         | | begin_repeat | r1   | R1    |
         | | text         | q1   | Q1    |
         | | end_repeat   | r1   |       |
+        | | csv-external | e1   |       |
 
         | entities |
         | | list_name | entity_id | label |
@@ -1935,8 +1958,9 @@ class TestEntitiesOutput(PyxformTestCase):
         # ES004 EB006 EB012 EB014 EB015
         md = """
         | survey |
-        | | type | name | label | default |
-        | | text | q1   | Q1    | uuid()  |
+        | | type         | name | label | default |
+        | | text         | q1   | Q1    | uuid()  |
+        | | csv-external | e1   |       |         |
 
         | entities |
         | | list_name | entity_id |
@@ -1969,6 +1993,7 @@ class TestEntitiesOutput(PyxformTestCase):
         | | begin_repeat | r1   | R1    |         |
         | | text         | q1   | Q1    | uuid()  |
         | | end_repeat   | r1   |       |         |
+        | | csv-external | e1   |       |         |
 
         | entities |
         | | list_name | entity_id |
@@ -2009,8 +2034,9 @@ class TestEntitiesOutput(PyxformTestCase):
         # ES004 EB007 EB012 EB014 EB015
         md = """
         | survey |
-        | | type | name | label |
-        | | text | q1   | Q1    |
+        | | type         | name | label |
+        | | text         | q1   | Q1    |
+        | | csv-external | e1   |       |
 
         | entities |
         | | list_name | entity_id | update_if   |
@@ -2041,6 +2067,7 @@ class TestEntitiesOutput(PyxformTestCase):
         | | begin_repeat | r1   | R1    |
         | | text         | q1   | Q1    |
         | | end_repeat   | r1   |       |
+        | | csv-external | e1   |       |
 
         | entities |
         | | list_name | entity_id | update_if   |
@@ -2070,8 +2097,9 @@ class TestEntitiesOutput(PyxformTestCase):
         # ES004 EB009 EB012 EB014 EB015 EB019
         md = """
         | survey |
-        | | type | name | label |
-        | | text | q1   | Q1    |
+        | | type         | name | label |
+        | | text         | q1   | Q1    |
+        | | csv-external | e1   |       |
 
         | entities |
         | | list_name | entity_id | update_if   | create_if   |
@@ -2080,7 +2108,6 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpe.model_no_instance_csv("e1"),
                 xpe.model_bind_meta_instanceid(),
                 xpe.model_instance_meta("e1", update=True, create=True),
                 xpe.model_bind_meta_id(" /test_name/q1 "),
@@ -2104,6 +2131,7 @@ class TestEntitiesOutput(PyxformTestCase):
         | | begin_repeat | r1   | R1    |
         | | text         | q1   | Q1    |
         | | end_repeat   | r1   |       |
+        | | csv-external | e1   |       |
 
         | entities |
         | | list_name | entity_id | update_if   | create_if   |
@@ -2112,7 +2140,6 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpe.model_no_instance_csv("e1"),
                 xpe.model_bind_meta_instanceid(),
                 xpe.model_instance_meta(
                     "e1", "/x:r1", repeat=True, update=True, create=True
@@ -2137,8 +2164,9 @@ class TestEntitiesOutput(PyxformTestCase):
         # ES004 EB009 EB012 EB014 EB015 EB019
         md = """
         | survey |
-        | | type | name | label |
-        | | text | q1   | Q1    |
+        | | type         | name | label |
+        | | text         | q1   | Q1    |
+        | | csv-external | e1   |       |
 
         | entities |
         | | list_name | entity_id | update_if   | create_if   | label |
@@ -2147,7 +2175,6 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpe.model_no_instance_csv("e1"),
                 xpe.model_bind_meta_instanceid(),
                 xpe.model_instance_meta("e1", update=True, create=True, label=True),
                 xpe.model_bind_meta_id(" /test_name/q1 "),
@@ -2172,6 +2199,7 @@ class TestEntitiesOutput(PyxformTestCase):
         | | begin_repeat | r1   | R1    |
         | | text         | q1   | Q1    |
         | | end_repeat   | r1   |       |
+        | | csv-external | e1   |       |
 
         | entities |
         | | list_name | entity_id | update_if   | create_if   | label |
@@ -2180,7 +2208,6 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpe.model_no_instance_csv("e1"),
                 xpe.model_bind_meta_instanceid(),
                 xpe.model_instance_meta(
                     "e1", "/x:r1", repeat=True, update=True, create=True, label=True
