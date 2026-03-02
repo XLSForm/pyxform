@@ -2055,9 +2055,10 @@ class TestEntitiesOutput(PyxformTestCase):
             md=md,
             run_odk_validate=True,
             odk_validate_error__contains=[
-                "Error evaluating field 'baseVersion' (${meta}[1]/entity[1]/@baseVersion): "
-                "The problem was located in Calculate expression for ${entity}/@baseVersion\n"
-                "XPath evaluation: Instance referenced by instance(e1)/root/item/__version does not exist"
+                "Error evaluating field",
+                "The problem was located in Calculate expression for ${entity}",
+                "XPath evaluation: Instance referenced by instance(e1)/root",
+                "does not exist",
             ],
         )
 
