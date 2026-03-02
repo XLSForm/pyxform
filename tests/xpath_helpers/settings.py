@@ -48,5 +48,12 @@ class XPathHelper:
         /h:html/h:head/x:model/x:itext[not(descendant::x:translation[@lang='{lang}'])]
         """
 
+    @staticmethod
+    def instance_meta_survey_element(name: str) -> str:
+        """The element 'name' exists in the survey-level meta element."""
+        return f"""
+        /h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:{name}
+        """
+
 
 xps = XPathHelper()

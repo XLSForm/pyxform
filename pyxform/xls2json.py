@@ -1441,7 +1441,6 @@ def workbook_to_json(
             entity_declarations=entity_declarations,
             entity_references_by_question=entity_references_by_question,
             json_dict=json_dict,
-            meta_children=meta_children,
         )
 
     if len(meta_children) > 0:

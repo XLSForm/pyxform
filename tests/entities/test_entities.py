@@ -48,7 +48,6 @@ Each entities test should reference one (or more) requirements from these lists.
     - EB008: implicit entity_id=1, create_if=1, update_if=0 (error, EV010)
     - EB009: implicit entity_id=1, create_if=1, update_if=1 (upsert / if)
     - EB010: Meta/entity allocations are stable/deterministic
-    - EB011: Entities sheet row order used for allocation tie break
     - EB012: Do not emit entity id setvalue when entity_id present (pyxform/#819)
     - EB013: Emit setvalue for default id
     - EB014: Always emit the instanceID in a survey-level meta block only
@@ -57,6 +56,9 @@ Each entities test should reference one (or more) requirements from these lists.
     - EB017: Do not emit entities namespace if entities not used
     - EB018: Do not emit entities version if entities not used
     - EB019: Do not emit default instance to load the entity from csv
+    - EB020: Allocate to survey when no references exist for an entity
+    - EB021: Allocation to survey meta is compatible with other meta settings
+    - EB022: Allocation searches path ancestors only (not children or siblings)
 
 
 ## Topological constraint solver regression suite
@@ -146,6 +148,7 @@ from pyxform.errors import ErrorCode, PyXFormError
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.entities import xpe
 from tests.xpath_helpers.questions import xpq
+from tests.xpath_helpers.settings import xps
 
 
 class TestEntitiesParsing(PyxformTestCase):
@@ -1581,6 +1584,101 @@ class TestEntitiesParsing(PyxformTestCase):
             with self.subTest(msg=case):
                 self.assertPyxformXform(md=md.format(case=case), warnings_count=0)
 
+    def test_no_allocations__single_entity__ok(self):
+        """Should not raise an error if a single entity with no references exists."""
+        # EV014 EB020
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_no_allocations__multiple_entity__error(self):
+        """Should raise an error if a multiple entities with no references exist."""
+        # EV014 EB010 EB020
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | E2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_009.value.format(row=3, scope="/survey")],
+        )
+
+    def test_no_allocations__multiple_entity__survey_target__error(self):
+        """Should raise an error if a multiple entities with no references exist."""
+        # EV014 EB010 EB020
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_009.value.format(row=3, scope="/survey")],
+        )
+
+    def test_no_allocations__multiple_entity__survey_target_dispersed__error(self):
+        """Should raise an error if a multiple entities with no references exist."""
+        # EV014 EB010 EB020 EB022
+        md = """
+        | survey |
+        | | type        | name | label |
+        | | begin_group | g1   | G1    |
+        | | text        | q1   | Q1    |
+        | | end_group   | g1   |       |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | ${q1} |
+        | | e3        | E3    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_009.value.format(row=4, scope="/survey")],
+        )
+
+    def test_no_allocations__multiple_entity__no_sibling_search__error(self):
+        """Should raise an error if a multiple entities with no references exist."""
+        # EV014 EB020 EB022
+        md = """
+        | survey |
+        | | type        | name | label |
+        | | begin_group | g1   | G1    |
+        | | text        | q1   | Q1    |
+        | | end_group   | g1   |       |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | E2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_009.value.format(row=3, scope="/survey")],
+        )
+
 
 class TestEntitiesOutput(PyxformTestCase):
     def test_namespace__entities_not_used__not_exists(self):
@@ -1718,8 +1816,30 @@ class TestEntitiesOutput(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
+            xml__xpath_match=[xps.instance_meta_survey_element(name="entity")],
+        )
+
+    def test_create__container_survey__child_of_meta__other_settings(self):
+        """Should find that the meta for an unreferenced entity works with settings."""
+        # ES003 EB021
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+
+        | settings |
+        | | instance_name |
+        | | my_form       |
+        """
+        self.assertPyxformXform(
+            md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity"""
+                xps.instance_meta_survey_element(name="entity"),
+                xps.instance_meta_survey_element(name="instanceName"),
             ],
         )
 

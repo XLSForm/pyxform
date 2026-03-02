@@ -170,7 +170,11 @@ class EntityReferences:
             scope_path=deepest_scope_boundary,
             dataset_name=self.dataset_name,
             requested_path=requested_ref.path,
-            sorting_key=(int(bool(deepest_saveto)), len(requested_ref.path.nodes)),
+            sorting_key=(
+                int(bool(deepest_saveto)),
+                len(requested_ref.path.nodes),
+                -self.row_number,
+            ),
             entity_row_number=self.row_number,
         )
 
@@ -184,14 +188,16 @@ class AllocationRequest(NamedTuple):
         dataset_name: The entity list_name.
         requested_path: The preferred path for the entity based on references.
         sorting_key: First item - if 1 (true), there are save_tos among the references.
-          Second item - the length of the requested path.
+          Second item - the length of the requested path. Third item - the entity sheet
+          row number, which is used to break ties, but with the number as negative so
+          that the reverse sort for priority places earlier rows first.
         entity_row_number: The entity sheet row number of the entity.
     """
 
     scope_path: ContainerPath
     dataset_name: str
     requested_path: ContainerPath
-    sorting_key: tuple[int, int]
+    sorting_key: tuple[int, int, int]
     entity_row_number: int
 
 
@@ -525,6 +531,7 @@ def get_entity_references_by_question(
 
 
 def allocate_entities_to_containers(
+    entity_declarations: dict[str, dict[str, Any]],
     entity_references_by_question: dict[str, EntityReferences],
 ) -> dict[ContainerPath, str]:
     """
@@ -537,6 +544,20 @@ def allocate_entities_to_containers(
     for entity_references in entity_references_by_question.values():
         req = entity_references.get_allocation_request()
         scope_paths[req.scope_path].append(req)
+
+    # For unreferenced declarations, default to the survey scope.
+    for dataset_name, declaration in entity_declarations.items():
+        survey_path = ContainerPath.default()
+        if dataset_name not in entity_references_by_question:
+            scope_paths[survey_path].append(
+                AllocationRequest(
+                    scope_path=survey_path,
+                    dataset_name=dataset_name,
+                    requested_path=survey_path,
+                    sorting_key=(0, 1, -declaration["__row_number"]),
+                    entity_row_number=declaration["__row_number"],
+                )
+            )
 
     # Assign the requests to available allowed container nodes.
     for scope_path, requests in scope_paths.items():
@@ -648,7 +669,6 @@ def apply_entities_declarations(
     entity_declarations: dict[str, dict[str, Any]],
     entity_references_by_question: dict[str, EntityReferences],
     json_dict: dict[str, Any],
-    meta_children: list[dict[str, Any]],
 ) -> None:
     """
     Traverse the json_dict tree and add meta/entity blocks where appropriate.
@@ -663,34 +683,24 @@ def apply_entities_declarations(
     :param entity_references_by_question: For each entity, details of where and how they
       are referred to, structured as `{dataset_name: EntityReferences}`.
     :param json_dict: The output dict structure to be emitted from `workbook_to_json`.
-    :param meta_children: Details of the nodes to be added to the (parent) meta block.
     :return: The json_dict is modified in-place
     """
-    has_allocations = False
-    has_repeats = False
-    if entity_references_by_question:
-        allocations = allocate_entities_to_containers(
-            entity_references_by_question=entity_references_by_question
-        )
-        if allocations:
-            has_allocations = True
-            has_repeats = any(
-                p.type == const.REPEAT for i in allocations.keys() for p in i.nodes
-            )
-            has_repeat_ancestor = json_dict.get(const.TYPE) == const.REPEAT
-            json_dict = inject_entities_into_json(
-                node=json_dict,
-                allocations=allocations,
-                entity_declarations=entity_declarations,
-                current_path=ContainerPath.default(),
-                search_prefixes=get_search_prefixes(allocations=allocations),
-                has_repeat_ancestor=has_repeat_ancestor,
-            )
+    allocations = allocate_entities_to_containers(
+        entity_declarations=entity_declarations,
+        entity_references_by_question=entity_references_by_question,
+    )
+    json_dict = inject_entities_into_json(
+        node=json_dict,
+        allocations=allocations,
+        entity_declarations=entity_declarations,
+        current_path=ContainerPath.default(),
+        search_prefixes=get_search_prefixes(allocations=allocations),
+        has_repeat_ancestor=json_dict.get(const.TYPE) == const.REPEAT,
+    )
 
-    if len(entity_declarations) > 1 or has_repeats:
+    if len(entity_declarations) > 1 or any(
+        p.type == const.REPEAT for i in allocations.keys() for p in i.nodes
+    ):
         json_dict[const.ENTITY_VERSION] = const.EntityVersion.v2025_1_0
     else:
         json_dict[const.ENTITY_VERSION] = const.EntityVersion.v2024_1_0
-        if not has_allocations:
-            # TODO: could this func chain deal with the no-reference case as well?
-            meta_children.append(next(iter(entity_declarations.values())))
