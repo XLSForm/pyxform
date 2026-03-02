@@ -640,6 +640,59 @@ class TestEntitiesParsing(PyxformTestCase):
             ],
         )
 
+    def test_save_to_scope_breach__depth_1_group__save_to_only__ok(self):
+        """Should not raise an error if an entity save_to is in more than one group."""
+        # ES006 EV014 EV015
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | text        | q1   | Q1    | e1#e1p1 |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q2   | Q2    | e1#e1p2 |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_1_group__save_and_var__ok(self):
+        """Should not raise an error if an entity savsave_to/vare_to is in more than one group."""
+        # ES006 EV014 EV015
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | text        | q1   | Q1    | e1#e1p1 |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q2   | Q2    | e1#e1p2 |
+        | | end_group   | g1   |       |         |
+        | | text        | q3   | Q3    |         |
+
+        | entities |
+        | | list_name | label                                 |
+        | | e1        | concat(${q1}, " ", ${q2}, " ", ${q3}) |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_1_group__var_only__ok(self):
+        """Should not raise an error if an entity var is in more than one group."""
+        # ES006 EV014
+        md = """
+        | survey |
+        | | type        | name | label |
+        | | text        | q1   | Q1    |
+        | | begin_group | g1   | G1    |
+        | | text        | q2   | Q2    |
+        | | end_group   | g1   |       |
+        | | text        | q3   | Q3    |
+
+        | entities |
+        | | list_name | label                                 |
+        | | e1        | concat(${q1}, " ", ${q2}, " ", ${q3}) |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
     def test_unsolvable_meta_topology__depth_1_group__saveto_only__error(self):
         """Should raise an error if there is no valid placement for the meta/entity block."""
         # EV014
@@ -663,23 +716,6 @@ class TestEntitiesParsing(PyxformTestCase):
                 ErrorCode.ENTITY_009.value.format(row=3, scope="/survey"),
             ],
         )
-
-    def test_save_to_scope_breach__depth_1_group__save_to_only__ok(self):
-        """Should not raise an error if an entity save_to is in more than one group."""
-        # ES006 EV014 EV015
-        md = """
-        | survey |
-        | | type        | name | label | save_to |
-        | | text        | q1   | Q1    | e1#e1p1 |
-        | | begin_group | g1   | g1    |         |
-        | | text        | q2   | Q2    | e1#e1p2 |
-        | | end_group   | g1   |       |         |
-
-        | entities |
-        | | list_name | label |
-        | | e1        | E1    |
-        """
-        self.assertPyxformXform(md=md, warnings_count=0)
 
     def test_unsolvable_meta_topology__depth_1_group__var_only__error(self):
         """Should raise an error if there is no valid placement for the meta/entity block."""
@@ -875,6 +911,82 @@ class TestEntitiesParsing(PyxformTestCase):
             ],
         )
 
+    def test_save_to_scope_breach__depth_1_repeat__ancestor_var__ok(self):
+        """Should not raise an error if an ancestor variable is outside the repeat scope."""
+        # ES006 EV015
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    |         |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q2   | Q2    | e1#e1p1 |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_1_repeat__save_to_only__ok(self):
+        """Should not raise an error if an entity save_to is in more than one group."""
+        # ES006 EV014 EV015
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | e1#e1p1 |
+        | | begin_group  | g1   | G1    |         |
+        | | text         | q2   | Q2    | e1#e1p2 |
+        | | end_group    | g1   |       |         |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_1_repeat__save_and_var__ok(self):
+        """Should not raise an error if an entity save_to/var is in more than one group."""
+        # ES006 EV014 EV015
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | e1#e1p1 |
+        | | begin_group  | g1   | G1    |         |
+        | | text         | q2   | Q2    | e1#e1p2 |
+        | | end_group    | g1   |       |         |
+        | | text         | q3   | Q3    |         |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | list_name | label                                 |
+        | | e1        | concat(${q1}, " ", ${q2}, " ", ${q3}) |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_1_repeat__var_only__ok(self):
+        """Should not raise an error if an entity var is in more than one group."""
+        # ES006 EV014
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | begin_group  | g1   | G1    |
+        | | text         | q2   | Q2    |
+        | | end_group    | g1   |       |
+        | | text         | q3   | Q3    |
+        | | end_repeat   | r1   |       |
+
+        | entities |
+        | | list_name | label                                 |
+        | | e1        | concat(${q1}, " ", ${q2}, " ", ${q3}) |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
     def test_save_to_scope_breach__depth_1_repeat__multiple_lists__ok(self):
         """Should not raise an error if different entity save_tos are in different scopes."""
         # ES006 EV015
@@ -975,6 +1087,71 @@ class TestEntitiesParsing(PyxformTestCase):
                 ),
             ],
         )
+
+    def test_save_to_scope_breach__depth_2_group__save_to_only__ok(self):
+        """Should not raise an error if an entity save_to is in more than one group."""
+        # ES006 EV014 EV015
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_group  | g1   | G1    |         |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | e1#e1p1 |
+        | | begin_group  | g2   | G2    |         |
+        | | text         | q2   | Q2    | e1#e1p2 |
+        | | end_group    | g2   |       |         |
+        | | end_repeat   | r1   |       |         |
+        | | end_group    | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_2_group__save_and_var__ok(self):
+        """Should not raise an error if an entity save_to/var is in more than one group."""
+        # ES006 EV014 EV015
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_group  | g1   | G1    |         |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | e1#e1p1 |
+        | | begin_group  | g2   | G2    |         |
+        | | text         | q2   | Q2    | e1#e1p2 |
+        | | end_group    | g2   |       |         |
+        | | text         | q3   | Q3    |         |
+        | | end_repeat   | r1   |       |         |
+        | | end_group    | g1   |       |         |
+
+        | entities |
+        | | list_name | label                                 |
+        | | e1        | concat(${q1}, " ", ${q2}, " ", ${q3}) |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_save_to_scope_breach__depth_2_group__var_only__ok(self):
+        """Should not raise an error if an entity var is in more than one group."""
+        # ES006 EV014
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_group  | g1   | G1    |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | begin_group  | g2   | G2    |
+        | | text         | q2   | Q2    |
+        | | end_group    | g2   |       |
+        | | text         | q3   | Q3    |
+        | | end_repeat   | r1   |       |
+        | | end_group    | g1   |       |
+
+        | entities |
+        | | list_name | label                                 |
+        | | e1        | concat(${q1}, " ", ${q2}, " ", ${q3}) |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
 
     def test_ref_scope_conflict__depth_1_sibling_repeat__saveto_only__error(self):
         """Should raise an error if an entity save_to is in more than one scope lineage."""
