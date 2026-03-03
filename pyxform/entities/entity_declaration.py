@@ -6,7 +6,10 @@ from pyxform.survey_elements.label import Label
 from pyxform.utils import combine_lists
 
 EC = const.EntityColumns
-ENTITY_EXTRA_FIELDS = (const.CHILDREN,)
+ENTITY_EXTRA_FIELDS = (
+    const.TYPE,
+    const.CHILDREN,
+)
 ENTITY_FIELDS = (*SURVEY_ELEMENT_FIELDS, *ENTITY_EXTRA_FIELDS)
 CHILD_TYPES = {"label": Label, "attribute": Attribute}
 
@@ -24,7 +27,7 @@ class EntityDeclaration(Section):
     def get_slot_names() -> tuple[str, ...]:
         return ENTITY_FIELDS
 
-    def __init__(self, name: str, type: str, **kwargs):
+    def __init__(self, name: str, type: str = const.ENTITY, **kwargs):
         super().__init__(name=name, type=type, **kwargs)
         self.children: list[Label | Attribute] = []
 

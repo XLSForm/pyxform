@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 
 from pyxform import constants
+from pyxform.errors import ErrorCode
 from pyxform.utils import levenshtein_distance
 
 
@@ -25,10 +26,8 @@ def find_sheet_misspellings(key: str, keys: Iterable) -> "str | None":
         and not _k.startswith("_")
     )
     if 0 < len(candidates):
-        msg = (
-            "When looking for a sheet named '{k}', the following sheets with "
-            "similar names were found: {c}."
-        ).format(k=key, c=str(", ".join(f"'{c}'" for c in candidates)))
-        return msg
+        return ErrorCode.NAMES_013.value.format(
+            sheet=key, candidates=str(", ".join(f"'{c}'" for c in candidates))
+        )
     else:
         return None

@@ -25,12 +25,12 @@ class XPathHelper:
         list_name: str,
         meta_path: str = "",
         repeat: bool = False,
-        template: bool = False,
+        template: bool | None = False,
         create: bool = False,
         update: bool = False,
         label: bool = False,
     ) -> str:
-        assertion = {True: "{0}", False: "not({0})"}
+        assertion = {True: "{0}", False: "not({0})", None: "true()"}
         repeat_asserts = ("not(./x:instanceID)",)
         template_asserts = ("@jr:template",)
         create_asserts = ("@create='1'",)
@@ -52,6 +52,22 @@ class XPathHelper:
           and {" and ".join(assertion[create].format(i) for i in create_asserts)}
           and {" and ".join(assertion[update].format(i) for i in update_asserts)}
           and {" and ".join(assertion[label].format(i) for i in label_asserts)}
+        ]
+        """
+
+    @staticmethod
+    def model_no_instance_csv(list_name: str) -> str:
+        return f"""
+        /h:html/h:head/x:model[
+          not(./x:instance[@id='{list_name}' and @src='jr://file-csv/{list_name}.csv'])
+        ]
+        """
+
+    @staticmethod
+    def model_instance_csv(list_name: str) -> str:
+        return f"""
+        /h:html/h:head/x:model/x:instance[
+          @id='{list_name}' and @src='jr://file-csv/{list_name}.csv'
         ]
         """
 
@@ -162,8 +178,8 @@ class XPathHelper:
     def model_bind_meta_label(value: str, meta_path: str = "") -> str:
         return f"""
         /h:html/h:head/x:model/x:bind[
-          @nodeset="/test_name{meta_path}/meta/entity/label"
-          and @calculate="{value}"
+          @nodeset='/test_name{meta_path}/meta/entity/label'
+          and @calculate='{value}'
           and @type='string'
           and @readonly='true()'
         ]

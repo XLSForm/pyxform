@@ -58,56 +58,123 @@ class ErrorCode(Enum):
     """
 
     ENTITY_001 = Detail(
-        name="Entities - invalid entity repeat reference",
+        name="Entities - save_to but no entities",
         msg=(
-            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-            "The 'repeat' column, if specified, must contain only a single reference variable "
-            "(like '${{q1}}'), and the reference variable must contain a valid name."
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "To save entity properties using the save_to column, add an entities sheet and "
+            "declare an entity."
         ),
     )
     ENTITY_002 = Detail(
-        name="Entities - invalid entity repeat: target not found",
+        name="Entities - duplicate save_to property",
         msg=(
-            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-            "The entity repeat target was not found in the 'survey' sheet."
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "The save_to property '{saveto}' is already assigned by row '{other_row}'. "
+            "Either remove or change one of these duplicate save_to property names."
         ),
     )
     ENTITY_003 = Detail(
-        name="Entities - invalid entity repeat: target is not a repeat",
+        name="Entities - save_to in group or repeat row",
         msg=(
-            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-            "The entity repeat target is not a repeat."
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "Groups and repeats can't be saved as entity properties. "
+            "Either remove or move the save_to value in this row."
         ),
     )
     ENTITY_004 = Detail(
-        name="Entities - invalid entity repeat: target is in a repeat",
+        name="Entities - list_name not found",
         msg=(
-            "[row : 2] On the 'entities' sheet, the 'repeat' value '{value}' is invalid. "
-            "The entity repeat target is inside a repeat."
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "The entity list name '{dataset}' was not found on the entities sheet. "
+            "Please either: check the spelling of the list name in the save_to value, or "
+            "on the entities sheet add a row for this entity list, or check the spelling "
+            "of existing entity list names."
         ),
     )
     ENTITY_005 = Detail(
-        name="Entities - invalid entity repeat save_to: question in nested repeat",
+        name="Entities - missing entity create label",
         msg=(
-            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-            "The entity property populated with 'save_to' must not be inside of a nested "
-            "repeat within the entity repeat."
+            "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
+            "The entity list name '{dataset}' does not have a label, but a 'label' is "
+            "required when creating entities. Creating entities is indicated by using "
+            "a 'create_if' expression, or by not using 'entity_id' expression. "
+            "Please either: add a 'label' for this entity declaration, or to update "
+            "entities instead provide an 'entity_id' (and optionally 'update_if') expression."
         ),
     )
     ENTITY_006 = Detail(
-        name="Entities - invalid entity repeat save_to: question not in entity repeat",
+        name="Entities - missing entity upsert update_if",
         msg=(
-            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-            "The entity property populated with 'save_to' must be inside of the entity "
-            "repeat."
+            "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
+            "The entity list name '{dataset}' does not have an 'update_if' expression, "
+            "but an 'update_if' is required when upserting entities. Upserting entities "
+            "is indicated by using 'create_if' and 'entity_id' expressions. "
+            "Please either: add an 'update_if' for this entity declaration, or to only "
+            "create entities instead remove the 'entity_id' expression."
         ),
     )
     ENTITY_007 = Detail(
-        name="Entities - invalid entity repeat save_to: question in repeat but no entity repeat defined",
+        name="Entities - missing entity update/upsert entity_id",
         msg=(
-            "[row : {row}] On the 'survey' sheet, the 'save_to' value '{value}' is invalid. "
-            "The entity property populated with 'save_to' must be inside a repeat that is "
-            "declared in the 'repeat' column of the 'entities' sheet."
+            "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
+            "The entity list name '{dataset}' does not have an 'entity_id' expression, "
+            "but an 'entity_id' is required when updating entities. Updating entities "
+            "is indicated by using 'entity_id' and/or 'update_if' expressions. "
+            "Please either: add an 'entity_id' for this entity declaration, or to only "
+            "create entities instead move the 'update_if' to 'create_if'."
+        ),
+    )
+    ENTITY_008 = Detail(
+        name="Entities - missing save_to prefix with multiple entities",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "When there is more than one entity declaration, 'save_to' names must be "
+            "prefixed with the entity 'list_name' that the property belongs to. "
+            "Please either: add the entity 'list_name' prefix separated with a '#' "
+            "e.g. my_list#my_save_to (where 'my_list' is the entity 'list_name', and "
+            "'my_save_to' is the 'save_to' property name), or remove all but one entity "
+            "declarations."
+        ),
+    )
+    ENTITY_009 = Detail(
+        name="Entities - unsolvable meta/entity topology",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
+            "Each container (survey, group, repeat) may have only one entity declaration, "
+            "but there are no valid containers available in the scope: '{scope}'. "
+            "Please either: check which entities are referred to from the 'survey' sheet"
+            "in the 'save_to' column, or check which questions are being referred to "
+            "from the 'entities' sheet with variable references (such as in the 'label')."
+        ),
+    )
+    ENTITY_011 = Detail(
+        name="Entities - reference scope conflict (save_to conflicts with other ref)",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "The entity list name '{dataset}' has a reference in container scope '{other_scope}' "
+            "which is not compatible with this 'save_to' reference in scope '{scope}'. "
+            "Please either: check the spelling of the list name in the 'save_to', or "
+            "copy either value into the desired container scope with a 'calculate' "
+            "question then use that 'calculate' for the 'save_to'."
+        ),
+    )
+    ENTITY_012 = Detail(
+        name="Entities - reference scope conflict (variable conflicts with other ref)",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
+            "The entity list name '{dataset}' has a reference in container scope '{other_scope}' "
+            "which is not compatible with the variable reference to '{question}' in scope '{scope}'. "
+            "Please either: check the spelling of the variable references, or "
+            "copy either value into the desired container scope with a 'calculate' "
+            "question then use that 'calculate' for the 'save_to'."
+        ),
+    )
+    ENTITY_013 = Detail(
+        name="Entities - save_to multiple delimiters",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
+            "A 'save_to' value must have at most one '#' delimiter character. "
+            "Please check the spelling of this 'save_to' value."
         ),
     )
     HEADER_001: Detail = Detail(
@@ -144,12 +211,29 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
+    HEADER_005: Detail = Detail(
+        name="Headers - invalid entities header",
+        msg=(
+            "[row : 1] On the 'entities' sheet, one or more column names are invalid. "
+            "The following column(s) are not supported by this version of pyxform: {columns}. "
+            "Please either: check the spelling of the column names, remove the columns, "
+            "or update pyxform."
+        ),
+    )
     INTERNAL_001: Detail = Detail(
         name="Internal error - incorrectly processed question trigger data",
         msg=(
             "Internal error: "
             "PyXForm expected processed trigger data as a tuple, but received a "
             "type '{type}' with value '{value}'."
+        ),
+    )
+    INTERNAL_002: Detail = Detail(
+        name="Internal error - reference source missing both property and question",
+        msg=(
+            "Internal error: "
+            "Both property_name and question_name were None for ReferenceSource with "
+            "path '{path}'."
         ),
     )
     LABEL_001: Detail = Detail(
@@ -252,6 +336,27 @@ class ErrorCode(Enum):
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Names used here must not be 'name' or 'label' (case-insensitive)."
+        ),
+    )
+    NAMES_013: Detail = Detail(
+        name="Names - possible sheet name misspelling",
+        msg=(
+            "When looking for a sheet named '{sheet}', the following sheets with "
+            "similar names were found: {candidates}."
+        ),
+    )
+    NAMES_014: Detail = Detail(
+        name="Names - invalid duplicate name in the entities sheet",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, the 'list_name' value is invalid. "
+            "The 'list_name' column must not have any duplicate names."
+        ),
+    )
+    NAMES_015: Detail = Detail(
+        name="Names - invalid missing name in the entities sheet",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, the 'list_name' value is invalid. "
+            "Entity lists must have a name."
         ),
     )
     PYREF_001: Detail = Detail(

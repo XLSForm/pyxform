@@ -16,9 +16,11 @@ from pyxform.constants import (
 )
 from pyxform.elements import action as action_module
 from pyxform.entities.entities_parsing import (
-    get_entity_declaration,
-    validate_entity_repeat_target,
-    validate_entity_saveto,
+    ContainerPath,
+    apply_entities_declarations,
+    get_entity_declarations,
+    get_entity_references_by_question,
+    get_entity_variable_references,
 )
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
@@ -402,7 +404,8 @@ def workbook_to_json(
             json_dict[constants.CHOICES] = choices
 
     # ########## Entities sheet ###########
-    entity_declaration = None
+    entity_declarations = None
+    entity_variable_references = None
     if workbook_dict.entities:
         entities_sheet = dealias_and_group_headers(
             sheet_name=constants.ENTITIES,
@@ -411,7 +414,10 @@ def workbook_to_json(
             header_aliases=aliases.entities_header,
             header_columns={i.value for i in constants.EntityColumns.value_list()},
         )
-        entity_declaration = get_entity_declaration(entities_sheet=entities_sheet.data)
+        entity_declarations = get_entity_declarations(entities_sheet=entities_sheet.data)
+        entity_variable_references = get_entity_variable_references(
+            entity_declarations=entity_declarations
+        )
     else:
         similar = find_sheet_misspellings(key=constants.ENTITIES, keys=sheet_names)
         if similar is not None:
@@ -472,6 +478,7 @@ def workbook_to_json(
             "child_names": set(),
             "child_names_lower": set(),
             "row_number": None,
+            "container_path": ContainerPath.default(),
         }
     ]
     # If a group has a table-list appearance flag
@@ -485,6 +492,7 @@ def workbook_to_json(
     element_names = Counter()
     trigger_references: list[tuple[str, int]] = []
     repeat_names = set()
+    entity_references_by_question = {}
 
     # row by row, validate questions, throwing errors and adding warnings where needed.
     for row_number, row in enumerate(survey_sheet.data, start=2):
@@ -737,23 +745,57 @@ def workbook_to_json(
             json_dict[settings_type] = str(row.get(constants.NAME))
             continue
 
+        # Try to parse question as begin control statement
+        # (i.e. begin loop/repeat/group):
+        begin_control_parse = RE_BEGIN_CONTROL.search(question_type)
         # Try to parse question as a end control statement
         # (i.e. end loop/repeat/group):
         end_control_parse = RE_END_CONTROL.search(question_type)
+
+        # Make sure the row has a valid name
+        question_name = None
+        if not end_control_parse:
+            if constants.NAME not in row:
+                if row[constants.TYPE] == "note":
+                    # autogenerate names for notes without them
+                    row[constants.NAME] = "generated_note_name_" + str(row_number)
+                elif not end_control_parse:
+                    raise PyXFormError(
+                        ROW_FORMAT_STRING % row_number
+                        + " Question or group with no name."
+                    )
+            question_name = str(row[constants.NAME])
+            if not is_xml_tag(question_name):
+                raise PyXFormError(
+                    ErrorCode.NAMES_008.value.format(
+                        sheet=constants.SURVEY, row=row_number, column=constants.NAME
+                    )
+                )
+            element_names.update((question_name,))
+
+            unique_names.validate_question_group_repeat_name(
+                row_number=row_number,
+                name=question_name,
+                seen_names=child_names,
+                seen_names_lower=child_names_lower,
+                warnings=warnings,
+            )
+
+        get_entity_references_by_question(
+            container_path=stack[-1]["container_path"],
+            row=row,
+            row_number=row_number,
+            question_name=question_name,
+            entity_declarations=entity_declarations,
+            entity_variable_references=entity_variable_references,
+            entity_references_by_question=entity_references_by_question,
+            is_container_begin=begin_control_parse is not None,
+            is_container_end=end_control_parse is not None,
+        )
+
         if end_control_parse:
             parse_dict = end_control_parse.groupdict()
             if parse_dict.get("end") and "type" in parse_dict:
-                if validate_entity_repeat_target(
-                    entity_declaration=entity_declaration,
-                    stack=stack,
-                ):
-                    parent_children_array.append(
-                        get_meta_group(children=[entity_declaration])
-                    )
-                    json_dict[constants.ENTITY_VERSION] = (
-                        constants.EntityVersion.v2025_1_0
-                    )
-                    entity_declaration = None
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
@@ -767,41 +809,6 @@ def workbook_to_json(
                 table_list = None
                 continue
 
-        # Make sure the row has a valid name
-        if constants.NAME not in row:
-            if row[constants.TYPE] == "note":
-                # autogenerate names for notes without them
-                row[constants.NAME] = "generated_note_name_" + str(row_number)
-            else:
-                raise PyXFormError(
-                    ROW_FORMAT_STRING % row_number + " Question or group with no name."
-                )
-        question_name = str(row[constants.NAME])
-        if not is_xml_tag(question_name):
-            raise PyXFormError(
-                ErrorCode.NAMES_008.value.format(
-                    sheet=constants.SURVEY, row=row_number, column=constants.NAME
-                )
-            )
-        element_names.update((question_name,))
-
-        unique_names.validate_question_group_repeat_name(
-            row_number=row_number,
-            name=question_name,
-            seen_names=child_names,
-            seen_names_lower=child_names_lower,
-            warnings=warnings,
-        )
-        validate_entity_saveto(
-            row=row,
-            row_number=row_number,
-            stack=stack,
-            entity_declaration=entity_declaration,
-        )
-
-        # Try to parse question as begin control statement
-        # (i.e. begin loop/repeat/group):
-        begin_control_parse = RE_BEGIN_CONTROL.search(question_type)
         if begin_control_parse:
             parse_dict = begin_control_parse.groupdict()
             if parse_dict.get("begin") and "type" in parse_dict:
@@ -927,10 +934,7 @@ def workbook_to_json(
                         "row_number": row_number,
                     }
                 )
-                validate_entity_repeat_target(
-                    stack=stack,
-                    entity_declaration=entity_declaration,
-                )
+                stack[-1]["container_path"] = ContainerPath.from_stack(stack=stack)
                 continue
 
         # Assuming a question is anything not processed above as a loop/repeat/group.
@@ -1432,15 +1436,26 @@ def workbook_to_json(
             }
         )
 
-    if entity_declaration:
-        validate_entity_repeat_target(entity_declaration=entity_declaration)
-        json_dict[constants.ENTITY_VERSION] = constants.EntityVersion.v2024_1_0
-        meta_children.append(entity_declaration)
+    if entity_declarations:
+        apply_entities_declarations(
+            entity_declarations=entity_declarations,
+            entity_references_by_question=entity_references_by_question,
+            json_dict=json_dict,
+        )
 
     if len(meta_children) > 0:
-        meta_element = get_meta_group(children=meta_children)
-        survey_children_array = stack[0]["parent_children"]
-        survey_children_array.append(meta_element)
+        existing_meta = next(
+            (
+                e
+                for e in json_dict[constants.CHILDREN]
+                if e[constants.NAME] == "meta" and e[constants.TYPE] == constants.GROUP
+            ),
+            None,
+        )
+        if existing_meta:
+            existing_meta[constants.CHILDREN].extend(meta_children)
+        else:
+            json_dict[constants.CHILDREN].append(get_meta_group(children=meta_children))
 
     validate_pyxform_references_in_workbook(
         workbook_dict=workbook_dict,
