@@ -416,7 +416,7 @@ def workbook_to_json(
         )
         entity_declarations = get_entity_declarations(entities_sheet=entities_sheet.data)
         entity_variable_references = get_entity_variable_references(
-            entities_sheet=entities_sheet.data
+            entity_declarations=entity_declarations
         )
     else:
         similar = find_sheet_misspellings(key=constants.ENTITIES, keys=sheet_names)

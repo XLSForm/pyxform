@@ -251,6 +251,14 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
             ErrorCode.ENTITY_005.value.format(row=row_number, dataset=dataset_name)
         )
 
+    variable_references = set()
+    for column in (entity_id, create_if, update_if, label):
+        if column is not None:
+            references = parse_pyxform_references(value=column)
+            if references:
+                for ref in references:
+                    variable_references.add(ref.name)
+
     entity = {
         const.NAME: const.ENTITY,
         const.TYPE: const.ENTITY,
@@ -262,6 +270,7 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
             },
         ],
         "__row_number": row_number,
+        "__variable_references": variable_references,
     }
 
     id_attr = {
@@ -459,22 +468,22 @@ def get_entity_declarations(
 
 
 def get_entity_variable_references(
-    entities_sheet: Iterable[dict],
-) -> dict[str, dict[str, list[str]]]:
+    entity_declarations: dict[str, dict[str, Any]],
+) -> dict[str, list[str]]:
     """
-    Parse variable references in the entities sheet columns.
+    Group variable references in the entities delarations by question_name.
+
+    :return: dict[question_name: str, list[dataset_name: str]]
     """
-    entity_references = defaultdict(lambda: defaultdict(list))
-    for row in entities_sheet:
-        dataset_name = row[EC.DATASET]
-        for column_name, value in row.items():
-            if column_name == EC.DATASET:
-                continue
-            references = parse_pyxform_references(value=value)
-            if references:
-                for ref in references:
-                    entity_references[ref.name][dataset_name].append(column_name)
-    return entity_references
+    variable_references = defaultdict(list)
+    for dataset_name, declaration in entity_declarations.items():
+        # Not needed anywhere else so remove from declaration.
+        references = declaration.pop("__variable_references", None)
+        if references:
+            for question_name in references:
+                variable_references[question_name].append(dataset_name)
+
+    return variable_references
 
 
 def get_entity_references_by_question(
@@ -483,7 +492,7 @@ def get_entity_references_by_question(
     row_number: int,
     question_name: str,
     entity_declarations: dict[str, dict[str, Any]],
-    entity_variable_references: dict[str, dict[str, list[str]]],
+    entity_variable_references: dict[str, list[str]],
     entity_references_by_question: dict[str, EntityReferences],
     is_container_begin: bool,
     is_container_end: bool,
