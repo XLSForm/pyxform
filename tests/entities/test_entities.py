@@ -2682,8 +2682,9 @@ class TestEntitiesOutput(PyxformTestCase):
         # ES003 ES005
         md = """
         | survey |
-        | | type | name | label | save_to |
-        | | text | q1   | Q1    | e1p1    |
+        | | type         | name | label | save_to |
+        | | text         | q1   | Q1    | e1p1    |
+        | | csv-external | e1   |       |         |
 
         | entities |
         | | list_name | label | entity_id |
@@ -2701,10 +2702,11 @@ class TestEntitiesOutput(PyxformTestCase):
         # ES003 ES005
         md = """
         | survey |
-        | | type        | name | label | save_to |
-        | | begin_group | g1   | G1    |         |
-        | | text        | q1   | Q1    | e1p1    |
-        | | end_group   | g1   |       |         |
+        | | type         | name | label | save_to |
+        | | begin_group  | g1   | G1    |         |
+        | | text         | q1   | Q1    | e1p1    |
+        | | end_group    | g1   |       |         |
+        | | csv-external | e1   |       |         |
 
         | entities |
         | | list_name | label | entity_id |
@@ -2726,6 +2728,7 @@ class TestEntitiesOutput(PyxformTestCase):
         | | begin_repeat | r1   | R1    |         |
         | | text         | q1   | Q1    | e1p1    |
         | | end_repeat   | r1   |       |         |
+        | | csv-external | e1   |       |         |
 
         | entities |
         | | list_name | label | entity_id |
@@ -2749,6 +2752,7 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text         | q1   | Q1    | e1p1    |
         | | end_group    | g1   |       |         |
         | | end_repeat   | r1   |       |         |
+        | | csv-external | e1   |       |         |
 
         | entities |
         | | list_name | label | entity_id |
@@ -2772,6 +2776,7 @@ class TestEntitiesOutput(PyxformTestCase):
         | | text         | q1   | Q1    | e1p1    |
         | | end_repeat   | r1   |       |         |
         | | end_group    | g1   |       |         |
+        | | csv-external | e1   |       |         |
 
         | entities |
         | | list_name | label | entity_id |
