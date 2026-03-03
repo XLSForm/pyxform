@@ -349,7 +349,14 @@ class ErrorCode(Enum):
         name="Names - invalid duplicate name in the entities sheet",
         msg=(
             "[row : {row}] On the 'entities' sheet, the 'list_name' value is invalid. "
-            "The 'list_name' column must not have any duplicate names. "
+            "The 'list_name' column must not have any duplicate names."
+        ),
+    )
+    NAMES_015: Detail = Detail(
+        name="Names - invalid missing name in the entities sheet",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, the 'list_name' value is invalid. "
+            "Entity lists must have a name."
         ),
     )
     PYREF_001: Detail = Detail(

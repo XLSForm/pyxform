@@ -37,6 +37,7 @@ Each entities test should reference one (or more) requirements from these lists.
     - EV021: save_to name invalid identifier error
     - EV022: save_to name invalid reserved names error
     - EV023: save_to name invalid underscore prefix error
+    - EV024: Entity name missing error
 - Behaviour
     - EB001: Dataset column alias
     - EB002: implicit entity_id=0, create_if=0, update_if=0 (create)
@@ -1493,6 +1494,43 @@ class TestEntitiesParsing(PyxformTestCase):
                     sheet=co.ENTITIES, row=2, column=co.EntityColumns.DATASET.value
                 )
             ],
+        )
+
+    def test_dataset_name__missing__error(self):
+        """Should raise an error if the dataset name is missing."""
+        # ES003 EV024
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | label |
+        | |           | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.NAMES_015.value.format(row=2)],
+        )
+
+    def test_dataset_name__missing_multiple__error(self):
+        """Should raise an error if the dataset name is missing."""
+        # ES003 EV024
+        md = """
+        | survey |
+        | | type | name | label |
+        | | text | q1   | Q1    |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | |           | E2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.NAMES_015.value.format(row=3)],
         )
 
     def test_save_to_name__xml_identifier__error(self):

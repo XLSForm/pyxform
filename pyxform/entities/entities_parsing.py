@@ -229,12 +229,13 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
         )
         raise PyXFormError(msg)
 
-    dataset_name = get_validated_dataset_name(row)
+    dataset_name = row.get(EC.DATASET, None)
     entity_id = row.get(EC.ENTITY_ID, None)
     create_if = row.get(EC.CREATE_IF, None)
     update_if = row.get(EC.UPDATE_IF, None)
     label = row.get(EC.LABEL, None)
 
+    validate_dataset_name(dataset_name=dataset_name, row_number=row_number)
     if not entity_id and update_if:
         raise PyXFormError(
             ErrorCode.ENTITY_007.value.format(row=row_number, dataset=dataset_name)
@@ -354,38 +355,53 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
     return entity
 
 
-def get_validated_dataset_name(entity):
-    dataset = entity[EC.DATASET]
+def validate_dataset_name(dataset_name: str | None, row_number: int) -> None:
+    """
+    Check the dataset_name passes all naming rules.
 
-    if dataset.startswith(const.ENTITIES_RESERVED_PREFIX):
+    :param dataset_name: The value to check.
+    :param row_number: The entities sheet row number.
+    """
+    if not dataset_name:
+        raise PyXFormError(ErrorCode.NAMES_015.value.format(row=row_number))
+    elif dataset_name.startswith(const.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
             ErrorCode.NAMES_010.value.format(
-                sheet=const.ENTITIES, row=2, column=EC.DATASET.value
+                sheet=const.ENTITIES, row=row_number, column=EC.DATASET.value
             )
         )
-    elif "." in dataset:
+    elif "." in dataset_name:
         raise PyXFormError(
             ErrorCode.NAMES_011.value.format(
-                sheet=const.ENTITIES, row=2, column=EC.DATASET.value
+                sheet=const.ENTITIES, row=row_number, column=EC.DATASET.value
             )
         )
-    elif not is_xml_tag(dataset):
+    elif not is_xml_tag(dataset_name):
         raise PyXFormError(
             ErrorCode.NAMES_008.value.format(
-                sheet=const.ENTITIES, row=2, column=EC.DATASET.value
+                sheet=const.ENTITIES, row=row_number, column=EC.DATASET.value
             )
         )
 
-    return dataset
 
-
-def validate_entity_saveto(
-    saveto: str,
+def validate_saveto(
+    saveto: str | None,
     row_number: int,
     is_container_begin: bool,
     is_container_end: bool,
     entity_references: EntityReferences,
 ) -> None:
+    """
+    Check the saveto passes all naming rules.
+
+    :param saveto: The value to check.
+    :param row_number: The entities sheet row number.
+    :param is_container_begin: If True, the row type is a "begin_repeat" or "begin_group"
+      or some parsed alias of these.
+    :param is_container_end: If True, the row type is a "end_repeat" or "end_group"
+      or some parsed alias of these.
+    :param entity_references: All entity references parsed so far in the form.
+    """
     if not saveto:
         raise PyXFormError(
             ErrorCode.NAMES_008.value.format(
@@ -450,13 +466,14 @@ def get_entity_variable_references(
     """
     entity_references = defaultdict(lambda: defaultdict(list))
     for row in entities_sheet:
+        dataset_name = row[EC.DATASET]
         for column_name, value in row.items():
             if column_name == EC.DATASET:
                 continue
             references = parse_pyxform_references(value=value)
             if references:
                 for ref in references:
-                    entity_references[ref.name][row[EC.DATASET]].append(column_name)
+                    entity_references[ref.name][dataset_name].append(column_name)
     return entity_references
 
 
@@ -476,7 +493,7 @@ def get_entity_references_by_question(
     """
     # Collect references for later reconciliation, because otherwise the first
     # referent found will determine the scope but there may be deeper refs.
-    saveto = row.get(const.BIND, {}).get(const.ENTITIES_SAVETO_NS, "")
+    saveto = row.get(const.BIND, {}).get(const.ENTITIES_SAVETO_NS)
     if saveto:
         if not entity_declarations:
             raise PyXFormError(ErrorCode.ENTITY_001.value.format(row=row_number))
@@ -504,7 +521,7 @@ def get_entity_references_by_question(
                 row_number=entity_declarations[dataset_name]["__row_number"],
             )
 
-        validate_entity_saveto(
+        validate_saveto(
             saveto=saveto,
             row_number=row_number,
             is_container_begin=is_container_begin,
