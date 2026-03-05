@@ -1,5 +1,10 @@
 Pyxform Changelog
 
+v4.3.0, 2026-03-05
+* Update identifier validation message now that leading colons aren't allowed by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/795
+* Remove warning for groups without label by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/801
+* Allow declaring that multiple Entities should be created/updated by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/818
+
 v4.2.0, 2026-01-08
 * Fix 'NoneType is not iterable' error for group with no children by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/787
 * Indicate which sheet a ${} replacement error comes from by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/789
