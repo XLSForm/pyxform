@@ -2906,6 +2906,164 @@ class TestEntitiesOutput(PyxformTestCase):
             ],
         )
 
+    def test_save_to__multiple_properties__split_groups__survey(self):
+        """Should find the saveto binding is output for save_to in a survey container."""
+        # ES003 ES005
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q1   | Q1    | e1p1    |
+        | | end_group   | g1   |       |         |
+        | | begin_group | g2   | G2    |         |
+        | | text        | q2   | Q2    | e1p2    |
+        | | end_group   | g2   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_bind_question_saveto("/g1/q1", "e1p1"),
+                xpe.model_bind_question_saveto("/g2/q2", "e1p2"),
+            ],
+        )
+
+    def test_save_to__multiple_properties__split_groups__group(self):
+        """Should find the saveto binding is output for save_to in a group container."""
+        # ES003 ES005
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    |         |
+        | | begin_group | g2   | G2    |         |
+        | | text        | q1   | Q1    | e1p1    |
+        | | end_group   | g2   |       |         |
+        | | begin_group | g3   | G3    |         |
+        | | text        | q2   | Q2    | e1p2    |
+        | | end_group   | g3   |       |         |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """/h:html/h:head/x:model/x:instance/x:test_name/x:g1/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_bind_question_saveto("/g1/g2/q1", "e1p1"),
+                xpe.model_bind_question_saveto("/g1/g3/q2", "e1p2"),
+            ],
+        )
+
+    def test_save_to__multiple_properties__split_groups__repeat(self):
+        """Should find the saveto binding is output for save_to in a repeat container."""
+        # ES003 ES005
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | r1   | R1    |         |
+        | | begin_group  | g1   | G1    |         |
+        | | text         | q1   | Q1    | e1p1    |
+        | | end_group    | g1   |       |         |
+        | | begin_group  | g2   | G2    |         |
+        | | text         | q2   | Q2    | e1p2    |
+        | | end_group    | g2   |       |         |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """/h:html/h:head/x:model/x:instance/x:test_name/x:r1[not(@jr:template)]/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_bind_question_saveto("/r1/g1/q1", "e1p1"),
+                xpe.model_bind_question_saveto("/r1/g2/q2", "e1p2"),
+            ],
+        )
+
+    def test_save_to__multiple_properties__uneven_groups__survey(self):
+        """Should find the saveto binding is output for save_to in a survey container."""
+        # ES003 ES005
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | text        | q1   | Q1    | e1p1    |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q2   | Q2    | e1p2    |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_bind_question_saveto("/q1", "e1p1"),
+                xpe.model_bind_question_saveto("/g1/q2", "e1p2"),
+            ],
+        )
+
+    def test_save_to__multiple_properties__uneven_groups__group(self):
+        """Should find the saveto binding is output for save_to in a group container."""
+        # ES003 ES005
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q1   | Q1    | e1p1    |
+        | | begin_group | g2   | G2    |         |
+        | | text        | q2   | Q2    | e1p2    |
+        | | end_group   | g2   |       |         |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """/h:html/h:head/x:model/x:instance/x:test_name/x:g1/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_bind_question_saveto("/g1/q1", "e1p1"),
+                xpe.model_bind_question_saveto("/g1/g2/q2", "e1p2"),
+            ],
+        )
+
+    def test_save_to__multiple_properties__uneven_groups__repeat(self):
+        """Should find the saveto binding is output for save_to in a repeat container."""
+        # ES003 ES005
+        md = """
+        | survey |
+        | | type         | name | label | save_to |
+        | | begin_repeat | r1   | R1    |         |
+        | | text         | q1   | Q1    | e1p1    |
+        | | begin_group  | g2   | G2    |         |
+        | | text         | q2   | Q2    | e1p2    |
+        | | end_group    | g2   |       |         |
+        | | end_repeat   | r1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """/h:html/h:head/x:model/x:instance/x:test_name/x:r1[not(@jr:template)]/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_bind_question_saveto("/r1/q1", "e1p1"),
+                xpe.model_bind_question_saveto("/r1/g2/q2", "e1p2"),
+            ],
+        )
+
     def test_save_to__multiple_entities__survey(self):
         """Should find the saveto binding is output for save_to in a survey container."""
         # ES003 ES005 ES006
@@ -3035,6 +3193,33 @@ class TestEntitiesOutput(PyxformTestCase):
             xml__xpath_match=[
                 xpe.model_bind_question_saveto("/g1/r1/q1", "e1p1"),
                 xpe.model_bind_question_saveto("/g1/r1/g2/q2", "e2p1"),
+            ],
+        )
+
+    def test_refs__multiple_properties__cross_boundary(self):
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q1   | Q1    |
+        | | end_repeat   | r1   |       |
+        | | begin_group  | g1   | G1    |
+        | | begin_group  | g2   | G2    |
+        | | text         | q2   | Q2    |
+        | | end_group    | g2   |       |
+        | | end_group    | g1   |       |
+
+        | entities |
+        | | list_name | label                |
+        | | e1        | concat(${q1}, ${q2}) |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """/h:html/h:head/x:model/x:instance/x:test_name/x:r1[not(@jr:template)]/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_bind_meta_label(
+                    "concat( ../../../q1 ,  /test_name/g1/g2/q2 )", "/r1"
+                ),
             ],
         )
 

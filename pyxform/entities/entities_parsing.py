@@ -58,6 +58,35 @@ class ContainerPath:
         else:
             return cls.default()
 
+    def get_scope_boundary(self) -> "ContainerPath":
+        for i in range(len(self.nodes) - 1, -1, -1):
+            if self.nodes[i].type in {const.REPEAT, const.SURVEY}:
+                return ContainerPath(self.nodes[: i + 1])
+        return ContainerPath.default()
+
+    def get_lowest_common_ancestor(self, other: "ContainerPath") -> "ContainerPath":
+        if not other:
+            return self.default()
+
+        # Convergence point cannot be lower than the shortest path
+        self_len = len(self.nodes)
+        other_len = len(other.nodes)
+        ref = self
+        if other_len < self_len:
+            ref = other
+        min_len = min((self_len, other_len))
+        lca = None
+
+        for i in range(min_len):
+            target = ref.nodes[i]
+            if other.nodes[i] != target:
+                lca = ContainerPath(ref.nodes[:i])
+                break
+
+        if lca is None:
+            lca = ContainerPath(ref.nodes[:min_len])
+        return lca
+
 
 @dataclass(frozen=True, slots=True)
 class ReferenceSource:
@@ -98,18 +127,19 @@ class EntityReferences:
         deepest_scope_boundary = None
         deepest_container_ref = self.references[0]
         deepest_saveto = None
+        saveto_lineages = []
         boundaries = []
 
         # Find the request constraints for this entity.
         for ref in self.references:
             ref_path_length = len(ref.path.nodes)
-            if ref_path_length > len(deepest_container_ref.path.nodes):
-                deepest_container_ref = ref
 
-            if ref.property_name is not None and (
-                deepest_saveto is None or ref_path_length > len(deepest_saveto.path.nodes)
-            ):
-                deepest_saveto = ref
+            if ref.property_name is not None:
+                saveto_lineages.append(ref)
+                if deepest_saveto is None or ref_path_length > len(
+                    deepest_saveto.path.nodes
+                ):
+                    deepest_saveto = ref
 
             boundary = ref.get_scope_boundary()
             boundary_length = len(boundary.nodes)
@@ -118,14 +148,46 @@ class EntityReferences:
             ):
                 deepest_scope_boundary = boundary
                 deepest_scope_ref = ref
+                if ref_path_length > len(deepest_container_ref.path.nodes):
+                    deepest_container_ref = ref
 
             boundaries.append((ref, boundary, boundary_length))
+
+            if (
+                ref_path_length > len(deepest_container_ref.path.nodes)
+                and boundary.nodes[-1].type == const.REPEAT
+            ):
+                deepest_container_ref = ref
 
         # Prioritise saveto since they must be in the nearest container with an entity.
         if deepest_saveto:
             requested_ref = deepest_saveto
         else:
             requested_ref = deepest_container_ref
+
+        if saveto_lineages:
+            min_len = min(len(p.path.nodes) for p in saveto_lineages)
+            first_ref = min(saveto_lineages, key=lambda x: len(x.path.nodes))
+            common_path = first_ref.path.nodes[:min_len]
+
+            for i in range(min_len):
+                target = first_ref.path.nodes[i]
+                for j in range(1, len(saveto_lineages)):
+                    if saveto_lineages[j].path.nodes[i] != target:
+                        common_path = first_ref.path.nodes[:i]
+                        break
+
+            ref_path = max(
+                (deepest_saveto.get_scope_boundary().nodes, common_path),
+                key=lambda x: len(x),
+            )
+            requested_ref = ReferenceSource(
+                path=ContainerPath(nodes=ref_path),
+                row=first_ref.row,
+                property_name=first_ref.property_name,
+            )
+
+        requested_ref_scope_boundary = requested_ref.get_scope_boundary()
 
         # Validate each reference against the request constraints.
         for ref_source, scope_boundary, scope_boundary_length in boundaries:
@@ -155,7 +217,7 @@ class EntityReferences:
 
             if (
                 ref_source.property_name is not None  # save_to
-                and deepest_scope_boundary != scope_boundary
+                and requested_ref_scope_boundary != scope_boundary
             ):
                 raise PyXFormError(
                     ErrorCode.ENTITY_011.value.format(
