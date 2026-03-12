@@ -33,6 +33,9 @@ class ContainerPath:
 
     nodes: tuple[ContainerNode, ...]
 
+    def __str__(self):
+        return self.path_as_str()
+
     @classmethod
     def default(cls) -> "ContainerPath":
         """
@@ -64,28 +67,8 @@ class ContainerPath:
                 return ContainerPath(self.nodes[: i + 1])
         return ContainerPath.default()
 
-    def get_lowest_common_ancestor(self, other: "ContainerPath") -> "ContainerPath":
-        if not other:
-            return self.default()
-
-        # Convergence point cannot be lower than the shortest path
-        self_len = len(self.nodes)
-        other_len = len(other.nodes)
-        ref = self
-        if other_len < self_len:
-            ref = other
-        min_len = min((self_len, other_len))
-        lca = None
-
-        for i in range(min_len):
-            target = ref.nodes[i]
-            if other.nodes[i] != target:
-                lca = ContainerPath(ref.nodes[:i])
-                break
-
-        if lca is None:
-            lca = ContainerPath(ref.nodes[:min_len])
-        return lca
+    def path_as_str(self) -> str:
+        return f"/{'/'.join(p.name for p in self.nodes)}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,7 +81,7 @@ class ReferenceSource:
     def __post_init__(self):
         if self.property_name is None and self.question_name is None:
             raise PyXFormError(
-                ErrorCode.INTERNAL_002.value.format(path=self.path_as_str())
+                ErrorCode.INTERNAL_002.value.format(path=self.path.path_as_str())
             )
 
     def get_scope_boundary(self) -> ContainerPath:
@@ -106,9 +89,6 @@ class ReferenceSource:
             if self.path.nodes[i].type in {const.REPEAT, const.SURVEY}:
                 return ContainerPath(self.path.nodes[: i + 1])
         return ContainerPath.default()
-
-    def path_as_str(self) -> str:
-        return f"/{'/'.join(p.name for p in self.path.nodes)}"
 
 
 @dataclass(slots=True)
@@ -125,9 +105,9 @@ class EntityReferences:
         """
         deepest_scope_ref = None
         deepest_scope_boundary = None
-        deepest_container_ref = self.references[0]
+        deepest_container_ref = None
         deepest_saveto = None
-        saveto_lineages = []
+        saveto_lineages = set()
         boundaries = []
 
         # Find the request constraints for this entity.
@@ -135,7 +115,7 @@ class EntityReferences:
             ref_path_length = len(ref.path.nodes)
 
             if ref.property_name is not None:
-                saveto_lineages.append(ref)
+                saveto_lineages.add(ref.path)
                 if deepest_saveto is None or ref_path_length > len(
                     deepest_saveto.path.nodes
                 ):
@@ -146,48 +126,49 @@ class EntityReferences:
             if deepest_scope_boundary is None or boundary_length > len(
                 deepest_scope_boundary.nodes
             ):
+                # Found a deeper scope so set deepest container to the current ref.
+                if boundary != deepest_scope_boundary:
+                    deepest_container_ref = ref
                 deepest_scope_boundary = boundary
                 deepest_scope_ref = ref
-                if ref_path_length > len(deepest_container_ref.path.nodes):
-                    deepest_container_ref = ref
 
             boundaries.append((ref, boundary, boundary_length))
 
-            if (
-                ref_path_length > len(deepest_container_ref.path.nodes)
-                and boundary.nodes[-1].type == const.REPEAT
+            # Deepest container not set, or in deepest scope and current ref is deeper.
+            if deepest_container_ref is None or (
+                boundary == deepest_scope_boundary
+                and ref_path_length > len(deepest_container_ref.path.nodes)
             ):
                 deepest_container_ref = ref
 
         # Prioritise saveto since they must be in the nearest container with an entity.
         if deepest_saveto:
-            requested_ref = deepest_saveto
+            requested_path = deepest_saveto.path
         else:
-            requested_ref = deepest_container_ref
+            requested_path = deepest_container_ref.path
 
         if saveto_lineages:
-            min_len = min(len(p.path.nodes) for p in saveto_lineages)
-            first_ref = min(saveto_lineages, key=lambda x: len(x.path.nodes))
-            common_path = first_ref.path.nodes[:min_len]
+            min_len = min(len(p.nodes) for p in saveto_lineages)
+            any_ref = next(iter(saveto_lineages))
+            common_path = any_ref.nodes[:min_len]
+            ref_path = common_path
 
-            for i in range(min_len):
-                target = first_ref.path.nodes[i]
-                for j in range(1, len(saveto_lineages)):
-                    if saveto_lineages[j].path.nodes[i] != target:
-                        common_path = first_ref.path.nodes[:i]
-                        break
+            if len(saveto_lineages) > 1:
+                for i in range(min_len):
+                    target = any_ref.nodes[i]
+                    for j in saveto_lineages:
+                        if j.nodes[i] != target:
+                            common_path = any_ref.nodes[:i]
+                            break
 
-            ref_path = max(
-                (deepest_saveto.get_scope_boundary().nodes, common_path),
-                key=lambda x: len(x),
-            )
-            requested_ref = ReferenceSource(
-                path=ContainerPath(nodes=ref_path),
-                row=first_ref.row,
-                property_name=first_ref.property_name,
-            )
+                ref_path = max(
+                    (deepest_saveto.get_scope_boundary().nodes, common_path),
+                    key=lambda x: len(x),
+                )
 
-        requested_ref_scope_boundary = requested_ref.get_scope_boundary()
+            requested_path = ContainerPath(nodes=ref_path)
+
+        requested_path_scope_boundary = requested_path.get_scope_boundary()
 
         # Validate each reference against the request constraints.
         for ref_source, scope_boundary, scope_boundary_length in boundaries:
@@ -200,8 +181,8 @@ class EntityReferences:
                         ErrorCode.ENTITY_011.value.format(
                             row=ref_source.row,
                             dataset=self.dataset_name,
-                            other_scope=deepest_scope_ref.path_as_str(),
-                            scope=ref_source.path_as_str(),
+                            other_scope=deepest_scope_ref.path.path_as_str(),
+                            scope=ref_source.path.path_as_str(),
                         )
                     )
                 else:  # variable
@@ -209,35 +190,32 @@ class EntityReferences:
                         ErrorCode.ENTITY_012.value.format(
                             row=self.row_number,
                             dataset=self.dataset_name,
-                            other_scope=deepest_scope_ref.path_as_str(),
-                            scope=ref_source.path_as_str(),
+                            other_scope=deepest_scope_ref.path.path_as_str(),
+                            scope=ref_source.path.path_as_str(),
                             question=ref_source.question_name,
                         )
                     )
 
             if (
                 ref_source.property_name is not None  # save_to
-                and requested_ref_scope_boundary != scope_boundary
+                and requested_path_scope_boundary != scope_boundary
             ):
                 raise PyXFormError(
                     ErrorCode.ENTITY_011.value.format(
                         row=ref_source.row,
                         dataset=self.dataset_name,
-                        other_scope=requested_ref.path_as_str(),
-                        scope=ref_source.path_as_str(),
+                        other_scope=requested_path.path_as_str(),
+                        scope=ref_source.path.path_as_str(),
                     )
                 )
 
         return AllocationRequest(
             scope_path=deepest_scope_boundary,
             dataset_name=self.dataset_name,
-            requested_path=requested_ref.path,
-            sorting_key=(
-                int(bool(deepest_saveto)),
-                len(requested_ref.path.nodes),
-                -self.row_number,
-            ),
+            requested_path=requested_path,
+            requested_path_length=len(requested_path.nodes),
             entity_row_number=self.row_number,
+            saveto_lineages=saveto_lineages,
         )
 
 
@@ -259,8 +237,9 @@ class AllocationRequest(NamedTuple):
     scope_path: ContainerPath
     dataset_name: str
     requested_path: ContainerPath
-    sorting_key: tuple[int, int, int]
+    requested_path_length: int
     entity_row_number: int
+    saveto_lineages: set[ContainerPath]
 
 
 def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
@@ -642,37 +621,60 @@ def allocate_entities_to_containers(
                     scope_path=survey_path,
                     dataset_name=dataset_name,
                     requested_path=survey_path,
-                    sorting_key=(0, 1, -declaration["__row_number"]),
+                    # sorting_key=(0, 1, -declaration["__row_number"]),
+                    requested_path_length=1,
                     entity_row_number=declaration["__row_number"],
+                    saveto_lineages=set(),
                 )
             )
 
     # Assign the requests to available allowed container nodes.
+    reserved_paths = {}
     for scope_path, requests in scope_paths.items():
         scope_path_depth_limit = len(scope_path.nodes) - 1
 
         # Prioritise save_to references but otherwise try to put deepest allocation first.
-        for req in sorted(requests, key=lambda x: x.sorting_key, reverse=True):
-            placed = False
+        for req in sorted(requests, key=lambda x: x.entity_row_number):
+            conflicting_dataset = None
 
             # Attempt to place as low as possible, but try going up to the highest allowed.
-            for depth in range(req.sorting_key[1], scope_path_depth_limit, -1):
+            for depth in range(req.requested_path_length, scope_path_depth_limit, -1):
                 current_path = ContainerPath(req.requested_path.nodes[:depth])
 
-                if current_path in allocations:
-                    # Request with a save_to wants a group that already has an entity.
-                    if req.sorting_key[0] == 1:
+                conflicting_dataset = allocations.get(
+                    current_path, reserved_paths.get(current_path)
+                )
+                if conflicting_dataset is not None:
+                    # There may be multiple conflicts but search stops at the first one.
+                    conflicting_dataset_saveto = next(
+                        (reserved_paths.get(i) for i in req.saveto_lineages), None
+                    )
+                    # Request with save_tos wants a container reserved by another entity.
+                    if conflicting_dataset_saveto:
+                        conflicting_dataset = conflicting_dataset_saveto
                         break
+                    # Otherwise continue the search for an available container.
+                    else:
+                        continue
                 else:
                     allocations[current_path] = req.dataset_name
-                    placed = True
+                    reserved_paths[current_path] = req.dataset_name
+                    # Reserve all nodes between each lineage leaf and the assigned node.
+                    for lineage in req.saveto_lineages:
+                        for i in range(
+                            len(lineage.nodes), len(current_path.nodes) - 1, -1
+                        ):
+                            reserved_paths[ContainerPath(lineage.nodes[:i])] = (
+                                req.dataset_name
+                            )
                     break
 
-            if not placed:
+            if conflicting_dataset is not None:
+                # TODO: add "conflicting_dataset" to error message.
                 raise PyXFormError(
                     ErrorCode.ENTITY_009.value.format(
                         row=req.entity_row_number,
-                        scope=f"/{'/'.join(p.name for p in scope_path.nodes)}",
+                        scope=scope_path.path_as_str(),
                     )
                 )
 
