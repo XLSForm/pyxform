@@ -74,9 +74,9 @@ class ContainerPath:
         """
         Count boundary nodes from the root to the parent container.
 
-        Includes the root node (minimum 1).
+        If zero, the boundary is the root node.
         """
-        return 1 + sum(
+        return sum(
             1
             for i in range(len(self.nodes) - 1, 0, -1)
             if self.nodes[i].type == const.REPEAT
@@ -112,12 +112,6 @@ class ReferenceSource:
                 ErrorCode.INTERNAL_002.value.format(path=self.path.path_as_str())
             )
 
-    def get_scope_boundary(self) -> ContainerPath:
-        for i in range(len(self.path.nodes) - 1, -1, -1):
-            if self.path.nodes[i].type in {const.REPEAT, const.SURVEY}:
-                return ContainerPath(self.path.nodes[: i + 1])
-        return ContainerPath.default()
-
 
 @dataclass(slots=True)
 class EntityReferences:
@@ -142,7 +136,7 @@ class EntityReferences:
         for ref in self.references:
             ref_subpath_length = ref.path.get_scope_boundary_subpath_node_count()
 
-            boundary = ref.get_scope_boundary()
+            boundary = ref.path.get_scope_boundary()
             boundary_length = boundary.get_scope_boundary_node_count()
             if (
                 deepest_scope_boundary is None
@@ -200,7 +194,7 @@ class EntityReferences:
                 # Use the deepest scope, or the deepest container in the deepest scope.
                 # (neither are necessarily the same as the longest path)
                 requested_path = max(
-                    (deepest_saveto.get_scope_boundary(), common_path),
+                    (deepest_saveto.path.get_scope_boundary(), common_path),
                     key=lambda x: (
                         x.get_scope_boundary_node_count(),
                         x.get_scope_boundary_subpath_node_count(),
