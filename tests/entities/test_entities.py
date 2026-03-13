@@ -599,7 +599,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey"),
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey", other_row=2),
             ],
         )
 
@@ -620,7 +620,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey"),
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey", other_row=2),
             ],
         )
 
@@ -641,7 +641,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey"),
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey", other_row=2),
             ],
         )
 
@@ -718,7 +718,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey"),
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey", other_row=2),
             ],
         )
 
@@ -742,7 +742,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey"),
+                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey", other_row=3),
             ],
         )
 
@@ -766,7 +766,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey"),
+                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey", other_row=3),
             ],
         )
 
@@ -790,7 +790,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1"),
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1", other_row=2),
             ],
         )
 
@@ -814,7 +814,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1"),
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1", other_row=2),
             ],
         )
 
@@ -838,7 +838,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1"),
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1", other_row=2),
             ],
         )
 
@@ -861,7 +861,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1"),
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1", other_row=2),
             ],
         )
 
@@ -887,7 +887,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey/r1"),
+                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey/r1", other_row=3),
             ],
         )
 
@@ -921,7 +921,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1"),
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1", other_row=2),
             ],
         )
 
@@ -1092,9 +1092,9 @@ class TestEntitiesParsing(PyxformTestCase):
         | |       begin_group | g4   | G4    |         |
         | |         text      | q4   | Q4    | e2#e2p2 |
         | |       end_group   | g4   |       |         |
-        | |       text        | q5   | Q5    | e3#e3p1 | conflict e2
+        | |       text        | q5   | Q5    | e3#e3p1 | conflict e2 (error)
         | |     end_group     | g2   |       |         |
-        | |     text          | q6   | Q6    | e3#e3p2 | conflict e3
+        | |     text          | q6   | Q6    | e3#e3p2 | conflict e1 (also error)
         | |   end_group       | g1   |       |         |
         | | end_repeat        |      |       |         |
 
@@ -1108,7 +1108,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey/r1"),
+                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey/r1", other_row=3),
             ],
         )
 
@@ -1207,7 +1207,7 @@ class TestEntitiesParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1"),
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey/r1", other_row=2),
             ],
         )
 
@@ -2045,7 +2045,9 @@ class TestEntitiesParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.ENTITY_009.value.format(row=3, scope="/survey")],
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey", other_row=2)
+            ],
         )
 
     def test_no_allocations__multiple_entity__survey_target__error(self):
@@ -2064,7 +2066,9 @@ class TestEntitiesParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.ENTITY_009.value.format(row=3, scope="/survey")],
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey", other_row=2)
+            ],
         )
 
     def test_no_allocations__multiple_entity__survey_target_dispersed__error(self):
@@ -2086,7 +2090,9 @@ class TestEntitiesParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.ENTITY_009.value.format(row=4, scope="/survey")],
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=4, scope="/survey", other_row=2)
+            ],
         )
 
     def test_no_allocations__multiple_entity__no_sibling_search__error(self):
@@ -2107,7 +2113,9 @@ class TestEntitiesParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.ENTITY_009.value.format(row=3, scope="/survey")],
+            error__contains=[
+                ErrorCode.ENTITY_009.value.format(row=3, scope="/survey", other_row=2)
+            ],
         )
 
 

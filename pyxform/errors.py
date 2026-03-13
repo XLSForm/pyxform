@@ -141,7 +141,8 @@ class ErrorCode(Enum):
         msg=(
             "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
             "Each container (survey, group, repeat) may have only one entity declaration, "
-            "but there are no valid containers available in the scope: '{scope}'. "
+            "but there are no valid containers available in the scope: '{scope}', which "
+            "has been allocated to the entity on row '{other_row}'. "
             "Please either: check which entities are referred to from the 'survey' sheet"
             "in the 'save_to' column, or check which questions are being referred to "
             "from the 'entities' sheet with variable references (such as in the 'label')."

@@ -135,7 +135,7 @@ class EntityReferences:
         deepest_scope_boundary = None
         deepest_container_ref = None
         deepest_saveto = None
-        saveto_lineages = set()
+        saveto_lineages = {}
         boundaries = []
 
         # Find the request constraints for this entity.
@@ -168,7 +168,7 @@ class EntityReferences:
                 deepest_container_ref = ref
 
             if ref.property_name is not None:
-                saveto_lineages.add(ref.path)
+                saveto_lineages[ref.path] = None
                 # Deepest saveto not set, or in deepest scope and current ref is deeper.
                 if deepest_saveto is None or (
                     boundary == deepest_scope_boundary
@@ -268,11 +268,9 @@ class AllocationRequest(NamedTuple):
         scope_path: The scope boundary for the entity.
         dataset_name: The entity list_name.
         requested_path: The preferred path for the entity based on references.
-        sorting_key: First item - if 1 (true), there are save_tos among the references.
-          Second item - the length of the requested path. Third item - the entity sheet
-          row number, which is used to break ties, but with the number as negative so
-          that the reverse sort for priority places earlier rows first.
+        requested_path_length: Count of container nodes in the requested_path.
         entity_row_number: The entity sheet row number of the entity.
+        saveto_lineages: The full paths of all saveto references for the entity.
     """
 
     scope_path: ContainerPath
@@ -280,7 +278,7 @@ class AllocationRequest(NamedTuple):
     requested_path: ContainerPath
     requested_path_length: int
     entity_row_number: int
-    saveto_lineages: set[ContainerPath]
+    saveto_lineages: dict[ContainerPath, None]
 
 
 def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
@@ -664,7 +662,7 @@ def allocate_entities_to_containers(
                     requested_path=survey_path,
                     requested_path_length=1,
                     entity_row_number=declaration["__row_number"],
-                    saveto_lineages=set(),
+                    saveto_lineages={},
                 )
             )
 
@@ -675,23 +673,23 @@ def allocate_entities_to_containers(
 
         # Prioritise save_to references but otherwise try to put deepest allocation first.
         for req in sorted(requests, key=lambda x: x.entity_row_number):
-            conflicting_dataset = None
+            conflict_dataset = None
 
             # Attempt to place as low as possible, but try going up to the highest allowed.
             for depth in range(req.requested_path_length, scope_path_depth_limit, -1):
                 current_path = ContainerPath(req.requested_path.nodes[:depth])
 
-                conflicting_dataset = allocations.get(
+                conflict_dataset = allocations.get(
                     current_path, reserved_paths.get(current_path)
                 )
-                if conflicting_dataset is not None:
-                    # There may be multiple conflicts but search stops at the first one.
-                    conflicting_dataset_saveto = next(
+                if conflict_dataset is not None:
+                    # May be n conflicts but search stops at the first one (row order).
+                    conflict_dataset_saveto = next(
                         (reserved_paths.get(i) for i in req.saveto_lineages), None
                     )
                     # Request with save_tos wants a container reserved by another entity.
-                    if conflicting_dataset_saveto:
-                        conflicting_dataset = conflicting_dataset_saveto
+                    if conflict_dataset_saveto:
+                        conflict_dataset = conflict_dataset_saveto
                         break
                     # Otherwise continue the search for an available container.
                     else:
@@ -709,12 +707,12 @@ def allocate_entities_to_containers(
                             )
                     break
 
-            if conflicting_dataset is not None:
-                # TODO: add "conflicting_dataset" to error message.
+            if conflict_dataset is not None:
                 raise PyXFormError(
                     ErrorCode.ENTITY_009.value.format(
                         row=req.entity_row_number,
                         scope=scope_path.path_as_str(),
+                        other_row=entity_declarations[conflict_dataset]["__row_number"],
                     )
                 )
 
