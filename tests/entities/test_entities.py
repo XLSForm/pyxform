@@ -57,10 +57,11 @@ Each entities test should reference one (or more) requirements from these lists.
     - EB017: Do not emit entities namespace if entities not used
     - EB018: Do not emit entities version if entities not used
     - EB019: Do not emit default instance to load the entity from csv
-    - EB020: Allocate to survey when no references exist for an entity
+    - EB020: Allocation is to survey when no references exist for an entity
     - EB021: Allocation to survey meta is compatible with other meta settings
     - EB022: Allocation searches path ancestors only (not children or siblings)
     - EB023: Allocation selects deepest boundary scope (pyxform/#822)
+    - EB024: ALlocation is to survey for only one entity not in repeats (pyxform/#825)
 
 
 ## Topological constraint solver regression suite
@@ -3387,9 +3388,7 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpe.model_instance_meta(
-                    "e1", "/x:g1", repeat=None, create=True, label=True
-                ),
+                xpe.model_instance_meta("e1", "", repeat=None, create=True, label=True),
                 xpe.model_bind_question_saveto("/g1/g2/q1", "e1p1"),
                 xpe.model_bind_question_saveto("/g1/g3/q2", "e1p2"),
             ],
@@ -3469,9 +3468,7 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpe.model_instance_meta(
-                    "e1", "/x:g1", repeat=None, create=True, label=True
-                ),
+                xpe.model_instance_meta("e1", "", repeat=None, create=True, label=True),
                 xpe.model_bind_question_saveto("/g1/q1", "e1p1"),
                 xpe.model_bind_question_saveto("/g1/g2/q2", "e1p2"),
             ],
@@ -3498,12 +3495,10 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpe.model_instance_meta(
-                    "e1", "/x:g1", repeat=None, create=True, label=True
-                ),
+                xpe.model_instance_meta("e1", "", repeat=None, create=True, label=True),
                 xpe.model_bind_question_saveto("/g1/q1", "e1p1"),
                 xpe.model_bind_question_saveto("/g1/g2/q2", "e1p2"),
-                xpe.model_bind_meta_label(" /test_name/g1/g2/q2 ", "/g1"),
+                xpe.model_bind_meta_label(" /test_name/g1/g2/q2 ", ""),
             ],
         )
 
@@ -3739,6 +3734,30 @@ class TestEntitiesOutput(PyxformTestCase):
                 xpe.model_bind_meta_label(
                     "concat( ../../../q1 ,  /test_name/g1/g2/q2 )", "/r1"
                 ),
+            ],
+        )
+
+    def test_single_entity__no_repeats__survey(self):
+        """Should find the saveto binding is output for save_to in a survey container."""
+        # ES003 ES005 EB024
+        # pyxform/#825 repro
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q1   | Q1    | e1p1    |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_instance_meta("e1", "", create=True, repeat=None, label=True),
+                xpe.model_bind_question_saveto("/g1/q1", "e1p1"),
+                xpe.model_bind_meta_label(" /test_name/g1/q1 ", ""),
             ],
         )
 

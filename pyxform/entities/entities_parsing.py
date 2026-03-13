@@ -639,6 +639,7 @@ def allocate_entities_to_containers(
     """
     allocations: dict[ContainerPath, str] = {}
     scope_paths: defaultdict[ContainerPath, list[AllocationRequest]] = defaultdict(list)
+    survey_path = ContainerPath.default()
 
     # Group requests by container scope.
     for entity_references in entity_references_by_question.values():
@@ -647,7 +648,6 @@ def allocate_entities_to_containers(
 
     # For unreferenced declarations, default to the survey scope.
     for dataset_name, declaration in entity_declarations.items():
-        survey_path = ContainerPath.default()
         if dataset_name not in entity_references_by_question:
             scope_paths[survey_path].append(
                 AllocationRequest(
@@ -659,6 +659,13 @@ def allocate_entities_to_containers(
                     saveto_lineages={},
                 )
             )
+
+    # If there's only one entity, and it's scope is the survey, then allocate to the survey.
+    # (avoids unnecessarily nested meta/entity blocks, for spec 2024.1.0 compatibility)
+    if len(scope_paths) == 1:
+        scope_path, requests = next(iter(scope_paths.items()))
+        if scope_path == survey_path and len(requests) == 1:
+            return {survey_path: requests[0].dataset_name}
 
     # Assign the requests to available allowed container nodes.
     reserved_paths: dict[ContainerPath, str] = {}
@@ -821,7 +828,7 @@ def apply_entities_declarations(
     )
 
     if len(entity_declarations) > 1 or any(
-        p.type == const.REPEAT for i in allocations.keys() for p in i.nodes
+        i.get_scope_boundary_node_count() > 0 for i in allocations.keys()
     ):
         json_dict[const.ENTITY_VERSION] = const.EntityVersion.v2025_1_0
     else:
