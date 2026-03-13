@@ -127,8 +127,11 @@ class EntityReferences:
         """
         deepest_scope_ref = None
         deepest_scope_boundary = None
+        deepest_scope_boundary_node_count = None
         deepest_container_ref = None
+        deepest_container_ref_subpath_node_count = None
         deepest_saveto = None
+        deepest_saveto_subpath_node_count = None
         saveto_lineages = {}
         boundaries = []
 
@@ -140,15 +143,17 @@ class EntityReferences:
             boundary_length = boundary.get_scope_boundary_node_count()
             if (
                 deepest_scope_boundary is None
-                or boundary_length
-                > deepest_scope_boundary.get_scope_boundary_node_count()
+                or boundary_length > deepest_scope_boundary_node_count
             ):
                 # Found a deeper scope so set deepest container/saveto to the current ref.
                 if boundary != deepest_scope_boundary:
                     deepest_container_ref = ref
+                    deepest_container_ref_subpath_node_count = ref_subpath_length
                     if ref.property_name is not None:
                         deepest_saveto = ref
+                        deepest_saveto_subpath_node_count = ref_subpath_length
                 deepest_scope_boundary = boundary
+                deepest_scope_boundary_node_count = boundary_length
                 deepest_scope_ref = ref
 
             boundaries.append((ref, boundary, len(boundary.nodes)))
@@ -156,20 +161,20 @@ class EntityReferences:
             # Deepest container not set, or in deepest scope and current ref is deeper.
             if deepest_container_ref is None or (
                 boundary == deepest_scope_boundary
-                and ref_subpath_length
-                > deepest_container_ref.path.get_scope_boundary_subpath_node_count()
+                and ref_subpath_length > deepest_container_ref_subpath_node_count
             ):
                 deepest_container_ref = ref
+                deepest_container_ref_subpath_node_count = ref_subpath_length
 
             if ref.property_name is not None:
                 saveto_lineages[ref.path] = None
                 # Deepest saveto not set, or in deepest scope and current ref is deeper.
                 if deepest_saveto is None or (
                     boundary == deepest_scope_boundary
-                    and ref_subpath_length
-                    > deepest_saveto.path.get_scope_boundary_subpath_node_count()
+                    and ref_subpath_length > deepest_saveto_subpath_node_count
                 ):
                     deepest_saveto = ref
+                    deepest_saveto_subpath_node_count = ref_subpath_length
 
         # Prioritise saveto since they must be in the nearest container with an entity.
         if deepest_saveto:
