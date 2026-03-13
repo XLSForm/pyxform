@@ -62,10 +62,38 @@ class ContainerPath:
             return cls.default()
 
     def get_scope_boundary(self) -> "ContainerPath":
+        """
+        Get the full path to the nearest ancestor boundary scope node.
+        """
         for i in range(len(self.nodes) - 1, -1, -1):
             if self.nodes[i].type in {const.REPEAT, const.SURVEY}:
                 return ContainerPath(self.nodes[: i + 1])
         return ContainerPath.default()
+
+    def get_scope_boundary_node_count(self) -> int:
+        """
+        Count boundary nodes from the root to the parent container.
+
+        Includes the root node (minimum 1).
+        """
+        return 1 + sum(
+            1
+            for i in range(len(self.nodes) - 1, 0, -1)
+            if self.nodes[i].type == const.REPEAT
+        )
+
+    def get_scope_boundary_subpath_node_count(self) -> int:
+        """
+        Count containers from the parent container to the nearest ancestor boundary scope.
+
+        If zero, the parent is a boundary node.
+        """
+        count = 0
+        for i in range(len(self.nodes) - 1, -1, -1):
+            if self.nodes[i].type in {const.REPEAT, const.SURVEY}:
+                break
+            count += 1
+        return count
 
     def path_as_str(self) -> str:
         return f"/{'/'.join(p.name for p in self.nodes)}"
@@ -112,34 +140,42 @@ class EntityReferences:
 
         # Find the request constraints for this entity.
         for ref in self.references:
-            ref_path_length = len(ref.path.nodes)
-
-            if ref.property_name is not None:
-                saveto_lineages.add(ref.path)
-                if deepest_saveto is None or ref_path_length > len(
-                    deepest_saveto.path.nodes
-                ):
-                    deepest_saveto = ref
+            ref_subpath_length = ref.path.get_scope_boundary_subpath_node_count()
 
             boundary = ref.get_scope_boundary()
-            boundary_length = len(boundary.nodes)
-            if deepest_scope_boundary is None or boundary_length > len(
-                deepest_scope_boundary.nodes
+            boundary_length = boundary.get_scope_boundary_node_count()
+            if (
+                deepest_scope_boundary is None
+                or boundary_length
+                > deepest_scope_boundary.get_scope_boundary_node_count()
             ):
-                # Found a deeper scope so set deepest container to the current ref.
+                # Found a deeper scope so set deepest container/saveto to the current ref.
                 if boundary != deepest_scope_boundary:
                     deepest_container_ref = ref
+                    if ref.property_name is not None:
+                        deepest_saveto = ref
                 deepest_scope_boundary = boundary
                 deepest_scope_ref = ref
 
-            boundaries.append((ref, boundary, boundary_length))
+            boundaries.append((ref, boundary, len(boundary.nodes)))
 
             # Deepest container not set, or in deepest scope and current ref is deeper.
             if deepest_container_ref is None or (
                 boundary == deepest_scope_boundary
-                and ref_path_length > len(deepest_container_ref.path.nodes)
+                and ref_subpath_length
+                > deepest_container_ref.path.get_scope_boundary_subpath_node_count()
             ):
                 deepest_container_ref = ref
+
+            if ref.property_name is not None:
+                saveto_lineages.add(ref.path)
+                # Deepest saveto not set, or in deepest scope and current ref is deeper.
+                if deepest_saveto is None or (
+                    boundary == deepest_scope_boundary
+                    and ref_subpath_length
+                    > deepest_saveto.path.get_scope_boundary_subpath_node_count()
+                ):
+                    deepest_saveto = ref
 
         # Prioritise saveto since they must be in the nearest container with an entity.
         if deepest_saveto:
@@ -148,25 +184,30 @@ class EntityReferences:
             requested_path = deepest_container_ref.path
 
         if saveto_lineages:
+            # Uses overall path length here since the common path has to align overall.
             min_len = min(len(p.nodes) for p in saveto_lineages)
             any_ref = next(iter(saveto_lineages))
-            common_path = any_ref.nodes[:min_len]
-            ref_path = common_path
+            common_path = ContainerPath(any_ref.nodes[:min_len])
 
             if len(saveto_lineages) > 1:
                 for i in range(min_len):
                     target = any_ref.nodes[i]
                     for j in saveto_lineages:
                         if j.nodes[i] != target:
-                            common_path = any_ref.nodes[:i]
+                            common_path = ContainerPath(any_ref.nodes[:i])
                             break
 
-                ref_path = max(
-                    (deepest_saveto.get_scope_boundary().nodes, common_path),
-                    key=lambda x: len(x),
+                # Use the deepest scope, or the deepest container in the deepest scope.
+                # (neither are necessarily the same as the longest path)
+                requested_path = max(
+                    (deepest_saveto.get_scope_boundary(), common_path),
+                    key=lambda x: (
+                        x.get_scope_boundary_node_count(),
+                        x.get_scope_boundary_subpath_node_count(),
+                    ),
                 )
-
-            requested_path = ContainerPath(nodes=ref_path)
+            else:
+                requested_path = common_path
 
         requested_path_scope_boundary = requested_path.get_scope_boundary()
 
@@ -604,8 +645,8 @@ def allocate_entities_to_containers(
     """
     Get the paths into which the entities will be placed.
     """
-    allocations = {}
-    scope_paths = defaultdict(list)
+    allocations: dict[ContainerPath, str] = {}
+    scope_paths: defaultdict[ContainerPath, list[AllocationRequest]] = defaultdict(list)
 
     # Group requests by container scope.
     for entity_references in entity_references_by_question.values():
@@ -621,7 +662,6 @@ def allocate_entities_to_containers(
                     scope_path=survey_path,
                     dataset_name=dataset_name,
                     requested_path=survey_path,
-                    # sorting_key=(0, 1, -declaration["__row_number"]),
                     requested_path_length=1,
                     entity_row_number=declaration["__row_number"],
                     saveto_lineages=set(),
@@ -629,7 +669,7 @@ def allocate_entities_to_containers(
             )
 
     # Assign the requests to available allowed container nodes.
-    reserved_paths = {}
+    reserved_paths: dict[ContainerPath, str] = {}
     for scope_path, requests in scope_paths.items():
         scope_path_depth_limit = len(scope_path.nodes) - 1
 

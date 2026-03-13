@@ -60,6 +60,7 @@ Each entities test should reference one (or more) requirements from these lists.
     - EB020: Allocate to survey when no references exist for an entity
     - EB021: Allocation to survey meta is compatible with other meta settings
     - EB022: Allocation searches path ancestors only (not children or siblings)
+    - EB023: Allocation selects deepest boundary scope (pyxform/#822)
 
 
 ## Topological constraint solver regression suite
@@ -933,7 +934,7 @@ class TestEntitiesParsing(PyxformTestCase):
         | survey |
         | | type              | name | label | save_to |
         | | begin_repeat      | r1   | R1    |         | e1 - q1, q2
-        | | text              | q1   | Q1    | e1#e1p1 |
+        | |   text            | q1   | Q1    | e1#e1p1 |
         | |   begin_group     | g1   | G1    |         |
         | |     text          | q2   | Q2    | e1#e1p2 |
         | |     begin_group   | g2   | G2    |         | e2 - q3, q4
@@ -969,6 +970,106 @@ class TestEntitiesParsing(PyxformTestCase):
                 xpe.model_bind_question_saveto("/r1/g1/q2", "e1p2"),
                 xpe.model_bind_question_saveto("/r1/g1/g2/g3/q3", "e2p1"),
                 xpe.model_bind_question_saveto("/r1/g1/g2/g4/q4", "e2p2"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_1_repeat__conflict_2_group__repeat__saveto_only__ok(
+        self,
+    ):
+        """Should be able to resolve the above error case by adding a repeat for e2."""
+        # EV014
+        md = """
+        | survey |
+        | | type              | name | label | save_to |
+        | | begin_repeat      | r1   | R1    |         | e1 - q1, q2
+        | |   text            | q1   | Q1    | e1#e1p1 |
+        | |   begin_group     | g1   | G1    |         |
+        | |     text          | q2   | Q2    | e1#e1p2 |
+        | |     begin_repeat  | r2   | R2    |         | e2 - q3, q4
+        | |       begin_group | g2   | G2    |         |
+        | |         text      | q3   | Q3    | e2#e2p1 |
+        | |       end_group   | g2   |       |         |
+        | |       begin_group | g3   | G3    |         |
+        | |         text      | q4   | Q4    | e2#e2p2 |
+        | |       end_group   | g3   |       |         |
+        | |     end_repeat    | r2   |       |         |
+        | |   end_group       | g1   |       |         |
+        | | end_repeat        |      |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        | | e2        | E2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", create=True, label=True, repeat=True
+                ),
+                xpe.model_instance_meta(
+                    "e2",
+                    "/x:r1[not(@jr:template)]/x:g1/x:r2[not(@jr:template)]",
+                    create=True,
+                    label=True,
+                    repeat=True,
+                ),
+                xpe.model_bind_question_saveto("/r1/q1", "e1p1"),
+                xpe.model_bind_question_saveto("/r1/g1/q2", "e1p2"),
+                xpe.model_bind_question_saveto("/r1/g1/r2/g2/q3", "e2p1"),
+                xpe.model_bind_question_saveto("/r1/g1/r2/g3/q4", "e2p2"),
+            ],
+        )
+
+    def test_unsolvable_meta_topology__depth_1_repeat__conflict_2_group__saveto_and_var__ok(
+        self,
+    ):
+        """Should be able to resolve the above error case by adding a group for e2."""
+        # EV014 EB016
+        md = """
+        | survey |
+        | | type              | name | label | save_to |
+        | | begin_repeat      | r1   | R1    |         | e1 - q1, q2
+        | |   text            | q1   | Q1    | e1#e1p1 |
+        | |   begin_group     | g1   | G1    |         |
+        | |     text          | q2   | Q2    | e1#e1p2 |
+        | |     begin_group   | g2   | G2    |         | e2 - q3, q4
+        | |       begin_group | g3   | G3    |         |
+        | |         text      | q3   | Q3    | e2#e2p1 |
+        | |       end_group   | g3   |       |         |
+        | |       begin_group | g4   | G4    |         |
+        | |         text      | q4   | Q4    | e2#e2p2 |
+        | |       end_group   | g4   |       |         |
+        | |     end_group     | g2   |       |         |
+        | |   end_group       | g1   |       |         |
+        | | end_repeat        |      |       |         |
+        | | text              | q5   | Q5    |         | ancestor ref
+
+        | entities |
+        | | list_name | label                |
+        | | e1        | E1                   |
+        | | e2        | concat(${q3}, ${q5}) |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", create=True, label=True, repeat=True
+                ),
+                xpe.model_instance_meta(
+                    "e2",
+                    "/x:r1[not(@jr:template)]/x:g1/x:g2",
+                    create=True,
+                    label=True,
+                    repeat=True,
+                ),
+                xpe.model_bind_question_saveto("/r1/q1", "e1p1"),
+                xpe.model_bind_question_saveto("/r1/g1/q2", "e1p2"),
+                xpe.model_bind_question_saveto("/r1/g1/g2/g3/q3", "e2p1"),
+                xpe.model_bind_question_saveto("/r1/g1/g2/g4/q4", "e2p2"),
+                xpe.model_bind_meta_label(
+                    "concat( ../../../g3/q3 ,  /test_name/q5 )", "/r1/g1/g2"
+                ),
             ],
         )
 
@@ -1497,6 +1598,40 @@ class TestEntitiesParsing(PyxformTestCase):
             ],
         )
 
+    def test_ref_scope_conflict__depth_1_sibling_repeat__var_only__indexed_repeat__error(
+        self,
+    ):
+        """Should raise an error if an entity has references in more than one scope lineage."""
+        # EV016
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | text         | q1   | Q1    |
+        | | begin_repeat | r1   | R1    |
+        | | text         | q2   | Q2    |
+        | | end_repeat   | r1   |       |
+        | | begin_repeat | r2   | R2    |
+        | | text         | q3   | Q3    |
+        | | end_repeat   | r2   |       |
+
+        | entities |
+        | | list_name | label                                               |
+        | | e1        | concat(${q2}, " ", indexed-repeat(${q3}, ${r2}, 1)) |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_012.value.format(
+                    row=2,
+                    dataset="e1",
+                    other_scope="/survey/r1",
+                    scope="/survey/r2",
+                    question="q3",
+                ),
+            ],
+        )
+
     def test_ref_scope_conflict__depth_2_asymmetric_lineage__saveto_only__error(self):
         """Should raise an error if an entity has references in more than one scope lineage."""
         # EV016
@@ -1591,6 +1726,44 @@ class TestEntitiesParsing(PyxformTestCase):
                     other_scope="/survey/r2/r3",
                     scope="/survey/r1",
                     question="q3",
+                ),
+            ],
+        )
+
+    def test_ref_scope_conflict__depth_1_asymmetric_lineage__saveto_only__error(self):
+        """Should raise an error if an entity has references in more than one scope lineage."""
+        # EV016 EB023
+        md = """
+        | survey |
+        | | type             | name | label | save_to |
+        | | begin_repeat     | r1   | R1    |         |
+        | |   text           | q1   | Q1    | e1p1    |
+        | |   begin_group    | g1   | G1    |         |
+        | |     text         | q2   | Q2    | e1p2    |
+        | |   end_group      | g1   |       |         |
+        | | end_repeat       | r1   |       |         |
+        | | begin_group      | g2   | G2    |         |
+        | |   begin_group    | g3   | G3    |         |
+        | |     text         | q3   | Q3    |         |
+        | |     begin_repeat | r2   | R2    |         |
+        | |       text       | q4   | Q4    | e1p3    |
+        | |     end_repeat   | r2   |       |         |
+        | |   end_group      | g2   |       |         |
+        | | end_group        | g3   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | E1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.ENTITY_011.value.format(
+                    row=12,
+                    dataset="e1",
+                    other_scope="/survey/r1",
+                    scope="/survey/g2/g3/r2",
                 ),
             ],
         )
@@ -2003,7 +2176,7 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity"""
+                xpe.model_instance_meta("e1", "", repeat=None, create=True, label=True),
             ],
         )
 
@@ -2116,7 +2289,7 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@id]"""
+                xpe.model_instance_meta("e1", "", repeat=None, create=True, label=True),
             ],
         )
 
@@ -2152,7 +2325,7 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@dataset]"""
+                xpe.model_instance_meta("e1", "", repeat=None, create=True, label=True),
             ],
         )
 
@@ -2171,7 +2344,7 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@dataset='e1']"""
+                xpe.model_instance_meta("e1", "", repeat=None, create=True, label=True),
             ],
         )
 
@@ -3146,9 +3319,41 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_instance_meta("e1", "", repeat=None, create=True, label=True),
                 xpe.model_bind_question_saveto("/g1/q1", "e1p1"),
                 xpe.model_bind_question_saveto("/g2/q2", "e1p2"),
+            ],
+        )
+
+    def test_save_to__multiple_properties__split_groups__survey__with_var(self):
+        """Should find the saveto binding is output for save_to in a survey container."""
+        # ES003 ES005
+        # pyxform/#826 repro
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q1   | Q1    | e1p1    |
+        | | text        | q2   | Q2    | e1p2    |
+        | | end_group   | g1   |       |         |
+        | | begin_group | g2   | G2    |         |
+        | | text        | q3   | Q3    | e1p3    |
+        | | text        | q4   | Q4    | e1p4    |
+        | | end_group   | g2   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | ${q1} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_instance_meta("e1", "", repeat=None, create=True, label=True),
+                xpe.model_bind_question_saveto("/g1/q1", "e1p1"),
+                xpe.model_bind_question_saveto("/g1/q2", "e1p2"),
+                xpe.model_bind_question_saveto("/g2/q3", "e1p3"),
+                xpe.model_bind_question_saveto("/g2/q4", "e1p4"),
+                xpe.model_bind_meta_label(" /test_name/g1/q1 ", ""),
             ],
         )
 
@@ -3174,7 +3379,9 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:instance/x:test_name/x:g1/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_instance_meta(
+                    "e1", "/x:g1", repeat=None, create=True, label=True
+                ),
                 xpe.model_bind_question_saveto("/g1/g2/q1", "e1p1"),
                 xpe.model_bind_question_saveto("/g1/g3/q2", "e1p2"),
             ],
@@ -3202,7 +3409,9 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:instance/x:test_name/x:r1[not(@jr:template)]/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_instance_meta(
+                    "e1", "/x:r1", repeat=True, create=True, label=True
+                ),
                 xpe.model_bind_question_saveto("/r1/g1/q1", "e1p1"),
                 xpe.model_bind_question_saveto("/r1/g2/q2", "e1p2"),
             ],
@@ -3226,7 +3435,7 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_instance_meta("e1", "", repeat=None, create=True, label=True),
                 xpe.model_bind_question_saveto("/q1", "e1p1"),
                 xpe.model_bind_question_saveto("/g1/q2", "e1p2"),
             ],
@@ -3252,9 +3461,41 @@ class TestEntitiesOutput(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:instance/x:test_name/x:g1/x:meta/x:entity[@dataset='e1']""",
+                xpe.model_instance_meta(
+                    "e1", "/x:g1", repeat=None, create=True, label=True
+                ),
                 xpe.model_bind_question_saveto("/g1/q1", "e1p1"),
                 xpe.model_bind_question_saveto("/g1/g2/q2", "e1p2"),
+            ],
+        )
+
+    def test_save_to__multiple_properties__uneven_groups__group__with_var(self):
+        """Should find the saveto binding is output for save_to in a group container."""
+        # ES003 ES005
+        # pyxform/#823 repro
+        md = """
+        | survey |
+        | | type        | name | label | save_to |
+        | | begin_group | g1   | G1    |         |
+        | | text        | q1   | Q1    | e1p1    |
+        | | begin_group | g2   | G2    |         |
+        | | text        | q2   | Q2    | e1p2    |
+        | | end_group   | g2   |       |         |
+        | | end_group   | g1   |       |         |
+
+        | entities |
+        | | list_name | label |
+        | | e1        | ${q2} |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpe.model_instance_meta(
+                    "e1", "/x:g1", repeat=None, create=True, label=True
+                ),
+                xpe.model_bind_question_saveto("/g1/q1", "e1p1"),
+                xpe.model_bind_question_saveto("/g1/g2/q2", "e1p2"),
+                xpe.model_bind_meta_label(" /test_name/g1/g2/q2 ", "/g1"),
             ],
         )
 
@@ -3422,9 +3663,9 @@ class TestEntitiesOutput(PyxformTestCase):
             ],
         )
 
-    def test_var__multiple_properties__cross_boundary__before(self):
+    def test_var__multiple_var__cross_boundary__before(self):
         """Should find the deepest scope preferenced and outside vars resolve to one item."""
-        # TODO: matrix tags
+        # ES005 EB016 EB023
         md = """
         | survey |
         | | type          | name | label |
@@ -3457,8 +3698,10 @@ class TestEntitiesOutput(PyxformTestCase):
             ],
         )
 
-    def test_var__multiple_properties__cross_boundary__after(self):
+    def test_var__multiple_var__cross_boundary__after(self):
         """Should find the deepest scope preferenced and outside vars resolve to one item."""
+        # ES005 EB016 EB023
+        # pyxform/#822 repro
         md = """
         | survey |
         | | type          | name | label |
@@ -3489,63 +3732,6 @@ class TestEntitiesOutput(PyxformTestCase):
                     "concat( ../../../q1 ,  /test_name/g1/g2/q2 )", "/r1"
                 ),
             ],
-        )
-
-    def test_saveto_competing_uneven_nest(self):
-        md = """
-        | survey |
-        | | type              | name | label | save_to |
-        | | begin_repeat      | r1   | R1    |         | e1
-        | |   text            | q1   | Q1    | e1#e1p1 |
-        | |   begin_group     | g1   | G1    |         |
-        | |     text          | q2   | Q2    | e1#e1p2 |
-        | |     begin_repeat  | r2   | R2    |         | e2
-        | |       begin_group | g2   | G2    |         |
-        | |         text      | q3   | Q3    | e2#e2p1 |
-        | |       end_group   | g2   |       |         |
-        | |       begin_group | g3   | G3    |         |
-        | |         text      | q4   | Q4    | e2#e2p2 |
-        | |       end_group   | g3   |       |         |
-        | |     end_repeat    | r2   |       |         |
-        | |   end_group       | g1   |       |         |
-        | | end_repeat        | r1   |       |         |
-
-        | entities |
-        | | list_name | label |
-        | | e1        | E1    |
-        | | e2        | E2    |
-        """
-        self.assertPyxformXform(
-            md=md,
-            # TODO: assertions
-        )
-
-    def test_saveto_competing_uneven_outside_refs(self):
-        md = """
-        | survey |
-        | | type          | name | label | save_to |
-        | | begin_repeat  | r1   | R1    |         | e1
-        | | text          | q1   | Q1    | e1#e1p1 |
-        | | begin_group   | g1   | G1    |         | e2
-        | |   text        | q2   | Q2    | e1#e1p2 |
-        | |   begin_group | g2   | G2    |         |
-        | |     text      | q3   | Q3    |         |
-        | |   end_group   | g2   |       |         |
-        | |   begin_group | g3   | G3    |         |
-        | |     text      | q4   | Q4    | e2#e2p2 |
-        | |   end_group   | g3   |       |         |
-        | | end_group     | g1   |       |         |
-        | | end_repeat    |      |       |         |
-        | | text          | q5   | Q5    |         |
-
-        | entities |
-        | | list_name | label |
-        | | e1        | E1    |
-        | | e2        | concat(${q3}, ${q5}) |
-        """
-        self.assertPyxformXform(
-            md=md,
-            # TODO: assertions
         )
 
 
