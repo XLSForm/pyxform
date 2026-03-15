@@ -24,11 +24,11 @@ class XPathHelper:
     def model_instance_meta(
         list_name: str,
         meta_path: str = "",
-        repeat: bool = False,
+        repeat: bool | None = False,
         template: bool | None = False,
-        create: bool = False,
-        update: bool = False,
-        label: bool = False,
+        create: bool | None = False,
+        update: bool | None = False,
+        label: bool | None = False,
     ) -> str:
         assertion = {True: "{0}", False: "not({0})", None: "true()"}
         repeat_asserts = ("not(./x:instanceID)",)
