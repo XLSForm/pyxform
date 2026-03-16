@@ -498,7 +498,6 @@ def validate_saveto(
         )
     elif is_container_begin or is_container_end:
         raise PyXFormError(ErrorCode.ENTITY_003.value.format(row=row_number))
-    # Error: naming rules
     elif saveto.lower() in {const.NAME, const.LABEL}:
         raise PyXFormError(
             ErrorCode.NAMES_012.value.format(
@@ -677,7 +676,7 @@ def allocate_entities_to_containers(
     for scope_path, requests in scope_paths.items():
         scope_path_depth_limit = len(scope_path.nodes) - 1
 
-        # Prioritise save_to references but otherwise try to put deepest allocation first.
+        # Prioritise by row order to help make allocations stable.
         for req in sorted(requests, key=lambda x: x.entity_row_number):
             conflict_dataset = None
 
