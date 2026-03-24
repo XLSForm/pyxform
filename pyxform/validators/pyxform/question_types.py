@@ -3,9 +3,13 @@ Validations for question types.
 """
 
 from collections.abc import Collection, Iterable
+from math import isinf
+from typing import Any
 
 from pyxform import aliases
 from pyxform.errors import ErrorCode, PyXFormError
+from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
+from pyxform.validators.pyxform import parameters_generic
 from pyxform.validators.pyxform.pyxform_reference import (
     is_pyxform_reference_candidate,
     parse_pyxform_references,
@@ -100,3 +104,140 @@ def validate_geo_parameter_incremental(value: str) -> None:
         raise PyXFormError(
             code=ErrorCode.SURVEY_003,
         )
+
+
+def process_range_question_type(
+    row_number: int,
+    row: dict[str, Any],
+    parameters: parameters_generic.PARAMETERS_TYPE,
+    appearance: str,
+    choices: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Returns a new row that includes the Range parameters start, end and step.
+
+    Raises PyXFormError when invalid range parameters are used.
+    """
+    parameters = parameters_generic.validate(
+        parameters=parameters,
+        allowed={"start", "end", "step", "tick_interval", "placeholder", "tick_labelset"},
+    )
+    if (
+        appearance
+        and appearance not in {"vertical", "no-ticks"}
+        and any(
+            k in parameters for k in ("tick_interval", "placeholder", "tick_labelset")
+        )
+    ):
+        raise PyXFormError(ErrorCode.RANGE_008.value.format(row=row_number))
+    no_ticks_appearance = appearance and appearance == "no-ticks"
+
+    defaults = QUESTION_TYPE_DICT["range"]["parameters"]
+    # set defaults
+    for key in defaults:
+        if key not in parameters:
+            parameters[key] = defaults[key]
+
+    def process_parameter(name: str) -> float | None:
+        value = parameters.get(name)
+        if value is None:
+            return value
+        err = False
+        try:
+            value = float(value)
+        except ValueError:
+            err = True
+
+        if err or isinf(value):
+            raise PyXFormError(
+                ErrorCode.RANGE_001.value.format(row=row_number, name=name)
+            )
+        return value
+
+    start = process_parameter(name="start")
+    end = process_parameter(name="end")
+    step = process_parameter(name="step")
+    tick_interval = process_parameter(name="tick_interval")
+    placeholder = process_parameter(name="placeholder")
+    tick_labelset = parameters.get("tick_labelset")
+    range_width = abs(end - start)
+
+    if step == 0:
+        raise PyXFormError(ErrorCode.RANGE_002.value.format(row=row_number, name="step"))
+    if step > range_width:
+        raise PyXFormError(ErrorCode.RANGE_003.value.format(row=row_number, name="step"))
+
+    if tick_interval is not None:
+        if tick_interval == 0:
+            raise PyXFormError(
+                ErrorCode.RANGE_002.value.format(row=row_number, name="tick_interval")
+            )
+        if tick_interval > range_width:
+            raise PyXFormError(
+                ErrorCode.RANGE_003.value.format(row=row_number, name="tick_interval")
+            )
+        if (tick_interval % step) != 0:
+            raise PyXFormError(
+                ErrorCode.RANGE_004.value.format(row=row_number, name="tick_interval")
+            )
+        parameters["odk:tick-interval"] = parameters.pop("tick_interval")
+
+    if placeholder is not None:
+        if (placeholder % step) != 0:
+            raise PyXFormError(
+                ErrorCode.RANGE_004.value.format(row=row_number, name="placeholder")
+            )
+        if placeholder < start or placeholder > end:
+            raise PyXFormError(
+                ErrorCode.RANGE_005.value.format(row=row_number, name="placeholder")
+            )
+        parameters["odk:placeholder"] = parameters.pop("placeholder")
+
+    if tick_labelset:
+        tick_list = choices.get(tick_labelset)
+        if tick_list is None:
+            raise PyXFormError(ErrorCode.RANGE_006.value.format(row=row_number))
+
+        no_ticks_labels = set()
+        for label in tick_list:
+            errored = False
+            try:
+                label = float(label.get("name"))
+            except ValueError:
+                errored = True
+
+            if errored or isinf(label):
+                raise PyXFormError(ErrorCode.RANGE_009.value.format(row=row_number))
+
+            if label < start or label > end:
+                raise PyXFormError(ErrorCode.RANGE_010.value.format(row=row_number))
+            if tick_interval is not None and (label % tick_interval) != 0:
+                raise PyXFormError(
+                    ErrorCode.RANGE_011.value.format(row=row_number, name="tick_interval")
+                )
+            elif (label % step) != 0:
+                raise PyXFormError(
+                    ErrorCode.RANGE_011.value.format(row=row_number, name="step")
+                )
+            if no_ticks_appearance:
+                no_ticks_labels.add(label)
+
+        if no_ticks_appearance:
+            if len(no_ticks_labels) > 2:
+                raise PyXFormError(ErrorCode.RANGE_007.value.format(row=row_number))
+            if no_ticks_labels != {start, end}:
+                raise PyXFormError(ErrorCode.RANGE_012.value.format(row=row_number))
+
+        parameters["odk:tick-labelset"] = parameters.pop("tick_labelset")
+
+    # Default is integer, but if the floats have decimals then change the bind type.
+    if any(
+        i is not None and not i.is_integer()
+        for i in (start, end, step, tick_interval, placeholder)
+    ):
+        row["bind"] = row.get("bind", {})
+        row["bind"].update({"type": "decimal"})
+
+    row["parameters"] = parameters
+
+    return row

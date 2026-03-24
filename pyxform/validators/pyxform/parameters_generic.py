@@ -19,12 +19,13 @@ def parse(raw_parameters: str) -> PARAMETERS_TYPE:
 
     params = {}
     for param in parts:
-        if "=" not in param:
+        kv_split = param.split("=")
+        if "=" not in param or len(kv_split) != 2:
             raise PyXFormError(
                 "Expecting parameters to be in the form of "
                 "'parameter1=value parameter2=value'."
             )
-        k, v = param.split("=")[:2]
+        k, v = kv_split
         key = maybe_strip(k.lower())
         params[key] = v if key in CASE_SENSITIVE_VALUES else maybe_strip(v.lower())
 

@@ -356,7 +356,11 @@ _QUESTION_TYPE_DICT = {
         "control": {"tag": "upload", "mediatype": "application/*"},
         "bind": {"type": "binary"},
     },
-    "range": {"control": {"tag": "range"}, "bind": {"type": "int"}},
+    "range": {
+        "control": {"tag": "range"},
+        "bind": {"type": "int"},
+        "parameters": {"start": "1", "end": "10", "step": "1"},
+    },
     "audit": {"bind": {"type": "binary"}},
     "xml-external": {
         # Only effect is to add an external instance.
