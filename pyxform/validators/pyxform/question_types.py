@@ -3,6 +3,7 @@ Validations for question types.
 """
 
 from collections.abc import Collection, Iterable
+from decimal import Decimal, InvalidOperation
 from math import isinf
 from typing import Any
 
@@ -138,14 +139,14 @@ def process_range_question_type(
         if key not in parameters:
             parameters[key] = defaults[key]
 
-    def process_parameter(name: str) -> float | None:
+    def process_parameter(name: str) -> Decimal | None:
         value = parameters.get(name)
         if value is None:
             return value
         err = False
         try:
-            value = float(value)
-        except ValueError:
+            value = Decimal(value)
+        except InvalidOperation:
             err = True
 
         if err or isinf(value):
@@ -202,8 +203,8 @@ def process_range_question_type(
         for label in tick_list:
             errored = False
             try:
-                label = float(label.get("name"))
-            except ValueError:
+                label = Decimal(label.get("name"))
+            except InvalidOperation:
                 errored = True
 
             if errored or isinf(label):
@@ -230,9 +231,9 @@ def process_range_question_type(
 
         parameters["odk:tick-labelset"] = parameters.pop("tick_labelset")
 
-    # Default is integer, but if the floats have decimals then change the bind type.
+    # Default is integer, but if the values have decimals then change the bind type.
     if any(
-        i is not None and not i.is_integer()
+        i is not None and not i == i.to_integral_value()
         for i in (start, end, step, tick_interval, placeholder)
     ):
         row["bind"] = row.get("bind", {})

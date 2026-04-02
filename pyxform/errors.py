@@ -423,8 +423,8 @@ class ErrorCode(Enum):
         name="Range type - parameter outside range",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
-            "For the 'range' question type, the parameter '{name}' must be a within "
-            "the range (between the 'start' and 'end' values, inclusive)."
+            "For the 'range' question type, the parameter '{name}' must be "
+            "between the 'start' and 'end' values, inclusive)."
         ),
     )
     RANGE_006 = Detail(

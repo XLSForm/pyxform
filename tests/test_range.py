@@ -294,26 +294,43 @@ class TestRangeParsing(PyxformTestCase):
                         ],
                     )
 
-    def test_parameter_not_a_multiple_of_step__error(self):
+    def test_tick_interval_not_a_multiple_of_step__error(self):
         """Should raise an error if the relevant ticks parameter is not a multiple of 'step'."""
         # RI003 RP001
         md = """
         | survey |
-        | | type  | name | label | parameters                           |
-        | | range | q1   | Q1    | start=-3 end=3 step=2 {name}={value} |
+        | | type  | name | label | parameters                                  |
+        | | range | q1   | Q1    | start=-3 end=3 step=2 tick_interval={value} |
         """
-        params = ("tick_interval", "placeholder")
-        cases = ("3", "-3")
-        for name in params:
-            for value in cases:
-                with self.subTest((name, value)):
-                    self.assertPyxformXform(
-                        md=md.format(name=name, value=value),
-                        errored=True,
-                        error__contains=[
-                            ErrorCode.RANGE_004.value.format(row=2, name=name)
-                        ],
-                    )
+        cases = ("-3", "3", "-1", "1")
+        for value in cases:
+            with self.subTest(("tick_interval", value)):
+                self.assertPyxformXform(
+                    md=md.format(name="tick_interval", value=value),
+                    errored=True,
+                    error__contains=[
+                        ErrorCode.RANGE_004.value.format(row=2, name="tick_interval")
+                    ],
+                )
+
+    def test_tick_interval_not_a_multiple_of_step__error(self):
+        """Should raise an error if the placeholder is not a multiple of 'step' starting at 'start'."""
+        # RI003 RP001
+        md = """
+        | survey |
+        | | type  | name | label | parameters                                  |
+        | | range | q1   | Q1    | start=-3 end=3 step=2 placeholder={value} |
+        """
+        cases = ("-2", "2", "0")
+        for value in cases:
+            with self.subTest(("placeholder", value)):
+                self.assertPyxformXform(
+                    md=md.format(name="placeholder", value=value),
+                    errored=True,
+                    error__contains=[
+                        ErrorCode.RANGE_004.value.format(row=2, name="placeholder")
+                    ],
+                )
 
     def test_parameter_not_a_multiple_of_step__ok(self):
         """Should not raise an error if the relevant ticks parameter is a multiple of 'step'."""
@@ -341,6 +358,32 @@ class TestRangeParsing(PyxformTestCase):
                         ],
                     )
 
+    def test_parameter_not_a_multiple_of_step_decimal__ok(self):
+        """Should not raise an error if the relevant ticks parameter is a multiple of 'step'."""
+        # RI003 RP001
+        md = """
+        | survey |
+        | | type  | name | label | parameters                           |
+        | | range | q1   | Q1    | start=-1 end=1 step=0.1 {name}={value} |
+        """
+        params = (
+            ("tick_interval", "odk:tick-interval"),
+            ("placeholder", "odk:placeholder"),
+        )
+        cases = ("0.6", "-0.6")
+        for name, attr in params:
+            for value in cases:
+                with self.subTest((name, attr, value)):
+                    self.assertPyxformXform(
+                        md=md.format(name=name, value=value),
+                        xml__xpath_match=[
+                            xpq.body_range(
+                                "q1",
+                                {"start": "-1", "end": "1", "step": "0.1", attr: value},
+                            ),
+                        ],
+                    )
+
     def test_placeholder_outside_range__error(self):
         """Should raise an error if the placeholder is outside the range."""
         # RP002
@@ -349,7 +392,7 @@ class TestRangeParsing(PyxformTestCase):
         | | type  | name | label | parameters                               |
         | | range | q1   | Q1    | start=3 end=7 step=2 placeholder={value} |
         """
-        cases = ("2", "8")
+        cases = ("1", "9")
         for value in cases:
             with self.subTest(value):
                 self.assertPyxformXform(
@@ -368,7 +411,7 @@ class TestRangeParsing(PyxformTestCase):
         | | type  | name | label | parameters                               |
         | | range | q1   | Q1    | start=7 end=3 step=2 placeholder={value} |
         """
-        cases = ("8", "1")
+        cases = ("9", "1")
         for value in cases:
             with self.subTest(value):
                 self.assertPyxformXform(
