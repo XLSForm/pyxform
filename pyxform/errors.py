@@ -473,7 +473,7 @@ class ErrorCode(Enum):
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
             "For the 'range' question type, the parameter 'tick_labelset' choices' must "
-            "be a multiple of '{name}'."
+            "be equal to the start of the range plus a multiple of '{name}'."
         ),
     )
     RANGE_012 = Detail(

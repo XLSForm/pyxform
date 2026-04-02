@@ -360,15 +360,34 @@ class TestRangeParsing(PyxformTestCase):
                     ],
                 )
 
-    def test_placeholder_outside_range__ok(self):
+    def test_placeholder_outside_inverted_range__error(self):
+        """Should raise an error if the placeholder is outside an inverted range."""
+        # RP002
+        md = """
+        | survey |
+        | | type  | name | label | parameters                               |
+        | | range | q1   | Q1    | start=7 end=3 step=2 placeholder={value} |
+        """
+        cases = ("8", "1")
+        for value in cases:
+            with self.subTest(value):
+                self.assertPyxformXform(
+                    md=md.format(value=value),
+                    errored=True,
+                    error__contains=[
+                        ErrorCode.RANGE_005.value.format(row=2, name="placeholder")
+                    ],
+                )
+
+    def test_placeholder_inside_inverted_range__ok(self):
         """Should not raise an error if the placeholder is inside the range."""
         # RP002
         md = """
         | survey |
         | | type  | name | label | parameters                               |
-        | | range | q1   | Q1    | start=0 end=7 step=2 placeholder={value} |
+        | | range | q1   | Q1    | start=7 end=3 step=2 placeholder={value} |
         """
-        cases = ("2", "6")
+        cases = ("7", "5", "3")
         for value in cases:
             with self.subTest(value):
                 self.assertPyxformXform(
@@ -377,7 +396,33 @@ class TestRangeParsing(PyxformTestCase):
                         xpq.body_range(
                             "q1",
                             {
-                                "start": "0",
+                                "start": "7",
+                                "end": "3",
+                                "step": "2",
+                                "odk:placeholder": value,
+                            },
+                        ),
+                    ],
+                )
+
+    def test_placeholder_inside_range__ok(self):
+        """Should not raise an error if the placeholder is inside the range."""
+        # RP002
+        md = """
+        | survey |
+        | | type  | name | label | parameters                               |
+        | | range | q1   | Q1    | start=1 end=7 step=2 placeholder={value} |
+        """
+        cases = ("1", "3", "5", "7")
+        for value in cases:
+            with self.subTest(value):
+                self.assertPyxformXform(
+                    md=md.format(value=value),
+                    xml__xpath_match=[
+                        xpq.body_range(
+                            "q1",
+                            {
+                                "start": "1",
                                 "end": "7",
                                 "step": "2",
                                 "odk:placeholder": value,
@@ -826,7 +871,7 @@ class TestRangeOutput(PyxformTestCase):
         md = """
         | survey |
         | | type  | name | label | parameters      |
-        | | range | q1   | Q1    | start=3 end=13 step=2 tick_interval=2 placeholder=6 tick_labelset=c1 |
+        | | range | q1   | Q1    | start=3 end=13 step=2 tick_interval=2 placeholder=7 tick_labelset=c1 |
 
         | choices |
         | | list_name | name | label |
@@ -845,7 +890,7 @@ class TestRangeOutput(PyxformTestCase):
                         "end": "13",
                         "step": "2",
                         "odk:tick-interval": "2",
-                        "odk:placeholder": "6",
+                        "odk:placeholder": "7",
                         "odk:tick-labelset": "c1",
                     },
                 ),

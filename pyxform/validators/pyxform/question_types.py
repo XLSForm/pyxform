@@ -183,11 +183,11 @@ def process_range_question_type(
         parameters["odk:tick-interval"] = parameters.pop("tick_interval")
 
     if placeholder is not None:
-        if (placeholder % step) != 0:
+        if (abs(placeholder - start) % step) != 0:
             raise PyXFormError(
                 ErrorCode.RANGE_004.value.format(row=row_number, name="placeholder")
             )
-        if placeholder < start or placeholder > end:
+        if placeholder < min(start, end) or placeholder > max(start, end):
             raise PyXFormError(
                 ErrorCode.RANGE_005.value.format(row=row_number, name="placeholder")
             )
