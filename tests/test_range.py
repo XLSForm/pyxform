@@ -751,6 +751,27 @@ class TestRangeParsing(PyxformTestCase):
                     error__contains=[ErrorCode.RANGE_010.value.format(row=2)],
                 )
 
+    def test_tick_labelset_choice_outside_inverted_range__error(self):
+        """Should raise an error if any tick_labelset choices are outside the inverted range."""
+        # RL004
+        md = """
+        | survey |
+        | | type  | name | label | parameters                            |
+        | | range | q1   | Q1    | start=7 end=3 step=2 tick_labelset=c1 |
+
+        | choices |
+        | | list_name | name    | label |
+        | | c1        | {value} | N1    |
+        """
+        cases = ("9", "1")
+        for value in cases:
+            with self.subTest(value):
+                self.assertPyxformXform(
+                    md=md.format(value=value),
+                    errored=True,
+                    error__contains=[ErrorCode.RANGE_010.value.format(row=2)],
+                )
+
     def test_tick_labelset_choice_outside_range__ok(self):
         """Should not raise an error if any tick_labelset choices are inside the range."""
         # RL004
@@ -775,6 +796,36 @@ class TestRangeParsing(PyxformTestCase):
                                 "start": "0",
                                 "end": "7",
                                 "step": "1",
+                                "odk:tick-labelset": "c1",
+                            },
+                        ),
+                    ],
+                )
+
+    def test_tick_labelset_choice_outside_inverted_range__ok(self):
+        """Should not raise an error if any tick_labelset choices are inside the range."""
+        # RL004
+        md = """
+        | survey |
+        | | type  | name | label | parameters                            |
+        | | range | q1   | Q1    | start=7 end=3 step=2 tick_labelset=c1 |
+
+        | choices |
+        | | list_name | name    | label |
+        | | c1        | {value} | N1    |
+        """
+        cases = ("7", "5", "3")
+        for value in cases:
+            with self.subTest(value):
+                self.assertPyxformXform(
+                    md=md.format(value=value),
+                    xml__xpath_match=[
+                        xpq.body_range(
+                            "q1",
+                            {
+                                "start": "7",
+                                "end": "3",
+                                "step": "2",
                                 "odk:tick-labelset": "c1",
                             },
                         ),
@@ -836,8 +887,8 @@ class TestRangeParsing(PyxformTestCase):
                     ],
                 )
 
-    def test_tick_labelset_choice_not_a_multiple_of_step__both__ok(self):
-        """Should not raise an error if the choice is a multiple of 'step'."""
+    def test_tick_labelset_choice_not_aligned_with_tick_interval__both__ok(self):
+        """Should not raise an error if the choice is aligned with ticks."""
         # RL003
         md = """
         | survey |
@@ -846,7 +897,9 @@ class TestRangeParsing(PyxformTestCase):
 
         | choices |
         | | list_name | name    | label |
-        | | c1        | 8       | N1    |
+        | | c1        | 1       | N1    |
+        | | c1        | 5       | N2    |
+        | | c1        | 9       | N3    |
         """
         self.assertPyxformXform(
             md=md,
@@ -918,8 +971,8 @@ class TestRangeOutput(PyxformTestCase):
 
         | choices |
         | | list_name | name | label |
-        | | c1        | 4  | N1    |
-        | | c1        | 8  | N2    |
+        | | c1        | 5   | N1    |
+        | | c1        | 11  | N2    |
         """
         self.assertPyxformXform(
             md=md,
@@ -950,8 +1003,8 @@ class TestRangeOutput(PyxformTestCase):
 
         | choices |
         | | list_name | name | label |
-        | | c1        | 1.5  | N1    |
-        | | c1        | 3.0  | N2    |
+        | | c1        | 2.0  | N1    |
+        | | c1        | 3.5  | N2    |
         """
         self.assertPyxformXform(
             md=md,

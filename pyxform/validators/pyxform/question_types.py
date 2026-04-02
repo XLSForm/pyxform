@@ -184,7 +184,7 @@ def process_range_question_type(
         parameters["odk:tick-interval"] = parameters.pop("tick_interval")
 
     if placeholder is not None:
-        if (abs(placeholder - start) % step) != 0:
+        if (placeholder - start) % step != 0:
             raise PyXFormError(
                 ErrorCode.RANGE_004.value.format(row=row_number, name="placeholder")
             )
@@ -200,28 +200,28 @@ def process_range_question_type(
             raise PyXFormError(ErrorCode.RANGE_006.value.format(row=row_number))
 
         no_ticks_labels = set()
-        for label in tick_list:
+        for item in tick_list:
             errored = False
             try:
-                label = Decimal(label.get("name"))
+                value = Decimal(item.get("name"))
             except InvalidOperation:
                 errored = True
 
-            if errored or isinf(label):
+            if errored or isinf(value):
                 raise PyXFormError(ErrorCode.RANGE_009.value.format(row=row_number))
 
-            if label < start or label > end:
+            if value < min(start, end) or value > max(start, end):
                 raise PyXFormError(ErrorCode.RANGE_010.value.format(row=row_number))
-            if tick_interval is not None and (label % tick_interval) != 0:
+            if tick_interval is not None and (value - start) % tick_interval != 0:
                 raise PyXFormError(
                     ErrorCode.RANGE_011.value.format(row=row_number, name="tick_interval")
                 )
-            elif (label % step) != 0:
+            elif (value - start) % step != 0:
                 raise PyXFormError(
                     ErrorCode.RANGE_011.value.format(row=row_number, name="step")
                 )
             if no_ticks_appearance:
-                no_ticks_labels.add(label)
+                no_ticks_labels.add(value)
 
         if no_ticks_appearance:
             if len(no_ticks_labels) > 2:

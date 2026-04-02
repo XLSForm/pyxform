@@ -465,7 +465,7 @@ class ErrorCode(Enum):
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
             "For the 'range' question type, the parameter 'tick_labelset' choices must "
-            "be a within the range (between the 'start' and 'end' values, inclusive)."
+            "be between the 'start' and 'end' values, inclusive."
         ),
     )
     RANGE_011 = Detail(
