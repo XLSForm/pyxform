@@ -295,7 +295,7 @@ class TestRangeParsing(PyxformTestCase):
                     )
 
     def test_tick_interval_not_a_multiple_of_step__error(self):
-        """Should raise an error if the relevant ticks parameter is not a multiple of 'step'."""
+        """Should raise an error if tick interval is not a multiple of 'step'."""
         # RI003 RP001
         md = """
         | survey |
@@ -313,12 +313,12 @@ class TestRangeParsing(PyxformTestCase):
                     ],
                 )
 
-    def test_tick_interval_not_a_multiple_of_step__error(self):
+    def test_placeholder_not_a_multiple_of_step__error(self):
         """Should raise an error if the placeholder is not a multiple of 'step' starting at 'start'."""
         # RI003 RP001
         md = """
         | survey |
-        | | type  | name | label | parameters                                  |
+        | | type  | name | label | parameters                                |
         | | range | q1   | Q1    | start=-3 end=3 step=2 placeholder={value} |
         """
         cases = ("-2", "2", "0")
