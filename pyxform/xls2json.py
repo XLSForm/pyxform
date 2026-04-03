@@ -132,47 +132,6 @@ def add_flat_annotations(prompt_list, parent_relevant="", name_prefix=""):
             #    prompt['name'] = name_prefix + prompt['name']
 
 
-def process_range_question_type(
-    row: dict[str, Any], parameters: parameters_generic.PARAMETERS_TYPE
-) -> dict[str, Any]:
-    """
-    Returns a new row that includes the Range parameters start, end and step.
-
-    Raises PyXFormError when invalid range parameters are used.
-    """
-    new_dict = row.copy()
-    parameters = parameters_generic.validate(
-        parameters=parameters, allowed=("start", "end", "step")
-    )
-    parameters_map = {"start": "start", "end": "end", "step": "step"}
-    defaults = {"start": "1", "end": "10", "step": "1"}
-
-    # set defaults
-    for key in parameters_map.values():
-        if key not in parameters:
-            parameters[key] = defaults[key]
-
-    has_float = False
-    try:
-        # Check all parameters.
-        for x in parameters.values():
-            if float(x) and "." in str(x):
-                has_float = True
-    except ValueError as range_err:
-        raise PyXFormError(
-            "Range parameters 'start', 'end' or 'step' must all be numbers."
-        ) from range_err
-    else:
-        # is integer by default, convert to decimal if it has any float values
-        if has_float:
-            new_dict["bind"] = new_dict.get("bind", {})
-            new_dict["bind"].update({"type": "decimal"})
-
-    new_dict["parameters"] = parameters
-
-    return new_dict
-
-
 def process_image_default(default_value):
     # prepend image files with the correct prefix, if they don't have it.
     image_jr_prefix = "jr://images/"
@@ -519,6 +478,7 @@ def workbook_to_json(
 
         # Get question type
         question_type = row.get(constants.TYPE)
+        appearance = row.get("control", {}).get("appearance")
 
         if not question_type:
             # if name and label are also missing,
@@ -888,10 +848,8 @@ def workbook_to_json(
 
                 # Code to deal with table_list appearance flags
                 # (for groups of selects)
-                ctrl_ap = new_json_dict.get("control", {}).get("appearance")
-
-                if ctrl_ap:
-                    appearance_mods_as_list = ctrl_ap.split()
+                if appearance:
+                    appearance_mods_as_list = appearance.split()
                     if constants.TABLE_LIST in appearance_mods_as_list:
                         # Table List modifier should add field list to the new dict,
                         # as well as appending other appearance modifiers.
@@ -1195,7 +1153,13 @@ def workbook_to_json(
 
         # range question_type
         if question_type == "range":
-            new_dict = process_range_question_type(row=row, parameters=parameters)
+            new_dict = qt.process_range_question_type(
+                row_number=row_number,
+                row=row,
+                parameters=parameters,
+                appearance=appearance,
+                choices=choices,
+            )
             parent_children_array.append(new_dict)
             continue
 
@@ -1247,7 +1211,6 @@ def workbook_to_json(
                 )
 
             if "app" in parameters:
-                appearance = row.get("control", {}).get("appearance")
                 if appearance is None or appearance == "annotate":
                     app_package_name = str(parameters["app"])
                     validation_result = validate_android_package_name(app_package_name)

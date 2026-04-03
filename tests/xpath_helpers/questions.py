@@ -1,3 +1,6 @@
+from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
+
+
 class XPathHelper:
     """
     XPath expressions for questions assertions.
@@ -170,13 +173,25 @@ class XPathHelper:
     def body_upload_tags(qname: str, tags: tuple[tuple[str, ...], ...]) -> str:
         """Body has osm upload control with tags data inline."""
         tags_xp = "\n          and ".join(
-            (f"""./x:tag[@key='{k}']/x:label[text()='{v}']""" for k, v in tags)
+            f"""./x:tag[@key='{k}']/x:label[text()='{v}']""" for k, v in tags
         )
         return f"""
         /h:html/h:body/x:upload[
           @ref='/test_name/{qname}'
           and @mediatype='osm/*'
           and {tags_xp}
+        ]
+        """
+
+    @staticmethod
+    def body_range(qname: str, attrs: dict[str, str] | None = None) -> str:
+        parameters = QUESTION_TYPE_DICT["range"]["parameters"].copy()
+        if attrs is not None:
+            parameters.update(attrs)
+        attrs = " and ".join(f"@{k}='{v}'" for k, v in parameters.items())
+        return f"""
+        /h:html/h:body/x:range[
+          @ref='/test_name/{qname}' and {attrs}
         ]
         """
 

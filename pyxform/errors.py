@@ -390,6 +390,100 @@ class ErrorCode(Enum):
             "'{q}' appears more than once."
         ),
     )
+    RANGE_001 = Detail(
+        name="Range type - parameter is not a number",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter '{name}' must be a number."
+        ),
+    )
+    RANGE_002 = Detail(
+        name="Range type - parameter is zero",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter '{name}' must not be '0' (zero)."
+        ),
+    )
+    RANGE_003 = Detail(
+        name="Range type - parameter larger than range",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter '{name}' must not be larger than "
+            "the range (the difference between 'start' and 'end')."
+        ),
+    )
+    RANGE_004 = Detail(
+        name="Range type - parameter not a multiple of tick",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter '{name}' must be a multiple of 'step'."
+        ),
+    )
+    RANGE_005 = Detail(
+        name="Range type - parameter outside range",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter '{name}' must be "
+            "between the 'start' and 'end' values, inclusive)."
+        ),
+    )
+    RANGE_006 = Detail(
+        name="Range type - tick_labelset not found",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter 'tick_labelset' must be a "
+            "choice list name from the 'list_name' column on the choices sheet."
+        ),
+    )
+    RANGE_007 = Detail(
+        name="Range type - tick_labelset too many choices with no-ticks",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter 'tick_labelset' choice list "
+            "must have only 2 items when the 'appearance' is 'no-ticks'."
+        ),
+    )
+    RANGE_008 = Detail(
+        name="Range type - parameter not compatible with appearance",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameters 'tick_interval', 'placeholder', "
+            "and 'tick_labelset' are only supported for the appearances 'vertical', 'no-ticks' "
+            "and the default (empty) horizontal."
+        ),
+    )
+    RANGE_009 = Detail(
+        name="Range type - tick_labelset choice is not a number",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter '{tick_labelset}' choices must "
+            "all be numbers."
+        ),
+    )
+    RANGE_010 = Detail(
+        name="Range type - tick_labelset choice outside range",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter 'tick_labelset' choices must "
+            "be between the 'start' and 'end' values, inclusive."
+        ),
+    )
+    RANGE_011 = Detail(
+        name="Range type - tick_labelset choice not a multiple of tick",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter 'tick_labelset' choices' must "
+            "be equal to the start of the range plus a multiple of '{name}'."
+        ),
+    )
+    RANGE_012 = Detail(
+        name="Range type - tick_labelset choices not start/end for no-ticks",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For the 'range' question type, the parameter 'tick_labelset' choice list "
+            "match the range 'start' and 'end' values when the 'appearance' is 'no-ticks'."
+        ),
+    )
     SURVEY_001 = Detail(
         name="Survey sheet - unmatched group/repeat/loop end",
         msg=(
