@@ -19,12 +19,12 @@ Each test should reference one (or more) requirements from these lists.
     - RI002: must be less than or equal to abs(end - start).
     - RI003: must be a multiple of 'step'.
   - parameter 'placeholder':
-    - RP001: must be a multiple of 'step'.
+    - RP001: must be on a tick (determined by tick_interval if it exists else step).
     - RP002: must be between 'start' and 'end' inclusive.
   - parameter 'tick_labelset':
     - RL001: must match one 'list_name' from the choices sheet.
     - RL002: the referenced choice list must have one or more items.
-    - RL003: choice list values must each be a multiple of 'step' or 'tick_interval'.
+    - RL003: choice list values must each be a multiple of 'step' or 'tick_interval', offset from 'start'.
     - RL004: choice list values must each be between 'start' and 'end' inclusive.
     - RL005: with the 'no-ticks' appearance, choices must match 'start' and 'end' only.
 - Behaviour
