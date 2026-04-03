@@ -1,5 +1,8 @@
 Pyxform Changelog
 
+v4.4.0, 2026-04-02
+* Add configurability to range question type by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/832
+
 v4.3.1, 2026-03-14
 * Fix forms with save_tos across groups by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/827
 
