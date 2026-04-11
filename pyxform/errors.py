@@ -456,7 +456,7 @@ class ErrorCode(Enum):
         name="Range type - tick_labelset choice is not a number",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
-            "For the 'range' question type, the parameter '{tick_labelset}' choices must "
+            "For the 'range' question type, the parameter '{tick_labelset}' choice values must "
             "all be numbers."
         ),
     )
@@ -472,7 +472,7 @@ class ErrorCode(Enum):
         name="Range type - tick_labelset choice not a multiple of tick",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
-            "For the 'range' question type, the parameter 'tick_labelset' choices' must "
+            "For the 'range' question type, the parameter 'tick_labelset' choices' values must "
             "be equal to the start of the range plus a multiple of '{name}'."
         ),
     )
@@ -480,7 +480,7 @@ class ErrorCode(Enum):
         name="Range type - tick_labelset choices not start/end for no-ticks",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
-            "For the 'range' question type, the parameter 'tick_labelset' choice list "
+            "For the 'range' question type, the parameter 'tick_labelset' choice list values may only"
             "match the range 'start' and 'end' values when the 'appearance' is 'no-ticks'."
         ),
     )

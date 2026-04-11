@@ -189,11 +189,16 @@ class XPathHelper:
         if attrs is not None:
             parameters.update(attrs)
         attrs = " and ".join(f"@{k}='{v}'" for k, v in parameters.items())
+
         return f"""
         /h:html/h:body/x:range[
           @ref='/test_name/{qname}' and {attrs}
         ]
         """
+
+    @staticmethod
+    def range_itemset(qname: str, labelset: str) -> str:
+        return f"/h:html/h:body/x:range[@ref='/test_name/{qname}']/x:itemset[@nodeset=\"instance('{labelset}')/root/item\"]"
 
 
 xpq = XPathHelper()
