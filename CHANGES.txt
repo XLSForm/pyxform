@@ -1,5 +1,8 @@
 Pyxform Changelog
 
+v4.4.1, 2026-04-12
+* Insert itemset declaration for range labels by @lognaturel in https://github.com/XLSForm/pyxform/pull/836
+
 v4.4.0, 2026-04-02
 * Add configurability to range question type by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/832
 
