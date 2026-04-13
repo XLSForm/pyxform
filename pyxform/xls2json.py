@@ -1153,6 +1153,8 @@ def workbook_to_json(
 
         # range question_type
         if question_type == "range":
+            tick_labelset = parameters.get("tick_labelset")
+
             new_dict = qt.process_range_question_type(
                 row_number=row_number,
                 row=row,
@@ -1160,6 +1162,16 @@ def workbook_to_json(
                 appearance=appearance,
                 choices=choices,
             )
+
+            if tick_labelset is not None:
+                add_choices_info_to_question(
+                    question=new_dict,
+                    list_name=tick_labelset,
+                    choices=choices,
+                    choice_filter=None,
+                    file_extension=None,
+                )
+
             parent_children_array.append(new_dict)
             continue
 

@@ -229,7 +229,7 @@ def process_range_question_type(
             if no_ticks_labels != {start, end}:
                 raise PyXFormError(ErrorCode.RANGE_012.value.format(row=row_number))
 
-        parameters["odk:tick-labelset"] = parameters.pop("tick_labelset")
+        parameters.pop("tick_labelset")
 
     # Default is integer, but if the values have decimals then change the bind type.
     if any(

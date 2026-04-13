@@ -100,9 +100,9 @@ class TestRangeParsing(PyxformTestCase):
                         "step": "1",
                         "odk:tick-interval": "2",
                         "odk:placeholder": "6",
-                        "odk:tick-labelset": "c1",
                     },
                 ),
+                xpq.range_itemset("q1", "c1"),
             ],
         )
 
@@ -130,9 +130,9 @@ class TestRangeParsing(PyxformTestCase):
                         "step": "1",
                         "odk:tick-interval": "2",
                         "odk:placeholder": "6",
-                        "odk:tick-labelset": "c1",
                     },
                 ),
+                xpq.range_itemset("q1", "c1"),
             ],
         )
 
@@ -502,9 +502,7 @@ class TestRangeParsing(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            xml__xpath_match=[
-                xpq.body_range("q1", {"odk:tick-labelset": "c1"}),
-            ],
+            xml__xpath_match=[xpq.body_range("q1"), xpq.range_itemset("q1", "c1")],
         )
 
     def test_tick_labelset_empty__error(self):
@@ -562,9 +560,8 @@ class TestRangeParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpq.body_range(
-                    "q1", {"odk:tick-labelset": "c1", "appearance": "no-ticks"}
-                ),
+                xpq.body_range("q1", {"appearance": "no-ticks"}),
+                xpq.range_itemset("q1", "c1"),
             ],
         )
 
@@ -609,9 +606,8 @@ class TestRangeParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpq.body_range(
-                    "q1", {"odk:tick-labelset": "c1", "appearance": "no-ticks"}
-                ),
+                xpq.body_range("q1", {"appearance": "no-ticks"}),
+                xpq.range_itemset("q1", "c1"),
             ],
         )
 
@@ -673,14 +669,14 @@ class TestRangeParsing(PyxformTestCase):
         params = (
             ("tick_interval=2", {"odk:tick-interval": "2"}),
             ("placeholder=3", {"odk:placeholder": "3"}),
-            ("tick_labelset=c1", {"odk:tick-labelset": "c1"}),
+            ("tick_labelset=c1", {}),
         )
         cases = ("", "vertical", "no-ticks")
         for param, attr in params:
-            for value in cases:
-                with self.subTest((param, attr, value)):
+            for appearance in cases:
+                with self.subTest((param, attr, appearance)):
                     self.assertPyxformXform(
-                        md=md.format(param=param, value=value),
+                        md=md.format(param=param, value=appearance),
                         xml__xpath_match=[
                             xpq.body_range("q1", attr),
                         ],
@@ -726,7 +722,7 @@ class TestRangeParsing(PyxformTestCase):
                     md=md.format(value=value),
                     xml__xpath_match=[
                         xpq.model_instance_bind("q1", "int"),
-                        xpq.body_range("q1", {"odk:tick-labelset": "c1"}),
+                        xpq.range_itemset("q1", "c1"),
                     ],
                 )
 
@@ -796,9 +792,9 @@ class TestRangeParsing(PyxformTestCase):
                                 "start": "0",
                                 "end": "7",
                                 "step": "1",
-                                "odk:tick-labelset": "c1",
                             },
                         ),
+                        xpq.range_itemset("q1", "c1"),
                     ],
                 )
 
@@ -826,9 +822,9 @@ class TestRangeParsing(PyxformTestCase):
                                 "start": "7",
                                 "end": "3",
                                 "step": "2",
-                                "odk:tick-labelset": "c1",
                             },
                         ),
+                        xpq.range_itemset("q1", "c1"),
                     ],
                 )
 
@@ -881,9 +877,9 @@ class TestRangeParsing(PyxformTestCase):
                                 "start": "0",
                                 "end": "7",
                                 "step": "1",
-                                "odk:tick-labelset": "c1",
                             },
                         ),
+                        xpq.range_itemset("q1", "c1"),
                     ],
                 )
 
@@ -911,9 +907,9 @@ class TestRangeParsing(PyxformTestCase):
                         "end": "12",
                         "step": "2",
                         "odk:tick-interval": "4",
-                        "odk:tick-labelset": "c1",
                     },
                 ),
+                xpq.range_itemset("q1", "c1"),
             ],
         )
 
@@ -987,9 +983,9 @@ class TestRangeOutput(PyxformTestCase):
                         "step": "2",
                         "odk:tick-interval": "2",
                         "odk:placeholder": "7",
-                        "odk:tick-labelset": "c1",
                     },
                 ),
+                xpq.range_itemset("q1", "c1"),
             ],
         )
 
@@ -1019,8 +1015,8 @@ class TestRangeOutput(PyxformTestCase):
                         "step": "0.5",
                         "odk:tick-interval": "1.5",
                         "odk:placeholder": "2.5",
-                        "odk:tick-labelset": "c1",
                     },
                 ),
+                xpq.range_itemset("q1", "c1"),
             ],
         )

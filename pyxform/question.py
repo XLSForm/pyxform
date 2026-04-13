@@ -9,9 +9,9 @@ from typing import TYPE_CHECKING
 
 from pyxform import constants
 from pyxform.constants import (
-    EXTERNAL_CHOICES_ITEMSET_REF_LABEL,
+    DEFAULT_ITEMSET_LABEL_REF,
+    DEFAULT_ITEMSET_VALUE_REF,
     EXTERNAL_CHOICES_ITEMSET_REF_LABEL_GEOJSON,
-    EXTERNAL_CHOICES_ITEMSET_REF_VALUE,
     EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON,
     EXTERNAL_INSTANCE_EXTENSIONS,
 )
@@ -53,15 +53,15 @@ QUESTION_EXTRA_FIELDS = (
 )
 QUESTION_FIELDS = (*SURVEY_ELEMENT_FIELDS, *QUESTION_EXTRA_FIELDS)
 
-SELECT_QUESTION_EXTRA_FIELDS = (
+ITEM_QUESTION_EXTRA_FIELDS = (
     constants.CHOICES,
     constants.ITEMSET,
     constants.LIST_NAME_U,
 )
-SELECT_QUESTION_FIELDS = (*QUESTION_FIELDS, *SELECT_QUESTION_EXTRA_FIELDS)
+SELECT_QUESTION_FIELDS = (*QUESTION_FIELDS, *ITEM_QUESTION_EXTRA_FIELDS)
 
 OSM_QUESTION_EXTRA_FIELDS = (constants.CHILDREN,)
-OSM_QUESTION_FIELDS = (*QUESTION_FIELDS, *SELECT_QUESTION_EXTRA_FIELDS)
+OSM_QUESTION_FIELDS = (*QUESTION_FIELDS, *ITEM_QUESTION_EXTRA_FIELDS)
 
 OPTION_EXTRA_FIELDS = (
     "_choice_itext_ref",
@@ -354,7 +354,7 @@ class Itemset:
 
 
 class MultipleChoiceQuestion(Question):
-    __slots__ = SELECT_QUESTION_EXTRA_FIELDS
+    __slots__ = ITEM_QUESTION_EXTRA_FIELDS
 
     @staticmethod
     def get_slot_names() -> tuple[str, ...]:
@@ -398,8 +398,8 @@ class MultipleChoiceQuestion(Question):
                 itemset_value_ref = EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON
                 itemset_label_ref = EXTERNAL_CHOICES_ITEMSET_REF_LABEL_GEOJSON
             else:
-                itemset_value_ref = EXTERNAL_CHOICES_ITEMSET_REF_VALUE
-                itemset_label_ref = EXTERNAL_CHOICES_ITEMSET_REF_LABEL
+                itemset_value_ref = DEFAULT_ITEMSET_VALUE_REF
+                itemset_label_ref = DEFAULT_ITEMSET_LABEL_REF
             if self.parameters is not None:
                 itemset_value_ref = self.parameters.get("value", itemset_value_ref)
                 itemset_label_ref = self.parameters.get("label", itemset_label_ref)
@@ -549,10 +549,43 @@ class OsmUploadQuestion(UploadQuestion):
 
 
 class RangeQuestion(Question):
+    __slots__ = ITEM_QUESTION_EXTRA_FIELDS
+
+    def __init__(
+        self, itemset: str | None = None, list_name: str | None = None, **kwargs
+    ):
+        self.itemset: str | None = itemset
+        self.list_name: str | None = list_name
+
+        super().__init__(**kwargs)
+
     def build_xml(self, survey: "Survey"):
+        if self.bind["type"] not in {"int", "decimal"}:
+            raise PyXFormError(
+                f"""Invalid value for `self.bind["type"]`: {self.bind["type"]}"""
+            )
+
         result = self._build_xml(survey=survey)
+
         params = self.parameters
         if params:
             for k, v in params.items():
                 result.setAttribute(k, v)
+
+        if survey.choices and self.itemset:
+            if survey.choices.get(self.itemset, None).requires_itext:
+                itemset_label_ref = "jr:itext(itextId)"
+            else:
+                itemset_label_ref = DEFAULT_ITEMSET_LABEL_REF
+
+            nodeset = f"instance('{self.itemset}')/root/item"
+            result.appendChild(
+                node(
+                    "itemset",
+                    node("value", ref=DEFAULT_ITEMSET_VALUE_REF),
+                    node("label", ref=itemset_label_ref),
+                    nodeset=nodeset,
+                )
+            )
+
         return result
