@@ -143,6 +143,23 @@ class TestSurveyColumns(PyxformTestCase):
             xml__excludes=["m.png"],
         )
 
+    def test_non_translatable_column__translated__error(self):
+        self.assertPyxformXform(
+            md="""
+            | survey |      |      |       |                           |
+            |        | type | name | label | appearance::French (fr)   |
+            |        | text | q1   | hello | minimal                   |
+            """,
+            errored=True,
+            error__contains=[
+                ErrorCode.HEADER_006.value.format(
+                    sheet_name=constants.SURVEY,
+                    column="appearance::French (fr)",
+                    base="appearance",
+                )
+            ],
+        )
+
     def test_column_case(self):
         """
         Ensure that column name is case insensitive

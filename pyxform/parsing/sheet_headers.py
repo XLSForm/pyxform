@@ -11,6 +11,38 @@ from pyxform.xls2json_backends import RE_WHITESPACE
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
 
+TRANSLATABLE_HEADER_PATHS = {
+    constants.SURVEY: {
+        (constants.LABEL,),
+        (constants.HINT,),
+        ("guidance_hint",),
+        ("media", "image"),
+        ("media", "big-image"),
+        ("media", "audio"),
+        ("media", "video"),
+        ("bind", "jr:constraintMsg"),
+        ("bind", "jr:requiredMsg"),
+        ("bind", "jr:noAppErrorString"),
+    },
+    constants.CHOICES: {
+        (constants.LABEL,),
+        ("media", "image"),
+        ("media", "big-image"),
+        ("media", "audio"),
+        ("media", "video"),
+    },
+    constants.SETTINGS: set(),
+    constants.EXTERNAL_CHOICES: set(),
+    constants.ENTITIES: set(),
+}
+
+GROUPABLE_HEADER_ROOTS = {
+    constants.SURVEY: {"attribute", "bind", "body", "control", "instance", "media"},
+    constants.CHOICES: {"media"},
+    constants.SETTINGS: {"attribute"},
+    constants.EXTERNAL_CHOICES: {"media"},
+}
+
 
 def clean_text_values(
     value: str,
@@ -191,6 +223,44 @@ def process_row(
     return out_row
 
 
+def validate_translatable_header(
+    sheet_name: str,
+    header: str,
+    new_header: str,
+    tokens: tuple[str, ...],
+    header_columns: Container[str],
+) -> None:
+    """
+    Raise a user-facing error for translated headers on non-translatable columns.
+    """
+    if len(tokens) < 2:
+        return
+
+    recognized_column = new_header != header or tokens[0] in header_columns
+    if not recognized_column:
+        return
+
+    translation_paths = TRANSLATABLE_HEADER_PATHS.get(sheet_name, set())
+    if tokens[:-1] in translation_paths:
+        return
+
+    groupable_roots = GROUPABLE_HEADER_ROOTS.get(sheet_name, set())
+    if len(tokens) == 2 and tokens[0] in groupable_roots:
+        return
+
+    if "::" in header:
+        base = header.rsplit("::", 1)[0]
+    else:
+        base = header.rsplit(":", 1)[0]
+    raise PyXFormError(
+        ErrorCode.HEADER_006.value.format(
+            sheet_name=sheet_name,
+            column=header,
+            base=base,
+        )
+    )
+
+
 def dealias_and_group_headers(
     sheet_name: str,
     sheet_data: Sequence[dict[str, str]],
@@ -246,6 +316,13 @@ def dealias_and_group_headers(
                     header=header,
                     use_double_colon=use_double_colon,
                     header_aliases=header_aliases,
+                    header_columns=header_columns,
+                )
+                validate_translatable_header(
+                    sheet_name=sheet_name,
+                    header=header,
+                    new_header=new_header,
+                    tokens=tokens,
                     header_columns=header_columns,
                 )
                 other_header = tokens_key.get(tokens)
