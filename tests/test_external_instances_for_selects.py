@@ -265,6 +265,27 @@ class TestSelectFromFile(PyxformTestCase):
                     ],
                 )
 
+    def test_param_value_and_label_whitespace_trimmed_case_preserved(self):
+        """Should trim outer spaces for value/label params while preserving case."""
+        md = """
+        | survey |                                        |         |         |                              |
+        |        | type                                   | name    | label   | parameters                   |
+        |        | select_one_from_file cities{ext}       | city    | City    | value = VAL , label = lBl    |
+        |        | select_multiple_from_file suburbs{ext} | suburbs | Suburbs | value = VAL , label = lBl    |
+        """
+        for ext, xp_city, xp_subs in self.xp_test_args:
+            with self.subTest(msg=ext):
+                self.assertPyxformXform(
+                    name="test",
+                    md=md.format(ext=ext),
+                    xml__xpath_match=[
+                        xp_city.model_external_instance_and_bind(),
+                        xp_subs.model_external_instance_and_bind(),
+                        xp_city.body_itemset_nodeset_and_refs(value="VAL", label="lBl"),
+                        xp_subs.body_itemset_nodeset_and_refs(value="VAL", label="lBl"),
+                    ],
+                )
+
     def test_expected_error_message(self):
         """Should get helpful error when select_from_file is missing a file extension."""
         md = """

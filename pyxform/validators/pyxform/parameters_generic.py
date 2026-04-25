@@ -26,7 +26,9 @@ def parse(raw_parameters: str) -> PARAMETERS_TYPE:
             )
         k, v = param.split("=")[:2]
         key = maybe_strip(k.lower())
-        params[key] = v if key in CASE_SENSITIVE_VALUES else maybe_strip(v.lower())
+        params[key] = (
+            maybe_strip(v) if key in CASE_SENSITIVE_VALUES else maybe_strip(v.lower())
+        )
 
     return params
 
