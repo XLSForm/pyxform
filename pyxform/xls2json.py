@@ -311,6 +311,9 @@ def workbook_to_json(
         )
         settings = settings_sheet.data[0]
         validate_settings.validate_name(name=settings.get(constants.NAME, None))
+        validate_settings.validate_submission_url(
+            submission_url=settings.get(constants.SUBMISSION_URL, None)
+        )
     else:
         similar = find_sheet_misspellings(key=constants.SETTINGS, keys=sheet_names)
         if similar is not None:

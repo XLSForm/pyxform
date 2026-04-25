@@ -221,6 +221,13 @@ class ErrorCode(Enum):
             "or update pyxform."
         ),
     )
+    HEADER_006: Detail = Detail(
+        name="Headers - invalid translated non-translatable column",
+        msg=(
+            "[row : 1] On the '{sheet_name}' sheet, the column name '{column}' is invalid. "
+            "The column '{base}' is not translatable on this sheet."
+        ),
+    )
     INTERNAL_001: Detail = Detail(
         name="Internal error - incorrectly processed question trigger data",
         msg=(
@@ -243,6 +250,14 @@ class ErrorCode(Enum):
             "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
             "Choices should have a label. "
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    SETTINGS_001: Detail = Detail(
+        name="Settings - invalid submission_url",
+        msg=(
+            "[row : 1] On the 'settings' sheet, the 'submission_url' value is invalid. "
+            "Submission URLs must be full HTTP or HTTPS URLs, for example "
+            "'https://example.com/submission'."
         ),
     )
     NAMES_001: Detail = Detail(

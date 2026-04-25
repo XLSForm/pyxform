@@ -29,6 +29,28 @@ class TestSettings(PyxformTestCase):
             xml__xpath_match=[xps.form_title("My Form")],
         )
 
+    def test_form_title__translated__error(self):
+        """Should raise a clear error for translated form_title columns."""
+        md = """
+        | settings |
+        |          | form_title::French (fr) |
+        |          | Mon formulaire          |
+        | survey |       |      |       |
+        |        | type  | name | label |
+        |        | text  | q1   | hello |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.HEADER_006.value.format(
+                    sheet_name=co.SETTINGS,
+                    column="form_title::French (fr)",
+                    base="form_title",
+                )
+            ],
+        )
+
     def test_form_id(self):
         """Should find the instance id set in the XForm."""
         md = """
@@ -102,6 +124,55 @@ class TestSettings(PyxformTestCase):
             errored=True,
             error__contains=[ErrorCode.NAMES_009.value.format(name="form_name")],
         )
+
+    def test_submission_url__http__valid(self):
+        """Should allow full HTTP submission URLs."""
+        md = """
+        | settings |
+        | | submission_url            |
+        | | http://example.com/submit |
+
+        | survey |
+        | | type  | name | label |
+        | | text  | q1   | hello |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """
+                /h:html/h:head/x:model/x:submission[
+                  @action='http://example.com/submit'
+                  and @method='post'
+                ]
+                """
+            ],
+        )
+
+    def test_submission_url__invalid__error(self):
+        """Should raise an error for obviously invalid submission URLs."""
+        md = """
+        | settings |
+        | | submission_url |
+        | | {submission_url} |
+
+        | survey |
+        | | type  | name | label |
+        | | text  | q1   | hello |
+        """
+        bad_urls = (
+            "not_a_url",
+            "/submission",
+            "ftp://example.com/submission",
+            "https://",
+            "https://example .com/submission",
+        )
+        for submission_url in bad_urls:
+            with self.subTest(msg=submission_url):
+                self.assertPyxformXform(
+                    md=md.format(submission_url=submission_url),
+                    errored=True,
+                    error__contains=[ErrorCode.SETTINGS_001.value.format()],
+                )
 
     def test_clean_text_values__yes(self):
         """Should find clean_text_values=yes (default) collapses survey sheet whitespace."""
