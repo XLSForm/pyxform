@@ -135,7 +135,7 @@ class TestParameterIncremental(PyxformTestCase):
         | | {type} | q1   | Q1    | incremental={value} |
         """
         types = ["geoshape", "geotrace"]
-        values = ["", "yeah", "false"]
+        values = ["yeah", "false"]
         for t in types:
             for v in values:
                 with self.subTest((t, v)):
@@ -149,23 +149,43 @@ class TestParameterIncremental(PyxformTestCase):
                         ],
                     )
 
+    def test_with_incremental__geopoint__error(self):
+        """Should raise an error if specified for geopoint."""
+        md = """
+        | survey |
+        | | type     | name | label | parameters       |
+        | | geopoint | q1   | Q1    | incremental=true |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.SURVEY_005.value.format(
+                    row=2,
+                    accepted=co.ParametersGeoPoint.value_str_sorted(),
+                    rejected="incremental",
+                ),
+            ],
+        )
+
     def test_with_incremental__wrong_type_with_params__error(self):
         """Should raise an error if specified for other question types with parameters."""
         md = """
         | survey |
         | | type   | name | label | parameters       |
-        | | {type} | q1   | Q1    | incremental=true |
+        | | audio  | q1   | Q1    | incremental=true |
         """
-        types = ["geopoint", "audio"]
-        for t in types:
-            with self.subTest(t):
-                self.assertPyxformXform(
-                    md=md.format(type=t),
-                    errored=True,
-                    error__contains=[
-                        "The following are invalid parameter(s): 'incremental'."
-                    ],
-                )
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.SURVEY_005.value.format(
+                    row=2,
+                    accepted=co.ParametersAudio.value_str_sorted(),
+                    rejected="incremental",
+                ),
+            ],
+        )
 
     def test_with_incremental__wrong_type_no_params__ok(self):
         """Should not raise an error if specified for other question types without parameters."""

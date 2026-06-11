@@ -34,6 +34,7 @@ Each test should reference one (or more) requirements from these lists.
   - RB004: if the range has values that are decimals the data type must be 'decimal'.
 """
 
+from pyxform import constants as co
 from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -71,8 +72,11 @@ class TestRangeParsing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                "Accepted parameters are 'end, placeholder, start, step, tick_interval, tick_labelset'. "
-                "The following are invalid parameter(s): 'stop'."
+                ErrorCode.SURVEY_005.value.format(
+                    row=2,
+                    accepted=co.ParametersRange.value_str_sorted(),
+                    rejected="stop",
+                ),
             ],
         )
 
@@ -151,7 +155,7 @@ class TestRangeParsing(PyxformTestCase):
                     md=md.format(sep=value),
                     errored=True,
                     error__contains=[
-                        "Expecting parameters to be in the form of 'parameter1=value parameter2=value'."
+                        ErrorCode.SURVEY_004.value.format(row=2),
                     ],
                 )
 
@@ -171,9 +175,7 @@ class TestRangeParsing(PyxformTestCase):
                     self.assertPyxformXform(
                         md=md.format(name=name, value=value),
                         errored=True,
-                        error__contains=[
-                            "Expecting parameters to be in the form of 'parameter1=value parameter2=value'."
-                        ],
+                        error__contains=[ErrorCode.SURVEY_004.value.format(row=2)],
                     )
 
     def test_parameter_not_a_number__error(self):
@@ -185,7 +187,7 @@ class TestRangeParsing(PyxformTestCase):
         | | range | q1   | Q1    | {name}={value} |
         """
         params = ("start", "end", "step", "tick_interval", "placeholder")
-        cases = ("", "one")
+        cases = ("*", "one")
         for name in params:
             for value in cases:
                 with self.subTest((name, value)):

@@ -8,9 +8,13 @@ from math import isinf
 from typing import Any
 
 from pyxform import aliases
+from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
-from pyxform.validators.pyxform import parameters_generic
+from pyxform.validators.pyxform import parameters as pv
+from pyxform.validators.pyxform.parameters import (
+    PARAMETERS_TYPE,
+)
 from pyxform.validators.pyxform.pyxform_reference import (
     is_pyxform_reference_candidate,
     parse_pyxform_references,
@@ -110,7 +114,7 @@ def validate_geo_parameter_incremental(value: str) -> None:
 def process_range_question_type(
     row_number: int,
     row: dict[str, Any],
-    parameters: parameters_generic.PARAMETERS_TYPE,
+    parameters: PARAMETERS_TYPE,
     appearance: str,
     choices: dict[str, Any],
 ) -> dict[str, Any]:
@@ -119,9 +123,10 @@ def process_range_question_type(
 
     Raises PyXFormError when invalid range parameters are used.
     """
-    parameters = parameters_generic.validate(
+    parameters = pv.validate(
         parameters=parameters,
-        allowed={"start", "end", "step", "tick_interval", "placeholder", "tick_labelset"},
+        accepted=co.ParametersRange,
+        row_number=row_number,
     )
     if (
         appearance

@@ -177,3 +177,64 @@ NSMAP = {
 SUPPORTED_MEDIA_TYPES = {"image", "big-image", "audio", "video"}
 OR_OTHER_CHOICE = {NAME: "other", LABEL: "Other"}
 RESERVED_NAMES_SURVEY_SHEET = {META}
+
+
+##########################################################################################
+# Parameters
+##########################################################################################
+# Name enums by question type, or if shared then use a sensible question type prefix.
+# For aliased question types, use the primary documented name e.g. "image" not "photo".
+# The module question_type_dictionary.py handles default parameter values, if any.
+# Add new enums or keys alphabetical order.
+class ParametersAudio(StrEnum):
+    QUALITY = "quality"
+
+
+class ParametersAudit(StrEnum):
+    IDENTIFY_USER = "identify-user"
+    LOCATION_MAX_AGE = "location-max-age"
+    LOCATION_MIN_INTERVAL = "location-min-interval"
+    LOCATION_PRIORITY = "location-priority"
+    TRACK_CHANGES = "track-changes"
+    TRACK_CHANGES_REASONS = "track-changes-reasons"
+
+
+class ParametersGeo(StrEnum):
+    ALLOW_MOCK_ACCURACY = "allow-mock-accuracy"
+    INCREMENTAL = "incremental"
+
+
+class ParametersGeoPoint(StrEnum):
+    ALLOW_MOCK_ACCURACY = "allow-mock-accuracy"
+    CAPTURE_ACCURACY = "capture-accuracy"
+    WARNING_ACCURACY = "warning-accuracy"
+
+
+class ParametersImage(StrEnum):
+    APP = "app"
+    MAX_PIXELS = "max-pixels"
+
+
+class ParametersRange(StrEnum):
+    END = "end"
+    PLACEHOLDER = "placeholder"
+    START = "start"
+    STEP = "step"
+    TICK_INTERVAL = "tick_interval"
+    TICK_LABELSET = "tick_labelset"
+
+
+class ParametersSelect(StrEnum):
+    RANDOMIZE = "randomize"
+    SEED = "seed"
+
+
+class ParametersSelectFromFile(StrEnum):
+    LABEL = "label"
+    RANDOMIZE = "randomize"
+    SEED = "seed"
+    VALUE = "value"
+
+
+class ParametersText(StrEnum):
+    ROWS = "rows"

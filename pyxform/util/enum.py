@@ -28,5 +28,13 @@ class StrEnum(str, Enum):
         return member
 
     @classmethod
-    def value_list(cls):
+    def value_list(cls) -> list:
         return list(cls.__members__.values())
+
+    @classmethod
+    def value_set(cls) -> set:
+        return set(cls.__members__.values())
+
+    @classmethod
+    def value_str_sorted(cls) -> str:
+        return ", ".join(sorted(cls.__members__.values()))

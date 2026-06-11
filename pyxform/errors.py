@@ -506,6 +506,21 @@ class ErrorCode(Enum):
             "be 'true' or not included."
         ),
     )
+    SURVEY_004: Detail = Detail(
+        name="Survey sheet - parameters parsing failed",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "Parameters must be in the form of 'key1=value1 key2=value2."
+        ),
+    )
+    SURVEY_005: Detail = Detail(
+        name="Survey sheet - parameters unknown key",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "The accepted parameter keys for this question type are '{accepted}'. "
+            "The following are invalid parameter key(s): '{rejected}'."
+        ),
+    )
 
 
 class PyXFormError(Exception):

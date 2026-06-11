@@ -332,12 +332,17 @@ class TestSelectOneExternal(PyxformTestCase):
         |        | select_one_external city   | city   | City   | value=val, label=lbl |
         |        | select_one_external suburb | suburb | Suburb | value=val, label=lbl |
         """
-        err = (
-            "Accepted parameters are 'randomize, seed'. "
-            "The following are invalid parameter(s): 'label, value'."
-        )
         self.assertPyxformXform(
-            name="test", md=md + self.all_choices, errored=True, error__contains=[err]
+            name="test",
+            md=md + self.all_choices,
+            errored=True,
+            error__contains=[
+                ErrorCode.SURVEY_005.value.format(
+                    row=3,
+                    accepted=co.ParametersSelect.value_str_sorted(),
+                    rejected="label, value",
+                ),
+            ],
         )
 
     def test_no_params_with_filters(self):
@@ -394,12 +399,17 @@ class TestSelectOneExternal(PyxformTestCase):
         |        | select_one_external city   | city   | City   | state=${state}                  | value=val, label=lbl |
         |        | select_one_external suburb | suburb | Suburb | state=${state} and city=${city} | value=val, label=lbl |
         """
-        err = (
-            "Accepted parameters are 'randomize, seed'. "
-            "The following are invalid parameter(s): 'label, value'."
-        )
         self.assertPyxformXform(
-            name="test", md=md + self.all_choices, errored=True, error__contains=[err]
+            name="test",
+            md=md + self.all_choices,
+            errored=True,
+            error__contains=[
+                ErrorCode.SURVEY_005.value.format(
+                    row=3,
+                    accepted=co.ParametersSelect.value_str_sorted(),
+                    rejected="label, value",
+                ),
+            ],
         )
 
     def test_list_name_not_in_external_choices_sheet_raises_error(self):

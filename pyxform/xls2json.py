@@ -24,6 +24,7 @@ from pyxform.entities.entities_parsing import (
 )
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
+from pyxform.parsing.parameters import parse as parameters_parse
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
 from pyxform.question_type_dictionary import get_meta_group
 from pyxform.utils import (
@@ -31,8 +32,9 @@ from pyxform.utils import (
     default_is_dynamic,
     print_pyobj_to_json,
 )
-from pyxform.validators.pyxform import parameters_generic, select_from_file, unique_names
+from pyxform.validators.pyxform import parameters as pv
 from pyxform.validators.pyxform import question_types as qt
+from pyxform.validators.pyxform import select_from_file, unique_names
 from pyxform.validators.pyxform import settings as validate_settings
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.choices import validate_and_clean_choices
@@ -144,8 +146,8 @@ def add_choices_info_to_question(
     question: dict[str, Any],
     list_name: str,
     choices: dict[str, list],
-    choice_filter: str,
-    file_extension: str,
+    choice_filter: str | None = None,
+    file_extension: str | None = None,
 ):
     """
     Add choices-related info to the question dict, e.g. itemset, list_name, choices, etc.
@@ -516,7 +518,10 @@ def workbook_to_json(
                         action_module.ActionLibrary.setvalue_new_repeat.value.to_dict()
                     )
 
-        parameters = parameters_generic.parse(raw_parameters=row.get("parameters", ""))
+        parameters = parameters_parse(
+            raw_parameters=row.get("parameters", ""),
+            row_number=row_number,
+        )
 
         # Pull out questions that will go in meta block
         if question_type == "audit":
@@ -530,16 +535,10 @@ def workbook_to_json(
             row["name"] = "audit"
 
             new_dict = row.copy()
-            parameters_generic.validate(
+            pv.validate(
                 parameters=parameters,
-                allowed=(
-                    constants.LOCATION_PRIORITY,
-                    constants.LOCATION_MIN_INTERVAL,
-                    constants.LOCATION_MAX_AGE,
-                    constants.TRACK_CHANGES,
-                    constants.IDENTIFY_USER,
-                    constants.TRACK_CHANGES_REASONS,
-                ),
+                accepted=constants.ParametersAudit,
+                row_number=row_number,
             )
 
             if constants.TRACK_CHANGES in parameters:
@@ -1034,16 +1033,18 @@ def workbook_to_json(
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
 
-                select_params_allowed = ["randomize", "seed"]
+                select_params_allowed = constants.ParametersSelect
                 if parse_dict["select_command"] in {
                     "select_one_from_file",
                     "select_multiple_from_file",
                 }:
-                    select_params_allowed += ["value", "label"]
+                    select_params_allowed = constants.ParametersSelectFromFile
 
                 # Look at parameters column for select parameters
-                parameters_generic.validate(
-                    parameters=parameters, allowed=select_params_allowed
+                pv.validate(
+                    parameters=parameters,
+                    accepted=select_params_allowed,
+                    row_number=row_number,
                 )
 
                 if "randomize" in parameters:
@@ -1177,7 +1178,11 @@ def workbook_to_json(
 
         if question_type == "text":
             new_dict = row.copy()
-            parameters_generic.validate(parameters=parameters, allowed=("rows",))
+            pv.validate(
+                parameters=parameters,
+                accepted=constants.ParametersText,
+                row_number=row_number,
+            )
 
             if "rows" in parameters:
                 try:
@@ -1199,12 +1204,10 @@ def workbook_to_json(
 
             if row.get("default"):
                 new_dict["default"] = process_image_default(row["default"])
-            parameters_generic.validate(
+            pv.validate(
                 parameters=parameters,
-                allowed=(
-                    "max-pixels",
-                    "app",
-                ),
+                accepted=constants.ParametersImage,
+                row_number=row_number,
             )
             if "max-pixels" in parameters:
                 try:
@@ -1239,7 +1242,11 @@ def workbook_to_json(
 
         if question_type == "audio":
             new_dict = row.copy()
-            parameters_generic.validate(parameters=parameters, allowed=("quality",))
+            pv.validate(
+                parameters=parameters,
+                accepted=constants.ParametersAudio,
+                row_number=row_number,
+            )
 
             if "quality" in parameters:
                 if parameters["quality"] not in {
@@ -1258,7 +1265,11 @@ def workbook_to_json(
 
         if question_type == "background-audio":
             new_dict = row.copy()
-            parameters_generic.validate(parameters=parameters, allowed=("quality",))
+            pv.validate(
+                parameters=parameters,
+                accepted=constants.ParametersAudio,
+                row_number=row_number,
+            )
             action = (
                 action_module.ActionLibrary.odk_recordaudio_instance_load.value.to_dict()
             )
@@ -1283,17 +1294,16 @@ def workbook_to_json(
             new_dict = row.copy()
 
             if question_type == "geopoint":
-                parameters_generic.validate(
+                pv.validate(
                     parameters=parameters,
-                    allowed=(
-                        "allow-mock-accuracy",
-                        "capture-accuracy",
-                        "warning-accuracy",
-                    ),
+                    accepted=constants.ParametersGeoPoint,
+                    row_number=row_number,
                 )
             else:
-                parameters_generic.validate(
-                    parameters=parameters, allowed=("allow-mock-accuracy", "incremental")
+                pv.validate(
+                    parameters=parameters,
+                    accepted=constants.ParametersGeo,
+                    row_number=row_number,
                 )
 
             if "allow-mock-accuracy" in parameters:
