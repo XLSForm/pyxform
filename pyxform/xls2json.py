@@ -180,8 +180,9 @@ def add_choices_info_to_question(
     elif not (
         # Select with randomized choices.
         (
-            constants.RANDOMIZE in question[constants.PARAMETERS]
-            and question[constants.PARAMETERS][constants.RANDOMIZE] == "true"
+            constants.ParametersSelect.RANDOMIZE in question[constants.PARAMETERS]
+            and question[constants.PARAMETERS][constants.ParametersSelect.RANDOMIZE]
+            == "true"
         )
         # Select from file e.g. type = "select_one_from_file cities.xml".
         or file_extension in EXTERNAL_INSTANCE_EXTENSIONS
@@ -535,149 +536,133 @@ def workbook_to_json(
             row["name"] = "audit"
 
             new_dict = row.copy()
+            qt_params = constants.ParametersAudit
             pv.validate(
                 parameters=parameters,
-                accepted=constants.ParametersAudit,
+                accepted=qt_params,
                 row_number=row_number,
             )
 
-            if constants.TRACK_CHANGES in parameters:
-                if (
-                    parameters[constants.TRACK_CHANGES] != "true"
-                    and parameters[constants.TRACK_CHANGES] != "false"
-                ):
+            if qt_params.TRACK_CHANGES in parameters:
+                if parameters[qt_params.TRACK_CHANGES] not in {"true", "false"}:
                     msg = (
-                        f"{constants.TRACK_CHANGES} must be set to true or false: "
-                        f"'{parameters[constants.TRACK_CHANGES]}' is an invalid value."
+                        f"{qt_params.TRACK_CHANGES.value} must be set to true or false: "
+                        f"'{parameters[qt_params.TRACK_CHANGES]}' is an invalid value."
                     )
                     raise PyXFormError(msg)
                 else:
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
                         {
-                            "odk:" + constants.TRACK_CHANGES: parameters[
-                                constants.TRACK_CHANGES
+                            f"odk:{qt_params.TRACK_CHANGES.value}": parameters[
+                                qt_params.TRACK_CHANGES
                             ]
                         }
                     )
 
-            if constants.TRACK_CHANGES_REASONS in parameters:
-                if parameters[constants.TRACK_CHANGES_REASONS] != "on-form-edit":
+            if qt_params.TRACK_CHANGES_REASONS in parameters:
+                if parameters[qt_params.TRACK_CHANGES_REASONS] != "on-form-edit":
                     raise PyXFormError(
-                        constants.TRACK_CHANGES_REASONS + " must be set to on-form-edit"
+                        f"{qt_params.TRACK_CHANGES_REASONS.value} must be set to on-form-edit"
                     )
                 else:
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
-                        {"odk:" + constants.TRACK_CHANGES_REASONS: "on-form-edit"}
+                        {f"odk:{qt_params.TRACK_CHANGES_REASONS.value}": "on-form-edit"}
                     )
 
-            if constants.IDENTIFY_USER in parameters:
-                if (
-                    parameters[constants.IDENTIFY_USER] != "true"
-                    and parameters[constants.IDENTIFY_USER] != "false"
-                ):
+            if qt_params.IDENTIFY_USER in parameters:
+                if parameters[qt_params.IDENTIFY_USER] not in {"true", "false"}:
                     msg = (
-                        f"{constants.IDENTIFY_USER} must be set to true or false: "
-                        f"'{parameters[constants.IDENTIFY_USER]}' is an invalid value."
+                        f"{qt_params.IDENTIFY_USER.value} must be set to true or false: "
+                        f"'{parameters[qt_params.IDENTIFY_USER]}' is an invalid value."
                     )
                     raise PyXFormError(msg)
                 else:
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
                         {
-                            "odk:" + constants.IDENTIFY_USER: parameters[
-                                constants.IDENTIFY_USER
+                            f"odk:{qt_params.IDENTIFY_USER.value}": parameters[
+                                qt_params.IDENTIFY_USER
                             ]
                         }
                     )
 
             location_parameters = {
-                constants.LOCATION_PRIORITY,
-                constants.LOCATION_MIN_INTERVAL,
-                constants.LOCATION_MAX_AGE,
+                qt_params.LOCATION_PRIORITY,
+                qt_params.LOCATION_MIN_INTERVAL,
+                qt_params.LOCATION_MAX_AGE,
             }
             if any(k in parameters for k in location_parameters):
                 if all(k in parameters for k in location_parameters):
-                    if parameters[constants.LOCATION_PRIORITY] not in {
+                    if parameters[qt_params.LOCATION_PRIORITY] not in {
                         "no-power",
                         "low-power",
                         "balanced",
                         "high-accuracy",
                     }:
                         msg = (
-                            f"Parameter {constants.LOCATION_PRIORITY} must be set to "
+                            f"Parameter {qt_params.LOCATION_PRIORITY.value} must be set to "
                             "no-power, low-power, balanced, or high-accuracy:"
-                            f"'{parameters[constants.LOCATION_PRIORITY]}' is an invalid value"
+                            f"'{parameters[qt_params.LOCATION_PRIORITY]}' is an invalid value"
                         )
                         raise PyXFormError(msg)
 
                     try:
-                        int(parameters[constants.LOCATION_MIN_INTERVAL])
+                        int(parameters[qt_params.LOCATION_MIN_INTERVAL])
                     except ValueError as lmi_err:
                         raise PyXFormError(
-                            "Parameter "
-                            + constants.LOCATION_MIN_INTERVAL
+                            f"Parameter {qt_params.LOCATION_MIN_INTERVAL.value}"
                             + " must have an integer value."
                         ) from lmi_err
-                    if int(parameters[constants.LOCATION_MIN_INTERVAL]) < 0:
+                    if int(parameters[qt_params.LOCATION_MIN_INTERVAL]) < 0:
                         raise PyXFormError(
-                            "Parameter "
-                            + constants.LOCATION_MIN_INTERVAL
+                            f"Parameter {qt_params.LOCATION_MIN_INTERVAL.value}"
                             + " must be greater than or equal to zero."
                         )
 
                     try:
-                        int(parameters[constants.LOCATION_MAX_AGE])
+                        int(parameters[qt_params.LOCATION_MAX_AGE])
                     except ValueError as lma_err:
                         raise PyXFormError(
-                            "Parameter "
-                            + constants.LOCATION_MAX_AGE
+                            f"Parameter {qt_params.LOCATION_MAX_AGE.value}"
                             + " must have an integer value."
                         ) from lma_err
-                    if int(parameters[constants.LOCATION_MAX_AGE]) < 0:
+                    if int(parameters[qt_params.LOCATION_MAX_AGE]) < 0:
                         raise PyXFormError(
-                            "Parameter "
-                            + constants.LOCATION_MAX_AGE
+                            f"Parameter {qt_params.LOCATION_MAX_AGE.value}"
                             + " must be greater  than or equal to zero."
                         )
 
-                    if int(parameters[constants.LOCATION_MAX_AGE]) < int(
-                        parameters[constants.LOCATION_MIN_INTERVAL]
+                    if int(parameters[qt_params.LOCATION_MAX_AGE]) < int(
+                        parameters[qt_params.LOCATION_MIN_INTERVAL]
                     ):
                         raise PyXFormError(
-                            "Parameter "
-                            + constants.LOCATION_MAX_AGE
-                            + " must be greater than or equal to "
-                            + constants.LOCATION_MIN_INTERVAL
-                            + "."
+                            f"Parameter {qt_params.LOCATION_MAX_AGE.value}"
+                            + f" must be greater than or equal to {qt_params.LOCATION_MIN_INTERVAL.value}."
                         )
 
                     new_dict["bind"] = new_dict.get("bind", {})
                     new_dict["bind"].update(
                         {
-                            "odk:" + constants.LOCATION_MAX_AGE: parameters[
-                                constants.LOCATION_MAX_AGE
+                            f"odk:{qt_params.LOCATION_MAX_AGE.value}": parameters[
+                                qt_params.LOCATION_MAX_AGE
                             ],
-                            "odk:" + constants.LOCATION_MIN_INTERVAL: parameters[
-                                constants.LOCATION_MIN_INTERVAL
+                            f"odk:{qt_params.LOCATION_MIN_INTERVAL.value}": parameters[
+                                qt_params.LOCATION_MIN_INTERVAL.value
                             ],
-                            "odk:" + constants.LOCATION_PRIORITY: parameters[
-                                constants.LOCATION_PRIORITY
+                            f"odk:{qt_params.LOCATION_PRIORITY.value}": parameters[
+                                qt_params.LOCATION_PRIORITY.value
                             ],
                         }
                     )
                 else:
                     raise PyXFormError(
                         "To include location information in"
-                        + " the audit, '"
-                        + constants.LOCATION_PRIORITY
-                        + "', '"
-                        + constants.LOCATION_MIN_INTERVAL
-                        + "', and '"
-                        + constants.LOCATION_MAX_AGE
-                        + "' are required"
-                        + " parameters."
+                        + f" the audit, '{qt_params.LOCATION_PRIORITY.value}'"
+                        + f", '{qt_params.LOCATION_MIN_INTERVAL.value}'"
+                        + f", and '{qt_params.LOCATION_MAX_AGE.value}'"
+                        + " are required parameters."
                     )
 
             meta_children.append(new_dict)
@@ -1033,54 +1018,54 @@ def workbook_to_json(
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
 
-                select_params_allowed = constants.ParametersSelect
                 if parse_dict["select_command"] in {
                     "select_one_from_file",
                     "select_multiple_from_file",
                 }:
-                    select_params_allowed = constants.ParametersSelectFromFile
+                    qt_params = constants.ParametersSelectFromFile
+                    pv.validate(
+                        parameters=parameters,
+                        accepted=qt_params,
+                        row_number=row_number,
+                    )
+                    if "value" in parameters:
+                        select_from_file.value_or_label_check(
+                            name="value",
+                            value=parameters["value"],
+                            row_number=row_number,
+                        )
+                    if "label" in parameters:
+                        select_from_file.value_or_label_check(
+                            name="label",
+                            value=parameters["label"],
+                            row_number=row_number,
+                        )
+                else:
+                    qt_params = constants.ParametersSelect
+                    pv.validate(
+                        parameters=parameters,
+                        accepted=qt_params,
+                        row_number=row_number,
+                    )
 
-                # Look at parameters column for select parameters
-                pv.validate(
-                    parameters=parameters,
-                    accepted=select_params_allowed,
-                    row_number=row_number,
-                )
-
-                if "randomize" in parameters:
-                    if (
-                        parameters["randomize"] != "true"
-                        and parameters["randomize"] != "false"
-                    ):
+                if qt_params.RANDOMIZE in parameters:
+                    if parameters[qt_params.RANDOMIZE] not in {"true", "false"}:
                         raise PyXFormError(
-                            "randomize must be set to true or false: "
-                            f"""'{parameters["randomize"]}' is an invalid value"""
+                            f"{qt_params.RANDOMIZE.value} must be set to true or false: "
+                            f"""'{parameters[qt_params.RANDOMIZE]}' is an invalid value"""
                         )
 
-                    if "seed" in parameters:
-                        if not is_pyxform_reference(parameters["seed"]):
+                    if qt_params.SEED in parameters:
+                        if not is_pyxform_reference(parameters[qt_params.SEED]):
                             try:
-                                float(parameters["seed"])
+                                float(parameters[qt_params.SEED])
                             except ValueError as seed_err:
                                 raise PyXFormError(
-                                    "seed value must be a number or a reference to another field."
+                                    f"{qt_params.SEED.value} value must be a number or a reference to another field."
                                 ) from seed_err
-                elif "seed" in parameters:
+                elif qt_params.SEED in parameters:
                     raise PyXFormError(
-                        "Parameters must include randomize=true to use a seed."
-                    )
-
-                if "value" in parameters:
-                    select_from_file.value_or_label_check(
-                        name="value",
-                        value=parameters["value"],
-                        row_number=row_number,
-                    )
-                if "label" in parameters:
-                    select_from_file.value_or_label_check(
-                        name="label",
-                        value=parameters["label"],
-                        row_number=row_number,
+                        f"Parameters must include {qt_params.RANDOMIZE.value}=true to use a {qt_params.SEED.value}."
                     )
 
                 new_json_dict[constants.PARAMETERS] = parameters
@@ -1154,7 +1139,7 @@ def workbook_to_json(
 
         # range question_type
         if question_type == "range":
-            tick_labelset = parameters.get("tick_labelset")
+            tick_labelset = parameters.get(constants.ParametersRange.TICK_LABELSET.value)
 
             new_dict = qt.process_range_question_type(
                 row_number=row_number,
@@ -1204,30 +1189,37 @@ def workbook_to_json(
 
             if row.get("default"):
                 new_dict["default"] = process_image_default(row["default"])
+            qt_params = constants.ParametersImage
             pv.validate(
                 parameters=parameters,
-                accepted=constants.ParametersImage,
+                accepted=qt_params,
                 row_number=row_number,
             )
-            if "max-pixels" in parameters:
+            if qt_params.MAX_PIXELS in parameters:
                 try:
-                    int(parameters["max-pixels"])
+                    int(parameters[qt_params.MAX_PIXELS])
                 except ValueError as mp_err:
                     raise PyXFormError(
-                        "Parameter max-pixels must have an integer value."
+                        f"Parameter {qt_params.MAX_PIXELS.value} must have an integer value."
                     ) from mp_err
 
                 new_dict["bind"] = new_dict.get("bind", {})
-                new_dict["bind"].update({"orx:max-pixels": parameters["max-pixels"]})
+                new_dict["bind"].update(
+                    {
+                        f"orx:{qt_params.MAX_PIXELS.value}": parameters[
+                            qt_params.MAX_PIXELS
+                        ]
+                    }
+                )
             else:
                 warnings.append(
                     (ROW_FORMAT_STRING % row_number)
-                    + " Use the max-pixels parameter to speed up submission sending and save storage space. Learn more: https://xlsform.org/#image"
+                    + f" Use the {qt_params.MAX_PIXELS.value} parameter to speed up submission sending and save storage space. Learn more: https://xlsform.org/#image"
                 )
 
-            if "app" in parameters:
+            if qt_params.APP in parameters:
                 if appearance is None or appearance == "annotate":
-                    app_package_name = str(parameters["app"])
+                    app_package_name = str(parameters[qt_params.APP])
                     validation_result = validate_android_package_name(app_package_name)
                     if validation_result is None:
                         new_dict["control"] = new_dict.get("control", {})
@@ -1242,47 +1234,51 @@ def workbook_to_json(
 
         if question_type == "audio":
             new_dict = row.copy()
+            qt_params = constants.ParametersAudio
             pv.validate(
                 parameters=parameters,
-                accepted=constants.ParametersAudio,
+                accepted=qt_params,
                 row_number=row_number,
             )
 
-            if "quality" in parameters:
-                if parameters["quality"] not in {
+            if qt_params.QUALITY in parameters:
+                if parameters[qt_params.QUALITY] not in {
                     constants.AUDIO_QUALITY_VOICE_ONLY,
                     constants.AUDIO_QUALITY_LOW,
                     constants.AUDIO_QUALITY_NORMAL,
                     constants.AUDIO_QUALITY_EXTERNAL,
                 }:
-                    raise PyXFormError("Invalid value for quality.")
+                    raise PyXFormError(f"Invalid value for {qt_params.QUALITY.value}.")
 
                 new_dict["bind"] = new_dict.get("bind", {})
-                new_dict["bind"].update({"odk:quality": parameters["quality"]})
+                new_dict["bind"].update(
+                    {f"odk:{qt_params.QUALITY.value}": parameters[qt_params.QUALITY]}
+                )
 
             parent_children_array.append(new_dict)
             continue
 
         if question_type == "background-audio":
             new_dict = row.copy()
+            qt_params = constants.ParametersAudio
             pv.validate(
                 parameters=parameters,
-                accepted=constants.ParametersAudio,
+                accepted=qt_params,
                 row_number=row_number,
             )
             action = (
                 action_module.ActionLibrary.odk_recordaudio_instance_load.value.to_dict()
             )
 
-            if "quality" in parameters:
-                if parameters["quality"] not in {
+            if qt_params.QUALITY in parameters:
+                if parameters[qt_params.QUALITY] not in {
                     constants.AUDIO_QUALITY_VOICE_ONLY,
                     constants.AUDIO_QUALITY_LOW,
                     constants.AUDIO_QUALITY_NORMAL,
                 }:
-                    raise PyXFormError("Invalid value for quality.")
+                    raise PyXFormError(f"Invalid value for {qt_params.QUALITY.value}.")
 
-                action["odk:quality"] = parameters["quality"]
+                action[f"odk:{qt_params.QUALITY.value}"] = parameters[qt_params.QUALITY]
 
             new_dict["actions"] = new_dict.get("actions", [])
             new_dict["actions"].append(action)
@@ -1292,64 +1288,78 @@ def workbook_to_json(
 
         if question_type in {"geopoint", "geoshape", "geotrace"}:
             new_dict = row.copy()
+            new_dict["control"] = new_dict.get("control", {})
 
             if question_type == "geopoint":
+                qt_params = constants.ParametersGeoPoint
                 pv.validate(
                     parameters=parameters,
-                    accepted=constants.ParametersGeoPoint,
-                    row_number=row_number,
-                )
-            else:
-                pv.validate(
-                    parameters=parameters,
-                    accepted=constants.ParametersGeo,
+                    accepted=qt_params,
                     row_number=row_number,
                 )
 
-            if "allow-mock-accuracy" in parameters:
-                if parameters["allow-mock-accuracy"] not in {"true", "false"}:
-                    raise PyXFormError("Invalid value for allow-mock-accuracy.")
+                if qt_params.CAPTURE_ACCURACY in parameters:
+                    try:
+                        float(parameters[qt_params.CAPTURE_ACCURACY])
+                        new_dict["control"].update(
+                            {"accuracyThreshold": parameters[qt_params.CAPTURE_ACCURACY]}
+                        )
+                    except ValueError as ca_err:
+                        raise PyXFormError(
+                            f"Parameter {qt_params.CAPTURE_ACCURACY.value} must have a numeric value"
+                        ) from ca_err
+
+                if qt_params.WARNING_ACCURACY in parameters:
+                    try:
+                        float(parameters[qt_params.WARNING_ACCURACY])
+                        new_dict["control"].update(
+                            {
+                                "unacceptableAccuracyThreshold": parameters[
+                                    qt_params.WARNING_ACCURACY
+                                ]
+                            }
+                        )
+                    except ValueError as wa_err:
+                        raise PyXFormError(
+                            f"Parameter {qt_params.WARNING_ACCURACY.value} must have a numeric value"
+                        ) from wa_err
+
+            else:
+                qt_params = constants.ParametersGeo
+                pv.validate(
+                    parameters=parameters,
+                    accepted=qt_params,
+                    row_number=row_number,
+                )
+                if qt_params.INCREMENTAL in parameters:
+                    try:
+                        qt.validate_geo_parameter_incremental(
+                            value=parameters[qt_params.INCREMENTAL]
+                        )
+                    except PyXFormError as e:
+                        e.context.update(
+                            sheet=constants.SURVEY,
+                            column=constants.PARAMETERS,
+                            row=row_number,
+                        )
+                        raise
+                    else:
+                        new_dict["control"][qt_params.INCREMENTAL.value] = "true"
+
+            if qt_params.ALLOW_MOCK_ACCURACY in parameters:
+                if parameters[qt_params.ALLOW_MOCK_ACCURACY] not in {"true", "false"}:
+                    raise PyXFormError(
+                        f"Invalid value for {qt_params.ALLOW_MOCK_ACCURACY.value}."
+                    )
 
                 new_dict["bind"] = new_dict.get("bind", {})
                 new_dict["bind"].update(
-                    {"odk:allow-mock-accuracy": parameters["allow-mock-accuracy"]}
+                    {
+                        f"odk:{qt_params.ALLOW_MOCK_ACCURACY.value}": parameters[
+                            qt_params.ALLOW_MOCK_ACCURACY
+                        ]
+                    }
                 )
-
-            new_dict["control"] = new_dict.get("control", {})
-            if "capture-accuracy" in parameters:
-                try:
-                    float(parameters["capture-accuracy"])
-                    new_dict["control"].update(
-                        {"accuracyThreshold": parameters["capture-accuracy"]}
-                    )
-                except ValueError as ca_err:
-                    raise PyXFormError(
-                        "Parameter capture-accuracy must have a numeric value"
-                    ) from ca_err
-
-            if "warning-accuracy" in parameters:
-                try:
-                    float(parameters["warning-accuracy"])
-                    new_dict["control"].update(
-                        {"unacceptableAccuracyThreshold": parameters["warning-accuracy"]}
-                    )
-                except ValueError as wa_err:
-                    raise PyXFormError(
-                        "Parameter warning-accuracy must have a numeric value"
-                    ) from wa_err
-
-            if "incremental" in parameters:
-                try:
-                    qt.validate_geo_parameter_incremental(value=parameters["incremental"])
-                except PyXFormError as e:
-                    e.context.update(
-                        sheet=constants.SURVEY,
-                        column=constants.PARAMETERS,
-                        row=row_number,
-                    )
-                    raise
-                else:
-                    new_dict["control"]["incremental"] = "true"
 
             parent_children_array.append(new_dict)
             continue

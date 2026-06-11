@@ -50,7 +50,6 @@ MEDIA = "media"
 CONTROL = "control"
 APPEARANCE = "appearance"
 ITEMSET = "itemset"
-RANDOMIZE = "randomize"
 CHOICE_FILTER = "choice_filter"
 PARAMETERS = "parameters"
 
@@ -101,13 +100,6 @@ SUPPORTED_SHEET_NAMES = {
 XLS_EXTENSIONS = {".xls"}
 XLSX_EXTENSIONS = {".xlsx", ".xlsm"}
 SUPPORTED_FILE_EXTENSIONS = {*XLS_EXTENSIONS, *XLSX_EXTENSIONS}
-
-LOCATION_PRIORITY = "location-priority"
-LOCATION_MIN_INTERVAL = "location-min-interval"
-LOCATION_MAX_AGE = "location-max-age"
-TRACK_CHANGES = "track-changes"
-IDENTIFY_USER = "identify-user"
-TRACK_CHANGES_REASONS = "track-changes-reasons"
 
 # supported bind keywords for which external instances will be created for pulldata function
 EXTERNAL_INSTANCES = {"calculate", "constraint", "readonly", "required", "relevant"}

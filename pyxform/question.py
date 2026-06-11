@@ -451,12 +451,17 @@ class MultipleChoiceQuestion(Question):
             if self.parameters:
                 params = self.parameters
 
-                if "randomize" in params and params["randomize"] == "true":
+                if (
+                    constants.ParametersSelect.RANDOMIZE in params
+                    and params[constants.ParametersSelect.RANDOMIZE] == "true"
+                ):
                     nodeset = f"randomize({nodeset}"
 
-                    if "seed" in params:
+                    if constants.ParametersSelect.SEED in params:
                         seed = maybe_strip(
-                            survey.insert_xpaths(text=params["seed"], context=self)
+                            survey.insert_xpaths(
+                                text=params[constants.ParametersSelect.SEED], context=self
+                            )
                         )
                         nodeset = f"{nodeset}, {seed}"
 
