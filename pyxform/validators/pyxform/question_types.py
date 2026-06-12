@@ -143,7 +143,7 @@ def process_range_question_type(
         raise PyXFormError(ErrorCode.RANGE_008.value.format(row=row_number))
     no_ticks_appearance = appearance and appearance == "no-ticks"
 
-    defaults = QUESTION_TYPE_DICT["range"]["parameters"]
+    defaults = QUESTION_TYPE_DICT["range"][co.PARAMETERS]
     # set defaults
     for key in defaults:
         if key not in parameters:
@@ -276,6 +276,6 @@ def process_range_question_type(
         row["bind"] = row.get("bind", {})
         row["bind"].update({"type": "decimal"})
 
-    row["parameters"] = parameters
+    row[co.PARAMETERS] = parameters
 
     return row

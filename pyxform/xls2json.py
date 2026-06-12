@@ -520,7 +520,7 @@ def workbook_to_json(
                     )
 
         parameters = parameters_parse(
-            raw_parameters=row.get("parameters", ""),
+            raw_parameters=row.get(constants.PARAMETERS, ""),
             row_number=row_number,
         )
 
@@ -1028,16 +1028,16 @@ def workbook_to_json(
                         accepted=qt_params,
                         row_number=row_number,
                     )
-                    if "value" in parameters:
+                    if qt_params.VALUE in parameters:
                         select_from_file.value_or_label_check(
-                            name="value",
-                            value=parameters["value"],
+                            name=qt_params.VALUE.value,
+                            value=parameters[qt_params.VALUE],
                             row_number=row_number,
                         )
-                    if "label" in parameters:
+                    if qt_params.LABEL in parameters:
                         select_from_file.value_or_label_check(
-                            name="label",
-                            value=parameters["label"],
+                            name=qt_params.LABEL.value,
+                            value=parameters[qt_params.LABEL],
                             row_number=row_number,
                         )
                 else:
@@ -1163,23 +1163,26 @@ def workbook_to_json(
 
         if question_type == "text":
             new_dict = row.copy()
+            qt_params = constants.ParametersText
             pv.validate(
                 parameters=parameters,
-                accepted=constants.ParametersText,
+                accepted=qt_params,
                 row_number=row_number,
             )
 
-            if "rows" in parameters:
+            if qt_params.ROWS in parameters:
                 try:
-                    int(parameters["rows"])
+                    int(parameters[qt_params.ROWS])
                 except ValueError as rows_err:
                     raise PyXFormError(
                         (ROW_FORMAT_STRING % row_number)
-                        + " Parameter rows must have an integer value."
+                        + f" Parameter {qt_params.ROWS.value} must have an integer value."
                     ) from rows_err
 
                 new_dict["control"] = new_dict.get("control", {})
-                new_dict["control"].update({"rows": parameters["rows"]})
+                new_dict["control"].update(
+                    {qt_params.ROWS.value: parameters[qt_params.ROWS]}
+                )
 
             parent_children_array.append(new_dict)
             continue

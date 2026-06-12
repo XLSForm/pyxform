@@ -56,6 +56,7 @@ param_negative = [
     ("Missing equals sign and value", "value"),
     ("Missing key before equals", "=val"),
     ("Missing value after equals", "value="),
+    ("Whitespace only after equals", "value= "),
     ("Duplicate equals ", "value==val"),
     ("Key with no value assignment", "value=val label"),
     ("Spaces in values", "label=My Label"),
