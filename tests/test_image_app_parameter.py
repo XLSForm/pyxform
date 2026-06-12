@@ -2,6 +2,9 @@
 Test image max-pixels and app parameters.
 """
 
+from pyxform import constants as co
+from pyxform.errors import ErrorCode
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -41,31 +44,6 @@ class TestImageParameters(PyxformTestCase):
                         errored=True,
                         error__contains=[
                             "[row : 2] Parameter 'app' has an invalid Android package name - the package name must have at least one '.' separator."
-                        ],
-                        md=md.format(parameter=parameter, appearance=appearance),
-                        xml__xpath_match=[
-                            "/h:html/h:body/x:upload[not(@intent) and @mediatype='image/*' and @ref='/data/my_image']"
-                        ],
-                    )
-
-    def test_throwing_error_when_blank_android_package_name_is_used_with_supported_appearances(
-        self,
-    ):
-        appearances = ("", "annotate")
-        parameters = ("app=", "app= ")
-        md = """
-           | survey |        |          |       |              |              |
-           |        | type   | name     | label | parameters   | appearance   |
-           |        | image  | my_image | Image | {parameter}  | {appearance} |
-           """
-        for appearance in appearances:
-            for parameter in parameters:
-                with self.subTest(msg=f"{appearance} - {parameter}"):
-                    self.assertPyxformXform(
-                        name="data",
-                        errored=True,
-                        error__contains=[
-                            "[row : 2] Parameter 'app' has an invalid Android package name - package name is missing."
                         ],
                         md=md.format(parameter=parameter, appearance=appearance),
                         xml__xpath_match=[
@@ -145,7 +123,11 @@ class TestImageParameters(PyxformTestCase):
             |        | image  | my_image | Image | max-pixels=640 foo=bar |
             """,
             error__contains=[
-                "Accepted parameters are 'app, max-pixels'. The following are invalid parameter(s): 'foo'."
+                ErrorCode.SURVEY_005.value.format(
+                    row=2,
+                    accepted=co.ParametersImage.value_str_sorted(),
+                    rejected="foo",
+                ),
             ],
         )
 

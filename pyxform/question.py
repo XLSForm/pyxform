@@ -401,8 +401,12 @@ class MultipleChoiceQuestion(Question):
                 itemset_value_ref = DEFAULT_ITEMSET_VALUE_REF
                 itemset_label_ref = DEFAULT_ITEMSET_LABEL_REF
             if self.parameters is not None:
-                itemset_value_ref = self.parameters.get("value", itemset_value_ref)
-                itemset_label_ref = self.parameters.get("label", itemset_label_ref)
+                itemset_value_ref = self.parameters.get(
+                    constants.ParametersSelectFromFile.VALUE, itemset_value_ref
+                )
+                itemset_label_ref = self.parameters.get(
+                    constants.ParametersSelectFromFile.LABEL, itemset_label_ref
+                )
 
             is_previous_question = has_pyxform_reference(self.itemset)
 
@@ -451,12 +455,17 @@ class MultipleChoiceQuestion(Question):
             if self.parameters:
                 params = self.parameters
 
-                if "randomize" in params and params["randomize"] == "true":
+                if (
+                    constants.ParametersSelect.RANDOMIZE in params
+                    and params[constants.ParametersSelect.RANDOMIZE] == "true"
+                ):
                     nodeset = f"randomize({nodeset}"
 
-                    if "seed" in params:
+                    if constants.ParametersSelect.SEED in params:
                         seed = maybe_strip(
-                            survey.insert_xpaths(text=params["seed"], context=self)
+                            survey.insert_xpaths(
+                                text=params[constants.ParametersSelect.SEED], context=self
+                            )
                         )
                         nodeset = f"{nodeset}, {seed}"
 

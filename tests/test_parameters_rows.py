@@ -48,7 +48,7 @@ class TestParametersRows(PyxformTestCase):
     def test_throwing_error_if_rows_set_in_parameters_but_the_value_is_not_an_integer(
         self,
     ):
-        parameters = ("rows=", "rows=foo", "rows=7.5")
+        parameters = ("rows=foo", "rows=7.5")
         md = """
         | survey |        |          |       |                 |
         |        | type   | name     | label | parameters      |

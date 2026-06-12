@@ -1,3 +1,6 @@
+from pyxform import constants as co
+from pyxform.errors import ErrorCode
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -190,7 +193,13 @@ class GeoParameterTest(PyxformTestCase):
             |        | geoshape  | geoshape    | Geoshape | warning-accuracy=5       |
             """,
             errored=True,
-            error__contains=["invalid parameter(s): 'warning-accuracy'"],
+            error__contains=[
+                ErrorCode.SURVEY_005.value.format(
+                    row=2,
+                    accepted=co.ParametersGeo.value_str_sorted(),
+                    rejected="warning-accuracy",
+                ),
+            ],
         )
 
     def test_geotrace_with_accuracy_parameters_errors(self):
@@ -202,5 +211,11 @@ class GeoParameterTest(PyxformTestCase):
             |        | geotrace  | geotrace    | Geotrace | warning-accuracy=5       |
             """,
             errored=True,
-            error__contains=["invalid parameter(s): 'warning-accuracy'"],
+            error__contains=[
+                ErrorCode.SURVEY_005.value.format(
+                    row=2,
+                    accepted=co.ParametersGeo.value_str_sorted(),
+                    rejected="warning-accuracy",
+                ),
+            ],
         )

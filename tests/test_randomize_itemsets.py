@@ -2,6 +2,9 @@
 Test randomize itemsets.
 """
 
+from pyxform import constants as co
+from pyxform.errors import ErrorCode
+
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.choices import xpc
 from tests.xpath_helpers.questions import xpq
@@ -166,8 +169,11 @@ class RandomizeItemsetsTest(PyxformTestCase):
 
             """,
             error__contains=[
-                "Accepted parameters are 'randomize, seed'. "
-                "The following are invalid parameter(s): 'step'."
+                ErrorCode.SURVEY_005.value.format(
+                    row=2,
+                    accepted=co.ParametersSelect.value_str_sorted(),
+                    rejected="step",
+                ),
             ],
         )
 

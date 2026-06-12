@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from types import MappingProxyType
 from typing import Any
 
-from pyxform import constants as const
+from pyxform import constants as co
 
 _QUESTION_TYPE_DICT = {
     "q picture": {
@@ -359,7 +359,11 @@ _QUESTION_TYPE_DICT = {
     "range": {
         "control": {"tag": "range"},
         "bind": {"type": "int"},
-        "parameters": {"start": "1", "end": "10", "step": "1"},
+        "parameters": {
+            co.ParametersRange.START.value: "1",
+            co.ParametersRange.END.value: "10",
+            co.ParametersRange.STEP.value: "1",
+        },
     },
     "audit": {"bind": {"type": "binary"}},
     "xml-external": {
@@ -390,8 +394,8 @@ def get_meta_group(children: Sequence[dict[str, Any]]) -> dict[str, Any]:
     if children is None:
         children = []
     return {
-        const.NAME: "meta",
-        const.TYPE: const.GROUP,
-        const.CONTROL: {"bodyless": True},
-        const.CHILDREN: children,
+        co.NAME: "meta",
+        co.TYPE: co.GROUP,
+        co.CONTROL: {"bodyless": True},
+        co.CHILDREN: children,
     }
