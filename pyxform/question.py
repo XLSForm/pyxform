@@ -53,15 +53,15 @@ QUESTION_EXTRA_FIELDS = (
 )
 QUESTION_FIELDS = (*SURVEY_ELEMENT_FIELDS, *QUESTION_EXTRA_FIELDS)
 
-ITEM_QUESTION_EXTRA_FIELDS = (
+ITEMSET_QUESTION_EXTRA_FIELDS = (
     constants.CHOICES,
     constants.ITEMSET,
     constants.LIST_NAME_U,
 )
-SELECT_QUESTION_FIELDS = (*QUESTION_FIELDS, *ITEM_QUESTION_EXTRA_FIELDS)
+SELECT_QUESTION_FIELDS = (*QUESTION_FIELDS, *ITEMSET_QUESTION_EXTRA_FIELDS)
 
 OSM_QUESTION_EXTRA_FIELDS = (constants.CHILDREN,)
-OSM_QUESTION_FIELDS = (*QUESTION_FIELDS, *ITEM_QUESTION_EXTRA_FIELDS)
+OSM_QUESTION_FIELDS = (*QUESTION_FIELDS, *ITEMSET_QUESTION_EXTRA_FIELDS)
 
 OPTION_EXTRA_FIELDS = (
     "_choice_itext_ref",
@@ -353,8 +353,154 @@ class Itemset:
         self.requires_itext = requires_itext
 
 
+class ItemsetNode:
+    nodeset_template: str = "instance('{}')/root/item"
+
+    def __bool__(self):
+        return True
+
+    def __init__(
+        self,
+        value_ref: str | None = None,
+        label_ref: str | None = None,
+        nodeset: str | None = None,
+        choice_filter: str | None = None,
+    ):
+        self.value_ref: str | None = value_ref
+        self.label_ref: str | None = label_ref
+        self.nodeset: str | None = nodeset
+        self.choice_filter: str | None = choice_filter
+
+    def node(self):
+        return node(
+            constants.ITEMSET,
+            node("value", ref=self.value_ref),
+            node("label", ref=self.label_ref),
+            nodeset=self.nodeset,
+        )
+
+
+class ItemsetNodesetHelper:
+    """
+    Encapsulate itemset node preparation to allow re-use across itemset classes.
+    """
+
+    def __init__(self, itemset: str):
+        self.itemset: str = itemset
+        self._itemset_has_ref: bool | None = None
+
+    @property
+    def itemset_has_ref(self) -> bool:
+        if self._itemset_has_ref is None:
+            self._itemset_has_ref = has_pyxform_reference(value=self.itemset)
+        return self._itemset_has_ref
+
+    def process_itemset_internal(self, choices: Itemset | None) -> ItemsetNode | None:
+        """Try to build an itemset node from an internal choice list."""
+        if choices:
+            label_ref = DEFAULT_ITEMSET_LABEL_REF
+            if choices and choices.requires_itext:
+                label_ref = "jr:itext(itextId)"
+            return ItemsetNode(
+                value_ref=DEFAULT_ITEMSET_VALUE_REF,
+                label_ref=label_ref,
+                nodeset=ItemsetNode.nodeset_template.format(self.itemset),
+            )
+
+    def process_itemset_file(
+        self, question: "Question", allowed: set[str]
+    ) -> ItemsetNode | None:
+        """Try to build an itemset node from a file."""
+        itemset_base, file_ext = os.path.splitext(self.itemset)
+        if file_ext in allowed:
+            if file_ext == ".geojson":
+                value_ref = EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON
+                label_ref = EXTERNAL_CHOICES_ITEMSET_REF_LABEL_GEOJSON
+            else:
+                value_ref = DEFAULT_ITEMSET_VALUE_REF
+                label_ref = DEFAULT_ITEMSET_LABEL_REF
+
+            params = question.parameters
+            if params is not None:
+                value_ref = params.get(
+                    constants.ParametersSelectFromFile.VALUE, value_ref
+                )
+                label_ref = params.get(
+                    constants.ParametersSelectFromFile.LABEL, label_ref
+                )
+
+            return ItemsetNode(
+                value_ref=value_ref,
+                label_ref=label_ref,
+                nodeset=ItemsetNode.nodeset_template.format(itemset_base),
+            )
+
+    def process_itemset_reference(
+        self, question: "Question", survey: "Survey"
+    ) -> ItemsetNode | None:
+        """Try to build an itemset node from a pyxform reference."""
+        if self.itemset_has_ref:
+            path = (
+                survey.insert_xpaths(
+                    text=self.itemset, context=question, reference_parent=True
+                )
+                .strip()
+                .split("/")
+            )
+            return ItemsetNode(
+                value_ref=path[-1],
+                label_ref=path[-1],
+                nodeset="/".join(path[:-1]),
+                choice_filter=f"./{path[-1]} != ''",
+            )
+
+    def process_choice_filter(
+        self, itemset_node: ItemsetNode, question: "Question", survey: "Survey"
+    ):
+        """Try to attach a choice_filter to the existing nodeset."""
+        # Resolve and process the user-specified choice filter.
+        if question.choice_filter:
+            choice_filter = survey.insert_xpaths(
+                text=question.choice_filter,
+                context=question,
+                use_current=True,
+                reference_parent=self.itemset_has_ref,
+            )
+            if self.itemset_has_ref:
+                choice_filter = choice_filter.replace(
+                    f"current()/{itemset_node.nodeset}", "."
+                ).replace(itemset_node.nodeset, ".")
+
+            itemset_node.choice_filter = choice_filter
+
+        # Append the user-specified or generated choice_filter.
+        if itemset_node.choice_filter:
+            itemset_node.nodeset += f"[{itemset_node.choice_filter}]"
+
+    @staticmethod
+    def process_parameter_randomize(
+        itemset_node: ItemsetNode, question: "Question", survey: "Survey"
+    ):
+        """Try to wrap the existing nodeset in a randomize() call maybe with a seed."""
+        params = question.parameters
+        if (
+            params
+            and constants.ParametersSelect.RANDOMIZE in params
+            and params[constants.ParametersSelect.RANDOMIZE] == "true"
+        ):
+            if constants.ParametersSelect.SEED in params:
+                seed = maybe_strip(
+                    survey.insert_xpaths(
+                        text=params[constants.ParametersSelect.SEED], context=question
+                    )
+                )
+                itemset_node.nodeset = f"randomize({itemset_node.nodeset}, {seed})"
+            else:
+                itemset_node.nodeset = f"randomize({itemset_node.nodeset})"
+
+
 class MultipleChoiceQuestion(Question):
-    __slots__ = ITEM_QUESTION_EXTRA_FIELDS
+    __slots__ = ITEMSET_QUESTION_EXTRA_FIELDS
 
     @staticmethod
     def get_slot_names() -> tuple[str, ...]:
@@ -392,93 +538,24 @@ class MultipleChoiceQuestion(Question):
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
         if self.itemset and isinstance(self.itemset, str):
-            itemset, file_extension = os.path.splitext(self.itemset)
+            helper = ItemsetNodesetHelper(itemset=self.itemset)
 
-            if file_extension == ".geojson":
-                itemset_value_ref = EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON
-                itemset_label_ref = EXTERNAL_CHOICES_ITEMSET_REF_LABEL_GEOJSON
-            else:
-                itemset_value_ref = DEFAULT_ITEMSET_VALUE_REF
-                itemset_label_ref = DEFAULT_ITEMSET_LABEL_REF
-            if self.parameters is not None:
-                itemset_value_ref = self.parameters.get(
-                    constants.ParametersSelectFromFile.VALUE, itemset_value_ref
+            itemset_node = (
+                helper.process_itemset_internal(choices=choices)
+                or helper.process_itemset_file(
+                    question=self, allowed=EXTERNAL_INSTANCE_EXTENSIONS
                 )
-                itemset_label_ref = self.parameters.get(
-                    constants.ParametersSelectFromFile.LABEL, itemset_label_ref
-                )
-
-            is_previous_question = has_pyxform_reference(self.itemset)
-
-            if file_extension in EXTERNAL_INSTANCE_EXTENSIONS:
-                pass
-            elif choices and choices.requires_itext:
-                itemset = self.itemset
-                itemset_label_ref = "jr:itext(itextId)"
-            else:
-                itemset = self.itemset
-
-            choice_filter = self.choice_filter
-            if choice_filter:
-                choice_filter = survey.insert_xpaths(
-                    text=choice_filter,
-                    context=self,
-                    use_current=True,
-                    reference_parent=is_previous_question,
-                )
-            if is_previous_question:
-                path = (
-                    survey.insert_xpaths(
-                        text=self.itemset, context=self, reference_parent=True
-                    )
-                    .strip()
-                    .split("/")
-                )
-                nodeset = "/".join(path[:-1])
-                itemset_value_ref = path[-1]
-                itemset_label_ref = path[-1]
-                if choice_filter:
-                    choice_filter = choice_filter.replace(
-                        f"current()/{nodeset}", "."
-                    ).replace(nodeset, ".")
-                else:
-                    # Choices must have a value. Filter out repeat instances without
-                    # an answer for the linked question
-                    name = path[-1]
-                    choice_filter = f"./{name} != ''"
-            else:
-                nodeset = f"instance('{itemset}')/root/item"
-
-            if choice_filter:
-                nodeset += f"[{choice_filter}]"
-
-            if self.parameters:
-                params = self.parameters
-
-                if (
-                    constants.ParametersSelect.RANDOMIZE in params
-                    and params[constants.ParametersSelect.RANDOMIZE] == "true"
-                ):
-                    nodeset = f"randomize({nodeset}"
-
-                    if constants.ParametersSelect.SEED in params:
-                        seed = maybe_strip(
-                            survey.insert_xpaths(
-                                text=params[constants.ParametersSelect.SEED], context=self
-                            )
-                        )
-                        nodeset = f"{nodeset}, {seed}"
-
-                    nodeset += ")"
-
-            result.appendChild(
-                node(
-                    "itemset",
-                    node("value", ref=itemset_value_ref),
-                    node("label", ref=itemset_label_ref),
-                    nodeset=nodeset,
-                )
+                or helper.process_itemset_reference(question=self, survey=survey)
             )
+
+            if itemset_node:
+                helper.process_choice_filter(
+                    itemset_node=itemset_node, question=self, survey=survey
+                )
+                helper.process_parameter_randomize(
+                    itemset_node=itemset_node, question=self, survey=survey
+                )
+                result.appendChild(itemset_node.node())
         elif choices:
             # Options processing specific to XLSForms using the "search()" function.
             # The _choice_itext_ref is prepared by Survey._redirect_is_search_itext.
@@ -558,43 +635,24 @@ class OsmUploadQuestion(UploadQuestion):
 
 
 class RangeQuestion(Question):
-    __slots__ = ITEM_QUESTION_EXTRA_FIELDS
+    __slots__ = ITEMSET_QUESTION_EXTRA_FIELDS
 
     def __init__(
-        self, itemset: str | None = None, list_name: str | None = None, **kwargs
+        self, choices: Itemset | None = None, itemset: str | None = None, **kwargs
     ):
+        # Structure
+        self.choices: Itemset | None = choices
         self.itemset: str | None = itemset
-        self.list_name: str | None = list_name
 
         super().__init__(**kwargs)
 
     def build_xml(self, survey: "Survey"):
-        if self.bind["type"] not in {"int", "decimal"}:
-            raise PyXFormError(
-                f"""Invalid value for `self.bind["type"]`: {self.bind["type"]}"""
-            )
-
         result = self._build_xml(survey=survey)
 
-        params = self.parameters
-        if params:
-            for k, v in params.items():
-                result.setAttribute(k, v)
-
-        if survey.choices and self.itemset:
-            if survey.choices.get(self.itemset, None).requires_itext:
-                itemset_label_ref = "jr:itext(itextId)"
-            else:
-                itemset_label_ref = DEFAULT_ITEMSET_LABEL_REF
-
-            nodeset = f"instance('{self.itemset}')/root/item"
-            result.appendChild(
-                node(
-                    "itemset",
-                    node("value", ref=DEFAULT_ITEMSET_VALUE_REF),
-                    node("label", ref=itemset_label_ref),
-                    nodeset=nodeset,
-                )
-            )
+        if self.itemset and isinstance(self.itemset, str):
+            helper = ItemsetNodesetHelper(itemset=self.itemset)
+            itemset_node = helper.process_itemset_internal(choices=self.choices)
+            if itemset_node:
+                result.appendChild(itemset_node.node())
 
         return result

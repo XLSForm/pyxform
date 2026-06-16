@@ -10,7 +10,7 @@ def validate(
     parameters: PARAMETERS_TYPE,
     accepted: type[StrEnum],
     row_number: int,
-) -> dict[str, str]:
+) -> None:
     """
     Raise an error if 'parameters' includes any keys not named in 'accepted'.
     """
@@ -23,4 +23,3 @@ def validate(
                 rejected=", ".join(sorted(extras)),
             )
         )
-    return parameters

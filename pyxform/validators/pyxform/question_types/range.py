@@ -22,11 +22,7 @@ def process_range_question_type(
 
     Raises PyXFormError when invalid range parameters are used.
     """
-    parameters = pv.validate(
-        parameters=parameters,
-        accepted=co.ParametersRange,
-        row_number=row_number,
-    )
+    pv.validate(parameters=parameters, accepted=co.ParametersRange, row_number=row_number)
     if (
         appearance
         and appearance not in {"vertical", "no-ticks"}
@@ -175,6 +171,8 @@ def process_range_question_type(
         row["bind"] = row.get("bind", {})
         row["bind"].update({"type": "decimal"})
 
+    row[co.CONTROL] = row.get(co.CONTROL, {})
+    row[co.CONTROL].update(parameters)
     row[co.PARAMETERS] = parameters
 
     # To trigger addition of itemset child nodes.
