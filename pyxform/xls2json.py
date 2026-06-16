@@ -46,6 +46,8 @@ from pyxform.validators.pyxform.pyxform_reference import (
     is_pyxform_reference,
     validate_pyxform_references_in_workbook,
 )
+from pyxform.validators.pyxform.question_types import geo as qt_geo
+from pyxform.validators.pyxform.question_types import range as qt_range
 from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
 from pyxform.xls2json_backends import DefinitionData, get_xlsform
@@ -1090,7 +1092,7 @@ def workbook_to_json(
             continue
 
         if question_type == "range":
-            new_dict = qt.process_range_question_type(
+            new_dict = qt_range.process_range_question_type(
                 row_number=row_number,
                 row=row,
                 parameters=parameters,
@@ -1229,80 +1231,11 @@ def workbook_to_json(
             continue
 
         if question_type in {"geopoint", "geoshape", "geotrace"}:
-            new_dict = row.copy()
-            new_dict["control"] = new_dict.get("control", {})
-
-            if question_type == "geopoint":
-                qt_params = constants.ParametersGeoPoint
-                pv.validate(
-                    parameters=parameters,
-                    accepted=qt_params,
-                    row_number=row_number,
-                )
-
-                if qt_params.CAPTURE_ACCURACY in parameters:
-                    try:
-                        float(parameters[qt_params.CAPTURE_ACCURACY])
-                        new_dict["control"].update(
-                            {"accuracyThreshold": parameters[qt_params.CAPTURE_ACCURACY]}
-                        )
-                    except ValueError as ca_err:
-                        raise PyXFormError(
-                            f"Parameter {qt_params.CAPTURE_ACCURACY.value} must have a numeric value"
-                        ) from ca_err
-
-                if qt_params.WARNING_ACCURACY in parameters:
-                    try:
-                        float(parameters[qt_params.WARNING_ACCURACY])
-                        new_dict["control"].update(
-                            {
-                                "unacceptableAccuracyThreshold": parameters[
-                                    qt_params.WARNING_ACCURACY
-                                ]
-                            }
-                        )
-                    except ValueError as wa_err:
-                        raise PyXFormError(
-                            f"Parameter {qt_params.WARNING_ACCURACY.value} must have a numeric value"
-                        ) from wa_err
-
-            else:
-                qt_params = constants.ParametersGeo
-                pv.validate(
-                    parameters=parameters,
-                    accepted=qt_params,
-                    row_number=row_number,
-                )
-                if qt_params.INCREMENTAL in parameters:
-                    try:
-                        qt.validate_geo_parameter_incremental(
-                            value=parameters[qt_params.INCREMENTAL]
-                        )
-                    except PyXFormError as e:
-                        e.context.update(
-                            sheet=constants.SURVEY,
-                            column=constants.PARAMETERS,
-                            row=row_number,
-                        )
-                        raise
-                    else:
-                        new_dict["control"][qt_params.INCREMENTAL.value] = "true"
-
-            if qt_params.ALLOW_MOCK_ACCURACY in parameters:
-                if parameters[qt_params.ALLOW_MOCK_ACCURACY] not in {"true", "false"}:
-                    raise PyXFormError(
-                        f"Invalid value for {qt_params.ALLOW_MOCK_ACCURACY.value}."
-                    )
-
-                new_dict["bind"] = new_dict.get("bind", {})
-                new_dict["bind"].update(
-                    {
-                        f"odk:{qt_params.ALLOW_MOCK_ACCURACY.value}": parameters[
-                            qt_params.ALLOW_MOCK_ACCURACY
-                        ]
-                    }
-                )
-
+            new_dict = qt_geo.process_geo_question_type(
+                row_number=row_number,
+                row=row,
+                parameters=parameters,
+            )
             parent_children_array.append(new_dict)
             continue
         # TODO: Consider adding some question_type validation here.
