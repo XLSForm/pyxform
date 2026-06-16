@@ -184,21 +184,29 @@ class XPathHelper:
         """
 
     @staticmethod
-    def body_range(qname: str, attrs: dict[str, str] | None = None) -> str:
+    def body_range(
+        qname: str,
+        attrs: dict[str, str] | None = None,
+        cname: str | None = None,
+        translated: bool = False,
+    ) -> str:
         parameters = QUESTION_TYPE_DICT["range"]["parameters"].copy()
         if attrs is not None:
             parameters.update(attrs)
-        attrs = " and ".join(f"@{k}='{v}'" for k, v in parameters.items())
-
+        attrs = "\n  and ".join(f"@{k}='{v}'" for k, v in parameters.items())
+        itemset = ""
+        itemset_label = ""
+        if cname is not None:
+            itemset = f"""\n  and ./x:itemset[@nodeset="instance('{cname}')/root/item"]"""
+            clabel = "label"
+            if translated:
+                clabel = "jr:itext(itextId)"
+            itemset_label = f"""\n  and ./x:itemset/x:label[@ref='{clabel}']"""
         return f"""
         /h:html/h:body/x:range[
-          @ref='/test_name/{qname}' and {attrs}
+          @ref='/test_name/{qname}' and {attrs} {itemset} {itemset_label}
         ]
         """
-
-    @staticmethod
-    def range_itemset(qname: str, labelset: str) -> str:
-        return f"/h:html/h:body/x:range[@ref='/test_name/{qname}']/x:itemset[@nodeset=\"instance('{labelset}')/root/item\"]"
 
 
 xpq = XPathHelper()
