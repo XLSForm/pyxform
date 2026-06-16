@@ -12,6 +12,7 @@ from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.validators.pyxform import parameters as pv
+from pyxform.validators.pyxform.choices import add_choices_info_to_question
 from pyxform.validators.pyxform.parameters import (
     PARAMETERS_TYPE,
 )
@@ -277,5 +278,15 @@ def process_range_question_type(
         row["bind"].update({"type": "decimal"})
 
     row[co.PARAMETERS] = parameters
+
+    # To trigger addition of itemset child nodes.
+    if tick_labelset is not None:
+        add_choices_info_to_question(
+            question=row,
+            list_name=tick_labelset,
+            choices=choices,
+            choice_filter=None,
+            file_extension=None,
+        )
 
     return row

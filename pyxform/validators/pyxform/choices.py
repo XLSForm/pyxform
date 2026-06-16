@@ -1,5 +1,8 @@
-from pyxform import constants
+from typing import Any
+
+from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
+from pyxform.validators.pyxform.pyxform_reference import has_pyxform_reference
 
 
 def validate_headers(
@@ -8,7 +11,7 @@ def validate_headers(
     def check():
         for header in headers:
             header = header[0]
-            if header != constants.LIST_NAME_S and (" " in header or header == ""):
+            if header != co.LIST_NAME_S and (" " in header or header == ""):
                 warnings.append(ErrorCode.HEADER_004.value.format(column=header))
                 yield header
 
@@ -21,13 +24,13 @@ def validate_choice_list(
     seen_options = set()
     duplicate_errors = []
     for option in options:
-        if constants.NAME not in option:
+        if co.NAME not in option:
             raise PyXFormError(ErrorCode.NAMES_006.value.format(row=option["__row"]))
-        elif constants.LABEL not in option:
+        elif co.LABEL not in option:
             warnings.append(ErrorCode.LABEL_001.value.format(row=option["__row"]))
 
         if not allow_duplicates:
-            name = option[constants.NAME]
+            name = option[co.NAME]
             if name in seen_options:
                 duplicate_errors.append(
                     ErrorCode.NAMES_007.value.format(row=option["__row"])
@@ -67,3 +70,53 @@ def validate_and_clean_choices(
                 option.pop(invalid_header, None)
             option.pop("__row", None)
     return choices
+
+
+def add_choices_info_to_question(
+    question: dict[str, Any],
+    list_name: str,
+    choices: dict[str, list],
+    choice_filter: str | None = None,
+    file_extension: str | None = None,
+):
+    """
+    Add choices-related info to the question dict, e.g. itemset, list_name, choices, etc.
+
+    :param question: A dict with question details.
+    :param list_name: The choice list name for the question.
+    :param choices: The available choices in the survey.
+    :param choice_filter: The question's choice_filter, if any.
+    :param file_extension: The question's external select file_extension, if any.
+    :return: The updated question dict.
+    """
+    if choice_filter is None:
+        choice_filter = ""
+    if file_extension is None:
+        file_extension = ""
+
+    question[co.ITEMSET] = list_name
+
+    if choice_filter:
+        # External selects e.g. type = "select_one_external city".
+        if question[co.TYPE] == co.SELECT_ONE_EXTERNAL:
+            question["query"] = list_name
+        elif choices.get(list_name):
+            # Reference to list name for data dictionary tools (ilri/odktools).
+            question[co.LIST_NAME_U] = list_name
+            # Copy choices for data export tools (onaio/onadata).
+            # TODO: could onadata use the list_name to look up the list for
+            #  export, instead of pyxform internally duplicating choices data?
+            question[co.CHOICES] = choices[list_name]
+    elif not (
+        # Select with randomized choices.
+        (
+            co.ParametersSelect.RANDOMIZE in question[co.PARAMETERS]
+            and question[co.PARAMETERS][co.ParametersSelect.RANDOMIZE] == "true"
+        )
+        # Select from file e.g. type = "select_one_from_file cities.xml".
+        or file_extension in co.EXTERNAL_INSTANCE_EXTENSIONS
+        # Select from previous answers e.g. type = "select_one ${q1}".
+        or has_pyxform_reference(list_name)
+    ):
+        question[co.LIST_NAME_U] = list_name
+        question[co.CHOICES] = choices[list_name]
