@@ -665,3 +665,15 @@ class RangeQuestion(_SupportsItemset):
                 result.appendChild(itemset_node.node())
 
         return result
+
+
+class GeoQuestion(_SupportsItemset):
+    def build_xml(self, survey: "Survey"):
+        result = self._build_xml(survey=survey)
+
+        if self.itemset:
+            itemset_node = self.build_itemset(choices=self.choices, survey=survey)
+            if itemset_node:
+                result.appendChild(itemset_node)
+
+        return result

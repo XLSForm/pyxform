@@ -13,6 +13,7 @@ from pyxform.entities.entity_declaration import EntityDeclaration
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.question import (
+    GeoQuestion,
     InputQuestion,
     MultipleChoiceQuestion,
     Option,
@@ -39,6 +40,11 @@ QUESTION_CLASSES = {
     "select1": MultipleChoiceQuestion,
     "trigger": TriggerQuestion,
     "upload": UploadQuestion,
+    "__by_type__": {
+        "geopoint": GeoQuestion,
+        "geoshape": GeoQuestion,
+        "geotrace": GeoQuestion,
+    },
 }
 SECTION_CLASSES = {
     const.GROUP: GroupedSection,
@@ -198,6 +204,10 @@ class SurveyElementBuilder:
         and find what class it maps to going through
         type_dictionary -> QUESTION_CLASSES
         """
+        by_type = QUESTION_CLASSES["__by_type__"].get(question_type_str, None)
+        if by_type is not None:
+            return by_type
+
         control_tag = ""
         question_type = question_type_dictionary.get(question_type_str)
         if question_type:

@@ -521,6 +521,15 @@ class ErrorCode(Enum):
             "The following are invalid parameter key(s): '{rejected}'."
         ),
     )
+    SURVEY_006: Detail = Detail(
+        name="Survey sheet - invalid geo parameter 'reference-geo'",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "For geo questions, the 'reference-geo' parameter must be either: "
+            "a choices list_name, an entities list_name, a reference variable containing "
+            "the name of a repeat, or the name of an attached CSV file."
+        ),
+    )
 
 
 class PyXFormError(Exception):

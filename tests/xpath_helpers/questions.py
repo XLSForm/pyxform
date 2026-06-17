@@ -104,6 +104,27 @@ class XPathHelper:
         """
 
     @staticmethod
+    def body_itemset(
+        q_name: str,
+        nodeset: str,
+        q_type: str = "input",
+        value_ref: str = "name",
+        label_ref: str = "label",
+        extra_q_assertions: str = "",
+    ) -> str:
+        """Body has a direct child control with an itemset, and no inline items."""
+        return rf"""
+        /h:html/h:body/x:{q_type}[
+          @ref="/test_name/{q_name}"
+          and ./x:itemset[@nodeset="{nodeset}"]
+          and ./x:itemset/x:value[@ref="{value_ref}"]
+          and ./x:itemset/x:label[@ref="{label_ref}"]
+          and not(./x:item)
+          {extra_q_assertions}
+        ]
+        """
+
+    @staticmethod
     def body_select1_itemset(q_name: str) -> str:
         """Body has a select1 with an itemset, and no inline items."""
         return rf"""

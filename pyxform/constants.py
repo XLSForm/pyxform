@@ -194,11 +194,13 @@ class ParametersAudit(StrEnum):
 class ParametersGeo(StrEnum):
     ALLOW_MOCK_ACCURACY = "allow-mock-accuracy"
     INCREMENTAL = "incremental"
+    REFERENCE_GEO = "reference-geo"
 
 
 class ParametersGeoPoint(StrEnum):
     ALLOW_MOCK_ACCURACY = "allow-mock-accuracy"
     CAPTURE_ACCURACY = "capture-accuracy"
+    REFERENCE_GEO = "reference-geo"
     WARNING_ACCURACY = "warning-accuracy"
 
 
