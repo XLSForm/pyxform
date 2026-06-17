@@ -157,7 +157,9 @@ class SurveyElementBuilder:
 
         if question_class:
             if choices:
-                d_choices = d.get(const.CHOICES, d.get(const.CHILDREN))
+                d_choices = choices.get(
+                    d.get(const.ITEMSET), d.get(const.CHOICES, d.get(const.CHILDREN))
+                )
                 if d_choices:
                     return question_class(
                         question_type_dictionary=question_type_dictionary,
@@ -166,7 +168,7 @@ class SurveyElementBuilder:
                             for k, v in d.items()
                             if k not in {const.CHOICES, const.CHILDREN}
                         },
-                        choices=choices.get(d[const.ITEMSET], d_choices),
+                        choices=d_choices,
                     )
 
             return question_class(question_type_dictionary=question_type_dictionary, **d)

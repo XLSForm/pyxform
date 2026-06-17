@@ -22,11 +22,14 @@ from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
     DetachableElement,
+    coalesce,
     combine_lists,
     default_is_dynamic,
     node,
 )
-from pyxform.validators.pyxform.pyxform_reference import has_pyxform_reference
+from pyxform.validators.pyxform.pyxform_reference import (
+    has_pyxform_reference,
+)
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -54,11 +57,14 @@ QUESTION_EXTRA_FIELDS = (
 QUESTION_FIELDS = (*SURVEY_ELEMENT_FIELDS, *QUESTION_EXTRA_FIELDS)
 
 ITEMSET_QUESTION_EXTRA_FIELDS = (
+    "_itemset_has_ref",
     constants.CHOICES,
     constants.ITEMSET,
-    constants.LIST_NAME_U,
 )
-SELECT_QUESTION_FIELDS = (*QUESTION_FIELDS, *ITEMSET_QUESTION_EXTRA_FIELDS)
+ITEMSET_QUESTION_FIELDS = (*QUESTION_FIELDS, *ITEMSET_QUESTION_EXTRA_FIELDS)
+
+SELECT_QUESTION_EXTRA_FIELDS = (constants.LIST_NAME_U,)
+SELECT_QUESTION_FIELDS = (*ITEMSET_QUESTION_FIELDS, *SELECT_QUESTION_EXTRA_FIELDS)
 
 OSM_QUESTION_EXTRA_FIELDS = (constants.CHILDREN,)
 OSM_QUESTION_FIELDS = (*QUESTION_FIELDS, *ITEMSET_QUESTION_EXTRA_FIELDS)
@@ -380,14 +386,32 @@ class ItemsetNode:
         )
 
 
-class ItemsetNodesetHelper:
-    """
-    Encapsulate itemset node preparation to allow re-use across itemset classes.
-    """
+class _SupportsItemset(Question):
+    __slots__ = ITEMSET_QUESTION_EXTRA_FIELDS
 
-    def __init__(self, itemset: str):
-        self.itemset: str = itemset
+    @staticmethod
+    def get_slot_names() -> tuple[str, ...]:
+        return ITEMSET_QUESTION_FIELDS
+
+    def __init__(
+        self,
+        choices: Itemset | None = None,
+        itemset: str | None = None,
+        fields: tuple[str, ...] | None = None,
+        **kwargs,
+    ):
+        # Internals
         self._itemset_has_ref: bool | None = None
+
+        # Structure
+        self.choices: Itemset | None = choices
+        self.itemset: str | None = itemset
+
+        if fields is None:
+            fields = ITEMSET_QUESTION_EXTRA_FIELDS
+        else:
+            fields = chain(ITEMSET_QUESTION_EXTRA_FIELDS, fields)
+        super().__init__(fields=fields, **kwargs)
 
     @property
     def itemset_has_ref(self) -> bool:
@@ -395,22 +419,21 @@ class ItemsetNodesetHelper:
             self._itemset_has_ref = has_pyxform_reference(value=self.itemset)
         return self._itemset_has_ref
 
-    def process_itemset_internal(self, choices: Itemset | None) -> ItemsetNode | None:
-        """Try to build an itemset node from an internal choice list."""
-        if choices:
-            label_ref = DEFAULT_ITEMSET_LABEL_REF
-            if choices and choices.requires_itext:
-                label_ref = "jr:itext(itextId)"
-            return ItemsetNode(
-                value_ref=DEFAULT_ITEMSET_VALUE_REF,
-                label_ref=label_ref,
-                nodeset=ItemsetNode.nodeset_template.format(self.itemset),
-            )
+    def _build_itemset_instance(self, choices: Itemset | None) -> ItemsetNode:
+        """Build a default itemset node from referencing an internal instance."""
+        label_ref = DEFAULT_ITEMSET_LABEL_REF
+        if choices and choices.requires_itext:
+            label_ref = "jr:itext(itextId)"
+        return ItemsetNode(
+            value_ref=DEFAULT_ITEMSET_VALUE_REF,
+            label_ref=label_ref,
+            nodeset=ItemsetNode.nodeset_template.format(self.itemset),
+        )
 
-    def process_itemset_file(
+    def _build_itemset_file(
         self, question: "Question", allowed: set[str]
     ) -> ItemsetNode | None:
-        """Try to build an itemset node from a file."""
+        """Try to build an itemset node referencing a file instance."""
         itemset_base, file_ext = os.path.splitext(self.itemset)
         if file_ext in allowed:
             if file_ext == ".geojson":
@@ -435,10 +458,10 @@ class ItemsetNodesetHelper:
                 nodeset=ItemsetNode.nodeset_template.format(itemset_base),
             )
 
-    def process_itemset_reference(
+    def _build_itemset_reference(
         self, question: "Question", survey: "Survey"
     ) -> ItemsetNode | None:
-        """Try to build an itemset node from a pyxform reference."""
+        """Try to build an itemset node using a pyxform reference."""
         if self.itemset_has_ref:
             path = (
                 survey.insert_xpaths(
@@ -454,10 +477,10 @@ class ItemsetNodesetHelper:
                 choice_filter=f"./{path[-1]} != ''",
             )
 
-    def process_choice_filter(
+    def _process_choice_filter(
         self, itemset_node: ItemsetNode, question: "Question", survey: "Survey"
-    ):
-        """Try to attach a choice_filter to the existing nodeset."""
+    ) -> None:
+        """Attach a choice_filter, if any, to the existing nodeset."""
         # Resolve and process the user-specified choice filter.
         if question.choice_filter:
             choice_filter = survey.insert_xpaths(
@@ -478,10 +501,10 @@ class ItemsetNodesetHelper:
             itemset_node.nodeset += f"[{itemset_node.choice_filter}]"
 
     @staticmethod
-    def process_parameter_randomize(
+    def _process_parameter_randomize(
         itemset_node: ItemsetNode, question: "Question", survey: "Survey"
     ):
-        """Try to wrap the existing nodeset in a randomize() call maybe with a seed."""
+        """Wrap the existing nodeset in a randomize() call, optionally with a seed."""
         params = question.parameters
         if (
             params
@@ -498,30 +521,43 @@ class ItemsetNodesetHelper:
             else:
                 itemset_node.nodeset = f"randomize({itemset_node.nodeset})"
 
+    def build_itemset(
+        self, choices: Itemset, survey: "Survey"
+    ) -> "DetachableElement | None":
+        itemset_node = coalesce(
+            self._build_itemset_file(question=self, allowed=EXTERNAL_INSTANCE_EXTENSIONS),
+            self._build_itemset_reference(question=self, survey=survey),
+            self._build_itemset_instance(choices=choices),
+        )
 
-class MultipleChoiceQuestion(Question):
-    __slots__ = ITEMSET_QUESTION_EXTRA_FIELDS
+        self._process_choice_filter(
+            itemset_node=itemset_node, question=self, survey=survey
+        )
+        self._process_parameter_randomize(
+            itemset_node=itemset_node, question=self, survey=survey
+        )
+        return itemset_node.node()
+
+
+class MultipleChoiceQuestion(_SupportsItemset):
+    __slots__ = SELECT_QUESTION_EXTRA_FIELDS
 
     @staticmethod
     def get_slot_names() -> tuple[str, ...]:
         return SELECT_QUESTION_FIELDS
 
-    def __init__(
-        self, itemset: str | None = None, list_name: str | None = None, **kwargs
-    ):
-        if not itemset and not list_name:
+    def __init__(self, list_name: str | None = None, **kwargs):
+        if not kwargs.get(constants.ITEMSET, None) and not list_name:
             raise PyXFormError(
                 "Arguments 'itemset' and 'list_name' must not both be None or empty."
             )
 
         # Structure
-        self.choices: Itemset | None = None
-        self.itemset: str | None = itemset
         self.list_name: str | None = list_name
 
-        choices = kwargs.pop(constants.CHOICES, None)
-        if isinstance(choices, Itemset):
-            self.choices = choices
+        choices = kwargs.get(constants.CHOICES, None)
+        if not isinstance(choices, Itemset):
+            kwargs.pop(constants.CHOICES, None)
         super().__init__(**kwargs)
 
     def build_xml(self, survey: "Survey"):
@@ -538,24 +574,9 @@ class MultipleChoiceQuestion(Question):
         # itemset are only supposed to be strings,
         # check to prevent the rare dicts that show up
         if self.itemset and isinstance(self.itemset, str):
-            helper = ItemsetNodesetHelper(itemset=self.itemset)
-
-            itemset_node = (
-                helper.process_itemset_internal(choices=choices)
-                or helper.process_itemset_file(
-                    question=self, allowed=EXTERNAL_INSTANCE_EXTENSIONS
-                )
-                or helper.process_itemset_reference(question=self, survey=survey)
-            )
-
+            itemset_node = self.build_itemset(choices=choices, survey=survey)
             if itemset_node:
-                helper.process_choice_filter(
-                    itemset_node=itemset_node, question=self, survey=survey
-                )
-                helper.process_parameter_randomize(
-                    itemset_node=itemset_node, question=self, survey=survey
-                )
-                result.appendChild(itemset_node.node())
+                result.appendChild(itemset_node)
         elif choices:
             # Options processing specific to XLSForms using the "search()" function.
             # The _choice_itext_ref is prepared by Survey._redirect_is_search_itext.
@@ -634,24 +655,12 @@ class OsmUploadQuestion(UploadQuestion):
         return result
 
 
-class RangeQuestion(Question):
-    __slots__ = ITEMSET_QUESTION_EXTRA_FIELDS
-
-    def __init__(
-        self, choices: Itemset | None = None, itemset: str | None = None, **kwargs
-    ):
-        # Structure
-        self.choices: Itemset | None = choices
-        self.itemset: str | None = itemset
-
-        super().__init__(**kwargs)
-
+class RangeQuestion(_SupportsItemset):
     def build_xml(self, survey: "Survey"):
         result = self._build_xml(survey=survey)
 
-        if self.itemset and isinstance(self.itemset, str):
-            helper = ItemsetNodesetHelper(itemset=self.itemset)
-            itemset_node = helper.process_itemset_internal(choices=self.choices)
+        if self.itemset:
+            itemset_node = self._build_itemset_instance(choices=self.choices)
             if itemset_node:
                 result.appendChild(itemset_node.node())
 
