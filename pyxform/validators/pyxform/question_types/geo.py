@@ -21,7 +21,7 @@ def validate_parameter_incremental(value: str) -> None:
         )
 
 
-def validate_parameter_reference_geo(
+def validate_parameter_reference_geometry(
     referrers: Iterable[Iterable[str | None, int]],
     csv_sources: set[str],
     repeats: set[str],
@@ -29,7 +29,7 @@ def validate_parameter_reference_geo(
     entities: dict[str, dict[str, Any]] | None = None,
     external_choices: dict[Any, list] | None = None,
 ) -> None:
-    """Check that the reference-geo name can be resolved to valid nodeset target."""
+    """Check that the reference-geometry name can be resolved to valid nodeset target."""
     for target, row_num in referrers:
         if (
             target in csv_sources
@@ -132,8 +132,8 @@ def process_geo_question_type(
             }
         )
 
-    if qt_params.REFERENCE_GEO in parameters:
-        value = parameters[qt_params.REFERENCE_GEO]
+    if qt_params.REFERENCE_GEOMETRY in parameters:
+        value = parameters[qt_params.REFERENCE_GEOMETRY]
         geo_references.append((value, row_number))
         new_dict[co.ITEMSET] = value
 

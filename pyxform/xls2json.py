@@ -1273,7 +1273,7 @@ def workbook_to_json(
     except PyXFormError as e:
         e.context.update(sheet="survey", column="trigger")
         raise
-    qt_geo.validate_parameter_reference_geo(
+    qt_geo.validate_parameter_reference_geometry(
         referrers=geo_references,
         csv_sources=csv_sources,
         repeats=repeat_names,
