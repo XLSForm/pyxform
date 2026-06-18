@@ -37,10 +37,7 @@ from pyxform.validators.pyxform import question_types as qt
 from pyxform.validators.pyxform import select_from_file, unique_names
 from pyxform.validators.pyxform import settings as validate_settings
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
-from pyxform.validators.pyxform.choices import (
-    add_choices_info_to_question,
-    validate_and_clean_choices,
-)
+from pyxform.validators.pyxform.choices import validate_and_clean_choices
 from pyxform.validators.pyxform.pyxform_reference import (
     has_pyxform_reference,
     is_pyxform_reference,
@@ -145,6 +142,57 @@ def process_image_default(default_value):
     if image_jr_prefix not in default_value:
         return "{}{}".format("jr://images/", default_value)
     return default_value
+
+
+def add_choices_info_to_question(
+    question: dict[str, Any],
+    list_name: str,
+    choices: dict[str, list],
+    choice_filter: str | None = None,
+    file_extension: str | None = None,
+):
+    """
+    Add choices-related info to the question dict, e.g. itemset, list_name, choices, etc.
+
+    :param question: A dict with question details.
+    :param list_name: The choice list name for the question.
+    :param choices: The available choices in the survey.
+    :param choice_filter: The question's choice_filter, if any.
+    :param file_extension: The question's external select file_extension, if any.
+    :return: The updated question dict.
+    """
+    if choice_filter is None:
+        choice_filter = ""
+    if file_extension is None:
+        file_extension = ""
+
+    question[constants.ITEMSET] = list_name
+
+    if choice_filter:
+        # External selects e.g. type = "select_one_external city".
+        if question[constants.TYPE] == constants.SELECT_ONE_EXTERNAL:
+            question["query"] = list_name
+        elif choices.get(list_name):
+            # Reference to list name for data dictionary tools (ilri/odktools).
+            question[constants.LIST_NAME_U] = list_name
+            # Copy choices for data export tools (onaio/onadata).
+            # TODO: could onadata use the list_name to look up the list for
+            #  export, instead of pyxform internally duplicating choices data?
+            question[constants.CHOICES] = choices[list_name]
+    elif not (
+        # Select with randomized choices.
+        (
+            constants.ParametersSelect.RANDOMIZE in question[constants.PARAMETERS]
+            and question[constants.PARAMETERS][constants.ParametersSelect.RANDOMIZE]
+            == "true"
+        )
+        # Select from file e.g. type = "select_one_from_file cities.xml".
+        or file_extension in EXTERNAL_INSTANCE_EXTENSIONS
+        # Select from previous answers e.g. type = "select_one ${q1}".
+        or has_pyxform_reference(list_name)
+    ):
+        question[constants.LIST_NAME_U] = list_name
+        question[constants.CHOICES] = choices[list_name]
 
 
 def workbook_to_json(
