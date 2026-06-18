@@ -110,7 +110,7 @@ class SurveyElementBuilder:
             d = self._sections[section_name]
             full_survey = self.create_survey_element_from_dict(d=d, choices=choices)
             return full_survey.children
-        elif d[const.TYPE] in {"xml-external", "csv-external"}:
+        elif d[const.TYPE] in const.EXTERNAL_INSTANCE_TYPES:
             return ExternalInstance(**d)
         elif d[const.TYPE] == "entity":
             return EntityDeclaration(**d)

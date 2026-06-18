@@ -525,9 +525,9 @@ class ErrorCode(Enum):
         name="Survey sheet - invalid geo parameter 'reference-geometry'",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
-            "For geo questions, the 'reference-geometry' parameter must be either: "
-            "a choices list_name, an entities list_name, a reference variable containing "
-            "the name of a repeat, or the name of an attached CSV file."
+            "The 'reference-geometry' parameter must either match a secondary instance "
+            "name (a choices list_name, an entities list_name, or the base name of an "
+            "attached file), or be a reference variable containing the name of a repeat."
         ),
     )
 

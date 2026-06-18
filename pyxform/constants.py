@@ -136,6 +136,7 @@ AUDIO_QUALITY_NORMAL = "normal"
 AUDIO_QUALITY_EXTERNAL = "external"
 
 EXTERNAL_INSTANCE_EXTENSIONS = {".xml", ".csv", ".geojson"}
+EXTERNAL_INSTANCE_TYPES = {"csv-external", "xml-external"}
 
 DEFAULT_ITEMSET_LABEL_REF = "label"
 DEFAULT_ITEMSET_VALUE_REF = "name"

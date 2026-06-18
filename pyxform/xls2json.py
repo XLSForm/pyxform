@@ -408,7 +408,7 @@ def workbook_to_json(
     element_names = Counter()
     trigger_references: list[tuple[str, int]] = []
     geo_references: list[tuple[str, int]] = []
-    csv_sources: set[str] = set()
+    instance_sources: set[str] = set()
     repeat_names: set[str] = set()
     entity_references_by_question = {}
 
@@ -837,8 +837,8 @@ def workbook_to_json(
 
         # Assuming a question is anything not processed above as a loop/repeat/group.
         question_names.add(question_name)
-        if row[constants.TYPE] == "csv-external":
-            csv_sources.add(question_name.split(".")[0])
+        if row[constants.TYPE] in constants.EXTERNAL_INSTANCE_TYPES:
+            instance_sources.add(os.path.splitext(question_name)[0])
 
         # Try to parse question as a select:
         select_parse = RE_SELECT.search(question_type)
@@ -855,12 +855,10 @@ def workbook_to_json(
                         + " select one external is only meant for filtered selects."
                     )
                 list_name = parse_dict[constants.LIST_NAME_U]
-                file_extension = os.path.splitext(list_name)[1]
-                if file_extension == ".csv":
-                    csv_sources.add(list_name)
+                instance_name, file_extension = os.path.splitext(list_name)
+                instance_sources.add(instance_name)
 
                 if select_type == constants.SELECT_ONE_EXTERNAL:
-                    csv_sources.add("itemsets")
                     if not external_choices:
                         k = constants.EXTERNAL_CHOICES
                         msg = "There should be an external_choices sheet in this xlsform."
@@ -1275,11 +1273,10 @@ def workbook_to_json(
         raise
     qt_geo.validate_parameter_reference_geometry(
         referrers=geo_references,
-        csv_sources=csv_sources,
+        instance_sources=instance_sources,
         repeats=repeat_names,
         choices=choices,
         entities=entity_declarations,
-        external_choices=external_choices,
     )
 
     if len(stack) > 1:

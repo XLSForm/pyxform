@@ -23,19 +23,17 @@ def validate_parameter_incremental(value: str) -> None:
 
 def validate_parameter_reference_geometry(
     referrers: Iterable[Iterable[str | None, int]],
-    csv_sources: set[str],
+    instance_sources: set[str],
     repeats: set[str],
     choices: dict[str, list[dict]],
     entities: dict[str, dict[str, Any]] | None = None,
-    external_choices: dict[Any, list] | None = None,
 ) -> None:
     """Check that the reference-geometry name can be resolved to valid nodeset target."""
     for target, row_num in referrers:
         if (
-            target in csv_sources
+            target in instance_sources
             or target in choices
             or (entities and target in entities)
-            or (external_choices and target == "itemsets.csv")
         ):
             continue
         # Separated this part of the check since it requires slower parsing.
