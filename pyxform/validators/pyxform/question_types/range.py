@@ -17,6 +17,16 @@ def process_range_question_type(
     choices: dict[str, Any],
 ) -> dict[str, Any]:
     """
+    Amend the row data with processed parameters or other logic specific to the question type.
+
+    :param row_number: The row position in the 'survey' sheet.
+    :param row: The 'survey' sheet row data.
+    :param parameters: The parsed parameters from the row data.
+    :param appearance: The 'appearance' value from the row data.
+    :param choices: The choices data as `{list_name: [choice_items[options], ...]}`.
+    :return: The updated row.
+    """
+    """
     Returns a new row that includes the Range parameters start, end and step.
 
     Raises PyXFormError when invalid range parameters are used.
@@ -167,8 +177,8 @@ def process_range_question_type(
         i is not None and not i == i.to_integral_value()
         for i in (start, end, step, tick_interval, placeholder)
     ):
-        row["bind"] = row.get("bind", {})
-        row["bind"].update({"type": "decimal"})
+        row[co.BIND] = row.get(co.BIND, {})
+        row[co.BIND][co.TYPE] = "decimal"
 
     row[co.CONTROL] = row.get(co.CONTROL, {})
     row[co.CONTROL].update(parameters)

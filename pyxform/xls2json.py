@@ -456,7 +456,7 @@ def workbook_to_json(
     element_names = Counter()
     trigger_references: list[tuple[str, int]] = []
     geo_references: list[tuple[str, int]] = []
-    instance_sources: set[str] = set()
+    secondary_instances: set[str] = set()
     repeat_names: set[str] = set()
     entity_references_by_question = {}
 
@@ -886,7 +886,7 @@ def workbook_to_json(
         # Assuming a question is anything not processed above as a loop/repeat/group.
         question_names.add(question_name)
         if row[constants.TYPE] in constants.EXTERNAL_INSTANCE_TYPES:
-            instance_sources.add(os.path.splitext(question_name)[0])
+            secondary_instances.add(os.path.splitext(question_name)[0])
 
         # Try to parse question as a select:
         select_parse = RE_SELECT.search(question_type)
@@ -904,7 +904,6 @@ def workbook_to_json(
                     )
                 list_name = parse_dict[constants.LIST_NAME_U]
                 instance_name, file_extension = os.path.splitext(list_name)
-                instance_sources.add(instance_name)
 
                 if select_type == constants.SELECT_ONE_EXTERNAL:
                     if not external_choices:
@@ -924,6 +923,9 @@ def workbook_to_json(
                             + "List name not in external choices sheet: "
                             + list_name
                         )
+                else:
+                    secondary_instances.add(instance_name)
+
                 select_from_file.validate_list_name_extension(
                     select_command=parse_dict["select_command"],
                     list_name=list_name,
@@ -1320,11 +1322,11 @@ def workbook_to_json(
         e.context.update(sheet="survey", column="trigger")
         raise
     qt_geo.validate_parameter_reference_geometry(
-        referrers=geo_references,
-        instance_sources=instance_sources,
-        repeats=repeat_names,
+        geo_references=geo_references,
+        secondary_instances=secondary_instances,
+        repeat_names=repeat_names,
         choices=choices,
-        entities=entity_declarations,
+        entity_declarations=entity_declarations,
     )
 
     if len(stack) > 1:

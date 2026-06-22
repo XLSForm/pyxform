@@ -16,36 +16,47 @@ def validate_parameter_incremental(value: str) -> None:
     """For geoshape and geotrace, the 'incremental' parameter can only resolve to 'true'."""
     incremental = aliases.yes_no.get(value, None)
     if incremental is None or not incremental:
-        raise PyXFormError(
-            code=ErrorCode.SURVEY_003,
-        )
+        raise PyXFormError(code=ErrorCode.SURVEY_003)
 
 
 def validate_parameter_reference_geometry(
-    referrers: Iterable[Iterable[str | None, int]],
-    instance_sources: set[str],
-    repeats: set[str],
+    geo_references: Iterable[Iterable[str, int]],
+    secondary_instances: set[str],
+    repeat_names: set[str],
     choices: dict[str, list[dict]],
-    entities: dict[str, dict[str, Any]] | None = None,
+    entity_declarations: dict[str, dict[str, Any]] | None = None,
 ) -> None:
-    """Check that the reference-geometry name can be resolved to valid nodeset target."""
-    for target, row_num in referrers:
+    """
+    Check that the reference-geometry name can be resolved to valid nodeset target.
+
+    Does not support secondary instances that would be generated solely by:
+    - pulldata() calls
+    - search() calls
+    - last-saved usages in variables
+
+    :param geo_references: Pairs of (target, source row_num) for reference_geometry usage.
+    :param secondary_instances: The names of valid secondary instances in the form.
+    :param repeat_names: Names of repeat groups in the form.
+    :param choices: The choices data as `{list_name: [choice_items[options], ...]}`.
+    :param entity_declarations: The entities data `{list_name: declaration]}`.
+    """
+    for target, row_num in geo_references:
         if (
-            target in instance_sources
+            target in secondary_instances
             or target in choices
-            or (entities and target in entities)
+            or (entity_declarations and target in entity_declarations)
         ):
             continue
         # Separated this part of the check since it requires slower parsing.
         elif is_pyxform_reference_candidate(target):
             try:
                 refs = parse_pyxform_references(target, match_limit=1, match_full=True)
-                if refs and refs[0].name in repeats:
+                if refs and refs[0].name in repeat_names:
                     continue
-            except PyXFormError as e:
+            except PyXFormError as err:
                 raise PyXFormError(
                     code=ErrorCode.SURVEY_006, context={"row": row_num}
-                ) from e
+                ) from err
 
         raise PyXFormError(code=ErrorCode.SURVEY_006, context={"row": row_num})
 
@@ -56,10 +67,17 @@ def process_geo_question_type(
     parameters: PARAMETERS_TYPE,
     geo_references: list[tuple[str, int]],
 ) -> dict[str, Any]:
-    new_dict = row.copy()
-    new_dict["control"] = new_dict.get("control", {})
+    """
+    Amend the row data with processed parameters or other logic specific to the question type.
+
+    :param row_number: The row position in the 'survey' sheet.
+    :param row: The 'survey' sheet row data.
+    :param parameters: The parsed parameters from the row data.
+    :param geo_references: Pairs of (target, source row_num) for reference_geometry usage.
+    :return: The updated row. Also appends to geo_references.
+    """
+    row[co.CONTROL] = row.get(co.CONTROL, {})
     question_type = row.get(co.TYPE)
-    new_dict[co.PARAMETERS] = parameters
 
     if question_type == "geopoint":
         qt_params = co.ParametersGeoPoint
@@ -72,28 +90,24 @@ def process_geo_question_type(
         if qt_params.CAPTURE_ACCURACY in parameters:
             try:
                 float(parameters[qt_params.CAPTURE_ACCURACY])
-                new_dict["control"].update(
-                    {"accuracyThreshold": parameters[qt_params.CAPTURE_ACCURACY]}
-                )
-            except ValueError as ca_err:
+                row[co.CONTROL]["accuracyThreshold"] = parameters[
+                    qt_params.CAPTURE_ACCURACY
+                ]
+            except ValueError as err:
                 raise PyXFormError(
-                    f"Parameter {qt_params.CAPTURE_ACCURACY.value} must have a numeric value"
-                ) from ca_err
+                    code=ErrorCode.SURVEY_007, context={"row": row_number}
+                ) from err
 
         if qt_params.WARNING_ACCURACY in parameters:
             try:
                 float(parameters[qt_params.WARNING_ACCURACY])
-                new_dict["control"].update(
-                    {
-                        "unacceptableAccuracyThreshold": parameters[
-                            qt_params.WARNING_ACCURACY
-                        ]
-                    }
-                )
-            except ValueError as wa_err:
+                row[co.CONTROL]["unacceptableAccuracyThreshold"] = parameters[
+                    qt_params.WARNING_ACCURACY
+                ]
+            except ValueError as err:
                 raise PyXFormError(
-                    f"Parameter {qt_params.WARNING_ACCURACY.value} must have a numeric value"
-                ) from wa_err
+                    code=ErrorCode.SURVEY_008, context={"row": row_number}
+                ) from err
 
     else:
         qt_params = co.ParametersGeo
@@ -113,26 +127,20 @@ def process_geo_question_type(
                 )
                 raise
             else:
-                new_dict["control"][qt_params.INCREMENTAL.value] = "true"
+                row[co.CONTROL][qt_params.INCREMENTAL.value] = "true"
 
     if qt_params.ALLOW_MOCK_ACCURACY in parameters:
         if parameters[qt_params.ALLOW_MOCK_ACCURACY] not in {"true", "false"}:
-            raise PyXFormError(
-                f"Invalid value for {qt_params.ALLOW_MOCK_ACCURACY.value}."
-            )
+            raise PyXFormError(code=ErrorCode.SURVEY_009, context={"row": row_number})
 
-        new_dict["bind"] = new_dict.get("bind", {})
-        new_dict["bind"].update(
-            {
-                f"odk:{qt_params.ALLOW_MOCK_ACCURACY.value}": parameters[
-                    qt_params.ALLOW_MOCK_ACCURACY
-                ]
-            }
-        )
+        row[co.BIND] = row.get(co.BIND, {})
+        row[co.BIND][f"odk:{qt_params.ALLOW_MOCK_ACCURACY.value}"] = parameters[
+            qt_params.ALLOW_MOCK_ACCURACY
+        ]
 
     if qt_params.REFERENCE_GEOMETRY in parameters:
         value = parameters[qt_params.REFERENCE_GEOMETRY]
         geo_references.append((value, row_number))
-        new_dict[co.ITEMSET] = value
+        row[co.ITEMSET] = value
 
-    return new_dict
+    return row

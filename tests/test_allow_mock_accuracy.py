@@ -95,7 +95,7 @@ class GeoParameterTest(PyxformTestCase):
             |        | geopoint  | geopoint    | Geopoint | allow-mock-accuracy=foo |
             """,
             errored=True,
-            error__contains=["Invalid value for allow-mock-accuracy."],
+            error__contains=[ErrorCode.SURVEY_009.value.format(row=2)],
         )
 
         self.assertPyxformXform(
@@ -106,7 +106,7 @@ class GeoParameterTest(PyxformTestCase):
             |        | geoshape  | geoshape    | Geoshape | allow-mock-accuracy=foo |
             """,
             errored=True,
-            error__contains=["Invalid value for allow-mock-accuracy."],
+            error__contains=[ErrorCode.SURVEY_009.value.format(row=2)],
         )
 
         self.assertPyxformXform(
@@ -117,7 +117,7 @@ class GeoParameterTest(PyxformTestCase):
             |        | geotrace  | geotrace    | Geotrace | allow-mock-accuracy=foo |
             """,
             errored=True,
-            error__contains=["Invalid value for allow-mock-accuracy."],
+            error__contains=[ErrorCode.SURVEY_009.value.format(row=2)],
         )
 
     def test_numeric_geopoint_capture_accuracy_is_passed_through(self):
@@ -142,7 +142,7 @@ class GeoParameterTest(PyxformTestCase):
             |        | geopoint  | geopoint    | Geopoint | capture-accuracy=foo     |
             """,
             errored=True,
-            error__contains=["Parameter capture-accuracy must have a numeric value"],
+            error__contains=[ErrorCode.SURVEY_007.value.format(row=2)],
         )
 
     def test_geopoint_warning_accuracy_is_passed_through(self):
@@ -167,7 +167,7 @@ class GeoParameterTest(PyxformTestCase):
             |        | geopoint  | geopoint    | Geopoint | warning-accuracy=foo     |
             """,
             errored=True,
-            error__contains=["Parameter warning-accuracy must have a numeric value"],
+            error__contains=[ErrorCode.SURVEY_008.value.format(row=2)],
         )
 
     def test_geopoint_parameters_combine(self):
@@ -197,7 +197,7 @@ class GeoParameterTest(PyxformTestCase):
                 ErrorCode.SURVEY_005.value.format(
                     row=2,
                     accepted=co.ParametersGeo.value_str_sorted(),
-                    rejected="warning-accuracy",
+                    rejected=co.ParametersGeoPoint.WARNING_ACCURACY.value,
                 ),
             ],
         )
@@ -215,7 +215,7 @@ class GeoParameterTest(PyxformTestCase):
                 ErrorCode.SURVEY_005.value.format(
                     row=2,
                     accepted=co.ParametersGeo.value_str_sorted(),
-                    rejected="warning-accuracy",
+                    rejected=co.ParametersGeoPoint.WARNING_ACCURACY.value,
                 ),
             ],
         )
