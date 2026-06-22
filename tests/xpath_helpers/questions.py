@@ -22,7 +22,7 @@ class XPathHelper:
 
     @staticmethod
     def model_instance_bind(q_name: str, _type: str) -> str:
-        """Model instance contains the question item."""
+        """Model instance contains a binding for the question item."""
         return rf"""
           /h:html/h:head/x:model/x:bind[
             @nodeset='/test_name/{q_name}'
@@ -101,6 +101,27 @@ class XPathHelper:
         return f"""
         /h:html/h:body/x:{q_type}[@ref='/test_name/{q_name}']
           /x:label[@ref="jr:itext('/test_name/{q_name}:label')" and not(text())]
+        """
+
+    @staticmethod
+    def body_itemset(
+        q_name: str,
+        nodeset: str,
+        q_type: str = "input",
+        value_ref: str = "name",
+        label_ref: str = "label",
+        extra_q_assertions: str = "",
+    ) -> str:
+        """Body has a direct child control with an itemset, and no inline items."""
+        return rf"""
+        /h:html/h:body/x:{q_type}[
+          @ref="/test_name/{q_name}"
+          and ./x:itemset[@nodeset="{nodeset}"]
+          and ./x:itemset/x:value[@ref="{value_ref}"]
+          and ./x:itemset/x:label[@ref="{label_ref}"]
+          and not(./x:item)
+          {extra_q_assertions}
+        ]
         """
 
     @staticmethod
@@ -184,21 +205,29 @@ class XPathHelper:
         """
 
     @staticmethod
-    def body_range(qname: str, attrs: dict[str, str] | None = None) -> str:
+    def body_range(
+        qname: str,
+        attrs: dict[str, str] | None = None,
+        cname: str | None = None,
+        translated: bool = False,
+    ) -> str:
         parameters = QUESTION_TYPE_DICT["range"]["parameters"].copy()
         if attrs is not None:
             parameters.update(attrs)
-        attrs = " and ".join(f"@{k}='{v}'" for k, v in parameters.items())
-
+        attrs = "\n  and ".join(f"@{k}='{v}'" for k, v in parameters.items())
+        itemset = ""
+        itemset_label = ""
+        if cname is not None:
+            itemset = f"""\n  and ./x:itemset[@nodeset="instance('{cname}')/root/item"]"""
+            clabel = "label"
+            if translated:
+                clabel = "jr:itext(itextId)"
+            itemset_label = f"""\n  and ./x:itemset/x:label[@ref='{clabel}']"""
         return f"""
         /h:html/h:body/x:range[
-          @ref='/test_name/{qname}' and {attrs}
+          @ref='/test_name/{qname}' and {attrs} {itemset} {itemset_label}
         ]
         """
-
-    @staticmethod
-    def range_itemset(qname: str, labelset: str) -> str:
-        return f"/h:html/h:body/x:range[@ref='/test_name/{qname}']/x:itemset[@nodeset=\"instance('{labelset}')/root/item\"]"
 
 
 xpq = XPathHelper()

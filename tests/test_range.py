@@ -30,8 +30,9 @@ Each test should reference one (or more) requirements from these lists.
 - Behaviour
   - RB001: non-appearance parameters must be control attributes in the default xforms namespace.
   - RB002: appearance parameters must be control attributes in the 'odk' namespace.
-  - RB003: the default data type must be 'integer'.
-  - RB004: if the range has values that are decimals the data type must be 'decimal'.
+  - RB003: the default bind data type must be 'integer'.
+  - RB004: if the range has values that are decimals the bind data type must be 'decimal'.
+  - RB005: if the tick_labelset is for a translated list, the itemset label ref must use itext.
 """
 
 from pyxform import constants as co
@@ -105,8 +106,8 @@ class TestRangeParsing(PyxformTestCase):
                         "odk:tick-interval": "2",
                         "odk:placeholder": "6",
                     },
+                    "c1",
                 ),
-                xpq.range_itemset("q1", "c1"),
             ],
         )
 
@@ -135,8 +136,8 @@ class TestRangeParsing(PyxformTestCase):
                         "odk:tick-interval": "2",
                         "odk:placeholder": "6",
                     },
+                    "c1",
                 ),
-                xpq.range_itemset("q1", "c1"),
             ],
         )
 
@@ -504,7 +505,7 @@ class TestRangeParsing(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            xml__xpath_match=[xpq.body_range("q1"), xpq.range_itemset("q1", "c1")],
+            xml__xpath_match=[xpq.body_range("q1", cname="c1")],
         )
 
     def test_tick_labelset_empty__error(self):
@@ -562,8 +563,7 @@ class TestRangeParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpq.body_range("q1", {"appearance": "no-ticks"}),
-                xpq.range_itemset("q1", "c1"),
+                xpq.body_range("q1", {"appearance": "no-ticks"}, "c1"),
             ],
         )
 
@@ -608,8 +608,7 @@ class TestRangeParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             xml__xpath_match=[
-                xpq.body_range("q1", {"appearance": "no-ticks"}),
-                xpq.range_itemset("q1", "c1"),
+                xpq.body_range("q1", {"appearance": "no-ticks"}, "c1"),
             ],
         )
 
@@ -724,7 +723,7 @@ class TestRangeParsing(PyxformTestCase):
                     md=md.format(value=value),
                     xml__xpath_match=[
                         xpq.model_instance_bind("q1", "int"),
-                        xpq.range_itemset("q1", "c1"),
+                        xpq.body_range("q1", cname="c1"),
                     ],
                 )
 
@@ -795,8 +794,8 @@ class TestRangeParsing(PyxformTestCase):
                                 "end": "7",
                                 "step": "1",
                             },
+                            "c1",
                         ),
-                        xpq.range_itemset("q1", "c1"),
                     ],
                 )
 
@@ -825,8 +824,8 @@ class TestRangeParsing(PyxformTestCase):
                                 "end": "3",
                                 "step": "2",
                             },
+                            "c1",
                         ),
-                        xpq.range_itemset("q1", "c1"),
                     ],
                 )
 
@@ -880,8 +879,8 @@ class TestRangeParsing(PyxformTestCase):
                                 "end": "7",
                                 "step": "1",
                             },
+                            "c1",
                         ),
-                        xpq.range_itemset("q1", "c1"),
                     ],
                 )
 
@@ -910,8 +909,8 @@ class TestRangeParsing(PyxformTestCase):
                         "step": "2",
                         "odk:tick-interval": "4",
                     },
+                    "c1",
                 ),
-                xpq.range_itemset("q1", "c1"),
             ],
         )
 
@@ -964,13 +963,13 @@ class TestRangeOutput(PyxformTestCase):
         # RB001 RB002 RB003
         md = """
         | survey |
-        | | type  | name | label | parameters      |
+        | | type  | name | label | parameters                                                           |
         | | range | q1   | Q1    | start=3 end=13 step=2 tick_interval=2 placeholder=7 tick_labelset=c1 |
 
         | choices |
         | | list_name | name | label |
-        | | c1        | 5   | N1    |
-        | | c1        | 11  | N2    |
+        | | c1        | 5    | N1    |
+        | | c1        | 11   | N2    |
         """
         self.assertPyxformXform(
             md=md,
@@ -986,8 +985,8 @@ class TestRangeOutput(PyxformTestCase):
                         "odk:tick-interval": "2",
                         "odk:placeholder": "7",
                     },
+                    "c1",
                 ),
-                xpq.range_itemset("q1", "c1"),
             ],
         )
 
@@ -996,7 +995,7 @@ class TestRangeOutput(PyxformTestCase):
         # RB001 RB002 RB004
         md = """
         | survey |
-        | | type  | name | label | parameters                                                   |
+        | | type  | name | label | parameters                                                                    |
         | | range | q1   | Q1    | start=0.5 end=5.0 step=0.5 tick_interval=1.5 placeholder=2.5 tick_labelset=c1 |
 
         | choices |
@@ -1018,7 +1017,40 @@ class TestRangeOutput(PyxformTestCase):
                         "odk:tick-interval": "1.5",
                         "odk:placeholder": "2.5",
                     },
+                    "c1",
                 ),
-                xpq.range_itemset("q1", "c1"),
+            ],
+        )
+
+    def test_parameters__numeric__int__translated(self):
+        """Should find that the itemset label ref uses jr:itext for a translated tick_labelset."""
+        # RB001 RB003 RB005
+        md = """
+        | survey |
+        | | type  | name | label | parameters                                                           |
+        | | range | q1   | Q1    | start=3 end=13 step=2 tick_interval=2 placeholder=7 tick_labelset=c1 |
+
+        | choices |
+        | | list_name | name | label | label::French(fr) |
+        | | c1        | 5    | N1    | F1                |
+        | | c1        | 11   | N2    | F2                |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "int"),
+                xpq.body_range(
+                    "q1",
+                    {
+                        "start": "3",
+                        "end": "13",
+                        "step": "2",
+                        "odk:tick-interval": "2",
+                        "odk:placeholder": "7",
+                    },
+                    "c1",
+                    translated=True,
+                ),
             ],
         )

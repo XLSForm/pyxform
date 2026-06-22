@@ -1,4 +1,4 @@
-from pyxform import constants
+from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
 
 
@@ -8,7 +8,7 @@ def validate_headers(
     def check():
         for header in headers:
             header = header[0]
-            if header != constants.LIST_NAME_S and (" " in header or header == ""):
+            if header != co.LIST_NAME_S and (" " in header or header == ""):
                 warnings.append(ErrorCode.HEADER_004.value.format(column=header))
                 yield header
 
@@ -21,13 +21,13 @@ def validate_choice_list(
     seen_options = set()
     duplicate_errors = []
     for option in options:
-        if constants.NAME not in option:
+        if co.NAME not in option:
             raise PyXFormError(ErrorCode.NAMES_006.value.format(row=option["__row"]))
-        elif constants.LABEL not in option:
+        elif co.LABEL not in option:
             warnings.append(ErrorCode.LABEL_001.value.format(row=option["__row"]))
 
         if not allow_duplicates:
-            name = option[constants.NAME]
+            name = option[co.NAME]
             if name in seen_options:
                 duplicate_errors.append(
                     ErrorCode.NAMES_007.value.format(row=option["__row"])

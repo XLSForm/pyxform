@@ -136,6 +136,7 @@ AUDIO_QUALITY_NORMAL = "normal"
 AUDIO_QUALITY_EXTERNAL = "external"
 
 EXTERNAL_INSTANCE_EXTENSIONS = {".xml", ".csv", ".geojson"}
+EXTERNAL_INSTANCE_TYPES = {"csv-external", "xml-external"}
 
 DEFAULT_ITEMSET_LABEL_REF = "label"
 DEFAULT_ITEMSET_VALUE_REF = "name"
@@ -194,11 +195,13 @@ class ParametersAudit(StrEnum):
 class ParametersGeo(StrEnum):
     ALLOW_MOCK_ACCURACY = "allow-mock-accuracy"
     INCREMENTAL = "incremental"
+    REFERENCE_GEOMETRY = "reference-geometry"
 
 
 class ParametersGeoPoint(StrEnum):
     ALLOW_MOCK_ACCURACY = "allow-mock-accuracy"
     CAPTURE_ACCURACY = "capture-accuracy"
+    REFERENCE_GEOMETRY = "reference-geometry"
     WARNING_ACCURACY = "warning-accuracy"
 
 

@@ -13,6 +13,7 @@ from pyxform.entities.entity_declaration import EntityDeclaration
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.question import (
+    GeoQuestion,
     InputQuestion,
     MultipleChoiceQuestion,
     Option,
@@ -39,6 +40,11 @@ QUESTION_CLASSES = {
     "select1": MultipleChoiceQuestion,
     "trigger": TriggerQuestion,
     "upload": UploadQuestion,
+    "__by_type__": {
+        "geopoint": GeoQuestion,
+        "geoshape": GeoQuestion,
+        "geotrace": GeoQuestion,
+    },
 }
 SECTION_CLASSES = {
     const.GROUP: GroupedSection,
@@ -104,7 +110,7 @@ class SurveyElementBuilder:
             d = self._sections[section_name]
             full_survey = self.create_survey_element_from_dict(d=d, choices=choices)
             return full_survey.children
-        elif d[const.TYPE] in {"xml-external", "csv-external"}:
+        elif d[const.TYPE] in const.EXTERNAL_INSTANCE_TYPES:
             return ExternalInstance(**d)
         elif d[const.TYPE] == "entity":
             return EntityDeclaration(**d)
@@ -157,7 +163,9 @@ class SurveyElementBuilder:
 
         if question_class:
             if choices:
-                d_choices = d.get(const.CHOICES, d.get(const.CHILDREN))
+                d_choices = choices.get(
+                    d.get(const.ITEMSET), d.get(const.CHOICES, d.get(const.CHILDREN))
+                )
                 if d_choices:
                     return question_class(
                         question_type_dictionary=question_type_dictionary,
@@ -166,7 +174,7 @@ class SurveyElementBuilder:
                             for k, v in d.items()
                             if k not in {const.CHOICES, const.CHILDREN}
                         },
-                        choices=choices.get(d[const.ITEMSET], d_choices),
+                        choices=d_choices,
                     )
 
             return question_class(question_type_dictionary=question_type_dictionary, **d)
@@ -196,6 +204,10 @@ class SurveyElementBuilder:
         and find what class it maps to going through
         type_dictionary -> QUESTION_CLASSES
         """
+        by_type = QUESTION_CLASSES["__by_type__"].get(question_type_str, None)
+        if by_type is not None:
+            return by_type
+
         control_tag = ""
         question_type = question_type_dictionary.get(question_type_str)
         if question_type:

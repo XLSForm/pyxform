@@ -521,6 +521,36 @@ class ErrorCode(Enum):
             "The following are invalid parameter key(s): '{rejected}'."
         ),
     )
+    SURVEY_006: Detail = Detail(
+        name="Survey sheet - invalid geo parameter 'reference-geometry'",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "The 'reference-geometry' parameter must either match a secondary instance "
+            "name (a choices list_name, an entities list_name, or the base name of an "
+            "attached file), or be a reference variable containing the name of a repeat."
+        ),
+    )
+    SURVEY_007: Detail = Detail(
+        name="Survey sheet - invalid geo parameter 'capture-accuracy'",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "The 'capture-accuracy' parameter must have a numeric value."
+        ),
+    )
+    SURVEY_008: Detail = Detail(
+        name="Survey sheet - invalid geo parameter 'warning-accuracy'",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "The 'warning-accuracy' parameter must have a numeric value."
+        ),
+    )
+    SURVEY_009: Detail = Detail(
+        name="Survey sheet - invalid geo parameter 'allow-mock-accuracy'",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
+            "The 'allow-mock-accuracy' parameter must be either 'true' or 'false'."
+        ),
+    )
 
 
 class PyXFormError(Exception):

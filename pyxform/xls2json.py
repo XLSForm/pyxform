@@ -43,6 +43,8 @@ from pyxform.validators.pyxform.pyxform_reference import (
     is_pyxform_reference,
     validate_pyxform_references_in_workbook,
 )
+from pyxform.validators.pyxform.question_types import geo as qt_geo
+from pyxform.validators.pyxform.question_types import range as qt_range
 from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
 from pyxform.xls2json_backends import DefinitionData, get_xlsform
@@ -453,7 +455,9 @@ def workbook_to_json(
     question_names = set()
     element_names = Counter()
     trigger_references: list[tuple[str, int]] = []
-    repeat_names = set()
+    geo_references: list[tuple[str, int]] = []
+    secondary_instances: set[str] = set()
+    repeat_names: set[str] = set()
     entity_references_by_question = {}
 
     # row by row, validate questions, throwing errors and adding warnings where needed.
@@ -881,6 +885,8 @@ def workbook_to_json(
 
         # Assuming a question is anything not processed above as a loop/repeat/group.
         question_names.add(question_name)
+        if row[constants.TYPE] in constants.EXTERNAL_INSTANCE_TYPES:
+            secondary_instances.add(os.path.splitext(question_name)[0])
 
         # Try to parse question as a select:
         select_parse = RE_SELECT.search(question_type)
@@ -897,7 +903,8 @@ def workbook_to_json(
                         + " select one external is only meant for filtered selects."
                     )
                 list_name = parse_dict[constants.LIST_NAME_U]
-                file_extension = os.path.splitext(list_name)[1]
+                instance_name, file_extension = os.path.splitext(list_name)
+
                 if select_type == constants.SELECT_ONE_EXTERNAL:
                     if not external_choices:
                         k = constants.EXTERNAL_CHOICES
@@ -916,6 +923,9 @@ def workbook_to_json(
                             + "List name not in external choices sheet: "
                             + list_name
                         )
+                else:
+                    secondary_instances.add(instance_name)
+
                 select_from_file.validate_list_name_extension(
                     select_command=parse_dict["select_command"],
                     list_name=list_name,
@@ -1137,27 +1147,14 @@ def workbook_to_json(
 
             continue
 
-        # range question_type
         if question_type == "range":
-            tick_labelset = parameters.get(constants.ParametersRange.TICK_LABELSET.value)
-
-            new_dict = qt.process_range_question_type(
+            new_dict = qt_range.process_range_question_type(
                 row_number=row_number,
                 row=row,
                 parameters=parameters,
                 appearance=appearance,
                 choices=choices,
             )
-
-            if tick_labelset is not None:
-                add_choices_info_to_question(
-                    question=new_dict,
-                    list_name=tick_labelset,
-                    choices=choices,
-                    choice_filter=None,
-                    file_extension=None,
-                )
-
             parent_children_array.append(new_dict)
             continue
 
@@ -1290,80 +1287,12 @@ def workbook_to_json(
             continue
 
         if question_type in {"geopoint", "geoshape", "geotrace"}:
-            new_dict = row.copy()
-            new_dict["control"] = new_dict.get("control", {})
-
-            if question_type == "geopoint":
-                qt_params = constants.ParametersGeoPoint
-                pv.validate(
-                    parameters=parameters,
-                    accepted=qt_params,
-                    row_number=row_number,
-                )
-
-                if qt_params.CAPTURE_ACCURACY in parameters:
-                    try:
-                        float(parameters[qt_params.CAPTURE_ACCURACY])
-                        new_dict["control"].update(
-                            {"accuracyThreshold": parameters[qt_params.CAPTURE_ACCURACY]}
-                        )
-                    except ValueError as ca_err:
-                        raise PyXFormError(
-                            f"Parameter {qt_params.CAPTURE_ACCURACY.value} must have a numeric value"
-                        ) from ca_err
-
-                if qt_params.WARNING_ACCURACY in parameters:
-                    try:
-                        float(parameters[qt_params.WARNING_ACCURACY])
-                        new_dict["control"].update(
-                            {
-                                "unacceptableAccuracyThreshold": parameters[
-                                    qt_params.WARNING_ACCURACY
-                                ]
-                            }
-                        )
-                    except ValueError as wa_err:
-                        raise PyXFormError(
-                            f"Parameter {qt_params.WARNING_ACCURACY.value} must have a numeric value"
-                        ) from wa_err
-
-            else:
-                qt_params = constants.ParametersGeo
-                pv.validate(
-                    parameters=parameters,
-                    accepted=qt_params,
-                    row_number=row_number,
-                )
-                if qt_params.INCREMENTAL in parameters:
-                    try:
-                        qt.validate_geo_parameter_incremental(
-                            value=parameters[qt_params.INCREMENTAL]
-                        )
-                    except PyXFormError as e:
-                        e.context.update(
-                            sheet=constants.SURVEY,
-                            column=constants.PARAMETERS,
-                            row=row_number,
-                        )
-                        raise
-                    else:
-                        new_dict["control"][qt_params.INCREMENTAL.value] = "true"
-
-            if qt_params.ALLOW_MOCK_ACCURACY in parameters:
-                if parameters[qt_params.ALLOW_MOCK_ACCURACY] not in {"true", "false"}:
-                    raise PyXFormError(
-                        f"Invalid value for {qt_params.ALLOW_MOCK_ACCURACY.value}."
-                    )
-
-                new_dict["bind"] = new_dict.get("bind", {})
-                new_dict["bind"].update(
-                    {
-                        f"odk:{qt_params.ALLOW_MOCK_ACCURACY.value}": parameters[
-                            qt_params.ALLOW_MOCK_ACCURACY
-                        ]
-                    }
-                )
-
+            new_dict = qt_geo.process_geo_question_type(
+                row_number=row_number,
+                row=row,
+                parameters=parameters,
+                geo_references=geo_references,
+            )
             parent_children_array.append(new_dict)
             continue
         # TODO: Consider adding some question_type validation here.
@@ -1392,6 +1321,13 @@ def workbook_to_json(
     except PyXFormError as e:
         e.context.update(sheet="survey", column="trigger")
         raise
+    qt_geo.validate_parameter_reference_geometry(
+        geo_references=geo_references,
+        secondary_instances=secondary_instances,
+        repeat_names=repeat_names,
+        choices=choices,
+        entity_declarations=entity_declarations,
+    )
 
     if len(stack) > 1:
         raise PyXFormError(
