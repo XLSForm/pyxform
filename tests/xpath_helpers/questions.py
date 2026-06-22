@@ -22,7 +22,7 @@ class XPathHelper:
 
     @staticmethod
     def model_instance_bind(q_name: str, _type: str) -> str:
-        """Model instance contains the question item."""
+        """Model instance contains a binding for the question item."""
         return rf"""
           /h:html/h:head/x:model/x:bind[
             @nodeset='/test_name/{q_name}'
