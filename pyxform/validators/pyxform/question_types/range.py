@@ -34,7 +34,8 @@ def process_range_question_type(
     pv.validate(parameters=parameters, accepted=co.ParametersRange, row_number=row_number)
     if (
         appearance
-        and appearance not in {"vertical", "no-ticks"}
+        and "vertical" not in appearance
+        and "no-ticks" not in appearance
         and any(
             k in parameters
             for k in (
@@ -45,7 +46,7 @@ def process_range_question_type(
         )
     ):
         raise PyXFormError(ErrorCode.RANGE_008.value.format(row=row_number))
-    no_ticks_appearance = appearance and appearance == "no-ticks"
+    no_ticks_appearance = appearance and "no-ticks" in appearance
 
     defaults = QUESTION_TYPE_DICT["range"][co.PARAMETERS]
     # set defaults

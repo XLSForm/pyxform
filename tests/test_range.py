@@ -672,7 +672,7 @@ class TestRangeParsing(PyxformTestCase):
             ("placeholder=3", {"odk:placeholder": "3"}),
             ("tick_labelset=c1", {}),
         )
-        cases = ("", "vertical", "no-ticks")
+        cases = ("", "vertical", "no-ticks", "no-ticks vertical", "vertical no-ticks")
         for param, attr in params:
             for appearance in cases:
                 with self.subTest((param, attr, appearance)):
