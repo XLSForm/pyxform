@@ -448,8 +448,8 @@ class ErrorCode(Enum):
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
             "For the 'range' question type, the parameters 'tick_interval', 'placeholder', "
-            "and 'tick_labelset' are only supported for the appearances 'vertical', 'no-ticks' "
-            "and the default (empty) horizontal."
+            "and 'tick_labelset' are only supported for the appearances 'vertical', 'no-ticks', "
+            "'vertical no-ticks', and the default (empty) horizontal."
         ),
     )
     RANGE_009 = Detail(

@@ -26,15 +26,11 @@ def process_range_question_type(
     :param choices: The choices data as `{list_name: [choice_items[options], ...]}`.
     :return: The updated row.
     """
-    """
-    Returns a new row that includes the Range parameters start, end and step.
-
-    Raises PyXFormError when invalid range parameters are used.
-    """
     pv.validate(parameters=parameters, accepted=co.ParametersRange, row_number=row_number)
     if (
         appearance
-        and appearance not in {"vertical", "no-ticks"}
+        and "vertical" not in appearance
+        and "no-ticks" not in appearance
         and any(
             k in parameters
             for k in (
@@ -45,7 +41,6 @@ def process_range_question_type(
         )
     ):
         raise PyXFormError(ErrorCode.RANGE_008.value.format(row=row_number))
-    no_ticks_appearance = appearance and appearance == "no-ticks"
 
     defaults = QUESTION_TYPE_DICT["range"][co.PARAMETERS]
     # set defaults
@@ -136,6 +131,7 @@ def process_range_question_type(
         if tick_list is None:
             raise PyXFormError(ErrorCode.RANGE_006.value.format(row=row_number))
 
+        no_ticks_appearance = appearance and "no-ticks" in appearance
         no_ticks_labels = set()
         for item in tick_list:
             errored = False

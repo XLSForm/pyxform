@@ -9,7 +9,7 @@ Each test should reference one (or more) requirements from these lists.
   - RC003: parameter names may in lower case or in mixed case.
   - RC004: parameter names and values must be separated by a single equals sign.
   - RC005: parameter values must be numeric (or for 'tick_labelset', the choices).
-  - RC006: appearance parameters are only valid with default, 'vertical' or 'no-ticks' appearance.
+  - RC006: appearance parameters are only valid with default, 'vertical' or 'no-ticks' (or both) appearance.
   - RC007: parameters may specify ranges that are positive, negative, ascending, or descending.
   - parameter 'step':
     - RS001: must not be zero.
@@ -672,7 +672,7 @@ class TestRangeParsing(PyxformTestCase):
             ("placeholder=3", {"odk:placeholder": "3"}),
             ("tick_labelset=c1", {}),
         )
-        cases = ("", "vertical", "no-ticks")
+        cases = ("", "vertical", "no-ticks", "no-ticks vertical", "vertical no-ticks")
         for param, attr in params:
             for appearance in cases:
                 with self.subTest((param, attr, appearance)):
