@@ -522,15 +522,15 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
                 )
 
     def test_pyxform_reference__ok(self):
-        """Should find that a child itemset is emitted, with reference-specific value/label."""
+        """Should find that a child itemset is emitted, with geometry value/label."""
         # RG005 RG007 RG010 RG016
         md = """
         | survey |
-        | | type         | name | label | parameters                 |
-        | | begin_repeat | r1   | R1    |                            |
-        | | text         | q1   | Q1    |                            |
-        | | end_repeat   | r1   |       |                            |
-        | | {type}       | q2   | Q2    | reference-geometry=${{r1}} |
+        | | type         | name     | label | parameters                 |
+        | | begin_repeat | r1       | R1    |                            |
+        | | text         | geometry | Q1    |                            |
+        | | end_repeat   | r1       |       |                            |
+        | | {type}       | q2       | Q2    | reference-geometry=${{r1}} |
         """
         for t in GEO_TYPES:
             with self.subTest(t):
@@ -541,9 +541,9 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
                         xpq.model_instance_bind("q2", t),
                         xpq.body_itemset(
                             q_name="q2",
-                            nodeset="/test_name[./r1 != '']",
-                            value_ref="r1",
-                            label_ref="r1",
+                            nodeset="/test_name/r1[./geometry != '']",
+                            value_ref="geometry",
+                            label_ref="geometry",
                             extra_q_assertions="and not(@reference-geometry)",
                         ),
                     ],
@@ -554,11 +554,12 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
         # RG005 RG007 RG010 RG014 RG016
         md = """
         | survey |
-        | | type         | name | label | parameters                 | choice_filter |
-        | | begin_repeat | r1   | R1    |                            |               |
-        | | text         | q1   | Q1    |                            |               |
-        | | end_repeat   | r1   |       |                            |               |
-        | | {type}       | q2   | Q2    | reference-geometry=${{r1}} | ${{q1}} = 1   |
+        | | type         | name     | label | parameters                 | choice_filter |
+        | | begin_repeat | r1       | R1    |                            |               |
+        | | geopoint     | geometry | Q1    |                            |               |
+        | | text         | q2       | Q2    |
+        | | end_repeat   | r1       |       |                            |               |
+        | | {type}       | q3       | Q3    | reference-geometry=${{r1}} | ${{q2}} = 1   |
         """
         for t in GEO_TYPES:
             with self.subTest(t):
@@ -566,12 +567,12 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
                     md=md.format(type=t),
                     xml__xpath_match=[
                         xpq.model_instance_item("r1[not(@jr:template)]"),
-                        xpq.model_instance_bind("q2", t),
+                        xpq.model_instance_bind("q3", t),
                         xpq.body_itemset(
-                            q_name="q2",
-                            nodeset="/test_name[ ./r1/q1  = 1]",
-                            value_ref="r1",
-                            label_ref="r1",
+                            q_name="q3",
+                            nodeset="/test_name/r1[ ./q2  = 1]",
+                            value_ref="geometry",
+                            label_ref="geometry",
                             extra_q_assertions="and not(@reference-geometry)",
                         ),
                     ],

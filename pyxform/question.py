@@ -668,6 +668,21 @@ class RangeQuestion(_SupportsItemset):
 
 
 class GeoQuestion(_SupportsItemset):
+    def _build_itemset_reference(
+        self, question: "Question", survey: "Survey"
+    ) -> ItemsetNode | None:
+        """Build a geo-specific itemset node using a reference to a repeat."""
+        if self.itemset_has_ref:
+            path = survey.insert_xpaths(
+                text=self.itemset, context=question, reference_parent=True
+            ).strip()
+            return ItemsetNode(
+                value_ref="geometry",
+                label_ref="geometry",
+                nodeset=path,
+                choice_filter="./geometry != ''",
+            )
+
     def build_xml(self, survey: "Survey"):
         result = self._build_xml(survey=survey)
 
