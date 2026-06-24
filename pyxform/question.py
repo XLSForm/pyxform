@@ -676,11 +676,17 @@ class GeoQuestion(_SupportsItemset):
             path = survey.insert_xpaths(
                 text=self.itemset, context=question, reference_parent=True
             ).strip()
+            # A default choice_filter is added here as a workaround for Collect appending
+            # an index predicate (e.g. "/data/r1[1]") to absolute references in a repeat
+            # context (the whole nodeset is desired for the user to choose from). Assumes
+            # that Collect will not alter or replace an existing predicate, and also that
+            # pyxform emits an absolute reference for this topology. See pyxform/#848.
+            choice_filter = "./geometry != ''"
             return ItemsetNode(
                 value_ref="geometry",
                 label_ref="geometry",
                 nodeset=path,
-                choice_filter="./geometry != ''",
+                choice_filter=choice_filter,
             )
 
     def build_xml(self, survey: "Survey"):
