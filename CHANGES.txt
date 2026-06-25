@@ -1,5 +1,11 @@
 Pyxform Changelog
 
+v4.5.0, 2026-06-25
+* Leading and trailing spaces in parameters lead to form error by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/845
+* Add support for reference geometry for geo questions by @lindsay-stevens in https://github.com/XLSForm/pyxform/pull/847
+* Support vertical and no-ticks for new range parameters by @lognaturel in https://github.com/XLSForm/pyxform/pull/849
+* Fix reference-geometry from repeat by @lognaturel in https://github.com/XLSForm/pyxform/pull/848
+
 v4.4.1, 2026-04-12
 * Insert itemset declaration for range labels by @lognaturel in https://github.com/XLSForm/pyxform/pull/836
 
