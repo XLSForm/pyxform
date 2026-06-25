@@ -111,10 +111,11 @@ class XPathHelper:
         value_ref: str = "name",
         label_ref: str = "label",
         extra_q_assertions: str = "",
+        body_path: str = "",
     ) -> str:
         """Body has a direct child control with an itemset, and no inline items."""
         return rf"""
-        /h:html/h:body/x:{q_type}[
+        /h:html/h:body{body_path}/x:{q_type}[
           @ref="/test_name/{q_name}"
           and ./x:itemset[@nodeset="{nodeset}"]
           and ./x:itemset/x:value[@ref="{value_ref}"]

@@ -668,6 +668,27 @@ class RangeQuestion(_SupportsItemset):
 
 
 class GeoQuestion(_SupportsItemset):
+    def _build_itemset_reference(
+        self, question: "Question", survey: "Survey"
+    ) -> ItemsetNode | None:
+        """Build a geo-specific itemset node using a reference to a repeat."""
+        if self.itemset_has_ref:
+            path = survey.insert_xpaths(
+                text=self.itemset, context=question, reference_parent=True
+            ).strip()
+            # A default choice_filter is added here as a workaround for Collect appending
+            # an index predicate (e.g. "/data/r1[1]") to absolute references in a repeat
+            # context (the whole nodeset is desired for the user to choose from). Assumes
+            # that Collect will not alter or replace an existing predicate, and also that
+            # pyxform emits an absolute reference for this topology. See pyxform/#848.
+            choice_filter = "./geometry != ''"
+            return ItemsetNode(
+                value_ref="geometry",
+                label_ref="geometry",
+                nodeset=path,
+                choice_filter=choice_filter,
+            )
+
     def build_xml(self, survey: "Survey"):
         result = self._build_xml(survey=survey)
 
