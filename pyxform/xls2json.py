@@ -9,6 +9,7 @@ from collections import Counter
 from typing import IO, Any
 
 from pyxform import aliases, constants
+from pyxform import external_instance as qt_external_instance
 from pyxform.constants import (
     _MSG_SUPPRESS_SPELLING,
     EXTERNAL_INSTANCE_EXTENSIONS,
@@ -886,6 +887,7 @@ def workbook_to_json(
         # Assuming a question is anything not processed above as a loop/repeat/group.
         question_names.add(question_name)
         if row[constants.TYPE] in constants.EXTERNAL_INSTANCE_TYPES:
+            qt_external_instance.validate_scope(row_number=row_number, stack=stack)
             secondary_instances.add(os.path.splitext(question_name)[0])
 
         # Try to parse question as a select:

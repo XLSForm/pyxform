@@ -551,6 +551,14 @@ class ErrorCode(Enum):
             "The 'allow-mock-accuracy' parameter must be either 'true' or 'false'."
         ),
     )
+    SURVEY_010 = Detail(
+        name="Survey sheet - invalid external instance in repeat",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'type' value is invalid. "
+            "External instances must not be placed inside a repeat. "
+            "Move this question out of the repeat, or choose a different question type."
+        ),
+    )
 
 
 class PyXFormError(Exception):

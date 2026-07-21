@@ -121,11 +121,8 @@ class ExternalInstanceTests(PyxformTestCase):
             with self.subTest(msg=case):
                 self.assertPyxformXform(
                     md=md.format(case),
-                    xml__xpath_count=[
-                        # e1 is not in the main data instance.
-                        ("/h:html/h:head/x:model/x:instance[not(@id)]//x:e1", 0)
-                    ],
-                    xml__xpath_match=[xpq.model_instance_exists("e1")],
+                    errored=True,
+                    error__contains=[ErrorCode.SURVEY_010.value.format(row=3)],
                 )
 
     def test_cannot__use_same_external_xml_id_across_groups(self):

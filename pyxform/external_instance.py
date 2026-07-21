@@ -2,9 +2,10 @@
 ExternalInstance class module
 """
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pyxform import constants
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 
 if TYPE_CHECKING:
@@ -32,3 +33,9 @@ class ExternalInstance(SurveyElement):
 
         Exists here because there's a soft abstractmethod in SurveyElement.
         """
+
+
+def validate_scope(row_number: int, stack: list[dict[str, Any]]) -> None:
+    """Check that the external instance is in the survey context (not a repeat)."""
+    if len(stack[-1]["container_path"].get_scope_boundary().nodes) > 1:
+        raise PyXFormError(code=ErrorCode.SURVEY_010, context={"row": row_number})
