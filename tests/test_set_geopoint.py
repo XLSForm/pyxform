@@ -22,3 +22,20 @@ class SetGeopointTest(PyxformTestCase):
                 "",
             ],
         )
+
+    def test_label_ignored_if_specified(self):
+        """Should find that the control output is hidden even if a label is specified."""
+        md = """
+        | survey |
+        | | type           | name | label |
+        | | start-geopoint | q1   | Q1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_count=[
+                # No control output with this ref.
+                ("/h:html/h:body//*[@ref='/test_name/q1']", 0),
+                # No control with the specified label.
+                ("/h:html/h:body//*[text()='Q1']", 0),
+            ],
+        )

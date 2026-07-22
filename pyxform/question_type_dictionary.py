@@ -381,7 +381,7 @@ _QUESTION_TYPE_DICT = {
         "bind": {"type": "binary"},
     },
     "background-geopoint": {
-        "control": {"tag": "trigger"},
+        "control": {"tag": "action"},
         "bind": {"type": "geopoint"},
     },
 }
