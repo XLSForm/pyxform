@@ -901,18 +901,16 @@ def workbook_to_json(
             if parse_dict.get("select_command"):
                 select_command = parse_dict["select_command"]
                 select_type = aliases.select[select_command]
-                if (
-                    select_type == constants.SELECT_ONE_EXTERNAL
-                    and constants.CHOICE_FILTER not in row
-                ):
-                    warnings.append(
-                        ROW_FORMAT_STRING % row_number
-                        + " select one external is only meant for filtered selects."
-                    )
                 list_name = parse_dict[constants.LIST_NAME_U]
                 instance_name, file_extension = os.path.splitext(list_name)
 
+                # Validate external selects.
                 if select_type == constants.SELECT_ONE_EXTERNAL:
+                    if constants.CHOICE_FILTER not in row:
+                        warnings.append(
+                            ROW_FORMAT_STRING % row_number
+                            + " select one external is only meant for filtered selects."
+                        )
                     if not external_choices:
                         k = constants.EXTERNAL_CHOICES
                         msg = "There should be an external_choices sheet in this xlsform."
@@ -930,20 +928,11 @@ def workbook_to_json(
                             + "List name not in external choices sheet: "
                             + list_name
                         )
-                elif select_command in aliases.select_from_file:
-                    secondary_instances.add((instance_name, file_extension))
-                else:
-                    secondary_instances.add((instance_name, ""))
 
-                select_from_file.validate_list_name_extension(
-                    select_command=parse_dict["select_command"],
-                    list_name=list_name,
-                    row_number=row_number,
-                )
+                # Validate internal selects.
                 if (
-                    list_name not in choices
-                    and select_type != constants.SELECT_ONE_EXTERNAL
-                    and file_extension not in EXTERNAL_INSTANCE_EXTENSIONS
+                    select_type != constants.SELECT_ONE_EXTERNAL
+                    and select_command not in aliases.select_from_file
                     and not has_pyxform_reference(list_name)
                 ):
                     if not choices:
@@ -956,28 +945,28 @@ def workbook_to_json(
                             f"{msg} Please ensure that the choices sheet has the"
                             " mandatory columns 'list_name', 'name', and 'label'."
                         )
-                    raise PyXFormError(
-                        ROW_FORMAT_STRING % row_number
-                        + " List name not in choices sheet: "
-                        + list_name
-                    )
+                    elif list_name not in choices:
+                        raise PyXFormError(
+                            ROW_FORMAT_STRING % row_number
+                            + " List name not in choices sheet: "
+                            + list_name
+                        )
 
-                # Validate select_multiple choice names by making sure
-                # they have no spaces (will cause errors in exports).
-                if (
-                    select_type == constants.SELECT_ALL_THAT_APPLY
-                    and file_extension not in EXTERNAL_INSTANCE_EXTENSIONS
-                ):
-                    for choice in choices[list_name]:
-                        if " " in choice[constants.NAME]:
-                            raise PyXFormError(
-                                "Choice names with spaces cannot be added "
-                                "to multiple choice selects. See ["
-                                + choice[constants.NAME]
-                                + "] in ["
-                                + list_name
-                                + "]"
-                            )
+                    # Validate select_multiple choice names by making sure
+                    # they have no spaces (will cause errors in exports).
+                    if select_type == constants.SELECT_ALL_THAT_APPLY:
+                        for choice in choices[list_name]:
+                            if " " in choice[constants.NAME]:
+                                raise PyXFormError(
+                                    "Choice names with spaces cannot be added "
+                                    "to multiple choice selects. See ["
+                                    + choice[constants.NAME]
+                                    + "] in ["
+                                    + list_name
+                                    + "]"
+                                )
+                    # Track the secondary instance.
+                    secondary_instances.add((instance_name, ""))
 
                 specify_other_question = None
                 if parse_dict.get("specify_other") is not None:
@@ -1038,6 +1027,11 @@ def workbook_to_json(
                 new_json_dict[constants.TYPE] = select_type
 
                 if select_command in aliases.select_from_file:
+                    select_from_file.validate_list_name_extension(
+                        select_command=select_command,
+                        list_name=list_name,
+                        row_number=row_number,
+                    )
                     qt_params = constants.ParametersSelectFromFile
                     pv.validate(
                         parameters=parameters,
@@ -1056,6 +1050,8 @@ def workbook_to_json(
                             value=parameters[qt_params.LABEL],
                             row_number=row_number,
                         )
+                    # Track the secondary instance.
+                    secondary_instances.add((instance_name, file_extension))
                 else:
                     qt_params = constants.ParametersSelect
                     pv.validate(
