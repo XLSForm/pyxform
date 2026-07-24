@@ -947,9 +947,7 @@ def workbook_to_json(
                         )
                     elif list_name not in choices:
                         raise PyXFormError(
-                            ROW_FORMAT_STRING % row_number
-                            + " List name not in choices sheet: "
-                            + list_name
+                            code=ErrorCode.NAMES_016, context={"row": row_number}
                         )
 
                     # Validate select_multiple choice names by making sure

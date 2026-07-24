@@ -371,6 +371,16 @@ class ErrorCode(Enum):
             "Entity lists must have a name."
         ),
     )
+    NAMES_016 = Detail(
+        name="Names - select list_name not found on choices sheet",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'type' value is invalid. "
+            "The select list name was not found in the 'choices' sheet. "
+            "Please add one or more rows to the 'choices' sheet for this list_name, or "
+            "check the spelling of the list name in the 'type' column and existing "
+            "choices 'list_name' rows."
+        ),
+    )
     PYREF_001: Detail = Detail(
         name="PyXForm reference - parsing failed",
         msg=(
