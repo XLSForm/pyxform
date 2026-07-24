@@ -178,6 +178,17 @@ class ErrorCode(Enum):
             "Please check the spelling of this 'save_to' value."
         ),
     )
+    ENTITY_014 = Detail(
+        name="Entities - missing secondary instance for update",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
+            "The entity list name '{dataset}' does not match the name of a secondary instance, "
+            "which is required when updating entities. "
+            "Please either: add a question on the 'survey' sheet with the type "
+            "'select_*_from_file' or 'csv-external', or check the spelling of existing "
+            "questions using these types and the entity list name."
+        ),
+    )
     HEADER_001: Detail = Detail(
         name="Headers - invalid missing header row",
         msg=(
