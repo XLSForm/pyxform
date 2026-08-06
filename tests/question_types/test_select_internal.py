@@ -1,5 +1,4 @@
 from pyxform.errors import ErrorCode
-
 from tests.pyxform_test_case import PyxformTestCase
 
 
