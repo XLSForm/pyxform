@@ -74,7 +74,7 @@ lark_grammar = rf"""
     CLOSE_PAREN.16: /\)/
     BRACKET.15: /[\[\{{\}}]/
     PARENT_REF.14: /\.\./
-    SELF_REF.13: /\./\
+    SELF_REF.13: /\./
     // # javarosa.xpath says "//" is an "unsupported construct".
     PATH_SEP.12: /\//
     SYSTEM_LITERAL.11: /"[^"]*"|'[^']*'/
@@ -88,9 +88,9 @@ lark_grammar = rf"""
     // Must be lower priority than rules containing ncname_regex.
     NAME.3: /{ncname_regex_ns}/
     PYXFORM_REF_START.2: /\$\{{/
-    PYXFORM_REF_END.1: /\}}/\
+    PYXFORM_REF_END.1: /\}}/
     // Catch any other character so that parsing doesn't stop.
-    OTHER.0: /.+?/\
+    OTHER.0: /.+?/
 """
 
 RE_NCNAME_NAMESPACED = re.compile(ncname_regex_ns_named)
