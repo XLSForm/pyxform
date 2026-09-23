@@ -243,6 +243,7 @@ class Survey(Section):
             raise PyXFormError("Survey cannot have an empty id_string")
         super().validate()
         self._validate_uniqueness_of_section_names()
+        self._setup_xpath_dictionary()
 
     def _validate_uniqueness_of_section_names(self):
         root_node_name = self.name
@@ -287,7 +288,6 @@ class Survey(Section):
     def xml(self):
         """Calls necessary preparation methods, then returns the xml."""
         self.validate()
-        self._setup_xpath_dictionary()
 
         body_kwargs = {}
         if self.style:
@@ -983,7 +983,7 @@ class Survey(Section):
         return f"""<?xml version="1.0"?>\n{self.xml().toprettyxml(indent="  ")}"""
 
     def _setup_xpath_dictionary(self):
-        if self._xpath:
+        if self._xpath is not None:
             return
         xpaths = {}
         for element in self.iter_descendants(lambda i: isinstance(i, Question | Section)):
