@@ -16,7 +16,7 @@ from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
 from pyxform.parsing.expression import RE_PYXFORM_REF
-from pyxform.parsing.instance_expression import replace_with_output
+from pyxform.parsing.expression_delimited import replace_with_output
 from pyxform.question import Itemset, MultipleChoiceQuestion, Option, Question, Tag
 from pyxform.section import SECTION_EXTRA_FIELDS, RepeatingSection, Section
 from pyxform.survey_element import _GET_SENTINEL, SURVEY_ELEMENT_FIELDS, SurveyElement
@@ -1159,13 +1159,6 @@ class Survey(Section):
 
         return re.sub(RE_PYXFORM_REF, _var_repl_function, value)
 
-    def _var_repl_output_function(self, matchobj, context):
-        """
-        A regex substitution function that will replace
-        ${varname} with an output element that has the xpath to varname.
-        """
-        return f"""<output value="{self._var_repl_function(matchobj, context)}" />"""
-
     def insert_output_values(
         self,
         text: str,
@@ -1183,9 +1176,6 @@ class Survey(Section):
         if text == "-":
             return text, False
 
-        def _var_repl_output_function(matchobj):
-            return self._var_repl_output_function(matchobj, context)
-
         # There was a bug where escaping is completely turned off in labels
         # where variable replacement is used.
         # For exampke, `${name} < 3` causes an error but `< 3` does not.
@@ -1193,12 +1183,7 @@ class Survey(Section):
         # variable replacement:
         original_xml = escape_text_for_xml(text=text)
 
-        # need to make sure we have reason to replace
-        # since at this point < is &lt,
-        # the net effect &lt gets translated again to &amp;lt;
         value = replace_with_output(original_xml, context, self)
-        if is_pyxform_reference_candidate(value):
-            value = re.sub(RE_PYXFORM_REF, _var_repl_output_function, value)
         changed = value != original_xml
         if changed:
             return value, True
