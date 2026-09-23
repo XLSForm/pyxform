@@ -119,18 +119,4 @@ def parse_expression(text: str) -> tuple[Token, ...]:
 
 def is_xml_tag(value: str) -> bool:
     """Check if the input string contains only a valid XML tag / element name."""
-    return value and bool(RE_NCNAME_NAMESPACED.fullmatch(value))
-
-
-def maybe_strip(value: Any) -> Any:
-    """
-    If the value is a string and looks like it has whitespace at either end, strip it.
-
-    If a string was "interned" (cached) by Python, string.strip() should generally return
-    the existing string if no leading/trailing whitespace was found. But strings may or
-    may not be interned by Python, and there may be a large cache for many unique values
-    (which is likely for XLSForms), so this function tries to avoid calling strip().
-    """
-    if isinstance(value, str) and value and (value[0].isspace() or value[-1].isspace()):
-        return value.strip()
-    return value
+    return bool(value) and bool(RE_NCNAME_NAMESPACED.fullmatch(value))

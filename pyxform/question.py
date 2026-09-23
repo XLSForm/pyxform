@@ -15,7 +15,7 @@ from pyxform.constants import (
 )
 from pyxform.elements import action
 from pyxform.errors import PyXFormError
-from pyxform.parsing.expression import maybe_strip
+from pyxform.parsing.utils import maybe_strip
 from pyxform.question_type_dictionary import QUESTION_TYPE_DICT
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import (
