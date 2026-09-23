@@ -1,6 +1,5 @@
 import re
 from functools import lru_cache
-from typing import Any
 
 from lark import Lark, Token
 
@@ -105,14 +104,14 @@ _EXPRESSION_LEXER = Lark(
 
 
 @lru_cache(maxsize=128)
-def parse_expression(text: str) -> tuple[Token, ...]:
+def lex_expression(text: str) -> tuple[Token, ...]:
     """
-    Parse an expression.
+    Lex an expression.
 
     Use this function instead of _EXPRESSION_LEXER to take advantage of caching.
 
     :param text: The expression.
-    :return: The parsed tokens, and any remaining unparsed text.
+    :return: The lexed tokens, and any remaining text.
     """
     return tuple(_EXPRESSION_LEXER.lex(text))
 
