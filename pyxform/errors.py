@@ -397,8 +397,8 @@ class ErrorCode(Enum):
         name="PyXForm reference - name not found",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "Reference variables must contain a name from the 'survey' sheet. Could not "
-            "find the name '{q}'."
+            "${{{q}}} refers to a field named '{q}', but no such field exists on the "
+            "'survey' sheet."
         ),
     )
     PYREF_004: Detail = Detail(

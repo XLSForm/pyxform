@@ -123,3 +123,19 @@ class TestPyxformReference(PyxformTestCase):
                     ErrorCode.PYREF_001.value.format(sheet="test", column="label", row=2),
                     msg=case,
                 )
+
+    def test_name_not_found__error(self):
+        """Should fail with the reference in the message if the name is not found."""
+        with self.assertRaises(PyXFormError) as err:
+            pr.validate_pyxform_reference_syntax(
+                sheet_name="survey",
+                sheet_data=({"choice_filter": "${FOO} = 1"},),
+                element_names=ELEMENT_NAMES,
+                limit_to_columns={"choice_filter"},
+            )
+        self.assertEqual(
+            str(err.exception),
+            "[row : 2] On the 'survey' sheet, the 'choice_filter' value is invalid. "
+            "${FOO} refers to a field named 'FOO', but no such field exists on the "
+            "'survey' sheet.",
+        )
