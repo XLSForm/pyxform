@@ -1,11 +1,16 @@
 from lark import Lark, Token, Transformer
 from lark.exceptions import LarkError
 
+from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import maybe_strip
 
-# Label and value are used to match against user-specified files so case should be preserved.
-CASE_SENSITIVE_VALUES = {"label", "value"}
+# Parameters for which the value should not be lower-cased.
+CASE_SENSITIVE_VALUES = {
+    co.ParametersGeo.REFERENCE_GEOMETRY.value,
+    co.ParametersSelectFromFile.LABEL.value,
+    co.ParametersSelectFromFile.VALUE.value,
+}
 
 PARAMETER_GRAMMAR = r"""
     start: pair*
