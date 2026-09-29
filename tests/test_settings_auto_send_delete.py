@@ -83,3 +83,47 @@ class SettingsAutoSendDelete(PyxformTestCase):
                 '<submission action="https://odk.ona.io/random_person/submission" method="post" orx:auto-send="false"/>'
             ],
         )
+
+    def test_settings_auto_send_delete__true_aliases(self):
+        """Should output "true" for any alias of true."""
+        for alias in ("yes", "Yes", "YES", "true", "True", "TRUE", "true()"):
+            with self.subTest(alias=alias):
+                self.assertPyxformXform(
+                    md=f"""
+                    | settings |
+                    |          | auto_delete | auto_send |
+                    |          | {alias}     | {alias}   |
+                    | survey   |
+                    |          | type | name | label |
+                    |          | text | q1   | Q1    |
+                    """,
+                    xml__xpath_match=[
+                        """
+                        /h:html/h:head/x:model/x:submission[
+                          @orx:auto-send='true' and @orx:auto-delete='true'
+                        ]
+                        """
+                    ],
+                )
+
+    def test_settings_auto_send_delete__false_aliases(self):
+        """Should output "false" for any alias of false, since it overrides the client."""
+        for alias in ("no", "No", "NO", "false", "False", "FALSE", "false()"):
+            with self.subTest(alias=alias):
+                self.assertPyxformXform(
+                    md=f"""
+                    | settings |
+                    |          | auto_delete | auto_send |
+                    |          | {alias}     | {alias}   |
+                    | survey   |
+                    |          | type | name | label |
+                    |          | text | q1   | Q1    |
+                    """,
+                    xml__xpath_match=[
+                        """
+                        /h:html/h:head/x:model/x:submission[
+                          @orx:auto-send='false' and @orx:auto-delete='false'
+                        ]
+                        """
+                    ],
+                )
