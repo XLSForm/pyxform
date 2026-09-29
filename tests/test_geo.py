@@ -23,6 +23,7 @@ Each test should reference one (or more) requirements from these lists.
     - RG015: supported nodeset target types can be used with unsupported nodeset target types.
     - RG016: the parameter is not emitted as an attribute of the body control.
     - RG017: value casing is preserved to allow matching any valid secondary instance name.
+    - RG018: when the parameter is specified multiple times, the last occurrence is used.
 """
 
 from unittest import expectedFailure
@@ -374,6 +375,37 @@ class TestParameterReferenceGeometryParsing(PyxformTestCase):
                     md=md.format(type=t),
                     errored=True,
                     error__contains=[ErrorCode.SURVEY_006.value.format(row=2)],
+                )
+
+    def test_duplicate_params_last_wins__ok(self):
+        """Should use last of duplicate reference-geometry parameters."""
+        # RG001 RG018
+        # Part of general parameters behaviour but added test here in reference to forum
+        #   discussion of such a use case: https://forum.getodk.org/t/57427/51
+        md = """
+        | survey |
+        | | type   | name | label | parameters                                  |
+        | | {type} | q1   | Q1    | reference-geometry=c1 reference-geometry=c2 |
+
+        | choices |
+        | | list_name | name | label | geometry |
+        | | c1        | n1   | N1    | 123 ...  |
+        | | c2        | n2   | N2    | 123 ...  |
+        """
+        for t in GEO_TYPES:
+            with self.subTest(t):
+                self.assertPyxformXform(
+                    md=md.format(type=t),
+                    xml__xpath_match=[
+                        xpq.model_instance_exists("c1"),
+                        xpq.model_instance_exists("c2"),
+                        xpq.model_instance_bind("q1", t),
+                        xpq.body_itemset(
+                            q_name="q1",
+                            nodeset="instance('c2')/root/item",
+                            extra_q_assertions="and not(@reference-geometry)",
+                        ),
+                    ],
                 )
 
 
