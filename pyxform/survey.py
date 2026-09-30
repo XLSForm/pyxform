@@ -17,6 +17,10 @@ from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
 from pyxform.parsing.expression import RE_PYXFORM_REF
 from pyxform.parsing.expression_delimited import replace_with_output
+from pyxform.parsing.variable_reference import (
+    has_pyxform_reference_with_last_saved,
+    is_pyxform_reference_candidate,
+)
 from pyxform.question import Itemset, MultipleChoiceQuestion, Option, Question, Tag
 from pyxform.section import SECTION_EXTRA_FIELDS, RepeatingSection, Section
 from pyxform.survey_element import _GET_SENTINEL, SURVEY_ELEMENT_FIELDS, SurveyElement
@@ -30,10 +34,6 @@ from pyxform.utils import (
 from pyxform.validators import odk_validate
 from pyxform.validators.pyxform import unique_names
 from pyxform.validators.pyxform.iana_subtags.validation import get_languages_with_bad_tags
-from pyxform.validators.pyxform.pyxform_reference import (
-    has_pyxform_reference_with_last_saved,
-    is_pyxform_reference_candidate,
-)
 
 RE_BRACKET = re.compile(r"\[([^]]+)\]")
 RE_FUNCTION_ARGS = re.compile(r"\b[^()]+\((.*)\)$")

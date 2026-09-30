@@ -1,14 +1,16 @@
 from typing import TYPE_CHECKING
 
-from lark import Lark, LarkError, Transformer, Tree
+from lark import Lark, LarkError, Transformer
 
 from pyxform.errors import ErrorCode, PyXFormError
-from pyxform.parsing.expression import RE_PYXFORM_REF
 from pyxform.parsing.instance_expression import (
     replace_with_output as replace_with_output_old,
 )
+from pyxform.parsing.variable_reference import (
+    is_pyxform_reference_candidate,
+    resolve_variables,
+)
 from pyxform.utils import node
-from pyxform.validators.pyxform.pyxform_reference import is_pyxform_reference_candidate
 
 if TYPE_CHECKING:
     from lark import Token
@@ -38,33 +40,6 @@ _EXPRESSION_PARSER = Lark(
 )
 
 
-def resolve_variables(
-    xml_text: str,
-    survey: "Survey",
-    context: "SurveyElement | None" = None,
-    wrap: bool = False,
-):
-    """
-    Replace ${} variables with XPath references, optionally wrapped in <output/>.
-
-    :param xml_text: Input string to process.
-    :param survey: Survey object for reference lookup.
-    :param context: The document node that the text belongs to.
-    :param wrap: If True, enclose resolved references in <output/> tags.
-    """
-
-    def resolver(match):
-        replaced = survey._var_repl_function(match, context)
-        if wrap:
-            return node("output", value=replaced).toxml()
-        else:
-            return replaced
-
-    if is_pyxform_reference_candidate(value=xml_text):
-        return RE_PYXFORM_REF.sub(resolver, xml_text)
-    return xml_text
-
-
 class ExpressionTransformer(Transformer):
     def __init__(
         self, context: "SurveyElement", survey: "Survey", visit_tokens: bool = True
@@ -89,7 +64,7 @@ class ExpressionTransformer(Transformer):
         return self._flatten(children=children)
 
     def text(self, children: list["Token"]) -> str:
-        """Join all children strings."""
+        """Join all children strings, resolve variable references."""
         original = self._flatten(children=children)
         resolved = resolve_variables(
             xml_text=original, survey=self.survey, context=self.context, wrap=True
@@ -114,7 +89,7 @@ class ExpressionTransformer(Transformer):
         raise PyXFormError(code=ErrorCode.INTERNAL_004)
 
     def expression(self, children: list["Token"]) -> str:
-        """Join/wrap children in XML: `<output value='children123'/>`."""
+        """Join/wrap children in XML: `<output value='children123'/>`, resolve variable references."""
         resolved = resolve_variables(
             xml_text=self._flatten(children=children),
             survey=self.survey,

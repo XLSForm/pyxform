@@ -4,12 +4,12 @@ from typing import Any
 from pyxform import aliases
 from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
-from pyxform.validators.pyxform import parameters as pv
-from pyxform.validators.pyxform.parameters import PARAMETERS_TYPE
-from pyxform.validators.pyxform.pyxform_reference import (
+from pyxform.parsing.variable_reference import (
     is_pyxform_reference_candidate,
     parse_pyxform_references,
 )
+from pyxform.validators.pyxform import parameters as pv
+from pyxform.validators.pyxform.parameters import PARAMETERS_TYPE
 
 
 def validate_parameter_incremental(value: str) -> None:

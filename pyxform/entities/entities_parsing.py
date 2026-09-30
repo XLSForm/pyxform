@@ -7,8 +7,8 @@ from pyxform import constants as const
 from pyxform.elements import action
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
+from pyxform.parsing.variable_reference import parse_pyxform_references
 from pyxform.question_type_dictionary import get_meta_group
-from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
 

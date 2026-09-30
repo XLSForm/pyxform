@@ -10,12 +10,12 @@ from pyxform import aliases as alias
 from pyxform import constants as const
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
+from pyxform.parsing.variable_reference import has_pyxform_reference
 from pyxform.utils import (
     DetachableElement,
     node,
     print_pyobj_to_json,
 )
-from pyxform.validators.pyxform.pyxform_reference import has_pyxform_reference
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey

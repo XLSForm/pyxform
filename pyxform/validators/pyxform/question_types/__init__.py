@@ -3,7 +3,7 @@
 from collections.abc import Collection, Iterable
 
 from pyxform.errors import ErrorCode, PyXFormError
-from pyxform.validators.pyxform.pyxform_reference import (
+from pyxform.parsing.variable_reference import (
     is_pyxform_reference_candidate,
     parse_pyxform_references,
 )
