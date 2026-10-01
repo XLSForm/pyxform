@@ -27,6 +27,7 @@ from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
 from pyxform.parsing.parameters import parse as parameters_parse
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
+from pyxform.parsing.variable_reference import has_pyxform_reference, is_pyxform_reference
 from pyxform.question_type_dictionary import get_meta_group
 from pyxform.utils import (
     coalesce,
@@ -39,15 +40,13 @@ from pyxform.validators.pyxform import select_from_file, unique_names
 from pyxform.validators.pyxform import settings as validate_settings
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.choices import validate_and_clean_choices
-from pyxform.validators.pyxform.pyxform_reference import (
-    has_pyxform_reference,
-    is_pyxform_reference,
-    validate_pyxform_references_in_workbook,
-)
 from pyxform.validators.pyxform.question_types import geo as qt_geo
 from pyxform.validators.pyxform.question_types import range as qt_range
 from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
+from pyxform.validators.pyxform.variable_reference import (
+    validate_pyxform_references_in_workbook,
+)
 from pyxform.xls2json_backends import DefinitionData, get_xlsform
 
 RE_BEGIN_CONTROL = re.compile(

@@ -2,7 +2,7 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-from pyxform.parsing.expression import maybe_strip
+from pyxform.parsing.utils import maybe_strip
 
 LANG_CODE_REGEX = re.compile(r"\((.*)\)$")
 HERE = Path(__file__).parent

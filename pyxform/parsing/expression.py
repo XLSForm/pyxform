@@ -1,6 +1,5 @@
 import re
 from functools import lru_cache
-from typing import Any
 
 from lark import Lark, Token
 
@@ -74,7 +73,7 @@ lark_grammar = rf"""
     CLOSE_PAREN.16: /\)/
     BRACKET.15: /[\[\{{\}}]/
     PARENT_REF.14: /\.\./
-    SELF_REF.13: /\./\
+    SELF_REF.13: /\./
     // # javarosa.xpath says "//" is an "unsupported construct".
     PATH_SEP.12: /\//
     SYSTEM_LITERAL.11: /"[^"]*"|'[^']*'/
@@ -88,9 +87,9 @@ lark_grammar = rf"""
     // Must be lower priority than rules containing ncname_regex.
     NAME.3: /{ncname_regex_ns}/
     PYXFORM_REF_START.2: /\$\{{/
-    PYXFORM_REF_END.1: /\}}/\
+    PYXFORM_REF_END.1: /\}}/
     // Catch any other character so that parsing doesn't stop.
-    OTHER.0: /.+?/\
+    OTHER.0: /.+?/
 """
 
 RE_NCNAME_NAMESPACED = re.compile(ncname_regex_ns_named)
@@ -105,32 +104,18 @@ _EXPRESSION_LEXER = Lark(
 
 
 @lru_cache(maxsize=128)
-def parse_expression(text: str) -> tuple[Token, ...]:
+def lex_expression(text: str) -> tuple[Token, ...]:
     """
-    Parse an expression.
+    Lex an expression.
 
     Use this function instead of _EXPRESSION_LEXER to take advantage of caching.
 
     :param text: The expression.
-    :return: The parsed tokens, and any remaining unparsed text.
+    :return: The lexed tokens, and any remaining text.
     """
     return tuple(_EXPRESSION_LEXER.lex(text))
 
 
 def is_xml_tag(value: str) -> bool:
     """Check if the input string contains only a valid XML tag / element name."""
-    return value and bool(RE_NCNAME_NAMESPACED.fullmatch(value))
-
-
-def maybe_strip(value: Any) -> Any:
-    """
-    If the value is a string and looks like it has whitespace at either end, strip it.
-
-    If a string was "interned" (cached) by Python, string.strip() should generally return
-    the existing string if no leading/trailing whitespace was found. But strings may or
-    may not be interned by Python, and there may be a large cache for many unique values
-    (which is likely for XLSForms), so this function tries to avoid calling strip().
-    """
-    if isinstance(value, str) and value and (value[0].isspace() or value[-1].isspace()):
-        return value.strip()
-    return value
+    return bool(value) and bool(RE_NCNAME_NAMESPACED.fullmatch(value))

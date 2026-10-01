@@ -246,6 +246,17 @@ class ErrorCode(Enum):
             "path '{path}'."
         ),
     )
+    INTERNAL_003 = Detail(
+        name="Internal error - expression parsing failed",
+        msg="Internal error: expression parsing failed. Input string: {s}",
+    )
+    INTERNAL_004 = Detail(
+        name="Internal error - expression parsing failed",
+        msg=(
+            "Internal error: expression parsing failed. "
+            "Nested expressions are not allowed. Input string: {s}"
+        ),
+    )
     LABEL_001: Detail = Detail(
         name="Labels - invalid missing label in the choices sheet",
         msg=(
