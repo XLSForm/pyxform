@@ -296,6 +296,13 @@ def workbook_to_json(
         settings[constants.CLIENT_EDITABLE] = aliases.yes_no.get(
             settings.get(constants.CLIENT_EDITABLE, "no"), False
         )
+    # auto_send and auto_delete are tri-state: unset, "true", or "false", since an
+    # explicit "false" overrides the client's own setting. Unrecognised values are kept.
+    for key in (constants.AUTO_SEND, constants.AUTO_DELETE):
+        if key in settings:
+            value = aliases.yes_no.get(settings[key])
+            if value is not None:
+                settings[key] = "true" if value else "false"
 
     # Here we create our json dict root with default settings:
     id_string = settings.get(
