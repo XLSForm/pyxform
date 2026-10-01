@@ -75,3 +75,7 @@ class TestSurveyElementMappingBehaviour(TestCase):
         self.assertEqual(
             ErrorCode.NAMES_009.value.format(name=co.NAME), err.exception.args[0]
         )
+
+    def test_validate__name_in_valid_unicode_range__ok(self):
+        """Should not raise an error if the 'name' includes valid unicode characters."""
+        SurveyElement(name="SäöüÄÖÜß", label="Q1").validate()

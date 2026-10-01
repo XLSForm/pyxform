@@ -10,6 +10,7 @@ from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
 from tests.xpath_helpers.choices import xpc
+from tests.xpath_helpers.questions import xpq
 
 
 class ExternalInstanceTests(PyxformTestCase):
@@ -82,6 +83,47 @@ class ExternalInstanceTests(PyxformTestCase):
                 '<instance id="mydata2" src="jr://file-csv/mydata2.csv"/>',
             ],
         )
+
+    def test_external_inside_group__ok(self):
+        """Should find that an external instance can be placed inside a group."""
+        # The "q1" item is required otherwise Validate errors on empty group.
+        md = """
+        | survey |
+        | | type        | name | label |
+        | | begin_group | g1   | G1    |
+        | | text        | q1   | Q1    |
+        | | {}          | e1   | E1    |
+        | | end_group   | g1   |       |
+        """
+        cases = ("csv-external", "xml-external")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case),
+                    xml__xpath_count=[
+                        # e1 is not in the main data instance.
+                        ("/h:html/h:head/x:model/x:instance[not(@id)]//x:e1", 0)
+                    ],
+                    xml__xpath_match=[xpq.model_instance_exists("e1")],
+                )
+
+    def test_external_inside_repeat__error(self):
+        """Should raise an error if an external instance is placed inside a repeat."""
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | begin_repeat | r1   | R1    |
+        | | csv-external | e1   | E1    |
+        | | end_repeat   | r1   |       |
+        """
+        cases = ("csv-external", "xml-external")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case),
+                    errored=True,
+                    error__contains=[ErrorCode.SURVEY_010.value.format(row=3)],
+                )
 
     def test_cannot__use_same_external_xml_id_across_groups(self):
         """Duplicate external instances anywhere raises an error."""

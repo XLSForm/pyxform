@@ -9,6 +9,7 @@ from collections import Counter
 from typing import IO, Any
 
 from pyxform import aliases, constants
+from pyxform import external_instance as qt_external_instance
 from pyxform.constants import (
     _MSG_SUPPRESS_SPELLING,
     EXTERNAL_INSTANCE_EXTENSIONS,
@@ -21,6 +22,7 @@ from pyxform.entities.entities_parsing import (
     get_entity_declarations,
     get_entity_references_by_question,
     get_entity_variable_references,
+    validate_update_dataset_references,
 )
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
@@ -456,7 +458,8 @@ def workbook_to_json(
     element_names = Counter()
     trigger_references: list[tuple[str, int]] = []
     geo_references: list[tuple[str, int]] = []
-    secondary_instances: set[str] = set()
+    # secondary_instances items: tuple[name, file_extension]
+    secondary_instances: set[tuple[str, str]] = set()
     repeat_names: set[str] = set()
     entity_references_by_question = {}
 
@@ -886,26 +889,28 @@ def workbook_to_json(
         # Assuming a question is anything not processed above as a loop/repeat/group.
         question_names.add(question_name)
         if row[constants.TYPE] in constants.EXTERNAL_INSTANCE_TYPES:
-            secondary_instances.add(os.path.splitext(question_name)[0])
+            qt_external_instance.validate_scope(row_number=row_number, stack=stack)
+            secondary_instances.add(
+                (question_name, f".{row[constants.TYPE].split('-')[0]}")
+            )
 
         # Try to parse question as a select:
         select_parse = RE_SELECT.search(question_type)
         if select_parse:
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
-                select_type = aliases.select[parse_dict["select_command"]]
-                if (
-                    select_type == constants.SELECT_ONE_EXTERNAL
-                    and constants.CHOICE_FILTER not in row
-                ):
-                    warnings.append(
-                        ROW_FORMAT_STRING % row_number
-                        + " select one external is only meant for filtered selects."
-                    )
+                select_command = parse_dict["select_command"]
+                select_type = aliases.select[select_command]
                 list_name = parse_dict[constants.LIST_NAME_U]
                 instance_name, file_extension = os.path.splitext(list_name)
 
+                # Validate external selects.
                 if select_type == constants.SELECT_ONE_EXTERNAL:
+                    if constants.CHOICE_FILTER not in row:
+                        warnings.append(
+                            ROW_FORMAT_STRING % row_number
+                            + " select one external is only meant for filtered selects."
+                        )
                     if not external_choices:
                         k = constants.EXTERNAL_CHOICES
                         msg = "There should be an external_choices sheet in this xlsform."
@@ -923,18 +928,11 @@ def workbook_to_json(
                             + "List name not in external choices sheet: "
                             + list_name
                         )
-                else:
-                    secondary_instances.add(instance_name)
 
-                select_from_file.validate_list_name_extension(
-                    select_command=parse_dict["select_command"],
-                    list_name=list_name,
-                    row_number=row_number,
-                )
+                # Validate internal selects.
                 if (
-                    list_name not in choices
-                    and select_type != constants.SELECT_ONE_EXTERNAL
-                    and file_extension not in EXTERNAL_INSTANCE_EXTENSIONS
+                    select_type != constants.SELECT_ONE_EXTERNAL
+                    and select_command not in aliases.select_from_file
                     and not has_pyxform_reference(list_name)
                 ):
                     if not choices:
@@ -947,28 +945,26 @@ def workbook_to_json(
                             f"{msg} Please ensure that the choices sheet has the"
                             " mandatory columns 'list_name', 'name', and 'label'."
                         )
-                    raise PyXFormError(
-                        ROW_FORMAT_STRING % row_number
-                        + " List name not in choices sheet: "
-                        + list_name
-                    )
+                    elif list_name not in choices:
+                        raise PyXFormError(
+                            code=ErrorCode.NAMES_016, context={"row": row_number}
+                        )
 
-                # Validate select_multiple choice names by making sure
-                # they have no spaces (will cause errors in exports).
-                if (
-                    select_type == constants.SELECT_ALL_THAT_APPLY
-                    and file_extension not in EXTERNAL_INSTANCE_EXTENSIONS
-                ):
-                    for choice in choices[list_name]:
-                        if " " in choice[constants.NAME]:
-                            raise PyXFormError(
-                                "Choice names with spaces cannot be added "
-                                "to multiple choice selects. See ["
-                                + choice[constants.NAME]
-                                + "] in ["
-                                + list_name
-                                + "]"
-                            )
+                    # Validate select_multiple choice names by making sure
+                    # they have no spaces (will cause errors in exports).
+                    if select_type == constants.SELECT_ALL_THAT_APPLY:
+                        for choice in choices[list_name]:
+                            if " " in choice[constants.NAME]:
+                                raise PyXFormError(
+                                    "Choice names with spaces cannot be added "
+                                    "to multiple choice selects. See ["
+                                    + choice[constants.NAME]
+                                    + "] in ["
+                                    + list_name
+                                    + "]"
+                                )
+                    # Track the secondary instance.
+                    secondary_instances.add((instance_name, ""))
 
                 specify_other_question = None
                 if parse_dict.get("specify_other") is not None:
@@ -1028,10 +1024,12 @@ def workbook_to_json(
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = select_type
 
-                if parse_dict["select_command"] in {
-                    "select_one_from_file",
-                    "select_multiple_from_file",
-                }:
+                if select_command in aliases.select_from_file:
+                    select_from_file.validate_list_name_extension(
+                        select_command=select_command,
+                        list_name=list_name,
+                        row_number=row_number,
+                    )
                     qt_params = constants.ParametersSelectFromFile
                     pv.validate(
                         parameters=parameters,
@@ -1050,6 +1048,8 @@ def workbook_to_json(
                             value=parameters[qt_params.LABEL],
                             row_number=row_number,
                         )
+                    # Track the secondary instance.
+                    secondary_instances.add((instance_name, file_extension))
                 else:
                     qt_params = constants.ParametersSelect
                     pv.validate(
@@ -1371,6 +1371,10 @@ def workbook_to_json(
         )
 
     if entity_declarations:
+        validate_update_dataset_references(
+            entity_declarations=entity_declarations,
+            secondary_instances=secondary_instances,
+        )
         apply_entities_declarations(
             entity_declarations=entity_declarations,
             entity_references_by_question=entity_references_by_question,

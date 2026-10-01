@@ -22,6 +22,8 @@ Each test should reference one (or more) requirements from these lists.
     - RG014: the itemset's @nodeset instance() lookup has a choice filter, if any, appended.
     - RG015: supported nodeset target types can be used with unsupported nodeset target types.
     - RG016: the parameter is not emitted as an attribute of the body control.
+    - RG017: value casing is preserved to allow matching any valid secondary instance name.
+    - RG018: when the parameter is specified multiple times, the last occurrence is used.
 """
 
 from unittest import expectedFailure
@@ -33,6 +35,7 @@ from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.questions import xpq
 
 GEO_TYPES = ("geoshape", "geotrace", "geopoint")
+REF_GEO_CASES = tuple((t, n) for t in GEO_TYPES for n in ("c1", "C1", "_c1A"))
 
 
 class GeoWidgetsTest(PyxformTestCase):
@@ -276,6 +279,26 @@ class TestParameterReferenceGeometryParsing(PyxformTestCase):
                     ],
                 )
 
+    def test_list_name__casing_mismatch__error(self):
+        """Should raise an error when the case-sensitive parameter value does not match."""
+        # RG001 RG017
+        md = """
+        | survey |
+        | | type   | name | label | parameters            |
+        | | {type} | q1   | Q1    | reference-geometry=c1 |
+
+        | choices |
+        | | list_name | name | label | geometry |
+        | | C1        | n1   | N1    | 123 ...  |
+        """
+        for t in GEO_TYPES:
+            with self.subTest(t):
+                self.assertPyxformXform(
+                    md=md.format(type=t),
+                    errored=True,
+                    error__contains=[ErrorCode.SURVEY_006.value.format(row=2)],
+                )
+
     def test_not_supported__pulldata__error(self):
         """Should raise an error when the secondary instance triggers are not supported."""
         # RG003
@@ -356,6 +379,37 @@ class TestParameterReferenceGeometryParsing(PyxformTestCase):
                     error__contains=[ErrorCode.SURVEY_006.value.format(row=2)],
                 )
 
+    def test_duplicate_params_last_wins__ok(self):
+        """Should use last of duplicate reference-geometry parameters."""
+        # RG001 RG018
+        # Part of general parameters behaviour but added test here in reference to forum
+        #   discussion of such a use case: https://forum.getodk.org/t/57427/51
+        md = """
+        | survey |
+        | | type   | name | label | parameters                                  |
+        | | {type} | q1   | Q1    | reference-geometry=c1 reference-geometry=c2 |
+
+        | choices |
+        | | list_name | name | label | geometry |
+        | | c1        | n1   | N1    | 123 ...  |
+        | | c2        | n2   | N2    | 123 ...  |
+        """
+        for t in GEO_TYPES:
+            with self.subTest(t):
+                self.assertPyxformXform(
+                    md=md.format(type=t),
+                    xml__xpath_match=[
+                        xpq.model_instance_exists("c1"),
+                        xpq.model_instance_exists("c2"),
+                        xpq.model_instance_bind("q1", t),
+                        xpq.body_itemset(
+                            q_name="q1",
+                            nodeset="instance('c2')/root/item",
+                            extra_q_assertions="and not(@reference-geometry)",
+                        ),
+                    ],
+                )
+
 
 class TestParameterReferenceGeometryOutput(PyxformTestCase):
     def test_not_emitted_by_default(self):
@@ -384,26 +438,26 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_choices_sheet__ok(self):
         """Should find that a child itemset is emitted, with default value/label."""
-        # RG005 RG006 RG008 RG016
+        # RG005 RG006 RG008 RG016 RG017
         md = """
         | survey |
-        | | type   | name | label | parameters            |
-        | | {type} | q1   | Q1    | reference-geometry=c1 |
+        | | type   | name | label | parameters                |
+        | | {type} | q1   | Q1    | reference-geometry={name} |
 
         | choices |
         | | list_name | name | label | geometry |
-        | | c1        | n1   | N1    | 123 ...  |
+        | | {name}    | n1   | N1    | 123 ...  |
         """
-        for t in GEO_TYPES:
-            with self.subTest(t):
+        for t, name in REF_GEO_CASES:
+            with self.subTest((t, name)):
                 self.assertPyxformXform(
-                    md=md.format(type=t),
+                    md=md.format(type=t, name=name),
                     xml__xpath_match=[
-                        xpq.model_instance_exists("c1"),
+                        xpq.model_instance_exists(name),
                         xpq.model_instance_bind("q1", t),
                         xpq.body_itemset(
                             q_name="q1",
-                            nodeset="instance('c1')/root/item",
+                            nodeset=f"instance('{name}')/root/item",
                             extra_q_assertions="and not(@reference-geometry)",
                         ),
                     ],
@@ -411,26 +465,26 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_choices_sheet__translated__ok(self):
         """Should find that a child itemset is emitted, with translations label."""
-        # RG005 RG006 RG008 RG013 RG016
+        # RG005 RG006 RG008 RG013 RG016 RG017
         md = """
         | survey |
-        | | type   | name | label | parameters            |
-        | | {type} | q1   | Q1    | reference-geometry=c1 |
+        | | type   | name | label | parameters                |
+        | | {type} | q1   | Q1    | reference-geometry={name} |
 
         | choices |
         | | list_name | name | label::English (en) | geometry |
-        | | c1        | n1   | N1                  | 123 ...  |
+        | | {name}    | n1   | N1                  | 123 ...  |
         """
-        for t in GEO_TYPES:
-            with self.subTest(t):
+        for t, name in REF_GEO_CASES:
+            with self.subTest((t, name)):
                 self.assertPyxformXform(
-                    md=md.format(type=t),
+                    md=md.format(type=t, name=name),
                     xml__xpath_match=[
-                        xpq.model_instance_exists("c1"),
+                        xpq.model_instance_exists(name),
                         xpq.model_instance_bind("q1", t),
                         xpq.body_itemset(
                             q_name="q1",
-                            nodeset="instance('c1')/root/item",
+                            nodeset=f"instance('{name}')/root/item",
                             label_ref="jr:itext(itextId)",
                             extra_q_assertions="and not(@reference-geometry)",
                         ),
@@ -439,27 +493,27 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_choices_sheet__choice_filter__ok(self):
         """Should find that a child itemset is emitted, with a choice_filter predicate."""
-        # RG005 RG006 RG008 RG014 RG016
+        # RG005 RG006 RG008 RG014 RG016 RG017
         md = """
         | survey |
-        | | type   | name | label | parameters            | choice_filter  |
-        | | text   | q1   | Q1    |                       |                |
-        | | {type} | q2   | Q2    | reference-geometry=c1 | name = ${{q1}} |
+        | | type   | name | label | parameters                | choice_filter  |
+        | | text   | q1   | Q1    |                           |                |
+        | | {type} | q2   | Q2    | reference-geometry={name} | name = ${{q1}} |
 
         | choices |
         | | list_name | name | label | geometry |
-        | | c1        | n1   | N1    | 123 ...  |
+        | | {name}    | n1   | N1    | 123 ...  |
         """
-        for t in GEO_TYPES:
-            with self.subTest(t):
+        for t, name in REF_GEO_CASES:
+            with self.subTest((t, name)):
                 self.assertPyxformXform(
-                    md=md.format(type=t),
+                    md=md.format(type=t, name=name),
                     xml__xpath_match=[
-                        xpq.model_instance_exists("c1"),
+                        xpq.model_instance_exists(name),
                         xpq.model_instance_bind("q2", t),
                         xpq.body_itemset(
                             q_name="q2",
-                            nodeset="instance('c1')/root/item[name =  /test_name/q1 ]",
+                            nodeset=f"instance('{name}')/root/item[name =  /test_name/q1 ]",
                             extra_q_assertions="and not(@reference-geometry)",
                         ),
                     ],
@@ -467,27 +521,27 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_entity_list__ok(self):
         """Should find that a child itemset is emitted, with default value/label."""
-        # RG005 RG006 RG009 RG016
+        # RG005 RG006 RG009 RG016 RG017
         md = """
         | survey |
-        | | type         | name | label | parameters            |
-        | | csv-external | e1   |       |                       |
-        | | {type}       | q1   | Q1    | reference-geometry=e1 |
+        | | type         | name   | label | parameters                |
+        | | csv-external | {name} |       |                           |
+        | | {type}       | q1     | Q1    | reference-geometry={name} |
 
         | entities |
         | | list_name | label |
-        | | e1        | E1    |
+        | | {name}    | E1    |
         """
-        for t in GEO_TYPES:
-            with self.subTest(t):
+        for t, name in REF_GEO_CASES:
+            with self.subTest((t, name)):
                 self.assertPyxformXform(
-                    md=md.format(type=t),
+                    md=md.format(type=t, name=name),
                     xml__xpath_match=[
-                        xpq.model_instance_exists("e1"),
+                        xpq.model_instance_exists(name),
                         xpq.model_instance_bind("q1", t),
                         xpq.body_itemset(
                             q_name="q1",
-                            nodeset="instance('e1')/root/item",
+                            nodeset=f"instance('{name}')/root/item",
                             extra_q_assertions="and not(@reference-geometry)",
                         ),
                     ],
@@ -495,27 +549,27 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_entity_list__choice_filter__ok(self):
         """Should find that a child itemset is emitted, with a choice_filter predicate."""
-        # RG005 RG006 RG009 RG014 RG016
+        # RG005 RG006 RG009 RG014 RG016 RG017
         md = """
         | survey |
-        | | type         | name | label | parameters            | choice_filter |
-        | | csv-external | e1   |       |                       |               |
-        | | {type}       | q1   | Q1    | reference-geometry=e1 | region = 1    |
+        | | type         | name   | label | parameters                | choice_filter |
+        | | csv-external | {name} |       |                           |               |
+        | | {type}       | q1     | Q1    | reference-geometry={name} | region = 1    |
 
         | entities |
         | | list_name | label |
-        | | e1        | E1    |
+        | | {name}    | E1    |
         """
-        for t in GEO_TYPES:
-            with self.subTest(t):
+        for t, name in REF_GEO_CASES:
+            with self.subTest((t, name)):
                 self.assertPyxformXform(
-                    md=md.format(type=t),
+                    md=md.format(type=t, name=name),
                     xml__xpath_match=[
-                        xpq.model_instance_exists("e1"),
+                        xpq.model_instance_exists(name),
                         xpq.model_instance_bind("q1", t),
                         xpq.body_itemset(
                             q_name="q1",
-                            nodeset="instance('e1')/root/item[region = 1]",
+                            nodeset=f"instance('{name}')/root/item[region = 1]",
                             extra_q_assertions="and not(@reference-geometry)",
                         ),
                     ],
@@ -523,25 +577,25 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_pyxform_reference__ok(self):
         """Should find that a child itemset is emitted, with geometry value/label."""
-        # RG005 RG007 RG010 RG016
+        # RG005 RG007 RG010 RG016 RG017
         md = """
         | survey |
-        | | type         | name     | label | parameters                 |
-        | | begin_repeat | r1       | R1    |                            |
-        | | text         | geometry | Q1    |                            |
-        | | end_repeat   | r1       |       |                            |
-        | | {type}       | q2       | Q2    | reference-geometry=${{r1}} |
+        | | type         | name     | label | parameters                     |
+        | | begin_repeat | {name}   | R1    |                                |
+        | | text         | geometry | Q1    |                                |
+        | | end_repeat   | {name}   |       |                                |
+        | | {type}       | q2       | Q2    | reference-geometry=${{{name}}} |
         """
-        for t in GEO_TYPES:
-            with self.subTest(t):
+        for t, name in REF_GEO_CASES:
+            with self.subTest((t, name)):
                 self.assertPyxformXform(
-                    md=md.format(type=t),
+                    md=md.format(type=t, name=name),
                     xml__xpath_match=[
-                        xpq.model_instance_item("r1[not(@jr:template)]"),
+                        xpq.model_instance_item(f"{name}[not(@jr:template)]"),
                         xpq.model_instance_bind("q2", t),
                         xpq.body_itemset(
                             q_name="q2",
-                            nodeset="/test_name/r1[./geometry != '']",
+                            nodeset=f"/test_name/{name}[./geometry != '']",
                             value_ref="geometry",
                             label_ref="geometry",
                             extra_q_assertions="and not(@reference-geometry)",
@@ -551,26 +605,26 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_pyxform_reference__choice_filter__ok(self):
         """Should find that a child itemset is emitted, with a choice_filter predicate."""
-        # RG005 RG007 RG010 RG014 RG016
+        # RG005 RG007 RG010 RG014 RG016 RG017
         md = """
         | survey |
-        | | type         | name     | label | parameters                 | choice_filter |
-        | | begin_repeat | r1       | R1    |                            |               |
-        | | geopoint     | geometry | Q1    |                            |               |
-        | | text         | q2       | Q2    |
-        | | end_repeat   | r1       |       |                            |               |
-        | | {type}       | q3       | Q3    | reference-geometry=${{r1}} | ${{q2}} = 1   |
+        | | type         | name     | label | parameters                     | choice_filter |
+        | | begin_repeat | {name}   | R1    |                                |               |
+        | | geopoint     | geometry | Q1    |                                |               |
+        | | text         | q2       | Q2    |                                |               |
+        | | end_repeat   | {name}   |       |                                |               |
+        | | {type}       | q3       | Q3    | reference-geometry=${{{name}}} | ${{q2}} = 1   |
         """
-        for t in GEO_TYPES:
-            with self.subTest(t):
+        for t, name in REF_GEO_CASES:
+            with self.subTest((t, name)):
                 self.assertPyxformXform(
-                    md=md.format(type=t),
+                    md=md.format(type=t, name=name),
                     xml__xpath_match=[
-                        xpq.model_instance_item("r1[not(@jr:template)]"),
+                        xpq.model_instance_item(f"{name}[not(@jr:template)]"),
                         xpq.model_instance_bind("q3", t),
                         xpq.body_itemset(
                             q_name="q3",
-                            nodeset="/test_name/r1[ ./q2  = 1]",
+                            nodeset=f"/test_name/{name}[ ./q2  = 1]",
                             value_ref="geometry",
                             label_ref="geometry",
                             extra_q_assertions="and not(@reference-geometry)",
@@ -580,24 +634,24 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_pyxform_reference__inside_repeat__ok(self):
         """Should find that a child itemset is emitted, with geometry value/label."""
-        # RG005 RG007 RG010 RG016
+        # RG005 RG007 RG010 RG016 RG017
         md = """
         | survey |
-        | | type         | name     | label | parameters                 |
-        | | begin_repeat | r1       | R1    |                            |
-        | | {type}       | geometry | Q1    | reference-geometry=${{r1}} |
-        | | end_repeat   | r1       |       |                            |
+        | | type         | name     | label | parameters                     |
+        | | begin_repeat | {name}   | R1    |                                |
+        | | {type}       | geometry | Q1    | reference-geometry=${{{name}}} |
+        | | end_repeat   | {name}   |       |                                |
         """
-        for t in GEO_TYPES:
-            with self.subTest(t):
+        for t, name in REF_GEO_CASES:
+            with self.subTest((t, name)):
                 self.assertPyxformXform(
-                    md=md.format(type=t),
+                    md=md.format(type=t, name=name),
                     xml__xpath_match=[
-                        xpq.model_instance_item("r1[not(@jr:template)]"),
-                        xpq.model_instance_bind("r1/geometry", t),
+                        xpq.model_instance_item(f"{name}[not(@jr:template)]"),
+                        xpq.model_instance_bind(f"{name}/geometry", t),
                         xpq.body_itemset(
-                            q_name="r1/geometry",
-                            nodeset="/test_name/r1[./geometry != '']",
+                            q_name=f"{name}/geometry",
+                            nodeset=f"/test_name/{name}[./geometry != '']",
                             value_ref="geometry",
                             label_ref="geometry",
                             extra_q_assertions="and not(@reference-geometry)",
@@ -608,24 +662,24 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_external_file__ok(self):
         """Should find that a child itemset is emitted, with default value/label."""
-        # RG005 RG006 RG011 RG016
+        # RG005 RG006 RG011 RG016 RG017
         md = """
         | survey |
-        | | type   | name | label | parameters            |
-        | | {ext}  | x1   |       |                       |
-        | | {type} | q2   | Q2    | reference-geometry=x1 |
+        | | type   | name   | label | parameters                |
+        | | {ext}  | {name} |       |                           |
+        | | {type} | q2     | Q2    | reference-geometry={name} |
         """
-        for t in GEO_TYPES:
+        for t, name in REF_GEO_CASES:
             for ext in co.EXTERNAL_INSTANCE_TYPES:
-                with self.subTest((t, ext)):
+                with self.subTest((t, ext, name)):
                     self.assertPyxformXform(
-                        md=md.format(type=t, ext=ext),
+                        md=md.format(type=t, ext=ext, name=name),
                         xml__xpath_match=[
-                            xpq.model_instance_exists("x1"),
+                            xpq.model_instance_exists(name),
                             xpq.model_instance_bind("q2", t),
                             xpq.body_itemset(
                                 q_name="q2",
-                                nodeset="instance('x1')/root/item",
+                                nodeset=f"instance('{name}')/root/item",
                                 extra_q_assertions="and not(@reference-geometry)",
                             ),
                         ],
@@ -633,24 +687,24 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_external_file__choice_filter__ok(self):
         """Should find that a child itemset is emitted, with a choice_filter predicate."""
-        # RG005 RG006 RG011 RG014 RG016
+        # RG005 RG006 RG011 RG014 RG016 RG017
         md = """
         | survey |
-        | | type   | name | label | parameters            | choice_filter |
-        | | {ext}  | x1   |       |                       |               |
-        | | {type} | q2   | Q2    | reference-geometry=x1 | region = 1    |
+        | | type   | name   | label | parameters                | choice_filter |
+        | | {ext}  | {name} |       |                           |               |
+        | | {type} | q2     | Q2    | reference-geometry={name} | region = 1    |
         """
-        for t in GEO_TYPES:
+        for t, name in REF_GEO_CASES:
             for ext in co.EXTERNAL_INSTANCE_TYPES:
-                with self.subTest((t, ext)):
+                with self.subTest((t, ext, name)):
                     self.assertPyxformXform(
-                        md=md.format(type=t, ext=ext),
+                        md=md.format(type=t, ext=ext, name=name),
                         xml__xpath_match=[
-                            xpq.model_instance_exists("x1"),
+                            xpq.model_instance_exists(name),
                             xpq.model_instance_bind("q2", t),
                             xpq.body_itemset(
                                 q_name="q2",
-                                nodeset="instance('x1')/root/item[region = 1]",
+                                nodeset=f"instance('{name}')/root/item[region = 1]",
                                 extra_q_assertions="and not(@reference-geometry)",
                             ),
                         ],
@@ -658,24 +712,24 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_select_from_file__ok(self):
         """Should find that a child itemset is emitted, with default value/label."""
-        # RG005 RG006 RG012 RG016
+        # RG005 RG006 RG012 RG016 RG017
         md = """
         | survey |
-        | | type                         | name | label | parameters            |
-        | | select_one_from_file s1{ext} | q1   | Q1    |                       |
-        | | {type}                       | q2   | Q2    | reference-geometry=s1 |
+        | | type                             | name | label | parameters                |
+        | | select_one_from_file {name}{ext} | q1   | Q1    |                           |
+        | | {type}                           | q2   | Q2    | reference-geometry={name} |
         """
-        for t in GEO_TYPES:
+        for t, name in REF_GEO_CASES:
             for ext in co.EXTERNAL_INSTANCE_EXTENSIONS:
-                with self.subTest((t, ext)):
+                with self.subTest((t, ext, name)):
                     self.assertPyxformXform(
-                        md=md.format(type=t, ext=ext),
+                        md=md.format(type=t, ext=ext, name=name),
                         xml__xpath_match=[
-                            xpq.model_instance_exists("s1"),
+                            xpq.model_instance_exists(name),
                             xpq.model_instance_bind("q2", t),
                             xpq.body_itemset(
                                 q_name="q2",
-                                nodeset="instance('s1')/root/item",
+                                nodeset=f"instance('{name}')/root/item",
                                 extra_q_assertions="and not(@reference-geometry)",
                             ),
                         ],
@@ -683,24 +737,24 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_select_from_file__choice_filter__ok(self):
         """Should find that a child itemset is emitted, with a choice_filter predicate."""
-        # RG005 RG006 RG012 RG014 RG016
+        # RG005 RG006 RG012 RG014 RG016 RG017
         md = """
         | survey |
-        | | type                         | name | label | parameters            | choice_filter |
-        | | select_one_from_file s1{ext} | q1   | Q1    |                       |               |
-        | | {type}                       | q2   | Q2    | reference-geometry=s1 | region = 1    |
+        | | type                             | name | label | parameters                | choice_filter |
+        | | select_one_from_file {name}{ext} | q1   | Q1    |                           |               |
+        | | {type}                           | q2   | Q2    | reference-geometry={name} | region = 1    |
         """
-        for t in GEO_TYPES:
+        for t, name in REF_GEO_CASES:
             for ext in co.EXTERNAL_INSTANCE_EXTENSIONS:
-                with self.subTest((t, ext)):
+                with self.subTest((t, ext, name)):
                     self.assertPyxformXform(
-                        md=md.format(type=t, ext=ext),
+                        md=md.format(type=t, ext=ext, name=name),
                         xml__xpath_match=[
-                            xpq.model_instance_exists("s1"),
+                            xpq.model_instance_exists(name),
                             xpq.model_instance_bind("q2", t),
                             xpq.body_itemset(
                                 q_name="q2",
-                                nodeset="instance('s1')/root/item[region = 1]",
+                                nodeset=f"instance('{name}')/root/item[region = 1]",
                                 extra_q_assertions="and not(@reference-geometry)",
                             ),
                         ],
@@ -708,32 +762,32 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_select_from_file__params_value_label__ok(self):
         """Should find that a child itemset is emitted, with default value/label."""
-        # RG005 RG006 RG012 RG016
+        # RG005 RG006 RG012 RG016 RG017
         md = """
         | survey |
-        | | type                         | name | label | parameters            |
-        | | select_one_from_file s1{ext} | q1   | Q1    | value=v, label=l      |
-        | | {type}                       | q2   | Q2    | reference-geometry=s1 |
+        | | type                             | name | label | parameters                |
+        | | select_one_from_file {name}{ext} | q1   | Q1    | value=v, label=l          |
+        | | {type}                           | q2   | Q2    | reference-geometry={name} |
         """
-        for t in GEO_TYPES:
+        for t, name in REF_GEO_CASES:
             for ext in co.EXTERNAL_INSTANCE_EXTENSIONS:
-                with self.subTest((t, ext)):
+                with self.subTest((t, ext, name)):
                     self.assertPyxformXform(
-                        md=md.format(type=t, ext=ext),
+                        md=md.format(type=t, ext=ext, name=name),
                         xml__xpath_match=[
-                            xpq.model_instance_exists("s1"),
+                            xpq.model_instance_exists(name),
                             # The "select from file" params are separate to reference-geometry.
                             xpq.body_itemset(
                                 q_name="q1",
                                 q_type="select1",
-                                nodeset="instance('s1')/root/item",
+                                nodeset=f"instance('{name}')/root/item",
                                 value_ref="v",
                                 label_ref="l",
                             ),
                             xpq.model_instance_bind("q2", t),
                             xpq.body_itemset(
                                 q_name="q2",
-                                nodeset="instance('s1')/root/item",
+                                nodeset=f"instance('{name}')/root/item",
                                 extra_q_assertions="and not(@reference-geometry)",
                             ),
                         ],
@@ -741,24 +795,24 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_select_one_external__ok(self):
         """Should find that a child itemset is emitted, with default value/label."""
-        # RG005 RG006 RG011 RG015 RG016
+        # RG005 RG006 RG011 RG015 RG016 RG017
         # select_one_external doesn't generate an instance, so the csv-external does that,
         # and the file name "itemsets.csv" is the hard-coded file name  external_choices.
         md = """
         | survey |
-        | | type                    | name     | label | parameters                  | choice_filter  | relevant |
-        | | csv-external            | itemsets |       |                             |                |          |
-        | | select_one_external c1  | q1       | Q1    |                             | false()        | false()  |
-        | | {type}                  | q2       | Q2    | reference-geometry=itemsets |                |          |
+        | | type                       | name     | label | parameters                  | choice_filter | relevant |
+        | | csv-external               | itemsets |       |                             |               |          |
+        | | select_one_external {name} | q1       | Q1    |                             | false()       | false()  |
+        | | {type}                     | q2       | Q2    | reference-geometry=itemsets |               |          |
 
         | external_choices |
         | | list_name | name | label | geometry |
-        | | c1        | n1   | N1    | 123 ...  |
+        | | {name}    | n1   | N1    | 123 ...  |
         """
-        for t in GEO_TYPES:
-            with self.subTest(t):
+        for t, name in REF_GEO_CASES:
+            with self.subTest((t, name)):
                 self.assertPyxformXform(
-                    md=md.format(type=t),
+                    md=md.format(type=t, name=name),
                     xml__xpath_match=[
                         xpq.model_instance_exists("itemsets"),
                         xpq.model_instance_bind("q2", t),
@@ -772,22 +826,22 @@ class TestParameterReferenceGeometryOutput(PyxformTestCase):
 
     def test_select_one_external__choice_filter__ok(self):
         """Should find that a child itemset is emitted, with a choice_filter predicate."""
-        # RG005 RG006 RG011 RG014 RG015 RG016
+        # RG005 RG006 RG011 RG014 RG015 RG016 RG017
         md = """
         | survey |
-        | | type                    | name     | label | parameters                  | choice_filter  | relevant |
-        | | csv-external            | itemsets |       |                             |                |          |
-        | | select_one_external c1  | q1       | Q1    |                             | false()        | false()  |
-        | | {type}                  | q2       | Q2    | reference-geometry=itemsets | name = 'n1'    |          |
+        | | type                       | name     | label | parameters                  | choice_filter | relevant |
+        | | csv-external               | itemsets |       |                             |               |          |
+        | | select_one_external {name} | q1       | Q1    |                             | false()       | false()  |
+        | | {type}                     | q2       | Q2    | reference-geometry=itemsets | name = 'n1'   |          |
 
         | external_choices |
         | | list_name | name | label | geometry |
-        | | c1        | n1   | N1    | 123 ...  |
+        | | {name}    | n1   | N1    | 123 ...  |
         """
-        for t in GEO_TYPES:
-            with self.subTest(t):
+        for t, name in REF_GEO_CASES:
+            with self.subTest((t, name)):
                 self.assertPyxformXform(
-                    md=md.format(type=t),
+                    md=md.format(type=t, name=name),
                     xml__xpath_match=[
                         xpq.model_instance_exists("itemsets"),
                         xpq.model_instance_bind("q2", t),

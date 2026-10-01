@@ -443,6 +443,16 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
     return entity
 
 
+def get_entity_property(entity: dict[str, Any], name: str) -> dict[str, Any] | None:
+    """
+    From the entity "children" list, lookup a property item by the "name" key.
+
+    :param entity: The entity declaration to search.
+    :param name: The property name to look for.
+    """
+    return next(iter(c for c in entity[const.CHILDREN] if c[const.NAME] == name), None)
+
+
 def validate_dataset_name(dataset_name: str | None, row_number: int) -> None:
     """
     Check the dataset_name passes all naming rules.
@@ -470,6 +480,29 @@ def validate_dataset_name(dataset_name: str | None, row_number: int) -> None:
                 sheet=const.ENTITIES, row=row_number, column=EC.DATASET.value
             )
         )
+
+
+def validate_update_dataset_references(
+    entity_declarations: dict[str, dict[str, Any]],
+    secondary_instances: set[tuple[str, str]],
+) -> None:
+    """
+    Check that the entities in update mode refer to a secondary instance.
+
+    :param entity_declarations: The entities data `{list_name: declaration]}`.
+    :param secondary_instances:
+    :return:
+    """
+    secondary_instance_csvs = {n for n, t in secondary_instances if t.lower() == ".csv"}
+    for ed in entity_declarations.values():
+        update = get_entity_property(entity=ed, name="update")
+        if update is not None:
+            dataset = get_entity_property(entity=ed, name="dataset")
+            if dataset is not None and dataset["value"] not in secondary_instance_csvs:
+                raise PyXFormError(
+                    code=ErrorCode.ENTITY_014,
+                    context={"row": ed["__row_number"], "dataset": dataset["value"]},
+                )
 
 
 def validate_saveto(
@@ -744,10 +777,7 @@ def inject_entities_into_json(
     if dataset_name and dataset_name not in entities_allocated:
         entity_decl = entity_declarations[dataset_name]
         if has_repeat_ancestor:
-            id_attr = next(
-                iter(c for c in entity_decl[const.CHILDREN] if c[const.NAME] == "id"),
-                None,
-            )
+            id_attr = get_entity_property(entity=entity_decl, name="id")
             if id_attr and len(id_attr["actions"]) == 1:
                 new_repeat = action.ActionLibrary.setvalue_new_repeat.value.to_dict()
                 new_repeat["value"] = id_attr["actions"][0]["value"]

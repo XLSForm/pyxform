@@ -21,7 +21,7 @@ def validate_parameter_incremental(value: str) -> None:
 
 def validate_parameter_reference_geometry(
     geo_references: Iterable[Iterable[str, int]],
-    secondary_instances: set[str],
+    secondary_instances: set[tuple[str, str]],
     repeat_names: set[str],
     choices: dict[str, list[dict]],
     entity_declarations: dict[str, dict[str, Any]] | None = None,
@@ -35,14 +35,15 @@ def validate_parameter_reference_geometry(
     - last-saved usages in variables
 
     :param geo_references: Pairs of (target, source row_num) for reference_geometry usage.
-    :param secondary_instances: The names of valid secondary instances in the form.
+    :param secondary_instances: The (name, ext) of valid secondary instances in the form.
     :param repeat_names: Names of repeat groups in the form.
     :param choices: The choices data as `{list_name: [choice_items[options], ...]}`.
     :param entity_declarations: The entities data `{list_name: declaration]}`.
     """
+    secondary_instance_names = {n for n, t in secondary_instances if t}
     for target, row_num in geo_references:
         if (
-            target in secondary_instances
+            target in secondary_instance_names
             or target in choices
             or (entity_declarations and target in entity_declarations)
         ):

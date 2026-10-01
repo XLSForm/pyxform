@@ -163,7 +163,7 @@ Releases are now automatic. These instructions are provided for forks or for a f
 3. Install the production and packaging requirements::
 
      pip install -e .
-     pip install flit==3.9.0
+     pip install flit==3.12.0 "flit_core >=3.2,<4"
 
 4. Clean up build and dist folders::
 

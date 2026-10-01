@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from pyxform import aliases
 from pyxform import constants as co
 from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, ROW_FORMAT_STRING
 from pyxform.errors import ErrorCode, PyXFormError
@@ -35,7 +34,7 @@ def validate_list_name_extension(
 ) -> None:
     """For select_from_file types, the list_name should end with a supported extension."""
     list_path = Path(list_name)
-    if select_command in aliases.select_from_file and (
+    if (
         1 != len(list_path.suffixes)
         or list_path.suffix not in EXTERNAL_INSTANCE_EXTENSIONS
     ):
