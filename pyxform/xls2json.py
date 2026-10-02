@@ -281,21 +281,8 @@ def workbook_to_json(
         if similar is not None:
             warnings.append(similar + _MSG_SUPPRESS_SPELLING)
 
-    clean_text_values_enabled = aliases.yes_no.get(
-        settings.get("clean_text_values", "yes"), True
-    )
     default_language = settings.get(constants.DEFAULT_LANGUAGE_KEY, default_language)
-    # add_none_option is a boolean that when true,
-    # indicates a none option should automatically be added to selects.
-    # It should probably be deprecated but I haven't checked yet.
-    if "add_none_option" in settings:
-        settings["add_none_option"] = aliases.yes_no.get(
-            settings.get("add_none_option", "no"), False
-        )
-    if constants.CLIENT_EDITABLE in settings:
-        settings[constants.CLIENT_EDITABLE] = aliases.yes_no.get(
-            settings.get(constants.CLIENT_EDITABLE, "no"), False
-        )
+    validate_settings.resolve_bool_settings(settings=settings, warnings=warnings)
 
     # Here we create our json dict root with default settings:
     id_string = settings.get(
@@ -361,9 +348,7 @@ def workbook_to_json(
             choices=choices,
             warnings=warnings,
             headers=choices_sheet.headers,
-            allow_duplicates=aliases.yes_no.get(
-                settings.get("allow_choice_duplicates", "no"), False
-            ),
+            allow_duplicates=settings.get(constants.ALLOW_CHOICE_DUPLICATES, False),
         )
         if choices:
             json_dict[constants.CHOICES] = choices
@@ -400,7 +385,7 @@ def workbook_to_json(
         header_columns=set(MultipleChoiceQuestion.get_slot_names()),
         headers_required={constants.TYPE},
         default_language=default_language,
-        strip_whitespace=clean_text_values_enabled,
+        strip_whitespace=settings.get("clean_text_values", True),
     )
     survey_sheet.data = dealias_types(dict_array=survey_sheet.data)
 
@@ -1341,7 +1326,7 @@ def workbook_to_json(
         # print "Generating flattened instance..."
         add_flat_annotations(stack[0]["parent_children"])
 
-    if aliases.yes_no.get(settings.get("omit_instanceID")):
+    if settings.get("omit_instanceID", False):
         if settings.get("public_key"):
             raise PyXFormError("Cannot omit instanceID, it is required for encryption.")
     else:
