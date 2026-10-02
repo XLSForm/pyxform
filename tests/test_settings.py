@@ -591,70 +591,323 @@ class TestNamespaces(PyxformTestCase):
             ],
         )
 
-    def test_client_editable_setting__active(self):
-        """Should find the odk:client-editable attribute in the submission config."""
-        # Set to an alias of True.
-        md1 = """
-        | settings |
-        |          | client_editable |
-        |          | yes             |
-        | survey |       |      |       |
-        |        | type  | name | label |
-        |        | text  | q1   | hello |
-        """
-        # Set the same way as another submission setting (e.g. auto_send).
-        md2 = """
-        | settings |
-        |          | client_editable |
-        |          | true            |
-        | survey |       |      |       |
-        |        | type  | name | label |
-        |        | text  | q1   | hello |
-        """
-        for md in (md1, md2):
-            self.assertPyxformXform(
-                md=md,
-                xml__xpath_match=[
-                    """/h:html/h:head/x:model/x:submission[@odk:client-editable = 'true']""",
-                ],
-            )
 
-    def test_client_editable_setting__inactive(self):
-        """Should not find the odk:client-editable attribute in the submission config."""
-        # Set to an alias of False.
-        md1 = """
+class TestSubmission(PyxformTestCase):
+    """Test settings that configure the submission element."""
+
+    def test_client_editable__active(self):
+        """Should find the odk:client-editable attribute in the submission config."""
+        md = """
         | settings |
-        |          | client_editable |
-        |          | no              |
-        | survey |       |      |       |
-        |        | type  | name | label |
-        |        | text  | q1   | hello |
+        || client_editable |
+        || {case}          |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
         """
-        # Not set.
-        md2 = """
-        | survey |       |      |       |
-        |        | type  | name | label |
-        |        | text  | q1   | hello |
-        """
-        for md in (md1, md2):
-            self.assertPyxformXform(
-                md=md,
-                xml__xpath_match=[
-                    """/h:html/h:head/x:model[not(./x:submission/@odk:client-editable)]""",
-                ],
-            )
-        # Set to false, with other setting that triggers `submission` element.
-        md3 = """
+        cases = ("yes", "true")
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        xps.submission_where("@odk:client-editable = 'true'"),
+                    ],
+                )
+
+    def test_client_editable__inactive__explicit(self):
+        """Should not find a submission config containing odk:client-editable."""
+        md = """
         | settings |
-        |          | client_editable | auto_send |
-        |          | false           | true      |
-        | survey |       |      |       |
-        |        | type  | name | label |
-        |        | text  | q1   | hello |
+        || client_editable |
+        || {case}          |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        cases = ("no", "false")
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        """/h:html/h:head/x:model[not(./x:submission/@odk:client-editable)]""",
+                    ],
+                )
+
+    def test_client_editable__inactive__implicit(self):
+        """Should not find a submission config containing odk:client-editable."""
+        md = """
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
         """
         self.assertPyxformXform(
-            md=md3,
+            md=md,
             xml__xpath_match=[
-                """/h:html/h:head/x:model/x:submission[not(@odk:client-editable)]""",
+                """/h:html/h:head/x:model[not(./x:submission/@odk:client-editable)]""",
+            ],
+        )
+
+    def test_client_editable__inactive__explicit__submission(self):
+        """Should not find the odk:client-editable attribute in the submission config."""
+        md = """
+        | settings |
+        || client_editable | auto_send |
+        || {case}          | true      |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        cases = ("no", "false")
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        xps.submission_where("not(@odk:client-editable = 'true')"),
+                    ],
+                )
+
+    def test_auto_send__active(self):
+        """Should find the orx:auto-send attribute in the submission config."""
+        md = """
+        | settings |
+        || auto_send |
+        || {case}    |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        cases = ("yes", "true")
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        xps.submission_where("@orx:auto-send = 'true'"),
+                    ],
+                )
+
+    def test_auto_send__inactive__explicit(self):
+        """Should not find a submission config containing orx:auto-send."""
+        md = """
+        | settings |
+        || auto_send |
+        || {case}    |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        cases = ("no", "false")
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        """/h:html/h:head/x:model[not(./x:submission/@orx:auto-send)]""",
+                    ],
+                )
+
+    def test_auto_send__inactive__implicit(self):
+        """Should not find a submission config containing orx:auto-send."""
+        md = """
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """/h:html/h:head/x:model[not(./x:submission/@orx:auto-send)]""",
+            ],
+        )
+
+    def test_auto_send__inactive__explicit__submission(self):
+        """Should not find the orx:auto-send attribute in the submission config."""
+        md = """
+        | settings |
+        || auto_send | client_editable |
+        || {case}    | true            |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        cases = ("no", "false")
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        xps.submission_where("not(@orx:auto-send)"),
+                    ],
+                )
+
+    def test_auto_delete__active(self):
+        """Should find the orx:auto-delete attribute in the submission config."""
+        md = """
+        | settings |
+        || auto_delete |
+        || {case}      |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        cases = ("yes", "true")
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        xps.submission_where("@orx:auto-delete = 'true'"),
+                    ],
+                )
+
+    def test_auto_delete__inactive__explicit(self):
+        """Should not find a submission config containing orx:auto-delete."""
+        md = """
+        | settings |
+        || auto_delete |
+        || {case}      |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        cases = ("no", "false")
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        """/h:html/h:head/x:model[not(./x:submission/@orx:auto-delete)]""",
+                    ],
+                )
+
+    def test_auto_delete__inactive__implicit(self):
+        """Should not find a submission config containing orx:auto-delete."""
+        md = """
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                """/h:html/h:head/x:model[not(./x:submission/@orx:auto-delete)]""",
+            ],
+        )
+
+    def test_auto_delete__inactive__explicit__submission(self):
+        """Should not find the orx:auto-delete attribute in the submission config."""
+        md = """
+        | settings |
+        || auto_delete | client_editable |
+        || {case}      | true            |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        cases = ("no", "false")
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        xps.submission_where("not(@orx:auto-delete)"),
+                    ],
+                )
+
+    def test_bool_setting_unrecognised_value__warning(self):
+        """Should show a warning if a bool setting value was not recognised."""
+        md = """
+        | settings |
+        || auto_delete |
+        || {case}      |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        cases = ("yeah", "nah", "Y", "N", "X")
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    warnings__contains=[
+                        ErrorCode.SETTING_001.value.format(
+                            name=co.AUTO_DELETE,
+                            value=case,
+                            default="no",
+                        )
+                    ],
+                )
+
+    def test_bool_setting_unrecognised_value__no_warning_for_empty(self):
+        """Should not show a warning if a bool setting has a column with no value."""
+        md = """
+        | settings |
+        || auto_delete |
+        ||             |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            warnings_count=0,
+            warnings__not_contains=[
+                ErrorCode.SETTING_001.value.format(
+                    name=co.AUTO_DELETE,
+                    value="",
+                    default="no",
+                )
+            ],
+        )
+
+    def test_settings_without_submission_url_does_not_generate_method_attribute(self):
+        """Should not generate method attribute on submission config when submission_url is omitted."""
+        pk = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwOHPJWD9zc8JPBZj/UtCdHiY7I4HWt61UG1XRaGvvwUkC/y8P5Kk6dRnf3yMTBHQoisT2vU2ODWVaU5elndkhiKiWdhufp1d86FWGYz/i+VOmdoV+0zoyPzk+vTEG8bpiY7/UcDYY0CsrRmaMei115xZwQpSMpayqMjemvwGDyhy2B3Yize4yaxyLFG53wMrHEczzsYz8FuRfuKUleE/6jFc3uXZET4LJ7S76n1XU+bE+mhhoZ+tVERgaVH38l0SZljBITwHeqQ9WQckkmDfbRHBG7TQm+Afnx0s5E2bGIT5jB5cj9YaX6BqZSeodpafQjpXEJg6uufxF1Ni3Btv4wIDAQAB"
+        md = f"""
+        | settings |
+        || public_key | auto_send |
+        || {pk}       | false     |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xps.submission_where(f"@base64RsaPublicKey='{pk}' and not(@method)"),
+            ],
+        )
+
+    def test_settings_with_submission_url_generates_method_attribute(self):
+        """Should generate action and method attributes on submission config when submission_url is provided."""
+        url = "https://odk.ona.io/random_person/submission"
+        md = f"""
+        | settings |
+        || submission_url | auto_send |
+        || {url}          | false     |
+
+        | survey |
+        || type | name | label |
+        || text | q1   | Q1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xps.submission_where(f"@action='{url}' and @method='post'"),
             ],
         )

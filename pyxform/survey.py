@@ -204,8 +204,8 @@ class Survey(Section):
         # Other settings
         self.add_none_option: bool = False
         self.allow_choice_duplicates: bool = False
-        self.auto_delete: str | None = None
-        self.auto_send: str | None = None
+        self.auto_delete: bool = False
+        self.auto_send: bool = False
         self.clean_text_values: bool = False
         self.client_editable: bool = False
         self.instance_xmlns: str | None = None
@@ -627,9 +627,9 @@ class Survey(Section):
             if self.public_key:
                 submission_attrs["base64RsaPublicKey"] = self.public_key
             if self.auto_send:
-                submission_attrs["orx:auto-send"] = self.auto_send
+                submission_attrs["orx:auto-send"] = "true"
             if self.auto_delete:
-                submission_attrs["orx:auto-delete"] = self.auto_delete
+                submission_attrs["orx:auto-delete"] = "true"
             if self.client_editable:
                 submission_attrs["odk:client-editable"] = "true"
             submission_node = node("submission", **submission_attrs)

@@ -503,6 +503,15 @@ class ErrorCode(Enum):
             "match the range 'start' and 'end' values when the 'appearance' is 'no-ticks'."
         ),
     )
+    SETTING_001 = Detail(
+        name="Settings sheet - bool setting not resolved",
+        msg=(
+            "On the 'settings' sheet, the '{name}' value may need to be updated. "
+            "The '{name}' setting expects one of: true/false/yes/no, but the value '{value}' "
+            "was not recognised. The default value '{default} will be used instead. "
+            "Learn more: https://docs.getodk.org/xlsform/#the-settings-sheet"
+        ),
+    )
     SURVEY_001 = Detail(
         name="Survey sheet - unmatched group/repeat/loop end",
         msg=(
