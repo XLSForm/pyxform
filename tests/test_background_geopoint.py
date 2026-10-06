@@ -4,9 +4,7 @@ from pyxform.validators.pyxform import question_types as qt
 from tests.pyxform_test_case import PyxformTestCase
 
 
-class TestBackgroundGeopoint(PyxformTestCase):
-    """Test background-geopoint question type."""
-
+class TestBackgroundGeopointParsing(PyxformTestCase):
     def test_error__missing_trigger(self):
         """Should raise an error if the question trigger is empty."""
         md = """
@@ -54,6 +52,8 @@ class TestBackgroundGeopoint(PyxformTestCase):
             error__contains=[qt.BACKGROUND_GEOPOINT_CALCULATION.format(r=3)],
         )
 
+
+class TestBackgroundGeopointOutput(PyxformTestCase):
     def test_question_no_group__trigger_no_group(self):
         """Should find geopoint binding, and setgeopoint action on the triggering item."""
         md = """
@@ -271,5 +271,26 @@ class TestBackgroundGeopoint(PyxformTestCase):
                     @event='xforms-value-changed' and @ref='/data/groupB/temp_geo'
                 ]
                 """,
+            ],
+        )
+
+    def test_label_ignored_if_specified(self):
+        """Should find that the control output is hidden even if a label is specified."""
+        md = """
+        | survey |
+        | | type                | name | label | trigger |
+        | | integer             | q1   | Q1    |         |
+        | | background-geopoint | q2   | Q2    | ${q1}   |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_count=[
+                # No control output with this ref (other than setgeopoint in q1).
+                (
+                    "/h:html/h:body//*[local-name()!='setgeopoint' and @ref='/test_name/q2']",
+                    0,
+                ),
+                # No control with the specified label.
+                ("/h:html/h:body//*[text()='Q2']", 0),
             ],
         )

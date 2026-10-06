@@ -10,7 +10,7 @@ from xml.dom.minidom import Attr
 from pyxform import constants
 from pyxform.external_instance import ExternalInstance
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
-from pyxform.utils import node
+from pyxform.utils import DetachableElement, node
 from pyxform.validators.pyxform import unique_names
 
 if TYPE_CHECKING:
@@ -142,7 +142,7 @@ class Section(SurveyElement):
 
         for child in self.children:
             repeating_template = None
-            if hasattr(child, "flat") and child.get("flat"):
+            if isinstance(child, Section) and child.flat:
                 for grandchild in child.xml_instance_array(survey=survey):
                     result.appendChild(grandchild)
             elif isinstance(child, ExternalInstance):
@@ -150,7 +150,7 @@ class Section(SurveyElement):
             else:
                 if isinstance(child, RepeatingSection) and not append_template:
                     append_template = not append_template
-                    repeating_template = child.generate_repeating_template(survey=survey)
+                    repeating_template = child.xml_instance_template(survey=survey)
                 child_instance = child.xml_instance(
                     survey=survey, append_template=append_template
                 )
@@ -163,22 +163,12 @@ class Section(SurveyElement):
                 result.insertBefore(repeating_template, result._get_lastChild())
         return result
 
-    def generate_repeating_template(self, survey: "Survey", **kwargs):
-        attributes = {"jr:template": ""}
-        result = node(self.name, **attributes)
-        for child in self.children:
-            if isinstance(child, RepeatingSection):
-                result.appendChild(child.template_instance(survey=survey))
-            else:
-                result.appendChild(child.xml_instance(survey=survey))
-        return result
-
     def xml_instance_array(self, survey: "Survey"):
         """
         This method is used for generating flat instances.
         """
         for child in self.children:
-            if hasattr(child, "flat") and child.get("flat"):
+            if isinstance(child, Section) and child.flat:
                 yield from child.xml_instance_array(survey=survey)
             else:
                 yield child.xml_instance(survey=survey)
@@ -280,10 +270,16 @@ class RepeatingSection(Section):
         else:
             return node("group", repeat_node, ref=self.get_xpath())
 
-    # I'm anal about matching function signatures when overriding a function,
-    # but there's no reason for kwargs to be an argument
-    def template_instance(self, survey: "Survey", **kwargs):
-        return super().generate_repeating_template(survey=survey, **kwargs)
+    def xml_instance_template(self, survey: "Survey") -> DetachableElement:
+        result = node(self.name, **{"jr:template": ""})
+        from pyxform.question import Question
+
+        for child in self.children:
+            if isinstance(child, RepeatingSection):
+                result.appendChild(child.xml_instance_template(survey=survey))
+            elif isinstance(child, Section | Question):
+                result.appendChild(child.xml_instance(survey=survey))
+        return result
 
 
 class GroupedSection(Section):

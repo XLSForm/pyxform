@@ -178,7 +178,8 @@ RESERVED_NAMES_SURVEY_SHEET = {META}
 # Name enums by question type, or if shared then use a sensible question type prefix.
 # For aliased question types, use the primary documented name e.g. "image" not "photo".
 # The module question_type_dictionary.py handles default parameter values, if any.
-# Add new enums or keys alphabetical order.
+# Add new enums or keys alphabetical order. Parameter values are lower-cased unless the
+# key is added to CASE_SENSITIVE_VALUES in parameters.py.
 class ParametersAudio(StrEnum):
     QUALITY = "quality"
 

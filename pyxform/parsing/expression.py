@@ -9,7 +9,7 @@ from lark import Lark, Token
 # They in turn adapted it from https://www.w3.org/TR/REC-xml/#NT-NameStartChar
 # and https://www.w3.org/TR/REC-xml-names/#NT-NCName
 namestartchar = (
-    r"(?:[A-Z]|_|[a-z]|\xc0-\xd6]|[\xd8-\xf6]|[\xf8-\u02ff]|"
+    r"(?:[A-Z]|_|[a-z]|[\xc0-\xd6]|[\xd8-\xf6]|[\xf8-\u02ff]|"
     + r"[\u0370-\u037d]|[\u037f-\u1fff]|[\u200c-\u200d]|[\u2070-\u218f]|"
     + r"[\u2c00-\u2fef]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]"
     + r"|[\U00010000-\U000EFFFF])"

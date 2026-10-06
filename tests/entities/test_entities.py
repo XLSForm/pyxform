@@ -38,6 +38,7 @@ Each entities test should reference one (or more) requirements from these lists.
     - EV022: save_to name invalid reserved names error
     - EV023: save_to name invalid underscore prefix error
     - EV024: Entity name missing error
+    - EV025: Entity name does not match secondary instance error
 - Behaviour
     - EB001: Dataset column alias
     - EB002: implicit entity_id=0, create_if=0, update_if=0 (create)
@@ -61,7 +62,8 @@ Each entities test should reference one (or more) requirements from these lists.
     - EB021: Allocation to survey meta is compatible with other meta settings
     - EB022: Allocation searches path ancestors only (not children or siblings)
     - EB023: Allocation selects deepest boundary scope (pyxform/#822)
-    - EB024: ALlocation is to survey for only one entity not in repeats (pyxform/#825)
+    - EB024: Allocation is to survey for only one entity not in repeats (pyxform/#825)
+    - EB025: Update instance csv can be declared with select*from_file or csv-external
 
 
 ## Topological constraint solver regression suite
@@ -2119,6 +2121,42 @@ class TestEntitiesParsing(PyxformTestCase):
             ],
         )
 
+    def test_update_mode__missing_secondary_instance__none__error(self):
+        """Should find that when an update mode, an instance for the entity is required."""
+        # ES004 EB006 EB015 EB019 EV025
+        md = """
+        | survey |
+        | | type         | name | label |
+        | | text         | q1   | Q1    |
+
+        | entities |
+        | | list_name | entity_id |
+        | | e1        | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_014.value.format(row="2", dataset="e1")],
+        )
+
+    def test_update_mode__missing_secondary_instance__misspelling__error(self):
+        """Should find that when an update mode, an instance for the entity is required."""
+        # ES004 EB006 EB015 EB019 EV025
+        md = """
+        | survey |
+        | | type                         | name | label |
+        | | select_one_from_file e1s.csv | q1   | Q1    |
+
+        | entities |
+        | | list_name | entity_id |
+        | | e1        | ${q1}     |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.ENTITY_014.value.format(row="2", dataset="e1")],
+        )
+
 
 class TestEntitiesOutput(PyxformTestCase):
     def test_namespace__entities_not_used__not_exists(self):
@@ -2479,13 +2517,13 @@ class TestEntitiesOutput(PyxformTestCase):
             ],
         )
 
-    def test_implicit_update_mode__instance_required__error(self):
-        """Should find that when an update mode, an instance for the entity is required."""
-        # ES004 EB006 EB012 EB014 EB015 EB019
+    def test_implicit_update_mode__entity_id__survey__from_file(self):
+        """Should find that when an entity_id is provided, the entity is in update mode."""
+        # ES004 EB006 EB012 EB014 EB015 EB019 EB025
         md = """
         | survey |
-        | | type         | name | label |
-        | | text         | q1   | Q1    |
+        | | type                        | name | label |
+        | | select_one_from_file e1.csv | q1   | Q1    |
 
         | entities |
         | | list_name | entity_id |
@@ -2493,18 +2531,22 @@ class TestEntitiesOutput(PyxformTestCase):
         """
         self.assertPyxformXform(
             md=md,
-            run_odk_validate=True,
-            odk_validate_error__contains=[
-                "Error evaluating field",
-                "The problem was located in Calculate expression for ${entity}",
-                "XPath evaluation: Instance referenced by instance(e1)/root",
-                "does not exist",
+            xml__xpath_match=[
+                xpe.model_bind_meta_instanceid(),
+                xpe.model_instance_meta("e1", update=True),
+                xpe.model_bind_meta_id(" /test_name/q1 "),
+                xpe.model_bind_meta_baseversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_trunkversion("e1", "/test_name/q1"),
+                xpe.model_bind_meta_branchid("e1", "/test_name/q1"),
+            ],
+            xml__xpath_count=[
+                ("/h:html//x:setvalue", 0),
             ],
         )
 
     def test_implicit_update_mode__entity_id__survey(self):
         """Should find that when an entity_id is provided, the entity is in update mode."""
-        # ES004 EB006 EB012 EB014 EB015 EB019
+        # ES004 EB006 EB012 EB014 EB015 EB019 EB025
         md = """
         | survey |
         | | type         | name | label |

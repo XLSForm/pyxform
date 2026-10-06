@@ -55,6 +55,15 @@ class ErrorCode(Enum):
     significant and does not have to be sequential. With reference to the SQLSTATE standard
     as an example, the enum name would be the sqlstate code, and the Detail.name would be
     the "class text" and the Detail.msg would be the "subclass text" (with app context).
+
+    When writing error messages, try to follow a consistent structure (in the order shown
+    below) to help users quickly understand the message and resolve problems:
+
+    - error location: where is the value with the problem?
+    - error rule: what validation rule failed for the problem?
+    - additional context: (if helpful/possible) what part of the value has a problem?
+    - suggested resolution: (if helpful/possible) how could the user fix the problem?
+    - documentation link: (if helpful/possible) "Learn more: <docs URL>"
     """
 
     ENTITY_001 = Detail(
@@ -176,6 +185,17 @@ class ErrorCode(Enum):
             "[row : {row}] On the 'survey' sheet, the 'save_to' value is invalid. "
             "A 'save_to' value must have at most one '#' delimiter character. "
             "Please check the spelling of this 'save_to' value."
+        ),
+    )
+    ENTITY_014 = Detail(
+        name="Entities - missing secondary instance for update",
+        msg=(
+            "[row : {row}] On the 'entities' sheet, the entity declaration is invalid. "
+            "The entity list name '{dataset}' does not match the name of a secondary instance, "
+            "which is required when updating entities. "
+            "Please either: add a question on the 'survey' sheet with the type "
+            "'select_*_from_file' or 'csv-external', or check the spelling of existing "
+            "questions using these types and the entity list name."
         ),
     )
     HEADER_001: Detail = Detail(
@@ -360,34 +380,50 @@ class ErrorCode(Enum):
             "Entity lists must have a name."
         ),
     )
-    PYREF_001: Detail = Detail(
-        name="PyXForm reference - parsing failed",
+    NAMES_016 = Detail(
+        name="Names - select list_name not found on choices sheet",
         msg=(
-            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "Reference variables must start with '${{', then a question name, and end with '}}'."
+            "[row : {row}] On the 'survey' sheet, the 'type' value is invalid. "
+            "The select list name was not found in the 'choices' sheet. "
+            "Please add one or more rows to the 'choices' sheet for this list_name, or "
+            "check the spelling of the list name in the 'type' column and existing "
+            "choices 'list_name' rows."
         ),
     )
-    PYREF_002: Detail = Detail(
-        name="PyXForm reference - parsing limit reached",
+    PYREF_001 = Detail(
+        name="Variable reference - parsing failed",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "Reference variable lists must have a comma between each variable."
+            "A variable reference ('${name}') must start with '${{', followed "
+            "by a name from the 'survey' sheet 'name' column, and end with '}}'. "
+            "Learn more: https://docs.getodk.org/form-logic/#variables"
         ),
     )
-    PYREF_003: Detail = Detail(
-        name="PyXForm reference - name not found",
+    PYREF_002 = Detail(
+        name="Variable reference - parsing limit reached",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "Reference variables must contain a name from the 'survey' sheet. Could not "
-            "find the name '{q}'."
+            "A variable reference ('${name}') list must have a comma between each "
+            "variable, for example: '${q1},${q2},${q3}'."
+        ),
+        # Does not include 'Learn more' link since this error is about multiple triggers.
+    )
+    PYREF_003 = Detail(
+        name="Variable reference - name not found",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
+            "A variable reference ('${name}') name must exist in the 'survey' sheet "
+            "'name' column. The name '{q}' was not found. "
+            "Learn more: https://docs.getodk.org/form-logic/#variables"
         ),
     )
-    PYREF_004: Detail = Detail(
-        name="PyXForm reference - duplicate name",
+    PYREF_004 = Detail(
+        name="Variable reference - duplicate name",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "Reference variables names must be unique anywhere in the 'survey'. The name "
-            "'{q}' appears more than once."
+            "A variable reference ('${name}') name must be unique in the 'survey' sheet "
+            "'name' column. The name '{q}' occurs more than once. "
+            "Learn more: https://docs.getodk.org/form-logic/#variables"
         ),
     )
     RANGE_001 = Detail(
@@ -549,6 +585,14 @@ class ErrorCode(Enum):
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
             "The 'allow-mock-accuracy' parameter must be either 'true' or 'false'."
+        ),
+    )
+    SURVEY_010 = Detail(
+        name="Survey sheet - invalid external instance in repeat",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'type' value is invalid. "
+            "External instances must not be placed inside a repeat. "
+            "Move this question out of the repeat, or choose a different question type."
         ),
     )
 
