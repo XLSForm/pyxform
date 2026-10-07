@@ -42,75 +42,100 @@ class TestChoicesSheet(PyxformTestCase):
             ],
         )
 
-    def test_choices_without_labels__for_static_selects__warning_and_error(self):
-        """Should warn (and Validate error) if a label is missing in the choices sheet."""
-        self.assertPyxformXform(
-            md="""
-            | survey   |                    |      |       |
-            |          | type               | name | label |
-            |          | select_one choices | a    | A     |
-            | choices  |                    |      |       |
-            |          | list_name          | name | label |
-            |          | choices            | 1    |       |
-            |          | choices            | 2    |       |
-            """,
-            xml__xpath_match=[
-                xpq.body_select1_itemset("a"),
-                """
-                /h:html/h:head/x:model/x:instance[@id='choices']/x:root[
-                  ./x:item/x:name/text() = '1'
-                    and not(./x:item/x:label)
-                    and not(./x:item/x:itextId)
-                  and
-                  ./x:item/x:name/text() = '2'
-                    and not(./x:item/x:label)
-                    and not(./x:item/x:itextId)
-                ]
-                """,
-            ],
-            warnings__contains=[
-                ErrorCode.LABEL_001.value.format(row=2),
-                ErrorCode.LABEL_001.value.format(row=3),
-            ],
-            odk_validate_error__contains=[
-                "<label> node for itemset doesn't exist! [instance(choices)/root/item/label]"
-            ],
-        )
+    def test_choices_without_labels__for_static_selects__error(self):
+        """Should raise an error if a label and media are missing."""
+        md = """
+        | survey |
+        || type          | name | label |
+        || select_one c1 | q1   | Q1    |
 
-    def test_choices_without_labels__for_dynamic_selects__warning_and_error(self):
-        """Should warn (and Validate error) if a label is missing in the choices sheet."""
-        self.assertPyxformXform(
-            md="""
-            | survey   |                    |      |       |               |
-            |          | type               | name | label | choice_filter |
-            |          | select_one choices | a    | A     | true()        |
-            | choices  |                    |      |       |
-            |          | list_name          | name | label |
-            |          | choices            | 1    |       |
-            |          | choices            | 2    |       |
-            """,
-            xml__xpath_match=[
-                xpq.body_select1_itemset("a"),
-                """
-                /h:html/h:head/x:model/x:instance[@id='choices']/x:root[
-                  ./x:item/x:name/text() = '1'
-                    and not(./x:item/x:label)
-                    and not(./x:item/x:itextId)
-                  and
-                  ./x:item/x:name/text() = '2'
-                    and not(./x:item/x:label)
-                    and not(./x:item/x:itextId)
-                ]
-                """,
-            ],
-            warnings__contains=[
-                ErrorCode.LABEL_001.value.format(row=2),
-                ErrorCode.LABEL_001.value.format(row=3),
-            ],
-            odk_validate_error__contains=[
-                "<label> node for itemset doesn't exist! [instance(choices)/root/item/label]"
-            ],
-        )
+        | choices |
+        || list_name | name | {case} |
+        || c1        | n1   |        |
+        """
+        cases = ("", "label", "label::English (en)", "audio", "image", "video")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[ErrorCode.LABEL_001.value.format(row=2)],
+                )
+
+    def test_choices_without_labels__for_dynamic_selects__error(self):
+        """Should raise an error if a label and media are missing."""
+        md = """
+        | survey |
+        || type          | name | label | choice_filter |
+        || select_one c1 | q1   | Q1    | true()        |
+
+        | choices |
+        || list_name | name | {case} |
+        || c1        | n1   |        |
+        """
+        cases = ("", "label", "label::English (en)", "audio", "image", "video")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[ErrorCode.LABEL_001.value.format(row=2)],
+                )
+
+    def test_choices_without_labels__for_static_selects__media__ok(self):
+        """Should not raise an error if a label or media is provided."""
+        md = """
+        | survey |
+        || type          | name | label |
+        || select_one c1 | q1   | Q1    |
+
+        | choices |
+        || list_name | name | {case} |
+        || c1        | n1   | N1     |
+        """
+        cases = ("label", "label::English (en)", "audio", "image", "video")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        xpq.body_select1_itemset("q1"),
+                        """
+                        /h:html/h:head/x:model/x:instance[@id='c1']/x:root/x:item[
+                          x:name[text()='n1']
+                          and (x:label='N1' or x:itextId='c1-0')
+                        ]
+                        """,
+                    ],
+                )
+
+    def test_choices_without_labels__for_dynamic_selects__media__ok(self):
+        """Should not raise an error if a label or media is provided."""
+        md = """
+        | survey |
+        || type          | name | label | choice_filter |
+        || text          | q1   | Q1    |               |
+        || select_one c1 | q2   | Q2    | true()        |
+
+        | choices |
+        || list_name | name | {case}  |
+        || c1        | n1   | ${{q1}} |
+        """
+        cases = ("label", "label::English (en)", "audio", "image", "video")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=[
+                        xpq.body_select1_itemset("q2"),
+                        """
+                        /h:html/h:head/x:model/x:instance[@id='c1']/x:root/x:item[
+                          x:name[text()='n1']
+                          and (x:label='N1' or x:itextId='c1-0')
+                        ]
+                        """,
+                    ],
+                )
 
     def test_choices_extra_columns_output_order_matches_xlsform(self):
         """Should find that element order matches column order."""

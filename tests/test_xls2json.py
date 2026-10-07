@@ -350,7 +350,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
 
     def test_workbook_to_json__misspelled_not_found__external_choices(self):
         """Should not mention misspellings for dissimilar sheet names."""
-        test_names = ("external", "choices", "eternal_choosey")
+        test_names = ("external", "ext_choices", "eternal_choosey")
         for n in test_names:
             self.assertPyxformXform(
                 md=EXTERNAL_CHOICES.format(name=n),

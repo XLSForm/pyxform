@@ -259,7 +259,7 @@ class ErrorCode(Enum):
         name="Labels - invalid missing label in the choices sheet",
         msg=(
             "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
-            "Choices should have a label. "
+            "Choices must have a label or media. "
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
