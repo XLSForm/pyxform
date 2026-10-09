@@ -1117,7 +1117,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
         )
 
     def test_template_and_concrete__case_depth_2(self):
-        """Should find that only the outermost repeat has a concrete instance."""
+        """Should find that each repeat template has a template and concrete instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1130,10 +1130,10 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
         """
         cases = ("", "1", "${q1}")
         match = [
-            # Template tree: no concretes at any depth.
+            # Template tree: template and concrete at each depth.
             xpr.model_instance_pred("./x:r1[@jr:template]"),
             xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
-            xpr.model_instance_pred("not(./x:r1[@jr:template]/x:r2[not(@jr:template)])"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
             # Concrete tree: no templates at any depth.
             xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
             xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
@@ -1147,7 +1147,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
                 )
 
     def test_template_and_concrete__case_depth_2__repeat_sibling(self):
-        """Should find that only the outermost repeat has a concrete instance."""
+        """Should find that each repeat template has a template and concrete instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1162,12 +1162,12 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
         """
         cases = ("", "1", "${q1}")
         match = [
-            # Template tree: no concretes at any depth.
+            # Template tree: template and concrete at each depth.
             xpr.model_instance_pred("./x:r1[@jr:template]"),
             xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
             xpr.model_instance_pred("./x:r1[@jr:template]/x:r3[@jr:template]"),
-            xpr.model_instance_pred("not(./x:r1[@jr:template]/x:r2[not(@jr:template)])"),
-            xpr.model_instance_pred("not(./x:r1[@jr:template]/x:r3[not(@jr:template)])"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r3[not(@jr:template)]"),
             # Concrete tree: no templates at any depth.
             xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
             xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
@@ -1183,7 +1183,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
                 )
 
     def test_template_and_concrete__case_depth_2__repeat_child(self):
-        """Should find that only the outermost repeat has a concrete instance."""
+        """Should find that each repeat template has a template and concrete instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1198,15 +1198,15 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
         """
         cases = ("", "1", "${q1}")
         match = [
-            # Template tree: no concretes at any depth.
+            # Template tree: template and concrete at each depth.
             xpr.model_instance_pred("./x:r1[@jr:template]"),
             xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred(
+                "./x:r1[@jr:template]/x:r2[@jr:template]/x:r3[not(@jr:template)]"
+            ),
             xpr.model_instance_pred(
                 "./x:r1[@jr:template]/x:r2[@jr:template]/x:r3[@jr:template]"
-            ),
-            xpr.model_instance_pred("not(./x:r1[@jr:template]/x:r2[not(@jr:template)])"),
-            xpr.model_instance_pred(
-                "not(./x:r1[@jr:template]/x:r2[@jr:template]/x:r3[not(@jr:template)])"
             ),
             # Concrete tree: no templates at any depth.
             xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
@@ -1227,7 +1227,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
                 )
 
     def test_template_and_concrete__case_depth_3(self):
-        """Should find that only the outermost repeat has a concrete instance."""
+        """Should find that each repeat template has a template and concrete instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1242,15 +1242,15 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
         """
         cases = ("", "1", "${q1}")
         match = [
-            # Template tree: no concretes at any depth.
+            # Template tree: template and concrete at each depth.
             xpr.model_instance_pred("./x:r1[@jr:template]"),
             xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred(
+                "./x:r1[@jr:template]/x:r2[@jr:template]/x:r3[not(@jr:template)]"
+            ),
             xpr.model_instance_pred(
                 "./x:r1[@jr:template]/x:r2[@jr:template]/x:r3[@jr:template]"
-            ),
-            xpr.model_instance_pred("not(./x:r1[@jr:template]/x:r2[not(@jr:template)])"),
-            xpr.model_instance_pred(
-                "not(./x:r1[@jr:template]/x:r2[@jr:template]/x:r3[not(@jr:template)])"
             ),
             # Concrete tree: no templates at any depth.
             xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
@@ -1271,7 +1271,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
                 )
 
     def test_template_and_concrete__case_depth_2__group_depth_0_parent(self):
-        """Should find that only the outermost repeat has a concrete instance."""
+        """Should find that each repeat template has a template and concrete instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1286,12 +1286,10 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
         """
         cases = ("", "1", "${q1}")
         match = [
-            # Template tree: no concretes at any depth.
+            # Template tree: template and concrete at each depth.
             xpr.model_instance_pred("./x:g1/x:r1[@jr:template]"),
             xpr.model_instance_pred("./x:g1/x:r1[@jr:template]/x:r2[@jr:template]"),
-            xpr.model_instance_pred(
-                "not(./x:g1/x:r1[@jr:template]/x:r2[not(@jr:template)])"
-            ),
+            xpr.model_instance_pred("./x:g1/x:r1[@jr:template]/x:r2[not(@jr:template)]"),
             # Concrete tree: no templates at any depth.
             xpr.model_instance_pred("./x:g1/x:r1[not(@jr:template)]"),
             xpr.model_instance_pred(
@@ -1312,7 +1310,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
                 )
 
     def test_template_and_concrete__case_depth_2__group_depth_0_sibling(self):
-        """Should find that only the outermost repeat has a concrete instance."""
+        """Should find that each repeat template has a template and concrete instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1327,11 +1325,11 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
         """
         cases = ("", "1", "${q1}")
         match = [
-            # Template tree: no concretes at any depth.
+            # Template tree: template and concrete at each depth.
             xpr.model_instance_pred("./x:g1"),
             xpr.model_instance_pred("./x:r1[@jr:template]"),
             xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
-            xpr.model_instance_pred("not(./x:r1[@jr:template]/x:r2[not(@jr:template)])"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
             # Concrete tree: no templates at any depth.
             xpr.model_instance_pred("./x:g1[not(@jr:template)]"),
             xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
@@ -1346,7 +1344,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
                 )
 
     def test_template_and_concrete__case_depth_2__group_depth_1_parent(self):
-        """Should find that only the outermost repeat has a concrete instance (unless grouped)."""
+        """Should find that each repeat template has a template and concrete instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1361,7 +1359,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
         """
         cases = ("", "1", "${q1}")
         match = [
-            # Template tree: grouped repeat includes concrete.
+            # Template tree: template and concrete at each depth.
             xpr.model_instance_pred("./x:r1[@jr:template]"),
             xpr.model_instance_pred("./x:r1[@jr:template]/x:g1/x:r2[@jr:template]"),
             xpr.model_instance_pred("./x:r1[@jr:template]/x:g1/x:r2[not(@jr:template)]"),
@@ -1385,7 +1383,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
                 )
 
     def test_template_and_concrete__case_depth_2__group_depth_1_sibling(self):
-        """Should find that only the outermost repeat has a concrete instance."""
+        """Should find that each repeat template has a template and concrete instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1400,10 +1398,10 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
         """
         cases = ("", "1", "${q1}")
         match = [
-            # Template tree: no concretes at any depth.
+            # Template tree: template and concrete at each depth.
             xpr.model_instance_pred("./x:r1[@jr:template]"),
             xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
-            xpr.model_instance_pred("not(./x:r1[@jr:template]/x:r2[not(@jr:template)])"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
             # Concrete tree: no templates at any depth.
             xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
             xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
@@ -1420,7 +1418,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
                 )
 
     def test_template_and_concrete__case_depth_2__group_depth_2_child(self):
-        """Should find that only the outermost repeat has a concrete instance."""
+        """Should find that each repeat template has a template and concrete instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1438,7 +1436,7 @@ class TestRepeatOutputNestedTemplates(PyxformTestCase):
             # Template tree: no concretes at any depth.
             xpr.model_instance_pred("./x:r1[@jr:template]"),
             xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
-            xpr.model_instance_pred("not(./x:r1[@jr:template]/x:r2[not(@jr:template)])"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
             # Concrete tree: no templates at any depth.
             xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
             xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),

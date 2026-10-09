@@ -267,13 +267,31 @@ class RepeatingSection(Section):
         else:
             return node("group", repeat_node, ref=self.get_xpath())
 
-    def xml_instance_template(self, survey: "Survey") -> DetachableElement:
-        result = node(self.name, **{"jr:template": ""})
+    def xml_instance_template(
+        self, survey: "Survey", as_template: bool = True
+    ) -> DetachableElement:
+        """
+        Create xml instance templates for the repeat.
+
+        Child repeats get a template and concrete instance so that a copy of the parent
+        template has a complete template/concrete structure
+
+        :param survey: The Survey that the repeat is in.
+        :param as_template: If True, create the element with a "jr:template" attribute.
+        """
+        result = node(self.name)
+        if as_template:
+            result.setAttribute("jr:template", "")
         from pyxform.question import Question
 
         for child in self.children:
             if isinstance(child, RepeatingSection):
-                result.appendChild(child.xml_instance_template(survey=survey))
+                result.appendChild(
+                    child.xml_instance_template(survey=survey, as_template=True)
+                )
+                result.appendChild(
+                    child.xml_instance_template(survey=survey, as_template=False)
+                )
             elif isinstance(child, Section | Question):
                 result.appendChild(child.xml_instance(survey=survey))
         return result
