@@ -829,6 +829,17 @@ class TestGroupParsing(PyxformTestCase):
             error__contains=[ErrorCode.SURVEY_011.value.format(row=2)],
         )
 
+    def test_group__required_no__ok(self):
+        """Should not raise an error if 'required' is explicitly 'no' on a group."""
+        md = """
+        | survey |
+        |        | type        | name | label | required |
+        |        | begin group | g1   | G1    | no       |
+        |        | text        | q1   | Q1    |          |
+        |        | end group   |      |       |          |
+        """
+        self.assertPyxformXform(md=md)
+
     def test_empty_group__no_question__error(self):
         """Should raise an error for an empty group with no questions."""
         md = """

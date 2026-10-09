@@ -796,7 +796,8 @@ def workbook_to_json(
                     )
 
                 bind = row.get(constants.BIND, {})
-                if isinstance(bind, dict) and bind.get("required"):
+                required = bind.get("required") if isinstance(bind, dict) else None
+                if required and aliases.yes_no.get(required, True):
                     raise PyXFormError(ErrorCode.SURVEY_011.value.format(row=row_number))
 
                 new_json_dict = row.copy()
