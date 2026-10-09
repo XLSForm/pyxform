@@ -5,7 +5,8 @@ from itertools import chain
 from typing import TYPE_CHECKING
 from xml.dom.minidom import Attr
 
-from pyxform import constants
+from pyxform import aliases, constants
+from pyxform.errors import PyXFormError
 from pyxform.external_instance import ExternalInstance
 from pyxform.survey_element import SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.utils import DetachableElement, node
@@ -90,6 +91,13 @@ class Section(SurveyElement):
 
     def validate(self):
         super().validate()
+        required = self.bind.get("required") if isinstance(self.bind, dict) else None
+        if required and aliases.yes_no.get(required, True):
+            raise PyXFormError(
+                f"The 'required' value on the {self.type} '{self.name}' is invalid. "
+                "Groups, repeats, and loops cannot be required. "
+                "Either remove the 'required' value, or move it to a question inside."
+            )
         for element in self.children:
             element.validate()
         self._validate_uniqueness_of_element_names()
