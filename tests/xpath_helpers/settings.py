@@ -53,5 +53,10 @@ class XPathHelper:
         /h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:{name}
         """
 
+    @staticmethod
+    def submission_where(pred: str) -> str:
+        """The submission element exists and the attribute has the given value."""
+        return f"""/h:html/h:head/x:model/x:submission[{pred}]"""
+
 
 xps = XPathHelper()
