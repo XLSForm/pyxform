@@ -11,6 +11,7 @@ from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.questions import xpq
+from tests.xpath_helpers.repeats import xpr
 
 
 class TestRepeatOutput(PyxformTestCase):
@@ -1041,85 +1042,415 @@ class TestRepeatOutput(PyxformTestCase):
             ],
         )
 
+
+class TestRepeatOutputNestedTemplates(PyxformTestCase):
     def test_repeat_adding_template_and_instance(self):
         """Repeat should add template and instances."""
+        md = """
+        | survey |
+        || type         | name | label |
+        || text         | q1   | Q1    |
+        || begin_repeat | r1   | R1    |
+        || text         | q2   | Q2    |
+        || end_repeat   | r1   |       |
+        || begin_repeat | r2   | R2    |
+        || begin_repeat | r3   | R3    |
+        || text         | q3   | Q3    |
+        || begin_repeat | r4   | R4    |
+        || text         | q4   | Q4    |
+        || end_repeat   | r4   |       |
+        || end_repeat   | r3   |       |
+        || text         | q5   | q5    |
+        || begin_repeat | r5   | R5    |
+        || note         | q6   | q6    |
+        || end_repeat   | r5   |       |
+        || note         | q7   | q7    |
+        || end_repeat   | r2   |       |
+        """
         self.assertPyxformXform(
-            md="""
-            | survey |              |          |           |
-            |        | type         | name     | label     |
-            |        | text         | aa       | Text AA   |
-            |        | begin repeat | section  | Section   |
-            |        | text         | a        | Text A    |
-            |        | text         | b        | Text B    |
-            |        | text         | c        | Text C    |
-            |        | note         | d        | Note D    |
-            |        | end repeat   |          |           |
-            |        |              |          |           |
-            |        | begin repeat | repeat_a | Section A |
-            |        | begin repeat | repeat_b | Section B |
-            |        | text         | e        | Text E    |
-            |        | begin repeat | repeat_c | Section C |
-            |        | text         | f        | Text F    |
-            |        | end repeat   |          |           |
-            |        | end repeat   |          |           |
-            |        | text         | g        | Text G    |
-            |        | begin repeat | repeat_d | Section D |
-            |        | note         | h        | Note H    |
-            |        | end repeat   |          |           |
-            |        | note         | i        | Note I    |
-            |        | end repeat   |          |           |
-            """,
+            md=md,
             xml__xpath_match=[
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:section[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:section[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_b[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_b[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_b/x:repeat_c[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_b/x:repeat_c[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_d[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_d[not(@jr:template)]",
+                xpr.model_instance_pred("x:r1[@jr:template='']"),
+                xpr.model_instance_pred("x:r1[not(@jr:template)]"),
+                xpr.model_instance_pred("x:r2[@jr:template='']"),
+                xpr.model_instance_pred("x:r2[not(@jr:template)]"),
+                xpr.model_instance_pred("x:r2/x:r3[@jr:template='']"),
+                xpr.model_instance_pred("x:r2/x:r3[not(@jr:template)]"),
+                xpr.model_instance_pred("x:r2/x:r3/x:r4[@jr:template='']"),
+                xpr.model_instance_pred("x:r2/x:r3/x:r4[not(@jr:template)]"),
+                xpr.model_instance_pred("x:r2/x:r5[@jr:template='']"),
+                xpr.model_instance_pred("x:r2/x:r5[not(@jr:template)]"),
             ],
         )
 
     def test_repeat_adding_template_and_instance_with_group(self):
         """Repeat should add template and instance even when they are inside grouping."""
+        md = """
+        | survey |
+        || type         | name | label |
+        || text         | q1   | Q1    |
+        || begin_repeat | r1   | R1    |
+        || text         | q2   | Q2    |
+        || end_repeat   | r1   |       |
+        || begin_group  | g1   | G1    |
+        || begin_repeat | r2   | R2    |
+        || begin_repeat | r3   | R3    |
+        || text         | q3   | Q3    |
+        || begin_group  | g2   | G2    |
+        || text         | q4   | Q4    |
+        || end_group    | g2   |       |
+        || note         | q5   | Q5    |
+        || end_repeat   | r3   |       |
+        || end_repeat   | r2   |       |
+        || end_group    | g1   |       |
+        """
         self.assertPyxformXform(
-            md="""
-            | survey |              |          |           |
-            |        | type         | name     | label     |
-            |        | text         | aa       | Text AA   |
-            |        | begin repeat | section  | Section   |
-            |        | text         | a        | Text A    |
-            |        | text         | b        | Text B    |
-            |        | text         | c        | Text C    |
-            |        | note         | d        | Note D    |
-            |        | end repeat   |          |           |
-            |        |              |          |           |
-            |        | begin group  | group_a  | Group A   |
-            |        | begin repeat | repeat_a | Section A |
-            |        | begin repeat | repeat_b | Section B |
-            |        | text         | e        | Text E    |
-            |        | begin group  | group_b  | Group B   |
-            |        | text         | f        | Text F    |
-            |        | text         | g        | Text G    |
-            |        | note         | h        | Note H    |
-            |        | end group    |          |           |
-            |        | note         | i        | Note I    |
-            |        | end repeat   |          |           |
-            |        | end repeat   |          |           |
-            |        | end group    |          |           |
-            """,
+            md=md,
             xml__xpath_match=[
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:section[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:section[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:group_a/x:repeat_a[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:group_a/x:repeat_a[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:group_a/x:repeat_a/x:repeat_b[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:group_a/x:repeat_a/x:repeat_b[not(@jr:template)]",
+                xpr.model_instance_pred("x:r1[@jr:template='']"),
+                xpr.model_instance_pred("x:r1[not(@jr:template)]"),
+                xpr.model_instance_pred("x:g1/x:r2[@jr:template='']"),
+                xpr.model_instance_pred("x:g1/x:r2[not(@jr:template)]"),
+                xpr.model_instance_pred("x:g1/x:r2/x:r3[@jr:template='']"),
+                xpr.model_instance_pred("x:g1/x:r2/x:r3[not(@jr:template)]"),
             ],
         )
+
+    def test_template_and_concrete__case_depth_2(self):
+        """Should find that each repeat template has a template and concrete instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | r2   | R2    | {case}       |
+        | | text         | q2   | Q2    |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template tree: template and concrete at each depth.
+            xpr.model_instance_pred("./x:r1[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            # Concrete tree: no templates at any depth.
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred("not(./x:r1[not(@jr:template)]/x:r2[@jr:template])"),
+        ]
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=match,
+                )
+
+    def test_template_and_concrete__case_depth_2__repeat_sibling(self):
+        """Should find that each repeat template has a template and concrete instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | r2   | R2    | {case}       |
+        | | text         | q2   | Q2    |              |
+        | | end_repeat   | r2   |       |              |
+        | | begin_repeat | r3   | R3    |              |
+        | | end_repeat   | r3   |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template tree: template and concrete at each depth.
+            xpr.model_instance_pred("./x:r1[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r3[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r3[not(@jr:template)]"),
+            # Concrete tree: no templates at any depth.
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r3[not(@jr:template)]"),
+            xpr.model_instance_pred("not(./x:r1[not(@jr:template)]/x:r2[@jr:template])"),
+            xpr.model_instance_pred("not(./x:r1[not(@jr:template)]/x:r3[@jr:template])"),
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=match,
+                )
+
+    def test_template_and_concrete__case_depth_2__repeat_child(self):
+        """Should find that each repeat template has a template and concrete instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | r2   | R2    | {case}       |
+        | | text         | q2   | Q2    |              |
+        | | begin_repeat | r3   | R3    |              |
+        | | end_repeat   | r3   |       |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template tree: template and concrete at each depth.
+            xpr.model_instance_pred("./x:r1[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred(
+                "./x:r1[@jr:template]/x:r2[@jr:template]/x:r3[not(@jr:template)]"
+            ),
+            xpr.model_instance_pred(
+                "./x:r1[@jr:template]/x:r2[@jr:template]/x:r3[@jr:template]"
+            ),
+            # Concrete tree: no templates at any depth.
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred(
+                "./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]/x:r3[not(@jr:template)]"
+            ),
+            xpr.model_instance_pred("not(./x:r1[not(@jr:template)]/x:r2[@jr:template])"),
+            xpr.model_instance_pred(
+                "not(./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]/x:r3[@jr:template])"
+            ),
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=match,
+                )
+
+    def test_template_and_concrete__case_depth_3(self):
+        """Should find that each repeat template has a template and concrete instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | r2   | R2    |              |
+        | | begin_repeat | r3   | R3    | {case}       |
+        | | text         | q2   | Q2    |              |
+        | | end_repeat   | r3   |       |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template tree: template and concrete at each depth.
+            xpr.model_instance_pred("./x:r1[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred(
+                "./x:r1[@jr:template]/x:r2[@jr:template]/x:r3[not(@jr:template)]"
+            ),
+            xpr.model_instance_pred(
+                "./x:r1[@jr:template]/x:r2[@jr:template]/x:r3[@jr:template]"
+            ),
+            # Concrete tree: no templates at any depth.
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred(
+                "./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]/x:r3[not(@jr:template)]"
+            ),
+            xpr.model_instance_pred("not(./x:r1[not(@jr:template)]/x:r2[@jr:template])"),
+            xpr.model_instance_pred(
+                "not(./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]/x:r3[@jr:template])"
+            ),
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=match,
+                )
+
+    def test_template_and_concrete__case_depth_2__group_depth_0_parent(self):
+        """Should find that each repeat template has a template and concrete instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | begin_group  | g1   | G1    |              |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | r2   | R2    | {case}       |
+        | | text         | q2   | Q2    |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | r1   |       |              |
+        | | end_group    | g1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template tree: template and concrete at each depth.
+            xpr.model_instance_pred("./x:g1/x:r1[@jr:template]"),
+            xpr.model_instance_pred("./x:g1/x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:g1/x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            # Concrete tree: no templates at any depth.
+            xpr.model_instance_pred("./x:g1/x:r1[not(@jr:template)]"),
+            xpr.model_instance_pred(
+                "./x:g1/x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"
+            ),
+            xpr.model_instance_pred(
+                "not(./x:g1/x:r1[not(@jr:template)]/x:r2[@jr:template])"
+            ),
+            # Group has no template.
+            xpr.model_instance_pred("not(./x:g1[@jr:template])"),
+            xpr.model_instance_pred("./x:g1[not(@jr:template)]"),
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=match,
+                )
+
+    def test_template_and_concrete__case_depth_2__group_depth_0_sibling(self):
+        """Should find that each repeat template has a template and concrete instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_group  | g1   | G1    |              |
+        | | end_group    | g1   |       |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | r2   | R2    | {case}       |
+        | | text         | q2   | Q2    |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template tree: template and concrete at each depth.
+            xpr.model_instance_pred("./x:g1"),
+            xpr.model_instance_pred("./x:r1[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            # Concrete tree: no templates at any depth.
+            xpr.model_instance_pred("./x:g1[not(@jr:template)]"),
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred("not(./x:r1[not(@jr:template)]/x:r2[@jr:template])"),
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=match,
+                )
+
+    def test_template_and_concrete__case_depth_2__group_depth_1_parent(self):
+        """Should find that each repeat template has a template and concrete instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_group  | g1   | G1    |              |
+        | | begin_repeat | r2   | R2    | {case}       |
+        | | text         | q2   | Q2    |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template tree: template and concrete at each depth.
+            xpr.model_instance_pred("./x:r1[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:g1/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:g1/x:r2[not(@jr:template)]"),
+            # Concrete tree: no templates at any depth.
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
+            xpr.model_instance_pred(
+                "./x:r1[not(@jr:template)]/x:g1/x:r2[not(@jr:template)]"
+            ),
+            xpr.model_instance_pred(
+                "not(./x:r1[not(@jr:template)]/x:g1/x:r2[@jr:template])"
+            ),
+            # Group has no template.
+            xpr.model_instance_pred("not(./x:r1/x:g1[@jr:template])"),
+            xpr.model_instance_pred("./x:r1/x:g1[not(@jr:template)]"),
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=match,
+                )
+
+    def test_template_and_concrete__case_depth_2__group_depth_1_sibling(self):
+        """Should find that each repeat template has a template and concrete instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_group  | g1   | G1    |              |
+        | | end_group    | g1   |       |              |
+        | | begin_repeat | r2   | R2    | {case}       |
+        | | text         | q2   | Q2    |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template tree: template and concrete at each depth.
+            xpr.model_instance_pred("./x:r1[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            # Concrete tree: no templates at any depth.
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred("not(./x:r1[not(@jr:template)]/x:r2[@jr:template])"),
+            # Group has no template.
+            xpr.model_instance_pred("not(./x:r1/x:g1[@jr:template])"),
+            xpr.model_instance_pred("./x:r1/x:g1[not(@jr:template)]"),
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=match,
+                )
+
+    def test_template_and_concrete__case_depth_2__group_depth_2_child(self):
+        """Should find that each repeat template has a template and concrete instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | r2   | R2    | {case}       |
+        | | begin_group  | g1   | G1    |              |
+        | | text         | q2   | Q2    |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template tree: no concretes at any depth.
+            xpr.model_instance_pred("./x:r1[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance_pred("./x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            # Concrete tree: no templates at any depth.
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]"),
+            xpr.model_instance_pred("./x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
+            xpr.model_instance_pred("not(./x:r1[not(@jr:template)]/x:r2[@jr:template])"),
+            # Group has no template.
+            xpr.model_instance_pred("not(./x:r1/x:r2/x:g1[@jr:template])"),
+            xpr.model_instance_pred("./x:r1/x:r2/x:g1[not(@jr:template)]"),
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    xml__xpath_match=match,
+                )
 
 
 class TestRepeatParsing(PyxformTestCase):
