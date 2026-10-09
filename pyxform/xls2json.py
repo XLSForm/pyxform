@@ -795,6 +795,10 @@ def workbook_to_json(
                         + f" {control_type.capitalize()} has no label: {msg_dict}"
                     )
 
+                bind = row.get(constants.BIND, {})
+                if isinstance(bind, dict) and bind.get("required"):
+                    raise PyXFormError(ErrorCode.SURVEY_011.value.format(row=row_number))
+
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type
                 child_list = []
