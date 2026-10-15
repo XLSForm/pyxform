@@ -740,7 +740,7 @@ class TestHeaderProcessing(PyxformTestCase):
             )
         self.assertEqual(
             ErrorCode.HEADER_001.value.format(sheet_name="survey", header="e"),
-            err.exception.args[0],
+            str(err.exception),
         )
 
     def test_process_row__bad_header_info__dict(self):
@@ -755,7 +755,7 @@ class TestHeaderProcessing(PyxformTestCase):
             convert(xlsform={"survey": survey_data})
         self.assertEqual(
             ErrorCode.HEADER_001.value.format(sheet_name="survey", header="e"),
-            err.exception.args[0],
+            str(err.exception),
         )
 
     def test_process_row__bad_header_info__markdown(self):

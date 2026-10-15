@@ -25,7 +25,9 @@ def clean_text_values(
     if isinstance(value, str) and value:
         # Remove extraneous whitespace characters.
         if strip_whitespace:
-            value = RE_WHITESPACE.sub(" ", maybe_strip(value))
+            value = maybe_strip(value)
+            if len(value) > 0:
+                value = RE_WHITESPACE.sub(" ", value)
         # Replace "smart" quotes with regular quotes.
         value = RE_SMART_QUOTES.sub(lambda m: SMART_QUOTES[m.group(0)], value)
     return value
@@ -177,7 +179,8 @@ def process_row(
         tokens = header_key.get(header, None)
         if not tokens:
             raise PyXFormError(
-                ErrorCode.HEADER_001.value.format(sheet_name=sheet_name, header=header)
+                code=ErrorCode.HEADER_001,
+                context={"sheet_name": sheet_name, "header": header},
             )
         elif len(tokens) == 1:
             out_row[tokens[0]] = val
@@ -248,11 +251,12 @@ def dealias_and_group_headers(
                 other_header = tokens_key.get(tokens)
                 if other_header and new_header != header:
                     raise PyXFormError(
-                        ErrorCode.HEADER_002.value.format(
-                            sheet_name=sheet_name,
-                            other=other_header,
-                            header=header,
-                        )
+                        code=ErrorCode.HEADER_002,
+                        context={
+                            "sheet_name": sheet_name,
+                            "other": other_header,
+                            "header": header,
+                        },
                     )
                 header_key[header] = tokens
                 tokens_key[tokens] = header
@@ -273,8 +277,10 @@ def dealias_and_group_headers(
         missing = {h for h in headers_required if h not in {h[0] for h in tokens_key}}
         if missing:
             raise PyXFormError(
-                ErrorCode.HEADER_003.value.format(
-                    sheet_name=sheet_name, missing=", ".join(f"'{h}'" for h in missing)
-                )
+                code=ErrorCode.HEADER_003,
+                context={
+                    "sheet_name": sheet_name,
+                    "missing": ", ".join(f"'{h}'" for h in missing),
+                },
             )
     return DealiasAndGroupHeadersResult(headers=tuple(tokens_key), data=data)

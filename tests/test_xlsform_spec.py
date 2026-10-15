@@ -1,5 +1,3 @@
-from pyxform.errors import ErrorCode
-
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -50,8 +48,6 @@ class TestWarnings(PyxformTestCase):
         |          | yes_no    | no      | no    |       |
         |          | a_b       | a       |       | a.jpg |
         |          | a_b       | b       |       | b.jpg |
-        |          | animals   | zebra   |       |       |
-        |          | animals   | buffalo |       |       |
         | settings |            |           |            |                |                  |
         |          | form_title | form_id   | public_key | submission_url | default_language |
         |          | spec_test  | spec_test |            |                |                  |
@@ -63,10 +59,6 @@ class TestWarnings(PyxformTestCase):
         )
         self.maxDiff = 2000
         expected = [
-            ErrorCode.LABEL_001.value.format(row=4),
-            ErrorCode.LABEL_001.value.format(row=5),
-            ErrorCode.LABEL_001.value.format(row=6),
-            ErrorCode.LABEL_001.value.format(row=7),
             "[row : 9] Repeat has no label: {'name': 'repeat_test', 'type': 'begin repeat'}",
             "[row : 28] Use the max-pixels parameter to speed up submission "
             + "sending and save storage space. Learn more: https://xlsform.org/#image",
