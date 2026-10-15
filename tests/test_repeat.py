@@ -1084,10 +1084,18 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 xpr.model_instance("/x:r1[@jr:template]"),
                 xpr.model_instance("/x:r2[@jr:template]"),
                 xpr.model_instance("/x:r2[@jr:template]/x:r3[@jr:template]"),
+                xpr.model_instance("/x:r2[@jr:template]/x:r3[not(@jr:template)]"),
                 xpr.model_instance("""
                   /x:r2[@jr:template]/x:r3[@jr:template]/x:r4[@jr:template]
                 """),
+                xpr.model_instance("""
+                  /x:r2[@jr:template]/x:r3[@jr:template]/x:r4[not(@jr:template)]
+                """),
+                xpr.model_instance("""
+                  /x:r2[@jr:template]/x:r3[not(@jr:template)]/x:r4[not(@jr:template)]
+                """),
                 xpr.model_instance("/x:r2[@jr:template]/x:r5[@jr:template]"),
+                xpr.model_instance("/x:r2[@jr:template]/x:r5[not(@jr:template)]"),
                 # Primary
                 xpr.model_instance("/x:r1[not(@jr:template)]"),
                 xpr.model_instance("/x:r2[not(@jr:template)]"),
@@ -1100,9 +1108,9 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             xml__xpath_count=[
                 (xpr.model_instance("/x:r1"), 2),
                 (xpr.model_instance("/x:r2"), 2),
-                (xpr.model_instance("/x:r2/x:r3"), 2),
-                (xpr.model_instance("/x:r2/x:r3/x:r4"), 2),
-                (xpr.model_instance("/x:r2/x:r5"), 2),
+                (xpr.model_instance("/x:r2/x:r3"), 3),
+                (xpr.model_instance("/x:r2/x:r3/x:r4"), 4),
+                (xpr.model_instance("/x:r2/x:r5"), 3),
             ],
         )
 
@@ -1134,8 +1142,12 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 xpr.model_instance("/x:r1[@jr:template]"),
                 xpr.model_instance("/x:g1/x:r2[@jr:template]"),
                 xpr.model_instance("/x:g1/x:r2[@jr:template]/x:r3[@jr:template]"),
+                xpr.model_instance("/x:g1/x:r2[@jr:template]/x:r3[not(@jr:template)]"),
                 xpr.model_instance("""
                   /x:g1/x:r2[@jr:template]/x:r3[@jr:template]/x:g2
+                """),
+                xpr.model_instance("""
+                  /x:g1/x:r2[@jr:template]/x:r3[not(@jr:template)]/x:g2
                 """),
                 # Primary
                 xpr.model_instance("/x:g1"),
@@ -1152,13 +1164,13 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 (xpr.model_instance("/x:g1"), 1),
                 (xpr.model_instance("/x:r1"), 2),
                 (xpr.model_instance("/x:g1/x:r2"), 2),
-                (xpr.model_instance("/x:g1/x:r2/x:r3"), 2),
-                (xpr.model_instance("/x:g1/x:r2/x:r3/x:g2"), 2),
+                (xpr.model_instance("/x:g1/x:r2/x:r3"), 3),
+                (xpr.model_instance("/x:g1/x:r2/x:r3/x:g2"), 3),
             ],
         )
 
     def test_instance_attribute__depth_1_yt(self):
-        """Should find the attribute in the primary instance, but not the template."""
+        """Should find the attribute in the template and primary instances."""
         md = """
         | survey |
         | | type         | name | label | repeat_count | instance::k |
@@ -1170,7 +1182,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         cases = ("", "1", "${q1}")
         match = [
             # Template
-            xpr.model_instance("/x:t[@jr:template and not(@k='kt')]"),
+            xpr.model_instance("/x:t[@jr:template and @k='kt']"),
             # Primary
             xpr.model_instance("/x:t[not(@jr:template) and @k='kt']"),
         ]
@@ -1184,7 +1196,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_instance_attribute__depth_2_yrt(self):
-        """Should find the attribute in the primary instance, but not the template."""
+        """Should find the attribute in the template, initial, and primary instances."""
         md = """
         | survey |
         | | type         | name | label | repeat_count | instance::k |
@@ -1198,15 +1210,16 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         cases = ("", "1", "${q1}")
         match = [
             # Template
-            xpr.model_instance("/x:r1[@jr:template and not(@k='kr1')]"),
-            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template and not(@k='kt')]"),
+            xpr.model_instance("/x:r1[@jr:template and @k='kr1']"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template and @k='kt']"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template) and @k='kt']"),
             # Primary
             xpr.model_instance("/x:r1[not(@jr:template) and @k='kr1']"),
             xpr.model_instance("""
               /x:r1[not(@jr:template) and @k='kr1']/x:t[not(@jr:template) and @k='kt']
             """),
         ]
-        count = [(xpr.model_instance("/x:r1"), 2), (xpr.model_instance("/x:r1/x:t"), 2)]
+        count = [(xpr.model_instance("/x:r1"), 2), (xpr.model_instance("/x:r1/x:t"), 3)]
         for case in cases:
             with self.subTest(count=case):
                 self.assertPyxformXform(
@@ -1331,11 +1344,12 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             # Template
             xpr.model_instance("/x:t[@jr:template]"),
             xpr.model_instance("/x:t[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[not(@jr:template)]"),
             # Primary
             xpr.model_instance("/x:t[not(@jr:template)]"),
             xpr.model_instance("/x:t[not(@jr:template)]/x:r2[not(@jr:template)]"),
         ]
-        count = [(xpr.model_instance("/x:t"), 2), (xpr.model_instance("/x:t/x:r2"), 2)]
+        count = [(xpr.model_instance("/x:t"), 2), (xpr.model_instance("/x:t/x:r2"), 3)]
         for case in cases:
             with self.subTest(count=case):
                 self.assertPyxformXform(
@@ -1363,7 +1377,9 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             # Template
             xpr.model_instance("/x:t[@jr:template]"),
             xpr.model_instance("/x:t[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[not(@jr:template)]"),
             xpr.model_instance("/x:t[@jr:template]/x:r2[@jr:template]/x:g1"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[not(@jr:template)]/x:g1"),
             # Primary
             xpr.model_instance("/x:t[not(@jr:template)]"),
             xpr.model_instance("/x:t[not(@jr:template)]/x:r2[not(@jr:template)]"),
@@ -1371,8 +1387,8 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         ]
         count = [
             (xpr.model_instance("/x:t"), 2),
-            (xpr.model_instance("/x:t/x:r2"), 2),
-            (xpr.model_instance("/x:t/x:r2/x:g1"), 2),
+            (xpr.model_instance("/x:t/x:r2"), 3),
+            (xpr.model_instance("/x:t/x:r2/x:g1"), 3),
         ]
         for case in cases:
             with self.subTest(count=case):
@@ -1401,8 +1417,15 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             # Template
             xpr.model_instance("/x:t[@jr:template]"),
             xpr.model_instance("/x:t[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[not(@jr:template)]"),
             xpr.model_instance("""
               /x:t[@jr:template]/x:r2[@jr:template]/x:r3[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:t[@jr:template]/x:r2[@jr:template]/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:t[@jr:template]/x:r2[not(@jr:template)]/x:r3[not(@jr:template)]
             """),
             # Primary
             xpr.model_instance("/x:t[not(@jr:template)]"),
@@ -1413,8 +1436,8 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         ]
         count = [
             (xpr.model_instance("/x:t"), 2),
-            (xpr.model_instance("/x:t/x:r2"), 2),
-            (xpr.model_instance("/x:t/x:r2/x:r3"), 2),
+            (xpr.model_instance("/x:t/x:r2"), 3),
+            (xpr.model_instance("/x:t/x:r2/x:r3"), 4),
         ]
         for case in cases:
             with self.subTest(count=case):
@@ -1512,6 +1535,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             # Template
             xpr.model_instance("/x:g1/x:t[@jr:template]"),
             xpr.model_instance("/x:g1/x:t[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance("/x:g1/x:t[@jr:template]/x:r2[not(@jr:template)]"),
             # Primary
             xpr.model_instance("/x:g1"),
             xpr.model_instance("/x:g1/x:t[not(@jr:template)]"),
@@ -1520,7 +1544,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         count = [
             (xpr.model_instance("/x:g1"), 1),
             (xpr.model_instance("/x:g1/x:t"), 2),
-            (xpr.model_instance("/x:g1/x:t/x:r2"), 2),
+            (xpr.model_instance("/x:g1/x:t/x:r2"), 3),
         ]
         for case in cases:
             with self.subTest(count=case):
@@ -1531,7 +1555,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_depth_2_yrt(self):
-        """Should find that target has a template and primary instance."""
+        """Should find that target has a template, initial, and primary instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1547,11 +1571,12 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             # Template
             xpr.model_instance("/x:r1[@jr:template]"),
             xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
             # Primary
             xpr.model_instance("/x:r1[not(@jr:template)]"),
             xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
         ]
-        count = [(xpr.model_instance("/x:r1"), 2), (xpr.model_instance("/x:r1/x:t"), 2)]
+        count = [(xpr.model_instance("/x:r1"), 2), (xpr.model_instance("/x:r1/x:t"), 3)]
         for case in cases:
             with self.subTest(count=case):
                 self.assertPyxformXform(
@@ -1561,7 +1586,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_depth_2_yrtg(self):
-        """Should find that target has a template and primary instance."""
+        """Should find that target has a template, initial, and primary instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1579,7 +1604,9 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             # Template
             xpr.model_instance("/x:r1[@jr:template]"),
             xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
             xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]/x:g1"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1"),
             # Primary
             xpr.model_instance("/x:r1[not(@jr:template)]"),
             xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
@@ -1587,8 +1614,8 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         ]
         count = [
             (xpr.model_instance("/x:r1"), 2),
-            (xpr.model_instance("/x:r1/x:t"), 2),
-            (xpr.model_instance("/x:r1/x:t/x:g1"), 2),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1"), 3),
         ]
         for case in cases:
             with self.subTest(count=case):
@@ -1599,7 +1626,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_depth_2_yrtgr(self):
-        """Should find that target has a template and primary instance."""
+        """Should find that target has a template, initial, and primary instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1626,6 +1653,11 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             xpr.model_instance("""
               /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]
             """),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
             # Primary
             xpr.model_instance("/x:r1[not(@jr:template)]"),
             xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
@@ -1636,9 +1668,9 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         ]
         count = [
             (xpr.model_instance("/x:r1"), 2),
-            (xpr.model_instance("/x:r1/x:t"), 2),
-            (xpr.model_instance("/x:r1/x:t/x:g1"), 2),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 3),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 4),
         ]
         for case in cases:
             with self.subTest(count=case):
@@ -1649,7 +1681,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_depth_2_yrtgrggrr(self):
-        """Should find that target has a template and primary instance."""
+        """Should find that target has a template, initial, and primary instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1694,6 +1726,9 @@ class TestRepeatOutputTemplates(PyxformTestCase):
               /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:g3/x:r4[@jr:template]/x:r5[@jr:template]
             """),
             xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:g3/x:r4[@jr:template]/x:r5[not(@jr:template)]
+            """),
+            xpr.model_instance("""
               /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:g3/x:r4[not(@jr:template)]
             """),
             xpr.model_instance("""
@@ -1713,6 +1748,23 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             """),
             xpr.model_instance("""
               /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
+            """),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
             """),
             # Primary
             xpr.model_instance("/x:r1[not(@jr:template)]"),
@@ -1736,13 +1788,13 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         ]
         count = [
             (xpr.model_instance("/x:r1"), 2),
-            (xpr.model_instance("/x:r1/x:t"), 2),
-            (xpr.model_instance("/x:r1/x:t/x:g1"), 2),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 3),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2"), 3),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:g3"), 3),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:g3/x:r4"), 4),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:g3/x:r4/x:r5"), 4),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:g3"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:g3/x:r4"), 5),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:g3/x:r4/x:r5"), 6),
         ]
         for case in cases:
             with self.subTest(count=case):
@@ -1753,7 +1805,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_depth_2_yrtgrgr(self):
-        """Should find that target has a template and primary instance."""
+        """Should find that target has a template, initial, and primary instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1799,6 +1851,17 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             xpr.model_instance("""
               /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]
             """),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]
+            """),
             # Primary
             xpr.model_instance("/x:r1[not(@jr:template)]"),
             xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
@@ -1815,11 +1878,11 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         ]
         count = [
             (xpr.model_instance("/x:r1"), 2),
-            (xpr.model_instance("/x:r1/x:t"), 2),
-            (xpr.model_instance("/x:r1/x:t/x:g1"), 2),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 3),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2"), 3),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:r4"), 4),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:r4"), 5),
         ]
         for case in cases:
             with self.subTest(count=case):
@@ -1830,7 +1893,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_depth_2_yrtgrgrr(self):
-        """Should find that target has a template and primary instance."""
+        """Should find that target has a template, initial, and primary instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1870,6 +1933,9 @@ class TestRepeatOutputTemplates(PyxformTestCase):
               /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:r4[@jr:template]/x:r5[@jr:template]
             """),
             xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:r4[@jr:template]/x:r5[not(@jr:template)]
+            """),
+            xpr.model_instance("""
               /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:r4[not(@jr:template)]
             """),
             xpr.model_instance("""
@@ -1886,6 +1952,20 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             """),
             xpr.model_instance("""
               /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
+            """),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
             """),
             # Primary
             xpr.model_instance("/x:r1[not(@jr:template)]"),
@@ -1906,12 +1986,12 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         ]
         count = [
             (xpr.model_instance("/x:r1"), 2),
-            (xpr.model_instance("/x:r1/x:t"), 2),
-            (xpr.model_instance("/x:r1/x:t/x:g1"), 2),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 3),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2"), 3),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:r4"), 4),
-            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:r4/x:r5"), 4),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:r4"), 5),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:r4/x:r5"), 6),
         ]
         for case in cases:
             with self.subTest(count=case):
@@ -1922,7 +2002,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_depth_2_yrtr(self):
-        """Should find that target has a template and primary instance."""
+        """Should find that target has a template, initial, and primary instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1940,8 +2020,15 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             # Template
             xpr.model_instance("/x:r1[@jr:template]"),
             xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
             xpr.model_instance("""
               /x:r1[@jr:template]/x:t[@jr:template]/x:r3[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:r3[not(@jr:template)]
             """),
             # Primary
             xpr.model_instance("/x:r1[not(@jr:template)]"),
@@ -1952,8 +2039,8 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         ]
         count = [
             (xpr.model_instance("/x:r1"), 2),
-            (xpr.model_instance("/x:r1/x:t"), 2),
-            (xpr.model_instance("/x:r1/x:t/x:r3"), 2),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:r3"), 4),
         ]
         for case in cases:
             with self.subTest(count=case):
@@ -1964,7 +2051,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_depth_3_ygrt(self):
-        """Should find that target has a template and primary instance."""
+        """Should find that target has a template, initial, and primary instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -1982,6 +2069,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             # Template
             xpr.model_instance("/x:g1/x:r1[@jr:template]"),
             xpr.model_instance("/x:g1/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:g1/x:r1[@jr:template]/x:t[not(@jr:template)]"),
             # Primary
             xpr.model_instance("/x:g1"),
             xpr.model_instance("/x:g1/x:r1[not(@jr:template)]"),
@@ -1990,7 +2078,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         count = [
             (xpr.model_instance("/x:g1"), 1),
             (xpr.model_instance("/x:g1/x:r1"), 2),
-            (xpr.model_instance("/x:g1/x:r1/x:t"), 2),
+            (xpr.model_instance("/x:g1/x:r1/x:t"), 3),
         ]
         for case in cases:
             with self.subTest(count=case):
@@ -2001,7 +2089,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_depth_3_yrgt(self):
-        """Should find that target has a template (with initial) and primary instance."""
+        """Should find that target has a template, initial, and primary instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -2040,7 +2128,7 @@ class TestRepeatOutputTemplates(PyxformTestCase):
                 )
 
     def test_depth_3_yrrt(self):
-        """Should find that target has a template and primary instance."""
+        """Should find that target has a template, initials, and primary instance."""
         md = """
         | survey |
         | | type         | name | label | repeat_count |
@@ -2058,8 +2146,15 @@ class TestRepeatOutputTemplates(PyxformTestCase):
             # Template
             xpr.model_instance("/x:r1[@jr:template]"),
             xpr.model_instance("/x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:r2[not(@jr:template)]"),
             xpr.model_instance("""
               /x:r1[@jr:template]/x:r2[@jr:template]/x:t[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:r2[@jr:template]/x:t[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:r2[not(@jr:template)]/x:t[not(@jr:template)]
             """),
             # Primary
             xpr.model_instance("/x:r1[not(@jr:template)]"),
@@ -2070,8 +2165,8 @@ class TestRepeatOutputTemplates(PyxformTestCase):
         ]
         count = [
             (xpr.model_instance("/x:r1"), 2),
-            (xpr.model_instance("/x:r1/x:r2"), 2),
-            (xpr.model_instance("/x:r1/x:r2/x:t"), 2),
+            (xpr.model_instance("/x:r1/x:r2"), 3),
+            (xpr.model_instance("/x:r1/x:r2/x:t"), 4),
         ]
         for case in cases:
             with self.subTest(count=case):

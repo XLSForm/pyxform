@@ -463,7 +463,7 @@
             <a_integer/>
             <a_decimal/>
             <repeat_test_count/>
-            <repeat_test jr:template="">
+            <repeat_test testAttribute="test" jr:template="">
               <group_test>
                 <required_text/>
                 <select_multiple_test/>
