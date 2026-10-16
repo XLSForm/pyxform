@@ -1340,9 +1340,9 @@ def workbook_to_json(
         # Automatically add an instanceName element:
         meta_children.append(
             {
-                "name": "instanceName",
-                "bind": {"calculate": settings["instance_name"]},
-                "type": "calculate",
+                constants.NAME: constants.INSTANCE_NAME,
+                constants.BIND: {"calculate": settings["instance_name"]},
+                constants.TYPE: "calculate",
             }
         )
 
