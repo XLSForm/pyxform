@@ -2317,7 +2317,7 @@ class TestEntitiesOutput(PyxformTestCase):
             md=md,
             xml__xpath_match=[
                 xps.instance_meta_survey_element(name="entity"),
-                xps.instance_meta_survey_element(name="instanceName"),
+                xps.instance_meta_survey_element(name=co.INSTANCE_NAME),
             ],
         )
 
