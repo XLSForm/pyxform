@@ -2,7 +2,9 @@ from collections import Counter
 from itertools import chain, product
 
 from pyxform.errors import ErrorCode, PyXFormError
-from pyxform.validators.pyxform import pyxform_reference as pr
+from pyxform.validators.pyxform.variable_reference import (
+    validate_pyxform_reference_syntax,
+)
 
 from tests.pyxform_test_case import PyxformTestCase
 
@@ -40,7 +42,7 @@ class TestPyxformReference(PyxformTestCase):
             for token, tok_desc in ok_tokens:
                 with self.subTest(c=context, ctx=ctx_desc, t=token, tok=tok_desc):
                     case = context.format(token)
-                    pr.validate_pyxform_reference_syntax(
+                    validate_pyxform_reference_syntax(
                         sheet_name="test",
                         sheet_data=({"label": case},),
                         element_names=ELEMENT_NAMES,
@@ -56,7 +58,7 @@ class TestPyxformReference(PyxformTestCase):
                     self.assertRaises(PyXFormError) as err,
                 ):
                     case = context.format(token)
-                    pr.validate_pyxform_reference_syntax(
+                    validate_pyxform_reference_syntax(
                         sheet_name="test",
                         sheet_data=({"label": case},),
                         element_names=ELEMENT_NAMES,
@@ -84,7 +86,7 @@ class TestPyxformReference(PyxformTestCase):
                     tok_desc=(tok_desc1, tok_desc2),
                 ):
                     case = context.format(token1, token2)
-                    pr.validate_pyxform_reference_syntax(
+                    validate_pyxform_reference_syntax(
                         sheet_name="test",
                         sheet_data=({"label": case},),
                         element_names=ELEMENT_NAMES,
@@ -112,7 +114,7 @@ class TestPyxformReference(PyxformTestCase):
                     self.assertRaises(PyXFormError) as err,
                 ):
                     case = context.format(token1, token2)
-                    pr.validate_pyxform_reference_syntax(
+                    validate_pyxform_reference_syntax(
                         sheet_name="test",
                         sheet_data=({"label": case},),
                         element_names=ELEMENT_NAMES,

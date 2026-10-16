@@ -1,6 +1,7 @@
 """Test the "note" question type."""
 
 from dataclasses import dataclass, field
+from unittest import expectedFailure
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.questions import xpq
@@ -16,7 +17,7 @@ class Case:
 
 
 class TestNotes(PyxformTestCase):
-    def test_instance_expression__original_problem_scenario(self):
+    def test_instance_expression__original_problem_scenario_646(self):
         """Should produce expected output for scenario similar to pyxform/#646."""
         md = """
         | survey  |               |      |       |
@@ -52,6 +53,53 @@ class TestNotes(PyxformTestCase):
                         " /test_name/text ",
                         "instance('c1')/root/item[name =  /test_name/q1 ]/label",
                         "instance('c2')/root/item[contains(name,  /test_name/q2 )]/label",
+                    },
+                ),
+            ],
+        )
+
+    @expectedFailure
+    def test_instance_expression__original_problem_scenario_844(self):
+        """Documentation of pyxform/#844 bug behaviour due to compound predicate/tokens."""
+        md = """
+        | survey |
+        | | type                        | name | label |
+        | | select_one_from_file c1.csv | q1   | Q1    |
+        | | note                        | q2   | Thing's label: instance('c1')/root/item[name=${q1} or true()]/label Thing's denomination: instance('c1')/root/item[name=${q1}]/denomination and more stuff. |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_exact=[
+                # What should not happen: parsing stops after first `instance()`.
+                (
+                    xpq.body_input_label_text("q2"),
+                    {
+                        """ Thing's label: instance('c1')/root/item[name=""",
+                        " or true()]/label Thing's denomination: ",
+                        " stuff. ",
+                    },
+                ),
+                (
+                    xpq.body_input_label_output_value("q2"),
+                    {
+                        " /test_name/q1 ",
+                        "instance('c1')/root/item[name= /test_name/q1 ]/denomination and more",
+                    },
+                ),
+                # What should happen: both `instance()` usages detected accurately.
+                (
+                    xpq.body_input_label_text("q2"),
+                    {
+                        " Thing's label: ",
+                        " Thing's denomination: ",
+                        " and more stuff. ",
+                    },
+                ),
+                (
+                    xpq.body_input_label_output_value("q2"),
+                    {
+                        "instance('c1')/root/item[name= /test_name/q1  or true()]/label",
+                        "instance('c1')/root/item[name= /test_name/q1 ]/denomination",
                     },
                 ),
             ],

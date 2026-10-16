@@ -10,6 +10,26 @@ class XPathHelper:
     """XPath expressions for choices assertions."""
 
     @staticmethod
+    def model_itext_form_value(cname: str, lang: str, form: str, suffix: str = "") -> str:
+        """Model itext contains an alternate form itext for the label or hint."""
+        prefix = {
+            "audio": ("label", True),
+            "image": ("label", True),
+            "big-image": ("label", True),
+            "video": ("label", True),
+            "label": ("label", False),
+            "geometry": ("geometry", False),
+        }
+        value_predicate = "not(@form)"
+        if prefix[form][1]:
+            value_predicate = f"@form='{form}'"
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='{cname}']
+          /x:value[{value_predicate}]{suffix}
+        """
+
+    @staticmethod
     def model_instance_choices_label(cname: str, choices: tuple[tuple[str, str], ...]):
         """Model instance has choices elements with name and label."""
         choices_xp = "\n              and ".join(

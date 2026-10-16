@@ -3,7 +3,7 @@ from lark.exceptions import LarkError
 
 from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
-from pyxform.parsing.expression import maybe_strip
+from pyxform.parsing.utils import maybe_strip
 
 # Parameters for which the value should not be lower-cased.
 CASE_SENSITIVE_VALUES = {

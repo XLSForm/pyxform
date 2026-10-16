@@ -89,6 +89,31 @@ class XPathHelper:
         """
 
     @staticmethod
+    def model_itext_form_value(
+        q_name: str, lang: str, form: str, suffix: str = ""
+    ) -> str:
+        """Model itext contains an alternate form itext for the label or hint."""
+        prefix = {
+            "audio": ("label", True),
+            "image": ("label", True),
+            "big-image": ("label", True),
+            "video": ("label", True),
+            "guidance": ("hint", True),
+            "label": ("label", False),
+            "hint": ("hint", False),
+            "constraint_msg": ("jr:constraintMsg", False),
+            "required_msg": ("jr:requiredMsg", False),
+        }
+        value_predicate = "not(@form)"
+        if prefix[form][1]:
+            value_predicate = f"@form='{form}'"
+        return f"""
+        /h:html/h:head/x:model/x:itext/x:translation[@lang='{lang}']
+          /x:text[@id='/test_name/{q_name}:{prefix[form][0]}']
+          /x:value[{value_predicate}]{suffix}
+        """
+
+    @staticmethod
     def body_label_inline(q_type: str, q_name: str, q_label: str) -> str:
         """Body element contains the question label."""
         return f"""
@@ -176,6 +201,13 @@ class XPathHelper:
           and ./x:itemset
           and not(./x:item)
         ]
+        """
+
+    @staticmethod
+    def body_input_label_text(q_name: str) -> str:
+        """Body has an input with label text."""
+        return rf"""
+        /h:html/h:body/x:input[@ref='/test_name/{q_name}']/x:label/text()
         """
 
     @staticmethod

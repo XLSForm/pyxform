@@ -255,6 +255,30 @@ class ErrorCode(Enum):
             "path '{path}'."
         ),
     )
+    INTERNAL_003 = Detail(
+        name="Internal error - delimited expression parsing failed, grammar error",
+        msg=(
+            "Delimited expression parsing failed. "
+            "Check the expression syntax, or try using delimiter escapes. "
+            "Input string: {s}"
+        ),
+    )
+    INTERNAL_004 = Detail(
+        name="Internal error - delimited expression parsing failed, nested expression",
+        msg=(
+            "Delimited expression parsing failed. "
+            "Expressions must not be nested inside another expression. "
+            "Input string: {s}"
+        ),
+    )
+    INTERNAL_005 = Detail(
+        name="Internal error - delimited expression parsing failed, empty expression",
+        msg=(
+            "Delimited expression parsing failed. "
+            "Expressions must not be empty or only contain whitespace characters. "
+            "Input string: {s}"
+        ),
+    )
     LABEL_001: Detail = Detail(
         name="Labels - invalid missing label in the choices sheet",
         msg=(

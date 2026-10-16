@@ -16,7 +16,11 @@ from pyxform.errors import PyXFormError, ValidationError
 from pyxform.external_instance import ExternalInstance
 from pyxform.instance import SurveyInstance
 from pyxform.parsing.expression import RE_PYXFORM_REF
-from pyxform.parsing.instance_expression import replace_with_output
+from pyxform.parsing.expression_delimited import replace_with_output
+from pyxform.parsing.variable_reference import (
+    has_pyxform_reference_with_last_saved,
+    is_pyxform_reference_candidate,
+)
 from pyxform.question import Itemset, MultipleChoiceQuestion, Option, Question, Tag
 from pyxform.section import SECTION_EXTRA_FIELDS, RepeatingSection, Section
 from pyxform.survey_element import _GET_SENTINEL, SURVEY_ELEMENT_FIELDS, SurveyElement
@@ -30,10 +34,6 @@ from pyxform.utils import (
 from pyxform.validators import odk_validate
 from pyxform.validators.pyxform import unique_names
 from pyxform.validators.pyxform.iana_subtags.validation import get_languages_with_bad_tags
-from pyxform.validators.pyxform.pyxform_reference import (
-    has_pyxform_reference_with_last_saved,
-    is_pyxform_reference_candidate,
-)
 
 RE_BRACKET = re.compile(r"\[([^]]+)\]")
 RE_FUNCTION_ARGS = re.compile(r"\b[^()]+\((.*)\)$")
@@ -243,6 +243,7 @@ class Survey(Section):
             raise PyXFormError("Survey cannot have an empty id_string")
         super().validate()
         self._validate_uniqueness_of_section_names()
+        self._setup_xpath_dictionary()
 
     def _validate_uniqueness_of_section_names(self):
         root_node_name = self.name
@@ -287,7 +288,6 @@ class Survey(Section):
     def xml(self):
         """Calls necessary preparation methods, then returns the xml."""
         self.validate()
-        self._setup_xpath_dictionary()
 
         body_kwargs = {}
         if self.style:
@@ -983,7 +983,7 @@ class Survey(Section):
         return f"""<?xml version="1.0"?>\n{self.xml().toprettyxml(indent="  ")}"""
 
     def _setup_xpath_dictionary(self):
-        if self._xpath:
+        if self._xpath is not None:
             return
         xpaths = {}
         for element in self.iter_descendants(lambda i: isinstance(i, Question | Section)):
@@ -1159,13 +1159,6 @@ class Survey(Section):
 
         return re.sub(RE_PYXFORM_REF, _var_repl_function, value)
 
-    def _var_repl_output_function(self, matchobj, context):
-        """
-        A regex substitution function that will replace
-        ${varname} with an output element that has the xpath to varname.
-        """
-        return f"""<output value="{self._var_repl_function(matchobj, context)}" />"""
-
     def insert_output_values(
         self,
         text: str,
@@ -1183,9 +1176,6 @@ class Survey(Section):
         if text == "-":
             return text, False
 
-        def _var_repl_output_function(matchobj):
-            return self._var_repl_output_function(matchobj, context)
-
         # There was a bug where escaping is completely turned off in labels
         # where variable replacement is used.
         # For exampke, `${name} < 3` causes an error but `< 3` does not.
@@ -1193,12 +1183,7 @@ class Survey(Section):
         # variable replacement:
         original_xml = escape_text_for_xml(text=text)
 
-        # need to make sure we have reason to replace
-        # since at this point < is &lt,
-        # the net effect &lt gets translated again to &amp;lt;
         value = replace_with_output(original_xml, context, self)
-        if is_pyxform_reference_candidate(value):
-            value = re.sub(RE_PYXFORM_REF, _var_repl_output_function, value)
         changed = value != original_xml
         if changed:
             return value, True
