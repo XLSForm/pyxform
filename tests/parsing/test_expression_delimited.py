@@ -872,6 +872,20 @@ class TestOutputDelimiterAmbiguity(PyxformTestCase):
             ],
         )
 
+    def test_triple_opening_delimiter(self):
+        """Should ignore extra delimiter token and accept outer opening delimiter."""
+        # EDB01 EDB08 EDB14
+        inp = "Triple open: {{{ ${q1} }}"
+        expected = """Triple open: <output value="{  /test_name/q1  "/>"""
+        self.assertEqual(expected, replace_with_output(inp, Q1, SURVEY))
+        self.assertPyxformXform(
+            md=MD_SURVEY.format(label=inp),
+            xml__xpath_exact=[
+                (xpq.body_input_label_text("q1"), {" Triple open: ", " "}),
+                (xpq.body_input_label_output_value("q1"), {"{  /test_name/q1  "}),
+            ],
+        )
+
     def test_triple_closing_delimiter(self):
         """Should ignore extra delimiter token and accept outer closing delimiter."""
         # EDB01 EDB08 EDB14
@@ -883,6 +897,23 @@ class TestOutputDelimiterAmbiguity(PyxformTestCase):
             xml__xpath_exact=[
                 (xpq.body_input_label_text("q1"), {" Triple close: ", " "}),
                 (xpq.body_input_label_output_value("q1"), {"  /test_name/q1  }"}),
+            ],
+        )
+
+    def test_extra_opening_delimiter_near_expression_start(self):
+        """Should ignore single quote near accepted opening delimiter."""
+        # EDB01 EDB08 EDB14
+        inp = "Starting brace: {{ concat('{', ${q1}) }}"
+        expected = """Starting brace: <output value=" concat('{',  /test_name/q1 ) "/>"""
+        self.assertEqual(expected, replace_with_output(inp, Q1, SURVEY))
+        self.assertPyxformXform(
+            md=MD_SURVEY.format(label=inp),
+            xml__xpath_exact=[
+                (xpq.body_input_label_text("q1"), {" Starting brace: ", " "}),
+                (
+                    xpq.body_input_label_output_value("q1"),
+                    {" concat('{',  /test_name/q1 ) "},
+                ),
             ],
         )
 

@@ -65,24 +65,18 @@ class ExpressionTransformer(Transformer):
 
     def text(self, children: list["Token"]) -> str:
         """Join all children strings, resolve variable references."""
-        original = self._flatten(children=children)
-        resolved = resolve_variables(
-            xml_text=original, survey=self.survey, context=self.context, wrap=True
+        return resolve_variables(
+            xml_text=self._flatten(children=children),
+            survey=self.survey,
+            context=self.context,
+            wrap=True,
         )
-        if original != resolved:
-            return resolved
-        else:
-            return original
 
     def escaped(self, children: list["Token"]) -> str:
         r"""Drop the leading backslash: `'\{{' -> '{{'`, `'\}}' -> '}}'`."""
-        original = children[0]
-        resolved = {r"\{{": "{{", r"\}}": "}}"}[original]
-        if original != resolved:
-            self.expression_modified = True
-            return resolved
-        else:
-            return original
+        resolved = {r"\{{": "{{", r"\}}": "}}"}[children[0]]
+        self.expression_modified = True
+        return resolved
 
     def invalid_nesting(self, children: list["Token"]) -> str:
         """Raise an error if a nested expression is found."""
