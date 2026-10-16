@@ -86,6 +86,7 @@ OSM_TYPE = "binary"
 
 NAMESPACES = "namespaces"
 META = "meta"
+INSTANCE_ID = "instanceID"
 
 # The following are the possible sheet names:
 SUPPORTED_SHEET_NAMES = {

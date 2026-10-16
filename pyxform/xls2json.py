@@ -1332,16 +1332,13 @@ def workbook_to_json(
         # Automatically add an instanceID element:
         meta_children.append(
             {
-                "name": "instanceID",
-                "bind": {
-                    "readonly": "true()",
-                    "jr:preload": settings.get("instance_id", "uid"),
-                },
-                "type": "calculate",
+                constants.NAME: constants.INSTANCE_ID,
+                constants.BIND: {"readonly": "true()", "jr:preload": "uid"},
+                constants.TYPE: "calculate",
             }
         )
         # Allow ${instanceID} reference for longitudinal / entities workflows.
-        element_names.update(("instanceID",))
+        element_names.update((constants.INSTANCE_ID,))
 
     if "instance_name" in settings:
         # Automatically add an instanceName element:

@@ -230,34 +230,6 @@ class TestSettings(PyxformTestCase):
             ],
         )
 
-    def test_instance_id__bind_can_be_modified_with_setting(self):
-        """Should find that the instance_id bind can be changed via instance_id setting."""
-        md = """
-        | settings |
-        | | instance_id |
-        | | x           |
-
-        | survey |
-        | | type  | name | label |
-        | | text  | q1   | Q1    |
-        """
-        self.assertPyxformXform(
-            md=md,
-            xml__xpath_match=[
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:instanceID
-                """,
-                """
-                /h:html/h:head/x:model/x:bind[
-                  @nodeset='/test_name/meta/instanceID'
-                  and @type='string'
-                  and @readonly='true()'
-                  and @jr:preload='x'
-                ]
-                """,
-            ],
-        )
-
     def test_instance_id__can_be_excluded_with_omit_instanceID__no_meta(self):
         """Should find that instanceID can be excluded with omit_instanceID setting.."""
         md = """
