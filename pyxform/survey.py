@@ -147,7 +147,6 @@ SURVEY_EXTRA_FIELDS = (
     "instance_name",
     "instance_xmlns",
     "namespaces",
-    "omit_instanceID",
     "public_key",
     "setgeopoint_by_triggering_ref",
     "setvalues_by_triggering_ref",
@@ -210,7 +209,6 @@ class Survey(Section):
         self.client_editable: bool = False
         self.instance_xmlns: str | None = None
         self.namespaces: str | None = None
-        self.omit_instanceID: bool = False
         self.public_key: str | None = None
         self.submission_url: str | None = None
 

@@ -1325,20 +1325,16 @@ def workbook_to_json(
         # print "Generating flattened instance..."
         add_flat_annotations(stack[0]["parent_children"])
 
-    if settings.get("omit_instanceID", False):
-        if settings.get("public_key"):
-            raise PyXFormError("Cannot omit instanceID, it is required for encryption.")
-    else:
-        # Automatically add an instanceID element:
-        meta_children.append(
-            {
-                constants.NAME: constants.INSTANCE_ID,
-                constants.BIND: {"readonly": "true()", "jr:preload": "uid"},
-                constants.TYPE: "calculate",
-            }
-        )
-        # Allow ${instanceID} reference for longitudinal / entities workflows.
-        element_names.update((constants.INSTANCE_ID,))
+    # Automatically add an instanceID element:
+    meta_children.append(
+        {
+            constants.NAME: constants.INSTANCE_ID,
+            constants.BIND: {"readonly": "true()", "jr:preload": "uid"},
+            constants.TYPE: "calculate",
+        }
+    )
+    # Allow ${instanceID} reference for longitudinal / entities workflows.
+    element_names.update((constants.INSTANCE_ID,))
 
     if "instance_name" in settings:
         # Automatically add an instanceName element:

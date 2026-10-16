@@ -7,7 +7,6 @@ from pyxform.parsing.expression import is_xml_tag
 BOOL_SETTINGS = {
     "add_none_option": "no",
     "clean_text_values": "yes",
-    "omit_instanceID": "no",
     co.ALLOW_CHOICE_DUPLICATES: "no",
     co.AUTO_DELETE: "no",
     co.AUTO_SEND: "no",
