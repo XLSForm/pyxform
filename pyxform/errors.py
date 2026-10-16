@@ -247,14 +247,27 @@ class ErrorCode(Enum):
         ),
     )
     INTERNAL_003 = Detail(
-        name="Internal error - expression parsing failed",
-        msg="Internal error: expression parsing failed. Input string: {s}",
+        name="Internal error - delimited expression parsing failed, grammar error",
+        msg=(
+            "Delimited expression parsing failed. "
+            "Check the expression syntax, or try using delimiter escapes. "
+            "Input string: {s}"
+        ),
     )
     INTERNAL_004 = Detail(
-        name="Internal error - expression parsing failed",
+        name="Internal error - delimited expression parsing failed, nested expression",
         msg=(
-            "Internal error: expression parsing failed. "
-            "Nested expressions are not allowed. Input string: {s}"
+            "Delimited expression parsing failed. "
+            "Expressions must not be nested inside another expression. "
+            "Input string: {s}"
+        ),
+    )
+    INTERNAL_005 = Detail(
+        name="Internal error - delimited expression parsing failed, empty expression",
+        msg=(
+            "Delimited expression parsing failed. "
+            "Expressions must not be empty or only contain whitespace characters. "
+            "Input string: {s}"
         ),
     )
     LABEL_001: Detail = Detail(

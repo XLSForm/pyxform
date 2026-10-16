@@ -7,6 +7,7 @@ Each test should reference one (or more) requirements from these lists.
   - Validation
     - EDV01: an opening expression delimiter must have a matching closing delimiter.
     - EDV02: expressions must not be nested.
+    - EDV03: expressions must not be empty (or contain only whitespace characters).
   - Behaviour
     - EDB01: delimited expression contents are wrapped in an XML <output/> element.
     - EDB02: whitespace in expression contents is preserved.
@@ -65,61 +66,114 @@ class TestParsingErrors(PyxformTestCase):
         """Unclosed template with trailing content."""
         # EDV01
         inp = "Total cost: {{ ${q1} * ${q2}"
-        with self.assertRaises(PyXFormError):
+        expected = ErrorCode.INTERNAL_003.value.format(s=inp)
+        with self.assertRaises(PyXFormError) as err:
             replace_with_output(inp, Q1, SURVEY)
+        self.assertEqual(str(err.exception), expected)
         self.assertPyxformXform(
             md=MD_SURVEY.format(label=inp),
             errored=True,
-            error__contains=[ErrorCode.INTERNAL_003.value.format(s=inp)],
+            error__contains=[expected],
         )
 
     def test_valid_template_followed_by_unclosed_template(self):
         """Valid template followed by unclosed template."""
         # EDV01
         inp = "User {{ ${q1} }} has pending {{ ${q2}"
-        with self.assertRaises(PyXFormError):
+        expected = ErrorCode.INTERNAL_003.value.format(s=inp)
+        with self.assertRaises(PyXFormError) as err:
             replace_with_output(inp, Q1, SURVEY)
+        self.assertEqual(str(err.exception), expected)
         self.assertPyxformXform(
             md=MD_SURVEY.format(label=inp),
             errored=True,
-            error__contains=[ErrorCode.INTERNAL_003.value.format(s=inp)],
+            error__contains=[expected],
         )
 
     def test_unclosed_expression_following_escaped_delimiter(self):
         """Unclosed template following escaped delimiter."""
         # EDV01
         inp = r"\{{ escaped \}} but {{ unclosed template"
-        with self.assertRaises(PyXFormError):
+        expected = ErrorCode.INTERNAL_003.value.format(s=inp)
+        with self.assertRaises(PyXFormError) as err:
             replace_with_output(inp, Q1, SURVEY)
+        self.assertEqual(str(err.exception), expected)
         self.assertPyxformXform(
             md=MD_SURVEY.format(label=inp),
             errored=True,
-            error__contains=[ErrorCode.INTERNAL_003.value.format(s=inp)],
+            error__contains=[expected],
         )
 
     def test_repeated_delimiters(self):
         """Doubled up delimiters inside expression."""
         # EDV01
         inp = "Value: {{{{ ${q1} }}}}"
-        with self.assertRaises(PyXFormError):
+        expected = ErrorCode.INTERNAL_003.value.format(s=inp)
+        with self.assertRaises(PyXFormError) as err:
             replace_with_output(inp, Q1, SURVEY)
+        self.assertEqual(str(err.exception), expected)
         self.assertPyxformXform(
             md=MD_SURVEY.format(label=inp),
             errored=True,
-            error__contains=[ErrorCode.INTERNAL_003.value.format(s=inp)],
+            error__contains=[expected],
         )
 
     def test_nested_delimiters_inside_expression(self):
         """Nested delimiters inside expression."""
         # EDV02
         inp = "Value: {{ {{ ${q1} }} }}"
-        with self.assertRaises(PyXFormError):
+        expected = ErrorCode.INTERNAL_004.value.format(s=inp)
+        with self.assertRaises(PyXFormError) as err:
             replace_with_output(inp, Q1, SURVEY)
+        self.assertEqual(str(err.exception), expected)
         self.assertPyxformXform(
             md=MD_SURVEY.format(label=inp),
             errored=True,
-            error__contains=[ErrorCode.INTERNAL_004.value.format(s=inp)],
+            error__contains=[expected],
         )
+
+    def test_empty_expression(self):
+        """Empty expression."""
+        # EDV03
+        inp = "Value: {{}}"
+        expected = ErrorCode.INTERNAL_005.value.format(s=inp)
+        with self.assertRaises(PyXFormError) as err:
+            replace_with_output(inp, Q1, SURVEY)
+        self.assertEqual(str(err.exception), expected)
+        self.assertPyxformXform(
+            md=MD_SURVEY.format(label=inp),
+            errored=True,
+            error__contains=[expected],
+        )
+
+    def test_whitespace_expression(self):
+        """Expression containing only whitespace."""
+        # EDV03
+
+        # Use concat func since the extra curly braces for python formatting is confusing.
+        def make_case(i):
+            return "Value: {{" + i + "}}"
+
+        cases = (" ", "\t", "\r\n", "  ")
+        for case in cases:
+            inp = make_case(case)
+            with self.subTest(inp):
+                with self.assertRaises(PyXFormError) as err:
+                    replace_with_output(inp, Q1, SURVEY)
+                self.assertEqual(
+                    str(err.exception),
+                    ErrorCode.INTERNAL_005.value.format(s=inp),
+                )
+
+        # Newlines confuse the markdown parser. Multiple spaces are collapsed in xls2json.
+        for case in cases[0:1]:
+            inp = make_case(case)
+            with self.subTest(inp):
+                self.assertPyxformXform(
+                    md=MD_SURVEY.format(label=inp),
+                    errored=True,
+                    error__contains=[ErrorCode.INTERNAL_005.value.format(s=inp)],
+                )
 
 
 class TestOutputText(PyxformTestCase):
@@ -261,20 +315,6 @@ class TestOutputBasicExpressions(PyxformTestCase):
                     xpq.body_input_label_output_value("q1"),
                     {" 1 + 1 ", " 2 + 2 "},
                 )
-            ],
-        )
-
-    def test_empty_template(self):
-        """Should accept an empty template."""
-        # EDB01
-        inp = "Empty: {{}}"
-        expected = 'Empty: <output value=""/>'
-        self.assertEqual(expected, replace_with_output(inp, Q1, SURVEY))
-        self.assertPyxformXform(
-            md=MD_SURVEY.format(label=inp),
-            xml__xpath_exact=[
-                (xpq.body_input_label_text("q1"), {" Empty: ", " "}),
-                (xpq.body_input_label_output_value("q1"), {""}),
             ],
         )
 

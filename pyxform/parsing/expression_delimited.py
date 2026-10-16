@@ -6,6 +6,7 @@ from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.instance_expression import (
     replace_with_output as replace_with_output_old,
 )
+from pyxform.parsing.utils import maybe_strip
 from pyxform.parsing.variable_reference import (
     is_pyxform_reference_candidate,
     resolve_variables,
@@ -84,8 +85,11 @@ class ExpressionTransformer(Transformer):
 
     def expression(self, children: list["Token"]) -> str:
         """Join/wrap children in XML: `<output value='children123'/>`, resolve variable references."""
+        flat = self._flatten(children=children)
+        if len(maybe_strip(flat)) == 0:
+            raise PyXFormError(code=ErrorCode.INTERNAL_005)
         resolved = resolve_variables(
-            xml_text=self._flatten(children=children),
+            xml_text=flat,
             survey=self.survey,
             context=self.context,
         )
