@@ -3,7 +3,7 @@
 from unittest import TestCase
 
 from pyxform.builder import create_survey_element_from_dict
-from pyxform.errors import ErrorCode
+from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -799,6 +799,47 @@ class TestGroupParsing(PyxformTestCase):
             error__contains=[ErrorCode.SURVEY_001.value.format(row=4, type="group")],
         )
 
+    def test_group__required__error(self):
+        """Should raise an error if 'required' is used on a group."""
+        md = """
+        | survey |
+        |        | type        | name | label | required |
+        |        | begin group | g1   | G1    | yes      |
+        |        | text        | q1   | Q1    |          |
+        |        | end group   |      |       |          |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.SURVEY_011.value.format(row=2)],
+        )
+
+    def test_repeat__required__error(self):
+        """Should raise an error if 'required' is used on a repeat."""
+        md = """
+        | survey |
+        |        | type         | name | label | required |
+        |        | begin repeat | r1   | R1    | yes      |
+        |        | text         | q1   | Q1    |          |
+        |        | end repeat   |      |       |          |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.SURVEY_011.value.format(row=2)],
+        )
+
+    def test_group__required_no__ok(self):
+        """Should not raise an error if 'required' is explicitly 'no' on a group."""
+        md = """
+        | survey |
+        |        | type        | name | label | required |
+        |        | begin group | g1   | G1    | no       |
+        |        | text        | q1   | Q1    |          |
+        |        | end group   |      |       |          |
+        """
+        self.assertPyxformXform(md=md)
+
     def test_empty_group__no_question__error(self):
         """Should raise an error for an empty group with no questions."""
         md = """
@@ -918,3 +959,26 @@ class TestGroupInternalRepresentations(TestCase):
         expected = convert(xlsform=md, form_name="group")._survey.to_json_dict()
         observed = create_survey_element_from_dict(expected).to_json_dict()
         self.assertEqual(expected, observed)
+
+    def test_group_required_bind__error(self):
+        """Should raise an error if a group is built with a required bind."""
+        d = {
+            "name": "data",
+            "title": "data",
+            "type": "survey",
+            "id_string": "data",
+            "children": [
+                {
+                    "type": "group",
+                    "name": "g1",
+                    "label": "G1",
+                    "bind": {"required": "true()"},
+                    "children": [
+                        {"type": "text", "name": "q1", "label": "Q1"},
+                    ],
+                }
+            ],
+        }
+        survey = create_survey_element_from_dict(d)
+        with self.assertRaises(PyXFormError):
+            survey.xml()
