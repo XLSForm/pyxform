@@ -230,81 +230,6 @@ class TestSettings(PyxformTestCase):
             ],
         )
 
-    def test_instance_id__bind_can_be_modified_with_setting(self):
-        """Should find that the instance_id bind can be changed via instance_id setting."""
-        md = """
-        | settings |
-        | | instance_id |
-        | | x           |
-
-        | survey |
-        | | type  | name | label |
-        | | text  | q1   | Q1    |
-        """
-        self.assertPyxformXform(
-            md=md,
-            xml__xpath_match=[
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name/x:meta/x:instanceID
-                """,
-                """
-                /h:html/h:head/x:model/x:bind[
-                  @nodeset='/test_name/meta/instanceID'
-                  and @type='string'
-                  and @readonly='true()'
-                  and @jr:preload='x'
-                ]
-                """,
-            ],
-        )
-
-    def test_instance_id__can_be_excluded_with_omit_instanceID__no_meta(self):
-        """Should find that instanceID can be excluded with omit_instanceID setting.."""
-        md = """
-        | settings |
-        | | omit_instanceID |
-        | | yes             |
-
-        | survey |
-        | | type  | name | label |
-        | | text  | q1   | Q1    |
-        """
-        self.assertPyxformXform(
-            md=md,
-            xml__xpath_match=[
-                # The meta block is not emitted if it would be empty.
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name[not(./x:meta)]
-                """,
-                """
-                /h:html/h:head/x:model[not(./x:bind[@nodeset='/test_name/meta/instanceID'])]
-                """,
-            ],
-        )
-
-    def test_instance_id__can_be_excluded_with_omit_instanceID__with_meta(self):
-        """Should find that instanceID can be excluded with omit_instanceID setting.."""
-        md = """
-        | settings |
-        | | omit_instanceID | instance_name |
-        | | yes             | x             |
-
-        | survey |
-        | | type  | name | label |
-        | | text  | q1   | Q1    |
-        """
-        self.assertPyxformXform(
-            md=md,
-            xml__xpath_match=[
-                """
-                /h:html/h:head/x:model/x:instance/x:test_name/x:meta[not(./x:instanceID)]
-                """,
-                """
-                /h:html/h:head/x:model[not(./x:bind[@nodeset='/test_name/meta/instanceID'])]
-                """,
-            ],
-        )
-
     def test_instance_id__can_be_used_as_reference_variable(self):
         """Should find that ${instanceID} resolves to the survey-level meta child."""
         md = """
@@ -336,22 +261,18 @@ class TestSettings(PyxformTestCase):
         )
 
     def test_instance_id__can_be_used_as_reference_variable__error(self):
-        """Should find that ${instanceID} resolves to the survey-level meta child."""
+        """Should find that misspelling ${instanceID} raises an error."""
         md = """
-        | settings |
-        | | omit_instanceID |
-        | | yes             |
-
         | survey |
-        | | type  | name | label         | calculation   | read_only |
-        | | text  | q1   | ${instanceID} |               |           |
+        | | type  | name | label          | calculation   | read_only |
+        | | text  | q1   | ${instance_id} |               |           |
         """
         self.assertPyxformXform(
             md=md,
             errored=True,
             error__contains=[
                 ErrorCode.PYREF_003.value.format(
-                    sheet="survey", column="label", row=2, q="instanceID"
+                    sheet="survey", column="label", row=2, q="instance_id"
                 ),
             ],
         )
