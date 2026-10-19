@@ -23,16 +23,19 @@ if TYPE_CHECKING:
 expression_grammar = r"""
 start: (expression | escaped | text)*
 
-expression: _OPEN (invalid_nesting | escaped | TEXT_NON_DELIMITER | CHAR_NON_DELIMITER)* _CLOSE
+expression: _OPEN (invalid_nesting | escaped | TEXT_NON_DELIMITER | CHAR_NON_DELIMITER | _xml_escape_expr)* _CLOSE
 invalid_nesting: expression
 escaped: ESCAPED_DELIMITER
-text: (TEXT_NON_DELIMITER | CHAR_NON_DELIMITER)+
+text: (TEXT_NON_DELIMITER | CHAR_NON_DELIMITER | xml_escape_text)+
+_xml_escape_expr: CHAR_XML_ESCAPE
+xml_escape_text: CHAR_XML_ESCAPE
 
 _OPEN: "{{"
 _CLOSE: /}\}(?!})/
 ESCAPED_DELIMITER: "\\{{" | "\\}}"
-TEXT_NON_DELIMITER: /[^{}\\]+/
+TEXT_NON_DELIMITER: /[^{}\\<>&]+/
 CHAR_NON_DELIMITER: /[{}\\]/
+CHAR_XML_ESCAPE: /[<>&]/
 """
 
 
@@ -64,10 +67,14 @@ class ExpressionTransformer(Transformer):
         """Join all children strings."""
         return self._flatten(children=children)
 
+    @staticmethod
+    def xml_escape_text(children: list["Token"]) -> str:
+        return children[0].translate(XML_TEXT_TABLE)
+
     def text(self, children: list["Token"]) -> str:
         """Join all children strings, resolve variable references."""
         return resolve_variables(
-            xml_text=self._flatten(children=children).translate(XML_TEXT_TABLE),
+            xml_text=self._flatten(children=children),
             survey=self.survey,
             context=self.context,
             wrap=True,
