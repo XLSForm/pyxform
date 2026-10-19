@@ -11,7 +11,7 @@ from pyxform.parsing.variable_reference import (
     is_pyxform_reference_candidate,
     resolve_variables,
 )
-from pyxform.utils import node
+from pyxform.utils import XML_TEXT_TABLE, escape_text_for_xml, node
 
 if TYPE_CHECKING:
     from lark import Token
@@ -67,7 +67,7 @@ class ExpressionTransformer(Transformer):
     def text(self, children: list["Token"]) -> str:
         """Join all children strings, resolve variable references."""
         return resolve_variables(
-            xml_text=self._flatten(children=children),
+            xml_text=self._flatten(children=children).translate(XML_TEXT_TABLE),
             survey=self.survey,
             context=self.context,
             wrap=True,
@@ -121,12 +121,13 @@ def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey
                 return out_str
 
         # Fallback for old func that only looks for non-delimited `instance()`.
-        fallback = replace_with_output_old(xml_text, context, survey)
+        escaped = escape_text_for_xml(text=xml_text)
+        fallback = replace_with_output_old(escaped, context, survey)
         if is_pyxform_reference_candidate(fallback):
             fallback = resolve_variables(
                 xml_text=fallback, survey=survey, context=context, wrap=True
             )
-        if fallback != xml_text:
+        if fallback != escaped:
             return fallback
         else:
             return xml_text
