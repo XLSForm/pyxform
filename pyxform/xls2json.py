@@ -1325,7 +1325,7 @@ def workbook_to_json(
         # print "Generating flattened instance..."
         add_flat_annotations(stack[0]["parent_children"])
 
-    # Automatically add an instanceID element:
+    # instanceID: The unique ID of the record (required).
     meta_children.append(
         {
             constants.NAME: constants.INSTANCE_ID,
@@ -1337,7 +1337,7 @@ def workbook_to_json(
     element_names.update((constants.INSTANCE_ID,))
 
     if "instance_name" in settings:
-        # Automatically add an instanceName element:
+        # instanceName: The name of the record (optional).
         meta_children.append(
             {
                 constants.NAME: constants.INSTANCE_NAME,
