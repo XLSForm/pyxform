@@ -54,7 +54,8 @@ From the command line, complete the following. These steps use a virtualenv to m
     # Install the pyxform and it's production dependencies.
     (venv)$ cd repo
     # If this doesn't work, upgrade pip ``pip install --upgrade pip`` and retry.
-    (venv)$ pip install -e .
+    (venv)$ pip install --requirement pylock.toml
+    (venv)$ pip install --no-deps --editable .
     (venv)$ python pyxform/xls2xform.py --help
     (venv)$ xls2xform --help           # same effect as previous line
     (venv)$ which xls2xform            # ~/repos/pyxform/venv/bin/xls2xform
@@ -68,21 +69,12 @@ To leave and return to the virtualenv:
     (venv)$ which xls2xform                   # scripts available on $PATH again
     ~/repos/pyxform/venv/bin/xls2xform
 
-### Installing pyxform from remote source
-
-`pip` can install from the GitHub repository. Only do this if you want to install from the master branch, which is likely to have pre-release code. To install the latest release, see above.:
-
-    pip install git+https://github.com/XLSForm/pyxform.git@master#egg=pyxform
-
-You can then run xls2xform from the commandline:
-
-    xls2xform path_to_XLSForm [output_path]
-
 ## Development
 
 To set up for development / contributing, first complete the above steps for "Running pyxform from local source". Then repeat the command used to install pyxform, but with `[dev]` appended to the end, e.g.:
 
-    pip install -e .[dev]
+    pip install --requirement pylock.dev.toml
+    pip install --no-deps --editable .
 
 You can run tests with:
 
@@ -156,7 +148,8 @@ Releases are now automatic. These instructions are provided for forks or for a f
 
 3.  Install the production and packaging requirements:
 
-        pip install -e .
+        pip install --requirement pylock.toml
+        pip install --no-deps --editable .
         pip install flit==3.12.0 "flit_core >=3.2,<4"
 
 4.  Clean up build and dist folders:
