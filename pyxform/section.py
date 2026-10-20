@@ -123,40 +123,48 @@ class Section(SurveyElement):
                 check_reserved=False,
             )
 
-    def xml_instance(self, survey: "Survey", **kwargs):
-        """Creates an xml representation of the section."""
-        append_template = kwargs.pop("append_template", False)
+    def xml_instance(self, survey: "Survey", with_repeat_template: bool = False):
+        """
+        Create xml instance elements for the section.
 
-        attributes = {}
-        attributes.update(kwargs)
-        if self.instance:
-            attributes.update(self.instance)
-        # Resolve field references in attributes
-        for key, value in attributes.items():
-            attributes[key] = survey.insert_xpaths(text=value, context=self)
-        result = node(self.name, **attributes)
+        :param survey: The Survey that the Section is in.
+        :param with_repeat_template: If True, emit a template for each child repeat.
+        """
+        result = node(self.name)
+
+        attributes = self.instance
+        if attributes:
+            # Resolve variable references in attributes
+            for k, v in attributes.items():
+                result.setAttribute(k, survey.insert_xpaths(text=v, context=self))
 
         for child in self.children:
-            repeating_template = None
             if isinstance(child, Section) and child.flat:
                 for grandchild in child.xml_instance_array(survey=survey):
                     result.appendChild(grandchild)
             elif isinstance(child, ExternalInstance):
                 continue
             else:
-                if isinstance(child, RepeatingSection) and not append_template:
-                    append_template = not append_template
-                    repeating_template = child.xml_instance_template(survey=survey)
+                # Track template flag among siblings separately to function/recursion,
+                # so that only the template descendants are templates.
+                with_repeat_template_child = with_repeat_template
+                if isinstance(child, RepeatingSection):
+                    if with_repeat_template_child:
+                        result.appendChild(
+                            child.xml_instance_template(
+                                survey=survey,
+                                with_repeat_template=with_repeat_template_child,
+                            )
+                        )
+                        with_repeat_template_child = False
+
                 child_instance = child.xml_instance(
-                    survey=survey, append_template=append_template
+                    survey=survey, with_repeat_template=with_repeat_template_child
                 )
                 if isinstance(child_instance, Attr):
                     result.setAttributeNode(child_instance)
                 else:
                     result.appendChild(child_instance)
-            if append_template and repeating_template:
-                append_template = not append_template
-                result.insertBefore(repeating_template, result._get_lastChild())
         return result
 
     def xml_instance_array(self, survey: "Survey"):
@@ -267,15 +275,19 @@ class RepeatingSection(Section):
         else:
             return node("group", repeat_node, ref=self.get_xpath())
 
-    def xml_instance_template(self, survey: "Survey") -> DetachableElement:
-        result = node(self.name, **{"jr:template": ""})
-        from pyxform.question import Question
+    def xml_instance_template(
+        self, survey: "Survey", with_repeat_template: bool = False
+    ) -> DetachableElement:
+        """
+        Create xml instance elements for the repeat as a template.
 
-        for child in self.children:
-            if isinstance(child, RepeatingSection):
-                result.appendChild(child.xml_instance_template(survey=survey))
-            elif isinstance(child, Section | Question):
-                result.appendChild(child.xml_instance(survey=survey))
+        :param survey: The Survey that the repeat is in.
+        :param with_repeat_template: If True, emit a template for each child repeat.
+        """
+        result = self.xml_instance(
+            survey=survey, with_repeat_template=with_repeat_template
+        )
+        result.setAttribute("jr:template", "")
         return result
 
 

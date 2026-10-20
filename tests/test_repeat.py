@@ -11,6 +11,7 @@ from pyxform.xls2xform import convert
 
 from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.questions import xpq
+from tests.xpath_helpers.repeats import xpr
 
 
 class TestRepeatOutput(PyxformTestCase):
@@ -1041,85 +1042,1139 @@ class TestRepeatOutput(PyxformTestCase):
             ],
         )
 
+
+class TestRepeatOutputTemplates(PyxformTestCase):
+    """
+    Tests for output of repeat templates.
+
+    Naming conventions:
+    - y: Survey
+    - t: target repeat (subject of the test / case variables)
+    - g: Non-repeating group / GroupedSection
+    - r: Repeating group / RepeatingSection
+    """
+
     def test_repeat_adding_template_and_instance(self):
         """Repeat should add template and instances."""
+        md = """
+        | survey |
+        || type         | name | label |
+        || text         | q1   | Q1    |
+        || begin_repeat | r1   | R1    |
+        || text         | q2   | Q2    |
+        || end_repeat   | r1   |       |
+        || begin_repeat | r2   | R2    |
+        || begin_repeat | r3   | R3    |
+        || text         | q3   | Q3    |
+        || begin_repeat | r4   | R4    |
+        || text         | q4   | Q4    |
+        || end_repeat   | r4   |       |
+        || end_repeat   | r3   |       |
+        || text         | q5   | q5    |
+        || begin_repeat | r5   | R5    |
+        || note         | q6   | q6    |
+        || end_repeat   | r5   |       |
+        || note         | q7   | q7    |
+        || end_repeat   | r2   |       |
+        """
         self.assertPyxformXform(
-            md="""
-            | survey |              |          |           |
-            |        | type         | name     | label     |
-            |        | text         | aa       | Text AA   |
-            |        | begin repeat | section  | Section   |
-            |        | text         | a        | Text A    |
-            |        | text         | b        | Text B    |
-            |        | text         | c        | Text C    |
-            |        | note         | d        | Note D    |
-            |        | end repeat   |          |           |
-            |        |              |          |           |
-            |        | begin repeat | repeat_a | Section A |
-            |        | begin repeat | repeat_b | Section B |
-            |        | text         | e        | Text E    |
-            |        | begin repeat | repeat_c | Section C |
-            |        | text         | f        | Text F    |
-            |        | end repeat   |          |           |
-            |        | end repeat   |          |           |
-            |        | text         | g        | Text G    |
-            |        | begin repeat | repeat_d | Section D |
-            |        | note         | h        | Note H    |
-            |        | end repeat   |          |           |
-            |        | note         | i        | Note I    |
-            |        | end repeat   |          |           |
-            """,
+            md=md,
             xml__xpath_match=[
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:section[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:section[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_b[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_b[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_b/x:repeat_c[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_b/x:repeat_c[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_d[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:repeat_a/x:repeat_d[not(@jr:template)]",
+                # Template
+                xpr.model_instance("/x:r1[@jr:template]"),
+                xpr.model_instance("/x:r2[@jr:template]"),
+                xpr.model_instance("/x:r2[@jr:template]/x:r3[@jr:template]"),
+                xpr.model_instance("/x:r2[@jr:template]/x:r3[not(@jr:template)]"),
+                xpr.model_instance("""
+                  /x:r2[@jr:template]/x:r3[@jr:template]/x:r4[@jr:template]
+                """),
+                xpr.model_instance("""
+                  /x:r2[@jr:template]/x:r3[@jr:template]/x:r4[not(@jr:template)]
+                """),
+                xpr.model_instance("""
+                  /x:r2[@jr:template]/x:r3[not(@jr:template)]/x:r4[not(@jr:template)]
+                """),
+                xpr.model_instance("/x:r2[@jr:template]/x:r5[@jr:template]"),
+                xpr.model_instance("/x:r2[@jr:template]/x:r5[not(@jr:template)]"),
+                # Primary
+                xpr.model_instance("/x:r1[not(@jr:template)]"),
+                xpr.model_instance("/x:r2[not(@jr:template)]"),
+                xpr.model_instance("/x:r2[not(@jr:template)]/x:r3[not(@jr:template)]"),
+                xpr.model_instance("""
+                  /x:r2[not(@jr:template)]/x:r3[not(@jr:template)]/x:r4[not(@jr:template)]
+                """),
+                xpr.model_instance("/x:r2[not(@jr:template)]/x:r5[not(@jr:template)]"),
+            ],
+            xml__xpath_count=[
+                (xpr.model_instance("/x:r1"), 2),
+                (xpr.model_instance("/x:r2"), 2),
+                (xpr.model_instance("/x:r2/x:r3"), 3),
+                (xpr.model_instance("/x:r2/x:r3/x:r4"), 4),
+                (xpr.model_instance("/x:r2/x:r5"), 3),
             ],
         )
 
     def test_repeat_adding_template_and_instance_with_group(self):
         """Repeat should add template and instance even when they are inside grouping."""
+        md = """
+        | survey |
+        || type         | name | label |
+        || text         | q1   | Q1    |
+        || begin_repeat | r1   | R1    |
+        || text         | q2   | Q2    |
+        || end_repeat   | r1   |       |
+        || begin_group  | g1   | G1    |
+        || begin_repeat | r2   | R2    |
+        || begin_repeat | r3   | R3    |
+        || text         | q3   | Q3    |
+        || begin_group  | g2   | G2    |
+        || text         | q4   | Q4    |
+        || end_group    | g2   |       |
+        || note         | q5   | Q5    |
+        || end_repeat   | r3   |       |
+        || end_repeat   | r2   |       |
+        || end_group    | g1   |       |
+        """
         self.assertPyxformXform(
-            md="""
-            | survey |              |          |           |
-            |        | type         | name     | label     |
-            |        | text         | aa       | Text AA   |
-            |        | begin repeat | section  | Section   |
-            |        | text         | a        | Text A    |
-            |        | text         | b        | Text B    |
-            |        | text         | c        | Text C    |
-            |        | note         | d        | Note D    |
-            |        | end repeat   |          |           |
-            |        |              |          |           |
-            |        | begin group  | group_a  | Group A   |
-            |        | begin repeat | repeat_a | Section A |
-            |        | begin repeat | repeat_b | Section B |
-            |        | text         | e        | Text E    |
-            |        | begin group  | group_b  | Group B   |
-            |        | text         | f        | Text F    |
-            |        | text         | g        | Text G    |
-            |        | note         | h        | Note H    |
-            |        | end group    |          |           |
-            |        | note         | i        | Note I    |
-            |        | end repeat   |          |           |
-            |        | end repeat   |          |           |
-            |        | end group    |          |           |
-            """,
+            md=md,
             xml__xpath_match=[
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:section[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:section[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:group_a/x:repeat_a[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:group_a/x:repeat_a[not(@jr:template)]",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:group_a/x:repeat_a/x:repeat_b[@jr:template='']",
-                "/h:html/h:head/x:model/x:instance/x:test_name/x:group_a/x:repeat_a/x:repeat_b[not(@jr:template)]",
+                # Template
+                xpr.model_instance("/x:r1[@jr:template]"),
+                xpr.model_instance("/x:g1/x:r2[@jr:template]"),
+                xpr.model_instance("/x:g1/x:r2[@jr:template]/x:r3[@jr:template]"),
+                xpr.model_instance("/x:g1/x:r2[@jr:template]/x:r3[not(@jr:template)]"),
+                xpr.model_instance("""
+                  /x:g1/x:r2[@jr:template]/x:r3[@jr:template]/x:g2
+                """),
+                xpr.model_instance("""
+                  /x:g1/x:r2[@jr:template]/x:r3[not(@jr:template)]/x:g2
+                """),
+                # Primary
+                xpr.model_instance("/x:g1"),
+                xpr.model_instance("/x:r1[not(@jr:template)]"),
+                xpr.model_instance("/x:g1/x:r2[not(@jr:template)]"),
+                xpr.model_instance("""
+                  /x:g1/x:r2[not(@jr:template)]/x:r3[not(@jr:template)]
+                """),
+                xpr.model_instance("""
+                  /x:g1/x:r2[not(@jr:template)]/x:r3[not(@jr:template)]/x:g2
+                """),
+            ],
+            xml__xpath_count=[
+                (xpr.model_instance("/x:g1"), 1),
+                (xpr.model_instance("/x:r1"), 2),
+                (xpr.model_instance("/x:g1/x:r2"), 2),
+                (xpr.model_instance("/x:g1/x:r2/x:r3"), 3),
+                (xpr.model_instance("/x:g1/x:r2/x:r3/x:g2"), 3),
             ],
         )
+
+    def test_instance_attribute__depth_1_yt(self):
+        """Should find the attribute in the template and primary instances."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count | instance::k |
+        | | integer      | q1   | Q1    |              |             |
+        | | begin_repeat | t    | T     | {count}      | kt          |
+        | | integer      | q2   | Q2    |              |             |
+        | | end_repeat   | t    |       |              |             |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:t[@jr:template and @k='kt']"),
+            # Primary
+            xpr.model_instance("/x:t[not(@jr:template) and @k='kt']"),
+        ]
+        count = [(xpr.model_instance("/x:t"), 2)]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_instance_attribute__depth_2_yrt(self):
+        """Should find the attribute in the template, initial, and primary instances."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count | instance::k |
+        | | integer      | q1   | Q1    |              |             |
+        | | begin_repeat | r1   | R1    |              | kr1         |
+        | | begin_repeat | t    | T     | {count}      | kt          |
+        | | integer      | q2   | Q2    |              |             |
+        | | end_repeat   | t    |       |              |             |
+        | | end_repeat   | r1   |       |              |             |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:r1[@jr:template and @k='kr1']"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template and @k='kt']"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template) and @k='kt']"),
+            # Primary
+            xpr.model_instance("/x:r1[not(@jr:template) and @k='kr1']"),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template) and @k='kr1']/x:t[not(@jr:template) and @k='kt']
+            """),
+        ]
+        count = [(xpr.model_instance("/x:r1"), 2), (xpr.model_instance("/x:r1/x:t"), 3)]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_1_yt(self):
+        """Should find that target has a template and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | t    |       |              |
+        """
+        cases = (
+            "",  # Generate initial repeat.
+            "1",  # No initial (t_count: jr:count to t_count + calculate binding).
+            "${q1}",  # No initial (jr:count to q1).
+        )
+        match = [
+            # Template
+            xpr.model_instance("/x:t[@jr:template]"),
+            # Primary
+            xpr.model_instance("/x:t[not(@jr:template)]"),
+        ]
+        count = [(xpr.model_instance("/x:t"), 2)]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_1_ytg(self):
+        """Should find that target has a template and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_group  | g1   | G1    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | t    |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:t[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:g1"),
+            # Primary
+            xpr.model_instance("/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:t[not(@jr:template)]/x:g1"),
+        ]
+        count = [(xpr.model_instance("/x:t"), 2), (xpr.model_instance("/x:t/x:g1"), 2)]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_1_ytgr(self):
+        """Should find that target has a template and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_group  | g1   | G1    |              |
+        | | begin_repeat | r2   | R2    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | t    |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:t[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:g1"),
+            xpr.model_instance("/x:t[@jr:template]/x:g1/x:r2[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:g1/x:r2[not(@jr:template)]"),
+            # Primary
+            xpr.model_instance("/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("/x:t[not(@jr:template)]/x:g1/x:r2[not(@jr:template)]"),
+        ]
+        count = [
+            (xpr.model_instance("/x:t"), 2),
+            (xpr.model_instance("/x:t/x:g1"), 2),
+            (xpr.model_instance("/x:t/x:g1/x:r2"), 3),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_1_ytr(self):
+        """Should find that target has a template and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_repeat | r2   | R2    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | t    |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:t[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[not(@jr:template)]"),
+            # Primary
+            xpr.model_instance("/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:t[not(@jr:template)]/x:r2[not(@jr:template)]"),
+        ]
+        count = [(xpr.model_instance("/x:t"), 2), (xpr.model_instance("/x:t/x:r2"), 3)]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_1_ytrg(self):
+        """Should find that target has a template and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_repeat | r2   | R2    |              |
+        | | begin_group  | g1   | G1    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | t    |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:t[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[not(@jr:template)]"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[@jr:template]/x:g1"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[not(@jr:template)]/x:g1"),
+            # Primary
+            xpr.model_instance("/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:t[not(@jr:template)]/x:r2[not(@jr:template)]"),
+            xpr.model_instance("/x:t[not(@jr:template)]/x:r2[not(@jr:template)]/x:g1"),
+        ]
+        count = [
+            (xpr.model_instance("/x:t"), 2),
+            (xpr.model_instance("/x:t/x:r2"), 3),
+            (xpr.model_instance("/x:t/x:r2/x:g1"), 3),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_1_ytrr(self):
+        """Should find that target has a template and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_repeat | r2   | R2    |              |
+        | | begin_repeat | r3   | R3    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | r3   |       |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | t    |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:t[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance("/x:t[@jr:template]/x:r2[not(@jr:template)]"),
+            xpr.model_instance("""
+              /x:t[@jr:template]/x:r2[@jr:template]/x:r3[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:t[@jr:template]/x:r2[@jr:template]/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:t[@jr:template]/x:r2[not(@jr:template)]/x:r3[not(@jr:template)]
+            """),
+            # Primary
+            xpr.model_instance("/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:t[not(@jr:template)]/x:r2[not(@jr:template)]"),
+            xpr.model_instance("""
+              /x:t[not(@jr:template)]/x:r2[not(@jr:template)]/x:r3[not(@jr:template)]
+            """),
+        ]
+        count = [
+            (xpr.model_instance("/x:t"), 2),
+            (xpr.model_instance("/x:t/x:r2"), 3),
+            (xpr.model_instance("/x:t/x:r2/x:r3"), 4),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_2_ygt(self):
+        """Should find that target has a template and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_group  | g1   | G1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | t    |       |              |
+        | | end_group    | g1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:g1/x:t[@jr:template]"),
+            # Primary
+            xpr.model_instance("/x:g1"),
+            xpr.model_instance("/x:g1/x:t[not(@jr:template)]"),
+        ]
+        count = [
+            (xpr.model_instance("/x:g1"), 1),
+            (xpr.model_instance("/x:g1/x:t"), 2),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_2_ygtg(self):
+        """Should find that target has a template and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_group  | g1   | G1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_group  | g2   | G2    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_group    | g2   |       |              |
+        | | end_repeat   | t    |       |              |
+        | | end_group    | g1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:g1/x:t[@jr:template]"),
+            xpr.model_instance("/x:g1/x:t[@jr:template]/x:g2"),
+            # Primary
+            xpr.model_instance("/x:g1"),
+            xpr.model_instance("/x:g1/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:g1/x:t[not(@jr:template)]/x:g2"),
+        ]
+        count = [
+            (xpr.model_instance("/x:g1"), 1),
+            (xpr.model_instance("/x:g1/x:t"), 2),
+            (xpr.model_instance("/x:g1/x:t/x:g2"), 2),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_2_ygtr(self):
+        """Should find that target has a template and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_group  | g1   | G1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_repeat | r2   | R2    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | t    |       |              |
+        | | end_group    | g1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:g1/x:t[@jr:template]"),
+            xpr.model_instance("/x:g1/x:t[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance("/x:g1/x:t[@jr:template]/x:r2[not(@jr:template)]"),
+            # Primary
+            xpr.model_instance("/x:g1"),
+            xpr.model_instance("/x:g1/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:g1/x:t[not(@jr:template)]/x:r2[not(@jr:template)]"),
+        ]
+        count = [
+            (xpr.model_instance("/x:g1"), 1),
+            (xpr.model_instance("/x:g1/x:t"), 2),
+            (xpr.model_instance("/x:g1/x:t/x:r2"), 3),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_2_yrt(self):
+        """Should find that target has a template, initial, and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | t    |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:r1[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            # Primary
+            xpr.model_instance("/x:r1[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
+        ]
+        count = [(xpr.model_instance("/x:r1"), 2), (xpr.model_instance("/x:r1/x:t"), 3)]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_2_yrtg(self):
+        """Should find that target has a template, initial, and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_group  | g1   | G1    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | t    |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:r1[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]/x:g1"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1"),
+            # Primary
+            xpr.model_instance("/x:r1[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1"),
+        ]
+        count = [
+            (xpr.model_instance("/x:r1"), 2),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1"), 3),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_2_yrtgr(self):
+        """Should find that target has a template, initial, and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_group  | g1   |       |              |
+        | | begin_repeat | r3   | R3    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | r3   |       |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | t    |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:r1[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+            # Primary
+            xpr.model_instance("/x:r1[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+        ]
+        count = [
+            (xpr.model_instance("/x:r1"), 2),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 4),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_2_yrtgrggrr(self):
+        """Should find that target has a template, initial, and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_group  | g1   |       |              |
+        | | begin_repeat | r3   | R3    |              |
+        | | begin_group  | g2   |       |              |
+        | | begin_group  | g3   |       |              |
+        | | begin_repeat | r4   | R4    |              |
+        | | begin_repeat | r5   | R5    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | r5   |       |              |
+        | | end_repeat   | r4   |       |              |
+        | | end_group    | g3   |       |              |
+        | | end_group    | g2   |       |              |
+        | | end_repeat   | r3   |       |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | t    |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:r1[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:g3
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:g3/x:r4[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:g3/x:r4[@jr:template]/x:r5[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:g3/x:r4[@jr:template]/x:r5[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:g3/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:g3/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
+            """),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
+            """),
+            # Primary
+            xpr.model_instance("/x:r1[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3
+            """),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:g3/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
+            """),
+        ]
+        count = [
+            (xpr.model_instance("/x:r1"), 2),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:g3"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:g3/x:r4"), 5),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:g3/x:r4/x:r5"), 6),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_2_yrtgrgr(self):
+        """Should find that target has a template, initial, and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_group  | g1   |       |              |
+        | | begin_repeat | r3   | R3    |              |
+        | | begin_group  | g2   |       |              |
+        | | begin_repeat | r4   | R4    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | r4   |       |              |
+        | | end_group    | g2   |       |              |
+        | | end_repeat   | r3   |       |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | t    |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:r1[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:r4[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]
+            """),
+            # Primary
+            xpr.model_instance("/x:r1[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]
+            """),
+        ]
+        count = [
+            (xpr.model_instance("/x:r1"), 2),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:r4"), 5),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_2_yrtgrgrr(self):
+        """Should find that target has a template, initial, and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_group  | g1   |       |              |
+        | | begin_repeat | r3   | R3    |              |
+        | | begin_group  | g2   |       |              |
+        | | begin_repeat | r4   | R4    |              |
+        | | begin_repeat | r5   | R5    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | r5   |       |              |
+        | | end_repeat   | r4   |       |              |
+        | | end_group    | g2   |       |              |
+        | | end_repeat   | r3   |       |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | t    |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:r1[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:r4[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:r4[@jr:template]/x:r5[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:r4[@jr:template]/x:r5[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[@jr:template]/x:g2/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
+            """),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
+            """),
+            # Primary
+            xpr.model_instance("/x:r1[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1"),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2
+            """),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:g1/x:r3[not(@jr:template)]/x:g2/x:r4[not(@jr:template)]/x:r5[not(@jr:template)]
+            """),
+        ]
+        count = [
+            (xpr.model_instance("/x:r1"), 2),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2"), 4),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:r4"), 5),
+            (xpr.model_instance("/x:r1/x:t/x:g1/x:r3/x:g2/x:r4/x:r5"), 6),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_2_yrtr(self):
+        """Should find that target has a template, initial, and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | begin_repeat | r3   | R3    |              |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | r3   |       |              |
+        | | end_repeat   | t    |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:r1[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:r3[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[@jr:template]/x:r3[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:t[not(@jr:template)]/x:r3[not(@jr:template)]
+            """),
+            # Primary
+            xpr.model_instance("/x:r1[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:t[not(@jr:template)]/x:r3[not(@jr:template)]
+            """),
+        ]
+        count = [
+            (xpr.model_instance("/x:r1"), 2),
+            (xpr.model_instance("/x:r1/x:t"), 3),
+            (xpr.model_instance("/x:r1/x:t/x:r3"), 4),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_3_ygrt(self):
+        """Should find that target has a template, initial, and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_group  | g1   | G1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | t    |       |              |
+        | | end_repeat   | r1   |       |              |
+        | | end_group    | g1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:g1/x:r1[@jr:template]"),
+            xpr.model_instance("/x:g1/x:r1[@jr:template]/x:t[@jr:template]"),
+            xpr.model_instance("/x:g1/x:r1[@jr:template]/x:t[not(@jr:template)]"),
+            # Primary
+            xpr.model_instance("/x:g1"),
+            xpr.model_instance("/x:g1/x:r1[not(@jr:template)]"),
+            xpr.model_instance("/x:g1/x:r1[not(@jr:template)]/x:t[not(@jr:template)]"),
+        ]
+        count = [
+            (xpr.model_instance("/x:g1"), 1),
+            (xpr.model_instance("/x:g1/x:r1"), 2),
+            (xpr.model_instance("/x:g1/x:r1/x:t"), 3),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_3_yrgt(self):
+        """Should find that target has a template, initial, and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_group  | g1   | G1    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | t    |       |              |
+        | | end_group    | g1   |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:r1[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:g1"),
+            xpr.model_instance("/x:r1[@jr:template]/x:g1/x:t[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:g1/x:t[not(@jr:template)]"),
+            # Primary
+            xpr.model_instance("/x:r1[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:g1"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:g1/x:t[not(@jr:template)]"),
+        ]
+        count = [
+            (xpr.model_instance("/x:r1"), 2),
+            (xpr.model_instance("/x:r1/x:g1"), 2),
+            (xpr.model_instance("/x:r1/x:g1/x:t"), 3),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
+
+    def test_depth_3_yrrt(self):
+        """Should find that target has a template, initials, and primary instance."""
+        md = """
+        | survey |
+        | | type         | name | label | repeat_count |
+        | | integer      | q1   | Q1    |              |
+        | | begin_repeat | r1   | R1    |              |
+        | | begin_repeat | r2   | R2    |              |
+        | | begin_repeat | t    | T     | {count}      |
+        | | integer      | q2   | Q2    |              |
+        | | end_repeat   | t    |       |              |
+        | | end_repeat   | r2   |       |              |
+        | | end_repeat   | r1   |       |              |
+        """
+        cases = ("", "1", "${q1}")
+        match = [
+            # Template
+            xpr.model_instance("/x:r1[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:r2[@jr:template]"),
+            xpr.model_instance("/x:r1[@jr:template]/x:r2[not(@jr:template)]"),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:r2[@jr:template]/x:t[@jr:template]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:r2[@jr:template]/x:t[not(@jr:template)]
+            """),
+            xpr.model_instance("""
+              /x:r1[@jr:template]/x:r2[not(@jr:template)]/x:t[not(@jr:template)]
+            """),
+            # Primary
+            xpr.model_instance("/x:r1[not(@jr:template)]"),
+            xpr.model_instance("/x:r1[not(@jr:template)]/x:r2[not(@jr:template)]"),
+            xpr.model_instance("""
+              /x:r1[not(@jr:template)]/x:r2[not(@jr:template)]/x:t[not(@jr:template)]
+            """),
+        ]
+        count = [
+            (xpr.model_instance("/x:r1"), 2),
+            (xpr.model_instance("/x:r1/x:r2"), 3),
+            (xpr.model_instance("/x:r1/x:r2/x:t"), 4),
+        ]
+        for case in cases:
+            with self.subTest(count=case):
+                self.assertPyxformXform(
+                    md=md.format(count=case),
+                    xml__xpath_match=match,
+                    xml__xpath_count=count,
+                )
 
 
 class TestRepeatParsing(PyxformTestCase):
