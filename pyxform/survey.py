@@ -28,7 +28,6 @@ from pyxform.survey_elements.attribute import Attribute
 from pyxform.utils import (
     LAST_SAVED_INSTANCE_NAME,
     DetachableElement,
-    escape_text_for_xml,
     node,
 )
 from pyxform.validators import odk_validate
@@ -1174,16 +1173,8 @@ class Survey(Section):
         if text == "-":
             return text, False
 
-        # There was a bug where escaping is completely turned off in labels
-        # where variable replacement is used.
-        # For exampke, `${name} < 3` causes an error but `< 3` does not.
-        # This is my hacky fix for it, which does string escaping prior to
-        # variable replacement:
-        original_xml = escape_text_for_xml(text=text)
-
-        value = replace_with_output(original_xml, context, self)
-        changed = value != original_xml
-        if changed:
+        value = replace_with_output(text, context, self)
+        if value != text:
             return value, True
         else:
             return text, False

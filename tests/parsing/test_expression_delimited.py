@@ -385,7 +385,7 @@ class TestOutputBasicExpressions(PyxformTestCase):
                 (xpq.body_input_label_text("q1"), {" Result: ", " "}),
                 (
                     xpq.body_input_label_output_value("q1"),
-                    {"  if(   /test_name/q1  &gt;= 18,  'Adult',  'Minor'  ) "},
+                    {"  if(   /test_name/q1  >= 18,  'Adult',  'Minor'  ) "},
                 ),
             ],
         )
@@ -559,7 +559,27 @@ class TestOutputXpathExpressions(PyxformTestCase):
                 (xpq.body_input_label_text("q1"), {" Valid: ", " "}),
                 (
                     xpq.body_input_label_output_value("q1"),
-                    {"  /test_name/q1  &lt; 10 and  /test_name/q2  &lt;= 20 "},
+                    {"  /test_name/q1  < 10 and  /test_name/q2  <= 20 "},
+                ),
+            ],
+        )
+
+    def test_operator_escaping__instance(self):
+        """Should escape XML characters (instance() expression case for pyxform/#879)."""
+        # EDB01 EDB02 EDB03 EDB08
+        inp = "You're ${q1} years old. {{ instance('age_messages')/root/item[${q1} >= min_age and ${q1} <= max_age]/label }}"
+        expected = """You're <output value=" /test_name/q1 "/> years old. <output value=" instance('age_messages')/root/item[ /test_name/q1  &gt;= min_age and  /test_name/q1  &lt;= max_age]/label "/>"""
+        self.assertEqual(expected, replace_with_output(inp, Q1, SURVEY))
+        self.assertPyxformXform(
+            md=MD_SURVEY.format(label=inp),
+            xml__xpath_exact=[
+                (xpq.body_input_label_text("q1"), {" You're ", " ", " years old. "}),
+                (
+                    xpq.body_input_label_output_value("q1"),
+                    {
+                        " /test_name/q1 ",
+                        " instance('age_messages')/root/item[ /test_name/q1  >= min_age and  /test_name/q1  <= max_age]/label ",
+                    },
                 ),
             ],
         )
@@ -578,7 +598,7 @@ class TestOutputXpathExpressions(PyxformTestCase):
                 (xpq.body_input_label_text("q1"), {" Menu: ", " "}),
                 (
                     xpq.body_input_label_output_value("q1"),
-                    {" concat('Fish &amp; Chips: ',  /test_name/q1 ) "},
+                    {" concat('Fish & Chips: ',  /test_name/q1 ) "},
                 ),
             ],
         )
@@ -613,7 +633,7 @@ class TestOutputXpathExpressions(PyxformTestCase):
                 (
                     xpq.body_input_label_output_value("q1"),
                     {
-                        """ if( /test_name/q1  &gt;= 80, concat('PASS: ', round( /test_name/q1  * 1.1, 2), '%'), if( /test_name/q1  &gt;= 50, 'RETRY', 'FAIL')) """
+                        """ if( /test_name/q1  >= 80, concat('PASS: ', round( /test_name/q1  * 1.1, 2), '%'), if( /test_name/q1  >= 50, 'RETRY', 'FAIL')) """
                     },
                 ),
             ],
@@ -889,7 +909,7 @@ class TestOutputDelimiterAmbiguity(PyxformTestCase):
                 (
                     xpq.body_input_label_output_value("q1"),
                     {
-                        " instance('items')/root/item[code = 'x}y' and  /test_name/q1  &gt; 0]/name "
+                        " instance('items')/root/item[code = 'x}y' and  /test_name/q1  > 0]/name "
                     },
                 ),
             ],

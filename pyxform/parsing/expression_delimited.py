@@ -11,7 +11,7 @@ from pyxform.parsing.variable_reference import (
     is_pyxform_reference_candidate,
     resolve_variables,
 )
-from pyxform.utils import node
+from pyxform.utils import XML_TEXT_TABLE, escape_text_for_xml, node
 
 if TYPE_CHECKING:
     from lark import Token
@@ -23,16 +23,19 @@ if TYPE_CHECKING:
 expression_grammar = r"""
 start: (expression | escaped | text)*
 
-expression: _OPEN (invalid_nesting | escaped | TEXT_NON_DELIMITER | CHAR_NON_DELIMITER)* _CLOSE
+expression: _OPEN (invalid_nesting | escaped | TEXT_NON_DELIMITER | CHAR_NON_DELIMITER | _xml_escape_expr)* _CLOSE
 invalid_nesting: expression
 escaped: ESCAPED_DELIMITER
-text: (TEXT_NON_DELIMITER | CHAR_NON_DELIMITER)+
+text: (TEXT_NON_DELIMITER | CHAR_NON_DELIMITER | xml_escape_text)+
+_xml_escape_expr: CHAR_XML_ESCAPE
+xml_escape_text: CHAR_XML_ESCAPE
 
 _OPEN: "{{"
 _CLOSE: /}\}(?!})/
 ESCAPED_DELIMITER: "\\{{" | "\\}}"
-TEXT_NON_DELIMITER: /[^{}\\]+/
+TEXT_NON_DELIMITER: /[^{}\\<>&]+/
 CHAR_NON_DELIMITER: /[{}\\]/
+CHAR_XML_ESCAPE: /[<>&]/
 """
 
 
@@ -63,6 +66,10 @@ class ExpressionTransformer(Transformer):
     def start(self, children: list["Token"]) -> str:
         """Join all children strings."""
         return self._flatten(children=children)
+
+    @staticmethod
+    def xml_escape_text(children: list["Token"]) -> str:
+        return children[0].translate(XML_TEXT_TABLE)
 
     def text(self, children: list["Token"]) -> str:
         """Join all children strings, resolve variable references."""
@@ -121,12 +128,13 @@ def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey
                 return out_str
 
         # Fallback for old func that only looks for non-delimited `instance()`.
-        fallback = replace_with_output_old(xml_text, context, survey)
+        escaped = escape_text_for_xml(text=xml_text)
+        fallback = replace_with_output_old(escaped, context, survey)
         if is_pyxform_reference_candidate(fallback):
             fallback = resolve_variables(
                 xml_text=fallback, survey=survey, context=context, wrap=True
             )
-        if fallback != xml_text:
+        if fallback != escaped:
             return fallback
         else:
             return xml_text
