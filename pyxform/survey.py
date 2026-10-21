@@ -31,7 +31,7 @@ from pyxform.utils import (
     node,
 )
 from pyxform.validators import odk_validate
-from pyxform.validators.pyxform import unique_names
+from pyxform.validators.pyxform import settings, unique_names
 from pyxform.validators.pyxform.iana_subtags.validation import get_languages_with_bad_tags
 
 RE_BRACKET = re.compile(r"\[([^]]+)\]")
@@ -238,6 +238,7 @@ class Survey(Section):
     def validate(self):
         if self.id_string in {None, "None"}:
             raise PyXFormError("Survey cannot have an empty id_string")
+        settings.validate_submission_url(self.submission_url)
         super().validate()
         self._validate_uniqueness_of_section_names()
         self._setup_xpath_dictionary()

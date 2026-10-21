@@ -551,6 +551,12 @@ class ErrorCode(Enum):
             "Learn more: https://docs.getodk.org/xlsform/#the-settings-sheet"
         ),
     )
+    SETTING_002 = Detail(
+        name="Settings - invalid submission URL",
+        msg=(
+            "The 'submission_url' setting must be an http or https URL with a valid host."
+        ),
+    )
     SURVEY_001 = Detail(
         name="Survey sheet - unmatched group/repeat/loop end",
         msg=(

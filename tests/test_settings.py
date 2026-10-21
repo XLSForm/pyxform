@@ -1,4 +1,5 @@
 from pyxform import constants as co
+from pyxform.builder import create_survey_element_from_dict
 from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -832,3 +833,86 @@ class TestSubmission(PyxformTestCase):
                 xps.submission_where(f"@action='{url}' and @method='post'"),
             ],
         )
+
+    def test_submission_url__invalid__error(self):
+        """Reject submission URLs that Collect cannot use to download a form."""
+        for url in (
+            "example.com/submission",
+            "//example.com/submission",
+            "ftp://example.com/submission",
+            "https:///submission",
+            "https://",
+            "https://example .com/submission",
+            "https://-example.com/submission",
+            "https://example..com/submission",
+            "https://example.com:invalid/submission",
+            "https://[::1/submission",
+        ):
+            with self.subTest(url=url):
+                self.assertPyxformXform(
+                    md=f"""
+                    | settings |
+                    || submission_url |
+                    || {url}          |
+                    | survey |
+                    || type | name | label |
+                    || text | q1   | Q1    |
+                    """,
+                    errored=True,
+                    error__contains=[
+                        "The 'submission_url' setting must be an http or https URL "
+                        "with a valid host."
+                    ],
+                    run_odk_validate=False,
+                )
+
+    def test_submission_url__control_characters__error(self):
+        """Reject control characters before URL parsing can silently remove them."""
+        for control in ("\t", "\n", "\r", "\x00", "\x1f", "\x7f"):
+            for url in (
+                f"{control}https://example.com/submission",
+                f"https://exa{control}mple.com/submission",
+                f"https://example.com/submission{control}",
+            ):
+                with self.subTest(url=url):
+                    survey = create_survey_element_from_dict(
+                        {
+                            "type": "survey",
+                            "name": "data",
+                            "id_string": "data",
+                            "submission_url": url,
+                            "children": [{"type": "text", "name": "q1", "label": "Q1"}],
+                        }
+                    )
+                    self.assertPyxformXform(
+                        survey=survey,
+                        errored=True,
+                        error__contains=[ErrorCode.SETTING_002.value.format()],
+                        run_odk_validate=False,
+                    )
+
+    def test_submission_url__valid(self):
+        """Preserve remote and local submission endpoints without resolving hosts."""
+        for url in (
+            "http://example.com/submission",
+            "HTTPS://example.com/submission?project=1",
+            "https://example.com./submission",
+            "https://münchen.example/submission",
+            "http://localhost:8080/submission",
+            "http://192.168.1.10:8080/submission",
+            "http://[::1]:8080/submission",
+        ):
+            with self.subTest(url=url):
+                self.assertPyxformXform(
+                    md=f"""
+                    | settings |
+                    || submission_url |
+                    || {url}          |
+                    | survey |
+                    || type | name | label |
+                    || text | q1   | Q1    |
+                    """,
+                    xml__xpath_match=[
+                        xps.submission_where(f"@action='{url}' and @method='post'"),
+                    ],
+                )
