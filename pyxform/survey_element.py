@@ -130,7 +130,7 @@ class SurveyElement(Mapping):
         if (
             hasattr(self, const.CONTROL)
             and self.control
-            and self.control.get("appearance") == "label"
+            and self.control.get(const.APPEARANCE) == "label"
             and not self.label
         ):
             self.label = " "

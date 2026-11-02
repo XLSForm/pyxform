@@ -335,8 +335,8 @@ class GroupedSection(Section):
                 key: survey.insert_xpaths(text=value, context=self)
                 for key, value in self.control.items()
             }
-            if "appearance" in self.control:
-                attributes["appearance"] = self.control["appearance"]
+            if constants.APPEARANCE in self.control:
+                attributes[constants.APPEARANCE] = self.control[constants.APPEARANCE]
         else:
             attributes = {}
 
