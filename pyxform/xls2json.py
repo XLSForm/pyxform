@@ -512,7 +512,6 @@ def workbook_to_json(
                 )
             row["name"] = "audit"
 
-            new_dict = row.copy()
             qt_params = constants.ParametersAudit
             pv.validate(
                 parameters=parameters,
@@ -528,8 +527,8 @@ def workbook_to_json(
                     )
                     raise PyXFormError(msg)
                 else:
-                    new_dict["bind"] = new_dict.get("bind", {})
-                    new_dict["bind"].update(
+                    row[constants.BIND] = row.get(constants.BIND, {})
+                    row[constants.BIND].update(
                         {
                             f"odk:{qt_params.TRACK_CHANGES.value}": parameters[
                                 qt_params.TRACK_CHANGES
@@ -543,8 +542,8 @@ def workbook_to_json(
                         f"{qt_params.TRACK_CHANGES_REASONS.value} must be set to on-form-edit"
                     )
                 else:
-                    new_dict["bind"] = new_dict.get("bind", {})
-                    new_dict["bind"].update(
+                    row[constants.BIND] = row.get(constants.BIND, {})
+                    row[constants.BIND].update(
                         {f"odk:{qt_params.TRACK_CHANGES_REASONS.value}": "on-form-edit"}
                     )
 
@@ -556,8 +555,8 @@ def workbook_to_json(
                     )
                     raise PyXFormError(msg)
                 else:
-                    new_dict["bind"] = new_dict.get("bind", {})
-                    new_dict["bind"].update(
+                    row[constants.BIND] = row.get(constants.BIND, {})
+                    row[constants.BIND].update(
                         {
                             f"odk:{qt_params.IDENTIFY_USER.value}": parameters[
                                 qt_params.IDENTIFY_USER
@@ -619,8 +618,8 @@ def workbook_to_json(
                             + f" must be greater than or equal to {qt_params.LOCATION_MIN_INTERVAL.value}."
                         )
 
-                    new_dict["bind"] = new_dict.get("bind", {})
-                    new_dict["bind"].update(
+                    row[constants.BIND] = row.get(constants.BIND, {})
+                    row[constants.BIND].update(
                         {
                             f"odk:{qt_params.LOCATION_MAX_AGE.value}": parameters[
                                 qt_params.LOCATION_MAX_AGE
@@ -642,7 +641,7 @@ def workbook_to_json(
                         + " are required parameters."
                     )
 
-            meta_children.append(new_dict)
+            meta_children.append(row)
             continue
 
         if question_type == "calculate":
@@ -770,10 +769,9 @@ def workbook_to_json(
                         + f" {control_type.capitalize()} has no label: {msg_dict}"
                     )
 
-                new_json_dict = row.copy()
-                new_json_dict[constants.TYPE] = control_type
+                row[constants.TYPE] = control_type
                 child_list = []
-                new_json_dict[constants.CHILDREN] = child_list
+                row[constants.CHILDREN] = child_list
                 if control_type == constants.LOOP:
                     if not parse_dict.get(constants.LIST_NAME_U):
                         # TODO: Perhaps warn and make repeat into a group?
@@ -788,16 +786,14 @@ def workbook_to_json(
                             + " List name not in columns sheet: "
                             + list_name
                         )
-                    new_json_dict[constants.COLUMNS] = choices[list_name]
+                    row[constants.COLUMNS] = choices[list_name]
 
                 # Generate a new node for the jr:count column so xpath expressions can be used.
-                repeat_count_expression = new_json_dict.get(constants.CONTROL, {}).get(
-                    "jr:count"
-                )
+                repeat_count_expression = row.get(constants.CONTROL, {}).get("jr:count")
                 if repeat_count_expression:
                     # Simple expressions don't require a new node, they can reference directly.
                     if not is_pyxform_reference(value=repeat_count_expression):
-                        generated_node_name = f"""{new_json_dict["name"]}_count"""
+                        generated_node_name = f"""{row[constants.NAME]}_count"""
                         parent_children_array.append(
                             {
                                 "name": generated_node_name,
@@ -809,9 +805,7 @@ def workbook_to_json(
                             }
                         )
                         # This re-directs the body/repeat ref to the above generated node.
-                        new_json_dict[constants.CONTROL]["jr:count"] = (
-                            f"${{{generated_node_name}}}"
-                        )
+                        row[constants.CONTROL]["jr:count"] = f"${{{generated_node_name}}}"
 
                 # Code to deal with table_list appearance flags
                 # (for groups of selects)
@@ -825,34 +819,32 @@ def workbook_to_json(
                         for w in appearance_mods_as_list:
                             if w != constants.TABLE_LIST:
                                 appearance_string += " " + str(w)
-                        new_json_dict[constants.CONTROL][constants.APPEARANCE] = (
-                            appearance_string
-                        )
+                        row[constants.CONTROL][constants.APPEARANCE] = appearance_string
 
                         # Generate a note label element so hints and labels
                         # work as expected in table-lists.
                         # see https://github.com/modilabs/pyxform/issues/62
-                        if "label" in new_json_dict or "hint" in new_json_dict:
+                        if constants.LABEL in row or constants.HINT in row:
                             generated_label_element = {
                                 "type": "note",
                                 "name": "generated_table_list_label_" + str(row_number),
                             }
-                            if "label" in new_json_dict:
-                                generated_label_element[constants.LABEL] = new_json_dict[
+                            if constants.LABEL in row:
+                                generated_label_element[constants.LABEL] = row[
                                     constants.LABEL
                                 ]
-                                del new_json_dict[constants.LABEL]
-                            if "hint" in new_json_dict:
-                                generated_label_element["hint"] = new_json_dict["hint"]
-                                del new_json_dict["hint"]
+                                del row[constants.LABEL]
+                            if constants.HINT in row:
+                                generated_label_element[constants.HINT] = row[
+                                    constants.HINT
+                                ]
+                                del row[constants.HINT]
                             child_list.append(generated_label_element)
-                if "intent" in new_json_dict:
-                    new_json_dict[constants.CONTROL] = new_json_dict.get(
-                        constants.CONTROL, {}
-                    )
-                    new_json_dict[constants.CONTROL]["intent"] = new_json_dict["intent"]
+                if "intent" in row:
+                    row[constants.CONTROL] = row.get(constants.CONTROL, {})
+                    row[constants.CONTROL]["intent"] = row["intent"]
 
-                parent_children_array.append(new_json_dict)
+                parent_children_array.append(row)
                 stack.append(
                     {
                         "control_type": control_type,
@@ -876,6 +868,8 @@ def workbook_to_json(
 
         # Try to parse question as a select:
         select_parse = RE_SELECT.search(question_type)
+        osm_parse = RE_OSM.search(question_type)
+
         if select_parse:
             parse_dict = select_parse.groupdict()
             if parse_dict.get("select_command"):
@@ -992,8 +986,7 @@ def workbook_to_json(
                         },
                     }
 
-                new_json_dict = row.copy()
-                new_json_dict[constants.TYPE] = select_type
+                row[constants.TYPE] = select_type
 
                 if select_command in aliases.select_from_file:
                     select_from_file.validate_list_name_extension(
@@ -1049,10 +1042,10 @@ def workbook_to_json(
                         f"Parameters must include {qt_params.RANDOMIZE.value}=true to use a {qt_params.SEED.value}."
                     )
 
-                new_json_dict[constants.PARAMETERS] = parameters
+                row[constants.PARAMETERS] = parameters
 
                 add_choices_info_to_question(
-                    question=new_json_dict,
+                    question=row,
                     list_name=list_name,
                     choices=choices,
                     choice_filter=row.get(constants.CHOICE_FILTER),
@@ -1090,47 +1083,37 @@ def workbook_to_json(
                         )
                         raise PyXFormError(error_message)
 
-                    if constants.CONTROL not in new_json_dict:
-                        new_json_dict[constants.CONTROL] = {}
-                    new_json_dict[constants.CONTROL][constants.APPEARANCE] = (
-                        constants.LIST_NOLABEL
-                    )
-                parent_children_array.append(new_json_dict)
+                    if constants.CONTROL not in row:
+                        row[constants.CONTROL] = {}
+                    row[constants.CONTROL][constants.APPEARANCE] = constants.LIST_NOLABEL
+                parent_children_array.append(row)
                 if specify_other_question:
                     parent_children_array.append(specify_other_question)
-                continue
 
-        # Try to parse question as osm:
-        osm_parse = RE_OSM.search(question_type)
-        if osm_parse:
+        elif osm_parse:
             parse_dict = osm_parse.groupdict()
-            new_dict = row.copy()
-            new_dict["type"] = constants.OSM
+            row[constants.TYPE] = constants.OSM
 
             if osm_tags and parse_dict.get(constants.LIST_NAME_U) is not None:
                 tags = osm_tags.get(parse_dict.get(constants.LIST_NAME_U))
                 for tag in tags:
                     if osm_tags.get(tag.get("name")):
                         tag["choices"] = osm_tags.get(tag.get("name"))
-                new_dict["tags"] = tags
+                row["tags"] = tags
 
-            parent_children_array.append(new_dict)
+            parent_children_array.append(row)
 
-            continue
-
-        if question_type == "range":
-            new_dict = qt_range.process_range_question_type(
+        elif question_type == "range":
+            row = qt_range.process_range_question_type(
                 row_number=row_number,
                 row=row,
                 parameters=parameters,
                 appearance=appearance,
                 choices=choices,
             )
-            parent_children_array.append(new_dict)
-            continue
+            parent_children_array.append(row)
 
-        if question_type == "text":
-            new_dict = row.copy()
+        elif question_type == "text":
             qt_params = constants.ParametersText
             pv.validate(
                 parameters=parameters,
@@ -1147,19 +1130,16 @@ def workbook_to_json(
                         + f" Parameter {qt_params.ROWS.value} must have an integer value."
                     ) from rows_err
 
-                new_dict[constants.CONTROL] = new_dict.get(constants.CONTROL, {})
-                new_dict[constants.CONTROL].update(
+                row[constants.CONTROL] = row.get(constants.CONTROL, {})
+                row[constants.CONTROL].update(
                     {qt_params.ROWS.value: parameters[qt_params.ROWS]}
                 )
 
-            parent_children_array.append(new_dict)
-            continue
+            parent_children_array.append(row)
 
-        if question_type == "photo":
-            new_dict = row.copy()
-
+        elif question_type == "photo":
             if row.get("default"):
-                new_dict["default"] = process_image_default(row["default"])
+                row["default"] = process_image_default(row["default"])
             qt_params = constants.ParametersImage
             pv.validate(
                 parameters=parameters,
@@ -1174,8 +1154,8 @@ def workbook_to_json(
                         f"Parameter {qt_params.MAX_PIXELS.value} must have an integer value."
                     ) from mp_err
 
-                new_dict["bind"] = new_dict.get("bind", {})
-                new_dict["bind"].update(
+                row[constants.BIND] = row.get(constants.BIND, {})
+                row[constants.BIND].update(
                     {
                         f"orx:{qt_params.MAX_PIXELS.value}": parameters[
                             qt_params.MAX_PIXELS
@@ -1193,18 +1173,16 @@ def workbook_to_json(
                     app_package_name = str(parameters[qt_params.APP])
                     validation_result = validate_android_package_name(app_package_name)
                     if validation_result is None:
-                        new_dict[constants.CONTROL] = new_dict.get(constants.CONTROL, {})
-                        new_dict[constants.CONTROL].update({"intent": app_package_name})
+                        row[constants.CONTROL] = row.get(constants.CONTROL, {})
+                        row[constants.CONTROL].update({"intent": app_package_name})
                     else:
                         raise PyXFormError(
                             (ROW_FORMAT_STRING % row_number) + " " + validation_result
                         )
 
-            parent_children_array.append(new_dict)
-            continue
+            parent_children_array.append(row)
 
-        if question_type == "audio":
-            new_dict = row.copy()
+        elif question_type == "audio":
             qt_params = constants.ParametersAudio
             pv.validate(
                 parameters=parameters,
@@ -1221,16 +1199,14 @@ def workbook_to_json(
                 }:
                     raise PyXFormError(f"Invalid value for {qt_params.QUALITY.value}.")
 
-                new_dict["bind"] = new_dict.get("bind", {})
-                new_dict["bind"].update(
+                row[constants.BIND] = row.get(constants.BIND, {})
+                row[constants.BIND].update(
                     {f"odk:{qt_params.QUALITY.value}": parameters[qt_params.QUALITY]}
                 )
 
-            parent_children_array.append(new_dict)
-            continue
+            parent_children_array.append(row)
 
-        if question_type == "background-audio":
-            new_dict = row.copy()
+        elif question_type == "background-audio":
             qt_params = constants.ParametersAudio
             pv.validate(
                 parameters=parameters,
@@ -1251,40 +1227,35 @@ def workbook_to_json(
 
                 action[f"odk:{qt_params.QUALITY.value}"] = parameters[qt_params.QUALITY]
 
-            new_dict["actions"] = new_dict.get("actions", [])
-            new_dict["actions"].append(action)
+            row["actions"] = row.get("actions", [])
+            row["actions"].append(action)
+            parent_children_array.append(row)
 
-            parent_children_array.append(new_dict)
-            continue
-
-        if question_type in {"geopoint", "geoshape", "geotrace"}:
-            new_dict = qt_geo.process_geo_question_type(
+        elif question_type in {"geopoint", "geoshape", "geotrace"}:
+            row = qt_geo.process_geo_question_type(
                 row_number=row_number,
                 row=row,
                 parameters=parameters,
                 geo_references=geo_references,
             )
-            parent_children_array.append(new_dict)
-            continue
+            parent_children_array.append(row)
         # TODO: Consider adding some question_type validation here.
 
-        if question_type == "start-geopoint":
-            new_dict = row.copy()
-            new_dict["actions"] = new_dict.get("actions", [])
-            new_dict["actions"].append(
+        elif question_type == "start-geopoint":
+            row["actions"] = row.get("actions", [])
+            row["actions"].append(
                 action_module.ActionLibrary.odk_setgeopoint_first_load.value.to_dict()
             )
-            parent_children_array.append(new_dict)
-            continue
-
-        if question_type == "background-geopoint":
+            parent_children_array.append(row)
+        elif question_type == "background-geopoint":
             qt.validate_background_geopoint_trigger(
                 trigger=row.get("trigger"), row_num=row_number
             )
             qt.validate_background_geopoint_calculation(row=row, row_num=row_number)
-
-        # Put the row in the json dict as is:
-        parent_children_array.append(row)
+            parent_children_array.append(row)
+        else:
+            # Put the row in the json dict as is:
+            parent_children_array.append(row)
 
     sheet_translations.or_other_check(warnings=warnings)
     try:
