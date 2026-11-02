@@ -458,7 +458,7 @@ def workbook_to_json(
 
         # Get question type
         question_type = row.get(constants.TYPE)
-        appearance = row.get("control", {}).get("appearance")
+        appearance = row.get(constants.CONTROL, {}).get("appearance")
 
         if not question_type:
             # if name and label are also missing,
@@ -791,7 +791,9 @@ def workbook_to_json(
                     new_json_dict[constants.COLUMNS] = choices[list_name]
 
                 # Generate a new node for the jr:count column so xpath expressions can be used.
-                repeat_count_expression = new_json_dict.get("control", {}).get("jr:count")
+                repeat_count_expression = new_json_dict.get(constants.CONTROL, {}).get(
+                    "jr:count"
+                )
                 if repeat_count_expression:
                     # Simple expressions don't require a new node, they can reference directly.
                     if not is_pyxform_reference(value=repeat_count_expression):
@@ -807,7 +809,7 @@ def workbook_to_json(
                             }
                         )
                         # This re-directs the body/repeat ref to the above generated node.
-                        new_json_dict["control"]["jr:count"] = (
+                        new_json_dict[constants.CONTROL]["jr:count"] = (
                             f"${{{generated_node_name}}}"
                         )
 
@@ -823,7 +825,7 @@ def workbook_to_json(
                         for w in appearance_mods_as_list:
                             if w != constants.TABLE_LIST:
                                 appearance_string += " " + str(w)
-                        new_json_dict["control"]["appearance"] = appearance_string
+                        new_json_dict[constants.CONTROL]["appearance"] = appearance_string
 
                         # Generate a note label element so hints and labels
                         # work as expected in table-lists.
@@ -843,8 +845,10 @@ def workbook_to_json(
                                 del new_json_dict["hint"]
                             child_list.append(generated_label_element)
                 if "intent" in new_json_dict:
-                    new_json_dict["control"] = new_json_dict.get("control", {})
-                    new_json_dict["control"]["intent"] = new_json_dict["intent"]
+                    new_json_dict[constants.CONTROL] = new_json_dict.get(
+                        constants.CONTROL, {}
+                    )
+                    new_json_dict[constants.CONTROL]["intent"] = new_json_dict["intent"]
 
                 parent_children_array.append(new_json_dict)
                 stack.append(
@@ -1141,8 +1145,8 @@ def workbook_to_json(
                         + f" Parameter {qt_params.ROWS.value} must have an integer value."
                     ) from rows_err
 
-                new_dict["control"] = new_dict.get("control", {})
-                new_dict["control"].update(
+                new_dict[constants.CONTROL] = new_dict.get(constants.CONTROL, {})
+                new_dict[constants.CONTROL].update(
                     {qt_params.ROWS.value: parameters[qt_params.ROWS]}
                 )
 
@@ -1187,8 +1191,8 @@ def workbook_to_json(
                     app_package_name = str(parameters[qt_params.APP])
                     validation_result = validate_android_package_name(app_package_name)
                     if validation_result is None:
-                        new_dict["control"] = new_dict.get("control", {})
-                        new_dict["control"].update({"intent": app_package_name})
+                        new_dict[constants.CONTROL] = new_dict.get(constants.CONTROL, {})
+                        new_dict[constants.CONTROL].update({"intent": app_package_name})
                     else:
                         raise PyXFormError(
                             (ROW_FORMAT_STRING % row_number) + " " + validation_result

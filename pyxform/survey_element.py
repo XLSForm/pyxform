@@ -128,7 +128,7 @@ class SurveyElement(Mapping):
         # options for selects in a field-list and might want blank labels for
         # themselves.
         if (
-            hasattr(self, "control")
+            hasattr(self, const.CONTROL)
             and self.control
             and self.control.get("appearance") == "label"
             and not self.label
