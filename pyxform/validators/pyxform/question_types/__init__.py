@@ -28,7 +28,7 @@ def validate_background_geopoint_trigger(trigger: str | None, row_num: int) -> b
 
 
 def validate_references(
-    referrers: Iterable[Iterable[str | None, int]], questions: Collection[str]
+    referrers: Iterable[tuple[str | None, int]], questions: Collection[str]
 ) -> bool:
     """Pyxform references must refer to a question that exists."""
     for target, row_num in referrers:
