@@ -7,59 +7,7 @@ from tests.pyxform_test_case import PyxformTestCase
 from tests.xpath_helpers.questions import xpq
 
 
-class TypedCalculatesTest(PyxformTestCase):
-    def test_xls_type_calculate_has_type_string(self):
-        self.assertPyxformXform(
-            name="calculate-type",
-            md="""
-            | survey |          |      |             |             |
-            |        | type     | name | label       | calculation |
-            |        | calculate| a    |             | 2 * 2       |
-            """,
-            xml__contains=[
-                '<bind calculate="2 * 2" nodeset="/calculate-type/a" type="string"/>',
-            ],
-        )
-
-    def test_xls_type_calculate_with_label_has_no_body(self):
-        self.assertPyxformXform(
-            name="calculate-type",
-            md="""
-                | survey |          |      |             |             |
-                |        | type     | name | label       | calculation |
-                |        | calculate| a    | A           | 2 * 2       |
-                """,
-            xml__contains=[
-                '<bind calculate="2 * 2" nodeset="/calculate-type/a" type="string"/>',
-                "<h:body/>",
-            ],
-        )
-
-    def test_non_calculate_type_with_calculation_is_bind_type(self):
-        self.assertPyxformXform(
-            name="non-calculate-type",
-            md="""
-            | survey |          |      |             |             |
-            |        | type     | name | label       | calculation |
-            |        | integer  | a    |             | 2 * 2       |
-            """,
-            xml__contains=[
-                '<bind calculate="2 * 2" nodeset="/non-calculate-type/a" type="int"/>'
-            ],
-        )
-
-    def test_non_calculate_type_with_calculation_and_no_label_has_no_control(self):
-        self.assertPyxformXform(
-            name="no-label",
-            md="""
-                | survey |          |      |             |             |
-                |        | type     | name | label       | calculation |
-                |        | integer  | a    |             | 2 * 2       |
-                """,
-            instance__contains=["<a/>"],
-            xml__excludes=["input"],
-        )
-
+class TestCalculateParsing(PyxformTestCase):
     def test_non_calculate_type_with_calculation_no_warns(self):
         self.assertPyxformXform(
             md="""
@@ -106,25 +54,6 @@ class TypedCalculatesTest(PyxformTestCase):
             |        | note      | note | Hello World |      |             |         |
             """,
             warnings_count=0,
-        )
-
-    def test_select_type_with_calculation_and_no_label_has_no_control(self):
-        self.assertPyxformXform(
-            name="calculate-select",
-            md="""
-                | survey  |                   |      |       |                  |
-                |         | type              | name | label | calculation      |
-                |         | select_one yes_no | a    |       | concat('a', 'b') |
-                | choices |                   |      |       |                  |
-                |         | list_name         | name | label |                  |
-                |         | yes_no            | yes  | Yes   |                  |
-                |         | yes_no            | no   | No    |                  |
-                """,
-            xml__contains=[
-                '<bind calculate="concat(\'a\', \'b\')" nodeset="/calculate-select/a" type="string"/>'
-            ],
-            instance__contains=["<a/>"],
-            xml__excludes=["<select1>"],
         )
 
     def test_row_without_label_or_calculation_throws_error(self):
@@ -174,17 +103,6 @@ class TypedCalculatesTest(PyxformTestCase):
         """,
             errored=True,
             error__contains=["Missing calculation"],
-        )
-
-    def test_calculate_without_calculation_with_dynamic_default(self):
-        self.assertPyxformXform(
-            name="calculate-without-calculation-with-dynamic-default",
-            md="""
-        | survey |            |      |             |             |          |
-        |        | type       | name | label       | calculation | default  |
-        |        | calculate  | a    |             |             | random() |
-        """,
-            instance__contains=["<a/>"],
         )
 
     def test_round_function__ok(self):
@@ -250,4 +168,88 @@ class TypedCalculatesTest(PyxformTestCase):
                     "if( /test_name/q4 ='n3',  /test_name/q5 , if( /test_name/q4 ='n4',  /test_name/q6 , if( /test_name/q4 ='n5',  /test_name/q7 , if( /test_name/q4 ='n6',  /test_name/q8 , 'Error'))))",
                 ),
             ],
+        )
+
+
+class TestCalculateOutput(PyxformTestCase):
+    def test_xls_type_calculate_has_type_string(self):
+        self.assertPyxformXform(
+            name="calculate-type",
+            md="""
+            | survey |          |      |             |             |
+            |        | type     | name | label       | calculation |
+            |        | calculate| a    |             | 2 * 2       |
+            """,
+            xml__contains=[
+                '<bind calculate="2 * 2" nodeset="/calculate-type/a" type="string"/>',
+            ],
+        )
+
+    def test_xls_type_calculate_with_label_has_no_body(self):
+        self.assertPyxformXform(
+            name="calculate-type",
+            md="""
+                | survey |          |      |             |             |
+                |        | type     | name | label       | calculation |
+                |        | calculate| a    | A           | 2 * 2       |
+                """,
+            xml__contains=[
+                '<bind calculate="2 * 2" nodeset="/calculate-type/a" type="string"/>',
+                "<h:body/>",
+            ],
+        )
+
+    def test_non_calculate_type_with_calculation_is_bind_type(self):
+        self.assertPyxformXform(
+            name="non-calculate-type",
+            md="""
+            | survey |          |      |             |             |
+            |        | type     | name | label       | calculation |
+            |        | integer  | a    |             | 2 * 2       |
+            """,
+            xml__contains=[
+                '<bind calculate="2 * 2" nodeset="/non-calculate-type/a" type="int"/>'
+            ],
+        )
+
+    def test_non_calculate_type_with_calculation_and_no_label_has_no_control(self):
+        self.assertPyxformXform(
+            name="no-label",
+            md="""
+                | survey |          |      |             |             |
+                |        | type     | name | label       | calculation |
+                |        | integer  | a    |             | 2 * 2       |
+                """,
+            instance__contains=["<a/>"],
+            xml__excludes=["input"],
+        )
+
+    def test_select_type_with_calculation_and_no_label_has_no_control(self):
+        self.assertPyxformXform(
+            name="calculate-select",
+            md="""
+                | survey  |                   |      |       |                  |
+                |         | type              | name | label | calculation      |
+                |         | select_one yes_no | a    |       | concat('a', 'b') |
+                | choices |                   |      |       |                  |
+                |         | list_name         | name | label |                  |
+                |         | yes_no            | yes  | Yes   |                  |
+                |         | yes_no            | no   | No    |                  |
+                """,
+            xml__contains=[
+                '<bind calculate="concat(\'a\', \'b\')" nodeset="/calculate-select/a" type="string"/>'
+            ],
+            instance__contains=["<a/>"],
+            xml__excludes=["<select1>"],
+        )
+
+    def test_calculate_without_calculation_with_dynamic_default(self):
+        self.assertPyxformXform(
+            name="calculate-without-calculation-with-dynamic-default",
+            md="""
+        | survey |            |      |             |             |          |
+        |        | type       | name | label       | calculation | default  |
+        |        | calculate  | a    |             |             | random() |
+        """,
+            instance__contains=["<a/>"],
         )
