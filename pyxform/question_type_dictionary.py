@@ -370,18 +370,9 @@ _QUESTION_TYPE_DICT = {
     "csv-external": {
         # Only effect is to add an external instance.
     },
-    "start-geopoint": {
-        "control": {"tag": "action"},
-        "bind": {"type": "geopoint"},
-    },
-    "background-audio": {
-        "control": {"tag": "action"},
-        "bind": {"type": "binary"},
-    },
-    "background-geopoint": {
-        "control": {"tag": "action"},
-        "bind": {"type": "geopoint"},
-    },
+    "start-geopoint": {"bind": {"type": "geopoint"}},
+    "background-audio": {"bind": {"type": "binary"}},
+    "background-geopoint": {"bind": {"type": "geopoint"}},
 }
 
 # Read-only view of the types.

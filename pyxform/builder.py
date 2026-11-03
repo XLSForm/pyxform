@@ -29,7 +29,6 @@ from pyxform.xls2json import SurveyReader
 
 QUESTION_CLASSES = {
     "": Question,
-    "action": Question,
     "input": InputQuestion,
     "odk:rank": MultipleChoiceQuestion,
     "osm": OsmUploadQuestion,
