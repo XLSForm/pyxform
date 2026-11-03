@@ -133,8 +133,8 @@ class SurveyElementBuilder:
 
         for t in trigger:
             value = ""
-            if const.BIND in d and "calculate" in d[const.BIND]:
-                value = d[const.BIND]["calculate"]
+            if const.BIND in d and const.CALCULATE in d[const.BIND]:
+                value = d[const.BIND][const.CALCULATE]
             question_ref = (d[const.NAME], value)
             if d[const.TYPE] == "background-geopoint":
                 self.setgeopoint_by_triggering_ref[t].append(question_ref)

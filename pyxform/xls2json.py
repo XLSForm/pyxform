@@ -644,8 +644,8 @@ def workbook_to_json(
             meta_children.append(row)
             continue
 
-        if question_type == "calculate":
-            calculation = row.get("bind", {}).get("calculate")
+        if question_type == constants.CALCULATE:
+            calculation = row.get(constants.BIND, {}).get(constants.CALCULATE)
             if not calculation and not row.get("_dynamic_default", False):
                 raise PyXFormError(
                     ROW_FORMAT_STRING % row_number + " Missing calculation."
@@ -796,12 +796,12 @@ def workbook_to_json(
                         generated_node_name = f"""{row[constants.NAME]}_count"""
                         parent_children_array.append(
                             {
-                                "name": generated_node_name,
-                                "bind": {
+                                constants.NAME: generated_node_name,
+                                constants.BIND: {
                                     "readonly": "true()",
-                                    "calculate": repeat_count_expression,
+                                    constants.CALCULATE: repeat_count_expression,
                                 },
-                                "type": "calculate",
+                                constants.TYPE: constants.CALCULATE,
                             }
                         )
                         # This re-directs the body/repeat ref to the above generated node.
@@ -1290,7 +1290,7 @@ def workbook_to_json(
         {
             constants.NAME: constants.INSTANCE_ID,
             constants.BIND: {"readonly": "true()", "jr:preload": "uid"},
-            constants.TYPE: "calculate",
+            constants.TYPE: constants.CALCULATE,
         }
     )
     # Allow ${instanceID} reference for longitudinal / entities workflows.
@@ -1301,8 +1301,8 @@ def workbook_to_json(
         meta_children.append(
             {
                 constants.NAME: constants.INSTANCE_NAME,
-                constants.BIND: {"calculate": settings["instance_name"]},
-                constants.TYPE: "calculate",
+                constants.BIND: {constants.CALCULATE: settings["instance_name"]},
+                constants.TYPE: constants.CALCULATE,
             }
         )
 

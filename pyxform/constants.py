@@ -46,6 +46,7 @@ ATTRIBUTE = "attribute"
 ALLOW_CHOICE_DUPLICATES = "allow_choice_duplicates"
 
 BIND = "bind"  # TODO: What should I do with the nested types? (readonly and relevant)
+CALCULATE = "calculate"
 MEDIA = "media"
 CONTROL = "control"
 APPEARANCE = "appearance"
@@ -103,7 +104,7 @@ XLSX_EXTENSIONS = {".xlsx", ".xlsm"}
 SUPPORTED_FILE_EXTENSIONS = {*XLS_EXTENSIONS, *XLSX_EXTENSIONS}
 
 # supported bind keywords for which external instances will be created for pulldata function
-EXTERNAL_INSTANCES = {"calculate", "constraint", "readonly", "required", "relevant"}
+EXTERNAL_INSTANCES = {CALCULATE, "constraint", "readonly", "required", "relevant"}
 
 # The ODK XForms version that generated forms comply to
 CURRENT_XFORMS_VERSION = "1.0.0"
@@ -152,7 +153,7 @@ CONVERTIBLE_BIND_ATTRIBUTES = {
     "required",
     "relevant",
     "constraint",
-    "calculate",
+    CALCULATE,
 }
 NSMAP = {
     "xmlns": "http://www.w3.org/2002/xforms",

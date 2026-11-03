@@ -2,6 +2,7 @@
 
 from collections.abc import Collection, Iterable
 
+from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.variable_reference import (
     is_pyxform_reference_candidate,
@@ -12,7 +13,7 @@ from pyxform.parsing.variable_reference import (
 def validate_background_geopoint_calculation(row: dict, row_num: int) -> bool:
     """A background-geopoint must not have a calculation."""
     try:
-        row["bind"]["calculate"]
+        row[co.BIND][co.CALCULATE]
     except KeyError:
         return True
     else:
