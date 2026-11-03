@@ -35,7 +35,7 @@ QUESTION_CLASSES = {
     "range": RangeQuestion,
     "select": MultipleChoiceQuestion,
     "select1": MultipleChoiceQuestion,
-    "trigger": TriggerQuestion,
+    const.TRIGGER: TriggerQuestion,
     "upload": UploadQuestion,
     "__by_type__": {
         "geopoint": GeoQuestion,
@@ -121,7 +121,7 @@ class SurveyElementBuilder:
             )
 
     def _save_trigger(self, d: dict) -> None:
-        trigger = d.get("trigger")
+        trigger = d.get(const.TRIGGER)
         if not trigger:
             return
         elif not isinstance(trigger, tuple):

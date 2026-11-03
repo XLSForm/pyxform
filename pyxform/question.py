@@ -41,7 +41,7 @@ QUESTION_EXTRA_FIELDS = (
     "instance",
     "query",
     "sms_field",
-    "trigger",
+    constants.TRIGGER,
     constants.BIND,
     constants.CHOICE_FILTER,
     constants.CONTROL,

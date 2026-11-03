@@ -53,6 +53,7 @@ APPEARANCE = "appearance"
 ITEMSET = "itemset"
 CHOICE_FILTER = "choice_filter"
 PARAMETERS = "parameters"
+TRIGGER = "trigger"
 
 LOOP = "loop"
 COLUMNS = "columns"

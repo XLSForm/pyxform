@@ -126,7 +126,7 @@ def validate_pyxform_references_in_workbook(
     # type is validated against the question_type_dict.
     # name is validated against XML tag name rules.
     # trigger is validated against question names only (not groups or repeats).
-    survey_ignore_columns = {co.TYPE, co.NAME, "trigger"}
+    survey_ignore_columns = {co.TYPE, co.NAME, co.TRIGGER}
     if workbook_dict.survey_header:
         survey_ignore_columns = {
             tuple(workbook_dict.survey_header[0])[i]

@@ -529,7 +529,7 @@ class SurveyElement(Mapping):
         bind_dict = {}
         for k, v in self.bind.items():
             # the expression goes in a setvalue action
-            if hasattr(self, "trigger") and self.trigger and k == const.CALCULATE:
+            if hasattr(self, const.TRIGGER) and self.trigger and k == const.CALCULATE:
                 continue
             # I think all the binding conversions should be happening on
             # the xls2json side.

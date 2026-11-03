@@ -57,7 +57,7 @@ def process_trigger(
     elif not is_pyxform_reference_candidate(trigger):
         raise PyXFormError(
             code=ErrorCode.PYREF_001,
-            context={"sheet": "survey", "column": "trigger", "row": row_num},
+            context={"sheet": co.SURVEY, "column": co.TRIGGER, "row": row_num},
         )
 
     try:
@@ -67,7 +67,7 @@ def process_trigger(
             for r in parse_pyxform_references(value=t, match_limit=1)
         )
     except PyXFormError as e:
-        e.context.update(sheet="survey", column="trigger", row=row_num)
+        e.context.update(sheet=co.SURVEY, column=co.TRIGGER, row=row_num)
         raise
 
     if trigger:

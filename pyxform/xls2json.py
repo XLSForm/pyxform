@@ -474,9 +474,9 @@ def workbook_to_json(
                 ROW_FORMAT_STRING % row_number + " Question with no type.\n" + str(row)
             )
 
-        if "trigger" in row:
-            row["trigger"] = qt.process_trigger(
-                trigger=row["trigger"],
+        if constants.TRIGGER in row:
+            row[constants.TRIGGER] = qt.process_trigger(
+                trigger=row[constants.TRIGGER],
                 row_num=row_number,
                 trigger_references=trigger_references,
             )
@@ -1249,7 +1249,7 @@ def workbook_to_json(
             parent_children_array.append(row)
         elif question_type == "background-geopoint":
             qt.validate_background_geopoint_trigger(
-                trigger=row.get("trigger"), row_num=row_number
+                trigger=row.get(constants.TRIGGER), row_num=row_number
             )
             qt.validate_background_geopoint_calculation(row=row, row_num=row_number)
             parent_children_array.append(row)
@@ -1261,7 +1261,7 @@ def workbook_to_json(
     try:
         qt.validate_references(referrers=trigger_references, questions=question_names)
     except PyXFormError as e:
-        e.context.update(sheet="survey", column="trigger")
+        e.context.update(sheet=constants.SURVEY, column=constants.TRIGGER)
         raise
     qt_geo.validate_parameter_reference_geometry(
         geo_references=geo_references,
