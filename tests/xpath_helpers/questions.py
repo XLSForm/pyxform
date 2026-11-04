@@ -114,6 +114,11 @@ class XPathHelper:
         """
 
     @staticmethod
+    def body_empty() -> str:
+        """Body exists but contains no elements."""
+        return """/h:html/h:body[not(text) and count(./*) = 0]"""
+
+    @staticmethod
     def body_label_inline(q_type: str, q_name: str, q_label: str) -> str:
         """Body element contains the question label."""
         return f"""

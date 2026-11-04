@@ -4,6 +4,7 @@ from pyxform import constants as co
 from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
+from tests.xpath_helpers.questions import xpq
 
 
 class TestQuestionParsing(PyxformTestCase):
@@ -632,3 +633,161 @@ class TestQuestionParsing(PyxformTestCase):
                 ),
             ],
         )
+
+
+class TestQuestionControlContentParsing(PyxformTestCase):
+    """Tests for whether or not a label/hint/media raises and error/warning."""
+
+    # Question types listed here are documented/primary type aliases from the reference
+    # template spreadsheet (version 2026-08-10), excluding those that require additional
+    # specifications (and so would raise some other error/warning).
+    visible = (
+        "acknowledge",
+        "audio",
+        "barcode",
+        "date",
+        "datetime",
+        "decimal",
+        "file",
+        "geopoint",
+        "geoshape",
+        "geotrace",
+        "integer",
+        "note",
+        "range",
+        "text",
+        "time",
+        "video",
+    )
+    not_visible = (
+        "background-audio",
+        "csv-external",
+        "deviceid",
+        "email",
+        "end",
+        "hidden",
+        "phonenumber",
+        "start",
+        "start-geopoint",
+        "today",
+        "username",
+    )
+
+    def test_visible__no_control_content__error(self):
+        """Should raise an error when no label/hint/media is provided."""
+        md = """
+        | survey |
+        || type   | name |
+        || {case} | q1   |
+        """
+        for case in self.visible:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[
+                        "The survey element named 'q1' has no label or hint."
+                    ],
+                )
+
+    def test_visible__no_control_content__with_trigger__ok(self):
+        """Should not raise an error/warning when no label/hint/media is provided."""
+        md = """
+        | survey |
+        || type   | name | label | trigger |
+        || text   | q1   | Q1    |         |
+        || {case} | q2   |       | ${{q1}} |
+        """
+        for case in self.visible:
+            with self.subTest(case):
+                self.assertPyxformXform(md=md.format(case=case), warnings_count=0)
+
+    def test_visible__no_control_content__with_trigger__as_trigger__error(self):
+        """Should raise an error/warning when no label/hint/media is provided."""
+        md = """
+        | survey |
+        || type   | name | label | trigger |
+        || text   | q1   | Q1    |         |
+        || {case} | q2   |       | ${{q1}} |
+        || text   | q3   | Q3    | ${{q2}} |
+        """
+        for case in self.visible:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[
+                        "The question ${q2} is not user-visible so it can't be used as a "
+                        "calculation trigger for question ${q3}."
+                    ],
+                )
+
+    def test_visible__no_control_content__with_calculate__ok(self):
+        """Should not raise an error/warning when no label/hint/media is provided."""
+        md = """
+        | survey |
+        || type    | name | label | calculation   |
+        || {case}  | q1   | Q1    |               |
+        || {case}  | q2   |       | once(${{q1}}) |
+        """
+        for case in self.visible:
+            with self.subTest(case):
+                self.assertPyxformXform(md=md.format(case=case), warnings_count=0)
+
+    def test_visible__no_control_content__with_calculate__as_trigger__error(self):
+        """Should raise an error/warning when no label/hint/media is provided."""
+        md = """
+        | survey |
+        || type    | name | label | calculation   | trigger |
+        || {case}  | q1   | Q1    |               |         |
+        || {case}  | q2   |       | once(${{q1}}) |         |
+        || text    | q3   | Q3    |               | ${{q2}} |
+        """
+        for case in self.visible:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[
+                        "The question ${q2} is not user-visible so it can't be used as a "
+                        "calculation trigger for question ${q3}."
+                    ],
+                )
+
+    def test_non_visible__no_control_content__ok(self):
+        """Should not raise an error/warning when no label/hint/media is provided."""
+        md = """
+        | survey |
+        || type   | name | {key} |
+        || {type} | q1   | {val} |
+        """
+        columns = (
+            ("label", "Q1"),
+            ("hint", "Q1"),
+            ("audio", "Q1.mp3"),
+            ("label::English (en)", "Q1"),
+        )
+        cases = ((t, c) for t in self.not_visible for c in columns)
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(type=case[0], key=case[1][0], val=case[1][1]),
+                    xml__xpath_match=[xpq.body_empty()],
+                    warnings_count=0,
+                )
+
+    def test_non_visible__no_control_content__as_trigger__ok(self):
+        """Should raise an error/warning when no label/hint/media is provided."""
+        # Seems like it should be an error/warning but currently is not.
+        md = """
+        | survey |
+        || type   | name | label | trigger |
+        || {case} | q1   |       |         |
+        || text   | q2   | Q2    | ${{q1}} |
+        """
+        for case in self.not_visible:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    warnings_count=0,
+                )

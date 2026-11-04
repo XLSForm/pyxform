@@ -1,6 +1,24 @@
 """
-Test that any row with a calculation becomes a calculate of the row's type or of type string if the type is "calculate". A hint or label
-error should only be thrown for a row without a calculation.
+## Calculate traceability.
+
+The scope of this test module is the "calculate" question type, and other question types
+with a user-specified "calculation" (which behave similarly to the "calculate" type, and
+not to be confused with the column alias "calculate" for "calculation").
+
+Each test should reference one (or more) requirements from these lists.
+
+- Validation
+  - CV001: a calculate question must have a calculation and/or a dynamic default.
+  - CV002: a calculate/non-calculate question may have a static default.
+  - CV003: a calculate question may have control content (label, hint, media, etc).
+- Behaviour
+  - CB001: for a calculate/non-calculate question, the calculation is emitted in a calculate binding.
+  - CB002: for a calculate question, the bind data type is "string".
+  - CB003: for a non-calculate question, the bind data type is the question data type.
+  - CB004: for a calculate/non-calculate question, a static default is emitted in the primary instance.
+  - CB005: for a calculate/non-calculate question, a dynamic default is emitted in a setvalue.
+  - CB006: for a calculate question, no control element is emitted.
+  - CB007: for a non-calculate question, a control element is emitted only if control content is provided.
 """
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -8,72 +26,13 @@ from tests.xpath_helpers.questions import xpq
 
 
 class TestCalculateParsing(PyxformTestCase):
-    def test_non_calculate_type_with_calculation_no_warns(self):
-        self.assertPyxformXform(
-            md="""
-            | survey |           |      |             |      |             |
-            |        | type      | name | label       | hint | calculation |
-            |        | dateTime  | a    |             |      | now()       |
-            |        | integer   | b    |             |      | 1 div 1     |
-            |        | note      | note | Hello World |      |             |
-            """,
-            warnings_count=0,
-        )
-
-    def test_non_calculate_type_with_hint_and_no_calculation__no_warning(self):
-        self.assertPyxformXform(
-            md="""
-            | survey |           |      |             |           |             |
-            |        | type      | name | label       | hint      | calculation |
-            |        | dateTime  | a    |             |           | now()       |
-            |        | integer   | b    |             | Some hint |             |
-            |        | note      | note | Hello World |           |             |
-            """,
-            warnings_count=0,
-        )
-
-    def test_non_calculate_type_with_calculation_and_dynamic_default_no_warns(self):
-        self.assertPyxformXform(
-            md="""
-            | survey |           |      |             |      |             |         |
-            |        | type      | name | label       | hint | calculation | default |
-            |        | dateTime  | a    |             |      | now()       |         |
-            |        | integer   | b    |             |      | 1 div 1     | $(a)    |
-            |        | note      | note | Hello World |      |             |         |
-            """,
-            warnings_count=0,
-        )
-
-    def test_non_calculate_type_with_calculation_and_default_no_warns(self):
-        self.assertPyxformXform(
-            md="""
-            | survey |           |      |             |      |             |         |
-            |        | type      | name | label       | hint | calculation | default |
-            |        | dateTime  | a    |             |      | now()       |         |
-            |        | integer   | b    |             |      | 1 div 1     | 1       |
-            |        | note      | note | Hello World |      |             |         |
-            """,
-            warnings_count=0,
-        )
-
-    def test_row_without_label_or_calculation_throws_error(self):
-        self.assertPyxformXform(
-            name="no-label",
-            md="""
-        | survey |          |      |             |
-        |        | type     | name | label       |
-        |        | integer  | a    |             |
-        """,
-            errored=True,
-            error__contains=["The survey element named 'a' has no label or hint."],
-        )
-
-    def test_calculate_without_calculation__error(self):
-        """Should find an error is raised when a calculate question has no calculation."""
+    def test_calculate__no_calculation__error(self):
+        """Should raise an error when no calculation or dynamic default is provided."""
+        # CV001
         md = """
         | survey |
-        | | type      | name | label | calculation |
-        | | calculate | q1   | Q1    |             |
+        | | type      | name |
+        | | calculate | q1   |
         """
         self.assertPyxformXform(
             md=md,
@@ -81,29 +40,49 @@ class TestCalculateParsing(PyxformTestCase):
             error__contains=["[row : 2] Missing calculation."],
         )
 
-    def test_calculate_without_calculation_without_default(self):
+    def test_calculate__no_calculation__with_static_default__error(self):
+        """Should raise an error when no calculation or dynamic default is provided."""
+        # CV001
+        md = """
+        | survey |
+        | | type      | name | default |
+        | | calculate | q1   | foo     |
+        """
         self.assertPyxformXform(
-            name="calculate-without-calculation-without-default",
-            md="""
-        | survey |            |      |             |             |         |
-        |        | type       | name | label       | calculation | default |
-        |        | calculate  | a    |             |             |         |
-        """,
+            md=md,
             errored=True,
-            error__contains=["Missing calculation"],
+            error__contains=["[row : 2] Missing calculation."],
         )
 
-    def test_calculate_without_calculation_with_default_without_dynamic_default(self):
-        self.assertPyxformXform(
-            name="calculate-without-calculation-with-default-without-dynamic-default",
-            md="""
-        | survey |            |      |             |             |         |
-        |        | type       | name | label       | calculation | default |
-        |        | calculate  | a    |             |             | foo     |
-        """,
-            errored=True,
-            error__contains=["Missing calculation"],
-        )
+    def test_calculate__no_calculation__with_dynamic_default__ok(self):
+        """Should find that a calculation is not required when a dynamic default is provided."""
+        # CV001
+        md = """
+        | survey |
+        | | type      | name | default |
+        | | calculate | q1   | 2 * 2   |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_calculate__with_static_default__ok(self):
+        """Should find that a calculation may have a static default."""
+        # CV002
+        md = """
+        | survey |
+        | | type      | name | calculation | default |
+        | | calculate | q1   | 2 * 2       | 3       |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_calculate__with_label__ok(self):
+        """Should find that a calculation may have control content."""
+        # CV003
+        md = """
+        | survey |
+        | | type      | name | label | calculation |
+        | | calculate | q1   | Q1    | 2 * 2       |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
 
     def test_round_function__ok(self):
         """Should find that using the round() function does not raise an ODK Validate error."""
@@ -172,84 +151,357 @@ class TestCalculateParsing(PyxformTestCase):
 
 
 class TestCalculateOutput(PyxformTestCase):
-    def test_xls_type_calculate_has_type_string(self):
+    def test_calculate(self):
+        """Should find that the bind is string, with the calculation, and no control."""
+        # CB001 CB002 CB006
+        md = """
+        | survey |
+        || type      | name | calculation |
+        || calculate | q1   | 2 * 2       |
+        """
         self.assertPyxformXform(
-            name="calculate-type",
-            md="""
-            | survey |          |      |             |             |
-            |        | type     | name | label       | calculation |
-            |        | calculate| a    |             | 2 * 2       |
-            """,
-            xml__contains=[
-                '<bind calculate="2 * 2" nodeset="/calculate-type/a" type="string"/>',
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.model_instance_bind_attr("q1", "calculate", "2 * 2"),
+                xpq.body_empty(),
             ],
+            warnings_count=0,
         )
 
-    def test_xls_type_calculate_with_label_has_no_body(self):
+    def test_calculate__with_control_content(self):
+        """Should find that no control is emitted."""
+        # CB001 CB002 CB006
+        md = """
+        | survey |
+        || type      | name | calculation | {key} |
+        || calculate | q1   | 2 * 2       | {val} |
+        """
+        cases = (
+            ("label", "Q1"),
+            ("hint", "Q1"),
+            ("audio", "Q1.mp3"),
+            ("label::English (en)", "Q1"),
+        )
+        for case in cases:
+            with self.subTest(case):
+                self.assertPyxformXform(
+                    md=md,
+                    xml__xpath_match=[
+                        xpq.model_instance_item("q1"),
+                        xpq.model_instance_bind("q1", "string"),
+                        xpq.model_instance_bind_attr("q1", "calculate", "2 * 2"),
+                        xpq.body_empty(),
+                    ],
+                    warnings_count=0,
+                )
+
+    def test_calculate__with_static_default(self):
+        """Should find that the static default is in the instance, and the calculation is in a bind."""
+        # CB001 CB002 CB004 CB006
+        md = """
+        | survey |
+        || type      | name | calculate | default  |
+        || calculate | q1   | 2 * 2     | 3        |
+        """
         self.assertPyxformXform(
-            name="calculate-type",
-            md="""
-                | survey |          |      |             |             |
-                |        | type     | name | label       | calculation |
-                |        | calculate| a    | A           | 2 * 2       |
-                """,
-            xml__contains=[
-                '<bind calculate="2 * 2" nodeset="/calculate-type/a" type="string"/>',
-                "<h:body/>",
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1", "3"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.model_instance_bind_attr("q1", "calculate", "2 * 2"),
+                xpq.body_empty(),
             ],
+            warnings_count=0,
         )
 
-    def test_non_calculate_type_with_calculation_is_bind_type(self):
+    def test_calculate__with_dynamic_default(self):
+        """Should find that the dynamic default is in a setvalue, and the calculation is in a bind."""
+        # CB001 CB002 CB005 CB006
+        md = """
+        | survey |
+        || type      | name | calculate | default  |
+        || calculate | q1   | 2 * 2     | random() |
+        """
         self.assertPyxformXform(
-            name="non-calculate-type",
-            md="""
-            | survey |          |      |             |             |
-            |        | type     | name | label       | calculation |
-            |        | integer  | a    |             | 2 * 2       |
-            """,
-            xml__contains=[
-                '<bind calculate="2 * 2" nodeset="/non-calculate-type/a" type="int"/>'
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.model_instance_bind_attr("q1", "calculate", "2 * 2"),
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/q1",
+                    event="odk-instance-first-load",
+                    value="random()",
+                ),
+                xpq.body_empty(),
             ],
+            warnings_count=0,
         )
 
-    def test_non_calculate_type_with_calculation_and_no_label_has_no_control(self):
+    def test_calculate__with_dynamic_default__no_calculation(self):
+        """Should find that the default is in a setvalue."""
+        # CB001 CB002 CB005 CB006
+        md = """
+        | survey |
+        || type      | name | default  |
+        || calculate | q1   | random() |
+        """
         self.assertPyxformXform(
-            name="no-label",
-            md="""
-                | survey |          |      |             |             |
-                |        | type     | name | label       | calculation |
-                |        | integer  | a    |             | 2 * 2       |
-                """,
-            instance__contains=["<a/>"],
-            xml__excludes=["input"],
-        )
-
-    def test_select_type_with_calculation_and_no_label_has_no_control(self):
-        self.assertPyxformXform(
-            name="calculate-select",
-            md="""
-                | survey  |                   |      |       |                  |
-                |         | type              | name | label | calculation      |
-                |         | select_one yes_no | a    |       | concat('a', 'b') |
-                | choices |                   |      |       |                  |
-                |         | list_name         | name | label |                  |
-                |         | yes_no            | yes  | Yes   |                  |
-                |         | yes_no            | no   | No    |                  |
-                """,
-            xml__contains=[
-                '<bind calculate="concat(\'a\', \'b\')" nodeset="/calculate-select/a" type="string"/>'
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/q1",
+                    event="odk-instance-first-load",
+                    value="random()",
+                ),
+                xpq.body_empty(),
             ],
-            instance__contains=["<a/>"],
-            xml__excludes=["<select1>"],
+            warnings_count=0,
         )
 
-    def test_calculate_without_calculation_with_dynamic_default(self):
+    def test_non_calculate__integer(self):
+        """Should find that the bind is the question type, with the calculation, and no control."""
+        # CB001 CB003 CB007
+        md = """
+        | survey |
+        || type      | name | calculation |
+        || integer   | q1   | 2 * 2       |
+        """
         self.assertPyxformXform(
-            name="calculate-without-calculation-with-dynamic-default",
-            md="""
-        | survey |            |      |             |             |          |
-        |        | type       | name | label       | calculation | default  |
-        |        | calculate  | a    |             |             | random() |
-        """,
-            instance__contains=["<a/>"],
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "int"),
+                xpq.model_instance_bind_attr("q1", "calculate", "2 * 2"),
+                xpq.body_empty(),
+            ],
+            warnings_count=0,
+        )
+
+    def test_non_calculate__integer__with_label(self):
+        """Should find that the label is in a control."""
+        # CB001 CB003 CB007
+        md = """
+        | survey |
+        || type      | name | label | calculation |
+        || integer   | q1   | Q1    | 2 * 2       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "int"),
+                xpq.model_instance_bind_attr("q1", "calculate", "2 * 2"),
+                xpq.body_label_inline("input", "q1", "Q1"),
+            ],
+            warnings_count=0,
+        )
+
+    def test_non_calculate__integer__with_static_default(self):
+        """Should find that the static default is in the instance, and the calculation is in a bind."""
+        # CB001 CB003 CB004 CB007
+        md = """
+        | survey |
+        || type      | name | calculation | default |
+        || integer   | q1   | 2 * 2       | 3       |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1", "3"),
+                xpq.model_instance_bind("q1", "int"),
+                xpq.model_instance_bind_attr("q1", "calculate", "2 * 2"),
+                xpq.body_empty(),
+            ],
+            warnings_count=0,
+        )
+
+    def test_non_calculate__integer__with_dynamic_default(self):
+        """Should find that the dynamic default is in a setvalue, and the calculation is in a bind."""
+        # CB001 CB003 CB005 CB007
+        md = """
+        | survey |
+        || type    | name | calculate | default  |
+        || integer | q1   | 2 * 2     | random() |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "int"),
+                xpq.model_instance_bind_attr("q1", "calculate", "2 * 2"),
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/q1",
+                    event="odk-instance-first-load",
+                    value="random()",
+                ),
+                xpq.body_empty(),
+            ],
+            warnings_count=0,
+        )
+
+    def test_non_calculate__integer__with_dynamic_default__no_calculation(self):
+        """Should find that the default is in a setvalue."""
+        # CB003 CB005 CB007
+        md = """
+        | survey |
+        || type    | name | label | default  |
+        || integer | q1   | Q1    | random() |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "int"),
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/q1",
+                    event="odk-instance-first-load",
+                    value="random()",
+                ),
+                xpq.body_label_inline("input", "q1", "Q1"),
+            ],
+            warnings_count=0,
+        )
+
+    def test_non_calculate__select(self):
+        """Should find that the bind is the question type, with the calculation, and no control."""
+        # CB001 CB003 CB007
+        md = """
+        | survey |
+        || type          | name | calculation      |
+        || select_one c1 | q1   | concat('a', 'b') |
+
+        | choices |
+        || list_name | name | label |
+        || c1        | n1   | N1    |
+        || c1        | n2   | N2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.model_instance_bind_attr("q1", "calculate", "concat('a', 'b')"),
+                xpq.body_empty(),
+            ],
+            warnings_count=0,
+        )
+
+    def test_non_calculate__select__with_label(self):
+        """Should find that the label is in a control."""
+        # CB001 CB003 CB007
+        md = """
+        | survey |
+        || type          | name | label | calculation      |
+        || select_one c1 | q1   | Q1    | concat('a', 'b') |
+
+        | choices |
+        || list_name | name | label |
+        || c1        | n1   | N1    |
+        || c1        | n2   | N2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.model_instance_bind_attr("q1", "calculate", "concat('a', 'b')"),
+                xpq.body_label_inline("select1", "q1", "Q1"),
+                xpq.body_select1_itemset("q1"),
+            ],
+            warnings_count=0,
+        )
+
+    def test_non_calculate__select__with_static_default(self):
+        """Should find that the static default is in the instance, and the calculation is in a bind."""
+        # CB001 CB003 CB004 CB007
+        md = """
+        | survey |
+        || type          | name | label | calculation      | default |
+        || select_one c1 | q1   | Q1    | concat('n', '1') | n1      |
+
+        | choices |
+        || list_name | name | label |
+        || c1        | n1   | N1    |
+        || c1        | n2   | N2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1", "n1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.model_instance_bind_attr("q1", "calculate", "concat('n', '1')"),
+                xpq.body_label_inline("select1", "q1", "Q1"),
+                xpq.body_select1_itemset("q1"),
+            ],
+            warnings_count=0,
+        )
+
+    def test_non_calculate__select__with_dynamic_default(self):
+        """Should find that the dynamic default is in a setvalue, and the calculation is in a bind."""
+        # CB001 CB003 CB005 CB007
+        md = """
+        | survey |
+        || type          | name | label | calculation      | default          |
+        || select_one c1 | q1   | Q1    | concat('n', '1') | concat('n', '2') |
+
+        | choices |
+        || list_name | name | label |
+        || c1        | n1   | N1    |
+        || c1        | n2   | N2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.model_instance_bind_attr("q1", "calculate", "concat('n', '1')"),
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/q1",
+                    event="odk-instance-first-load",
+                    value="concat('n', '2')",
+                ),
+                xpq.body_label_inline("select1", "q1", "Q1"),
+                xpq.body_select1_itemset("q1"),
+            ],
+            warnings_count=0,
+        )
+
+    def test_non_calculate__select__with_dynamic_default__no_calculation(self):
+        """Should find that the default is in a setvalue."""
+        # CB003 CB005 CB007
+        md = """
+        | survey |
+        || type          | name | label | default          |
+        || select_one c1 | q1   | Q1    | concat('n', '1') |
+
+        | choices |
+        || list_name | name | label |
+        || c1        | n1   | N1    |
+        || c1        | n2   | N2    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                xpq.model_instance_item("q1"),
+                xpq.model_instance_bind("q1", "string"),
+                xpq.setvalue(
+                    path="""h:head/x:model""",
+                    ref="/test_name/q1",
+                    event="odk-instance-first-load",
+                    value="concat('n', '1')",
+                ),
+                xpq.body_label_inline("select1", "q1", "Q1"),
+                xpq.body_select1_itemset("q1"),
+            ],
+            warnings_count=0,
         )

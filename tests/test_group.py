@@ -128,6 +128,48 @@ class TestGroupOutput(PyxformTestCase):
             ],
         )
 
+    def test_field_list_appearance__optional_label(self):
+        """Should find that the `field-list` appearance `label` allows an optional label."""
+        # Essentially the structure pyxform generates for the `table-list` shortcut.
+        md = """
+        | survey  |
+        | | type          | name | label | hint | appearance   |
+        | | begin_group   | g1   |       |      | field-list   |
+        | | note          | q1   | G1    | G1h  |              |
+        | | select_one c1 | q2   |       |      | label        |
+        | | select_one c1 | q3   | Q3    |      | list-nolabel |
+        | | end_group     |      |       |      |              |
+
+        | choices |
+        | | list_name | name | label |
+        | | c1        | n1   | N1    |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__xpath_match=[
+                # Model instance for specified items.
+                xpq.model_instance_item("g1"),
+                xpq.model_instance_item("g1/x:q1"),
+                xpq.model_instance_item("g1/x:q2"),
+                xpq.model_instance_item("g1/x:q3"),
+                # Model bind for specified items.
+                xpq.model_instance_bind("g1/q1", "string"),
+                xpq.model_instance_bind("g1/q2", "string"),
+                xpq.model_instance_bind("g1/q3", "string"),
+                # Body control group and selects are assigned appearances.
+                xpg.group_no_label_appearance("/test_name/g1", "field-list"),
+                """
+                /h:html/h:body/x:group/x:input[@ref='/test_name/g1/q1']
+                  /x:hint[text()='G1h']
+                """,
+                xpq.body_label_inline("group/x:input", "g1/q1", "G1"),
+                xpq.body_group_select1_itemset("g1", "q2", "label"),
+                xpq.body_label_inline("group/x:select1", "g1/q2", " "),
+                xpq.body_label_inline("group/x:select1", "g1/q3", "Q3"),
+                xpq.body_group_select1_itemset("g1", "q3", "list-nolabel"),
+            ],
+        )
+
     def test_table_list_appearance__preserve_additional_appearances(self):
         """Should find that the table-list shortcut keeps any extra appearances."""
         # Currently the documented / supported appearances for groups are 'table-list' and
