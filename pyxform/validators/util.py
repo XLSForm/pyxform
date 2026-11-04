@@ -107,7 +107,7 @@ def request_get(url):
             raise ValueError("URL must start with 'http:' or 'https:'")
         r = Request(url)
         r.add_header("Accept", "application/json")
-        with closing(urlopen(r)) as u:
+        with closing(urlopen(r, timeout=30)) as u:
             content = u.read()
         if len(content) == 0:
             raise PyXFormError(f"Empty response from URL: '{url}'.")
