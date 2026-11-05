@@ -72,9 +72,8 @@ class TestSurveyElementMappingBehaviour(TestCase):
         """Should raise an error if the 'name' is not a valid XML Name."""
         with self.assertRaises(PyXFormError) as err:
             SurveyElement(name=".q", label="Q1").validate()
-        self.assertEqual(
-            ErrorCode.NAMES_009.value.format(name=co.NAME), err.exception.args[0]
-        )
+        self.assertEqual(ErrorCode.NAMES_009, err.exception.code)
+        self.assertEqual(co.NAME, err.exception.context["name"])
 
     def test_validate__name_in_valid_unicode_range__ok(self):
         """Should not raise an error if the 'name' includes valid unicode characters."""

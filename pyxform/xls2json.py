@@ -701,9 +701,12 @@ def workbook_to_json(
             question_name = str(row[constants.NAME])
             if not is_xml_tag(question_name):
                 raise PyXFormError(
-                    ErrorCode.NAMES_008.value.format(
-                        sheet=constants.SURVEY, row=row_number, column=constants.NAME
-                    )
+                    code=ErrorCode.NAMES_008,
+                    context={
+                        "sheet": constants.SURVEY,
+                        "row": row_number,
+                        "column": constants.NAME,
+                    },
                 )
             element_names.update((question_name,))
 
@@ -1315,11 +1318,12 @@ def workbook_to_json(
 
     if len(stack) > 1:
         raise PyXFormError(
-            ErrorCode.SURVEY_002.value.format(
-                row=stack[-1]["row_number"],
-                type=stack[-1]["control_type"],
-                name=stack[-1]["control_name"],
-            )
+            code=ErrorCode.SURVEY_002,
+            context={
+                "row": stack[-1]["row_number"],
+                "type": stack[-1]["control_type"],
+                "name": stack[-1]["control_name"],
+            },
         )
 
     if settings.get("flat", False):
