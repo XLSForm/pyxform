@@ -404,7 +404,9 @@ class TestLoopParsing(PyxformTestCase):
             md=md,
             errored=True,
             # Not caught by xls2json since loops are currently generated in builder.py
-            error__contains=[ErrorCode.NAMES_004.value.format(row=None, value="r1")],
+            error__contains=[
+                ErrorCode.NAMES_004.value.format(row="(unknown)", value="r1")
+            ],
         )
 
     def test_loop__references_error(self):

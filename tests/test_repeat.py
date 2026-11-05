@@ -1554,7 +1554,9 @@ class TestRepeatCount(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.NAMES_001.value.format(value="r1_count")],
+            error__contains=[
+                ErrorCode.NAMES_001.value.format(row="(unknown)", value="r1_count")
+            ],
         )
 
     def test_expression__generated_element_different_name__ok(self):
@@ -1610,7 +1612,9 @@ class TestRepeatCount(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.NAMES_001.value.format(value="r1_count")],
+            error__contains=[
+                ErrorCode.NAMES_001.value.format(row="(unknown)", value="r1_count")
+            ],
         )
 
     def test_manual_xpath__generated_element_different_name__ok(self):
@@ -1661,7 +1665,9 @@ class TestRepeatCount(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.NAMES_001.value.format(value="r1_count")],
+            error__contains=[
+                ErrorCode.NAMES_001.value.format(row="(unknown)", value="r1_count")
+            ],
         )
 
     def test_constant_integer__generated_element_different_name__ok(self):

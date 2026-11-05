@@ -733,11 +733,12 @@ def workbook_to_json(
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
-                        ErrorCode.SURVEY_001.value.format(
-                            row=row_number,
-                            type=control_type,
-                            name=row.get(constants.NAME),
-                        )
+                        code=ErrorCode.SURVEY_001,
+                        context={
+                            "row": row_number,
+                            "type": control_type,
+                            "name": row.get(constants.NAME, "(unknown)"),
+                        },
                     )
                 stack.pop()
                 table_list = None

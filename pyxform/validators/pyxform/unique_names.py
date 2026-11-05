@@ -33,12 +33,13 @@ def validate_question_group_repeat_name(
         seen_names.update(const.RESERVED_NAMES_SURVEY_SHEET)
 
     if name in seen_names:
+        if row_number is None:
+            row_number = "(unknown)"
+        context = {"row": row_number, "value": name}
         if name == const.META:
-            raise PyXFormError(ErrorCode.NAMES_005.value.format(row=row_number))
+            raise PyXFormError(code=ErrorCode.NAMES_005, context=context)
         else:
-            raise PyXFormError(
-                ErrorCode.NAMES_001.value.format(row=row_number, value=name)
-            )
+            raise PyXFormError(code=ErrorCode.NAMES_001, context=context)
     seen_names.add(name)
 
     question_name_lower = name.lower()
@@ -69,12 +70,11 @@ def validate_repeat_name(
     :param seen_names: Names already processed in the sheet.
     """
     if control_type == const.REPEAT:
+        if row_number is None:
+            row_number = "(unknown)"
+        context = {"row": row_number, "value": name}
         if name == instance_element_name:
-            raise PyXFormError(
-                ErrorCode.NAMES_003.value.format(row=row_number, value=name)
-            )
+            raise PyXFormError(code=ErrorCode.NAMES_003, context=context)
         elif name in seen_names:
-            raise PyXFormError(
-                ErrorCode.NAMES_004.value.format(row=row_number, value=name)
-            )
+            raise PyXFormError(code=ErrorCode.NAMES_004, context=context)
         seen_names.add(name)
