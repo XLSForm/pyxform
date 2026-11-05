@@ -430,6 +430,16 @@ class ErrorCode(Enum):
             "choices 'list_name' rows."
         ),
     )
+    NAMES_017 = Detail(
+        name="Names - invalid duplicate name in the choices sheet (multiple duplicates)",
+        msg=(
+            "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
+            "Choice names must be unique for each choice list. "
+            "The same issue occurs on the following other rows: {other_rows}. "
+            "If this is intentional, use the setting 'allow_choice_duplicates'. "
+            "Learn more: https://xlsform.org/#choice-names."
+        ),
+    )
     PYREF_001 = Detail(
         name="Variable reference - parsing failed",
         msg=(

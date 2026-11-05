@@ -218,8 +218,30 @@ class TestChoicesSheet(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                ErrorCode.NAMES_007.value.format(row=3),
-                ErrorCode.NAMES_007.value.format(row=5),
+                ErrorCode.NAMES_017.value.format(row="3", other_rows="5"),
+            ],
+        )
+
+    def test_multiple_duplicate_choices_without_setting__with_comma(self):
+        md = """
+        | survey |
+        || type          | name | label |
+        || select_one c1 | q1   | Q1    |
+
+        | choices |
+        || list name | name | label |
+        || c1        | n1    | N1   |
+        || c1        | n1    | N1   |
+        || c1        | n2    | N2   |
+        || c1        | n2    | N2   |
+        || c1        | n3    | N3   |
+        || c1        | n3    | N3   |
+        """
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[
+                ErrorCode.NAMES_017.value.format(row="3", other_rows="5, 7"),
             ],
         )
 
