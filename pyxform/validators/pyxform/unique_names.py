@@ -9,6 +9,7 @@ def validate_question_group_repeat_name(
     warnings: list[str],
     row_number: int | None = None,
     check_reserved: bool = True,
+    warn: bool = True,
 ):
     """
     Warn about duplicate or problematic names on the survey sheet.
@@ -23,6 +24,7 @@ def validate_question_group_repeat_name(
     :param check_reserved: If True, check the name against any reserved names. When
       checking names in the context of SurveyElement processing, it's difficult to
       differentiate user-specified names from names added by pyxform.
+    :param warn: If True, add any applicable warning messages to `warnings`.
     """
     if not name:
         return
@@ -40,7 +42,7 @@ def validate_question_group_repeat_name(
     seen_names.add(name)
 
     question_name_lower = name.lower()
-    if question_name_lower in seen_names_lower:
+    if warn and question_name_lower in seen_names_lower:
         # No case-insensitive warning for 'meta' since it's not an exported data table.
         warnings.append(ErrorCode.NAMES_002.value.format(row=row_number, value=name))
     seen_names_lower.add(question_name_lower)
