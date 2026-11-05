@@ -774,7 +774,9 @@ class TestHeaderProcessing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.HEADER_001.value.format(sheet_name="survey", header="unknown"),
+                ErrorCode.HEADER_001.value.format(
+                    sheet_name="survey", header="(missing header)"
+                ),
             ],
         )
 

@@ -178,6 +178,8 @@ def process_row(
         val = clean_text_values(value=val, strip_whitespace=strip_whitespace)
         tokens = header_key.get(header, None)
         if not tokens:
+            if header is None:
+                header = "(missing header)"
             raise PyXFormError(
                 code=ErrorCode.HEADER_001,
                 context={"sheet_name": sheet_name, "header": header},
