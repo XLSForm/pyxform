@@ -8,15 +8,6 @@ from pyxform.parsing.variable_reference import (
     parse_pyxform_references,
 )
 
-BACKGROUND_GEOPOINT_CALCULATION = (
-    "[row : {r}] For 'background-geopoint' questions, "
-    "the 'calculation' column must be empty."
-)
-BACKGROUND_GEOPOINT_TRIGGER = (
-    "[row : {r}] For 'background-geopoint' questions, "
-    "the 'trigger' column must not be empty."
-)
-
 
 def validate_background_geopoint_calculation(row: dict, row_num: int) -> bool:
     """A background-geopoint must not have a calculation."""
@@ -25,13 +16,13 @@ def validate_background_geopoint_calculation(row: dict, row_num: int) -> bool:
     except KeyError:
         return True
     else:
-        raise PyXFormError(BACKGROUND_GEOPOINT_CALCULATION.format(r=row_num))
+        raise PyXFormError(code=ErrorCode.GEO_001, context={"row": row_num})
 
 
 def validate_background_geopoint_trigger(trigger: str | None, row_num: int) -> bool:
     """A background-geopoint must have a trigger."""
     if not trigger:
-        raise PyXFormError(BACKGROUND_GEOPOINT_TRIGGER.format(r=row_num))
+        raise PyXFormError(code=ErrorCode.GEO_002, context={"row": row_num})
     return True
 
 

@@ -198,6 +198,22 @@ class ErrorCode(Enum):
             "questions using these types and the entity list name."
         ),
     )
+    GEO_001 = Detail(
+        name="Geo type - invalid non-empty background-geopoint calculation",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'calculation' column is invalid. "
+            "For 'background-geopoint' questions, the 'calculation' column must be empty. "
+            "Learn more: https://docs.getodk.org/form-question-types/#background-geopoint"
+        ),
+    )
+    GEO_002 = Detail(
+        name="Geo type - invalid empty background-geopoint trigger",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'trigger' column is invalid. "
+            "For 'background-geopoint' questions, the 'trigger' column must not be empty. "
+            "Learn more: https://docs.getodk.org/form-question-types/#background-geopoint "
+        ),
+    )
     HEADER_001 = Detail(
         name="Headers - invalid missing header row",
         msg=(
