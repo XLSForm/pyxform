@@ -416,7 +416,7 @@ class ErrorCode(Enum):
         name="Variable reference - parsing failed",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "A variable reference ('${name}') must start with '${{', followed "
+            "A variable reference ('${{name}}') must start with '${{', followed "
             "by a name from the 'survey' sheet 'name' column, and end with '}}'. "
             "Learn more: https://docs.getodk.org/form-logic/#variables"
         ),
@@ -425,8 +425,8 @@ class ErrorCode(Enum):
         name="Variable reference - parsing limit reached",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "A variable reference ('${name}') list must have a comma between each "
-            "variable, for example: '${q1},${q2},${q3}'."
+            "A variable reference ('${{name}}') list must have a comma between each "
+            "variable, for example: '${{q1}},${{q2}},${{q3}}'."
         ),
         # Does not include 'Learn more' link since this error is about multiple triggers.
     )
@@ -434,7 +434,7 @@ class ErrorCode(Enum):
         name="Variable reference - name not found",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "A variable reference ('${name}') name must exist in the 'survey' sheet "
+            "A variable reference ('${{name}}') name must exist in the 'survey' sheet "
             "'name' column. The name '{q}' was not found. "
             "Learn more: https://docs.getodk.org/form-logic/#variables"
         ),
@@ -443,7 +443,7 @@ class ErrorCode(Enum):
         name="Variable reference - duplicate name",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "A variable reference ('${name}') name must be unique in the 'survey' sheet "
+            "A variable reference ('${{name}}') name must be unique in the 'survey' sheet "
             "'name' column. The name '{q}' occurs more than once. "
             "Learn more: https://docs.getodk.org/form-logic/#variables"
         ),
@@ -514,7 +514,7 @@ class ErrorCode(Enum):
         name="Range type - tick_labelset choice is not a number",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
-            "For the 'range' question type, the parameter '{tick_labelset}' choice values must "
+            "For the 'range' question type, the parameter 'tick_labelset' choice values must "
             "all be numbers."
         ),
     )
