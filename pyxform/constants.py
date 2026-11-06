@@ -146,11 +146,6 @@ EXTERNAL_CHOICES_ITEMSET_REF_LABEL_GEOJSON = "title"
 EXTERNAL_CHOICES_ITEMSET_REF_VALUE_GEOJSON = "id"
 
 ROW_FORMAT_STRING: str = "[row : %s]"
-_MSG_SUPPRESS_SPELLING = (
-    " If you do not mean to include a sheet, to suppress this message, "
-    "prefix the sheet name with an underscore. For example 'setting' "
-    "becomes '_setting'."
-)
 
 CONVERTIBLE_BIND_ATTRIBUTES = {
     "readonly",

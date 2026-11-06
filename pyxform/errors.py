@@ -28,7 +28,7 @@ _ERROR_FORMATTER = _ErrorFormatter()
 class Detail:
     """ErrorCode details."""
 
-    __slots__ = ("msg", "name")
+    __slots__ = ("field_names", "msg", "name")
 
     def __init__(self, name: str, msg: str) -> None:
         """
@@ -39,6 +39,11 @@ class Detail:
         """
         self.name: str = name
         self.msg: str = msg
+        self.field_names: tuple[str, ...] = tuple(
+            field_name
+            for _, field_name, _, _ in _ERROR_FORMATTER.parse(msg)
+            if field_name is not None
+        )
 
     def format(self, **kwargs):
         return _ERROR_FORMATTER.format(self.msg, **kwargs)
@@ -402,8 +407,11 @@ class ErrorCode(Enum):
     NAMES_013 = Detail(
         name="Names - possible sheet name misspelling",
         msg=(
-            "When looking for a sheet named '{sheet}', the following sheets with "
-            "similar names were found: {candidates}."
+            "The sheet names may be invalid. "
+            "The sheet name '{sheet}' is recognised, and "
+            "sheets with the following similar names were found: {candidates}. "
+            "To ignore a sheet, prefix the name with an underscore, for example '_{sheet}'. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
     NAMES_014 = Detail(
@@ -654,6 +662,40 @@ class ErrorCode(Enum):
             "Move this question out of the repeat, or choose a different question type."
         ),
     )
+    SURVEY_011 = Detail(
+        name="Survey sheet - sheet missing",
+        msg=(
+            "The sheet names are invalid. "
+            "A sheet named 'survey' must be provided. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    SURVEY_012 = Detail(
+        name="Survey sheet - sheet missing, possible misspelling",
+        msg=(
+            "The sheet names are invalid. "
+            "A sheet named 'survey' must be provided. "
+            "Sheets with the following similar names were found: {candidates}. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    SURVEY_013 = Detail(
+        name="Survey sheet - select type with no (external) choices sheet.",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'type' value is invalid. "
+            "To use this 'select' question type, a sheet named '{missing}' must be provided. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    SURVEY_014 = Detail(
+        name="Survey sheet - select type with no (external) choices sheet, possible misspelling.",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'type' value is invalid. "
+            "To use this 'select' question type, a sheet named '{missing}' must be provided. "
+            "Sheets with the following similar names were found: {candidates}. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
 
 
 class PyXFormError(Exception):
@@ -676,7 +718,9 @@ class PyXFormError(Exception):
 
     def __repr__(self):
         if self.code:
-            if self.context:
+            if len(self.code.value.field_names) == 0:
+                return self.code.value.msg
+            elif self.context:
                 return self.code.value.format(**self.context)
             else:
                 # If there's somehow no context for creating a helpful message, at least
