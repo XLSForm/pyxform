@@ -1728,7 +1728,6 @@ class TestEntitiesParsing(PyxformTestCase):
                     dataset="e1",
                     other_scope="/survey/r2/r3",
                     scope="/survey/r1",
-                    question="q3",
                 ),
             ],
         )

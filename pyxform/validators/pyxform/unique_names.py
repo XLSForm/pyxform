@@ -35,11 +35,12 @@ def validate_question_group_repeat_name(
     if name in seen_names:
         if row_number is None:
             row_number = "(unknown)"
-        context = {"row": row_number, "value": name}
         if name == const.META:
-            raise PyXFormError(code=ErrorCode.NAMES_005, context=context)
+            raise PyXFormError(code=ErrorCode.NAMES_005, context={"row": row_number})
         else:
-            raise PyXFormError(code=ErrorCode.NAMES_001, context=context)
+            raise PyXFormError(
+                code=ErrorCode.NAMES_001, context={"row": row_number, "value": name}
+            )
     seen_names.add(name)
 
     question_name_lower = name.lower()

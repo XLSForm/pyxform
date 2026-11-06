@@ -56,12 +56,7 @@ def process_trigger(
     elif not is_pyxform_reference_candidate(trigger):
         raise PyXFormError(
             code=ErrorCode.PYREF_001,
-            context={
-                "sheet": "survey",
-                "column": "trigger",
-                "row": row_num,
-                "q": trigger,
-            },
+            context={"sheet": "survey", "column": "trigger", "row": row_num},
         )
 
     try:
