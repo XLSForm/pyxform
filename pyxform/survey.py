@@ -640,7 +640,7 @@ class Survey(Section):
         return node("model", model_children_generator(), **model_kwargs)
 
     def xml_instance(self, **kwargs):
-        result = Section.xml_instance(self, survey=self, **kwargs)
+        result = Section.xml_instance(self, survey=self, with_repeat_template=True)
 
         # set these first to prevent overwriting id and version
         if self.attribute:
