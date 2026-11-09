@@ -1,3 +1,6 @@
+import re
+from urllib.parse import urlsplit
+
 from pyxform import constants as co
 from pyxform.aliases import yes_no
 from pyxform.errors import ErrorCode, PyXFormError
@@ -51,3 +54,33 @@ def validate_name(name: str | None, from_sheet: bool = True):
             )
         else:
             raise PyXFormError(ErrorCode.NAMES_009.value.format(name="form_name"))
+
+
+def validate_submission_url(value: str | None) -> None:
+    """Require an HTTP(S) endpoint with a valid host, without making a DNS request."""
+    if not value:
+        return
+
+    # urlsplit strips some controls, but the original URL is written to the XForm.
+    if any(ord(char) < 32 or ord(char) == 127 for char in value):
+        raise PyXFormError(ErrorCode.SETTING_002.value.format())
+
+    try:
+        url = urlsplit(value)
+        host = url.hostname
+        valid = url.scheme in {"http", "https"} and bool(host)
+        # Accessing port also checks that a supplied port is a valid integer.
+        _ = url.port
+        if valid and ":" not in host:
+            # urlsplit validates bracketed IPv6 addresses. Other hosts may be local
+            # names, IPv4 addresses, or internationalized domain names.
+            host = host.encode("idna").decode("ascii").removesuffix(".")
+            valid = len(host) <= 253 and all(
+                re.fullmatch(r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?", label)
+                for label in host.split(".")
+            )
+    except (ValueError, UnicodeError):
+        valid = False
+
+    if not valid:
+        raise PyXFormError(ErrorCode.SETTING_002.value.format())
