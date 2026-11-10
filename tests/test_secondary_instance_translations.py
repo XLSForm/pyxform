@@ -154,7 +154,7 @@ class TestSecondaryInstanceTest(PyxformTestCase):
             md=xform_md,
             itext__contains=[
                 '<text id="choices-0">',
-                '<value> One - <output value=" /test_name/txt "/>',
+                '<value>One - <output value=" /test_name/txt "/>',
             ],
             model__contains=[
                 "<itextId>choices-0</itextId>",
@@ -184,7 +184,7 @@ class TestSecondaryInstanceTest(PyxformTestCase):
                 '<text id="choices-0">',
                 "<value>One</value>",
                 '<text id="choices-1">',
-                '<value> Two - <output value=" /test_name/txt "/>',
+                '<value>Two - <output value=" /test_name/txt "/>',
             ],
             model__contains=[
                 "<itextId>choices-0</itextId>",
@@ -238,7 +238,7 @@ class TestSecondaryInstanceTest(PyxformTestCase):
                 /h:html/h:head/x:model/x:itext/x:translation[@lang='default']
                   /x:text[@id='choices-0']
                   /x:value[not(@form)
-                    and node()[position() = 1] = ' One - '
+                    and node()[position() = 1] = 'One - '
                     and node()[position() = 2] = ./x:output[@value=' /test_name/txt ']
                   ]
                 """,

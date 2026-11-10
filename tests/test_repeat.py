@@ -94,10 +94,9 @@ class TestRepeatOutput(PyxformTestCase):
                 '<group ref="/test_name/section">',
                 "<label>Section</label>",
                 "</group>",
-                """<label> B w <output value=" ../A "/> </label>""",
-                """<label> E w <output value=" /test_name/Z "/> </label>""",
-                """<label> Noted <output value=" ../FF "/> w """
-                """<output value=" ../sectionb/H "/> </label>""",
+                """<label>B w <output value=" ../A "/></label>""",
+                """<label>E w <output value=" /test_name/Z "/></label>""",
+                """<label>Noted <output value=" ../FF "/> w <output value=" ../sectionb/H "/></label>""",
             ],
         )
 
@@ -202,11 +201,11 @@ class TestRepeatOutput(PyxformTestCase):
             md=md,
             xml__contains=[
                 '<translation lang="English">',
-                '<value> Name of <output value=" ../pos "/> </value>',
-                '<value> hint <output value=" ../pos "/> </value>',
-                '<value> constraint <output value=" ../pos "/> </value>',
-                '<value> required <output value=" ../pos "/> </value>',
-                '<value> app error <output value=" ../pos "/>',
+                '<value>Name of <output value=" ../pos "/></value>',
+                '<value>hint <output value=" ../pos "/></value>',
+                '<value>constraint <output value=" ../pos "/></value>',
+                '<value>required <output value=" ../pos "/></value>',
+                '<value>app error <output value=" ../pos "/>',
             ],
         )
 
@@ -224,8 +223,8 @@ class TestRepeatOutput(PyxformTestCase):
             md=md,
             xml__contains=[
                 '<translation lang="English">',
-                '<value> Name of <output value=" ../pos "/> </value>',
-                '<value form="guidance"> More <output value=" ../pos "/> </value>',
+                '<value>Name of <output value=" ../pos "/></value>',
+                '<value form="guidance">More <output value=" ../pos "/></value>',
             ],
         )
 
@@ -244,7 +243,7 @@ class TestRepeatOutput(PyxformTestCase):
             md=md,
             xml__contains=[
                 '<translation lang="English">',
-                '<value> Name of <output value=" ../pos "/> </value>',
+                '<value>Name of <output value=" ../pos "/></value>',
             ],
         )
 

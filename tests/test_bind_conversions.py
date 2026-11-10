@@ -39,7 +39,7 @@ class BindConversionsTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind nodeset="/data/text" required="true()" type="string" jr:requiredMsg="jr:itext(\'/data/text:jr:requiredMsg\')"',
-                '<value> required, <output value=" /data/foo "/> </value>',
+                '<value>required, <output value=" /data/foo "/></value>',
             ],
         )
 
@@ -67,7 +67,7 @@ class BindConversionsTest(PyxformTestCase):
             """,
             xml__contains=[
                 '<bind constraint="string-length(.) &gt; 1" nodeset="/data/text" type="string" jr:constraintMsg="jr:itext(\'/data/text:jr:constraintMsg\')"',
-                '<value> too short <output value=" /data/foo "/> </value>',
+                '<value>too short <output value=" /data/foo "/></value>',
             ],
         )
 

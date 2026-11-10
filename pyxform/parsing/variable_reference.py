@@ -20,11 +20,12 @@ from pyxform.parsing.expression import (
     RE_PYXFORM_REF_INNER,
     RE_PYXFORM_REF_OUTER,
 )
-from pyxform.utils import node
+from pyxform.utils import Text, node
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
     from pyxform.survey_element import SurveyElement
+    from pyxform.utils import DetachableElement
 
 
 class ParsedReference:
@@ -166,27 +167,59 @@ def parse_pyxform_references(
 
 
 def resolve_variables(
-    xml_text: str,
+    text: str,
     survey: "Survey",
     context: "SurveyElement | None" = None,
-    wrap: bool = False,
-):
+) -> str:
     """
-    Replace ${} variables with XPath references, optionally wrapped in <output/>.
+    Replace ${} variables with XPath references.
 
-    :param xml_text: Input string to process.
+    :param text: Input string to process.
     :param survey: Survey object for reference lookup.
     :param context: The document node that the text belongs to.
-    :param wrap: If True, enclose resolved references in <output/> tags.
     """
 
     def resolver(match):
-        replaced = survey._var_repl_function(match, context)
-        if wrap:
-            return node("output", value=replaced).toxml()
-        else:
-            return replaced
+        return survey._var_repl_function(matchobj=match, context=context)
 
-    if is_pyxform_reference_candidate(value=xml_text):
-        return RE_PYXFORM_REF.sub(resolver, xml_text)
-    return xml_text
+    if is_pyxform_reference_candidate(value=text):
+        return RE_PYXFORM_REF.sub(resolver, text)
+    return text
+
+
+def resolve_variables_as_nodes(
+    text: str,
+    survey: "Survey",
+    context: "SurveyElement | None" = None,
+    wrap: bool = False,
+) -> Generator["Text | DetachableElement", None, None]:
+    """
+    Replace ${} variables with XPath references, optionally wrapped in <output/>.
+
+    :param text: Input string to process.
+    :param survey: Survey object for reference lookup.
+    :param context: The document node that the text belongs to.
+    :param wrap: If True, enclose resolved references in <output/> tags.
+    :return: Text (or output Element) objects for each plain or resolved text segment.
+    """
+    if not is_pyxform_reference_candidate(value=text):
+        yield Text(data=text)
+        return
+
+    cursor = 0
+    for match in RE_PYXFORM_REF.finditer(text):
+        # Text before this match.
+        yield Text(data=text[cursor : match.start()])
+
+        # Pass the match string through the variable reference resolver.
+        replaced = survey._var_repl_function(matchobj=match, context=context)
+        if wrap:
+            yield node("output", value=replaced)
+        else:
+            yield Text(data=replaced)
+
+        cursor = match.end()
+
+    # Text after all match(es).
+    if cursor < len(text):
+        yield Text(data=text[cursor:])

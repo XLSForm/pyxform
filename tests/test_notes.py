@@ -194,9 +194,7 @@ class TestNotes(PyxformTestCase):
             # Instance expression with predicate not using a pyxform token (all escaped).
             Case(
                 """instance("c1")/root/item[name <> 1 and "<>&" = "1"]/label""",
-                {
-                    """instance("c1")/root/item[name &lt;&gt; 1 and "&lt;&gt;&amp;" = "1"]/label"""
-                },
+                {"""instance("c1")/root/item[name <> 1 and "<>&" = "1"]/label"""},
             ),
         ]
         wrap_scenarios = ("{}", "Text {}", "{} text", "Text {} text")

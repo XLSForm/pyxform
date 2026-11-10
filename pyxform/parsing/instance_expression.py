@@ -1,11 +1,17 @@
+from collections.abc import Generator
 from typing import TYPE_CHECKING
 
-from pyxform.parsing.expression import RE_PYXFORM_REF, lex_expression
-from pyxform.utils import node
+from pyxform.parsing.expression import lex_expression
+from pyxform.parsing.variable_reference import (
+    resolve_variables,
+    resolve_variables_as_nodes,
+)
+from pyxform.utils import Text, node
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
     from pyxform.survey_element import SurveyElement
+    from pyxform.utils import DetachableElement
 
 
 def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
@@ -89,38 +95,43 @@ def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
     return pos_bounds
 
 
-def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey") -> str:
+def replace_with_output(
+    text: str, context: "SurveyElement", survey: "Survey"
+) -> Generator["DetachableElement | Text", None, None]:
     """
     Find occurrences of instance expressions and replace them with <output/> elements.
 
-    :param xml_text: The text string to search/replace.
+    :param text: The text string to search/replace.
     :param context: The SurveyElement that this string belongs to.
     :param survey: The Survey that the context is in.
-    :return: The possibly modified string.
     """
     # 9 = len("instance(")
-    if len(xml_text) <= 9 or "instance(" not in xml_text:
-        return xml_text
-    boundaries = find_boundaries(xml_text=xml_text)
-    if boundaries:
-        new_strings = []
-        for start, end in boundaries:
-            old_str = xml_text[start:end]
-            # Pass the new string through the pyxform reference replacer.
-            # noinspection PyProtectedMember
-            new_str = RE_PYXFORM_REF.sub(
-                lambda m: survey._var_repl_function(m, context),
-                old_str,
+    if len(text) <= 9 or "instance(" not in text:
+        yield Text(data=text)
+        return
+
+    boundaries = find_boundaries(xml_text=text)
+    if not boundaries:
+        yield Text(data=text)
+        return
+
+    cursor = 0
+    for start, end in boundaries:
+        # Text before this match.
+        if start > cursor:
+            yield from resolve_variables_as_nodes(
+                text=text[cursor:start], survey=survey, context=context, wrap=True
             )
-            # Generate a node so that character escapes are applied.
-            new_strings.append(
-                (start, end, old_str, node("output", value=new_str).toxml())
-            )
-        # Position-based replacement avoids strings which are substrings of other
-        # replacements being inserted incorrectly. Offset tracking deals with changing
-        # expression positions due to incremental replacement.
-        offset = 0
-        for s, e, o, n in new_strings:
-            xml_text = f"{xml_text[: s + offset]}{n}{xml_text[e + offset :]}"
-            offset += len(n) - len(o)
-    return xml_text
+
+        # Pass the instance string through the variable reference resolver.
+        yield node(
+            "output",
+            value=resolve_variables(text=text[start:end], survey=survey, context=context),
+        )
+        cursor = end
+
+    # Text after all match(es).
+    if cursor < len(text):
+        yield from resolve_variables_as_nodes(
+            text=text[cursor:], survey=survey, context=context, wrap=True
+        )

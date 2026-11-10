@@ -13,7 +13,7 @@ class WhitespaceTest(PyxformTestCase):
             |         | text            | Ignored     | var   |
             |         | note            | ${var} text | label |
             """,
-            xml__contains=['<label><output value=" /issue96/var "/> text </label>'],
+            xml__contains=['<label><output value=" /issue96/var "/> text</label>'],
         )
 
     def test_whitespace_output_permutations(self):
@@ -43,55 +43,55 @@ class WhitespaceTest(PyxformTestCase):
                         (
                             xp.format("B1"),
                             {
-                                f"""<label> Before <output value=" /test_name/{case} "/> </label>"""
+                                f"""<label>Before <output value=" /test_name/{case} "/></label>"""
                             },
                         ),
                         (
                             xp.format("C1"),
                             {
-                                f"""<label><output value=" /test_name/{case} "/> After </label>"""
+                                f"""<label><output value=" /test_name/{case} "/> After</label>"""
                             },
                         ),
                         (
                             xp.format("D1"),
                             {
-                                f"""<label> Before x2 <output value=" /test_name/{case} "/> <output value=" /test_name/{case} "/> </label>"""
+                                f"""<label>Before x2 <output value=" /test_name/{case} "/> <output value=" /test_name/{case} "/></label>"""
                             },
                         ),
                         (
                             xp.format("E1"),
                             {
-                                f"""<label><output value=" /test_name/{case} "/> <output value=" /test_name/{case} "/> After x2 </label>"""
+                                f"""<label><output value=" /test_name/{case} "/> <output value=" /test_name/{case} "/> After x2</label>"""
                             },
                         ),
                         (
                             xp.format("F1"),
                             {
-                                f"""<label><output value=" /test_name/{case} "/> Between <output value=" /test_name/{case} "/> </label>"""
+                                f"""<label><output value=" /test_name/{case} "/> Between <output value=" /test_name/{case} "/></label>"""
                             },
                         ),
                         (
                             xp.format("G1"),
                             {
-                                f"""<label> Wrap <output value=" /test_name/{case} "/> in text </label>"""
+                                f"""<label>Wrap <output value=" /test_name/{case} "/> in text</label>"""
                             },
                         ),
                         (
                             xp.format("H1"),
                             {
-                                f"""<label> Wrap <output value=" /test_name/{case} "/> in <output value=" /test_name/{case} "/> text </label>"""
+                                f"""<label>Wrap <output value=" /test_name/{case} "/> in <output value=" /test_name/{case} "/> text</label>"""
                             },
                         ),
                         (
                             xp.format("I1"),
                             {
-                                f"""<label> Wrap <output value=" /test_name/{case} "/> in <output value=" /test_name/{case} "/> </label>"""
+                                f"""<label>Wrap <output value=" /test_name/{case} "/> in <output value=" /test_name/{case} "/></label>"""
                             },
                         ),
                         (
                             xp.format("J1"),
                             {
-                                f"""<label> Encode <output value=" /test_name/{case} "/> &lt; <output value=" /test_name/{case} "/> </label>"""
+                                f"""<label>Encode <output value=" /test_name/{case} "/> &lt; <output value=" /test_name/{case} "/></label>"""
                             },
                         ),
                     ],

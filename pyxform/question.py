@@ -577,10 +577,12 @@ class MultipleChoiceQuestion(_SupportsItemset):
                     if choices.requires_itext:
                         label_node = node("label", ref=option._choice_itext_ref)
                     elif self.label:
-                        label, output_inserted = survey.insert_output_values(
-                            option.label, option
+                        label_node = node(
+                            "label",
+                            survey.insert_output_values(
+                                text=option.label, context=option
+                            ),
                         )
-                        label_node = node("label", label, toParseString=output_inserted)
                     else:
                         label_node = node("label")
                     result.appendChild(

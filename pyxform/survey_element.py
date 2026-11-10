@@ -465,8 +465,9 @@ class SurveyElement(Mapping):
             ref = f"""jr:itext('{self._translation_path("label")}')"""
             return node("label", ref=ref)
         elif self.label:
-            label, output_inserted = survey.insert_output_values(self.label, self)
-            return node("label", label, toParseString=output_inserted)
+            return node(
+                "label", survey.insert_output_values(text=self.label, context=self)
+            )
         else:
             return node("label")
 
@@ -475,8 +476,7 @@ class SurveyElement(Mapping):
             path = self._translation_path("hint")
             return node("hint", ref=f"jr:itext('{path}')")
         elif self.hint:
-            hint, output_inserted = survey.insert_output_values(self.hint, self)
-            return node("hint", hint, toParseString=output_inserted)
+            return node("hint", survey.insert_output_values(text=self.hint, context=self))
         else:
             return node("hint")
 

@@ -44,7 +44,7 @@ class LastSavedTest(PyxformTestCase):
             |        | text       | foo      | Foo was previously ${last-saved#foo} |
             """,
             xml__contains=[
-                "<label> Foo was previously <output value=\" instance('__last-saved')/last-saved/foo \"/> </label>",
+                "<label>Foo was previously <output value=\" instance('__last-saved')/last-saved/foo \"/></label>",
             ],
         )
 

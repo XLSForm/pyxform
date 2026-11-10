@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from typing import TYPE_CHECKING
 
 from lark import Lark, LarkError, Transformer
@@ -10,32 +11,31 @@ from pyxform.parsing.utils import maybe_strip
 from pyxform.parsing.variable_reference import (
     is_pyxform_reference_candidate,
     resolve_variables,
+    resolve_variables_as_nodes,
 )
-from pyxform.utils import XML_TEXT_TABLE, escape_text_for_xml, node
+from pyxform.utils import Text, node
 
 if TYPE_CHECKING:
     from lark import Token
 
     from pyxform.survey import Survey
     from pyxform.survey_element import SurveyElement
+    from pyxform.utils import DetachableElement
 
 
 expression_grammar = r"""
 start: (expression | escaped | text)*
 
-expression: _OPEN (invalid_nesting | escaped | TEXT_NON_DELIMITER | CHAR_NON_DELIMITER | _xml_escape_expr)* _CLOSE
+expression: _OPEN (invalid_nesting | ESCAPED_DELIMITER | TEXT_NON_DELIMITER | CHAR_NON_DELIMITER)* _CLOSE
 invalid_nesting: expression
 escaped: ESCAPED_DELIMITER
-text: (TEXT_NON_DELIMITER | CHAR_NON_DELIMITER | xml_escape_text)+
-_xml_escape_expr: CHAR_XML_ESCAPE
-xml_escape_text: CHAR_XML_ESCAPE
+text: (TEXT_NON_DELIMITER | CHAR_NON_DELIMITER)+
 
 _OPEN: "{{"
 _CLOSE: /}\}(?!})/
 ESCAPED_DELIMITER: "\\{{" | "\\}}"
-TEXT_NON_DELIMITER: /[^{}\\<>&]+/
+TEXT_NON_DELIMITER: /[^{}\\]+/
 CHAR_NON_DELIMITER: /[{}\\]/
-CHAR_XML_ESCAPE: /[<>&]/
 """
 
 
@@ -63,90 +63,100 @@ class ExpressionTransformer(Transformer):
         else:
             return str(children[0])
 
-    def start(self, children: list["Token"]) -> str:
-        """Join all children strings."""
-        return self._flatten(children=children)
-
     @staticmethod
-    def xml_escape_text(children: list["Token"]) -> str:
-        return children[0].translate(XML_TEXT_TABLE)
+    def start(
+        children: list[Generator["Text | DetachableElement", None, None]],
+    ) -> Generator["Text | DetachableElement", None, None]:
+        """Return parsed elements as a flattened iterable."""
+        for c in children:
+            yield from c
 
-    def text(self, children: list["Token"]) -> str:
+    def text(
+        self, children: list["Token"]
+    ) -> Generator["Text | DetachableElement", None, None]:
         """Join all children strings, resolve variable references."""
-        return resolve_variables(
-            xml_text=self._flatten(children=children),
+        yield from resolve_variables_as_nodes(
+            text=self._flatten(children=children),
             survey=self.survey,
             context=self.context,
             wrap=True,
         )
 
-    def escaped(self, children: list["Token"]) -> str:
+    def ESCAPED_DELIMITER(self, token: "Token") -> str:
         r"""Drop the leading backslash: `'\{{' -> '{{'`, `'\}}' -> '}}'`."""
-        resolved = {r"\{{": "{{", r"\}}": "}}"}[children[0]]
+        resolved = {r"\{{": "{{", r"\}}": "}}"}[token]
         self.expression_modified = True
         return resolved
 
-    def invalid_nesting(self, children: list["Token"]) -> str:
+    @staticmethod
+    def escaped(children: list["Token"]) -> Generator[Text, None, None]:
+        """Wrap an outer-level escaped delimiter in a Text object."""
+        yield Text(data=children[0])
+
+    def invalid_nesting(self, children: list["Token"]) -> None:
         """Raise an error if a nested expression is found."""
         raise PyXFormError(code=ErrorCode.INTERNAL_004)
 
-    def expression(self, children: list["Token"]) -> str:
+    def expression(
+        self, children: list["Token"]
+    ) -> Generator["DetachableElement", None, None]:
         """Join/wrap children in XML: `<output value='children123'/>`, resolve variable references."""
         flat = self._flatten(children=children)
         if len(maybe_strip(flat)) == 0:
             raise PyXFormError(code=ErrorCode.INTERNAL_005)
-        resolved = resolve_variables(
-            xml_text=flat,
-            survey=self.survey,
-            context=self.context,
-        )
+        resolved = resolve_variables(text=flat, survey=self.survey, context=self.context)
         self.expression_modified = True
-        return node("output", value=resolved).toxml()
+        yield node("output", value=resolved)
 
 
-def replace_with_output(xml_text: str, context: "SurveyElement", survey: "Survey") -> str:
+def replace_with_output(
+    text: str, context: "SurveyElement", survey: "Survey"
+) -> list["Text | DetachableElement"]:
     """
     Wrap expressions in output element: `{{contents}} -> <output value="contents"/>`.
 
-    Resolves variable references inside the expression, but not outside, so an extra pass
-    over the string is required.
+    Resolves variable references inside and the expression.
 
-    :param xml_text: Text that may contain an expression.
+    :param text: Text that may contain an expression.
     :param context: The element context that variable references should be resolved in,
       for example to determine relative references.
     :param survey: The parent Survey object.
     """
     # Minimum length token that could be changed.
-    if len(xml_text) < 3:
-        return xml_text
+    if len(text) < 3:
+        return [Text(data=text)]
 
     try:
-        if "{" in xml_text or "}" in xml_text:
+        if "{" in text or "}" in text:
             transformer = ExpressionTransformer(survey=survey, context=context)
-            out_str = transformer.transform(_EXPRESSION_PARSER.parse(xml_text))
+            result = list(transformer.transform(_EXPRESSION_PARSER.parse(text)))
             if transformer.expression_modified:
-                return out_str
+                return result
 
         # Fallback for old func that only looks for non-delimited `instance()`.
-        escaped = escape_text_for_xml(text=xml_text)
-        fallback = replace_with_output_old(escaped, context, survey)
-        if is_pyxform_reference_candidate(fallback):
-            fallback = resolve_variables(
-                xml_text=fallback, survey=survey, context=context, wrap=True
+        if len(text) > 9 and "instance(" in text:
+            return list(
+                replace_with_output_old(text=text, context=context, survey=survey)
             )
-        if fallback != escaped:
-            return fallback
+        elif is_pyxform_reference_candidate(value=text):
+            return list(
+                resolve_variables_as_nodes(
+                    text=text, survey=survey, context=context, wrap=True
+                )
+            )
         else:
-            return xml_text
+            return [Text(data=text)]
     except LarkError as e:
         if isinstance(e.__context__, PyXFormError):
             ctx = e.__context__
             if ctx.code:
-                ctx.context["s"] = xml_text
+                ctx.context["s"] = text
                 raise PyXFormError(code=ctx.code, context=ctx.context) from e
             else:
                 raise PyXFormError(ctx.args[0]) from e
         else:
-            raise PyXFormError(
-                code=ErrorCode.INTERNAL_003, context={"s": xml_text}
-            ) from e
+            raise PyXFormError(code=ErrorCode.INTERNAL_003, context={"s": text}) from e
+    except PyXFormError as e:
+        if "s" not in e.context:
+            e.context["s"] = text
+        raise

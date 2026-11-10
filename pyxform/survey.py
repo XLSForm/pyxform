@@ -25,11 +25,7 @@ from pyxform.question import Itemset, MultipleChoiceQuestion, Option, Question, 
 from pyxform.section import SECTION_EXTRA_FIELDS, RepeatingSection, Section
 from pyxform.survey_element import _GET_SENTINEL, SURVEY_ELEMENT_FIELDS, SurveyElement
 from pyxform.survey_elements.attribute import Attribute
-from pyxform.utils import (
-    LAST_SAVED_INSTANCE_NAME,
-    DetachableElement,
-    node,
-)
+from pyxform.utils import LAST_SAVED_INSTANCE_NAME, DetachableElement, Text, node
 from pyxform.validators import odk_validate
 from pyxform.validators.pyxform import unique_names
 from pyxform.validators.pyxform.iana_subtags.validation import get_languages_with_bad_tags
@@ -916,51 +912,69 @@ class Survey(Section):
                     if media_type == constants.TYPE:
                         continue
                     if isinstance(media_value, dict):
-                        value, output_inserted = self.insert_output_values(
-                            media_value["text"], context=media_value["output_context"]
-                        )
+                        output_value = media_value["text"]
+                        output_context = media_value["output_context"]
                     else:
-                        value, output_inserted = self.insert_output_values(media_value)
+                        output_value = media_value
+                        output_context = None
 
                     if label_type == "hint":
                         if media_type == "guidance":
                             itext_nodes.append(
                                 node(
                                     "value",
-                                    value,
+                                    self.insert_output_values(
+                                        text=output_value,
+                                        context=output_context,
+                                    ),
                                     form="guidance",
-                                    toParseString=output_inserted,
                                 )
                             )
                         else:
                             itext_nodes.append(
-                                node("value", value, toParseString=output_inserted)
+                                node(
+                                    "value",
+                                    self.insert_output_values(
+                                        text=output_value,
+                                        context=output_context,
+                                    ),
+                                )
                             )
                         continue
 
                     if media_type == "long":
-                        # I'm ignoring long types for now because I don't know
-                        # how they are supposed to work.
-                        itext_nodes.append(
-                            node("value", value, toParseString=output_inserted)
-                        )
-                    elif media_type in {"image", "big-image"}:
-                        if value != "-":
-                            itext_nodes.append(
-                                node(
-                                    "value",
-                                    f"jr://images/{value}",
-                                    form=media_type,
-                                    toParseString=output_inserted,
-                                )
-                            )
-                    elif value != "-":
                         itext_nodes.append(
                             node(
                                 "value",
-                                f"jr://{media_type}/{value}",
+                                self.insert_output_values(
+                                    text=output_value,
+                                    context=output_context,
+                                ),
+                            )
+                        )
+                    elif media_type in {"image", "big-image"}:
+                        if output_value != "-":
+                            itext_nodes.append(
+                                node(
+                                    "value",
+                                    Text(data="jr://images/"),
+                                    self.insert_output_values(
+                                        text=output_value,
+                                        context=output_context,
+                                    ),
+                                    form=media_type,
+                                )
+                            )
+                    elif output_value != "-":
+                        itext_nodes.append(
+                            node(
+                                "value",
+                                Text(data=f"jr://{media_type}/"),
+                                self.insert_output_values(
+                                    text=output_value,
+                                    context=output_context,
+                                ),
                                 form=media_type,
-                                toParseString=output_inserted,
                             )
                         )
 
@@ -1160,7 +1174,7 @@ class Survey(Section):
         self,
         text: str,
         context: SurveyElement | None = None,
-    ) -> tuple[str, bool]:
+    ) -> list["Text | DetachableElement"]:
         """
         Replace all the ${variables} in text with xpaths.
         Returns that and a boolean indicating if there were any ${variables}
@@ -1171,13 +1185,9 @@ class Survey(Section):
         :return: The output text, and a flag indicating whether any changes were made.
         """
         if text == "-":
-            return text, False
+            return [Text(data=text)]
 
-        value = replace_with_output(text, context, self)
-        if value != text:
-            return value, True
-        else:
-            return text, False
+        return replace_with_output(text, context, self)
 
     def print_xform_to_file(
         self, path=None, validate=True, pretty_print=True, warnings=None

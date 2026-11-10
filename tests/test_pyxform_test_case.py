@@ -46,13 +46,13 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         exact={
             (
                 """<h:body>\n"""
-                """    <input ref="/test_name/Part_ID">\n"""
-                """      <label>Participant ID</label>\n"""
-                """    </input>\n"""
-                """    <input ref="/test_name/Initial">\n"""
-                """      <label>Initials</label>\n"""
-                """    </input>\n"""
-                """  </h:body>"""
+                """  <input ref="/test_name/Part_ID">\n"""
+                """    <label>Participant ID</label>\n"""
+                """  </input>\n"""
+                """  <input ref="/test_name/Initial">\n"""
+                """    <label>Initials</label>\n"""
+                """  </input>\n"""
+                """</h:body>"""
             )
         },
         count=1,
@@ -104,14 +104,14 @@ class TestPyxformTestCaseXmlXpath(PyxformTestCase):
         exact={
             (
                 """<instance>\n"""
-                """        <test_name id="data">\n"""
-                """          <Part_ID/>\n"""
-                """          <Initial/>\n"""
-                """          <meta>\n"""
-                """            <instanceID/>\n"""
-                """          </meta>\n"""
-                """        </test_name>\n"""
-                """      </instance>"""
+                """  <test_name id="data">\n"""
+                """    <Part_ID/>\n"""
+                """    <Initial/>\n"""
+                """    <meta>\n"""
+                """      <instanceID/>\n"""
+                """    </meta>\n"""
+                """  </test_name>\n"""
+                """</instance>"""
             ),
             ("""<instance id="ID" src="jr://file-csv/ID.csv"/>"""),
         },

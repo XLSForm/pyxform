@@ -171,7 +171,7 @@ class PyxformTestCase(TestCase):
             if survey is None:
                 result = convert(
                     xlsform=coalesce(md, ss_structure),
-                    pretty_print=True,
+                    pretty_print=False,
                     form_name=coalesce(name, "test_name"),
                     warnings=warnings,
                     file_type=SupportedFileTypes.md.value,
@@ -179,7 +179,7 @@ class PyxformTestCase(TestCase):
                 survey = result._survey
                 xml = result.xform
             else:
-                xml = survey._to_pretty_xml()
+                xml = survey._to_ugly_xml()
             root = etree.fromstring(xml.encode("utf-8"))
 
             # Ensure all namespaces are present, even if unused
@@ -211,7 +211,7 @@ class PyxformTestCase(TestCase):
             for _n in ["model", "instance", "itext"]:
                 xml_nodes[_n] = _pull_xml_node_from_root(_n)
             if debug:
-                logger.debug(xml)
+                logger.debug(survey._to_pretty_xml())
             if run_odk_validate:
                 _run_odk_validate(xml=xml)
                 if odk_validate_error__contains:

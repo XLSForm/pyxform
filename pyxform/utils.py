@@ -10,12 +10,10 @@ from io import StringIO
 from itertools import chain
 from json.decoder import JSONDecodeError
 from xml.dom import Node
-from xml.dom.minidom import Element, Text
-
-from defusedxml.minidom import parseString
+from xml.dom.minidom import Element
+from xml.dom.minidom import Text as MinidomText
 
 from pyxform import constants as const
-from pyxform.errors import PyXFormError
 from pyxform.parsing.expression import lex_expression
 from pyxform.xls2json_backends import DefinitionData
 
@@ -55,14 +53,8 @@ class DetachableElement(Element):
             writer.write(">")
             # For text or mixed content, write without adding indents or newlines.
             if any(c.nodeType in NODE_TYPE_TEXT for c in self.childNodes):
-                # Conditions to match old Survey.py regex for remaining whitespace.
-                child_nodes = len(self.childNodes)
-                for idx, cnode in enumerate(self.childNodes):
-                    if 1 < child_nodes and idx == 0 and cnode.nodeType in NODE_TYPE_TEXT:
-                        writer.write(" ")
+                for cnode in self.childNodes:
                     cnode.writexml(writer, "", "", "")
-                    if 1 < child_nodes and (idx + 1) == child_nodes:
-                        writer.write(" ")
             else:
                 writer.write(newl)
                 for cnode in self.childNodes:
@@ -83,7 +75,12 @@ def escape_text_for_xml(text: str, attribute: bool = False) -> str:
     return text
 
 
-class PatchedText(Text):
+class Text(MinidomText):
+    def __init__(self, data: str = "") -> None:
+        # Shortcut for base class pattern: `t = Text(); t.data = data`.
+        super().__init__()
+        self.data = data
+
     def writexml(self, writer, indent="", addindent="", newl=""):
         """Same as original but no replacing double quotes with '&quot;'."""
         data = f"{indent}{self.data}{newl}"
@@ -92,45 +89,26 @@ class PatchedText(Text):
         writer.write(data)
 
 
-def node(tag: str, *args, toParseString: bool = False, **kwargs) -> DetachableElement:
+def node(tag: str, *args, **kwargs) -> DetachableElement:
     """
     Create an Element, with attached child elements (args) and attributes (kwargs).
 
     :param tag: The Element XML tag name.
-    :param toParseString: If True, parse the first text arg as XML and add it to the tag.
     """
     result = DetachableElement(tag)
-    unicode_args = tuple(u for u in args if isinstance(u, str))
-    if len(unicode_args) > 1:
-        raise PyXFormError("""Invalid value for `unicode_args`.""")
-    elif len(unicode_args) == 1:
-        if toParseString:
-            # Add this header string so parseString can be used?
-            s = f"""<?xml version="1.0" ?><{tag}>{unicode_args[0]}</{tag}>"""
-            parsed_node = parseString(s.encode("utf-8")).documentElement
-            # Move node's children to the result Element
-            # discarding node's root
-            for child in parsed_node.childNodes:
-                result.appendChild(child.cloneNode(deep=False))
-        else:
-            text_node = PatchedText()
-            text_node.data = unicode_args[0]
-            result.appendChild(text_node)
 
     # Convert the kwargs xml attribute dictionary to a xml.dom.minidom.Element.
     for k, v in kwargs.items():
         result.setAttribute(k, v)
 
     for n in args:
-        if isinstance(n, int | float | bytes):
-            text_node = PatchedText()
-            text_node.data = str(n)
-            result.appendChild(text_node)
-        elif isinstance(n, Generator):
+        if isinstance(n, str | int | float | bytes):
+            result.appendChild(Text(data=str(n)))
+        elif isinstance(n, list | Generator):
             for e in n:
-                if e is not None:
+                if isinstance(e, Element | Text):
                     result.appendChild(e)
-        elif not isinstance(n, str):
+        elif isinstance(n, Element | Text):
             result.appendChild(n)
     return result
 
