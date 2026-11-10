@@ -3,18 +3,9 @@
 from collections.abc import Collection, Iterable
 
 from pyxform.errors import ErrorCode, PyXFormError
-from pyxform.validators.pyxform.pyxform_reference import (
+from pyxform.parsing.variable_reference import (
     is_pyxform_reference_candidate,
     parse_pyxform_references,
-)
-
-BACKGROUND_GEOPOINT_CALCULATION = (
-    "[row : {r}] For 'background-geopoint' questions, "
-    "the 'calculation' column must be empty."
-)
-BACKGROUND_GEOPOINT_TRIGGER = (
-    "[row : {r}] For 'background-geopoint' questions, "
-    "the 'trigger' column must not be empty."
 )
 
 
@@ -25,13 +16,13 @@ def validate_background_geopoint_calculation(row: dict, row_num: int) -> bool:
     except KeyError:
         return True
     else:
-        raise PyXFormError(BACKGROUND_GEOPOINT_CALCULATION.format(r=row_num))
+        raise PyXFormError(code=ErrorCode.GEO_001, context={"row": row_num})
 
 
 def validate_background_geopoint_trigger(trigger: str | None, row_num: int) -> bool:
     """A background-geopoint must have a trigger."""
     if not trigger:
-        raise PyXFormError(BACKGROUND_GEOPOINT_TRIGGER.format(r=row_num))
+        raise PyXFormError(code=ErrorCode.GEO_002, context={"row": row_num})
     return True
 
 
@@ -65,12 +56,7 @@ def process_trigger(
     elif not is_pyxform_reference_candidate(trigger):
         raise PyXFormError(
             code=ErrorCode.PYREF_001,
-            context={
-                "sheet": "survey",
-                "column": "trigger",
-                "row": row_num,
-                "q": trigger,
-            },
+            context={"sheet": "survey", "column": "trigger", "row": row_num},
         )
 
     try:

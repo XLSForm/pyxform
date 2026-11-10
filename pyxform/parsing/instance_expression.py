@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from pyxform.parsing.expression import RE_PYXFORM_REF, parse_expression
+from pyxform.parsing.expression import RE_PYXFORM_REF, lex_expression
 from pyxform.utils import node
 
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ def find_boundaries(xml_text: str) -> list[tuple[int, int]]:
     :param xml_text: XML text that may contain an instance expression.
     :return: Tokens in instance expression, and the string position boundaries.
     """
-    tokens = parse_expression(xml_text)
+    tokens = lex_expression(xml_text)
     if not tokens:
         return []
     instance_enter = False

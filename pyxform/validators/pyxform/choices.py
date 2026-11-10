@@ -15,28 +15,35 @@ def validate_headers(
     return tuple(check())
 
 
-def validate_choice_list(
-    options: list[dict], warnings: list[str], allow_duplicates: bool = False
-) -> None:
+def validate_choice_list(options: list[dict], allow_duplicates: bool = False) -> None:
     seen_options = set()
-    duplicate_errors = []
+    duplicate_error_rows = []
     for option in options:
         if co.NAME not in option:
-            raise PyXFormError(ErrorCode.NAMES_006.value.format(row=option["__row"]))
-        elif co.LABEL not in option:
-            warnings.append(ErrorCode.LABEL_001.value.format(row=option["__row"]))
+            raise PyXFormError(code=ErrorCode.NAMES_006, context={"row": option["__row"]})
+        elif co.LABEL not in option and co.MEDIA not in option:
+            raise PyXFormError(code=ErrorCode.LABEL_001, context={"row": option["__row"]})
 
         if not allow_duplicates:
             name = option[co.NAME]
             if name in seen_options:
-                duplicate_errors.append(
-                    ErrorCode.NAMES_007.value.format(row=option["__row"])
-                )
+                duplicate_error_rows.append(str(option["__row"]))
             else:
                 seen_options.add(name)
 
-    if duplicate_errors:
-        raise PyXFormError("\n".join(duplicate_errors))
+    if len(duplicate_error_rows) == 1:
+        raise PyXFormError(
+            code=ErrorCode.NAMES_007,
+            context={"row": duplicate_error_rows[0]},
+        )
+    elif len(duplicate_error_rows) > 1:
+        raise PyXFormError(
+            code=ErrorCode.NAMES_017,
+            context={
+                "row": duplicate_error_rows[0],
+                "other_rows": ", ".join(duplicate_error_rows[1:]),
+            },
+        )
 
 
 def validate_and_clean_choices(
@@ -57,11 +64,7 @@ def validate_and_clean_choices(
     """
     invalid_headers = validate_headers(headers, warnings)
     for options in choices.values():
-        validate_choice_list(
-            options=options,
-            warnings=warnings,
-            allow_duplicates=allow_duplicates,
-        )
+        validate_choice_list(options=options, allow_duplicates=allow_duplicates)
         for option in options:
             for invalid_header in invalid_headers:
                 option.pop(invalid_header, None)

@@ -7,8 +7,8 @@ from pyxform import constants as const
 from pyxform.elements import action
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
+from pyxform.parsing.variable_reference import parse_pyxform_references
 from pyxform.question_type_dictionary import get_meta_group
-from pyxform.validators.pyxform.pyxform_reference import parse_pyxform_references
 
 EC = const.EntityColumns
 
@@ -101,7 +101,7 @@ class ReferenceSource:
     def __post_init__(self):
         if self.property_name is None and self.question_name is None:
             raise PyXFormError(
-                ErrorCode.INTERNAL_002.value.format(path=self.path.path_as_str())
+                code=ErrorCode.INTERNAL_002, context={"path": self.path.path_as_str()}
             )
 
 
@@ -208,22 +208,24 @@ class EntityReferences:
             ):
                 if ref_source.property_name is not None:  # save_to
                     raise PyXFormError(
-                        ErrorCode.ENTITY_011.value.format(
-                            row=ref_source.row,
-                            dataset=self.dataset_name,
-                            other_scope=deepest_scope_ref.path.path_as_str(),
-                            scope=ref_source.path.path_as_str(),
-                        )
+                        code=ErrorCode.ENTITY_011,
+                        context={
+                            "row": ref_source.row,
+                            "dataset": self.dataset_name,
+                            "other_scope": deepest_scope_ref.path.path_as_str(),
+                            "scope": ref_source.path.path_as_str(),
+                        },
                     )
                 else:  # variable
                     raise PyXFormError(
-                        ErrorCode.ENTITY_012.value.format(
-                            row=self.row_number,
-                            dataset=self.dataset_name,
-                            other_scope=deepest_scope_ref.path.path_as_str(),
-                            scope=ref_source.path.path_as_str(),
-                            question=ref_source.question_name,
-                        )
+                        code=ErrorCode.ENTITY_012,
+                        context={
+                            "row": self.row_number,
+                            "dataset": self.dataset_name,
+                            "other_scope": deepest_scope_ref.path.path_as_str(),
+                            "scope": ref_source.path.path_as_str(),
+                            "question": ref_source.question_name,
+                        },
                     )
 
             if (
@@ -231,12 +233,13 @@ class EntityReferences:
                 and requested_path_scope_boundary != scope_boundary
             ):
                 raise PyXFormError(
-                    ErrorCode.ENTITY_011.value.format(
-                        row=ref_source.row,
-                        dataset=self.dataset_name,
-                        other_scope=requested_path.path_as_str(),
-                        scope=ref_source.path.path_as_str(),
-                    )
+                    code=ErrorCode.ENTITY_011,
+                    context={
+                        "row": ref_source.row,
+                        "dataset": self.dataset_name,
+                        "other_scope": requested_path.path_as_str(),
+                        "scope": ref_source.path.path_as_str(),
+                    },
                 )
 
         return AllocationRequest(
@@ -293,10 +296,10 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
     """
     extra = {k: None for k in row if k not in EC.value_list()}
     if 0 < len(extra):
-        msg = ErrorCode.HEADER_005.value.format(
-            columns=", ".join(f"'{k}'" for k in extra)
+        raise PyXFormError(
+            code=ErrorCode.HEADER_005,
+            context={"columns": ", ".join(f"'{k}'" for k in extra)},
         )
-        raise PyXFormError(msg)
 
     dataset_name = row.get(EC.DATASET, None)
     entity_id = row.get(EC.ENTITY_ID, None)
@@ -307,17 +310,20 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
     validate_dataset_name(dataset_name=dataset_name, row_number=row_number)
     if not entity_id and update_if:
         raise PyXFormError(
-            ErrorCode.ENTITY_007.value.format(row=row_number, dataset=dataset_name)
+            code=ErrorCode.ENTITY_007,
+            context={"row": row_number, "dataset": dataset_name},
         )
 
     if entity_id and create_if and not update_if:
         raise PyXFormError(
-            ErrorCode.ENTITY_006.value.format(row=row_number, dataset=dataset_name)
+            code=ErrorCode.ENTITY_006,
+            context={"row": row_number, "dataset": dataset_name},
         )
 
     if not entity_id and not label:
         raise PyXFormError(
-            ErrorCode.ENTITY_005.value.format(row=row_number, dataset=dataset_name)
+            code=ErrorCode.ENTITY_005,
+            context={"row": row_number, "dataset": dataset_name},
         )
 
     variable_references = set()
@@ -451,24 +457,33 @@ def validate_dataset_name(dataset_name: str | None, row_number: int) -> None:
     :param row_number: The entities sheet row number.
     """
     if not dataset_name:
-        raise PyXFormError(ErrorCode.NAMES_015.value.format(row=row_number))
+        raise PyXFormError(code=ErrorCode.NAMES_015, context={"row": row_number})
     elif dataset_name.startswith(const.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
-            ErrorCode.NAMES_010.value.format(
-                sheet=const.ENTITIES, row=row_number, column=EC.DATASET.value
-            )
+            code=ErrorCode.NAMES_010,
+            context={
+                "sheet": const.ENTITIES,
+                "row": row_number,
+                "column": EC.DATASET.value,
+            },
         )
     elif "." in dataset_name:
         raise PyXFormError(
-            ErrorCode.NAMES_011.value.format(
-                sheet=const.ENTITIES, row=row_number, column=EC.DATASET.value
-            )
+            code=ErrorCode.NAMES_011,
+            context={
+                "sheet": const.ENTITIES,
+                "row": row_number,
+                "column": EC.DATASET.value,
+            },
         )
     elif not is_xml_tag(dataset_name):
         raise PyXFormError(
-            ErrorCode.NAMES_008.value.format(
-                sheet=const.ENTITIES, row=row_number, column=EC.DATASET.value
-            )
+            code=ErrorCode.NAMES_008,
+            context={
+                "sheet": const.ENTITIES,
+                "row": row_number,
+                "column": EC.DATASET.value,
+            },
         )
 
 
@@ -515,38 +530,53 @@ def validate_saveto(
     """
     if not saveto:
         raise PyXFormError(
-            ErrorCode.NAMES_008.value.format(
-                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
-            )
+            code=ErrorCode.NAMES_008,
+            context={
+                "sheet": const.SURVEY,
+                "row": row_number,
+                "column": const.ENTITIES_SAVETO,
+            },
         )
     elif is_container_begin or is_container_end:
-        raise PyXFormError(ErrorCode.ENTITY_003.value.format(row=row_number))
+        raise PyXFormError(code=ErrorCode.ENTITY_003, context={"row": row_number})
     # Error: naming rules
     elif saveto.lower() in {const.NAME, const.LABEL}:
         raise PyXFormError(
-            ErrorCode.NAMES_012.value.format(
-                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
-            )
+            code=ErrorCode.NAMES_012,
+            context={
+                "sheet": const.SURVEY,
+                "row": row_number,
+                "column": const.ENTITIES_SAVETO,
+            },
         )
     elif saveto.startswith(const.ENTITIES_RESERVED_PREFIX):
         raise PyXFormError(
-            ErrorCode.NAMES_010.value.format(
-                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
-            )
+            code=ErrorCode.NAMES_010,
+            context={
+                "sheet": const.SURVEY,
+                "row": row_number,
+                "column": const.ENTITIES_SAVETO,
+            },
         )
     elif not is_xml_tag(saveto):
         raise PyXFormError(
-            ErrorCode.NAMES_008.value.format(
-                sheet=const.SURVEY, row=row_number, column=const.ENTITIES_SAVETO
-            )
+            code=ErrorCode.NAMES_008,
+            context={
+                "sheet": const.SURVEY,
+                "row": row_number,
+                "column": const.ENTITIES_SAVETO,
+            },
         )
     elif entity_references:
         for ref_source in entity_references.references:
             if ref_source.property_name == saveto:
                 raise PyXFormError(
-                    ErrorCode.ENTITY_002.value.format(
-                        row=row_number, saveto=saveto, other_row=ref_source.row
-                    )
+                    code=ErrorCode.ENTITY_002,
+                    context={
+                        "row": row_number,
+                        "saveto": saveto,
+                        "other_row": ref_source.row,
+                    },
                 )
 
 
@@ -561,7 +591,7 @@ def get_entity_declarations(
             c["value"] for c in entity["children"] if c.get("name", "") == "dataset"
         )
         if dataset_name in entities:
-            raise PyXFormError(ErrorCode.NAMES_014.value.format(row=row_number))
+            raise PyXFormError(code=ErrorCode.NAMES_014, context={"row": row_number})
         entities[dataset_name] = entity
 
     return entities
@@ -603,23 +633,24 @@ def get_entity_references_by_question(
     saveto = row.get(const.BIND, {}).get(const.ENTITIES_SAVETO_NS)
     if saveto:
         if not entity_declarations:
-            raise PyXFormError(ErrorCode.ENTITY_001.value.format(row=row_number))
+            raise PyXFormError(code=ErrorCode.ENTITY_001, context={"row": row_number})
 
         delimiter_count = saveto.count("#")
         if delimiter_count == 1:
             dataset_name, saveto = saveto.split("#", maxsplit=1)
             row[const.BIND][const.ENTITIES_SAVETO_NS] = saveto
         elif delimiter_count > 1:
-            raise PyXFormError(ErrorCode.ENTITY_013.value.format(row=row_number))
+            raise PyXFormError(code=ErrorCode.ENTITY_013, context={"row": row_number})
         else:
             if len(entity_declarations) > 1:
-                raise PyXFormError(ErrorCode.ENTITY_008.value.format(row=row_number))
+                raise PyXFormError(code=ErrorCode.ENTITY_008, context={"row": row_number})
 
             dataset_name = next(iter(entity_declarations.keys()))
 
         if dataset_name not in entity_declarations:
             raise PyXFormError(
-                ErrorCode.ENTITY_004.value.format(row=row_number, dataset=dataset_name)
+                code=ErrorCode.ENTITY_004,
+                context={"row": row_number, "dataset": dataset_name},
             )
 
         if dataset_name not in entity_references_by_question:
@@ -732,11 +763,14 @@ def allocate_entities_to_containers(
 
             if conflict_dataset is not None:
                 raise PyXFormError(
-                    ErrorCode.ENTITY_009.value.format(
-                        row=req.entity_row_number,
-                        scope=scope_path.path_as_str(),
-                        other_row=entity_declarations[conflict_dataset]["__row_number"],
-                    )
+                    code=ErrorCode.ENTITY_009,
+                    context={
+                        "row": req.entity_row_number,
+                        "scope": scope_path.path_as_str(),
+                        "other_row": entity_declarations[conflict_dataset][
+                            "__row_number"
+                        ],
+                    },
                 )
 
     return allocations

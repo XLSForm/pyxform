@@ -7,19 +7,24 @@ authors = [
 description = "A Python package to create XForms for ODK Collect."
 readme = "README.md"
 requires-python = ">=3.11"
+# Install with `pip install --requirement pylock.toml; pip install --no-deps --editable .`.
+# Generate dev lock file: `uv export --python $(which python) --no-emit-project --no-group dev --format pylock.toml --output-file pylock.toml`.
 dependencies = [
+  "et-xmlfile==2.0.0",  # Openpyxl dependency for writing XML
   "openpyxl==3.1.5",    # Read XLSX files
   "defusedxml==0.7.1",  # Parse XML
   "lark==1.3.1",        # Parse custom grammars
 ]
 
-[project.optional-dependencies]
-# Install with `pip install pyxform[dev]`.
+[dependency-groups]
+# Install with `pip install --requirement pylock.dev.toml; pip install --no-deps --editable .`.
+# Generate dev lock file: `uv export --python $(which python) --no-emit-project --format pylock.toml --output-file pylock.dev.toml`
 dev = [
   "formencode==2.1.1",  # Compare XML
   "lxml==6.1.1",        # XPath test expressions
   "psutil==7.2.2",      # Process info for performance tests
   "ruff==0.15.21",      # Format and lint
+  "uv==0.12.15",        # Generate lock files.
 ]
 
 [project.urls]
@@ -103,3 +108,7 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
+
+[tool.uv]
+# In case `uv lock` is run, avoid packages that are too new.
+exclude-newer = "14 days"

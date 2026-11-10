@@ -9,11 +9,7 @@ from typing import IO, Any
 
 from pyxform import aliases, constants
 from pyxform import external_instance as qt_external_instance
-from pyxform.constants import (
-    _MSG_SUPPRESS_SPELLING,
-    EXTERNAL_INSTANCE_EXTENSIONS,
-    ROW_FORMAT_STRING,
-)
+from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, ROW_FORMAT_STRING
 from pyxform.elements import action as action_module
 from pyxform.entities.entities_parsing import (
     ContainerPath,
@@ -27,27 +23,21 @@ from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.expression import is_xml_tag
 from pyxform.parsing.parameters import parse as parameters_parse
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
+from pyxform.parsing.variable_reference import has_pyxform_reference, is_pyxform_reference
 from pyxform.question_type_dictionary import get_meta_group
-from pyxform.utils import (
-    coalesce,
-    default_is_dynamic,
-    print_pyobj_to_json,
-)
+from pyxform.utils import coalesce, default_is_dynamic, print_pyobj_to_json
 from pyxform.validators.pyxform import parameters as pv
 from pyxform.validators.pyxform import question_types as qt
-from pyxform.validators.pyxform import select_from_file, unique_names
+from pyxform.validators.pyxform import select_from_file, sheet_misspellings, unique_names
 from pyxform.validators.pyxform import settings as validate_settings
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.choices import validate_and_clean_choices
-from pyxform.validators.pyxform.pyxform_reference import (
-    has_pyxform_reference,
-    is_pyxform_reference,
-    validate_pyxform_references_in_workbook,
-)
 from pyxform.validators.pyxform.question_types import geo as qt_geo
 from pyxform.validators.pyxform.question_types import range as qt_range
-from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
+from pyxform.validators.pyxform.variable_reference import (
+    validate_pyxform_references_in_workbook,
+)
 from pyxform.xls2json_backends import DefinitionData, get_xlsform
 
 RE_BEGIN_CONTROL = re.compile(
@@ -224,11 +214,7 @@ def workbook_to_json(
     warnings = coalesce(warnings, [])
     sheet_names = workbook_dict.sheet_names
     if not workbook_dict.survey and not workbook_dict.survey_header:
-        msg = f"You must have a sheet named '{constants.SURVEY}'. "
-        similar = find_sheet_misspellings(key=constants.SURVEY, keys=sheet_names)
-        if similar is not None:
-            msg += similar
-        raise PyXFormError(msg)
+        sheet_misspellings.validate_survey(sheet_names=sheet_names)
 
     # Make sure the passed in vars are unicode
     validate_settings.validate_name(name=form_name, from_sheet=False)
@@ -277,25 +263,12 @@ def workbook_to_json(
         settings = settings_sheet.data[0]
         validate_settings.validate_name(name=settings.get(constants.NAME, None))
     else:
-        similar = find_sheet_misspellings(key=constants.SETTINGS, keys=sheet_names)
-        if similar is not None:
-            warnings.append(similar + _MSG_SUPPRESS_SPELLING)
+        warnings = sheet_misspellings.validate_optional(
+            sheet_name=constants.SETTINGS, sheet_names=sheet_names, warnings=warnings
+        )
 
-    clean_text_values_enabled = aliases.yes_no.get(
-        settings.get("clean_text_values", "yes"), True
-    )
     default_language = settings.get(constants.DEFAULT_LANGUAGE_KEY, default_language)
-    # add_none_option is a boolean that when true,
-    # indicates a none option should automatically be added to selects.
-    # It should probably be deprecated but I haven't checked yet.
-    if "add_none_option" in settings:
-        settings["add_none_option"] = aliases.yes_no.get(
-            settings.get("add_none_option", "no"), False
-        )
-    if constants.CLIENT_EDITABLE in settings:
-        settings[constants.CLIENT_EDITABLE] = aliases.yes_no.get(
-            settings.get(constants.CLIENT_EDITABLE, "no"), False
-        )
+    validate_settings.resolve_bool_settings(settings=settings, warnings=warnings)
 
     # Here we create our json dict root with default settings:
     id_string = settings.get(
@@ -361,9 +334,7 @@ def workbook_to_json(
             choices=choices,
             warnings=warnings,
             headers=choices_sheet.headers,
-            allow_duplicates=aliases.yes_no.get(
-                settings.get("allow_choice_duplicates", "no"), False
-            ),
+            allow_duplicates=settings.get(constants.ALLOW_CHOICE_DUPLICATES, False),
         )
         if choices:
             json_dict[constants.CHOICES] = choices
@@ -384,9 +355,9 @@ def workbook_to_json(
             entity_declarations=entity_declarations
         )
     else:
-        similar = find_sheet_misspellings(key=constants.ENTITIES, keys=sheet_names)
-        if similar is not None:
-            warnings.append(similar + constants._MSG_SUPPRESS_SPELLING)
+        warnings = sheet_misspellings.validate_optional(
+            sheet_name=constants.ENTITIES, sheet_names=sheet_names, warnings=warnings
+        )
 
     # ########## Survey sheet ###########
     # Process the headers:
@@ -400,7 +371,7 @@ def workbook_to_json(
         header_columns=set(MultipleChoiceQuestion.get_slot_names()),
         headers_required={constants.TYPE},
         default_language=default_language,
-        strip_whitespace=clean_text_values_enabled,
+        strip_whitespace=settings.get("clean_text_values", True),
     )
     survey_sheet.data = dealias_types(dict_array=survey_sheet.data)
 
@@ -717,9 +688,12 @@ def workbook_to_json(
             question_name = str(row[constants.NAME])
             if not is_xml_tag(question_name):
                 raise PyXFormError(
-                    ErrorCode.NAMES_008.value.format(
-                        sheet=constants.SURVEY, row=row_number, column=constants.NAME
-                    )
+                    code=ErrorCode.NAMES_008,
+                    context={
+                        "sheet": constants.SURVEY,
+                        "row": row_number,
+                        "column": constants.NAME,
+                    },
                 )
             element_names.update((question_name,))
 
@@ -749,11 +723,12 @@ def workbook_to_json(
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
-                        ErrorCode.SURVEY_001.value.format(
-                            row=row_number,
-                            type=control_type,
-                            name=row.get(constants.NAME),
-                        )
+                        code=ErrorCode.SURVEY_001,
+                        context={
+                            "row": row_number,
+                            "type": control_type,
+                            "name": row.get(constants.NAME, "(unknown)"),
+                        },
                     )
                 stack.pop()
                 table_list = None
@@ -798,7 +773,9 @@ def workbook_to_json(
                 bind = row.get(constants.BIND, {})
                 required = bind.get("required") if isinstance(bind, dict) else None
                 if required and aliases.yes_no.get(required, True):
-                    raise PyXFormError(ErrorCode.SURVEY_011.value.format(row=row_number))
+                    raise PyXFormError(
+                        code=ErrorCode.SURVEY_015, context={"row": row_number}
+                    )
 
                 new_json_dict = row.copy()
                 new_json_dict[constants.TYPE] = control_type
@@ -916,15 +893,10 @@ def workbook_to_json(
                             + " select one external is only meant for filtered selects."
                         )
                     if not external_choices:
-                        k = constants.EXTERNAL_CHOICES
-                        msg = "There should be an external_choices sheet in this xlsform."
-                        similar = find_sheet_misspellings(key=k, keys=sheet_names)
-                        if similar is not None:
-                            msg = msg + " " + similar
-                        raise PyXFormError(
-                            msg
-                            + " Please ensure that the external_choices sheet has columns"
-                            " 'list name', and 'name'."
+                        sheet_misspellings.validate_choices(
+                            row_number=row_number,
+                            sheet_name=constants.EXTERNAL_CHOICES,
+                            sheet_names=sheet_names,
                         )
                     if list_name not in external_choices:
                         raise PyXFormError(
@@ -940,14 +912,10 @@ def workbook_to_json(
                     and not has_pyxform_reference(list_name)
                 ):
                     if not choices:
-                        k = constants.CHOICES
-                        msg = "There should be a choices sheet in this xlsform."
-                        similar = find_sheet_misspellings(key=k, keys=sheet_names)
-                        if similar is not None:
-                            msg = f"{msg} {similar}"
-                        raise PyXFormError(
-                            f"{msg} Please ensure that the choices sheet has the"
-                            " mandatory columns 'list_name', 'name', and 'label'."
+                        sheet_misspellings.validate_choices(
+                            row_number=row_number,
+                            sheet_name=constants.CHOICES,
+                            sheet_names=sheet_names,
                         )
                     elif list_name not in choices:
                         raise PyXFormError(
@@ -1335,42 +1303,36 @@ def workbook_to_json(
 
     if len(stack) > 1:
         raise PyXFormError(
-            ErrorCode.SURVEY_002.value.format(
-                row=stack[-1]["row_number"],
-                type=stack[-1]["control_type"],
-                name=stack[-1]["control_name"],
-            )
+            code=ErrorCode.SURVEY_002,
+            context={
+                "row": stack[-1]["row_number"],
+                "type": stack[-1]["control_type"],
+                "name": stack[-1]["control_name"],
+            },
         )
 
     if settings.get("flat", False):
         # print "Generating flattened instance..."
         add_flat_annotations(stack[0]["parent_children"])
 
-    if aliases.yes_no.get(settings.get("omit_instanceID")):
-        if settings.get("public_key"):
-            raise PyXFormError("Cannot omit instanceID, it is required for encryption.")
-    else:
-        # Automatically add an instanceID element:
-        meta_children.append(
-            {
-                "name": "instanceID",
-                "bind": {
-                    "readonly": "true()",
-                    "jr:preload": settings.get("instance_id", "uid"),
-                },
-                "type": "calculate",
-            }
-        )
-        # Allow ${instanceID} reference for longitudinal / entities workflows.
-        element_names.update(("instanceID",))
+    # instanceID: The unique ID of the record (required).
+    meta_children.append(
+        {
+            constants.NAME: constants.INSTANCE_ID,
+            constants.BIND: {"readonly": "true()", "jr:preload": "uid"},
+            constants.TYPE: "calculate",
+        }
+    )
+    # Allow ${instanceID} reference for longitudinal / entities workflows.
+    element_names.update((constants.INSTANCE_ID,))
 
     if "instance_name" in settings:
-        # Automatically add an instanceName element:
+        # instanceName: The name of the record (optional).
         meta_children.append(
             {
-                "name": "instanceName",
-                "bind": {"calculate": settings["instance_name"]},
-                "type": "calculate",
+                constants.NAME: constants.INSTANCE_NAME,
+                constants.BIND: {"calculate": settings["instance_name"]},
+                constants.TYPE: "calculate",
             }
         )
 

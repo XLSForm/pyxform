@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pyxform.parsing.expression import is_xml_tag, parse_expression
+from pyxform.parsing.expression import is_xml_tag, lex_expression
 
 from tests.fixtures.lexer_cases import LexerCases
 from tests.pyxform_test_case import PyxformTestCase
@@ -402,11 +402,11 @@ class TestExpression(PyxformTestCase):
             with self.subTest(case=case, description=description):
                 self.assertFalse(is_xml_tag(case))
 
-    def test_parse_expression(self):
+    def test_lex_expression(self):
         """Should find expected sequence of token types for each input."""
         for lexer_case, token_types in (i.value for i in ExpectedTokens):
             description, case = lexer_case.value
-            with self.subTest(case=case, description=description):
+            with self.subTest(name=lexer_case.name, case=case, description=description):
                 self.assertEqual(
-                    token_types, tuple(t.type for t in parse_expression(text=case))
+                    token_types, tuple(t.type for t in lex_expression(text=case))
                 )

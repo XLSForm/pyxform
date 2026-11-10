@@ -16,7 +16,7 @@ from defusedxml.minidom import parseString
 
 from pyxform import constants as const
 from pyxform.errors import PyXFormError
-from pyxform.parsing.expression import parse_expression
+from pyxform.parsing.expression import lex_expression
 from pyxform.xls2json_backends import DefinitionData
 
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
@@ -226,7 +226,7 @@ def default_is_dynamic(element_default, element_type=None):
     if not element_default or not isinstance(element_default, str):
         return False
 
-    tokens = parse_expression(element_default)
+    tokens = lex_expression(element_default)
     for t in tokens:
         # Data types which are likely to have non-dynamic defaults containing a hyphen.
         if element_type in {"date", "dateTime", "geopoint", "geotrace", "geoshape"}:

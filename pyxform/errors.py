@@ -28,7 +28,7 @@ _ERROR_FORMATTER = _ErrorFormatter()
 class Detail:
     """ErrorCode details."""
 
-    __slots__ = ("msg", "name")
+    __slots__ = ("field_names", "msg", "name")
 
     def __init__(self, name: str, msg: str) -> None:
         """
@@ -39,6 +39,11 @@ class Detail:
         """
         self.name: str = name
         self.msg: str = msg
+        self.field_names: tuple[str, ...] = tuple(
+            field_name
+            for _, field_name, _, _ in _ERROR_FORMATTER.parse(msg)
+            if field_name is not None
+        )
 
     def format(self, **kwargs):
         return _ERROR_FORMATTER.format(self.msg, **kwargs)
@@ -63,6 +68,8 @@ class ErrorCode(Enum):
     - suggested resolution: (if helpful/possible) how could the user fix the problem?
     - documentation link: (if helpful/possible) "Learn more: <docs URL>"
     """
+
+    _value_: Detail
 
     ENTITY_001 = Detail(
         name="Entities - save_to but no entities",
@@ -196,7 +203,23 @@ class ErrorCode(Enum):
             "questions using these types and the entity list name."
         ),
     )
-    HEADER_001: Detail = Detail(
+    GEO_001 = Detail(
+        name="Geo type - invalid non-empty background-geopoint calculation",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'calculation' column is invalid. "
+            "For 'background-geopoint' questions, the 'calculation' column must be empty. "
+            "Learn more: https://docs.getodk.org/form-question-types/#background-geopoint"
+        ),
+    )
+    GEO_002 = Detail(
+        name="Geo type - invalid empty background-geopoint trigger",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'trigger' column is invalid. "
+            "For 'background-geopoint' questions, the 'trigger' column must not be empty. "
+            "Learn more: https://docs.getodk.org/form-question-types/#background-geopoint "
+        ),
+    )
+    HEADER_001 = Detail(
         name="Headers - invalid missing header row",
         msg=(
             "Invalid headers provided for sheet: '{sheet_name}'. For XLSForms, this may be due "
@@ -206,7 +229,7 @@ class ErrorCode(Enum):
             "within the first 100 rows, or specify the header row in '{sheet_name}_header'."
         ),
     )
-    HEADER_002: Detail = Detail(
+    HEADER_002 = Detail(
         name="Headers - invalid duplicate",
         msg=(
             "Invalid headers provided for sheet: '{sheet_name}'. Headers that are different "
@@ -214,7 +237,7 @@ class ErrorCode(Enum):
             "of these columns."
         ),
     )
-    HEADER_003: Detail = Detail(
+    HEADER_003 = Detail(
         name="Headers - invalid missing required header",
         msg=(
             "Invalid headers provided for sheet: '{sheet_name}'. One or more required column "
@@ -222,7 +245,7 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
-    HEADER_004: Detail = Detail(
+    HEADER_004 = Detail(
         name="Headers - invalid choices header",
         msg=(
             "[row : 1] On the 'choices' sheet, the '{column}' value is invalid. "
@@ -230,7 +253,7 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
-    HEADER_005: Detail = Detail(
+    HEADER_005 = Detail(
         name="Headers - invalid entities header",
         msg=(
             "[row : 1] On the 'entities' sheet, one or more column names are invalid. "
@@ -239,7 +262,7 @@ class ErrorCode(Enum):
             "or update pyxform."
         ),
     )
-    INTERNAL_001: Detail = Detail(
+    INTERNAL_001 = Detail(
         name="Internal error - incorrectly processed question trigger data",
         msg=(
             "Internal error: "
@@ -247,7 +270,7 @@ class ErrorCode(Enum):
             "type '{type}' with value '{value}'."
         ),
     )
-    INTERNAL_002: Detail = Detail(
+    INTERNAL_002 = Detail(
         name="Internal error - reference source missing both property and question",
         msg=(
             "Internal error: "
@@ -255,15 +278,39 @@ class ErrorCode(Enum):
             "path '{path}'."
         ),
     )
-    LABEL_001: Detail = Detail(
+    INTERNAL_003 = Detail(
+        name="Internal error - delimited expression parsing failed, grammar error",
+        msg=(
+            "Delimited expression parsing failed. "
+            "Check the expression syntax, or try using delimiter escapes. "
+            "Input string: {s}"
+        ),
+    )
+    INTERNAL_004 = Detail(
+        name="Internal error - delimited expression parsing failed, nested expression",
+        msg=(
+            "Delimited expression parsing failed. "
+            "Expressions must not be nested inside another expression. "
+            "Input string: {s}"
+        ),
+    )
+    INTERNAL_005 = Detail(
+        name="Internal error - delimited expression parsing failed, empty expression",
+        msg=(
+            "Delimited expression parsing failed. "
+            "Expressions must not be empty or only contain whitespace characters. "
+            "Input string: {s}"
+        ),
+    )
+    LABEL_001 = Detail(
         name="Labels - invalid missing label in the choices sheet",
         msg=(
             "[row : {row}] On the 'choices' sheet, the 'label' value is invalid. "
-            "Choices should have a label. "
+            "Choices must have a label or media. "
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
-    NAMES_001: Detail = Detail(
+    NAMES_001 = Detail(
         name="Names - invalid duplicate name in same context",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
@@ -271,7 +318,7 @@ class ErrorCode(Enum):
             "or repeat, or the survey if not inside a group or repeat."
         ),
     )
-    NAMES_002: Detail = Detail(
+    NAMES_002 = Detail(
         name="Names - invalid duplicate name in context (case-insensitive)",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is problematic. "
@@ -281,14 +328,14 @@ class ErrorCode(Enum):
             "case-sensitive, so the current names may make analysis difficult."
         ),
     )
-    NAMES_003: Detail = Detail(
+    NAMES_003 = Detail(
         name="Names - invalid repeat name same as survey",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
             "Repeat names must not be the same as the survey root (which defaults to 'data')."
         ),
     )
-    NAMES_004: Detail = Detail(
+    NAMES_004 = Detail(
         name="Names - invalid duplicate repeat name in the survey",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value '{value}' is invalid. "
@@ -296,14 +343,14 @@ class ErrorCode(Enum):
             "repeat nesting."
         ),
     )
-    NAMES_005: Detail = Detail(
+    NAMES_005 = Detail(
         name="Names - invalid duplicate meta name in the survey",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'name' value 'meta' is invalid. "
             "The name 'meta' is reserved for form metadata."
         ),
     )
-    NAMES_006: Detail = Detail(
+    NAMES_006 = Detail(
         name="Names - invalid missing name in the choices sheet",
         msg=(
             "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
@@ -311,7 +358,7 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
-    NAMES_007: Detail = Detail(
+    NAMES_007 = Detail(
         name="Names - invalid duplicate name in the choices sheet",
         msg=(
             "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
@@ -320,7 +367,7 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/#choice-names."
         ),
     )
-    NAMES_008: Detail = Detail(
+    NAMES_008 = Detail(
         name="Names - invalid character(s) in name (XML identifier)",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
@@ -328,7 +375,7 @@ class ErrorCode(Enum):
             "names may contain letters, digits, underscores, hyphens, or periods."
         ),
     )
-    NAMES_009: Detail = Detail(
+    NAMES_009 = Detail(
         name="Names - invalid character(s) in name (XML identifier)(no sheet context)",
         msg=(
             "The '{name}' value is invalid. "
@@ -336,42 +383,45 @@ class ErrorCode(Enum):
             "names may contain letters, digits, underscores, hyphens, or periods."
         ),
     )
-    NAMES_010: Detail = Detail(
+    NAMES_010 = Detail(
         name="Names - invalid character(s) in entity-related name (XML identifier)(underscores)",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Names used here must not begin with two underscores."
         ),
     )
-    NAMES_011: Detail = Detail(
+    NAMES_011 = Detail(
         name="Names - invalid character(s) in entity-related name (XML identifier)(period)",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Names used here must not contain a period."
         ),
     )
-    NAMES_012: Detail = Detail(
+    NAMES_012 = Detail(
         name="Names - invalid character(s) in entity-related name (XML identifier)(reserved words)",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
             "Names used here must not be 'name' or 'label' (case-insensitive)."
         ),
     )
-    NAMES_013: Detail = Detail(
+    NAMES_013 = Detail(
         name="Names - possible sheet name misspelling",
         msg=(
-            "When looking for a sheet named '{sheet}', the following sheets with "
-            "similar names were found: {candidates}."
+            "The sheet names may be invalid. "
+            "The sheet name '{sheet}' is recognised, and "
+            "sheets with the following similar names were found: {candidates}. "
+            "To ignore a sheet, prefix the name with an underscore, for example '_{sheet}'. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
-    NAMES_014: Detail = Detail(
+    NAMES_014 = Detail(
         name="Names - invalid duplicate name in the entities sheet",
         msg=(
             "[row : {row}] On the 'entities' sheet, the 'list_name' value is invalid. "
             "The 'list_name' column must not have any duplicate names."
         ),
     )
-    NAMES_015: Detail = Detail(
+    NAMES_015 = Detail(
         name="Names - invalid missing name in the entities sheet",
         msg=(
             "[row : {row}] On the 'entities' sheet, the 'list_name' value is invalid. "
@@ -388,11 +438,21 @@ class ErrorCode(Enum):
             "choices 'list_name' rows."
         ),
     )
+    NAMES_017 = Detail(
+        name="Names - invalid duplicate name in the choices sheet (multiple duplicates)",
+        msg=(
+            "[row : {row}] On the 'choices' sheet, the 'name' value is invalid. "
+            "Choice names must be unique for each choice list. "
+            "The same issue occurs on the following other rows: {other_rows}. "
+            "If this is intentional, use the setting 'allow_choice_duplicates'. "
+            "Learn more: https://xlsform.org/#choice-names."
+        ),
+    )
     PYREF_001 = Detail(
         name="Variable reference - parsing failed",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "A variable reference ('${name}') must start with '${{', followed "
+            "A variable reference ('${{name}}') must start with '${{', followed "
             "by a name from the 'survey' sheet 'name' column, and end with '}}'. "
             "Learn more: https://docs.getodk.org/form-logic/#variables"
         ),
@@ -401,8 +461,8 @@ class ErrorCode(Enum):
         name="Variable reference - parsing limit reached",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "A variable reference ('${name}') list must have a comma between each "
-            "variable, for example: '${q1},${q2},${q3}'."
+            "A variable reference ('${{name}}') list must have a comma between each "
+            "variable, for example: '${{q1}},${{q2}},${{q3}}'."
         ),
         # Does not include 'Learn more' link since this error is about multiple triggers.
     )
@@ -410,7 +470,7 @@ class ErrorCode(Enum):
         name="Variable reference - name not found",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "A variable reference ('${name}') name must exist in the 'survey' sheet "
+            "A variable reference ('${{name}}') name must exist in the 'survey' sheet "
             "'name' column. The name '{q}' was not found. "
             "Learn more: https://docs.getodk.org/form-logic/#variables"
         ),
@@ -419,7 +479,7 @@ class ErrorCode(Enum):
         name="Variable reference - duplicate name",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
-            "A variable reference ('${name}') name must be unique in the 'survey' sheet "
+            "A variable reference ('${{name}}') name must be unique in the 'survey' sheet "
             "'name' column. The name '{q}' occurs more than once. "
             "Learn more: https://docs.getodk.org/form-logic/#variables"
         ),
@@ -490,7 +550,7 @@ class ErrorCode(Enum):
         name="Range type - tick_labelset choice is not a number",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
-            "For the 'range' question type, the parameter '{tick_labelset}' choice values must "
+            "For the 'range' question type, the parameter 'tick_labelset' choice values must "
             "all be numbers."
         ),
     )
@@ -518,6 +578,15 @@ class ErrorCode(Enum):
             "match the range 'start' and 'end' values when the 'appearance' is 'no-ticks'."
         ),
     )
+    SETTING_001 = Detail(
+        name="Settings sheet - yes/no setting not resolved",
+        msg=(
+            "On the 'settings' sheet, the '{name}' value may need to be updated. "
+            "The '{name}' setting expects one of: true/false/yes/no, but the value '{value}' "
+            "was not recognised. The default value '{default}' will be used instead. "
+            "Learn more: https://docs.getodk.org/xlsform/#the-settings-sheet"
+        ),
+    )
     SURVEY_001 = Detail(
         name="Survey sheet - unmatched group/repeat/loop end",
         msg=(
@@ -532,7 +601,7 @@ class ErrorCode(Enum):
             "No matching 'end_{type}' was found for the name '{name}'."
         ),
     )
-    SURVEY_003: Detail = Detail(
+    SURVEY_003 = Detail(
         name="Survey sheet - invalid geoshape/geotrace parameter 'incremental'",
         msg=(
             "[row : {row}] On the '{sheet}' sheet, the '{column}' value is invalid. "
@@ -540,14 +609,14 @@ class ErrorCode(Enum):
             "be 'true' or not included."
         ),
     )
-    SURVEY_004: Detail = Detail(
+    SURVEY_004 = Detail(
         name="Survey sheet - parameters parsing failed",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
             "Parameters must be in the form of 'key1=value1 key2=value2."
         ),
     )
-    SURVEY_005: Detail = Detail(
+    SURVEY_005 = Detail(
         name="Survey sheet - parameters unknown key",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
@@ -555,7 +624,7 @@ class ErrorCode(Enum):
             "The following are invalid parameter key(s): '{rejected}'."
         ),
     )
-    SURVEY_006: Detail = Detail(
+    SURVEY_006 = Detail(
         name="Survey sheet - invalid geo parameter 'reference-geometry'",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
@@ -564,21 +633,21 @@ class ErrorCode(Enum):
             "attached file), or be a reference variable containing the name of a repeat."
         ),
     )
-    SURVEY_007: Detail = Detail(
+    SURVEY_007 = Detail(
         name="Survey sheet - invalid geo parameter 'capture-accuracy'",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
             "The 'capture-accuracy' parameter must have a numeric value."
         ),
     )
-    SURVEY_008: Detail = Detail(
+    SURVEY_008 = Detail(
         name="Survey sheet - invalid geo parameter 'warning-accuracy'",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
             "The 'warning-accuracy' parameter must have a numeric value."
         ),
     )
-    SURVEY_009: Detail = Detail(
+    SURVEY_009 = Detail(
         name="Survey sheet - invalid geo parameter 'allow-mock-accuracy'",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'parameters' value is invalid. "
@@ -594,6 +663,40 @@ class ErrorCode(Enum):
         ),
     )
     SURVEY_011 = Detail(
+        name="Survey sheet - sheet missing",
+        msg=(
+            "The sheet names are invalid. "
+            "A sheet named 'survey' must be provided. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    SURVEY_012 = Detail(
+        name="Survey sheet - sheet missing, possible misspelling",
+        msg=(
+            "The sheet names are invalid. "
+            "A sheet named 'survey' must be provided. "
+            "Sheets with the following similar names were found: {candidates}. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    SURVEY_013 = Detail(
+        name="Survey sheet - select type with no (external) choices sheet.",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'type' value is invalid. "
+            "To use this 'select' question type, a sheet named '{missing}' must be provided. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    SURVEY_014 = Detail(
+        name="Survey sheet - select type with no (external) choices sheet, possible misspelling.",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'type' value is invalid. "
+            "To use this 'select' question type, a sheet named '{missing}' must be provided. "
+            "Sheets with the following similar names were found: {candidates}. "
+            "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    SURVEY_015 = Detail(
         name="Survey sheet - invalid 'required' on group or repeat",
         msg=(
             "[row : {row}] On the 'survey' sheet, the 'required' value is invalid. "
@@ -624,7 +727,9 @@ class PyXFormError(Exception):
 
     def __repr__(self):
         if self.code:
-            if self.context:
+            if len(self.code.value.field_names) == 0:
+                return self.code.value.msg
+            elif self.context:
                 return self.code.value.format(**self.context)
             else:
                 # If there's somehow no context for creating a helpful message, at least

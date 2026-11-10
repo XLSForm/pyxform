@@ -711,7 +711,9 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.SURVEY_001.value.format(row=4, type="repeat")],
+            error__contains=[
+                ErrorCode.SURVEY_001.value.format(row=4, type="repeat", name="(unknown)")
+            ],
         )
 
     def test_group__no_end_error__with_another_closed_group(self):
@@ -743,7 +745,9 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.SURVEY_001.value.format(row=3, type="group")],
+            error__contains=[
+                ErrorCode.SURVEY_001.value.format(row=3, type="group", name="(unknown)")
+            ],
         )
 
     def test_group__no_begin_error__with_name(self):
@@ -779,6 +783,7 @@ class TestGroupParsing(PyxformTestCase):
                 ErrorCode.SURVEY_001.value.format(
                     row=5,
                     type="group",
+                    name="(unknown)",
                 )
             ],
         )
@@ -796,7 +801,9 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.SURVEY_001.value.format(row=4, type="group")],
+            error__contains=[
+                ErrorCode.SURVEY_001.value.format(row=4, type="group", name="(unknown)")
+            ],
         )
 
     def test_group__required__error(self):
@@ -811,7 +818,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.SURVEY_011.value.format(row=2)],
+            error__contains=[ErrorCode.SURVEY_015.value.format(row=2)],
         )
 
     def test_repeat__required__error(self):
@@ -826,7 +833,7 @@ class TestGroupParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[ErrorCode.SURVEY_011.value.format(row=2)],
+            error__contains=[ErrorCode.SURVEY_015.value.format(row=2)],
         )
 
     def test_group__required_no__ok(self):

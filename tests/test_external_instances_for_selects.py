@@ -468,19 +468,18 @@ class TestSelectOneExternal(PyxformTestCase):
         | external_choices |                          |       |       |
         """
         wb = md_table_to_workbook(md)
-        with get_temp_dir() as tmp:
+        with get_temp_dir() as tmp, self.assertRaises(PyXFormError) as err:
             wb_path = os.path.join(tmp, "empty_sheet.xlsx")
             wb.save(wb_path)
             wb.close()
-            try:
-                xls2xform_convert(
-                    xlsform_path=wb_path,
-                    xform_path=get_xml_path(wb_path),
-                )
-            except PyXFormError as e:
-                self.assertContains(
-                    str(e), "should be an external_choices sheet in this xlsform"
-                )
+            xls2xform_convert(
+                xlsform_path=wb_path,
+                xform_path=get_xml_path(wb_path),
+            )
+        self.assertEqual(
+            ErrorCode.SURVEY_013.value.format(row=3, missing=co.EXTERNAL_CHOICES),
+            str(err.exception),
+        )
 
     def test_external_choices_with_only_header__errors(self):
         md = """
@@ -495,19 +494,18 @@ class TestSelectOneExternal(PyxformTestCase):
         |                  | list_name                | name  | state | city          |
         """
         wb = md_table_to_workbook(md)
-        with get_temp_dir() as tmp:
+        with get_temp_dir() as tmp, self.assertRaises(PyXFormError) as err:
             wb_path = os.path.join(tmp, "empty_sheet.xlsx")
             wb.save(wb_path)
             wb.close()
-            try:
-                xls2xform_convert(
-                    xlsform_path=wb_path,
-                    xform_path=get_xml_path(wb_path),
-                )
-            except PyXFormError as e:
-                self.assertContains(
-                    str(e), "should be an external_choices sheet in this xlsform"
-                )
+            xls2xform_convert(
+                xlsform_path=wb_path,
+                xform_path=get_xml_path(wb_path),
+            )
+        self.assertEqual(
+            ErrorCode.SURVEY_013.value.format(row=3, missing=co.EXTERNAL_CHOICES),
+            str(err.exception),
+        )
 
     def test_choice_name_is_type__ok(self):
         """Should find that a choice name can be 'type' without error."""
