@@ -121,6 +121,7 @@ class Section(SurveyElement):
                 seen_names_lower=child_names_lower,
                 warnings=warnings,
                 check_reserved=False,
+                warn=False,
             )
 
     def xml_instance(self, survey: "Survey", with_repeat_template: bool = False):

@@ -40,7 +40,7 @@ def process_range_question_type(
             )
         )
     ):
-        raise PyXFormError(ErrorCode.RANGE_008.value.format(row=row_number))
+        raise PyXFormError(code=ErrorCode.RANGE_008, context={"row": row_number})
 
     defaults = QUESTION_TYPE_DICT["range"][co.PARAMETERS]
     # set defaults
@@ -60,7 +60,7 @@ def process_range_question_type(
 
         if err or isinf(value):
             raise PyXFormError(
-                ErrorCode.RANGE_001.value.format(row=row_number, name=name)
+                code=ErrorCode.RANGE_001, context={"row": row_number, "name": name}
             )
         return value
 
@@ -74,35 +74,39 @@ def process_range_question_type(
 
     if step == 0:
         raise PyXFormError(
-            ErrorCode.RANGE_002.value.format(
-                row=row_number, name=co.ParametersRange.STEP.value
-            )
+            code=ErrorCode.RANGE_002,
+            context={"row": row_number, "name": co.ParametersRange.STEP.value},
         )
     if step > range_width:
         raise PyXFormError(
-            ErrorCode.RANGE_003.value.format(
-                row=row_number, name=co.ParametersRange.STEP.value
-            )
+            code=ErrorCode.RANGE_003,
+            context={"row": row_number, "name": co.ParametersRange.STEP.value},
         )
 
     if tick_interval is not None:
         if tick_interval == 0:
             raise PyXFormError(
-                ErrorCode.RANGE_002.value.format(
-                    row=row_number, name=co.ParametersRange.TICK_INTERVAL.value
-                )
+                code=ErrorCode.RANGE_002,
+                context={
+                    "row": row_number,
+                    "name": co.ParametersRange.TICK_INTERVAL.value,
+                },
             )
         if tick_interval > range_width:
             raise PyXFormError(
-                ErrorCode.RANGE_003.value.format(
-                    row=row_number, name=co.ParametersRange.TICK_INTERVAL.value
-                )
+                code=ErrorCode.RANGE_003,
+                context={
+                    "row": row_number,
+                    "name": co.ParametersRange.TICK_INTERVAL.value,
+                },
             )
         if (tick_interval % step) != 0:
             raise PyXFormError(
-                ErrorCode.RANGE_004.value.format(
-                    row=row_number, name=co.ParametersRange.TICK_INTERVAL.value
-                )
+                code=ErrorCode.RANGE_004,
+                context={
+                    "row": row_number,
+                    "name": co.ParametersRange.TICK_INTERVAL.value,
+                },
             )
         # Input parameter uses underscore, output attribute name uses hyphen.
         parameters["odk:tick-interval"] = parameters.pop(
@@ -112,15 +116,13 @@ def process_range_question_type(
     if placeholder is not None:
         if (placeholder - start) % step != 0:
             raise PyXFormError(
-                ErrorCode.RANGE_004.value.format(
-                    row=row_number, name=co.ParametersRange.PLACEHOLDER.value
-                )
+                code=ErrorCode.RANGE_004,
+                context={"row": row_number, "name": co.ParametersRange.PLACEHOLDER.value},
             )
         if placeholder < min(start, end) or placeholder > max(start, end):
             raise PyXFormError(
-                ErrorCode.RANGE_005.value.format(
-                    row=row_number, name=co.ParametersRange.PLACEHOLDER.value
-                )
+                code=ErrorCode.RANGE_005,
+                context={"row": row_number, "name": co.ParametersRange.PLACEHOLDER.value},
             )
         parameters[f"odk:{co.ParametersRange.PLACEHOLDER.value}"] = parameters.pop(
             co.ParametersRange.PLACEHOLDER.value
@@ -129,7 +131,7 @@ def process_range_question_type(
     if tick_labelset:
         tick_list = choices.get(tick_labelset)
         if tick_list is None:
-            raise PyXFormError(ErrorCode.RANGE_006.value.format(row=row_number))
+            raise PyXFormError(code=ErrorCode.RANGE_006, context={"row": row_number})
 
         no_ticks_appearance = appearance and "no-ticks" in appearance
         no_ticks_labels = set()
@@ -141,30 +143,31 @@ def process_range_question_type(
                 errored = True
 
             if errored or isinf(value):
-                raise PyXFormError(ErrorCode.RANGE_009.value.format(row=row_number))
+                raise PyXFormError(code=ErrorCode.RANGE_009, context={"row": row_number})
 
             if value < min(start, end) or value > max(start, end):
-                raise PyXFormError(ErrorCode.RANGE_010.value.format(row=row_number))
+                raise PyXFormError(code=ErrorCode.RANGE_010, context={"row": row_number})
             if tick_interval is not None and (value - start) % tick_interval != 0:
                 raise PyXFormError(
-                    ErrorCode.RANGE_011.value.format(
-                        row=row_number, name=co.ParametersRange.TICK_INTERVAL.value
-                    )
+                    code=ErrorCode.RANGE_011,
+                    context={
+                        "row": row_number,
+                        "name": co.ParametersRange.TICK_INTERVAL.value,
+                    },
                 )
             elif (value - start) % step != 0:
                 raise PyXFormError(
-                    ErrorCode.RANGE_011.value.format(
-                        row=row_number, name=co.ParametersRange.STEP.value
-                    )
+                    code=ErrorCode.RANGE_011,
+                    context={"row": row_number, "name": co.ParametersRange.STEP.value},
                 )
             if no_ticks_appearance:
                 no_ticks_labels.add(value)
 
         if no_ticks_appearance:
             if len(no_ticks_labels) > 2:
-                raise PyXFormError(ErrorCode.RANGE_007.value.format(row=row_number))
+                raise PyXFormError(code=ErrorCode.RANGE_007, context={"row": row_number})
             if no_ticks_labels != {start, end}:
-                raise PyXFormError(ErrorCode.RANGE_012.value.format(row=row_number))
+                raise PyXFormError(code=ErrorCode.RANGE_012, context={"row": row_number})
 
         parameters.pop(co.ParametersRange.TICK_LABELSET.value)
 

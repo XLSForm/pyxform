@@ -34,9 +34,7 @@ class TriggerSetvalueTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                ErrorCode.PYREF_001.value.format(
-                    sheet="survey", column="trigger", row=2, q="6"
-                )
+                ErrorCode.PYREF_001.value.format(sheet="survey", column="trigger", row=2)
             ],
         )
 

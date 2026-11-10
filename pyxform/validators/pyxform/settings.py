@@ -47,7 +47,8 @@ def validate_name(name: str | None, from_sheet: bool = True):
     if name is not None and not is_xml_tag(value=name):
         if from_sheet:
             raise PyXFormError(
-                ErrorCode.NAMES_008.value.format(sheet=co.SETTINGS, row=1, column=co.NAME)
+                code=ErrorCode.NAMES_008,
+                context={"sheet": co.SETTINGS, "row": 1, "column": co.NAME},
             )
         else:
-            raise PyXFormError(ErrorCode.NAMES_009.value.format(name="form_name"))
+            raise PyXFormError(code=ErrorCode.NAMES_009, context={"name": "form_name"})

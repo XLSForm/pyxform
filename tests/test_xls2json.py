@@ -1,6 +1,8 @@
 import os
 
 import psutil
+from pyxform import constants as co
+from pyxform.errors import ErrorCode
 from pyxform.xls2json_backends import get_xlsform, md_table_to_workbook
 from pyxform.xls2xform import get_xml_path, xls2xform_convert
 
@@ -48,13 +50,6 @@ SURVEY = """
 
 
 class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
-    err_similar_found = "the following sheets with similar names were found"
-    err_survey_required = "You must have a sheet named 'survey'."
-    err_choices_required = "There should be a choices sheet in this xlsform."
-    err_ext_choices_required = (
-        "There should be an external_choices sheet in this xlsform."
-    )
-
     def test_workbook_to_json__case_insensitive__choices(self):
         """Should not warn/error if optional sheets are not lowercase."""
         test_names = ("choices", "Choices", "CHOICES")
@@ -98,8 +93,9 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 md=CHOICES.format(name=n),
                 errored=True,
-                error__contains=[self.err_choices_required],
-                error__not_contains=[self.err_similar_found, f"'{n}'"],
+                error__contains=[
+                    ErrorCode.SURVEY_013.value.format(row=2, missing=co.CHOICES)
+                ],
             )
 
     def test_workbook_to_json__ignore_prefixed_name__external_choices(self):
@@ -109,8 +105,9 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 md=EXTERNAL_CHOICES.format(name=n),
                 errored=True,
-                error__contains=[self.err_ext_choices_required],
-                error__not_contains=[self.err_similar_found, f"'{n}'"],
+                error__contains=[
+                    ErrorCode.SURVEY_013.value.format(row=3, missing=co.EXTERNAL_CHOICES)
+                ],
             )
 
     def test_workbook_to_json__ignore_prefixed_name__settings(self):
@@ -129,8 +126,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 md=SURVEY.format(name=n),
                 errored=True,
-                error__contains=[self.err_survey_required],
-                error__not_contains=[self.err_similar_found, f"'{n}'"],
+                error__contains=[ErrorCode.SURVEY_011.value.format()],
             )
 
     def test_workbook_to_json__misspelled_found__choices(self):
@@ -141,9 +137,9 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 md=CHOICES.format(name=n),
                 errored=True,
                 error__contains=[
-                    self.err_choices_required,
-                    self.err_similar_found,
-                    f"'{n}'",
+                    ErrorCode.SURVEY_014.value.format(
+                        row=2, missing=co.CHOICES, candidates=f"'{n}'"
+                    )
                 ],
             )
 
@@ -180,10 +176,9 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                self.err_choices_required,
-                self.err_similar_found,
-                "'choice'",
-                "'chioces'",
+                ErrorCode.SURVEY_014.value.format(
+                    row=2, missing=co.CHOICES, candidates="'choice', 'chioces'"
+                )
             ],
         )
 
@@ -195,9 +190,9 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
                 md=EXTERNAL_CHOICES.format(name=n),
                 errored=True,
                 error__contains=[
-                    self.err_ext_choices_required,
-                    self.err_similar_found,
-                    f"'{n}'",
+                    ErrorCode.SURVEY_014.value.format(
+                        row=3, missing=co.EXTERNAL_CHOICES, candidates=f"'{n}'"
+                    )
                 ],
             )
 
@@ -240,10 +235,11 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                self.err_ext_choices_required,
-                self.err_similar_found,
-                "'external_choice'",
-                "'extrenal_choices'",
+                ErrorCode.SURVEY_014.value.format(
+                    row=3,
+                    missing=co.EXTERNAL_CHOICES,
+                    candidates="'external_choice', 'extrenal_choices'",
+                )
             ],
         )
 
@@ -253,7 +249,11 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
         for n in test_names:
             self.assertPyxformXform(
                 md=SETTINGS.format(name=n),
-                warnings__contains=[self.err_similar_found, f"'{n}'"],
+                warnings__contains=[
+                    ErrorCode.NAMES_013.value.format(
+                        sheet=co.SETTINGS, candidates=f"'{n}'"
+                    )
+                ],
             )
 
     def test_workbook_to_json__misspelled_found__settings_exists(self):
@@ -287,7 +287,11 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | id_string | title     |       |
             |          | my_id     | My Survey |       |
             """,
-            warnings__contains=[self.err_similar_found, "'setting'", "'stetings'"],
+            warnings__contains=[
+                ErrorCode.NAMES_013.value.format(
+                    sheet=co.SETTINGS, candidates="'setting', 'stetings'"
+                )
+            ],
         )
 
     def test_workbook_to_json__misspelled_found__survey(self):
@@ -297,11 +301,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 md=SURVEY.format(name=n),
                 errored=True,
-                error__contains=[
-                    self.err_survey_required,
-                    self.err_similar_found,
-                    f"'{n}'",
-                ],
+                error__contains=[ErrorCode.SURVEY_012.value.format(candidates=f"'{n}'")],
             )
 
     def test_workbook_to_json__misspelled_found__survey_exists(self):
@@ -331,10 +331,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                self.err_survey_required,
-                self.err_similar_found,
-                "'surveys'",
-                "'Surve'",
+                ErrorCode.SURVEY_012.value.format(candidates="'surveys', 'Surve'")
             ],
         )
 
@@ -345,7 +342,9 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 md=CHOICES.format(name=n),
                 errored=True,
-                error__not_contains=[self.err_similar_found, f"'{n}'"],
+                error__contains=[
+                    ErrorCode.SURVEY_013.value.format(row=2, missing=co.CHOICES)
+                ],
             )
 
     def test_workbook_to_json__misspelled_not_found__external_choices(self):
@@ -355,7 +354,9 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 md=EXTERNAL_CHOICES.format(name=n),
                 errored=True,
-                error__not_contains=[self.err_similar_found, f"'{n}'"],
+                error__contains=[
+                    ErrorCode.SURVEY_013.value.format(row=3, missing=co.EXTERNAL_CHOICES)
+                ],
             )
 
     def test_workbook_to_json__misspelled_not_found__settings(self):
@@ -374,7 +375,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             self.assertPyxformXform(
                 md=SURVEY.format(name=n),
                 errored=True,
-                error__not_contains=[self.err_similar_found],
+                error__contains=[ErrorCode.SURVEY_011.value.format()],
             )
 
     def test_workbook_to_json__multiple_misspellings__all_ok(self):
@@ -419,21 +420,7 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | my_id         | My Survey |
             """,
             errored=True,
-            warnings__not_contains=[
-                self.err_similar_found,
-                "'settyngs'",
-            ],
-            error__contains=[
-                self.err_survey_required,
-                self.err_similar_found,
-                "'surveys'",
-            ],
-            error__not_contains=[
-                self.err_choices_required,
-                "'chooses'",
-                self.err_ext_choices_required,
-                "'external_choyces'",
-            ],
+            error__contains=[ErrorCode.SURVEY_012.value.format(candidates="'surveys'")],
         )
 
     def test_workbook_to_json__multiple_misspellings__choices(self):
@@ -456,20 +443,10 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | my_id         | My Survey |
             """,
             errored=True,
-            warnings__not_contains=[
-                self.err_similar_found,
-                "'settyngs'",
-            ],
             error__contains=[
-                self.err_choices_required,
-                "'chooses'",
-            ],
-            error__not_contains=[
-                self.err_survey_required,
-                "'survey'",
-                # Not raised because the "select_one l1, q1" is checked first.
-                self.err_ext_choices_required,
-                "'external_choyces'",
+                ErrorCode.SURVEY_014.value.format(
+                    row=2, missing=co.CHOICES, candidates="'chooses'"
+                ),
             ],
         )
 
@@ -493,19 +470,10 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | my_id         | My Survey |
             """,
             errored=True,
-            warnings__not_contains=[
-                self.err_similar_found,
-                "'settyngs'",
-            ],
             error__contains=[
-                self.err_ext_choices_required,
-                "'external_choyces'",
-            ],
-            error__not_contains=[
-                self.err_survey_required,
-                "'survey'",
-                self.err_choices_required,
-                "'chooses'",
+                ErrorCode.SURVEY_014.value.format(
+                    row=3, missing=co.EXTERNAL_CHOICES, candidates="'external_choyces'"
+                ),
             ],
         )
 
@@ -529,20 +497,10 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             |          | my_id         | My Survey |
             """,
             errored=True,
-            warnings__contains=[
-                self.err_similar_found,
-                "'settyngs'",
-            ],
             error__contains=[
-                self.err_choices_required,
-                "'chooses'",
-            ],
-            error__not_contains=[
-                self.err_survey_required,
-                "'survey'",
-                # Not raised because the "select_one l1, q1" is checked first.
-                self.err_ext_choices_required,
-                "'external_choyces",
+                ErrorCode.SURVEY_014.value.format(
+                    row=2, missing=co.CHOICES, candidates="'chooses'"
+                ),
             ],
         )
 
@@ -593,11 +551,10 @@ class TestXLS2JSONSheetNameHeuristics(PyxformTestCase):
             validate=False,
             pretty_print=False,
         )
-        expected = (
-            "When looking for a sheet named 'settings', the following sheets "
-            "with similar names were found: 'stettings'"
+        expected = ErrorCode.NAMES_013.value.format(
+            sheet=co.SETTINGS, candidates="'stettings'"
         )
-        self.assertIn(expected, "\n".join(warnings))
+        self.assertIn(expected, warnings)
 
     def test_xls2xform_convert__e2e_with_extra_columns__does_not_use_excessive_memory(
         self,

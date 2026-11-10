@@ -9,11 +9,7 @@ from typing import IO, Any
 
 from pyxform import aliases, constants
 from pyxform import external_instance as qt_external_instance
-from pyxform.constants import (
-    _MSG_SUPPRESS_SPELLING,
-    EXTERNAL_INSTANCE_EXTENSIONS,
-    ROW_FORMAT_STRING,
-)
+from pyxform.constants import EXTERNAL_INSTANCE_EXTENSIONS, ROW_FORMAT_STRING
 from pyxform.elements import action as action_module
 from pyxform.entities.entities_parsing import (
     ContainerPath,
@@ -29,20 +25,15 @@ from pyxform.parsing.parameters import parse as parameters_parse
 from pyxform.parsing.sheet_headers import dealias_and_group_headers
 from pyxform.parsing.variable_reference import has_pyxform_reference, is_pyxform_reference
 from pyxform.question_type_dictionary import get_meta_group
-from pyxform.utils import (
-    coalesce,
-    default_is_dynamic,
-    print_pyobj_to_json,
-)
+from pyxform.utils import coalesce, default_is_dynamic, print_pyobj_to_json
 from pyxform.validators.pyxform import parameters as pv
 from pyxform.validators.pyxform import question_types as qt
-from pyxform.validators.pyxform import select_from_file, unique_names
+from pyxform.validators.pyxform import select_from_file, sheet_misspellings, unique_names
 from pyxform.validators.pyxform import settings as validate_settings
 from pyxform.validators.pyxform.android_package_name import validate_android_package_name
 from pyxform.validators.pyxform.choices import validate_and_clean_choices
 from pyxform.validators.pyxform.question_types import geo as qt_geo
 from pyxform.validators.pyxform.question_types import range as qt_range
-from pyxform.validators.pyxform.sheet_misspellings import find_sheet_misspellings
 from pyxform.validators.pyxform.translations_checks import SheetTranslations
 from pyxform.validators.pyxform.variable_reference import (
     validate_pyxform_references_in_workbook,
@@ -223,11 +214,7 @@ def workbook_to_json(
     warnings = coalesce(warnings, [])
     sheet_names = workbook_dict.sheet_names
     if not workbook_dict.survey and not workbook_dict.survey_header:
-        msg = f"You must have a sheet named '{constants.SURVEY}'. "
-        similar = find_sheet_misspellings(key=constants.SURVEY, keys=sheet_names)
-        if similar is not None:
-            msg += similar
-        raise PyXFormError(msg)
+        sheet_misspellings.validate_survey(sheet_names=sheet_names)
 
     # Make sure the passed in vars are unicode
     validate_settings.validate_name(name=form_name, from_sheet=False)
@@ -276,9 +263,9 @@ def workbook_to_json(
         settings = settings_sheet.data[0]
         validate_settings.validate_name(name=settings.get(constants.NAME, None))
     else:
-        similar = find_sheet_misspellings(key=constants.SETTINGS, keys=sheet_names)
-        if similar is not None:
-            warnings.append(similar + _MSG_SUPPRESS_SPELLING)
+        warnings = sheet_misspellings.validate_optional(
+            sheet_name=constants.SETTINGS, sheet_names=sheet_names, warnings=warnings
+        )
 
     default_language = settings.get(constants.DEFAULT_LANGUAGE_KEY, default_language)
     validate_settings.resolve_bool_settings(settings=settings, warnings=warnings)
@@ -368,9 +355,9 @@ def workbook_to_json(
             entity_declarations=entity_declarations
         )
     else:
-        similar = find_sheet_misspellings(key=constants.ENTITIES, keys=sheet_names)
-        if similar is not None:
-            warnings.append(similar + constants._MSG_SUPPRESS_SPELLING)
+        warnings = sheet_misspellings.validate_optional(
+            sheet_name=constants.ENTITIES, sheet_names=sheet_names, warnings=warnings
+        )
 
     # ########## Survey sheet ###########
     # Process the headers:
@@ -701,9 +688,12 @@ def workbook_to_json(
             question_name = str(row[constants.NAME])
             if not is_xml_tag(question_name):
                 raise PyXFormError(
-                    ErrorCode.NAMES_008.value.format(
-                        sheet=constants.SURVEY, row=row_number, column=constants.NAME
-                    )
+                    code=ErrorCode.NAMES_008,
+                    context={
+                        "sheet": constants.SURVEY,
+                        "row": row_number,
+                        "column": constants.NAME,
+                    },
                 )
             element_names.update((question_name,))
 
@@ -733,11 +723,12 @@ def workbook_to_json(
                 control_type = aliases.control[parse_dict["type"]]
                 if prev_control_type != control_type or len(stack) == 1:
                     raise PyXFormError(
-                        ErrorCode.SURVEY_001.value.format(
-                            row=row_number,
-                            type=control_type,
-                            name=row.get(constants.NAME),
-                        )
+                        code=ErrorCode.SURVEY_001,
+                        context={
+                            "row": row_number,
+                            "type": control_type,
+                            "name": row.get(constants.NAME, "(unknown)"),
+                        },
                     )
                 stack.pop()
                 table_list = None
@@ -895,15 +886,10 @@ def workbook_to_json(
                             + " select one external is only meant for filtered selects."
                         )
                     if not external_choices:
-                        k = constants.EXTERNAL_CHOICES
-                        msg = "There should be an external_choices sheet in this xlsform."
-                        similar = find_sheet_misspellings(key=k, keys=sheet_names)
-                        if similar is not None:
-                            msg = msg + " " + similar
-                        raise PyXFormError(
-                            msg
-                            + " Please ensure that the external_choices sheet has columns"
-                            " 'list name', and 'name'."
+                        sheet_misspellings.validate_choices(
+                            row_number=row_number,
+                            sheet_name=constants.EXTERNAL_CHOICES,
+                            sheet_names=sheet_names,
                         )
                     if list_name not in external_choices:
                         raise PyXFormError(
@@ -919,14 +905,10 @@ def workbook_to_json(
                     and not has_pyxform_reference(list_name)
                 ):
                     if not choices:
-                        k = constants.CHOICES
-                        msg = "There should be a choices sheet in this xlsform."
-                        similar = find_sheet_misspellings(key=k, keys=sheet_names)
-                        if similar is not None:
-                            msg = f"{msg} {similar}"
-                        raise PyXFormError(
-                            f"{msg} Please ensure that the choices sheet has the"
-                            " mandatory columns 'list_name', 'name', and 'label'."
+                        sheet_misspellings.validate_choices(
+                            row_number=row_number,
+                            sheet_name=constants.CHOICES,
+                            sheet_names=sheet_names,
                         )
                     elif list_name not in choices:
                         raise PyXFormError(
@@ -1314,11 +1296,12 @@ def workbook_to_json(
 
     if len(stack) > 1:
         raise PyXFormError(
-            ErrorCode.SURVEY_002.value.format(
-                row=stack[-1]["row_number"],
-                type=stack[-1]["control_type"],
-                name=stack[-1]["control_name"],
-            )
+            code=ErrorCode.SURVEY_002,
+            context={
+                "row": stack[-1]["row_number"],
+                "type": stack[-1]["control_type"],
+                "name": stack[-1]["control_name"],
+            },
         )
 
     if settings.get("flat", False):

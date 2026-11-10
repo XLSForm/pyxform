@@ -1,5 +1,4 @@
 from pyxform.errors import ErrorCode
-from pyxform.validators.pyxform import question_types as qt
 
 from tests.pyxform_test_case import PyxformTestCase
 
@@ -14,10 +13,9 @@ class TestBackgroundGeopointParsing(PyxformTestCase):
         |        | background-geopoint | temp_geo      |            |         |
         """
         self.assertPyxformXform(
-            name="data",
             md=md,
             errored=True,
-            error__contains=[qt.BACKGROUND_GEOPOINT_TRIGGER.format(r=3)],
+            error__contains=[ErrorCode.GEO_002.value.format(row=3)],
         )
 
     def test_error__invalid_trigger(self):
@@ -49,7 +47,7 @@ class TestBackgroundGeopointParsing(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=[qt.BACKGROUND_GEOPOINT_CALCULATION.format(r=3)],
+            error__contains=[ErrorCode.GEO_001.value.format(row=3)],
         )
 
 

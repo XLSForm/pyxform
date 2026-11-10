@@ -4,7 +4,7 @@ from collections.abc import Container
 from dataclasses import dataclass
 from unittest import skip
 
-from pyxform import constants
+from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.sheet_headers import (
     dealias_and_group_headers,
@@ -299,8 +299,9 @@ class TestChoicesColumns(PyxformTestCase):
                 ]
             ),
             errored=True,
-            # some basic keywords that should be in the error:
-            error__contains=["choices", "name", "list_name"],
+            error__contains=[
+                ErrorCode.SURVEY_013.value.format(row=2, missing=co.CHOICES)
+            ],
         )
 
     def test_missing_choice_headers(self):
@@ -735,7 +736,7 @@ class TestHeaderProcessing(PyxformTestCase):
                 sheet_name="survey",
                 row={"a": "b", "c": "d", "e": "f"},
                 header_key={"a": ("a",), "c": ("b", "z")},
-                default_language=constants.DEFAULT_LANGUAGE_VALUE,
+                default_language=co.DEFAULT_LANGUAGE_VALUE,
                 row_number=2,
             )
         self.assertEqual(
@@ -774,7 +775,9 @@ class TestHeaderProcessing(PyxformTestCase):
             md=md,
             errored=True,
             error__contains=[
-                ErrorCode.HEADER_001.value.format(sheet_name="survey", header="unknown"),
+                ErrorCode.HEADER_001.value.format(
+                    sheet_name="survey", header="(missing header)"
+                ),
             ],
         )
 

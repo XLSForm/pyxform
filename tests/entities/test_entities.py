@@ -1728,7 +1728,6 @@ class TestEntitiesParsing(PyxformTestCase):
                     dataset="e1",
                     other_scope="/survey/r2/r3",
                     scope="/survey/r1",
-                    question="q3",
                 ),
             ],
         )
@@ -3809,6 +3808,5 @@ class TestReferenceSource(PyxformTestCase):
         """Should raise an error if both property_name and question_name are None."""
         with self.assertRaises(PyXFormError) as err:
             ReferenceSource(path=ContainerPath.default(), row=1)
-        self.assertEqual(
-            err.exception.args[0], ErrorCode.INTERNAL_002.value.format(path="/survey")
-        )
+        self.assertEqual(ErrorCode.INTERNAL_002, err.exception.code)
+        self.assertEqual("/survey", err.exception.context["path"])

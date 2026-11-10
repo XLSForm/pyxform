@@ -142,7 +142,7 @@ class SurveyElement(Mapping):
 
     def validate(self):
         if not is_xml_tag(self.name):
-            raise PyXFormError(ErrorCode.NAMES_009.value.format(name=const.NAME))
+            raise PyXFormError(code=ErrorCode.NAMES_009, context={"name": const.NAME})
 
     def iter_descendants(
         self,

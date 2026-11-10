@@ -23,9 +23,12 @@ def value_or_label_check(name: str, value: str, row_number: int) -> None:
     """
     if not is_xml_tag(value=value):
         raise PyXFormError(
-            ErrorCode.NAMES_008.value.format(
-                sheet=co.SURVEY, row=row_number, column=f"{co.PARAMETERS} ({name})"
-            )
+            code=ErrorCode.NAMES_008,
+            context={
+                "sheet": co.SURVEY,
+                "row": row_number,
+                "column": f"{co.PARAMETERS} ({name})",
+            },
         )
 
 
