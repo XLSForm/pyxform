@@ -696,6 +696,15 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
+    SURVEY_015 = Detail(
+        name="Survey sheet - invalid 'required' on group or repeat",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'required' value is invalid. "
+            "Groups, repeats, and loops cannot be required. "
+            "Either remove the 'required' value in this row, or move it to a "
+            "question inside."
+        ),
+    )
 
 
 class PyXFormError(Exception):
