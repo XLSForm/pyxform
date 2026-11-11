@@ -24,7 +24,7 @@ dev = [
   "lxml==6.1.1",        # XPath test expressions
   "psutil==7.2.2",      # Process info for performance tests
   "ruff==0.15.21",      # Format and lint
-  "uv==0.12.15",        # Generate lock files.
+  "uv==0.13.4",        # Generate lock files.
 ]
 
 [project.urls]
