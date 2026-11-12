@@ -114,17 +114,27 @@ class TestSurveyColumns(PyxformTestCase):
             xml__contains=prep_for_xml_contains(expected),
         )
 
-    def test_big_image_invalid_if_no_image(self):
+    def test_validate_big_image_with_no_image__error(self):
+        """Should raise an error if 'big-image' is provided with no 'image'."""
+        md = """
+        | survey |
+        || type | name | media::big-image |
+        || text | c    | m.png            |
+        """
         self.assertPyxformXform(
-            name="data",
-            md="""
-            | survey |      |      |                  |
-            |        | type | name | media::big-image |
-            |        | text | c    | m.png            |
-            """,
+            md=md,
             errored=True,
             error__contains=["must also specify an image"],
         )
+
+    def test_validate_big_image_with_no_image__with_columns__ok(self):
+        """Should find no error is raised if there is big-image/image in at least one language."""
+        md = """
+        | survey |
+        || type | name | image::En (en) | big-image::En (en) | image::Fr (fr) | big-image::Fr (fr) |
+        || text | q1   |                | Q1-big.png         | Q1.png         |                    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
 
     def test_media_column__is_ignored(self):
         self.assertPyxformXform(

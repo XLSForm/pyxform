@@ -689,3 +689,29 @@ class TestChoicesSheet(PyxformTestCase):
                 xpq.body_control("q1", "select1"),
             ],
         )
+
+    def test_validate_big_image_with_no_image__ok(self):
+        """Should find no error is raised if 'big-image' is provided with no 'image'."""
+        md = """
+        | survey |
+        || type          | name | label |
+        || select_one c1 | q1   | Q1    |
+
+        | choices |
+        || list_name | name | big-image |
+        || c1        | n1   | N1.png    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
+
+    def test_validate_big_image_with_no_image__with_columns__ok(self):
+        """Should find no error is raised if there is big-image/image in at least one language."""
+        md = """
+        | survey |
+        || type          | name | label |
+        || select_one c1 | q1   | Q1    |
+
+        | choices |
+        || list_name | name | image::En (en) | big-image::En (en) | image::Fr (fr) | big-image::Fr (fr) |
+        || c1        | n1   |                | N1-big.png         | N1.png         |                    |
+        """
+        self.assertPyxformXform(md=md, warnings_count=0)
