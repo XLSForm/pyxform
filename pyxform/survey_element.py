@@ -504,16 +504,6 @@ class SurveyElement(Mapping):
         if not any((self.label, self.media, self.hint)) and self.guidance_hint:
             raise PyXFormError(msg)
 
-        # big-image must combine with image
-        if (
-            self.media is not None
-            and "image" not in self.media
-            and "big-image" in self.media
-        ):
-            raise PyXFormError(
-                f"To use big-image, you must also specify an image for the survey element named {self.name}."
-            )
-
         return result
 
     def xml_bindings(

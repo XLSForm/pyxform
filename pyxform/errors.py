@@ -310,6 +310,15 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
+    LABEL_002 = Detail(
+        name="Labels - invalid media 'big-image' with no media 'image'",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, a 'big-image' value is invalid. "
+            "To use 'big-image' media, an 'image' media must be provided. "
+            "When using translations, in each language, each 'big-image' must have an 'image'. "
+            "Learn more: https://docs.getodk.org/form-styling/#bigger-images-for-panning-and-zooming"
+        ),
+    )
     NAMES_001 = Detail(
         name="Names - invalid duplicate name in same context",
         msg=(

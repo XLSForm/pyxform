@@ -1,3 +1,4 @@
+from pyxform import constants as co
 from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -691,7 +692,7 @@ class TestChoicesSheet(PyxformTestCase):
         )
 
     def test_validate_big_image_with_no_image__ok(self):
-        """Should find no error is raised if 'big-image' is provided with no 'image'."""
+        """Should raise an error if 'big-image' is provided with no 'image'."""
         md = """
         | survey |
         || type          | name | label |
@@ -701,7 +702,11 @@ class TestChoicesSheet(PyxformTestCase):
         || list_name | name | big-image |
         || c1        | n1   | N1.png    |
         """
-        self.assertPyxformXform(md=md, warnings_count=0)
+        self.assertPyxformXform(
+            md=md,
+            errored=True,
+            error__contains=[ErrorCode.LABEL_002.value.format(row=2, sheet=co.CHOICES)],
+        )
 
     def test_validate_big_image_with_no_image__with_columns__ok(self):
         """Should find no error is raised if there is big-image/image in at least one language."""

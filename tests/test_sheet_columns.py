@@ -124,7 +124,7 @@ class TestSurveyColumns(PyxformTestCase):
         self.assertPyxformXform(
             md=md,
             errored=True,
-            error__contains=["must also specify an image"],
+            error__contains=[ErrorCode.LABEL_002.value.format(row=2, sheet=co.SURVEY)],
         )
 
     def test_validate_big_image_with_no_image__with_columns__ok(self):

@@ -26,6 +26,7 @@ from pyxform.parsing.sheet_headers import dealias_and_group_headers
 from pyxform.parsing.variable_reference import has_pyxform_reference, is_pyxform_reference
 from pyxform.question_type_dictionary import get_meta_group
 from pyxform.utils import coalesce, default_is_dynamic, print_pyobj_to_json
+from pyxform.validators.pyxform import control_content as ccv
 from pyxform.validators.pyxform import parameters as pv
 from pyxform.validators.pyxform import question_types as qt
 from pyxform.validators.pyxform import select_from_file, sheet_misspellings, unique_names
@@ -1256,6 +1257,8 @@ def workbook_to_json(
         else:
             # Put the row in the json dict as is:
             parent_children_array.append(row)
+
+        ccv.validate_big_image(row=row, row_num=row_number, sheet_name=constants.SURVEY)
 
     sheet_translations.or_other_check(warnings=warnings)
     try:
