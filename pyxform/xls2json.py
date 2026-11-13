@@ -1070,7 +1070,9 @@ def workbook_to_json(
                             constants.NAME: "reserved_name_for_field_list_labels_"
                             + str(row_number),
                             # Adding row number for uniqueness
-                            constants.CONTROL: {constants.APPEARANCE: "label"},
+                            constants.CONTROL: {
+                                constants.APPEARANCE: constants.APPEARANCE_LABEL
+                            },
                             constants.CHOICES: choices[list_name],
                             constants.ITEMSET: list_name,
                         }

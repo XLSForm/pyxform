@@ -77,6 +77,7 @@ LIST_NAME_U = "list_name"
 TABLE_LIST = "table-list"  # hyphenated because it goes in appearance, and convention for appearance column is dashes
 FIELD_LIST = "field-list"
 LIST_NOLABEL = "list-nolabel"
+APPEARANCE_LABEL = "label"
 
 SURVEY = "survey"
 SETTINGS = "settings"

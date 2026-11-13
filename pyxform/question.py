@@ -220,14 +220,45 @@ class Question(SurveyElement):
                     **{k: v for k, v in _action.items() if k not in action_fields},
                 ).node()
 
-    def _build_xml(self, survey: "Survey") -> DetachableElement | None:
+    def xml_label(self, survey: "Survey") -> DetachableElement | None:
+        if (self.label or self.media) or (self.hint or self.guidance_hint):
+            return super().xml_label(survey=survey)
+
+    def xml_hint(self, survey: "Survey"):
+        if isinstance(self.hint, dict) or self.guidance_hint:
+            path = self._translation_path(constants.HINT)
+            return node(constants.HINT, ref=f"jr:itext('{path}')")
+        elif self.hint:
+            return node(
+                constants.HINT, survey.insert_output_values(text=self.hint, context=self)
+            )
+        else:
+            return node(constants.HINT)
+
+    def _build_xml(self, survey: "Survey") -> DetachableElement:
         """Initial control node result for further processing depending on Question type."""
         control_dict = self.control
-        result = node(
-            control_dict["tag"],
-            *self.xml_label_and_hint(survey=survey),
-            ref=self.get_xpath(),
-        )
+        result = node(control_dict["tag"], ref=self.get_xpath())
+
+        label_or_hint_added = False
+        label = self.xml_label(survey=survey)
+        if label is not None:
+            result.appendChild(label)
+            label_or_hint_added = True
+
+        if self.hint:
+            result.appendChild(self.xml_hint(survey=survey))
+            label_or_hint_added = True
+        elif self.guidance_hint:
+            result.appendChild(self.xml_hint(survey=survey))
+
+        if not label_or_hint_added or (
+            not any((self.label, self.media, self.hint)) and self.guidance_hint
+        ):
+            raise PyXFormError(
+                f"The survey element named '{self.name}' has no label or hint."
+            )
+
         # Resolve field references in attributes
         for k, v in control_dict.items():
             # "tag" is from the question type dict so it can't include references. Also,
@@ -590,6 +621,21 @@ class MultipleChoiceQuestion(_SupportsItemset):
                     )
 
         return result
+
+    def xml_label(self, survey: "Survey") -> DetachableElement | None:
+        if (
+            self.control
+            and self.control.get(constants.APPEARANCE) == constants.APPEARANCE_LABEL
+            and not self.label
+            and not self.hint
+            and not self.media
+        ):
+            # Create a space label for unlabeled elements with the label appearance tag.
+            # This is because such elements are used to label the options for selects in
+            # a field-list and might want blank labels for themselves.
+            return node(constants.LABEL, " ")
+        else:
+            return super().xml_label(survey=survey)
 
 
 class Tag(SurveyElement):
