@@ -85,7 +85,7 @@ class TestSurveyColumns(PyxformTestCase):
             name="invalidcols",
             ss_structure={"survey": [{"type": "text", "name": "q1"}]},
             errored=True,
-            error__contains=["no label or hint"],
+            error__contains=[ErrorCode.LABEL_003.value.format(row=2)],
         )
 
     def test_label_node_added_when_hint_given_but_no_label_value(self):

@@ -795,16 +795,18 @@ def workbook_to_json(
                     # Simple expressions don't require a new node, they can reference directly.
                     if not is_pyxform_reference(value=repeat_count_expression):
                         generated_node_name = f"""{row[constants.NAME]}_count"""
-                        parent_children_array.append(
-                            {
-                                constants.NAME: generated_node_name,
-                                constants.BIND: {
-                                    "readonly": "true()",
-                                    constants.CALCULATE: repeat_count_expression,
-                                },
-                                constants.TYPE: constants.CALCULATE,
-                            }
+                        row_count_question = {
+                            constants.NAME: generated_node_name,
+                            constants.BIND: {
+                                "readonly": "true()",
+                                constants.CALCULATE: repeat_count_expression,
+                            },
+                            constants.TYPE: constants.CALCULATE,
+                        }
+                        ccv.validate_control_content(
+                            row=row_count_question, row_num=row_number
                         )
+                        parent_children_array.append(row_count_question)
                         # This re-directs the body/repeat ref to the above generated node.
                         row[constants.CONTROL]["jr:count"] = f"${{{generated_node_name}}}"
 
@@ -840,6 +842,9 @@ def workbook_to_json(
                                     constants.HINT
                                 ]
                                 del row[constants.HINT]
+                            ccv.validate_control_content(
+                                row=generated_label_element, row_num=row_number
+                            )
                             child_list.append(generated_label_element)
                 if "intent" in row:
                     row[constants.CONTROL] = row.get(constants.CONTROL, {})
@@ -1076,6 +1081,9 @@ def workbook_to_json(
                             constants.CHOICES: choices[list_name],
                             constants.ITEMSET: list_name,
                         }
+                        ccv.validate_control_content(
+                            row=table_list_header, row_num=row_number
+                        )
                         parent_children_array.append(table_list_header)
 
                     if table_list != list_name:
@@ -1091,6 +1099,9 @@ def workbook_to_json(
                     row[constants.CONTROL][constants.APPEARANCE] = constants.LIST_NOLABEL
                 parent_children_array.append(row)
                 if specify_other_question:
+                    ccv.validate_control_content(
+                        row=specify_other_question, row_num=row_number
+                    )
                     parent_children_array.append(specify_other_question)
 
         elif osm_parse:
@@ -1261,6 +1272,7 @@ def workbook_to_json(
             parent_children_array.append(row)
 
         ccv.validate_big_image(row=row, row_num=row_number, sheet_name=constants.SURVEY)
+        ccv.validate_control_content(row=row, row_num=row_number)
 
     sheet_translations.or_other_check(warnings=warnings)
     try:

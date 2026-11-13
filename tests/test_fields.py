@@ -685,9 +685,7 @@ class TestQuestionControlContentParsing(PyxformTestCase):
                 self.assertPyxformXform(
                     md=md.format(case=case),
                     errored=True,
-                    error__contains=[
-                        "The survey element named 'q1' has no label or hint."
-                    ],
+                    error__contains=[ErrorCode.LABEL_003.value.format(row=2)],
                 )
 
     def test_visible__no_control_content__with_trigger__ok(self):

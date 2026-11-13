@@ -1,5 +1,7 @@
 """Guidance hint test module."""
 
+from pyxform.errors import ErrorCode
+
 from tests.pyxform_test_case import PyxformTestCase
 
 
@@ -78,7 +80,7 @@ class GuidanceHintTest(PyxformTestCase):
             |        | string | name | as shown on birth certificate |
             """,
             errored=True,
-            error__contains=["The survey element named 'name' has no label or hint."],
+            error__contains=[ErrorCode.LABEL_003.value.format(row=2)],
         )
 
     def test_multi_language_guidance_only(self):  # pylint:disable=C0103
@@ -91,7 +93,7 @@ class GuidanceHintTest(PyxformTestCase):
             |        | string | name | as shown on birth certificate| comme sur le certificat de naissance |
             """,
             errored=True,
-            error__contains=["The survey element named 'name' has no label or hint."],
+            error__contains=[ErrorCode.LABEL_003.value.format(row=2)],
         )
 
     def test_multi_language_hint(self):

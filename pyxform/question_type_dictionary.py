@@ -378,6 +378,11 @@ _QUESTION_TYPE_DICT = {
 # Read-only view of the types.
 QUESTION_TYPE_DICT = MappingProxyType(_QUESTION_TYPE_DICT)
 
+# Question types with a default control tag are usually visible.
+QUESTION_TYPE_HAS_CONTROL = frozenset(
+    {k for k, v in QUESTION_TYPE_DICT.items() if co.CONTROL in v}
+)
+
 
 def get_meta_group(children: Sequence[dict[str, Any]]) -> dict[str, Any]:
     if children is None:

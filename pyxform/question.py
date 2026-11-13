@@ -240,24 +240,12 @@ class Question(SurveyElement):
         control_dict = self.control
         result = node(control_dict["tag"], ref=self.get_xpath())
 
-        label_or_hint_added = False
         label = self.xml_label(survey=survey)
         if label is not None:
             result.appendChild(label)
-            label_or_hint_added = True
 
-        if self.hint:
+        if self.hint or self.guidance_hint:
             result.appendChild(self.xml_hint(survey=survey))
-            label_or_hint_added = True
-        elif self.guidance_hint:
-            result.appendChild(self.xml_hint(survey=survey))
-
-        if not label_or_hint_added or (
-            not any((self.label, self.media, self.hint)) and self.guidance_hint
-        ):
-            raise PyXFormError(
-                f"The survey element named '{self.name}' has no label or hint."
-            )
 
         # Resolve field references in attributes
         for k, v in control_dict.items():

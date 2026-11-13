@@ -319,6 +319,15 @@ class ErrorCode(Enum):
             "Learn more: https://docs.getodk.org/form-styling/#bigger-images-for-panning-and-zooming"
         ),
     )
+    LABEL_003 = Detail(
+        name="Labels - invalid missing question label in the survey sheet",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the question label/hint/media is invalid. "
+            "A question that may be displayed to a user must have a label, hint, or media "
+            "(image, big-image, audio, or video). "
+            "Learn more: https://docs.getodk.org/xlsform/#the-survey-sheet"
+        ),
+    )
     NAMES_001 = Detail(
         name="Names - invalid duplicate name in same context",
         msg=(
