@@ -310,6 +310,13 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
+    MEDIA_001 = Detail(
+        name="Media - invalid big-image without image in the choices sheet",
+        msg=(
+            "[row : {row}] On the 'choices' sheet, the 'big-image' value is invalid. "
+            "To use big-image, you must also specify an image for the choice."
+        ),
+    )
     NAMES_001 = Detail(
         name="Names - invalid duplicate name in same context",
         msg=(
