@@ -1,0 +1,20 @@
+name: Notify pyxform-http
+
+on:
+  push:
+    branches: [master]
+
+permissions: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger pyxform-http snapshot
+        env:
+          GH_TOKEN: ${{ secrets.PYXFORM_HTTP_DISPATCH_TOKEN }}
+        run: |
+          gh api --method POST \
+            repos/getodk/pyxform-http/dispatches \
+            -f event_type=pyxform-updated \
+            -f 'client_payload[sha]=${{ github.sha }}'
