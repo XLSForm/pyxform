@@ -1,4 +1,7 @@
+import re
 from typing import Any
+
+RE_WHITESPACE = re.compile(r"( )+")
 
 
 def maybe_strip(value: Any) -> Any:

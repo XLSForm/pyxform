@@ -5,8 +5,7 @@ from typing import Any
 
 from pyxform import constants
 from pyxform.errors import ErrorCode, PyXFormError
-from pyxform.parsing.utils import maybe_strip
-from pyxform.xls2json_backends import RE_WHITESPACE
+from pyxform.parsing.utils import RE_WHITESPACE, maybe_strip
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
