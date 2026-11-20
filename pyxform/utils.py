@@ -2,6 +2,7 @@
 
 import copy
 import csv
+import io
 import json
 import sys
 from collections.abc import Generator, Iterable
@@ -9,35 +10,42 @@ from functools import lru_cache
 from io import StringIO
 from itertools import chain
 from json.decoder import JSONDecodeError
+from typing import TYPE_CHECKING
 from xml.dom import Node
-from xml.dom.minidom import Element
-from xml.dom.minidom import Text as MinidomText
 
 from pyxform import constants as const
 from pyxform.parsing.expression import lex_expression
 from pyxform.xls2json_backends import DefinitionData
 
+if TYPE_CHECKING:
+    from xml.dom.minidom import Attr
+
+
 LAST_SAVED_INSTANCE_NAME = "__last-saved"
-NODE_TYPE_TEXT = {Node.TEXT_NODE, Node.CDATA_SECTION_NODE}
 SPACE_TRANS_TABLE = str.maketrans({" ": "_"})
 XML_TEXT_SUBS = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
 XML_TEXT_TABLE = str.maketrans(XML_TEXT_SUBS)
 
 
-class DetachableElement(Element):
+class DetachableElement:
     """
-    Element classes are not meant to be instantiated directly.   This
-    restriction was not strictly enforced in Python 2, but is effectively
-    enforced in Python 3 via http://bugs.python.org/issue15290.
+    Similar to the xml.dom.minidom.Node API, but for writing Element/Attr/Text XML only.
 
-    A simple workaround (for now) is to set an extra attribute on the Element
-    class.  The long term fix will probably be to rewrite node() to use
-    document.createElement rather than Element.
+    The DOM tracking/editing/other features offered by minidom are not used by pyxform,
+    so this class offers a minimal API for building and writing a XML tree structure.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.ownerDocument = None
+    __slots__ = ("_attrs", "childNodes", "tagName")
+    nodeType = Node.ELEMENT_NODE
+
+    def __init__(self, tagName: str):
+        self._attrs: dict | None = None
+        self.childNodes: list[DetachableElement | Text] | None = None
+        self.tagName: str = tagName
+
+    @property
+    def attributes(self):
+        return self._attrs
 
     def writexml(self, writer, indent="", addindent="", newl=""):
         # indent = current indentation
@@ -48,11 +56,11 @@ class DetachableElement(Element):
         if self._attrs:
             for k, v in self._attrs.items():
                 # First space prefix separates attr from tagName, then it separates attrs.
-                writer.write(f' {k}="{escape_text_for_xml(v.value, attribute=True)}"')
+                writer.write(f' {k}="{escape_text_for_xml(v, attribute=True)}"')
         if self.childNodes:
             writer.write(">")
             # For text or mixed content, write without adding indents or newlines.
-            if any(c.nodeType in NODE_TYPE_TEXT for c in self.childNodes):
+            if any(c.nodeType == Node.TEXT_NODE for c in self.childNodes):
                 for cnode in self.childNodes:
                     cnode.writexml(writer, "", "", "")
             else:
@@ -63,6 +71,34 @@ class DetachableElement(Element):
             writer.write(f"</{self.tagName}>{newl}")
         else:
             writer.write(f"/>{newl}")
+
+    def toxml(self):
+        return self.toprettyxml("", "")
+
+    def toprettyxml(self, indent="\t", newl="\n"):
+        writer = io.StringIO()
+        self.writexml(writer, "", indent, newl)
+        return writer.getvalue()
+
+    def setAttribute(self, attname, value):
+        if self._attrs is None:
+            self._attrs = {}
+        self._attrs[attname] = value
+
+    def setAttributeNode(self, attr: "Attr"):
+        self.setAttribute(attr._name, attr._value)
+
+    def setAttributeBatch(self, attrs):
+        if self._attrs is None:
+            self._attrs = attrs
+        else:
+            self._attrs.update(attrs)
+
+    def appendChild(self, node: "DetachableElement | Text"):
+        if self.childNodes is None:
+            self.childNodes = []
+        self.childNodes.append(node)
+        return node
 
 
 @lru_cache(maxsize=64)
@@ -75,18 +111,18 @@ def escape_text_for_xml(text: str, attribute: bool = False) -> str:
     return text
 
 
-class Text(MinidomText):
+class Text:
+    __slots__ = ("data",)
+    nodeType = Node.TEXT_NODE
+
     def __init__(self, data: str = "") -> None:
         # Shortcut for base class pattern: `t = Text(); t.data = data`.
-        super().__init__()
         self.data = data
 
     def writexml(self, writer, indent="", addindent="", newl=""):
         """Same as original but no replacing double quotes with '&quot;'."""
-        data = f"{indent}{self.data}{newl}"
-        if data:
-            data = escape_text_for_xml(text=data)
-        writer.write(data)
+        if self.data:
+            writer.write(f"{indent}{escape_text_for_xml(text=self.data)}{newl}")
 
 
 def node(tag: str, *args, **kwargs) -> DetachableElement:
@@ -98,18 +134,19 @@ def node(tag: str, *args, **kwargs) -> DetachableElement:
     result = DetachableElement(tag)
 
     # Convert the kwargs xml attribute dictionary to a xml.dom.minidom.Element.
-    for k, v in kwargs.items():
-        result.setAttribute(k, v)
+    if kwargs:
+        result.setAttributeBatch(kwargs)
 
-    for n in args:
-        if isinstance(n, str | int | float | bytes):
-            result.appendChild(Text(data=str(n)))
-        elif isinstance(n, list | Generator):
-            for e in n:
-                if isinstance(e, Element | Text):
-                    result.appendChild(e)
-        elif isinstance(n, Element | Text):
-            result.appendChild(n)
+    if args:
+        for n in args:
+            if isinstance(n, str | int | float | bytes):
+                result.appendChild(Text(data=str(n)))
+            elif isinstance(n, list | Generator):
+                for e in n:
+                    if isinstance(e, DetachableElement | Text):
+                        result.appendChild(e)
+            elif isinstance(n, DetachableElement | Text):
+                result.appendChild(n)
     return result
 
 
