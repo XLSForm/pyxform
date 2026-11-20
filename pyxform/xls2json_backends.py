@@ -3,7 +3,7 @@
 import csv
 import datetime
 import re
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from io import BytesIO, IOBase, StringIO
@@ -13,19 +13,18 @@ from typing import Any, BinaryIO
 from zipfile import BadZipFile
 
 from openpyxl import open as pyxl_open
-from openpyxl.cell import Cell as pyxlCell
 from openpyxl.reader.excel import ExcelReader
 from openpyxl.workbook import Workbook as pyxlWorkbook
 from openpyxl.worksheet.worksheet import Worksheet as pyxlWorksheet
 
 from pyxform import constants
 from pyxform.errors import PyXFormError, PyXFormReadError
+from pyxform.parsing.utils import RE_WHITESPACE, maybe_strip
 
 XL_DATE_AMBIGOUS_MSG = (
     "The xls file provided has an invalid date on the %s sheet, under"
     " the %s column on row number %s"
 )
-RE_WHITESPACE = re.compile(r"( )+")
 
 
 @dataclass(slots=True)
@@ -70,7 +69,6 @@ def trim_trailing_empty(a_list: list, n_empty: int) -> list:
 
 def get_excel_column_headers(first_row: Iterable[str | None]) -> list[str | None]:
     """Get column headers from the first row; stop if there's a run of empty columns."""
-    max_adjacent_empty_columns = 20
     column_header_list = []
     adjacent_empty_cols = 0
     for column_header in first_row:
@@ -78,7 +76,7 @@ def get_excel_column_headers(first_row: Iterable[str | None]) -> list[str | None
             # Preserve column order (will filter later)
             column_header_list.append(None)
             # After a run of empty cols, assume we've reached the end of the data.
-            if max_adjacent_empty_columns == adjacent_empty_cols:
+            if adjacent_empty_cols == 20:
                 break
             adjacent_empty_cols += 1
         else:
@@ -94,30 +92,28 @@ def get_excel_column_headers(first_row: Iterable[str | None]) -> list[str | None
 
 
 def get_excel_rows(
-    headers: Iterable[str | None],
-    rows: Iterable[tuple[pyxlCell, ...]],
-    cell_func: Callable[[pyxlCell, int, str], Any],
+    headers: Sequence[str | None],
+    rows: Iterable[tuple],
 ) -> list[dict[str, Any]]:
     """Get rows of cleaned data; stop if there's a run of empty rows."""
-    max_adjacent_empty_rows = 60
-    col_header_enum = list(enumerate(headers))
     adjacent_empty_rows = 0
     result_rows = []
-    for row_n, row in enumerate(rows):
+    for row in rows:
         row_dict = {}
-        for col_n, key in col_header_enum:
-            if key is None:
+        for idx, value in enumerate(row):
+            if value is None:
                 continue
-            try:
-                cell = row[col_n]
-                if not is_empty(cell.value):
-                    row_dict[key] = cell_func(cell, row_n, key)
-            except IndexError:
-                pass  # rows may not have values for every column
+            header = headers[idx]
+            if header is None:
+                continue
+            if not is_empty(value):
+                value = maybe_strip(value)
+                if not is_empty(value):
+                    row_dict[header] = xlsx_value_to_str(value)
 
-        if 0 == len(row_dict):
+        if not row_dict:
             # After a run of empty rows, assume we've reached the end of the data.
-            if max_adjacent_empty_rows == adjacent_empty_rows:
+            if adjacent_empty_rows == 60:
                 break
             adjacent_empty_rows += 1
         else:
@@ -140,21 +136,12 @@ def xlsx_to_dict(path_or_file):
     All the keys and leaf elements are strings.
     """
 
-    def xlsx_clean_cell(cell: pyxlCell, row_n: int, col_key: str) -> str | None:
-        value = cell.value
-        if isinstance(value, str):
-            value = value.strip()
-        if not is_empty(value):
-            return xlsx_value_to_str(value)
-
-        return None
-
     def xlsx_to_dict_normal_sheet(sheet: pyxlWorksheet):
         # XLSX format: max cols 16384, max rows 1048576
-        first_row = (c.value for c in next(sheet.rows, []))
+        first_row = next(sheet.iter_rows(min_row=1, max_row=1, values_only=True), ())
         headers = get_excel_column_headers(first_row=first_row)
-        row_iter = sheet.iter_rows(min_row=2, max_col=len(headers))
-        rows = get_excel_rows(headers=headers, rows=row_iter, cell_func=xlsx_clean_cell)
+        row_iter = sheet.iter_rows(min_row=2, max_col=len(headers), values_only=True)
+        rows = get_excel_rows(headers=headers, rows=row_iter)
         column_header_list = [key for key in headers if key is not None]
         return rows, _list_to_dict_list(column_header_list)
 

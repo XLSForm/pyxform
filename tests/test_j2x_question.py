@@ -201,17 +201,17 @@ class Json2XformQuestionValidationTests(PyxformTestCase):
 
         # Inspect XML Control
         observed = q.xml_control(survey=self.s)
-        self.assertEqual("input", observed.nodeName)
-        self.assertEqual("/test/phone_number_q", observed.attributes["ref"].nodeValue)
+        self.assertEqual("input", observed.tagName)
+        self.assertEqual("/test/phone_number_q", observed.attributes["ref"])
         observed_label = observed.childNodes[0]
-        self.assertEqual("label", observed_label.nodeName)
+        self.assertEqual("label", observed_label.tagName)
         self.assertEqual(
             "jr:itext('/test/phone_number_q:label')",
-            observed_label.attributes["ref"].nodeValue,
+            observed_label.attributes["ref"],
         )
         observed_hint = observed.childNodes[1]
-        self.assertEqual("hint", observed_hint.nodeName)
-        self.assertEqual("Enter numbers only.", observed_hint.childNodes[0].nodeValue)
+        self.assertEqual("hint", observed_hint.tagName)
+        self.assertEqual("Enter numbers only.", observed_hint.childNodes[0].data)
 
         # Inspect XML Binding
         expected = {

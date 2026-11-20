@@ -5,8 +5,7 @@ from typing import Any
 
 from pyxform import constants
 from pyxform.errors import ErrorCode, PyXFormError
-from pyxform.parsing.utils import maybe_strip
-from pyxform.xls2json_backends import RE_WHITESPACE
+from pyxform.parsing.utils import RE_WHITESPACE, maybe_strip
 
 SMART_QUOTES = {"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'}
 RE_SMART_QUOTES = re.compile(r"|".join(re.escape(old) for old in SMART_QUOTES))
@@ -187,8 +186,11 @@ def process_row(
         elif len(tokens) == 1:
             out_row[tokens[0]] = val
         else:
-            new_value = list_to_nested_dict((*tokens[1:], val))
-            out_row = merge_dicts(out_row, {tokens[0]: new_value}, default_language)
+            out_row = merge_dicts(
+                out_row,
+                {tokens[0]: list_to_nested_dict((*tokens[1:], val))},
+                default_language,
+            )
     if add_row_number:
         out_row["__row"] = row_number
     return out_row
