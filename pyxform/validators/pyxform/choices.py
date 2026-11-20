@@ -24,6 +24,11 @@ def validate_choice_list(options: list[dict], allow_duplicates: bool = False) ->
         elif co.LABEL not in option and co.MEDIA not in option:
             raise PyXFormError(code=ErrorCode.LABEL_001, context={"row": option["__row"]})
 
+        # big-image must combine with image
+        media = option.get(co.MEDIA)
+        if isinstance(media, dict) and "big-image" in media and "image" not in media:
+            raise PyXFormError(code=ErrorCode.MEDIA_001, context={"row": option["__row"]})
+
         if not allow_duplicates:
             name = option[co.NAME]
             if name in seen_options:
