@@ -755,7 +755,7 @@ class Survey(Section):
         if self.choices:
             for path, value in get_choices():
                 last_path = path.pop()
-                leaf_value = {last_path: value, constants.TYPE: constants.CHOICE}
+                leaf_value = {last_path: value}
                 self._add_to_nested_dict(self._translations, path, leaf_value)
 
         search_lists = set()
@@ -789,7 +789,6 @@ class Survey(Section):
                             "text": d["text"],
                             "output_context": d["output_context"],
                         },
-                        constants.TYPE: constants.QUESTION,
                     }
                 )
 
@@ -908,9 +907,6 @@ class Survey(Section):
                     raise PyXFormError("""Invalid value for `content`.""")
 
                 for media_type, media_value in content.items():
-                    # Ignore key indicating Question or Choice translation type.
-                    if media_type == constants.TYPE:
-                        continue
                     if isinstance(media_value, dict):
                         output_value = media_value["text"]
                         output_context = media_value["output_context"]
