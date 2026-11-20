@@ -187,8 +187,11 @@ def process_row(
         elif len(tokens) == 1:
             out_row[tokens[0]] = val
         else:
-            new_value = list_to_nested_dict((*tokens[1:], val))
-            out_row = merge_dicts(out_row, {tokens[0]: new_value}, default_language)
+            out_row = merge_dicts(
+                out_row,
+                {tokens[0]: list_to_nested_dict((*tokens[1:], val))},
+                default_language,
+            )
     if add_row_number:
         out_row["__row"] = row_number
     return out_row
