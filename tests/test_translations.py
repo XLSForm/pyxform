@@ -380,11 +380,11 @@ class TestTranslations(PyxformTestCase):
         with 2 choices each, average of 10 runs (seconds), with and without the check,
         per question:
         | num   | with   | without | peak RSS MB |
-        |   500 | 0.4428 |  0.4017 |          76 |
-        |  1000 | 0.8216 |  0.8307 |          91 |
-        |  2000 | 1.7578 |  1.6858 |         126 |
-        |  5000 | 4.4850 |  4.6740 |         233 |
-        | 10000 | 9.1478 |  9.2591 |         419 |
+        |   500 | 0.2755 |  0.2581 |          57 |
+        |  1000 | 0.5110 |  0.5306 |          64 |
+        |  2000 | 1.0174 |  1.1021 |          83 |
+        |  5000 | 2.8446 |  2.7222 |         132 |
+        | 10000 | 5.2261 |  5.0546 |         184 |
         """
         survey_header = """
         | survey |                 |        |                    |                   |
