@@ -8,6 +8,7 @@ permissions: {}
 
 jobs:
   notify:
+    if: github.repository == 'XLSForm/pyxform'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger pyxform-http snapshot
