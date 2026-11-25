@@ -82,6 +82,48 @@ class TestChoicesSheet(PyxformTestCase):
                     error__contains=[ErrorCode.LABEL_001.value.format(row=2)],
                 )
 
+    def test_choices_big_image_without_image__error(self):
+        """Should raise an error if a choice has a big-image but no image."""
+        md = """
+        | survey |
+        |        | type          | name | label |
+        |        | select_one c1 | q1   | Q1    |
+
+        | choices |
+        |         | list_name | name | label | {case} |
+        |         | c1        | n1   | N1    | a.jpg  |
+        |         | c1        | n2   | N2    |        |
+        """
+        cases = ("media::big-image", "big-image", "media::big-image::English (en)")
+        for case in cases:
+            with self.subTest(msg=case):
+                self.assertPyxformXform(
+                    md=md.format(case=case),
+                    errored=True,
+                    error__contains=[ErrorCode.MEDIA_001.value.format(row=2)],
+                )
+
+    def test_choices_big_image_with_image__ok(self):
+        """Should not raise an error if a choice has both a big-image and an image."""
+        md = """
+        | survey |
+        |        | type          | name | label |
+        |        | select_one c1 | q1   | Q1    |
+
+        | choices |
+        |         | list_name | name | label | media::image | media::big-image |
+        |         | c1        | n1   | N1    | a.jpg        | b.jpg            |
+        |         | c1        | n2   | N2    | c.jpg        |                  |
+        |         | c1        | n3   | N3    |              |                  |
+        """
+        self.assertPyxformXform(
+            md=md,
+            xml__contains=[
+                '<value form="image">jr://images/a.jpg</value>',
+                '<value form="big-image">jr://images/b.jpg</value>',
+            ],
+        )
+
     def test_choices_without_labels__for_static_selects__media__ok(self):
         """Should not raise an error if a label or media is provided."""
         md = """
