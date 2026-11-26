@@ -127,6 +127,14 @@ class XPathHelper:
         """
 
     @staticmethod
+    def body_label_inline_empty(q_type: str, q_name: str) -> str:
+        """Body element contains an empty question label element."""
+        return f"""
+        /h:html/h:body/x:{q_type}[@ref='/test_name/{q_name}']
+          /x:label[not(@ref) and not(text())]
+        """
+
+    @staticmethod
     def body_label_itext(q_type: str, q_name: str) -> str:
         """Body element references itext for the question label."""
         return f"""

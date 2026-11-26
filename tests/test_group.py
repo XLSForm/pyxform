@@ -114,8 +114,8 @@ class TestGroupOutput(PyxformTestCase):
                 xpq.body_group_select1_itemset(
                     "g1", "reserved_name_for_field_list_labels_3", "label"
                 ),
-                xpq.body_label_inline(
-                    "group/x:select1", "g1/reserved_name_for_field_list_labels_3", " "
+                xpq.body_label_inline_empty(
+                    "group/x:select1", "g1/reserved_name_for_field_list_labels_3"
                 ),
                 xpq.body_group_select1_itemset("g1", "q1", "list-nolabel"),
                 xpq.body_label_inline("group/x:select1", "g1/q1", "Q1"),
@@ -164,7 +164,7 @@ class TestGroupOutput(PyxformTestCase):
                 """,
                 xpq.body_label_inline("group/x:input", "g1/q1", "G1"),
                 xpq.body_group_select1_itemset("g1", "q2", "label"),
-                xpq.body_label_inline("group/x:select1", "g1/q2", " "),
+                xpq.body_label_inline_empty("group/x:select1", "g1/q2"),
                 xpq.body_label_inline("group/x:select1", "g1/q3", "Q3"),
                 xpq.body_group_select1_itemset("g1", "q3", "list-nolabel"),
             ],

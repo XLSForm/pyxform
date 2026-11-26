@@ -26,7 +26,10 @@ from pyxform.utils import (
     default_is_dynamic,
     node,
 )
-from pyxform.validators.pyxform.control_content import question_has_visible_control
+from pyxform.validators.pyxform.control_content import (
+    question_has_control_content,
+    question_has_visible_control,
+)
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -603,14 +606,12 @@ class MultipleChoiceQuestion(_SupportsItemset):
         if (
             self.control
             and self.control.get(constants.APPEARANCE) == constants.APPEARANCE_LABEL
-            and not self.label
-            and not self.hint
-            and not self.media
+            and not question_has_control_content(row=self)
         ):
-            # Create a space label for unlabeled elements with the label appearance tag.
+            # Create an empty label for unlabeled elements with the label appearance tag.
             # This is because such elements are used to label the options for selects in
-            # a field-list and might want blank labels for themselves.
-            return node(constants.LABEL, " ")
+            # a field-list and might want no label for themselves.
+            return node(constants.LABEL)
         else:
             return super().xml_label(survey=survey)
 
