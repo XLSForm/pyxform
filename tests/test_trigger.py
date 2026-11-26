@@ -184,10 +184,7 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | note      | note   | timestamp: ${one-ts} |         |             |
             """,
             errored=True,
-            error__contains=[
-                "The question ${one} is not user-visible so it can't be used as a"
-                + " calculation trigger for question ${one-ts}.",
-            ],
+            error__contains=[ErrorCode.SURVEY_015.value.format(row=3, q="one")],
         )
 
     def test_when_trigger_refers_to_calculate_with_label_error_is_shown(self):
@@ -200,10 +197,7 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | calculate | one-ts |                      | ${one}  | now()       |
             """,
             errored=True,
-            error__contains=[
-                "The question ${one} is not user-visible so it can't be used as a"
-                + " calculation trigger for question ${one-ts}.",
-            ],
+            error__contains=[ErrorCode.SURVEY_015.value.format(row=3, q="one")],
         )
 
     def test_typed_calculate_cant_be_trigger(self):
@@ -216,10 +210,7 @@ class TriggerSetvalueTests(PyxformTestCase):
                 |        | integer   | two-ts | ${two}  | now()       |
                 """,
             errored=True,
-            error__contains=[
-                "The question ${two} is not user-visible so it can't be used as a"
-                + " calculation trigger for question ${two-ts}."
-            ],
+            error__contains=[ErrorCode.SURVEY_015.value.format(row=3, q="two")],
         )
 
     def test_handling_trigger_column_in_group(self):

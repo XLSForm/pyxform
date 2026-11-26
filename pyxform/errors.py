@@ -714,6 +714,16 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
+    SURVEY_015 = Detail(
+        name="Survey sheet - trigger target not user-visible.",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'trigger' value is invalid. "
+            "A question must be user-visible to act as a trigger. "
+            "The question '{q}' is not user-visible. Update the question to add a "
+            "label / hint / media, or specify a different trigger question."
+            "Learn more: https://docs.getodk.org/form-logic/#triggering-calculations-on-value-change"
+        ),
+    )
 
 
 class PyXFormError(Exception):

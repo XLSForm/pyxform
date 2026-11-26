@@ -26,6 +26,7 @@ from pyxform.utils import (
     default_is_dynamic,
     node,
 )
+from pyxform.validators.pyxform.control_content import question_has_visible_control
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -149,19 +150,7 @@ class Question(SurveyElement):
         return result
 
     def xml_control(self, survey: "Survey"):
-        if self.type == constants.CALCULATE or (
-            ((self.bind is not None and constants.CALCULATE in self.bind) or self.trigger)
-            and not (self.label or self.hint)
-        ):
-            nested_setvalues = survey.setvalues_by_triggering_ref.get(self.name)
-            if nested_setvalues:
-                for setvalue in nested_setvalues:
-                    msg = (
-                        f"The question ${{{self.name}}} is not user-visible "
-                        "so it can't be used as a calculation trigger for "
-                        f"question ${{{setvalue[0]}}}."
-                    )
-                    raise PyXFormError(msg)
+        if not question_has_visible_control(row=self):
             return None
 
         xml_node = self.build_xml(survey=survey)

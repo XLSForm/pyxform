@@ -27,14 +27,26 @@ def validate_background_geopoint_trigger(trigger: str | None, row_num: int) -> b
     return True
 
 
-def validate_references(
-    referrers: Iterable[tuple[str | None, int]], questions: Collection[str]
+def validate_trigger_references(
+    referrers: Iterable[tuple[str | None, int]],
+    questions: Collection[str],
+    questions_visible: Collection[str],
 ) -> bool:
-    """Pyxform references must refer to a question that exists."""
+    """Trigger variable references must specify a question that exists and is user-visible."""
     for target, row_num in referrers:
         if target not in questions:
             raise PyXFormError(
-                code=ErrorCode.PYREF_003, context={"q": target, "row": row_num}
+                code=ErrorCode.PYREF_003,
+                context={
+                    "sheet": co.SURVEY,
+                    "column": co.TRIGGER,
+                    "row": row_num,
+                    "q": target,
+                },
+            )
+        if target not in questions_visible:
+            raise PyXFormError(
+                code=ErrorCode.SURVEY_015, context={"q": target, "row": row_num}
             )
     return True
 

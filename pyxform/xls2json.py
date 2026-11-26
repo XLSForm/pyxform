@@ -426,6 +426,7 @@ def workbook_to_json(
     meta_children = []
     # To check that questions with triggers refer to other questions that exist.
     question_names = set()
+    questions_visible = set()
     element_names = Counter()
     trigger_references: list[tuple[str, int]] = []
     geo_references: list[tuple[str, int]] = []
@@ -679,7 +680,7 @@ def workbook_to_json(
             if constants.NAME not in row:
                 if row[constants.TYPE] == "note":
                     # autogenerate names for notes without them
-                    row[constants.NAME] = "generated_note_name_" + str(row_number)
+                    row[constants.NAME] = f"generated_note_name_{row_number}"
                 elif not end_control_parse:
                     raise PyXFormError(
                         ROW_FORMAT_STRING % row_number
@@ -806,6 +807,8 @@ def workbook_to_json(
                         ccv.validate_control_content(
                             row=row_count_question, row_num=row_number
                         )
+                        if ccv.question_has_visible_control(row=row_count_question):
+                            questions_visible.add(row_count_question[constants.NAME])
                         parent_children_array.append(row_count_question)
                         # This re-directs the body/repeat ref to the above generated node.
                         row[constants.CONTROL]["jr:count"] = f"${{{generated_node_name}}}"
@@ -829,8 +832,8 @@ def workbook_to_json(
                         # see https://github.com/modilabs/pyxform/issues/62
                         if constants.LABEL in row or constants.HINT in row:
                             generated_label_element = {
-                                "type": "note",
-                                "name": "generated_table_list_label_" + str(row_number),
+                                constants.TYPE: "note",
+                                constants.NAME: f"generated_table_list_label_{row_number}",
                             }
                             if constants.LABEL in row:
                                 generated_label_element[constants.LABEL] = row[
@@ -845,6 +848,12 @@ def workbook_to_json(
                             ccv.validate_control_content(
                                 row=generated_label_element, row_num=row_number
                             )
+                            if ccv.question_has_visible_control(
+                                row=generated_label_element
+                            ):
+                                questions_visible.add(
+                                    generated_label_element[constants.NAME]
+                                )
                             child_list.append(generated_label_element)
                 if "intent" in row:
                     row[constants.CONTROL] = row.get(constants.CONTROL, {})
@@ -1084,6 +1093,8 @@ def workbook_to_json(
                         ccv.validate_control_content(
                             row=table_list_header, row_num=row_number
                         )
+                        if ccv.question_has_visible_control(row=table_list_header):
+                            questions_visible.add(table_list_header[constants.NAME])
                         parent_children_array.append(table_list_header)
 
                     if table_list != list_name:
@@ -1102,6 +1113,8 @@ def workbook_to_json(
                     ccv.validate_control_content(
                         row=specify_other_question, row_num=row_number
                     )
+                    if ccv.question_has_visible_control(row=specify_other_question):
+                        questions_visible.add(specify_other_question[constants.NAME])
                     parent_children_array.append(specify_other_question)
 
         elif osm_parse:
@@ -1273,13 +1286,15 @@ def workbook_to_json(
 
         ccv.validate_big_image(row=row, row_num=row_number, sheet_name=constants.SURVEY)
         ccv.validate_control_content(row=row, row_num=row_number)
+        if ccv.question_has_visible_control(row=row):
+            questions_visible.add(question_name)
 
     sheet_translations.or_other_check(warnings=warnings)
-    try:
-        qt.validate_references(referrers=trigger_references, questions=question_names)
-    except PyXFormError as e:
-        e.context.update(sheet=constants.SURVEY, column=constants.TRIGGER)
-        raise
+    qt.validate_trigger_references(
+        referrers=trigger_references,
+        questions=question_names,
+        questions_visible=questions_visible,
+    )
     qt_geo.validate_parameter_reference_geometry(
         geo_references=geo_references,
         secondary_instances=secondary_instances,

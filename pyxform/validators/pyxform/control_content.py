@@ -41,6 +41,20 @@ def question_has_control_content(row: Mapping) -> bool:
     return bool(row.get(co.LABEL) or row.get(co.HINT) or row.get(co.MEDIA))
 
 
+def question_has_visible_control(row: Mapping) -> bool:
+    """Determine whether the question definition will have a user-visible control."""
+    return bool(
+        # Has a default control tag.
+        row.get(co.TYPE) in QUESTION_TYPE_HAS_CONTROL
+        and (
+            # Has label/hint/media to put in the control tag.
+            question_has_control_content(row=row)
+            # Is a row header for a field-list group grid.
+            or coalesce(row.get(co.CONTROL), {}).get(co.APPEARANCE) == co.APPEARANCE_LABEL
+        )
+    )
+
+
 def validate_control_content(row: dict, row_num: int) -> bool:
     """Check if a question has user-visible control content."""
     if question_must_have_visible_control(row=row) and not question_has_control_content(

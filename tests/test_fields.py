@@ -714,10 +714,7 @@ class TestQuestionControlContentParsing(PyxformTestCase):
                 self.assertPyxformXform(
                     md=md.format(case=case),
                     errored=True,
-                    error__contains=[
-                        "The question ${q2} is not user-visible so it can't be used as a "
-                        "calculation trigger for question ${q3}."
-                    ],
+                    error__contains=[ErrorCode.SURVEY_015.value.format(row=4, q="q2")],
                 )
 
     def test_visible__no_control_content__with_calculate__ok(self):
@@ -746,10 +743,7 @@ class TestQuestionControlContentParsing(PyxformTestCase):
                 self.assertPyxformXform(
                     md=md.format(case=case),
                     errored=True,
-                    error__contains=[
-                        "The question ${q2} is not user-visible so it can't be used as a "
-                        "calculation trigger for question ${q3}."
-                    ],
+                    error__contains=[ErrorCode.SURVEY_015.value.format(row=4, q="q2")],
                 )
 
     def test_non_visible__no_control_content__ok(self):
@@ -774,9 +768,8 @@ class TestQuestionControlContentParsing(PyxformTestCase):
                     warnings_count=0,
                 )
 
-    def test_non_visible__no_control_content__as_trigger__ok(self):
+    def test_non_visible__no_control_content__as_trigger__error(self):
         """Should raise an error/warning when no label/hint/media is provided."""
-        # Seems like it should be an error/warning but currently is not.
         md = """
         | survey |
         || type   | name | label | trigger |
@@ -787,5 +780,6 @@ class TestQuestionControlContentParsing(PyxformTestCase):
             with self.subTest(case):
                 self.assertPyxformXform(
                     md=md.format(case=case),
-                    warnings_count=0,
+                    errored=True,
+                    error__contains=[ErrorCode.SURVEY_015.value.format(row=3, q="q1")],
                 )
