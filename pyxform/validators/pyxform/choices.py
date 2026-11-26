@@ -1,5 +1,6 @@
 from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
+from pyxform.validators.pyxform import control_content as ccv
 
 
 def validate_headers(
@@ -23,6 +24,8 @@ def validate_choice_list(options: list[dict], allow_duplicates: bool = False) ->
             raise PyXFormError(code=ErrorCode.NAMES_006, context={"row": option["__row"]})
         elif co.LABEL not in option and co.MEDIA not in option:
             raise PyXFormError(code=ErrorCode.LABEL_001, context={"row": option["__row"]})
+
+        ccv.validate_big_image(row=option, row_num=option["__row"], sheet_name=co.CHOICES)
 
         if not allow_duplicates:
             name = option[co.NAME]

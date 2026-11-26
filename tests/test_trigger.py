@@ -2,6 +2,7 @@
 
 from itertools import product
 
+from pyxform import constants as co
 from pyxform.errors import ErrorCode
 
 from tests.pyxform_test_case import PyxformTestCase
@@ -19,7 +20,7 @@ class TriggerSetvalueTests(PyxformTestCase):
             errored=True,
             error__contains=[
                 ErrorCode.PYREF_003.value.format(
-                    sheet="survey", column="trigger", row=2, q="a"
+                    sheet=co.SURVEY, column=co.TRIGGER, row=2, q="a"
                 )
             ],
         )
@@ -34,7 +35,9 @@ class TriggerSetvalueTests(PyxformTestCase):
             """,
             errored=True,
             error__contains=[
-                ErrorCode.PYREF_001.value.format(sheet="survey", column="trigger", row=2)
+                ErrorCode.PYREF_001.value.format(
+                    sheet=co.SURVEY, column=co.TRIGGER, row=2
+                )
             ],
         )
 
@@ -181,10 +184,7 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | note      | note   | timestamp: ${one-ts} |         |             |
             """,
             errored=True,
-            error__contains=[
-                "The question ${one} is not user-visible so it can't be used as a"
-                + " calculation trigger for question ${one-ts}.",
-            ],
+            error__contains=[ErrorCode.SURVEY_015.value.format(row=3, q="one")],
         )
 
     def test_when_trigger_refers_to_calculate_with_label_error_is_shown(self):
@@ -197,10 +197,7 @@ class TriggerSetvalueTests(PyxformTestCase):
             |        | calculate | one-ts |                      | ${one}  | now()       |
             """,
             errored=True,
-            error__contains=[
-                "The question ${one} is not user-visible so it can't be used as a"
-                + " calculation trigger for question ${one-ts}.",
-            ],
+            error__contains=[ErrorCode.SURVEY_015.value.format(row=3, q="one")],
         )
 
     def test_typed_calculate_cant_be_trigger(self):
@@ -213,10 +210,7 @@ class TriggerSetvalueTests(PyxformTestCase):
                 |        | integer   | two-ts | ${two}  | now()       |
                 """,
             errored=True,
-            error__contains=[
-                "The question ${two} is not user-visible so it can't be used as a"
-                + " calculation trigger for question ${two-ts}."
-            ],
+            error__contains=[ErrorCode.SURVEY_015.value.format(row=3, q="two")],
         )
 
     def test_handling_trigger_column_in_group(self):
@@ -391,7 +385,7 @@ class TriggerSetvalueTests(PyxformTestCase):
                     errored=True,
                     error__contains=[
                         ErrorCode.PYREF_002.value.format(
-                            sheet="survey", column="trigger", row="4"
+                            sheet=co.SURVEY, column=co.TRIGGER, row="4"
                         )
                     ],
                 )

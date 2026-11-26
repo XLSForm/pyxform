@@ -363,9 +363,9 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
         create_attr = {const.NAME: "create", const.TYPE: "attribute", "value": "1"}
         if create_if:
             create_attr[const.BIND] = {
-                "calculate": create_if,
+                const.CALCULATE: create_if,
                 "readonly": "true()",
-                "type": "string",
+                const.TYPE: "string",
             }
         entity[const.CHILDREN].append(create_attr)
 
@@ -379,14 +379,14 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
         update_attr = {const.NAME: "update", const.TYPE: "attribute", "value": "1"}
         if update_if:
             update_attr[const.BIND] = {
-                "calculate": update_if,
+                const.CALCULATE: update_if,
                 "readonly": "true()",
-                "type": "string",
+                const.TYPE: "string",
             }
 
         entity[const.CHILDREN].append(update_attr)
 
-        id_attr[const.BIND]["calculate"] = entity_id
+        id_attr[const.BIND][const.CALCULATE] = entity_id
 
         entity_id_expression = f"instance('{dataset_name}')/root/item[name={entity_id}]"
         entity[const.CHILDREN].extend(
@@ -395,27 +395,27 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
                     const.NAME: "baseVersion",
                     const.TYPE: "attribute",
                     const.BIND: {
-                        "calculate": f"{entity_id_expression}/__version",
+                        const.CALCULATE: f"{entity_id_expression}/__version",
                         "readonly": "true()",
-                        "type": "string",
+                        const.TYPE: "string",
                     },
                 },
                 {
                     const.NAME: "trunkVersion",
                     const.TYPE: "attribute",
                     const.BIND: {
-                        "calculate": f"{entity_id_expression}/__trunkVersion",
+                        const.CALCULATE: f"{entity_id_expression}/__trunkVersion",
                         "readonly": "true()",
-                        "type": "string",
+                        const.TYPE: "string",
                     },
                 },
                 {
                     const.NAME: "branchId",
                     const.TYPE: "attribute",
                     const.BIND: {
-                        "calculate": f"{entity_id_expression}/__branchId",
+                        const.CALCULATE: f"{entity_id_expression}/__branchId",
                         "readonly": "true()",
-                        "type": "string",
+                        const.TYPE: "string",
                     },
                 },
             ]
@@ -429,9 +429,9 @@ def get_entity_declaration(row: dict, row_number: int) -> dict[str, Any]:
                 const.TYPE: "label",
                 const.NAME: "label",
                 const.BIND: {
-                    "calculate": label,
+                    const.CALCULATE: label,
                     "readonly": "true()",
-                    "type": "string",
+                    const.TYPE: "string",
                 },
             },
         )

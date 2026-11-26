@@ -26,6 +26,10 @@ from pyxform.utils import (
     default_is_dynamic,
     node,
 )
+from pyxform.validators.pyxform.control_content import (
+    question_has_control_content,
+    question_has_visible_control,
+)
 
 if TYPE_CHECKING:
     from pyxform.survey import Survey
@@ -41,7 +45,7 @@ QUESTION_EXTRA_FIELDS = (
     "instance",
     "query",
     "sms_field",
-    "trigger",
+    constants.TRIGGER,
     constants.BIND,
     constants.CHOICE_FILTER,
     constants.CONTROL,
@@ -149,19 +153,7 @@ class Question(SurveyElement):
         return result
 
     def xml_control(self, survey: "Survey"):
-        if self.type == "calculate" or (
-            ((self.bind is not None and "calculate" in self.bind) or self.trigger)
-            and not (self.label or self.hint)
-        ):
-            nested_setvalues = survey.setvalues_by_triggering_ref.get(self.name)
-            if nested_setvalues:
-                for setvalue in nested_setvalues:
-                    msg = (
-                        f"The question ${{{self.name}}} is not user-visible "
-                        "so it can't be used as a calculation trigger for "
-                        f"question ${{{setvalue[0]}}}."
-                    )
-                    raise PyXFormError(msg)
+        if not question_has_visible_control(row=self):
             return None
 
         xml_node = self.build_xml(survey=survey)
@@ -220,14 +212,33 @@ class Question(SurveyElement):
                     **{k: v for k, v in _action.items() if k not in action_fields},
                 ).node()
 
-    def _build_xml(self, survey: "Survey") -> DetachableElement | None:
+    def xml_label(self, survey: "Survey") -> DetachableElement | None:
+        if (self.label or self.media) or (self.hint or self.guidance_hint):
+            return super().xml_label(survey=survey)
+
+    def xml_hint(self, survey: "Survey"):
+        if isinstance(self.hint, dict) or self.guidance_hint:
+            path = self._translation_path(constants.HINT)
+            return node(constants.HINT, ref=f"jr:itext('{path}')")
+        elif self.hint:
+            return node(
+                constants.HINT, survey.insert_output_values(text=self.hint, context=self)
+            )
+        else:
+            return node(constants.HINT)
+
+    def _build_xml(self, survey: "Survey") -> DetachableElement:
         """Initial control node result for further processing depending on Question type."""
         control_dict = self.control
-        result = node(
-            control_dict["tag"],
-            *self.xml_label_and_hint(survey=survey),
-            ref=self.get_xpath(),
-        )
+        result = node(control_dict["tag"], ref=self.get_xpath())
+
+        label = self.xml_label(survey=survey)
+        if label is not None:
+            result.appendChild(label)
+
+        if self.hint or self.guidance_hint:
+            result.appendChild(self.xml_hint(survey=survey))
+
         # Resolve field references in attributes
         for k, v in control_dict.items():
             # "tag" is from the question type dict so it can't include references. Also,
@@ -590,6 +601,19 @@ class MultipleChoiceQuestion(_SupportsItemset):
                     )
 
         return result
+
+    def xml_label(self, survey: "Survey") -> DetachableElement | None:
+        if (
+            self.control
+            and self.control.get(constants.APPEARANCE) == constants.APPEARANCE_LABEL
+            and not question_has_control_content(row=self)
+        ):
+            # Create an empty label for unlabeled elements with the label appearance tag.
+            # This is because such elements are used to label the options for selects in
+            # a field-list and might want no label for themselves.
+            return node(constants.LABEL)
+        else:
+            return super().xml_label(survey=survey)
 
 
 class Tag(SurveyElement):

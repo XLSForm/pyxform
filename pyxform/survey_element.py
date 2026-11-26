@@ -123,17 +123,6 @@ class SurveyElement(Mapping):
         if len(kwargs) > 0:
             self.extra_data = kwargs
 
-        # Create a space label for unlabeled elements with the label
-        # appearance tag. # This is because such elements are used to label the
-        # options for selects in a field-list and might want blank labels for
-        # themselves.
-        if (
-            hasattr(self, "control")
-            and self.control
-            and self.control.get("appearance") == "label"
-            and not self.label
-        ):
-            self.label = " "
         super().__init__()
 
     @property
@@ -458,7 +447,7 @@ class SurveyElement(Mapping):
         return None
 
     # XML generating functions, these probably need to be moved around.
-    def xml_label(self, survey: "Survey"):
+    def xml_label(self, survey: "Survey") -> "DetachableElement":
         if self.needs_itext_ref():
             # If there is a dictionary label, or non-empty media dict,
             # then we need to make a label with an itext ref
@@ -470,51 +459,6 @@ class SurveyElement(Mapping):
             )
         else:
             return node("label")
-
-    def xml_hint(self, survey: "Survey"):
-        if isinstance(self.hint, dict) or self.guidance_hint:
-            path = self._translation_path("hint")
-            return node("hint", ref=f"jr:itext('{path}')")
-        elif self.hint:
-            return node("hint", survey.insert_output_values(text=self.hint, context=self))
-        else:
-            return node("hint")
-
-    def xml_label_and_hint(self, survey: "Survey") -> list["DetachableElement"]:
-        """
-        Return a list containing one node for the label and if there
-        is a hint one node for the hint.
-        """
-        result = []
-        label_appended = False
-        if self.label or self.media:
-            result.append(self.xml_label(survey=survey))
-            label_appended = True
-
-        if self.hint or self.guidance_hint:
-            if not label_appended:
-                result.append(self.xml_label(survey=survey))
-            result.append(self.xml_hint(survey=survey))
-
-        msg = f"The survey element named '{self.name}' has no label or hint."
-        if len(result) == 0:
-            raise PyXFormError(msg)
-
-        # Guidance hint alone is not OK since they may be hidden by default.
-        if not any((self.label, self.media, self.hint)) and self.guidance_hint:
-            raise PyXFormError(msg)
-
-        # big-image must combine with image
-        if (
-            self.media is not None
-            and "image" not in self.media
-            and "big-image" in self.media
-        ):
-            raise PyXFormError(
-                f"To use big-image, you must also specify an image for the survey element named {self.name}."
-            )
-
-        return result
 
     def xml_bindings(
         self, survey: "Survey"
@@ -529,7 +473,7 @@ class SurveyElement(Mapping):
         bind_dict = {}
         for k, v in self.bind.items():
             # the expression goes in a setvalue action
-            if hasattr(self, "trigger") and self.trigger and k == "calculate":
+            if hasattr(self, const.TRIGGER) and self.trigger and k == const.CALCULATE:
                 continue
             # I think all the binding conversions should be happening on
             # the xls2json side.

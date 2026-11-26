@@ -310,6 +310,24 @@ class ErrorCode(Enum):
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
         ),
     )
+    LABEL_002 = Detail(
+        name="Labels - invalid media 'big-image' with no media 'image'",
+        msg=(
+            "[row : {row}] On the '{sheet}' sheet, a 'big-image' value is invalid. "
+            "To use 'big-image' media, an 'image' media must be provided. "
+            "When using translations, in each language, each 'big-image' must have an 'image'. "
+            "Learn more: https://docs.getodk.org/form-styling/#bigger-images-for-panning-and-zooming"
+        ),
+    )
+    LABEL_003 = Detail(
+        name="Labels - invalid missing question label in the survey sheet",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the question label/hint/media is invalid. "
+            "A question that may be displayed to a user must have a label, hint, or media "
+            "(image, big-image, audio, or video). "
+            "Learn more: https://docs.getodk.org/xlsform/#the-survey-sheet"
+        ),
+    )
     NAMES_001 = Detail(
         name="Names - invalid duplicate name in same context",
         msg=(
@@ -694,6 +712,16 @@ class ErrorCode(Enum):
             "To use this 'select' question type, a sheet named '{missing}' must be provided. "
             "Sheets with the following similar names were found: {candidates}. "
             "Learn more: https://xlsform.org/en/#setting-up-your-worksheets"
+        ),
+    )
+    SURVEY_015 = Detail(
+        name="Survey sheet - trigger target not user-visible.",
+        msg=(
+            "[row : {row}] On the 'survey' sheet, the 'trigger' value is invalid. "
+            "A question must be user-visible to act as a trigger. "
+            "The question '{q}' is not user-visible. Update the question to add a "
+            "label / hint / media, or specify a different trigger question."
+            "Learn more: https://docs.getodk.org/form-logic/#triggering-calculations-on-value-change"
         ),
     )
 

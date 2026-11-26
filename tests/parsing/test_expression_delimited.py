@@ -199,7 +199,7 @@ class TestOutputText(PyxformTestCase):
         self.assertPyxformXform(
             md=MD_SURVEY.format(label=inp),
             errored=True,
-            error__contains=["The survey element named 'q1' has no label or hint."],
+            error__contains=[ErrorCode.LABEL_003.value.format(row=2)],
         )
 
     def test_plain_text(self):

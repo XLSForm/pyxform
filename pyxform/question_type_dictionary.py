@@ -370,22 +370,18 @@ _QUESTION_TYPE_DICT = {
     "csv-external": {
         # Only effect is to add an external instance.
     },
-    "start-geopoint": {
-        "control": {"tag": "action"},
-        "bind": {"type": "geopoint"},
-    },
-    "background-audio": {
-        "control": {"tag": "action"},
-        "bind": {"type": "binary"},
-    },
-    "background-geopoint": {
-        "control": {"tag": "action"},
-        "bind": {"type": "geopoint"},
-    },
+    "start-geopoint": {"bind": {"type": "geopoint"}},
+    "background-audio": {"bind": {"type": "binary"}},
+    "background-geopoint": {"bind": {"type": "geopoint"}},
 }
 
 # Read-only view of the types.
 QUESTION_TYPE_DICT = MappingProxyType(_QUESTION_TYPE_DICT)
+
+# Question types with a default control tag are usually visible.
+QUESTION_TYPE_HAS_CONTROL = frozenset(
+    {k for k, v in QUESTION_TYPE_DICT.items() if co.CONTROL in v}
+)
 
 
 def get_meta_group(children: Sequence[dict[str, Any]]) -> dict[str, Any]:

@@ -3,6 +3,8 @@ Ensuring that the pyxform_test_case.PyxformTestCase class does some
 internal conversions correctly.
 """
 
+from pyxform.errors import ErrorCode
+
 from tests.pyxform_test_case import PyxformTestCase, PyxformTestError
 from tests.xpath_helpers.settings import xps
 
@@ -16,7 +18,7 @@ class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
         if "errored" parameter is not set to False, it should
         raise an exception
         """
-        _invalid_ss_structure = {"survey": [{"type": "note", "name": "n1"}]}
+        _invalid_ss_structure = {"survey": [{"type": "note", "name": "q1"}]}
 
         def _no_valid_flag():
             """
@@ -34,7 +36,7 @@ class PyxformTestCaseNonMarkdownSurveyAlternatives(PyxformTestCase):
         self.assertPyxformXform(
             ss_structure=_invalid_ss_structure,
             errored=True,
-            error__contains=["The survey element named 'n1' has no label or hint."],
+            error__contains=[ErrorCode.LABEL_003.value.format(row=2)],
         )
 
     def test_vanilla_survey(self):

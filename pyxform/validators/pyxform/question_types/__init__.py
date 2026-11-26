@@ -2,6 +2,7 @@
 
 from collections.abc import Collection, Iterable
 
+from pyxform import constants as co
 from pyxform.errors import ErrorCode, PyXFormError
 from pyxform.parsing.variable_reference import (
     is_pyxform_reference_candidate,
@@ -12,7 +13,7 @@ from pyxform.parsing.variable_reference import (
 def validate_background_geopoint_calculation(row: dict, row_num: int) -> bool:
     """A background-geopoint must not have a calculation."""
     try:
-        row["bind"]["calculate"]
+        row[co.BIND][co.CALCULATE]
     except KeyError:
         return True
     else:
@@ -26,14 +27,26 @@ def validate_background_geopoint_trigger(trigger: str | None, row_num: int) -> b
     return True
 
 
-def validate_references(
-    referrers: Iterable[Iterable[str | None, int]], questions: Collection[str]
+def validate_trigger_references(
+    referrers: Iterable[tuple[str | None, int]],
+    questions: Collection[str],
+    questions_visible: Collection[str],
 ) -> bool:
-    """Pyxform references must refer to a question that exists."""
+    """Trigger variable references must specify a question that exists and is user-visible."""
     for target, row_num in referrers:
         if target not in questions:
             raise PyXFormError(
-                code=ErrorCode.PYREF_003, context={"q": target, "row": row_num}
+                code=ErrorCode.PYREF_003,
+                context={
+                    "sheet": co.SURVEY,
+                    "column": co.TRIGGER,
+                    "row": row_num,
+                    "q": target,
+                },
+            )
+        if target not in questions_visible:
+            raise PyXFormError(
+                code=ErrorCode.SURVEY_015, context={"q": target, "row": row_num}
             )
     return True
 
@@ -56,7 +69,7 @@ def process_trigger(
     elif not is_pyxform_reference_candidate(trigger):
         raise PyXFormError(
             code=ErrorCode.PYREF_001,
-            context={"sheet": "survey", "column": "trigger", "row": row_num},
+            context={"sheet": co.SURVEY, "column": co.TRIGGER, "row": row_num},
         )
 
     try:
@@ -66,7 +79,7 @@ def process_trigger(
             for r in parse_pyxform_references(value=t, match_limit=1)
         )
     except PyXFormError as e:
-        e.context.update(sheet="survey", column="trigger", row=row_num)
+        e.context.update(sheet=co.SURVEY, column=co.TRIGGER, row=row_num)
         raise
 
     if trigger:

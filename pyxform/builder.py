@@ -29,14 +29,13 @@ from pyxform.xls2json import SurveyReader
 
 QUESTION_CLASSES = {
     "": Question,
-    "action": Question,
     "input": InputQuestion,
     "odk:rank": MultipleChoiceQuestion,
     "osm": OsmUploadQuestion,
     "range": RangeQuestion,
     "select": MultipleChoiceQuestion,
     "select1": MultipleChoiceQuestion,
-    "trigger": TriggerQuestion,
+    const.TRIGGER: TriggerQuestion,
     "upload": UploadQuestion,
     "__by_type__": {
         "geopoint": GeoQuestion,
@@ -122,7 +121,7 @@ class SurveyElementBuilder:
             )
 
     def _save_trigger(self, d: dict) -> None:
-        trigger = d.get("trigger")
+        trigger = d.get(const.TRIGGER)
         if not trigger:
             return
         elif not isinstance(trigger, tuple):
@@ -134,8 +133,8 @@ class SurveyElementBuilder:
 
         for t in trigger:
             value = ""
-            if const.BIND in d and "calculate" in d[const.BIND]:
-                value = d[const.BIND]["calculate"]
+            if const.BIND in d and const.CALCULATE in d[const.BIND]:
+                value = d[const.BIND][const.CALCULATE]
             question_ref = (d[const.NAME], value)
             if d[const.TYPE] == "background-geopoint":
                 self.setgeopoint_by_triggering_ref[t].append(question_ref)
