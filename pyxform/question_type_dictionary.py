@@ -181,7 +181,7 @@ _QUESTION_TYPE_DICT = {
             "jr:preloadParams": "start",
         }
     },
-    "trigger": {"control": {"tag": "trigger"}},
+    "trigger": {"control": {"tag": "trigger"}, "bind": {"type": "string"}},
     "add acknowledge prompt": {
         "control": {"tag": "trigger"},
         "bind": {"type": "string"},
